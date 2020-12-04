@@ -1,0 +1,55 @@
+{
+    "propertiesGroupName": "Encounter_Hospitalization",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "string"
+        },
+        {
+            "path": "preAdmissionIdentifier",
+            "name": "PreAdmissionIdentifier",
+            "propertiesGroupRef": "Identifier"
+        },
+        {
+            "path": "origin",
+            "name": "Origin",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "admitSource",
+            "name": "AdmitSource",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "reAdmission",
+            "name": "ReAdmission",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "dietPreference",
+            "name": "DietPreference",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "specialCourtesy",
+            "name": "SpecialCourtesy",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "specialArrangement",
+            "name": "SpecialArrangement",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "destination",
+            "name": "Destination",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "dischargeDisposition",
+            "name": "DischargeDisposition",
+            "propertiesGroupRef": "CodeableConcept"
+        }
+    ]
+}
