@@ -1,0 +1,45 @@
+{
+    "propertiesGroupName": "AllergyIntolerance_Reaction",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "string"
+        },
+        {
+            "path": "substance",
+            "name": "Substance",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "manifestation",
+            "name": "Manifestation",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "description",
+            "name": "Description",
+            "type": "string"
+        },
+        {
+            "path": "onset",
+            "name": "Onset",
+            "type": "string"
+        },
+        {
+            "path": "severity",
+            "name": "Severity",
+            "type": "string"
+        },
+        {
+            "path": "exposureRoute",
+            "name": "ExposureRoute",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "note",
+            "name": "Note",
+            "propertiesGroupRef": "Annotation"
+        }
+    ]
+}

@@ -1,0 +1,73 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hl7.Fhir.R4" Version="1.9.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.1.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.1.0" />
+    <PackageReference Include="coverlet.collector" Version="1.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.CommonDataModel.ObjectModel.Adapter.Adls\Microsoft.CommonDataModel.ObjectModel.Adapter.Adls.csproj" />
+    <ProjectReference Include="..\Microsoft.CommonDataModel.ObjectModel\Microsoft.CommonDataModel.ObjectModel.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Transformation.BatchExecutor\Microsoft.Health.Fhir.Transformation.Cdm.BatchExecutor.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Transformation.Cdm.Tool\Microsoft.Health.Fhir.Transformation.Cdm.Tool.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Transformation.Cdm\Microsoft.Health.Fhir.Transformation.Cdm.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Transformation.Core\Microsoft.Health.Fhir.Transformation.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="test-settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\FhirResource\*.ndjson">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\TestOutput\LocalAllergyIntolerance\AllergyIntolerance-partition-data.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\TestOutput\LocalCarePlanPeriod\CarePlanPeriod-partition-data.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\TestOutput\LocalCarePlan\CarePlan-partition-data.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\TestOutput\LocalEncounterClass\EncounterClass-partition-data.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\TestOutput\LocalEncounter\Encounter-partition-data.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\TestOutput\LocalLocation\Location-partition-data.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\TestOutput\LocalObservation\Observation-partition-data.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\TestOutput\LocalPatientFlattenJson\PatientFlattenJson-partition-data.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\TestOutput\LocalPatientName\PatientName-partition-data.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\TestOutput\LocalPatient\Patient-partition-data.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\TestSchema\*.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestResource\TestSchema\PropertiesGroup\*.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

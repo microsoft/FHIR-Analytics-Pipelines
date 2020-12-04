@@ -1,0 +1,85 @@
+{
+    "propertiesGroupName": "Observation_Component",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "string"
+        },
+        {
+            "path": "code",
+            "name": "Code",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "valueQuantity",
+            "name": "ValueQuantity",
+            "propertiesGroupRef": "Quantity"
+        },
+        {
+            "path": "valueCodeableConcept",
+            "name": "ValueCodeableConcept",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "valueString",
+            "name": "ValueString",
+            "type": "string"
+        },
+        {
+            "path": "valueBoolean",
+            "name": "ValueBoolean",
+            "type": "string"
+        },
+        {
+            "path": "valueInteger",
+            "name": "ValueInteger",
+            "type": "string"
+        },
+        {
+            "path": "valueRange",
+            "name": "ValueRange",
+            "propertiesGroupRef": "Range"
+        },
+        {
+            "path": "valueRatio",
+            "name": "ValueRatio",
+            "propertiesGroupRef": "Ratio"
+        },
+        {
+            "path": "valueSampledData",
+            "name": "ValueSampledData",
+            "propertiesGroupRef": "SampledData"
+        },
+        {
+            "path": "valueTime",
+            "name": "ValueTime",
+            "type": "string"
+        },
+        {
+            "path": "valueDateTime",
+            "name": "ValueDateTime",
+            "type": "string"
+        },
+        {
+            "path": "valuePeriod",
+            "name": "ValuePeriod",
+            "propertiesGroupRef": "Period"
+        },
+        {
+            "path": "dataAbsentReason",
+            "name": "DataAbsentReason",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "interpretation",
+            "name": "Interpretation",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "referenceRange",
+            "name": "ReferenceRange",
+            "propertiesGroupRef": "Observation_ReferenceRange"
+        }
+    ]
+}

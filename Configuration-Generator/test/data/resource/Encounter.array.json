@@ -1,0 +1,151 @@
+{
+    "name": "Encounter",
+    "resourceType": "Encounter",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "id"
+        },
+        {
+            "path": "meta",
+            "name": "Meta",
+            "propertiesGroupRef": "Meta"
+        },
+        {
+            "path": "implicitRules",
+            "name": "ImplicitRules",
+            "type": "uri"
+        },
+        {
+            "path": "language",
+            "name": "Language",
+            "type": "code"
+        },
+        {
+            "path": "text",
+            "name": "Text",
+            "propertiesGroupRef": "Narrative"
+        },
+        {
+            "path": "modifierExtension",
+            "name": "ModifierExtension",
+            "type": "array"
+        },
+        {
+            "path": "identifier",
+            "name": "Identifier",
+            "type": "array"
+        },
+        {
+            "path": "status",
+            "name": "Status",
+            "type": "string"
+        },
+        {
+            "path": "statusHistory",
+            "name": "StatusHistory",
+            "type": "array"
+        },
+        {
+            "path": "class",
+            "name": "Class",
+            "propertiesGroupRef": "Coding"
+        },
+        {
+            "path": "classHistory",
+            "name": "ClassHistory",
+            "type": "array"
+        },
+        {
+            "path": "type",
+            "name": "Type",
+            "type": "array"
+        },
+        {
+            "path": "serviceType",
+            "name": "ServiceType",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "priority",
+            "name": "Priority",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "subject",
+            "name": "Subject",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "episodeOfCare",
+            "name": "EpisodeOfCare",
+            "type": "array"
+        },
+        {
+            "path": "basedOn",
+            "name": "BasedOn",
+            "type": "array"
+        },
+        {
+            "path": "participant",
+            "name": "Participant",
+            "type": "array"
+        },
+        {
+            "path": "appointment",
+            "name": "Appointment",
+            "type": "array"
+        },
+        {
+            "path": "period",
+            "name": "Period",
+            "propertiesGroupRef": "Period"
+        },
+        {
+            "path": "length",
+            "name": "Length",
+            "propertiesGroupRef": "Duration"
+        },
+        {
+            "path": "reasonCode",
+            "name": "ReasonCode",
+            "type": "array"
+        },
+        {
+            "path": "reasonReference",
+            "name": "ReasonReference",
+            "type": "array"
+        },
+        {
+            "path": "diagnosis",
+            "name": "Diagnosis",
+            "type": "array"
+        },
+        {
+            "path": "account",
+            "name": "Account",
+            "type": "array"
+        },
+        {
+            "path": "hospitalization",
+            "name": "Hospitalization",
+            "propertiesGroupRef": "Encounter_Hospitalization"
+        },
+        {
+            "path": "location",
+            "name": "Location",
+            "type": "array"
+        },
+        {
+            "path": "serviceProvider",
+            "name": "ServiceProvider",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "partOf",
+            "name": "PartOf",
+            "propertiesGroupRef": "Reference"
+        }
+    ]
+}
