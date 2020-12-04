@@ -12,7 +12,7 @@ describe('Test can write the configurations to target folder', function() {
     it(`Publish resource configuration for ${resourceCases}`, function(){
         let folderName = Math.random().toString(30).substr(2);
         let destination = path.join(__dirname, folderName);
-        let arrayOperation = constants.arrayOperations.detail;
+        let arrayOperation = constants.arrayOperations.first;
         let overwrite = false;
 
         let results = {};
@@ -36,7 +36,7 @@ describe('Test can write the configurations to target folder', function() {
     it(`Publish unroll configuration for ${unrollCase}`, function(){
         let folderName = Math.random().toString(30).substr(2);
         let destination = path.join(__dirname, folderName);
-        let arrayOperation = constants.arrayOperations.detail;
+        let arrayOperation = constants.arrayOperations.first;
         let overwrite = false;
 
         configurationGenerator.publishUnrollConfiguration(destination, unrollCase, null, arrayOperation, overwrite);
@@ -55,7 +55,7 @@ describe('Test overwrite for publish configurations', function() {
     it(`Do not overwrite propertiy configurations when overwrite parameter is disable`, function() {
         let folderName = Math.random().toString(30).substr(2);
         let destination = path.join(__dirname, folderName);
-        let arrayOperation = constants.arrayOperations.detail;
+        let arrayOperation = constants.arrayOperations.first;
         let overwrite = false;
         let propertyfilePath = path.join(destination, "PropertiesGroup", "HumanName.json");
     
@@ -73,7 +73,7 @@ describe('Test overwrite for publish configurations', function() {
     it(`Overwrite resource configurations when overwrite parameter is disable`, function() {
         let folderName = Math.random().toString(30).substr(2);
         let destination = path.join(__dirname, folderName);
-        let arrayOperation = constants.arrayOperations.detail;
+        let arrayOperation = constants.arrayOperations.first;
         let overwrite = false;
         let resourcefilePath = path.join(destination, `${resourceCases[0]}.json`);
     
@@ -89,10 +89,10 @@ describe('Test overwrite for publish configurations', function() {
     });
 
     
-    it(`Overwrite propertiy configurations  when overwrite parameter is enable`, function() {
+    it(`Overwrite propertiy configurations when overwrite parameter is enable`, function() {
         let folderName = Math.random().toString(30).substr(2);
         let destination = path.join(__dirname, folderName);
-        let arrayOperation = constants.arrayOperations.detail;
+        let arrayOperation = constants.arrayOperations.first;
         let overwrite = true;
         let propertyfilePath = path.join(destination, "PropertiesGroup", "HumanName.json");
     

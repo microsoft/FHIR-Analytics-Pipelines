@@ -59,7 +59,7 @@ const configurationConst = {
 
 const arrayOperations = {
     as_json: "as_json",
-    aggregate: "aggregate"
+    first: "first"
 }
 
 

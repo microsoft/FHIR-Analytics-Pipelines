@@ -45,7 +45,7 @@ function getAllPropertiesGroupTypes() {
 describe('Test propertiesGroup types are correct', function() {
 
   it("Generated all propertiesGroup.", function() {
-    let propertiesGroupConfigurations = configuration_generator.generatePropertyGroups(null, schema, constants.arrayOperations.aggregate);
+    let propertiesGroupConfigurations = configuration_generator.generatePropertyGroups(null, schema, constants.arrayOperations.first);
     let expectPropertiesGroupSet = new Set(getAllPropertiesGroupTypes());
     let generatedPropertiesGroupSet = new Set(Object.keys(propertiesGroupConfigurations));
   
@@ -57,9 +57,9 @@ describe('Test propertiesGroup types are correct', function() {
   });
 
   it("Generated related propertiesGroup.", function() {
-    let resourceConfigurations = configuration_generator.generateResourceConfigurations(testResources, schema, constants.arrayOperations.aggregate);
+    let resourceConfigurations = configuration_generator.generateResourceConfigurations(testResources, schema, constants.arrayOperations.first);
     let propertyTypes = configuration_generator.getRelatedPropertiesGroupTypes(resourceConfigurations, schema);
-    let propertiesGroupConfigurations = configuration_generator.generatePropertyGroups(propertyTypes, schema, constants.arrayOperations.aggregate);
+    let propertiesGroupConfigurations = configuration_generator.generatePropertyGroups(propertyTypes, schema, constants.arrayOperations.first);
   
     let generatedPropertiesGroupSet = new Set(Object.keys(propertiesGroupConfigurations));
     let expectPropertiesGroupSet = new Set(expectPropertiesGroup);
@@ -72,9 +72,9 @@ describe('Test propertiesGroup types are correct', function() {
   });
 
   it("Generated related propertiesGroup.", function() {
-    let resourceConfigurations = configuration_generator.generateResourceConfigurations(testResources, schema, constants.arrayOperations.aggregate);
+    let resourceConfigurations = configuration_generator.generateResourceConfigurations(testResources, schema, constants.arrayOperations.first);
     let propertyTypes = configuration_generator.getRelatedPropertiesGroupTypes(resourceConfigurations, schema);
-    let propertiesGroupConfigurations = configuration_generator.generatePropertyGroups(propertyTypes, schema, constants.arrayOperations.aggregate);
+    let propertiesGroupConfigurations = configuration_generator.generatePropertyGroups(propertyTypes, schema, constants.arrayOperations.first);
   
     let generatedPropertiesGroupSet = new Set(Object.keys(propertiesGroupConfigurations));
     let expectPropertiesGroupSet = new Set(expectPropertiesGroup);

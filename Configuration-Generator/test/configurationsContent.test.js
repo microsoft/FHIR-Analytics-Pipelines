@@ -30,7 +30,7 @@ var testPropertiesGroups = [
 describe('Test generate configurations for resources', function() {
   testResources.forEach(function(resourceType) {
     it(`Generate configuration for \"${resourceType}\" => "${resourceType}.json`, function() {
-      let resourceConfiguration = configuration_generator.generateResourceConfigurations([resourceType], schema, constants.arrayOperations.aggregate)[resourceType];
+      let resourceConfiguration = configuration_generator.generateResourceConfigurations([resourceType], schema, constants.arrayOperations.first)[resourceType];
       let groundTruthFilePath = path.join(__dirname, `./data/resource`, `${resourceType}.json`);
       let groundTruth = fs.readFileSync(groundTruthFilePath, 'utf8');
       let result = JSON.stringify(resourceConfiguration, null, 4);
@@ -58,7 +58,7 @@ describe('Test generate configurations for unrollpaths', function() {
   testUnrollpaths.forEach(function(unrollPath) {
     let tableNameForUnrollPath = unrollPath.split('.').join('_');
     it(`Generate configuration for \"${unrollPath}\" => "${tableNameForUnrollPath}.json`, function() {
-      let unrollPathConfiguration = configuration_generator.generateUnrollConfigurations([unrollPath], schema, constants.arrayOperations.aggregate)[unrollPath];
+      let unrollPathConfiguration = configuration_generator.generateUnrollConfigurations([unrollPath], schema, constants.arrayOperations.first)[unrollPath];
       let tableNameForUnrollPath = unrollPath.split('.').join('_');
       let groundTruthFilePath = path.join(__dirname, `./data/unrollpath`, `${tableNameForUnrollPath}.json`);
       let groundTruth = fs.readFileSync(groundTruthFilePath, 'utf8');
@@ -72,7 +72,7 @@ describe('Test generate configurations for unrollpaths', function() {
  describe('Test generate configurations for propertyGroups', function() {
    testPropertiesGroups.forEach(function(propertiesGroupType){
     it(`Generate configuration for \"${propertiesGroupType}\" => "${propertiesGroupType}.json`, function() {
-      let propertyGroupConfiguration = configuration_generator.generatePropertyGroups([propertiesGroupType], schema, constants.arrayOperations.aggregate)[propertiesGroupType];
+      let propertyGroupConfiguration = configuration_generator.generatePropertyGroups([propertiesGroupType], schema, constants.arrayOperations.first)[propertiesGroupType];
       let groundTruthFilePath = path.join(__dirname, `./data/propertiesGroup`, `${propertiesGroupType}.json`);
       let groundTruth = fs.readFileSync(groundTruthFilePath, 'utf8');
       
