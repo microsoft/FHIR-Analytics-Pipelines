@@ -92,7 +92,7 @@ function resolveResourceProperties(resourceType, propertiesInSchema, schema, arr
             
             let typeRef;
             if ('array' == propertiesInSchema[propertyName].type) {
-                typeRef = arrayOperation==constants.arrayOperations.aggregate?
+                typeRef = arrayOperation==constants.arrayOperations.first?
                           propertiesInSchema[propertyName].items.$ref:
                           constants.reservedPropertyType.array
             }
@@ -251,7 +251,7 @@ function generateUnrollConfigurations(unrollPaths, schema){
 }
 
 // Export 
-function publishUnrollConfiguration(destination, unrollPath, schemaFile, arrayOperation=constants.arrayOperations.aggregate, overwrite=true) {
+function publishUnrollConfiguration(destination, unrollPath, schemaFile, arrayOperation=constants.arrayOperations.first, overwrite=false) {
     if (!schemaFile) {
         schemaFile = './fhir.schema.json'
     }
@@ -274,7 +274,7 @@ function publishUnrollConfiguration(destination, unrollPath, schemaFile, arrayOp
     })
 }
 
-function publishResourceConfigurations(destination, resourceTypes, schemaFile, arrayOperation=constants.arrayOperations.aggregate, overwrite=true) {
+function publishResourceConfigurations(destination, resourceTypes, schemaFile, arrayOperation=constants.arrayOperations.first, overwrite=false) {
     if (!schemaFile) {
         schemaFile = './fhir.schema.json'
     }
