@@ -2,6 +2,7 @@ const { program, description, option } = require('commander')
 const constants = require('./constants.js');
 
 var configurationGenerator = require('./configuration_generator.js')
+const configurationViewer = require('./configuration_viewer.js')
 
 function checkParameters(options, commandType) {
   if (!(options.array in constants.arrayOperations)){
@@ -33,6 +34,15 @@ program
 .action(function(options){
   checkParameters(options, 'generate-config-unrollpath')
   configurationGenerator.publishUnrollConfiguration(options.output, options.unroll, null, options.array, options.overwrite)
+});
+
+program
+.command('show-schema')
+.description('Show the schema properties')
+.option("-d, --destination <destination>", "Destination schema folder")
+.option("-t, --tableName <TableName>", "Name of table to show its schema properties")
+.action(function(options){
+  configurationViewer.showSchema(options.destination, options.tableName);
 });
 
 program.parse(process.argv)
