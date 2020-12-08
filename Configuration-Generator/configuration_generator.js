@@ -250,8 +250,51 @@ function generateUnrollConfigurations(unrollPaths, schema){
     return unrollConfigurations
 }
 
+function validateGeneratedResourceConfigurations(resourceConfigurations, destination) {
+    let files = fs.readdirSync(destination).filter(file => file.match(RegExp(/.json/)));
+    
+    // Collect existing unroll paths in destination folder
+    let existingUnrollPaths = []
+    files.forEach(function(file) {
+        filePath = path.join(destination, file);
+        content = JSON.parse(fs.readFileSync(filePath));
+        if (content.unrollPath) {
+            existingUnrollPaths.push(content.unrollPath);
+        }
+    });
+    
+    // Remove existing unroll path properties in configurations to be published
+    existingUnrollPaths.forEach(function(unrollPath) {
+        let subpaths = unrollPath.split('.')
+
+        // Only handle the unroll path property appear in resource configuration
+        if (subpaths.length == 2 && resourceConfigurations[subpaths[0]]) {
+            resourceConfigurations[subpaths[0]].properties = resourceConfigurations[subpaths[0]].properties.filter(property => property.path != subpaths[1])
+        }
+    });
+    return resourceConfigurations
+}
+
+function updateExistingResourceConfigurations(unrollPath, destination) {
+    let subPaths = unrollPath.split('.')
+    if (subPaths.length != 2) {
+        return;
+    }
+    let files = fs.readdirSync(destination).filter(file => file.match(RegExp(/.json/)));
+
+    // Update the existing resources when create a new unroll path configuration
+    files.forEach(function(file) {
+        filePath = path.join(destination, file);
+        content = JSON.parse(fs.readFileSync(filePath));
+        if (!content.unrollPath && content.resourceType == subPaths[0]) {
+            content.properties = content.properties.filter(property => property.path != subPaths[1])
+            fs.writeFileSync(path.join(filePath), JSON.stringify(content, null, 4))
+        }
+    });
+}
+
 // Export 
-function publishUnrollConfiguration(destination, unrollPath, schemaFile, arrayOperation=constants.arrayOperations.first, overwrite=false) {
+function publishUnrollConfiguration(destination, unrollPath, schemaFile, arrayOperation=constants.arrayOperations.first, overwrite=false, validate=false) {
     if (!schemaFile) {
         schemaFile = './fhir.schema.json'
     }
@@ -272,9 +315,12 @@ function publishUnrollConfiguration(destination, unrollPath, schemaFile, arrayOp
     Object.keys(unrollConfigurations).forEach(function(unrollPath, _) {
         fs.writeFileSync(path.join(destination, `${unrollPath.split('.').join('_')}.json`), JSON.stringify(unrollConfigurations[unrollPath], null, 4))
     })
+    if (validate) {
+        updateExistingResourceConfigurations(unrollPath, destination)
+    }
 }
 
-function publishResourceConfigurations(destination, resourceTypes, schemaFile, arrayOperation=constants.arrayOperations.first, overwrite=false) {
+function publishResourceConfigurations(destination, resourceTypes, schemaFile, arrayOperation=constants.arrayOperations.first, overwrite=false, validate=false) {
     if (!schemaFile) {
         schemaFile = './fhir.schema.json'
     }
@@ -288,6 +334,10 @@ function publishResourceConfigurations(destination, resourceTypes, schemaFile, a
     var resourceConfigurations = generateResourceConfigurations(resourceTypes, schema, arrayOperation)
     var propertyTypes = getRelatedPropertiesGroupTypes(resourceConfigurations, schema)
     var propertyGroups = generatePropertyGroups(propertyTypes, schema, arrayOperation)
+
+    if (validate) {
+        resourceConfigurations = validateGeneratedResourceConfigurations(resourceConfigurations, destination)
+    }
 
     Object.keys(propertyGroups).forEach(function(groupName, _) {
         if ( overwrite || !fs.existsSync(path.join(propertiesGroupPath, `${groupName}.json`))) {

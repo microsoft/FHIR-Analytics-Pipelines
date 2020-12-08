@@ -16,6 +16,7 @@ program
   .option("-o, --output <Output>", "output folder")
   .option("-a, --array <ArrayOperation>", 'How to handle "array" type for array properties', constants.arrayOperations.first)
   .option("-w, --overwrite", "Whether to overwite existed configurations", false)
+  .option("-v, --validate", "Whether to validate generated resource configuration to remove properties appear in unroll configurations", false)
   .action(function(options){
     checkParameters(options, 'generate-config')
     configurationGenerator.publishResourceConfigurations(options.output, options.resources, null, options.array, options.overwrite)
@@ -28,6 +29,7 @@ program
 .option("-o, --output <Output>", "output folder")
 .option("-a, --array <ArrayOperation>", "How to handle 'array' type for array properties", constants.arrayOperations.first)
 .option("-w, --overwrite", "Whether to overwite existed configurations", false)
+.option("-v, --validate", "Whether to validate extsing resource configuration to remove properties appear in unroll configurations", false)
 .action(function(options){
   checkParameters(options, 'generate-config-unrollpath')
   configurationGenerator.publishUnrollConfiguration(options.output, options.unroll, null, options.array, options.overwrite)
