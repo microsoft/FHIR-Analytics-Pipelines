@@ -294,7 +294,7 @@ function updateExistingResourceConfigurations(unrollPath, destination) {
 }
 
 // Export 
-function publishUnrollConfiguration(destination, unrollPath, schemaFile, arrayOperation=constants.arrayOperations.first, overwrite=false) {
+function publishUnrollConfiguration(destination, unrollPath, schemaFile, arrayOperation=constants.arrayOperations.first, overwrite=false, validate=false) {
     if (!schemaFile) {
         schemaFile = './fhir.schema.json'
     }
@@ -315,10 +315,12 @@ function publishUnrollConfiguration(destination, unrollPath, schemaFile, arrayOp
     Object.keys(unrollConfigurations).forEach(function(unrollPath, _) {
         fs.writeFileSync(path.join(destination, `${unrollPath.split('.').join('_')}.json`), JSON.stringify(unrollConfigurations[unrollPath], null, 4))
     })
-    updateExistingResourceConfigurations(unrollPath, destination)
+    if (validate) {
+        updateExistingResourceConfigurations(unrollPath, destination)
+    }
 }
 
-function publishResourceConfigurations(destination, resourceTypes, schemaFile, arrayOperation=constants.arrayOperations.first, overwrite=false) {
+function publishResourceConfigurations(destination, resourceTypes, schemaFile, arrayOperation=constants.arrayOperations.first, overwrite=false, validate=false) {
     if (!schemaFile) {
         schemaFile = './fhir.schema.json'
     }
@@ -333,7 +335,9 @@ function publishResourceConfigurations(destination, resourceTypes, schemaFile, a
     var propertyTypes = getRelatedPropertiesGroupTypes(resourceConfigurations, schema)
     var propertyGroups = generatePropertyGroups(propertyTypes, schema, arrayOperation)
 
-    resourceConfigurations = validateGeneratedResourceConfigurations(resourceConfigurations, destination)
+    if (validate) {
+        resourceConfigurations = validateGeneratedResourceConfigurations(resourceConfigurations, destination)
+    }
 
     Object.keys(propertyGroups).forEach(function(groupName, _) {
         if ( overwrite || !fs.existsSync(path.join(propertiesGroupPath, `${groupName}.json`))) {

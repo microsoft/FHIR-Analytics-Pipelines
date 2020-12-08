@@ -6,7 +6,7 @@ const utils = require('./util/utils.js');
 
 
 describe('Test can ignore property in unroll path when creating resource configuration', function() {
-    it(`Should not contain unroll path property in published resource configuration`, function(){
+    it(`Should not contain unroll path property in published resource configuration when enable validate`, function(){
         let unrollPath = 'Patient.name';
         let resources = ['Patient'];
         
@@ -14,11 +14,13 @@ describe('Test can ignore property in unroll path when creating resource configu
         let destination = path.join(__dirname, folderName);
         let arrayOperation = constants.arrayOperations.first;
         let overwrite = false;
+        let validate = true;
+
         // Publish unroll path configuration for 'Patient.name'
-        configurationGenerator.publishUnrollConfiguration(destination, unrollPath, null, arrayOperation, overwrite);
+        configurationGenerator.publishUnrollConfiguration(destination, unrollPath, null, arrayOperation, overwrite, validate);
         
         // Publish resource configuration for 'Patient'
-        configurationGenerator.publishResourceConfigurations(destination, [resources], null, arrayOperation, overwrite);
+        configurationGenerator.publishResourceConfigurations(destination, [resources], null, arrayOperation, overwrite, validate);
         
         let resultFilePath = path.join(destination, `Patient.json`);
         let content = JSON.parse(fs.readFileSync(resultFilePath, 'utf8'));
@@ -33,7 +35,7 @@ describe('Test can ignore property in unroll path when creating resource configu
 
 
 describe('Test can update existing resource configuration when creating unroll path configuration', function() {
-    it(`Should not contain unroll path property in existing resource configuration`, function(){
+    it(`Should not contain unroll path property in existing resource configuration when enable validate`, function(){
         let unrollPath = 'Patient.name';
         let resources = ['Patient'];
         
@@ -41,12 +43,13 @@ describe('Test can update existing resource configuration when creating unroll p
         let destination = path.join(__dirname, folderName);
         let arrayOperation = constants.arrayOperations.first;
         let overwrite = false;
+        let validate = true;
 
         // Publish resource configuration for 'Patient'
-        configurationGenerator.publishResourceConfigurations(destination, [resources], null, arrayOperation, overwrite);
+        configurationGenerator.publishResourceConfigurations(destination, [resources], null, arrayOperation, overwrite, validate);
 
         // Publish unroll path configuration for 'Patient.name'
-        configurationGenerator.publishUnrollConfiguration(destination, unrollPath, null, arrayOperation, overwrite);
+        configurationGenerator.publishUnrollConfiguration(destination, unrollPath, null, arrayOperation, overwrite, validate);
         
         let resultFilePath = path.join(destination, `Patient.json`);
         let content = JSON.parse(fs.readFileSync(resultFilePath, 'utf8'));
