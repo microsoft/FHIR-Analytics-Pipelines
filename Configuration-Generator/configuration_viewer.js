@@ -2,9 +2,10 @@ const fs = require('fs')
 const path = require('path');
 
 
+
 function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, maxDepth) {
     maxDepth -= 1
-    if (maxDepth == 0) {
+    if (maxDepth <= 0) {
         return []
     }
     let properties = [];
@@ -42,17 +43,28 @@ function loadConfigurations(folderPath, nameProperty) {
     return configurations;
 }
 
+function printProperties(tableName, properties, minWidth=40) {
+    console.log(`Table Name: ${tableName}`);
+    properties.forEach(function(property) {
+        let resolvedColumnName = property.ColumnName 
+        resolvedColumnName += property.ColumnName.length < minWidth?' '.repeat(minWidth - property.ColumnName.length):'';
+        console.log(`- ColumnName: ${resolvedColumnName} Type: ${property.Type}`);
+    });
+}
 
-function showSchema(destination, tableName, maxDepth=2) {
-    console.log(`{0}, {1}`, destination, tableName)
+function showSchema(destination, tableName, maxDepth=3) {
     let propertiesGroups = loadConfigurations(path.join(destination, 'propertiesGroup'), 'propertiesGroupName');
 
     let configurations = loadConfigurations(destination, 'name');
     
     if (tableName in configurations){
-        let properties = recursiveCollectProperties(configurations[tableName].properties, propertiesGroups, [], maxDepth)
-        console.log(properties)
+        let properties = recursiveCollectProperties(configurations[tableName].properties, propertiesGroups, [], maxDepth);
+        printProperties(tableName, properties);
+    }
+    else {
+        console.log(`Cannot find schema for ${tableName}`);
     }
 }
+
 
 module.exports = {showSchema}
