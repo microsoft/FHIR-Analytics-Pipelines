@@ -10,50 +10,8 @@ function extractGeneralName(refName) {
     return match[1]
 }
 
-function shouldSkipProperty(propertyName) {
-    if (propertyName.startsWith('_')) {
-        return true
-    }
-
-    if (propertyName == 'resourceType' || propertyName == 'extension' || propertyName == 'contained') {
-        return true
-    }
-
-    return false
-}
-
 function getPropertyName(name) {
     return name.slice(0,1).toUpperCase() + name.slice(1);
-}
-
-function tryToFindType(path, schema) {
-    let typeRef, unrollType
-    try {
-        let subType = path[0]
-        for(i = 0; i < path.length - 1; i++){
-            let subName = path[i+1]
-            let property = schema.definitions[subType].properties;
-            if ('array' == property[subName].type) {
-                typeRef = property[subName].items.$ref;
-            }
-            else if (property[subName].$ref){
-                typeRef = property[subName].$ref
-            }
-            else if (property[subName].enum){
-                typeRef = constants.reservedPropertyType.code
-            }
-            else{
-                typeRef = constants.reservedPropertyType.string
-            }
-            //subType = typeRef.split('/')[ typeRef.split('/').length - 1]
-            subType = extractGeneralName(typeRef);
-        }
-        unrollType = subType
-    }
-    catch(e){
-        throw 'Invalid unroll path: ' + path.join('.') + '\n' + e;
-    }
-    return unrollType
 }
 
 function initOutputFolder(destination, propertiesGroupPath) {
@@ -66,15 +24,48 @@ function initOutputFolder(destination, propertiesGroupPath) {
     }
 }
 
+function getTypeByPath(path, schema) {
+    let typeRef, result
+
+    try {
+        let subType = path[0]
+        for(i = 0; i < path.length - 1; i++){
+            let subName = path[i+1]
+            let property = schema.definitions[subType].properties;
+
+            if ('array' == property[subName].type) {
+                typeRef = property[subName].items.$ref;
+            }
+            else if (property[subName].$ref) {
+                typeRef = property[subName].$ref
+            }
+            else if (property[subName].enum) {
+                typeRef = constants.reservedPropertyType.code
+            }
+            else{
+                typeRef = constants.reservedPropertyType.string
+            }
+            
+            subType = extractGeneralName(typeRef);
+        }
+        result = subType
+    }
+    catch(e){
+        throw 'Invalid unroll path: ' + path.join('.') + '\n' + e;
+    }
+
+    return result
+}
+
 function generateUnrollConfigurations(unrollPath, schema){
     let unrollPathSplit = unrollPath.split('.');
     let resourceType = unrollPathSplit[0];
-    let unrollName = unrollPathSplit.map(path => getPropertyName(path)).join('');
+    let name = unrollPathSplit.map(path => getPropertyName(path)).join('');
     let propertyName = getPropertyName(unrollPathSplit[unrollPathSplit.length - 1]);
-    let unrollType = tryToFindType(unrollPathSplit, schema);
+    let unrollType = getTypeByPath(unrollPathSplit, schema);
 
     let unrollConfiguration = { }
-    unrollConfiguration[constants.configurationConst.name] = unrollName;
+    unrollConfiguration[constants.configurationConst.name] = name;
     unrollConfiguration[constants.configurationConst.resourceType] = resourceType;
     unrollConfiguration[constants.configurationConst.unrollPath] = unrollPathSplit.join('.');
     unrollConfiguration[constants.configurationConst.properties] = resolveUnrollProperties(unrollType, propertyName, schema);
@@ -86,6 +77,7 @@ function resolveUnrollProperties(unrollType, propertyName, schema) {
     var primitiveTypes = constants.primitiveTypes.map(function(item){return extractGeneralName(item)})
     var resourceTypes = schema.oneOf.map(function(item){return extractGeneralName(item.$ref)})
     var property = {};
+    
     property[constants.configurationConst.name] = propertyName
     property[constants.configurationConst.path] = ""
     if (primitiveTypes.includes(unrollType)){
@@ -94,7 +86,6 @@ function resolveUnrollProperties(unrollType, propertyName, schema) {
     else if(unrollType in resourceTypes){
         property[constants.configurationConst.propertiesGroupRef] = extractGeneralName(constants.reservedPropertyType.reference)
     }
-    // propertyGroups
     else {
         property[constants.configurationConst.propertiesGroupRef] = unrollType
     }
@@ -102,7 +93,7 @@ function resolveUnrollProperties(unrollType, propertyName, schema) {
     return [property];
 }
 
-function generateProperty(resourceType, propertyPath, schema) {
+function generatePropertyByPath(resourceType, propertyPath, schema) {
     var primitiveTypes = constants.primitiveTypes.map(function(item){return extractGeneralName(item)})
     var resourceTypes = schema.oneOf.map(function(item){return extractGeneralName(item.$ref)})
 
@@ -110,7 +101,7 @@ function generateProperty(resourceType, propertyPath, schema) {
     property[constants.configurationConst.path] = propertyPath
     property[constants.configurationConst.name] = propertyPath.split('.').map(path => getPropertyName(path)).join('')
     pathSplits = [resourceType].concat(propertyPath.split('.'))
-    type = tryToFindType(pathSplits, schema)
+    type = getTypeByPath(pathSplits, schema)
     if (primitiveTypes.includes(type)){
         property[constants.configurationConst.type] = type
     }
@@ -131,14 +122,14 @@ function generateResourceConfigurations(resourceType, schema, propertiesList) {
 
     properties = []
     propertiesList.forEach(function(path) {
-        properties.push(generateProperty(resourceType, path, schema))
+        properties.push(generatePropertyByPath(resourceType, path, schema))
     })
     configuration[constants.configurationConst.properties] = properties
 
     return configuration
 }
 
-function extensionPropertiesConfig(configuration, customProperties) {
+function addCustomizeProperties(configuration, customProperties) {
     if (!customProperties) {
         return
     }
@@ -151,7 +142,7 @@ function extensionPropertiesConfig(configuration, customProperties) {
             property[constants.configurationConst.name] = propertyDefination.name
         }
         else {
-            property[constants.configurationConst.name] = propertyDefination.path.split('.').map(path => getPropertyName(path)).join('');
+            property[constants.configurationConst.name] = propertyDefination.path.split('.').map(path => getPropertyName(path)).join('')
         }
 
         if (propertyDefination.expression) {
@@ -187,7 +178,7 @@ function publishResourceConfigurations(destination) {
         }
 
         resourceSchema = generateResourceConfigurations(resourceType, schema, resourceObj.propertiesByDefault)
-        extensionPropertiesConfig(resourceSchema, resourceObj.customProperties)
+        addCustomizeProperties(resourceSchema, resourceObj.customProperties)
         fs.writeFileSync( `${destination}/${resourceType}.json`, JSON.stringify(resourceSchema, null, 4))
     })
 
@@ -198,7 +189,7 @@ function publishResourceConfigurations(destination) {
         propertyObj = properties[propertyName]
 
         propertySchema = generateResourceConfigurations(propertyName, schema, propertyObj.propertiesByDefault)
-        extensionPropertiesConfig(propertySchema, propertyObj.customProperties)
+        addCustomizeProperties(propertySchema, propertyObj.customProperties)
         fs.writeFileSync( `${destination}/PropertiesGroup/${propertyName}.json`, JSON.stringify(propertySchema, null, 4))
     })
 }
