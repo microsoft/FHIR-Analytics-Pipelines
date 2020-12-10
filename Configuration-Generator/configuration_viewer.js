@@ -2,10 +2,8 @@ const fs = require('fs')
 const path = require('path');
 
 
-
-function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, maxDepth) {
-    maxDepth -= 1
-    if (maxDepth <= 0) {
+function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, maxLevel) {
+    if (maxLevel <= 0) {
         return []
     }
     let properties = [];
@@ -17,7 +15,7 @@ function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, m
             properties = properties.concat(recursiveCollectProperties(propertiesGroups[property.propertiesGroupRef].properties,
                                                                       propertiesGroups,
                                                                       paths,
-                                                                      maxDepth));
+                                                                      maxLevel - 1));
             subPaths.forEach(subPath => {paths.pop()});
         }
         else {
@@ -43,7 +41,9 @@ function loadConfigurations(folderPath, nameProperty) {
     return configurations;
 }
 
+
 function printProperties(tableName, properties, minWidth=40) {
+    // property: {ColumnName: "type", Type: "type"}
     console.log(`Table Name: ${tableName}`);
     properties.forEach(function(property) {
         let resolvedColumnName = property.ColumnName 
@@ -52,13 +52,14 @@ function printProperties(tableName, properties, minWidth=40) {
     });
 }
 
-function showSchema(destination, tableName, maxDepth=3) {
+
+function showSchema(destination, tableName, maxLevel=3) {
     let propertiesGroups = loadConfigurations(path.join(destination, 'propertiesGroup'), 'propertiesGroupName');
 
     let configurations = loadConfigurations(destination, 'name');
     
     if (tableName in configurations){
-        let properties = recursiveCollectProperties(configurations[tableName].properties, propertiesGroups, [], maxDepth);
+        let properties = recursiveCollectProperties(configurations[tableName].properties, propertiesGroups, [], maxLevel);
         printProperties(tableName, properties);
     }
     else {
@@ -67,4 +68,8 @@ function showSchema(destination, tableName, maxDepth=3) {
 }
 
 
-module.exports = {showSchema}
+module.exports = {
+    loadConfigurations,
+    recursiveCollectProperties,
+    showSchema
+}

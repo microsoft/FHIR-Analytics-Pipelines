@@ -26,7 +26,7 @@ namespace Microsoft.Health.Fhir.Transformation.Cdm.Tool
             });
 
             ILogger logger = TransformationLogging.CreateLogger<Program>();
-
+            
             var rootCommand = new RootCommand()
             {
                 new Option<string>("--config"),

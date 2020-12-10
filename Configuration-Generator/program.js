@@ -41,8 +41,9 @@ program
 .description('Show the schema properties')
 .option("-d, --destination <destination>", "Destination schema folder")
 .option("-t, --tableName <TableName>", "Name of table to show its schema properties")
+.option("-level, --maxLevel <maxLevel>", "Max level to stop recursive collect properties", 3)
 .action(function(options){
-  configurationViewer.showSchema(options.destination, options.tableName);
+  configurationViewer.showSchema(options.destination, options.tableName, options.maxLevel);
 });
 
 program.parse(process.argv)
