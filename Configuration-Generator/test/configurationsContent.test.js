@@ -83,7 +83,7 @@ describe('Test generate configurations for unrollpaths', function() {
   });
 });
 
- describe('Test generate configurations for propertyGroups when array to asJson', function() {
+describe('Test generate configurations for propertyGroups when array to asJson', function() {
   testPropertiesGroups.forEach(function(propertiesGroupType){
     it(`Generate configuration for \"${propertiesGroupType}\" => "${propertiesGroupType}.json`, function() {
       let propertyGroupConfiguration = configuration_generator.generatePropertyGroups([propertiesGroupType], schema, constants.arrayOperations.as_json)[propertiesGroupType];
