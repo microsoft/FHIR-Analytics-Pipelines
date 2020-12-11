@@ -77,7 +77,7 @@ function resolveUnrollProperties(unrollType, propertyName, schema) {
     var primitiveTypes = constants.primitiveTypes.map(function(item){return extractGeneralName(item)})
     var resourceTypes = schema.oneOf.map(function(item){return extractGeneralName(item.$ref)})
     var property = {};
-    
+
     property[constants.configurationConst.name] = propertyName
     property[constants.configurationConst.path] = ""
     if (primitiveTypes.includes(unrollType)){
@@ -167,31 +167,35 @@ function publishResourceConfigurations(destination) {
     let resourceConfig = fs.readFileSync('./resourcesConfig.yml', 'utf8')
     let resources = yaml.safeLoad(resourceConfig)
 
-    Object.keys(resources).forEach(function(resourceType, _) {
-        resourceObj = resources[resourceType]
-        if (resourceObj.unrollPath) {
-            resourceObj.unrollPath.forEach(function(unrollPath) {
-                unrollPath = resourceType + '.' + unrollPath
-                let unrollSchema = generateUnrollConfigurations(unrollPath, schema)
-                fs.writeFileSync( `${destination}/${unrollPath.split('.').join('_')}.json`, JSON.stringify(unrollSchema, null, 4))
+    if (resources) {
+        Object.keys(resources).forEach(function(resourceType, _) {
+            resourceObj = resources[resourceType]
+            if (resourceObj.unrollPath) {
+                resourceObj.unrollPath.forEach(function(unrollPath) {
+                    unrollPath = resourceType + '.' + unrollPath
+                    let unrollSchema = generateUnrollConfigurations(unrollPath, schema)
+                    fs.writeFileSync( `${destination}/${unrollPath.split('.').join('_')}.json`, JSON.stringify(unrollSchema, null, 4))
+                })
+            }
+
+            resourceSchema = generateResourceConfigurations(resourceType, schema, resourceObj.propertiesByDefault)
+            addCustomizeProperties(resourceSchema, resourceObj.customProperties)
+            fs.writeFileSync( `${destination}/${resourceType}.json`, JSON.stringify(resourceSchema, null, 4))
+        })
+
+        let propertiesConfig = fs.readFileSync('./propertiesGroupConfig.yml', 'utf8')
+        let properties = yaml.safeLoad(propertiesConfig)
+
+        if (properties) {
+            Object.keys(properties).forEach(function(propertyName, _) {
+                propertyObj = properties[propertyName]
+
+                propertySchema = generateResourceConfigurations(propertyName, schema, propertyObj.propertiesByDefault)
+                addCustomizeProperties(propertySchema, propertyObj.customProperties)
+                fs.writeFileSync( `${destination}/PropertiesGroup/${propertyName}.json`, JSON.stringify(propertySchema, null, 4))
             })
         }
-
-        resourceSchema = generateResourceConfigurations(resourceType, schema, resourceObj.propertiesByDefault)
-        addCustomizeProperties(resourceSchema, resourceObj.customProperties)
-        fs.writeFileSync( `${destination}/${resourceType}.json`, JSON.stringify(resourceSchema, null, 4))
-    })
-
-    let propertiesConfig = fs.readFileSync('./propertiesGroupConfig.yml', 'utf8')
-    let properties = yaml.safeLoad(propertiesConfig)
-
-    Object.keys(properties).forEach(function(propertyName, _) {
-        propertyObj = properties[propertyName]
-
-        propertySchema = generateResourceConfigurations(propertyName, schema, propertyObj.propertiesByDefault)
-        addCustomizeProperties(propertySchema, propertyObj.customProperties)
-        fs.writeFileSync( `${destination}/PropertiesGroup/${propertyName}.json`, JSON.stringify(propertySchema, null, 4))
-    })
+    }
 }
 
 const { program, description, option } = require('commander')
