@@ -8,7 +8,10 @@ function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, m
     }
     let properties = [];
     schemaProperties.forEach(function(property) {
-        if (property.propertiesGroupRef && property.propertiesGroupRef in propertiesGroups) {
+        if (property.propertiesGroupRef) {
+            if (!(property.propertiesGroupRef in propertiesGroups)) {
+                throw `Cannot find propertiesGroup ${property.propertiesGroupRef}`;
+            }
             subPaths = property.path.split('.')
 
             subPaths.forEach(subPath => {paths.push(subPath)});
@@ -18,11 +21,14 @@ function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, m
                                                                       maxLevel - 1));
             subPaths.forEach(subPath => {paths.pop()});
         }
-        else {
+        else if (property.type) {
             let currentProperty = {}
             currentProperty['ColumnName'] = paths.map(subPath => subPath.slice(0,1).toUpperCase() + subPath.slice(1)).join('') + property.name;
             currentProperty['Type'] = property.type;
             properties.push(currentProperty);
+        }
+        else {
+            throw `Cannot resolve property ${JSON.stringify(property)} at ${paths.join('.')}`;
         }
     });
     return properties;

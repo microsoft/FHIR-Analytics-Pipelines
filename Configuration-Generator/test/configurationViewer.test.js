@@ -2,6 +2,8 @@ const path = require("path");
 const fs = require("fs");
 const configurationViewer = require("../configuration_viewer");
 const _ = require('lodash');
+const expect = require('chai').expect;
+
 
 describe('Test configuration viewer can correctly collect properties', function() {
     it(`Given a schema destination folder, can collect required properties.`, function(){
@@ -27,10 +29,7 @@ describe('Test configuration viewer can correctly collect properties', function(
             { ColumnName: 'AddressPeriodEnd', Type: 'string' }
         ];
         // The order is matter. Same with the columns order in generated table
-        if (_.isEqual(properties, propertiesGroundTruth)) {
-            return true;
-        }
-        throw new Error(`The conversion result has different properties`);
+        expect(properties).to.deep.equal(propertiesGroundTruth);
     });
 
     it(`Set the max level parameter, can stop collecting properties.`, function(){
@@ -52,9 +51,41 @@ describe('Test configuration viewer can correctly collect properties', function(
             { ColumnName: 'AddressCountry', Type: 'string' },
         ];
         // The order is matter. Same with the columns order in generated table
-        if (_.isEqual(properties, propertiesGroundTruth)) {
-            return true;
-        }
-        throw new Error(`The conversion result has different properties`);
+        expect(properties).to.deep.equal(propertiesGroundTruth);
     });
 });
+
+
+describe('Test configuration viewer throw exceptions', function() {
+    it(`Throw an exception when cannot find required propertiesGroup schema`, function(){
+        let maxLevel = 3;
+
+        let propertiesGroups = {};
+        let schemaProperties = [
+            {
+                path: 'address',
+                name: 'Address',
+                propertiesGroupRef: "Address"
+            }
+        ];
+        expect(function() {
+            let properties = configurationViewer.recursiveCollectProperties(schemaProperties, propertiesGroups, [], maxLevel);
+        }).to.throw(`Cannot find propertiesGroup Address`);
+    });
+
+    it(`Throw an exception when cannot resolve schema property`, function(){
+        let maxLevel = 3;
+
+        let propertiesGroups = {};
+        let propertiesMissingType = [
+            {
+                path: 'address',
+                name: 'Address',
+            }
+        ];
+        expect(function() {
+            let properties = configurationViewer.recursiveCollectProperties(propertiesMissingType, propertiesGroups, ['Patient'], maxLevel);
+        }).to.throw(`Cannot resolve property {"path":"address","name":"Address"} at Patient`);
+    });
+});
+
