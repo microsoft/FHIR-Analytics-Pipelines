@@ -40,7 +40,7 @@ describe('Test generate configurations for resources', function() {
   });
 });
 
-describe('Test generate configurations for resources when array to asJson', function() {
+describe('Test generate configurations for resources when array operation is as_json', function() {
   testResources.forEach(function(resourceType) {
     it(`Generate configuration for \"${resourceType}\" => "${resourceType}.json`, function() {
       let resourceConfiguration = configuration_generator.generateResourceConfigurations([resourceType], schema, constants.arrayOperations.as_json)[resourceType];
@@ -83,7 +83,7 @@ describe('Test generate configurations for unrollpaths', function() {
   });
 });
 
- describe('Test generate configurations for propertyGroups when array to asJson', function() {
+describe('Test generate configurations for propertyGroups when array operation is as_json', function() {
   testPropertiesGroups.forEach(function(propertiesGroupType){
     it(`Generate configuration for \"${propertiesGroupType}\" => "${propertiesGroupType}.json`, function() {
       let propertyGroupConfiguration = configuration_generator.generatePropertyGroups([propertiesGroupType], schema, constants.arrayOperations.as_json)[propertiesGroupType];
