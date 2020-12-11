@@ -129,6 +129,19 @@ function generateResourceConfigurations(resourceType, schema, propertiesList) {
     return configuration
 }
 
+function generatePropertiesGroupConfigurations(propertyType, schema, propertiesList) {
+    var configuration = {};
+    configuration[constants.configurationConst.propertiesGroupName] = propertyType;
+
+    properties = []
+    propertiesList.forEach(function(path) {
+        properties.push(generatePropertyByPath(propertyType, path, schema))
+    })
+    configuration[constants.configurationConst.properties] = properties
+
+    return configuration
+}
+
 function addCustomizeProperties(configuration, customProperties) {
     if (!customProperties) {
         return
@@ -190,7 +203,7 @@ function publishResourceConfigurations(destination) {
             Object.keys(properties).forEach(function(propertyName, _) {
                 propertyObj = properties[propertyName]
 
-                propertySchema = generateResourceConfigurations(propertyName, schema, propertyObj.propertiesByDefault)
+                propertySchema = generatePropertiesGroupConfigurations(propertyName, schema, propertyObj.propertiesByDefault)
                 addCustomizeProperties(propertySchema, propertyObj.customProperties)
                 fs.writeFileSync( `${destination}/PropertiesGroup/${propertyName}.json`, JSON.stringify(propertySchema, null, 4))
             })

@@ -1,18 +1,22 @@
-Identifier:
- propertiesByDefault: 
-  - type
-  - system
-  - value
+Address:
+ propertiesByDefault: [type, text, city, district, state, postalCode, country]
  customProperties:
-  - path: assigner
-    type: array
+  - {name: line1, expression: "line[1]", type: string}
+  - {name: line2, expression: "line[2]", type: string}
+  - {name: line3, expression: "line[3]", type: string}
 
-Patient_Contact:
- propertiesByDefault: 
-  - relationship
-  - name
-  - telecom
-  - address
-  - gender
-  - organization
-  - period
+ContactPoint:
+ propertiesByDefault: [system, value, use, rank, period]
+ 
+HumanName:
+ propertiesByDefault: [text, family]
+ customProperties:
+  - {name: given, expression: "given[1]",type: string}
+  - {name: prefix, expression: "prefix[1]",type: string}
+  - {name: suffix, expression: "suffix[1]",type: string}
+
+Identifier:
+  propertiesByDefault: [type, system, value, assigner]
+  
+Period:
+ propertiesByDefault: [start, end]
