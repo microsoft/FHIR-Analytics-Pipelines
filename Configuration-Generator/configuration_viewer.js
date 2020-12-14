@@ -1,6 +1,29 @@
 const fs = require('fs')
 const path = require('path');
 
+const baseProperties = {
+    resource: [
+        {
+            ColumnName: 'ResourceId',
+            Type: 'string'
+        }
+    ],
+    unrollPath: [
+        {
+            ColumnName: 'RowId',
+            Type: 'string'
+        },
+        {
+            ColumnName: 'ResourceId',
+            Type: 'string'
+        },
+        {
+            ColumnName: 'Location',
+            Type: 'string'
+        }
+    ]
+}
+
 
 function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, maxLevel) {
     if (maxLevel <= 0) {
@@ -28,10 +51,19 @@ function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, m
             properties.push(currentProperty);
         }
         else {
-            throw `Cannot resolve property ${JSON.stringify(property)} at ${paths.join('.')}`;
+            throw `Cannot resolve property ${JSON.stringify(property)} at root:${paths.join('.')}`;
         }
     });
     return properties;
+}
+
+
+function getProperties(configuration, propertiesGroups, maxLevel) {
+    let properties = configuration.unrollPath?
+                        baseProperties.unrollPath:
+                        baseProperties.resource;
+    let schemaProperties = recursiveCollectProperties(configuration.properties, propertiesGroups, [], maxLevel);
+    return properties.concat(schemaProperties);
 }
 
 
@@ -65,7 +97,7 @@ function showSchema(destination, tableName, maxLevel=3) {
     let configurations = loadConfigurations(destination, 'name');
     
     if (tableName in configurations){
-        let properties = recursiveCollectProperties(configurations[tableName].properties, propertiesGroups, [], maxLevel);
+        let properties = getProperties(configurations[tableName], propertiesGroups, maxLevel);
         printProperties(tableName, properties);
     }
     else {
@@ -76,6 +108,6 @@ function showSchema(destination, tableName, maxLevel=3) {
 
 module.exports = {
     loadConfigurations,
-    recursiveCollectProperties,
+    getProperties,
     showSchema
 }

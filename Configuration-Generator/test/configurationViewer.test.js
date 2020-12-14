@@ -1,21 +1,21 @@
 const path = require("path");
 const fs = require("fs");
 const configurationViewer = require("../configuration_viewer");
-const _ = require('lodash');
 const expect = require('chai').expect;
 
 
 describe('Test configuration viewer can correctly collect properties', function() {
-    it(`Given a schema destination folder, can collect required properties.`, function(){
+    it(`Given a schema destination folder, can collect required properties for a resource table.`, function(){
         let cdmFolderPath = path.join(__dirname, 'data', 'exampleSchemaFolder');
         let tableName = 'Patient';
         let maxLevel = 3;
 
         let propertiesGroups = configurationViewer.loadConfigurations(path.join(cdmFolderPath, 'propertiesGroup'), 'propertiesGroupName');
         let configurations = configurationViewer.loadConfigurations(cdmFolderPath, 'name');
-        let properties = configurationViewer.recursiveCollectProperties(configurations[tableName].properties, propertiesGroups, [], maxLevel);
+        let properties = configurationViewer.getProperties(configurations[tableName], propertiesGroups, maxLevel);
         
         let propertiesGroundTruth = [
+            { ColumnName: 'ResourceId', Type: 'string' },
             { ColumnName: 'Id', Type: 'id' },
             { ColumnName: 'Gender', Type: 'string' },
             { ColumnName: 'NameFamily', Type: 'string' },
@@ -32,6 +32,28 @@ describe('Test configuration viewer can correctly collect properties', function(
         expect(properties).to.deep.equal(propertiesGroundTruth);
     });
 
+    it(`Given a schema destination folder, can collect required properties for a unrollPath table.`, function(){
+        let cdmFolderPath = path.join(__dirname, 'data', 'exampleSchemaFolder');
+        let tableName = 'PatientName';
+        let maxLevel = 3;
+
+        let propertiesGroups = configurationViewer.loadConfigurations(path.join(cdmFolderPath, 'propertiesGroup'), 'propertiesGroupName');
+        let configurations = configurationViewer.loadConfigurations(cdmFolderPath, 'name');
+        let properties = configurationViewer.getProperties(configurations[tableName], propertiesGroups, maxLevel);
+
+        let propertiesGroundTruth = [
+            { ColumnName: 'RowId', Type: 'string' },
+            { ColumnName: 'ResourceId', Type: 'string' },
+            { ColumnName: 'Location', Type: 'string' },
+            { ColumnName: 'Family', Type: 'string' },
+            { ColumnName: 'Given', Type: 'string' },
+            { ColumnName: 'PeriodStart', Type: 'string' },
+            { ColumnName: 'PeriodEnd', Type: 'string' }
+        ];
+        // The order is matter. Same with the columns order in generated table
+        expect(properties).to.deep.equal(propertiesGroundTruth);
+    });
+
     it(`Set the max level parameter, can stop collecting properties.`, function(){
         let cdmFolderPath = path.join(__dirname, 'data', 'exampleSchemaFolder');
         let tableName = 'Patient';
@@ -39,9 +61,10 @@ describe('Test configuration viewer can correctly collect properties', function(
 
         let propertiesGroups = configurationViewer.loadConfigurations(path.join(cdmFolderPath, 'propertiesGroup'), 'propertiesGroupName');
         let configurations = configurationViewer.loadConfigurations(cdmFolderPath, 'name');
-        let properties = configurationViewer.recursiveCollectProperties(configurations[tableName].properties, propertiesGroups, [], maxLevel);
+        let properties = configurationViewer.getProperties(configurations[tableName], propertiesGroups, maxLevel);
         
         let propertiesGroundTruth = [
+            { ColumnName: 'ResourceId', Type: 'string' },
             { ColumnName: 'Id', Type: 'id' },
             { ColumnName: 'Gender', Type: 'string' },
             { ColumnName: 'NameFamily', Type: 'string' },
@@ -68,8 +91,11 @@ describe('Test configuration viewer throw exceptions', function() {
                 propertiesGroupRef: "Address"
             }
         ];
+        let configuration = {
+            properties: schemaProperties,
+        }
         expect(function() {
-            let properties = configurationViewer.recursiveCollectProperties(schemaProperties, propertiesGroups, [], maxLevel);
+            let properties = configurationViewer.getProperties(configuration, propertiesGroups, maxLevel);
         }).to.throw(`Cannot find propertiesGroup Address`);
     });
 
@@ -83,9 +109,12 @@ describe('Test configuration viewer throw exceptions', function() {
                 name: 'Address',
             }
         ];
+        let configuration = {
+            properties: propertiesMissingType
+        }
         expect(function() {
-            let properties = configurationViewer.recursiveCollectProperties(propertiesMissingType, propertiesGroups, ['Patient'], maxLevel);
-        }).to.throw(`Cannot resolve property {"path":"address","name":"Address"} at Patient`);
+            let properties = configurationViewer.getProperties(configuration, propertiesGroups, maxLevel);
+        }).to.throw(`Cannot resolve property {"path":"address","name":"Address"} at root:`);
     });
 });
 
