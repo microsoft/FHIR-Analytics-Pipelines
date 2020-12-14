@@ -8,11 +8,11 @@ describe('Test configuration viewer can correctly collect properties', function(
     it(`Given a schema destination folder, can collect required properties for a resource table.`, function(){
         let cdmFolderPath = path.join(__dirname, 'data', 'exampleSchemaFolder');
         let tableName = 'Patient';
-        let maxLevel = 3;
+        let maxDepth = 3;
 
         let propertiesGroups = configurationViewer.loadConfigurations(path.join(cdmFolderPath, 'propertiesGroup'), 'propertiesGroupName');
         let configurations = configurationViewer.loadConfigurations(cdmFolderPath, 'name');
-        let properties = configurationViewer.getProperties(configurations[tableName], propertiesGroups, maxLevel);
+        let properties = configurationViewer.getProperties(configurations[tableName], propertiesGroups, maxDepth);
         
         let propertiesGroundTruth = [
             { ColumnName: 'ResourceId', Type: 'string' },
@@ -35,11 +35,11 @@ describe('Test configuration viewer can correctly collect properties', function(
     it(`Given a schema destination folder, can collect required properties for a unrollPath table.`, function(){
         let cdmFolderPath = path.join(__dirname, 'data', 'exampleSchemaFolder');
         let tableName = 'PatientName';
-        let maxLevel = 3;
+        let maxDepth = 3;
 
         let propertiesGroups = configurationViewer.loadConfigurations(path.join(cdmFolderPath, 'propertiesGroup'), 'propertiesGroupName');
         let configurations = configurationViewer.loadConfigurations(cdmFolderPath, 'name');
-        let properties = configurationViewer.getProperties(configurations[tableName], propertiesGroups, maxLevel);
+        let properties = configurationViewer.getProperties(configurations[tableName], propertiesGroups, maxDepth);
 
         let propertiesGroundTruth = [
             { ColumnName: 'RowId', Type: 'string' },
@@ -57,11 +57,11 @@ describe('Test configuration viewer can correctly collect properties', function(
     it(`Set the max level parameter, can stop collecting properties.`, function(){
         let cdmFolderPath = path.join(__dirname, 'data', 'exampleSchemaFolder');
         let tableName = 'Patient';
-        let maxLevel = 2;
+        let maxDepth = 2;
 
         let propertiesGroups = configurationViewer.loadConfigurations(path.join(cdmFolderPath, 'propertiesGroup'), 'propertiesGroupName');
         let configurations = configurationViewer.loadConfigurations(cdmFolderPath, 'name');
-        let properties = configurationViewer.getProperties(configurations[tableName], propertiesGroups, maxLevel);
+        let properties = configurationViewer.getProperties(configurations[tableName], propertiesGroups, maxDepth);
         
         let propertiesGroundTruth = [
             { ColumnName: 'ResourceId', Type: 'string' },
@@ -81,7 +81,7 @@ describe('Test configuration viewer can correctly collect properties', function(
 
 describe('Test configuration viewer throw exceptions', function() {
     it(`Throw an exception when cannot find required propertiesGroup schema`, function(){
-        let maxLevel = 3;
+        let maxDepth = 3;
 
         let propertiesGroups = {};
         let schemaProperties = [
@@ -95,12 +95,12 @@ describe('Test configuration viewer throw exceptions', function() {
             properties: schemaProperties,
         }
         expect(function() {
-            let properties = configurationViewer.getProperties(configuration, propertiesGroups, maxLevel);
+            let properties = configurationViewer.getProperties(configuration, propertiesGroups, maxDepth);
         }).to.throw(`Cannot find propertiesGroup Address`);
     });
 
     it(`Throw an exception when cannot resolve schema property`, function(){
-        let maxLevel = 3;
+        let maxDepth = 3;
 
         let propertiesGroups = {};
         let propertiesMissingType = [
@@ -113,7 +113,7 @@ describe('Test configuration viewer throw exceptions', function() {
             properties: propertiesMissingType
         }
         expect(function() {
-            let properties = configurationViewer.getProperties(configuration, propertiesGroups, maxLevel);
+            let properties = configurationViewer.getProperties(configuration, propertiesGroups, maxDepth);
         }).to.throw(`Cannot resolve property {"path":"address","name":"Address"} at root:`);
     });
 });

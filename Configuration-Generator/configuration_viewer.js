@@ -25,8 +25,8 @@ const baseProperties = {
 }
 
 
-function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, maxLevel) {
-    if (maxLevel <= 0) {
+function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, maxDepth) {
+    if (maxDepth <= 0) {
         return []
     }
     let properties = [];
@@ -41,7 +41,7 @@ function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, m
             properties = properties.concat(recursiveCollectProperties(propertiesGroups[property.propertiesGroupRef].properties,
                                                                       propertiesGroups,
                                                                       paths,
-                                                                      maxLevel - 1));
+                                                                      maxDepth - 1));
             subPaths.forEach(subPath => {paths.pop()});
         }
         else if (property.type) {
@@ -58,11 +58,11 @@ function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, m
 }
 
 
-function getProperties(configuration, propertiesGroups, maxLevel) {
+function getProperties(configuration, propertiesGroups, maxDepth) {
     let properties = configuration.unrollPath?
                         baseProperties.unrollPath:
                         baseProperties.resource;
-    let schemaProperties = recursiveCollectProperties(configuration.properties, propertiesGroups, [], maxLevel);
+    let schemaProperties = recursiveCollectProperties(configuration.properties, propertiesGroups, [], maxDepth);
     return properties.concat(schemaProperties);
 }
 
@@ -91,13 +91,13 @@ function printProperties(tableName, properties, minWidth=40) {
 }
 
 
-function showSchema(destination, tableName, maxLevel=3) {
+function showSchema(destination, tableName, maxDepth=3) {
     let propertiesGroups = loadConfigurations(path.join(destination, 'propertiesGroup'), 'propertiesGroupName');
 
     let configurations = loadConfigurations(destination, 'name');
     
     if (tableName in configurations){
-        let properties = getProperties(configurations[tableName], propertiesGroups, maxLevel);
+        let properties = getProperties(configurations[tableName], propertiesGroups, maxDepth);
         printProperties(tableName, properties);
     }
     else {
