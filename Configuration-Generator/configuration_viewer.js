@@ -1,9 +1,32 @@
 const fs = require('fs')
 const path = require('path');
 
+const baseProperties = {
+    resource: [
+        {
+            ColumnName: 'ResourceId',
+            Type: 'string'
+        }
+    ],
+    unrollPath: [
+        {
+            ColumnName: 'RowId',
+            Type: 'string'
+        },
+        {
+            ColumnName: 'ResourceId',
+            Type: 'string'
+        },
+        {
+            ColumnName: 'Location',
+            Type: 'string'
+        }
+    ]
+}
 
-function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, maxLevel) {
-    if (maxLevel <= 0) {
+
+function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, maxDepth) {
+    if (maxDepth <= 0) {
         return []
     }
     let properties = [];
@@ -18,7 +41,7 @@ function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, m
             properties = properties.concat(recursiveCollectProperties(propertiesGroups[property.propertiesGroupRef].properties,
                                                                       propertiesGroups,
                                                                       paths,
-                                                                      maxLevel - 1));
+                                                                      maxDepth - 1));
             subPaths.forEach(subPath => {paths.pop()});
         }
         else if (property.type) {
@@ -28,10 +51,19 @@ function recursiveCollectProperties(schemaProperties, propertiesGroups, paths, m
             properties.push(currentProperty);
         }
         else {
-            throw `Cannot resolve property ${JSON.stringify(property)} at ${paths.join('.')}`;
+            throw `Cannot resolve property ${JSON.stringify(property)} at root:${paths.join('.')}`;
         }
     });
     return properties;
+}
+
+
+function getProperties(configuration, propertiesGroups, maxDepth) {
+    let properties = configuration.unrollPath?
+                        baseProperties.unrollPath:
+                        baseProperties.resource;
+    let schemaProperties = recursiveCollectProperties(configuration.properties, propertiesGroups, [], maxDepth);
+    return properties.concat(schemaProperties);
 }
 
 
@@ -59,13 +91,13 @@ function printProperties(tableName, properties, minWidth=40) {
 }
 
 
-function showSchema(destination, tableName, maxLevel=3) {
+function showSchema(destination, tableName, maxDepth=3) {
     let propertiesGroups = loadConfigurations(path.join(destination, 'propertiesGroup'), 'propertiesGroupName');
 
     let configurations = loadConfigurations(destination, 'name');
     
     if (tableName in configurations){
-        let properties = recursiveCollectProperties(configurations[tableName].properties, propertiesGroups, [], maxLevel);
+        let properties = getProperties(configurations[tableName], propertiesGroups, maxDepth);
         printProperties(tableName, properties);
     }
     else {
@@ -76,6 +108,6 @@ function showSchema(destination, tableName, maxLevel=3) {
 
 module.exports = {
     loadConfigurations,
-    recursiveCollectProperties,
+    getProperties,
     showSchema
 }
