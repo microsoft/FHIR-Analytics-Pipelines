@@ -1,3 +1,9 @@
+  
+// -------------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// -------------------------------------------------------------------------------------------------
+
 var configuration_generator = require("../configuration_generator.js")
 var constants =  require("../constants.js")
 

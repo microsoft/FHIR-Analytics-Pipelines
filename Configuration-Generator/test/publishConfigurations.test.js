@@ -1,3 +1,9 @@
+  
+// -------------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// -------------------------------------------------------------------------------------------------
+
 const path = require("path")
 const fs = require("fs")
 const configurationGenerator = require("../configuration_generator.js");
