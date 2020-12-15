@@ -2,80 +2,12 @@ var fs = require('fs')
 var path = require('path')
 var constants = require('./constants.js')
 var schema = require('./fhir.schema.json')
+var generatorUtils = require('./generator-utils.js')
 const yaml = require('js-yaml')
 
-var generalTypeNameRegex = /#\/definitions\/([a-zA-Z0-9_]+)/;
-function extractGeneralName(refName) {
-    var match = generalTypeNameRegex.exec(refName)
-    return match[1]
-}
-
-function getPropertyName(name) {
-    return name.slice(0,1).toUpperCase() + name.slice(1);
-}
-
-function initOutputFolder(destination, propertiesGroupPath) {
-    if (!fs.existsSync(destination)){
-        fs.mkdirSync(destination);
-    }
-    
-    if (!fs.existsSync(propertiesGroupPath)){
-        fs.mkdirSync(propertiesGroupPath);
-    }
-}
-
-function getTypeByPath(path, schema) {
-    let typeRef, result
-
-    try {
-        let subType = path[0]
-        for(i = 0; i < path.length - 1; i++){
-            let subName = path[i+1]
-            let property = schema.definitions[subType].properties;
-
-            if ('array' == property[subName].type) {
-                typeRef = property[subName].items.$ref;
-            }
-            else if (property[subName].$ref) {
-                typeRef = property[subName].$ref
-            }
-            else if (property[subName].enum) {
-                typeRef = constants.reservedPropertyType.code
-            }
-            else{
-                typeRef = constants.reservedPropertyType.string
-            }
-            
-            subType = extractGeneralName(typeRef);
-        }
-        result = subType
-    }
-    catch(e){
-        throw 'Invalid unroll path: ' + path.join('.') + '\n' + e;
-    }
-
-    return result
-}
-
-function generateUnrollConfigurations(unrollPath, schema){
-    let unrollPathSplit = unrollPath.split('.');
-    let resourceType = unrollPathSplit[0];
-    let name = unrollPathSplit.map(path => getPropertyName(path)).join('');
-    let propertyName = getPropertyName(unrollPathSplit[unrollPathSplit.length - 1]);
-    let unrollType = getTypeByPath(unrollPathSplit, schema);
-
-    let unrollConfiguration = { }
-    unrollConfiguration[constants.configurationConst.name] = name;
-    unrollConfiguration[constants.configurationConst.resourceType] = resourceType;
-    unrollConfiguration[constants.configurationConst.unrollPath] = unrollPathSplit.join('.');
-    unrollConfiguration[constants.configurationConst.properties] = resolveUnrollProperties(unrollType, propertyName, schema);
-
-    return unrollConfiguration
-}
-
 function resolveUnrollProperties(unrollType, propertyName, schema) {
-    var primitiveTypes = constants.primitiveTypes.map(function(item){return extractGeneralName(item)})
-    var resourceTypes = schema.oneOf.map(function(item){return extractGeneralName(item.$ref)})
+    var primitiveTypes = constants.primitiveTypes.map(function(item){return generatorUtils.extractTypeName(item)})
+    var resourceTypes = schema.oneOf.map(function(item){return generatorUtils.extractTypeName(item.$ref)})
     var property = {};
 
     property[constants.configurationConst.name] = propertyName
@@ -84,7 +16,7 @@ function resolveUnrollProperties(unrollType, propertyName, schema) {
         property[constants.configurationConst.type] = unrollType
     }
     else if(unrollType in resourceTypes){
-        property[constants.configurationConst.propertiesGroupRef] = extractGeneralName(constants.reservedPropertyType.reference)
+        property[constants.configurationConst.propertiesGroupRef] = generatorUtils.extractTypeName(constants.reservedPropertyType.reference)
     }
     else {
         property[constants.configurationConst.propertiesGroupRef] = unrollType
@@ -93,26 +25,73 @@ function resolveUnrollProperties(unrollType, propertyName, schema) {
     return [property];
 }
 
+function addCustomizeProperties(configuration, customProperties) {
+    if (!customProperties) {
+        return
+    }
+
+    customProperties.forEach(function (propertyDefination) {
+        var property = {};
+
+        property[constants.configurationConst.path] = propertyDefination.path
+        if (propertyDefination.name) {
+            property[constants.configurationConst.name] = propertyDefination.name
+        }
+        else {
+            property[constants.configurationConst.name] = generatorUtils.toCamelCaseString(propertyDefination.path.split('.'))
+        }
+
+        if (propertyDefination.expression) {
+            property['fhirExpression'] = propertyDefination.expression
+        }
+
+        if (propertyDefination.type) {
+            property[constants.configurationConst.type] = propertyDefination.type
+        }
+        else {
+            property[constants.configurationConst.type] = 'string'
+        }
+
+        configuration[constants.configurationConst.properties].push(property)
+    })
+}
+
 function generatePropertyByPath(resourceType, propertyPath, schema) {
-    var primitiveTypes = constants.primitiveTypes.map(function(item){return extractGeneralName(item)})
-    var resourceTypes = schema.oneOf.map(function(item){return extractGeneralName(item.$ref)})
+    var primitiveTypes = constants.primitiveTypes.map(function(item){return generatorUtils.extractTypeName(item)})
+    var resourceTypes = schema.oneOf.map(function(item){return generatorUtils.extractTypeName(item.$ref)})
 
     var property = {};
     property[constants.configurationConst.path] = propertyPath
-    property[constants.configurationConst.name] = propertyPath.split('.').map(path => getPropertyName(path)).join('')
+    property[constants.configurationConst.name] = generatorUtils.toCamelCaseString(propertyPath.split('.'))
     pathSplits = [resourceType].concat(propertyPath.split('.'))
-    type = getTypeByPath(pathSplits, schema)
+    type = generatorUtils.getTypeByPath(pathSplits, schema)
     if (primitiveTypes.includes(type)){
         property[constants.configurationConst.type] = type
     }
     else if(type in resourceTypes){
-        property[constants.configurationConst.propertiesGroupRef] = extractGeneralName(constants.reservedPropertyType.reference)
+        property[constants.configurationConst.propertiesGroupRef] = generatorUtils.extractTypeName(constants.reservedPropertyType.reference)
     }
     else {
         property[constants.configurationConst.propertiesGroupRef] = type
     }
 
     return property
+}
+
+function generateUnrollConfigurations(unrollPath, schema){
+    let unrollPathSplit = unrollPath.split('.');
+    let resourceType = unrollPathSplit[0];
+    let name = generatorUtils.toCamelCaseString(unrollPathSplit)
+    let propertyName = generatorUtils.toCamelCaseString(unrollPathSplit[unrollPathSplit.length - 1]);
+    let unrollType = generatorUtils.getTypeByPath(unrollPathSplit, schema);
+
+    let unrollConfiguration = { }
+    unrollConfiguration[constants.configurationConst.name] = name;
+    unrollConfiguration[constants.configurationConst.resourceType] = resourceType;
+    unrollConfiguration[constants.configurationConst.unrollPath] = unrollPathSplit.join('.');
+    unrollConfiguration[constants.configurationConst.properties] = resolveUnrollProperties(unrollType, propertyName, schema);
+
+    return unrollConfiguration
 }
 
 function generateResourceConfigurations(resourceType, schema, propertiesList) {
@@ -142,40 +121,9 @@ function generatePropertiesGroupConfigurations(propertyType, schema, propertiesL
     return configuration
 }
 
-function addCustomizeProperties(configuration, customProperties) {
-    if (!customProperties) {
-        return
-    }
-
-    customProperties.forEach(function (propertyDefination) {
-        var property = {};
-
-        property[constants.configurationConst.path] = propertyDefination.path
-        if (propertyDefination.name) {
-            property[constants.configurationConst.name] = propertyDefination.name
-        }
-        else {
-            property[constants.configurationConst.name] = propertyDefination.path.split('.').map(path => getPropertyName(path)).join('')
-        }
-
-        if (propertyDefination.expression) {
-            property['fhirExpression'] = propertyDefination.expression
-        }
-
-        if (propertyDefination.type) {
-            property[constants.configurationConst.type] = propertyDefination.type
-        }
-        else {
-            property[constants.configurationConst.type] = 'string'
-        }
-
-        configuration[constants.configurationConst.properties].push(property)
-    })
-}
-
 function publishResourceConfigurations(destination) {
     var propertiesGroupPath = path.join(destination, constants.configurationConst.propertyGroupFolder)
-    initOutputFolder(destination, propertiesGroupPath)
+    generatorUtils.initOutputFolder(destination, propertiesGroupPath)
 
     let resourceConfig = fs.readFileSync('./resourcesConfig.yml', 'utf8')
     let resources = yaml.safeLoad(resourceConfig)
