@@ -53,7 +53,7 @@ function getTypeByPath(path, schema) {
         result = subType
     }
     catch(e){
-        throw 'Invalid unroll path: ' + path.join('.') + '\n' + e;
+        throw new Error('Invalid path: ' + path.join('.'));
     }
 
     return result

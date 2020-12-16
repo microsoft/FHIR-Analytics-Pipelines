@@ -2,28 +2,8 @@ var fs = require('fs')
 var path = require('path')
 var constants = require('./constants.js')
 var schema = require('./fhir.schema.json')
-var generatorUtils = require('./generator-utils.js')
+var generatorUtils = require('./generator_utils.js')
 const yaml = require('js-yaml')
-
-function resolveUnrollProperties(unrollType, propertyName, schema) {
-    var primitiveTypes = constants.primitiveTypes.map(function(item){return generatorUtils.extractTypeName(item)})
-    var resourceTypes = schema.oneOf.map(function(item){return generatorUtils.extractTypeName(item.$ref)})
-    var property = {};
-
-    property[constants.configurationConst.name] = propertyName
-    property[constants.configurationConst.path] = ""
-    if (primitiveTypes.includes(unrollType)){
-        property[constants.configurationConst.type] = unrollType
-    }
-    else if(unrollType in resourceTypes){
-        property[constants.configurationConst.propertiesGroupRef] = generatorUtils.extractTypeName(constants.reservedPropertyType.reference)
-    }
-    else {
-        property[constants.configurationConst.propertiesGroupRef] = unrollType
-    }
-
-    return [property];
-}
 
 function addCustomizeProperties(configuration, customProperties) {
     if (!customProperties) {
@@ -54,6 +34,26 @@ function addCustomizeProperties(configuration, customProperties) {
 
         configuration[constants.configurationConst.properties].push(property)
     })
+}
+
+function generatePropertyByUnrollPath(unrollType, propertyName, schema) {
+    var primitiveTypes = constants.primitiveTypes.map(function(item){return generatorUtils.extractTypeName(item)})
+    var resourceTypes = schema.oneOf.map(function(item){return generatorUtils.extractTypeName(item.$ref)})
+    var property = {};
+
+    property[constants.configurationConst.name] = propertyName
+    property[constants.configurationConst.path] = ""
+    if (primitiveTypes.includes(unrollType)){
+        property[constants.configurationConst.type] = unrollType
+    }
+    else if(unrollType in resourceTypes){
+        property[constants.configurationConst.propertiesGroupRef] = generatorUtils.extractTypeName(constants.reservedPropertyType.reference)
+    }
+    else {
+        property[constants.configurationConst.propertiesGroupRef] = unrollType
+    }
+
+    return [property];
 }
 
 function generatePropertyByPath(resourceType, propertyPath, schema) {
@@ -89,7 +89,7 @@ function generateUnrollConfigurations(unrollPath, schema){
     unrollConfiguration[constants.configurationConst.name] = name;
     unrollConfiguration[constants.configurationConst.resourceType] = resourceType;
     unrollConfiguration[constants.configurationConst.unrollPath] = unrollPathSplit.join('.');
-    unrollConfiguration[constants.configurationConst.properties] = resolveUnrollProperties(unrollType, propertyName, schema);
+    unrollConfiguration[constants.configurationConst.properties] = generatePropertyByUnrollPath(unrollType, propertyName, schema);
 
     return unrollConfiguration
 }
@@ -121,11 +121,11 @@ function generatePropertiesGroupConfigurations(propertyType, schema, propertiesL
     return configuration
 }
 
-function publishResourceConfigurations(destination) {
+function publishConfigurationsByYaml(destination, resourcesConfigFile, propertiesConfigFile) {
     var propertiesGroupPath = path.join(destination, constants.configurationConst.propertyGroupFolder)
     generatorUtils.initOutputFolder(destination, propertiesGroupPath)
 
-    let resourceConfig = fs.readFileSync('./resourcesConfig.yml', 'utf8')
+    let resourceConfig = fs.readFileSync(resourcesConfigFile, 'utf8')
     let resources = yaml.safeLoad(resourceConfig)
 
     if (resources) {
@@ -144,7 +144,7 @@ function publishResourceConfigurations(destination) {
             fs.writeFileSync( `${destination}/${resourceType}.json`, JSON.stringify(resourceSchema, null, 4))
         })
 
-        let propertiesConfig = fs.readFileSync('./propertiesGroupConfig.yml', 'utf8')
+        let propertiesConfig = fs.readFileSync(propertiesConfigFile, 'utf8')
         let properties = yaml.safeLoad(propertiesConfig)
 
         if (properties) {
@@ -163,8 +163,10 @@ const { program, description, option } = require('commander')
 
 program
   .option("-o, --output <Output>", "output folder")
+  .option("-r, --resourcesConfigFile <ResourcesConfig>", "Resources config file path.", "./resourcesConfig.yml")
+  .option("-p, --propertiesConfigFile <PropertiesConfig>", "Properties group config file path.", "./propertiesGroupConfig.yml")
   .action(function(options){
-    publishResourceConfigurations(options.output)
+    publishConfigurationsByYaml(options.output, options.resourcesConfigFile, options.propertiesConfigFile)
   });
 
 program.parse(process.argv)
