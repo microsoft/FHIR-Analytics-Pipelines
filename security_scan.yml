@@ -26,9 +26,17 @@ steps:
     outputFormat: sarif
     debugMode: false
   continueOnError: true
+  
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
+  displayName: 'Run BinSkim '
+  inputs:
+    InputType: Basic
+    AnalyzeTarget: '$(Build.SourcesDirectory)\Microsoft.Health.*.dll;$(Build.SourcesDirectory)\Microsoft.Health.*.exe'
+  continueOnError: true
 
-- task: securedevelopmentteam.vss-secure-development-tools.build-task-roslynanalyzers.RoslynAnalyzers@2
-  displayName: 'Run Roslyn Analyzers'
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
+  displayName: 'Run Vulnerability Assessment'
+  continueOnError: true
 
 - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
   displayName: 'Publish Security Analysis Logs'
@@ -41,5 +49,4 @@ steps:
 - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
   displayName: 'Post Analysis'
   inputs:
-    CredScan: true
     RoslynAnalyzers: true
