@@ -64,7 +64,7 @@ namespace Microsoft.Health.Fhir.Transformation.Cdm
                 localEDef.DataPartitions.Add(part);
                 part.Location = $"data/{entDef.EntityName}/partition-data-*.csv";
                 var csvTrait = part.ExhibitsTraits.Add("is.partition.format.CSV", false);
-                csvTrait.Arguments.Add("columnHeaders", "false");
+                csvTrait.Arguments.Add("columnHeaders", "true");
                 csvTrait.Arguments.Add("delimiter", ",");
             }
         }

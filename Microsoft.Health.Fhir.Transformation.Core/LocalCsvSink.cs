@@ -51,11 +51,15 @@ namespace Microsoft.Health.Fhir.Transformation.Core
             }
         }
 
-
         public async Task WriteAsync(string tableName, string[] columns, Dictionary<string, (object valueObj, object typeObj)> item)
         {
+            if (!_writers.ContainsKey(tableName))
+            {
+                _writers[tableName] = CreateWriteByTableName(tableName);
+                await InitializeHeadersAsync(tableName, columns);
+            }
             string newLine = CsvUtils.ConvertToCsvRow(columns, item);
-            await GetStreamWriterByTableName(tableName).WriteLineAsync(newLine);
+            await _writers[tableName].WriteLineAsync(newLine);
         }
 
         private static void DisposeWriter(StreamWriter writer)
@@ -64,20 +68,7 @@ namespace Microsoft.Health.Fhir.Transformation.Core
             writer.Dispose();
         }
 
-        private StreamWriter GetStreamWriterByTableName(string tableName)
-        {
-            lock (_syncRoot)
-            {
-                if (!_writers.ContainsKey(tableName))
-                {
-                    _writers[tableName] = GetOrCreateWriteByTableName(tableName);
-                }
-
-                return _writers[tableName];
-            }
-        }
-
-        private StreamWriter GetOrCreateWriteByTableName(string tableName)
+        private StreamWriter CreateWriteByTableName(string tableName)
         {
             string fileName = Path.Combine(_folderPath, CsvFilePath(tableName));
             string directory = Path.GetDirectoryName(fileName);
@@ -88,6 +79,12 @@ namespace Microsoft.Health.Fhir.Transformation.Core
             }
 
             return new StreamWriter(new FileStream(fileName, FileMode.Create));
+        }
+
+        private async Task InitializeHeadersAsync(string tableName, string[] columns)
+        { 
+            string headers = string.Join(",", columns);
+            await _writers[tableName].WriteLineAsync(headers);
         }
     }
 }
