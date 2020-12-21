@@ -44,11 +44,6 @@ steps:
   env:
     system_accesstoken: $(System.AccessToken)
 
-- task: corygehr.air-autoassess.uploadScanResults.uploadScanResults@1
-  displayName: 'Upload Scan Results for Analysis'
-  inputs:
-    areaPathParent: FhirServer
-
 - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
   displayName: 'Post Analysis'
   inputs:
