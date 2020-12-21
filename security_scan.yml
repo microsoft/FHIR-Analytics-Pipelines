@@ -33,3 +33,11 @@ steps:
 - task: RoslynAnalyzers@2
   inputs:
     userProvideBuildInfo: 'auto'
+
+- task: corygehr.air-autoassess.uploadScanResults.uploadScanResults@1
+  displayName: 'Upload Scan Results for Analysis'
+  inputs:
+    areaPathParent: '{Insert Area Path for Work Items}'
+    uploadUrl: 'https://airbuildscan.azurewebsites.net/api/Upload'
+  env:
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
