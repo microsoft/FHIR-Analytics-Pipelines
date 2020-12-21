@@ -8,6 +8,7 @@ variables:
   solution: '**/*.sln'
   testProjects: "**/*Test/*.csproj"
   buildConfiguration: 'Release'
+  system_accesstoken: $(System.AccessToken)
 
 steps:
 - task: DotNetCoreCLI@2
