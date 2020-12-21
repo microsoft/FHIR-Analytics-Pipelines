@@ -109,7 +109,7 @@ namespace Microsoft.Health.Fhir.Transformation.Cdm.BatchExecutor
             {
                 _contentCache[tableName] = new StringBuilder();
                 _offsetRecord[tableName] = 0;
-                InitializeHeadersAsync(tableName, columns);
+                await InitializeHeadersAsync(tableName, columns);
             }
 
             string contentForNewLine = CsvUtils.ConvertToCsvRow(columns, item);
@@ -180,10 +180,17 @@ namespace Microsoft.Health.Fhir.Transformation.Cdm.BatchExecutor
             }, TimeSpan.FromSeconds(OperationTimeoutInSeconds), RetryCount);
         }
 
-        private void InitializeHeadersAsync(string tableName, string[] columns)
+        private async Task InitializeHeadersAsync(string tableName, string[] columns)
         {
             string headers = string.Join(",", columns);
             _contentCache[tableName].AppendLine(headers);
+
+            if (_contentCache[tableName].Length >= MaxLengthForSingleAppendBlock)
+            {
+                StringBuilder contentStringBuilder = _contentCache[tableName];
+                _contentCache[tableName] = new StringBuilder();
+                await AddAppendContentTask(tableName, contentStringBuilder);
+            }
         }
 
         private DataLakeServiceClient CreateDataLakeServiceClient(string accountName)
