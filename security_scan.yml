@@ -17,27 +17,3 @@ steps:
     projects: '$(solution)'
     arguments: '--configuration $(buildConfiguration)'
 
-- task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
-  displayName: 'Run CredScan'
-  inputs:
-    outputFormat: sarif
-    debugMode: false
-  continueOnError: true
-
-- task: ComponentGovernanceComponentDetection@0
-  inputs:
-    scanType: 'Register'
-    verbosity: 'Verbose'
-    alertWarningLevel: 'High'
-
-- task: RoslynAnalyzers@2
-  inputs:
-    userProvideBuildInfo: 'auto'
-
-- task: corygehr.air-autoassess.uploadScanResults.uploadScanResults@1
-  displayName: 'Upload Scan Results for Analysis'
-  inputs:
-    areaPathParent: '{Insert Area Path for Work Items}'
-    uploadUrl: 'https://airbuildscan.azurewebsites.net/api/Upload'
-  env:
-    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
