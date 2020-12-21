@@ -20,11 +20,12 @@ steps:
 - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
 
-- task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
-  displayName: 'Run BinSkim'
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+  displayName: 'Run CredScan'
   inputs:
-    InputType: Basic
-    AnalyzeTarget: '$(Build.ArtifactStagingDirectory)\*.exe;$(Build.ArtifactStagingDirectory)\*.dll'
-    AnalyzeVerbose: true
-    AnalyzeStatistics: true
-    AnalyzeEnvironment: true
+    outputFormat: sarif
+    debugMode: false
+  continueOnError: true
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-roslynanalyzers.RoslynAnalyzers@2
+  displayName: 'Run Roslyn Analyzers'
