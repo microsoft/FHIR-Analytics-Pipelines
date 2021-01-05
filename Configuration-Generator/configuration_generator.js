@@ -7,7 +7,7 @@
 var fs = require('fs')
 var path = require('path');
 var constants = require('./constants.js');
-
+var generatorUtils = require('./generator_utils.js')
 
 var generalTypeNameRegex = /#\/definitions\/([a-zA-Z0-9_]+)/;
 function extractGeneralName(refName) {
@@ -319,7 +319,8 @@ function publishUnrollConfiguration(destination, unrollPath, schemaFile, arrayOp
         }
     })
     Object.keys(unrollConfigurations).forEach(function(unrollPath, _) {
-        fs.writeFileSync(path.join(destination, `${unrollPath.split('.').join('_')}.json`), JSON.stringify(unrollConfigurations[unrollPath], null, 4))
+        let unrollFileName = generatorUtils.toCamelCaseString(unrollPath.split('.'))
+        fs.writeFileSync(path.join(destination, `${unrollFileName}.json`), JSON.stringify(unrollConfigurations[unrollPath], null, 4))
     })
     if (validate) {
         updateExistingResourceConfigurations(unrollPath, destination)
