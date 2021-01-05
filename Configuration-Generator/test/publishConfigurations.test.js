@@ -48,7 +48,6 @@ describe('Test can write the configurations to target folder', function() {
 
         configurationGenerator.publishUnrollConfiguration(destination, unrollCase, null, arrayOperation, overwrite);
         let unrollName = generatorUtils.toCamelCaseString(unrollCase.split('.'))
-        
         let groundTruthFilePath = path.join(__dirname, `./data/unrollpath`, `${unrollName}.json`);
         let groundTruth = fs.readFileSync(groundTruthFilePath, 'utf8');
 
