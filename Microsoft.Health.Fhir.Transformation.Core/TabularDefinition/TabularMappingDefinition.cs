@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Transformation.Core
                         {
                             (ReservedColumnName.RowId, FhirTypeNames.String),
                             (ReservedColumnName.ResourceId, FhirTypeNames.String),
-                            (ReservedColumnName.Location, FhirTypeNames.String)
+                            (ReservedColumnName.FhirPath, FhirTypeNames.String)
                         };
 
                     columns.InsertRange(0, reservedColumns);

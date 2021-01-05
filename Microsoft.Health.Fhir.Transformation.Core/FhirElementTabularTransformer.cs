@@ -39,7 +39,7 @@ namespace Microsoft.Health.Fhir.Transformation.Core
 
                     output[ReservedColumnName.RowId] = (IdGenerator(), FhirTypeNames.String);
                     output[ReservedColumnName.ResourceId] = (resource.Id, FhirTypeNames.String);
-                    output[ReservedColumnName.Location] = (node.Location, FhirTypeNames.String);
+                    output[ReservedColumnName.FhirPath] = (node.Location, FhirTypeNames.String);
                     
                     yield return output;
                 }
