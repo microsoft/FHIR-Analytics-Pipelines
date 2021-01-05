@@ -9,6 +9,7 @@ namespace Microsoft.Health.Fhir.Transformation.Core
     {
         public const string ResourceId = "ResourceId";
         public const string FhirPath = "FhirPath";
+        public const string ParentPath = "ParentPath";
         public const string RowId = "RowId";
     }
 

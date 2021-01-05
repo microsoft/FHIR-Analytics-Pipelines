@@ -40,7 +40,12 @@ namespace Microsoft.Health.Fhir.Transformation.Core
                     output[ReservedColumnName.RowId] = (IdGenerator(), FhirTypeNames.String);
                     output[ReservedColumnName.ResourceId] = (resource.Id, FhirTypeNames.String);
                     output[ReservedColumnName.FhirPath] = (node.Location, FhirTypeNames.String);
-                    
+
+                    // Get Parent path
+                    string[] locationSplited = node.Location.Split('.');
+                    string parentPath = string.Join('.', locationSplited, 0, locationSplited.Length - 1);
+                    output[ReservedColumnName.ParentPath] = (parentPath, FhirTypeNames.String);
+
                     yield return output;
                 }
             }
