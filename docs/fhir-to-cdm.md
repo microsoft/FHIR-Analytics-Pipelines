@@ -14,7 +14,7 @@ The FHIR to CDM tool has three components, shown in green in the diagram below:
 
 Table configuration generator takes YAML instructions from user and generates a table configuration folder. The schema viewer, described later, helps visualize the schema of the generated tables.
 
-You can run the following command from the _Configuration-Generator_ folder to generate table configuration. You may use the sample yaml files, _resourcesConfig.yml_ and _propertiesGroupConfig.yml_ provided in the project. See the [YAML instructions format](yaml-instructions-format) document if you want to write yaml instructions as per your needs.
+First, use `npm install` to install the dependencies. Subsequently, you can run the following command from the _Configuration-Generator_ folder to generate table configuration. You may use the sample yaml files, [_resourcesConfig.yml_](../Configuration-Generator/resourcesConfig.yml) and [_propertiesGroupConfig.yml_](../Configuration-Generator/propertiesGroupConfig.yml) provided in the project. See the [YAML instructions format](yaml-instructions-format.md) document if you want to write yaml instructions as per your needs.
 
 ```Configuration-Generator> node .\generate_from_yaml.js -r {resource configuration file} -p {properties group file} -o {output folder}```
 
@@ -101,7 +101,10 @@ In the access control of the FHIR service grant _FHIR data exporter_ & _FHIR dat
 Upload the content of the table configuration folder to the configuration container that you specified in Step 4. The rectangularization behavior of the pipeline is goverened by the content of this folder. You can update the content of this folder to change the rectangularization behavior.
 
 ### 3.7. Trigger the ADF pipeline
-Go to the  _{pipelinename}-df_, and trigger the pipeline. One the pipeline execution is completed, you should see the exported data in the CDM folder on the storage account _{pipelinename}storage_.
+Go to the  _{pipelinename}-df_, and trigger the pipeline. One the pipeline execution is completed, you should see the exported data in the CDM folder on the storage account _{pipelinename}storage_. You should see one folder for each table having a csv file.
+
+### Troubleshooting the pipeline
+In case the pipeline run is successful, but you do not see data in the CDM folder, go to the _adfjobs_ container within _{pipelinename}storage_ account, look for the latest run-folder, which has a GUID name, and see the _stderr.txt_ file for details.
 
 ## Next Steps
 Once you have the data in a CDM folder, it can be consumed by several Microsoft services such as Synapse Analytics, ADF, Azure Databricks, Azure Machine Learning, Azure SQL, and Power BI. See the [instructions](cdm-to-synapse.md) for moving the data from a CDM folder to Synapse analytics.
