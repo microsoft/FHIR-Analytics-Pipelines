@@ -141,7 +141,8 @@ function publishConfigurationsByYaml(destination, resourcesConfigFile, propertie
                 resourceObj.unrollPath.forEach(function(unrollPath) {
                     unrollPath = resourceType + '.' + unrollPath
                     let unrollSchema = generateUnrollConfigurations(unrollPath, schema)
-                    fs.writeFileSync( `${destination}/${unrollPath.split('.').join('_')}.json`, JSON.stringify(unrollSchema, null, 4))
+                    let unrollFileName = generatorUtils.toCamelCaseString(unrollPath.split('.'))
+                    fs.writeFileSync( `${destination}/${unrollFileName}.json`, JSON.stringify(unrollSchema, null, 4))
                 })
             }
 

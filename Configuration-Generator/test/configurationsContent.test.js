@@ -6,6 +6,7 @@
 
 var configuration_generator = require("../configuration_generator.js")
 var constants =  require("../constants.js")
+var generatorUtils = require('../generator_utils.js')
 
 var fs = require("fs")
 var path = require("path")
@@ -62,10 +63,9 @@ describe('Test generate configurations for resources when array operation is as_
 
 describe('Test generate configurations for unrollpaths', function() {
   testUnrollpaths.forEach(function(unrollPath) {
-    let tableNameForUnrollPath = unrollPath.split('.').join('_');
+    let tableNameForUnrollPath = generatorUtils.toCamelCaseString(unrollPath.split('.'));
     it(`Generate configuration for \"${unrollPath}\" => "${tableNameForUnrollPath}.json`, function() {
       let unrollPathConfiguration = configuration_generator.generateUnrollConfigurations([unrollPath], schema, constants.arrayOperations.first)[unrollPath];
-      let tableNameForUnrollPath = unrollPath.split('.').join('_');
       let groundTruthFilePath = path.join(__dirname, `./data/unrollpath`, `${tableNameForUnrollPath}.json`);
       let groundTruth = fs.readFileSync(groundTruthFilePath, 'utf8');
       let result = JSON.stringify(unrollPathConfiguration, null, 4);

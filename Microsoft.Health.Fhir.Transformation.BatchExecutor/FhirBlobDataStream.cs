@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Transformation.Cdm.BatchExecutor
             _downloadTasks = new Queue<Task<Stream>>();
             _position = 0;
         }
-
+        
         public int ConcurrentCount
         {
             get;

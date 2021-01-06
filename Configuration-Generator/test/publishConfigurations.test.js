@@ -9,6 +9,7 @@ const fs = require("fs")
 const configurationGenerator = require("../configuration_generator.js");
 const constants =  require("../constants.js")
 const utils = require('./util/utils.js');
+const generatorUtils = require('../generator_utils.js')
 
 const resourceCases = ["Organization", "Patient"];
 const unrollCase = "Patient.address.city";
@@ -46,7 +47,7 @@ describe('Test can write the configurations to target folder', function() {
         let overwrite = false;
 
         configurationGenerator.publishUnrollConfiguration(destination, unrollCase, null, arrayOperation, overwrite);
-        let unrollName = unrollCase.split('.').join('_')
+        let unrollName = generatorUtils.toCamelCaseString(unrollCase.split('.'))
         let groundTruthFilePath = path.join(__dirname, `./data/unrollpath`, `${unrollName}.json`);
         let groundTruth = fs.readFileSync(groundTruthFilePath, 'utf8');
 
