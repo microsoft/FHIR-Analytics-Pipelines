@@ -20,7 +20,7 @@ steps:
     rootFolderOrFile: 'Configuration-Generator'
     includeRootFolder: true
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/ConfigurationGenerator.zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/ConfigurationGenerator/ConfigurationGenerator.zip'
     replaceExistingArchive: true
 
     
@@ -93,7 +93,7 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: Publish Configuration Generator
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/Configuration-Generator'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/ConfigurationGenerator'
     ArtifactName: 'Packages'
     publishLocation: 'Container'
 
