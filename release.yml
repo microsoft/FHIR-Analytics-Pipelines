@@ -9,19 +9,20 @@ variables:
 steps:
 - task: ArchiveFiles@2
   inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
+
+- task: ArchiveFiles@2
+  inputs:
     rootFolderOrFile: '$(Build.BinariesDirectory)/Configuration-Generator'
     includeRootFolder: true
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/Configuration-Generator/ConfigurationGenerator.zip'
     replaceExistingArchive: true
 
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)'
-    includeRootFolder: true
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/src/$(Build.BuildId).zip'
-    replaceExistingArchive: true
     
 - task: DotNetCoreCLI@2
   displayName: Build Engine Core
