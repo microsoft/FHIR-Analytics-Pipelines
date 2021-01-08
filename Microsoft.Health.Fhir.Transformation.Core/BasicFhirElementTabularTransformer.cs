@@ -65,9 +65,9 @@ namespace Microsoft.Health.Fhir.Transformation.Core
                         return (valueObj: TryParseFhirArrayNode(fhirElement), type);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                _logger.LogCritical("Not support resource type: {0}", type);
+                _logger.LogCritical("Not support resource type: {0}. Exception Message: {1}", type, ex);
             }
             return (valueObj: null, typeObj: type);
         }
@@ -83,9 +83,9 @@ namespace Microsoft.Health.Fhir.Transformation.Core
             {
                 return (T)Convert.ChangeType(dataValue, typeof(T));
             }
-            catch
+            catch (Exception ex)
             {
-                _logger.LogCritical("Error: Invalid resource value: {0}", dataValue);
+                _logger.LogCritical("Error: Invalid resource value: {0}. Exception Message: {1}", dataValue, ex);
             }
 
             return null;
@@ -108,9 +108,9 @@ namespace Microsoft.Health.Fhir.Transformation.Core
                 
                 return DateTime.MinValue + timeSpan;
             }
-            catch
+            catch (Exception ex)
             {
-                _logger.LogCritical("Error: Invalid resource value: {0}", node.Value);
+                _logger.LogCritical("Error: Invalid resource value: {0}. Exception Message: {1}", node.Value, ex);
             }
             return null;
         }
@@ -152,9 +152,9 @@ namespace Microsoft.Health.Fhir.Transformation.Core
                          dateTimeOffset.DateTime;
             }
 
-            catch
+            catch (Exception ex)
             {
-                _logger.LogCritical("Error: Invalid resource value: {0}.", node.Value);
+                _logger.LogCritical("Error: Invalid resource value: {0}.  Exception Message: {1}", node.Value, ex);
             }
             return null;
         }
@@ -166,9 +166,9 @@ namespace Microsoft.Health.Fhir.Transformation.Core
                 ElementNode? parent = node.Parent;
                 return $"[{string.Join(",", parent?[node.Name].Select(node => node.ToJson()))}]";
             }
-            catch
+            catch (Exception ex)
             {
-                _logger.LogCritical("Error: Invalid resource value: {0}", node.Value);
+                _logger.LogCritical("Error: Invalid resource value: {0}. Exception Message: {1}", node.Value, ex);
             }
             return null;
         }

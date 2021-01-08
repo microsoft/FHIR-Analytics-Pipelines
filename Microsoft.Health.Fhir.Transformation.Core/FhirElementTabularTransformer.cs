@@ -9,11 +9,14 @@ using System.Linq;
 using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.Model;
 using Hl7.FhirPath;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Health.Fhir.Transformation.Core
 {
     public abstract class FhirElementTabularTransformer
     {
+        private readonly ILogger _logger = TransformationLogging.CreateLogger<FhirElementTabularTransformer>();
+
         public static Func<string> IdGenerator { get; set; } = () =>
           {
               return Guid.NewGuid().ToString("N");
@@ -39,8 +42,9 @@ namespace Microsoft.Health.Fhir.Transformation.Core
 
                     output[ReservedColumnName.RowId] = (IdGenerator(), FhirTypeNames.String);
                     output[ReservedColumnName.ResourceId] = (resource.Id, FhirTypeNames.String);
-                    output[ReservedColumnName.Location] = (node.Location, FhirTypeNames.String);
-                    
+                    output[ReservedColumnName.FhirPath] = (node.Location, FhirTypeNames.String);
+                    output[ReservedColumnName.ParentPath] = (GetParentLocation(node), FhirTypeNames.String);
+
                     yield return output;
                 }
             }
@@ -88,6 +92,21 @@ namespace Microsoft.Health.Fhir.Transformation.Core
                     yield return subResult;
                 }
             }
+        }
+
+        private string GetParentLocation(ITypedElement node)
+        {
+            string parentLocation = string.Empty;
+            try
+            {
+                string[] locationSplited = node?.Location.Split('.');
+                parentLocation = string.Join('.', locationSplited, 0, locationSplited.Length - 1);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogCritical("Error: Invalid node {0}, or node location: {1}. Exception Message: {2}", node?.Name, node?.Location, ex);
+            }
+            return parentLocation;
         }
     }
 }

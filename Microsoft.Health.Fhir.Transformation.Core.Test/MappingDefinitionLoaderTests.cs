@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Transformation.Core.Test
             var columns = tabularMappingDefinitions[0].Columns;
             Assert.AreEqual(33, columns.Count());
             Assert.IsTrue(condition: columns.Any(c => c.columnName.Equals(ReservedColumnName.ResourceId)));
-            Assert.IsFalse(condition: columns.Any(c => c.columnName.Equals(ReservedColumnName.Location)));
+            Assert.IsFalse(condition: columns.Any(c => c.columnName.Equals(ReservedColumnName.FhirPath)));
             Assert.IsTrue(condition: columns.Any(c => c.columnName.Equals("NameMulti_seg_path")));
         }
 
@@ -34,10 +34,11 @@ namespace Microsoft.Health.Fhir.Transformation.Core.Test
             var tabularMappingDefinitions = loader.Load().ToList();
 
             var columns = tabularMappingDefinitions[0].Columns;
-            Assert.AreEqual(7, columns.Count());
+            Assert.AreEqual(8, columns.Count());
             Assert.IsTrue(condition: columns.Any(c => c.columnName.Equals(ReservedColumnName.ResourceId)));
-            Assert.IsTrue(condition: columns.Any(c => c.columnName.Equals(ReservedColumnName.Location)));
+            Assert.IsTrue(condition: columns.Any(c => c.columnName.Equals(ReservedColumnName.FhirPath)));
             Assert.IsTrue(condition: columns.Any(c => c.columnName.Equals(ReservedColumnName.RowId)));
+            Assert.IsTrue(condition: columns.Any(c => c.columnName.Equals(ReservedColumnName.ParentPath)));
         }
 
         [TestMethod]

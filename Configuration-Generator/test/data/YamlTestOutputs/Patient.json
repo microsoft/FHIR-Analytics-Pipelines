@@ -1,0 +1,48 @@
+{
+    "name": "Patient",
+    "resourceType": "Patient",
+    "properties": [
+        {
+            "path": "active",
+            "name": "Active",
+            "type": "boolean"
+        },
+        {
+            "path": "name",
+            "name": "Name",
+            "propertiesGroupRef": "HumanName"
+        },
+        {
+            "path": "telecom",
+            "name": "Telecom",
+            "propertiesGroupRef": "ContactPoint"
+        },
+        {
+            "path": "name.use",
+            "name": "NameUse",
+            "type": "code"
+        },
+        {
+            "path": "",
+            "name": "CommunicationLanguage",
+            "fhirExpression": "communication[1].language",
+            "type": "string"
+        },
+        {
+            "path": "address",
+            "name": "Address",
+            "type": "array"
+        },
+        {
+            "path": "",
+            "name": "address1",
+            "fhirExpression": "address.last()",
+            "type": "string"
+        },
+        {
+            "path": "deceased",
+            "name": "DeceasedBoolean",
+            "type": "boolean"
+        }
+    ]
+}

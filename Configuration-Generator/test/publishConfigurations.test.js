@@ -9,6 +9,7 @@ const fs = require("fs")
 const configurationGenerator = require("../configuration_generator.js");
 const constants =  require("../constants.js")
 const utils = require('./util/utils.js');
+const generatorUtils = require('../generator_utils.js')
 
 const resourceCases = ["Organization", "Patient"];
 const unrollCase = "Patient.address.city";
@@ -33,7 +34,7 @@ describe('Test can write the configurations to target folder', function() {
             results[resourceType] = result;
             groundTruths[resourceType] = groundTruth;
         })
-        deleteFolderRecursive(destination);
+        utils.deleteFolderRecursive(destination);
         resourceCases.forEach(function(resourceType) {
             utils.compareContent(results[resourceType], groundTruths[resourceType]);
         })
@@ -46,13 +47,13 @@ describe('Test can write the configurations to target folder', function() {
         let overwrite = false;
 
         configurationGenerator.publishUnrollConfiguration(destination, unrollCase, null, arrayOperation, overwrite);
-        let unrollName = unrollCase.split('.').join('_')
+        let unrollName = generatorUtils.toCamelCaseString(unrollCase.split('.'))
         let groundTruthFilePath = path.join(__dirname, `./data/unrollpath`, `${unrollName}.json`);
         let groundTruth = fs.readFileSync(groundTruthFilePath, 'utf8');
 
         let resultFilePath = path.join(destination, `${unrollName}.json`);
         let result = fs.readFileSync(resultFilePath, 'utf8');
-        deleteFolderRecursive(destination);
+        utils.deleteFolderRecursive(destination);
         utils.compareContent(result, groundTruth);
     });
 });
@@ -70,7 +71,7 @@ describe('Test overwrite for publish configurations', function() {
         
         configurationGenerator.publishResourceConfigurations(destination, resourceCases, null, arrayOperation, overwrite);
         let statOfPropertyNoOverwrite = fs.statSync(propertyfilePath);
-        deleteFolderRecursive(destination);
+        utils.deleteFolderRecursive(destination);
         if (statOfPropertyNoOverwrite.mtimeMs != statOfPropertyRaw.mtimeMs) {
             throw new Error('Valid overwrite the existed configurations');
         }
@@ -88,7 +89,7 @@ describe('Test overwrite for publish configurations', function() {
         
         configurationGenerator.publishResourceConfigurations(destination, resourceCases, null, arrayOperation, overwrite);
         let statOfResourceNoOverwrite = fs.statSync(resourcefilePath);
-        deleteFolderRecursive(destination);
+        utils.deleteFolderRecursive(destination);
         if (statOfResourceNoOverwrite.mtimeMs <= statOfResourceRaw.mtimeMs) {
             throw new Error('Should always overwrite the existed resource configurations');
         }
@@ -107,24 +108,10 @@ describe('Test overwrite for publish configurations', function() {
 
         configurationGenerator.publishResourceConfigurations(destination, resourceCases, null, arrayOperation, overwrite);
         let statOfPropertyOverwrite = fs.statSync(propertyfilePath);
-        deleteFolderRecursive(destination);
+        utils.deleteFolderRecursive(destination);
         if (statOfPropertyOverwrite.mtimeMs <= statOfPropertyRaw.mtimeMs) {
             throw new Error('Should overwrite configurations when overwrite is enable');
         }
     });
     return true;
 });
-
-function deleteFolderRecursive(path) {
-    if (fs.existsSync(path)) {
-        fs.readdirSync(path).forEach(function(file, index){
-            var curPath = path + "/" + file;
-            if (fs.lstatSync(curPath).isDirectory()) { // recurse
-                deleteFolderRecursive(curPath);
-            } else { // delete file
-                fs.unlinkSync(curPath);
-            }
-        });
-        fs.rmdirSync(path);
-    }
-};

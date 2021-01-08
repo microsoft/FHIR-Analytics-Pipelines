@@ -1,0 +1,16 @@
+Patient:
+ unrollPath:
+  - identifier
+ propertiesByDefault: ['active', name, 'telecom', 'name.use']
+ customProperties:
+  # Take the first element from communication array 
+  - name: CommunicationLanguage
+    expression: communication[1].language
+    path: ""
+    type: string
+  - { path: address, type: array }
+  - path: ""
+    name: address1
+    expression: "address.last()"
+    type: string
+  - {name: DeceasedBoolean, path: deceased, type: boolean}
