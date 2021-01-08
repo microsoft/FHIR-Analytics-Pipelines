@@ -24,7 +24,11 @@ const baseProperties = {
             Type: 'string'
         },
         {
-            ColumnName: 'Location',
+            ColumnName: 'FhirPath',
+            Type: 'string'
+        },
+        {
+            ColumnName: 'ParentPath',
             Type: 'string'
         }
     ]
