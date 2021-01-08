@@ -8,7 +8,8 @@ namespace Microsoft.Health.Fhir.Transformation.Core
     public static class ReservedColumnName
     {
         public const string ResourceId = "ResourceId";
-        public const string Location = "Location";
+        public const string FhirPath = "FhirPath";
+        public const string ParentPath = "ParentPath";
         public const string RowId = "RowId";
     }
 

@@ -116,7 +116,7 @@ namespace Microsoft.Health.Fhir.Transformation.Core.Test
             foreach (var result in results)
             {
                 Assert.AreEqual("Test1", result[ReservedColumnName.ResourceId].Item1);
-                Assert.IsTrue(result.ContainsKey(ReservedColumnName.Location));
+                Assert.IsTrue(result.ContainsKey(ReservedColumnName.FhirPath));
                 Assert.IsTrue(result.ContainsKey("column1"));
                 Assert.IsTrue(!string.IsNullOrEmpty(result["column1"].Item1?.ToString()));
             }

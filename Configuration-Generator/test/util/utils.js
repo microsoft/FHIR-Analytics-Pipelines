@@ -5,6 +5,8 @@
 
 // TODO: consider using `util` nodule inside node env
 const _ = require('lodash');
+const fs = require("fs")
+const path = require('path')
 const interceptors = require('./interceptors');
 const MAX_COMPARISION_DEPTH = 100;
 
@@ -63,7 +65,39 @@ const compareContent = (content, groundTruth) => {
     return __compareContent('', left, right, 0);
 };
 
+const getAllFiles = function(dirPath, arrayOfFiles) {
+    files = fs.readdirSync(dirPath)
+  
+    arrayOfFiles = arrayOfFiles || []
+  
+    files.forEach(function(file) {
+      if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+        arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles)
+      } else {
+        arrayOfFiles.push(path.join(dirPath, "/", file))
+      }
+    })
+  
+    return arrayOfFiles
+  }
+
+const deleteFolderRecursive = function(path) {
+    if (fs.existsSync(path)) {
+        fs.readdirSync(path).forEach(function(file, index){
+            var curPath = path + "/" + file;
+            if (fs.lstatSync(curPath).isDirectory()) { // recurse
+                deleteFolderRecursive(curPath);
+            } else { // delete file
+                fs.unlinkSync(curPath);
+            }
+        });
+        fs.rmdirSync(path);
+    }
+};
+
 module.exports = {
     MAX_COMPARISION_DEPTH,
-    compareContent
+    compareContent,
+    getAllFiles,
+    deleteFolderRecursive
 };

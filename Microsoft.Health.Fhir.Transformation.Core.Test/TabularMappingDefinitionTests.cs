@@ -44,9 +44,10 @@ namespace Microsoft.Health.Fhir.Transformation.Core.Test
             Assert.IsTrue(columns.Any(c => c.Item1.Contains("name2")));
             Assert.IsTrue(columns.Any(c => c.Item1.Contains("name3")));
             Assert.IsTrue(columns.Any(c => c.Item1.Contains(ReservedColumnName.ResourceId)));
-            Assert.IsTrue(columns.Any(c => c.Item1.Contains(ReservedColumnName.Location)));
+            Assert.IsTrue(columns.Any(c => c.Item1.Contains(ReservedColumnName.FhirPath)));
+            Assert.IsTrue(columns.Any(c => c.Item1.Contains(ReservedColumnName.ParentPath)));
             Assert.IsTrue(columns.Any(c => c.Item1.Contains(ReservedColumnName.RowId)));
-            Assert.AreEqual(6, columns.Count());
+            Assert.AreEqual(7, columns.Count());
         }
     }
 }

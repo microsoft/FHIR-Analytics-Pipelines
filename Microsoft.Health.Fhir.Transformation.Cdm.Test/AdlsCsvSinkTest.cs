@@ -78,7 +78,8 @@ namespace Microsoft.Health.Fhir.Transformation.Cdm.Test
                 string content = reader.ReadToEnd();
 
                 string[] lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                Assert.AreEqual(testCount, lines.Length);
+                // First line is headers 
+                Assert.AreEqual(1 + testCount, lines.Length);
             }
         }
 
@@ -122,7 +123,8 @@ namespace Microsoft.Health.Fhir.Transformation.Cdm.Test
             string content = reader.ReadToEnd();
 
             string[] lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            Assert.AreEqual(1, lines.Length);
+            // First line is headers 
+            Assert.AreEqual(2, lines.Length);
         }
     }
 }
