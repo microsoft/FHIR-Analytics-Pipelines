@@ -19,6 +19,22 @@ steps:
     versionSpec: '12.x'
     checkLatest: true
 
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)/Configuration-Generator'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/Configuration-Generator/ConfigurationGenerator.zip'
+    replaceExistingArchive: true
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/src/$(Build.BuildId).zip'
+    replaceExistingArchive: true
+
 - script: |
     npm install --prefix Configuration-Generator $(System.DefaultWorkingDirectory)\Configuration-Generator
     npm run build Configuration-Generator
@@ -58,13 +74,6 @@ steps:
     projects: 'Microsoft.Health.Fhir.Transformation.Cdm.Tool\*.csproj'
     arguments: '-c Release -r win10-x64 --self-contained true --output $(build.artifactstagingdirectory)/TransformationCdmTool'
     modifyOutputPath: false
-
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: 'Configuration-Generator'
-    Contents: '**'
-    TargetFolder: '$(build.artifactstagingdirectory)/Configuration-Generator'
-    CleanTargetFolder: true
     
 - task: PublishBuildArtifacts@1
   displayName: Publish Batch Executor
@@ -84,5 +93,12 @@ steps:
   displayName: Publish Configuration Generator
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)/Configuration-Generator'
+    ArtifactName: 'Packages'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Source Code
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/src'
     ArtifactName: 'Packages'
     publishLocation: 'Container'
