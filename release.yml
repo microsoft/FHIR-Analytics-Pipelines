@@ -17,7 +17,7 @@ steps:
 
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)/Configuration-Generator'
+    rootFolderOrFile: 'Configuration-Generator'
     includeRootFolder: true
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/ConfigurationGenerator.zip'
