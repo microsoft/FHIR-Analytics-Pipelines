@@ -7,6 +7,23 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '.'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/src/Source.zip'
+    replaceExistingArchive: true
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: 'Configuration-Generator'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/ConfigurationGenerator/ConfigurationGenerator.zip'
+    replaceExistingArchive: true
+
+    
 - task: DotNetCoreCLI@2
   displayName: Build Engine Core
   inputs:
@@ -40,7 +57,7 @@ steps:
   inputs:
     testRunner: JUnit
     testResultsFiles: '**/TEST-RESULTS.xml'
-    
+
 - task: DotNetCoreCLI@2
   displayName: Build Batch Executor
   inputs:
@@ -50,9 +67,39 @@ steps:
     arguments: '-c Release -r win10-x64 --self-contained true --output $(build.artifactstagingdirectory)/BatchExecutor'
     modifyOutputPath: false
 
+- task: DotNetCoreCLI@2
+  displayName: Build Local Tool
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: 'Microsoft.Health.Fhir.Transformation.Cdm.Tool\*.csproj'
+    arguments: '-c Release -r win10-x64 --self-contained true --output $(build.artifactstagingdirectory)/TransformationCdmTool'
+    modifyOutputPath: false
+    
 - task: PublishBuildArtifacts@1
   displayName: Publish Batch Executor
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)/BatchExecutor'
+    ArtifactName: 'Packages'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Local Tool
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/TransformationCdmTool'
+    ArtifactName: 'Packages'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Configuration Generator
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/ConfigurationGenerator'
+    ArtifactName: 'Packages'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Source Code
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/src'
     ArtifactName: 'Packages'
     publishLocation: 'Container'
