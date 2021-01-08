@@ -24,7 +24,7 @@ namespace Microsoft.Health.Fhir.Transformation.Cdm
             _cdmCorpusDefinition = cdmCorpusDefinition;
         }
 
-        public async Task InitializeCdmFolderAsync(IEnumerable<TabularMappingDefinition> tabularMappings, string rootFolder = "local")
+        public async Task<List<string>> InitializeCdmFolderAsync(IEnumerable<TabularMappingDefinition> tabularMappings, string rootFolder = "local")
         {
             _cdmCorpusDefinition.SetEventCallback(null, CdmStatusLevel.None);
             CdmManifestDefinition manifestAbstract = _cdmCorpusDefinition.MakeObject<CdmManifestDefinition>(CdmObjectType.ManifestDef, "tempAbstract");
@@ -32,10 +32,12 @@ namespace Microsoft.Health.Fhir.Transformation.Cdm
             var localRoot = _cdmCorpusDefinition.Storage.FetchRootFolder(rootFolder);
             localRoot.Documents.Add(manifestAbstract);
 
-            await BuildCdmEntitys(_cdmCorpusDefinition, manifestAbstract, localRoot, tabularMappings);
+            List<string> entities = await BuildCdmEntitys(_cdmCorpusDefinition, manifestAbstract, localRoot, tabularMappings);
             CdmManifestDefinition manifestResolved = await CreateResolvedManifest(manifestAbstract);
             await CreateDataPatitions(_cdmCorpusDefinition, manifestResolved);
             await manifestResolved.SaveAsAsync($"{manifestResolved.ManifestName}.manifest.cdm.json", true);
+
+            return entities;
         }
 
         public static CdmCorpusDefinition InitLocalcdmCorpusDefinition(string cdmRoot)
@@ -69,8 +71,9 @@ namespace Microsoft.Health.Fhir.Transformation.Cdm
             }
         }
 
-        private static async Task BuildCdmEntitys(CdmCorpusDefinition cdmCorpus, CdmManifestDefinition manifestAbstract, CdmFolderDefinition localRoot, IEnumerable<TabularMappingDefinition> tabularMappings)
+        private static async Task<List<string>> BuildCdmEntitys(CdmCorpusDefinition cdmCorpus, CdmManifestDefinition manifestAbstract, CdmFolderDefinition localRoot, IEnumerable<TabularMappingDefinition> tabularMappings)
         {
+            List<string> results = new List<string>();
             foreach (TabularMappingDefinition tabularMapping in tabularMappings)
             {
                 var entity = cdmCorpus.MakeObject<CdmEntityDefinition>(CdmObjectType.EntityDef, tabularMapping.TableName, false);
@@ -86,9 +89,13 @@ namespace Microsoft.Health.Fhir.Transformation.Cdm
                 entityDoc.Definitions.Add(entity);
                 localRoot.Documents.Add(entityDoc, entityDoc.Name);
 
-                var resolvedEntity = await entity.CreateResolvedEntityAsync($"Local{tabularMapping.TableName}");
+                string entityName = $"Local{tabularMapping.TableName}";
+                var resolvedEntity = await entity.CreateResolvedEntityAsync(entityName);
                 manifestAbstract.Entities.Add(resolvedEntity);
+                results.Add(entityName);
             }
+
+            return results;
         }
 
         private static CdmTypeAttributeDefinition CreateEntityAttributeWithPurposeAndDataType(CdmCorpusDefinition cdmCorpus, string attributeName, string purpose, string dataType)
