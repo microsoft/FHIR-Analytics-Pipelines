@@ -50,7 +50,8 @@ describe('Test configuration viewer can correctly collect properties', function(
         let propertiesGroundTruth = [
             { ColumnName: 'RowId', Type: 'string' },
             { ColumnName: 'ResourceId', Type: 'string' },
-            { ColumnName: 'Location', Type: 'string' },
+            { ColumnName: 'FhirPath', Type: 'string' },
+            { ColumnName: 'ParentPath', Type: 'string' },
             { ColumnName: 'Family', Type: 'string' },
             { ColumnName: 'Given', Type: 'string' },
             { ColumnName: 'PeriodStart', Type: 'string' },
