@@ -106,5 +106,10 @@ Go to the  _{pipelinename}-df_, and trigger the pipeline. One the pipeline execu
 ### Troubleshooting the pipeline
 In case the pipeline run is successful, but you do not see data in the CDM folder, go to the _adfjobs_ container within _{pipelinename}storage_ account, look for the latest run-folder, which has a GUID name, and see the _stderr.txt_ file for details.
 
-## Next Steps
-Once you have the data in a CDM folder, it can be consumed by several Microsoft services such as Synapse Analytics, ADF, Azure Databricks, Azure Machine Learning, Azure SQL, and Power BI. See the [instructions](cdm-to-synapse.md) for moving the data from a CDM folder to Synapse analytics.
+## Next steps
+Once you have the data in a CDM folder, it can be consumed by several Microsoft services such as Synapse Analytics, ADF, Azure Databricks, Azure Machine Learning, Azure SQL, and Power BI. 
+
+* [Read from CDM folder using Azure Data Factory](https://docs.microsoft.com/en-us/azure/data-factory/format-common-data-model)
+* [Move data from CDM folder to Synapse SQL](cdm-to-synapse.md)
+* [Analyze data in CDM folder using Power BI](https://docs.microsoft.com/en-us/power-query/connectors/datalakestorage)
+* [CDM Connector for Apache Spark in Synapse and Databricks](https://github.com/Azure/spark-cdm-connector/blob/master/documentation/overview.md)
