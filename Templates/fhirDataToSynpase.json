@@ -65,7 +65,7 @@
     },
     "PackageLink": {
       "type": "string",
-      "defaultValue": "https://github.com/microsoft/FHIR-Analytics-Pipelines/releases/download/v0.1.0/BatchExecutor.zip"
+      "defaultValue": "https://adfasia.blob.core.windows.net/privaterelease/BatchExecutor.zip?st=2021-01-27T03%3A33%3A44Z&se=2022-01-28T03%3A33%3A00Z&sp=rl&sv=2018-03-28&sr=b&sig=rEaxQn9OrUvJ22F6pkpw5VdoWhbeAY9eTksrth8oN%2Bc%3D"
     }
   },
   "variables": {
@@ -337,7 +337,7 @@
                   }
               ],
               "transformations": [],
-              "script": "parameters{\n\tRootLocation as string,\n\tEntityName as string\n}\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tentity: ($EntityName),\n\tformat: 'cdm',\n\tmanifestType: 'manifest',\n\tlocal: true,\n\tfolderPath: '',\n\tfileSystem: ($RootLocation)) ~> CDMSource\nCDMSource sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SynapseSink"
+              "script": "parameters{\n\tRootLocation as string,\n\tEntityName as string\n}\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tentity: (\"{$EntityName}\"),\n\tformat: 'cdm',\n\tmanifestType: 'manifest',\n\tlocal: true,\n\tfolderPath: '',\n\tfileSystem: (\"{$RootLocation}\")) ~> CDMSource\nCDMSource sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SynapseSink"
           }
       },
       "dependsOn": [
@@ -545,6 +545,77 @@
                   "linkedServiceName": {
                     "referenceName": "BatchService",
                     "type": "LinkedServiceReference"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "ForEachTable",
+            "type": "ForEach",
+            "dependsOn": [
+              {
+                "activity": "ForEachResource",
+                "dependencyConditions": [
+                  "Succeeded"
+                ]
+              }
+            ],
+            "userProperties": [],
+            "typeProperties": {
+              "items": {
+                "value": "@activity('GenerateSchema').Output.customOutput.Entities",
+                "type": "Expression"
+              },
+              "batchCount": 3,
+              "activities": [
+                {
+                  "name": "ToSynapse",
+                  "type": "ExecuteDataFlow",
+                  "dependsOn": [],
+                  "policy": {
+                      "timeout": "7.00:00:00",
+                      "retry": 0,
+                      "retryIntervalInSeconds": 30,
+                      "secureOutput": false,
+                      "secureInput": false
+                  },
+                  "userProperties": [],
+                  "typeProperties": {
+                      "dataflow": {
+                          "referenceName": "ToSynapseWorkspaceDataflow",
+                          "type": "DataFlowReference",
+                          "parameters": {
+                              "RootLocation": {
+                                  "value": "'@pipeline().parameters.AdlsFileSystem'",
+                                  "type": "Expression"
+                              },
+                              "EntityName": {
+                                  "value": "@item()",
+                                  "type": "Expression"
+                              }
+                          },
+                          "datasetParameters": {
+                              "SynapseSink": {
+                                  "TableName": {
+                                      "value": "@item()",
+                                      "type": "Expression"
+                                  }
+                              }
+                          }
+                      },
+                      "staging": {
+                          "linkedService": {
+                              "referenceName": "StorageService",
+                              "type": "LinkedServiceReference"
+                          },
+                          "folderPath": "staging"
+                      },
+                      "compute": {
+                          "coreCount": 8,
+                          "computeType": "General"
+                      },
+                      "traceLevel": "Fine"
                   }
                 }
               ]
