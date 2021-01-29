@@ -4,14 +4,22 @@ param (
     [string]$Config
 )
 
-<#
-    $Public  = @( Get-ChildItem -Path "$PSScriptRoot\Public\*.ps1" )
-    @($Public) | ForEach-Object {
-        . $_.FullName
-    }
-#>
-
 $configContent = (Get-Content $Config) | ConvertFrom-Json
+
+$Public  = @( Get-ChildItem -Path "$PSScriptRoot\Public\*.ps1" )
+@($Public) | ForEach-Object {
+    . $_.FullName
+}
+
+
+# Create staging container, will be used in CDM to synapse pipline
+
+New-StagingContainer `
+    -StorageAccount $configContent.templateParameters.AdlsAccountForCdm `
+    -StagingContainer $configContent.stagingContainer
+
+
+# Deploy CDM to synapse pipelines
 
 Write-Host "Deploying..."
 $count = 0
