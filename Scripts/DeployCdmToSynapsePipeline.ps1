@@ -1,75 +1,35 @@
+param (
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$Config
+)
 
-function Connect-ToAz {
-    # Connect to Azure account
-    Connect-AzAccount
-
-    # Select Azure subscription
-    # Set-AzContext [SubscriptionID/SubscriptionName]
-}
-
-function ReadJsonFile {
-    $content = (Get-Content "config.json") | ConvertFrom-Json
-    Write-Host $content
-    Write-Host $content.properties
-}
-
-function New-DeploySynapsePipeline {
-
-    param (
-        $ResourceGroupName,
-        $TemplateFilePath,
-        $ParamaterFilePath
-    )
-
-    Get-AzResourceGroup -Name $ResourceGroupName -ErrorVariable notPresent -ErrorAction SilentlyContinue
-
-    if ($notPresent)
-    {
-        Write-Host "Creating resource group '$ResourceGroupName'..."
-        
-        New-AzResourceGroup `
-            -Name $ResourceGroupName `
-            -Location "Central US"
+<#
+    $Public  = @( Get-ChildItem -Path "$PSScriptRoot\Public\*.ps1" )
+    @($Public) | ForEach-Object {
+        . $_.FullName
     }
-    
-    New-AzResourceGroupDeployment `
-        -Name DeployLocalTemplate `
-        -ResourceGroupName $ResourceGroupName `
-        -TemplateFile $TemplateFilePath `
-        -TemplateParameterFile $ParamaterFilePath `
-        -verbose
-}
 
-Import-Module Az.Storage
-
-$resourceGroupName = "quwan20210128"
-$templateFilePath = "../Templates/cdmToSynapse.json"
-$paramaterFilePath = "../Templates/cdmToSynapse.parameters.json"
-
-$manifestName = "default.manifest.cdm.json"
-
-Connect-ToAz
+    $configContent = (Get-Content $Config) | ConvertFrom-Json
+#>
 
 Write-Host "Deploying..."
 
-# New-DeploySynapsePipeline -ResourceGroupName $resourceGroupName -TemplateFilePath $templateFilePath -ParamaterFilePath $paramaterFilePath
+foreach ($entity in $configContent.templateParameters.Entities){
+    $templateParameters = @{
+        DataFactoryName = $configContent.templateParameters.DataFactoryName; `
+        SynapseWorkspace =$configContent.templateParameters.SynapseWorkspace; `
+        DedicatedSqlPool = $configContent.templateParameters.DedicatedSqlPool; `
+        AdlsAccountForCdm = $configContent.templateParameters.AdlsAccountForCdm; `
+        CdmRootLocation = $configContent.templateParameters.CdmRootLocation; `
+        CdmLocalEntity = $entity
+    }
 
-# Get-AzureStorageBlob -Container "cdm" -Blob $manifestName | Get-AzureStorageBlobContent
-
-# Get-AzureStorageBlobContent -Container "fhirtocdmstorage" -Blob $manifestName
-function test-pull {
-    $storageAccount = 'fhirtocdmstorage'
-    $resourceGroupName = 'quwan20210128'
-    $container = 'cdm'
-    $manifestName = 'default.manifest.cdm.json'
-
-    $file = "./.$manifestName"
-
-    $context = New-AzStorageContext -StorageAccountName $storageAccount -UseConnectedAccount
-    $blob = Get-AzStorageBlobContent -Blob $blob -Container $container -Context $context -Destination $file -Force
+    New-AzResourceGroupDeployment `
+        -Name DeployLocalTemplate `
+        -ResourceGroupName $configContent.resourceGroup `
+        -TemplateFile $configContent.templateFilePath `
+        -TemplateParameterObject $templateParameters `
+        -verbose
 }
-
-test-pull
-
-
 Write-Host "Complete!"
