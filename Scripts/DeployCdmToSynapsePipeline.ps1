@@ -9,13 +9,16 @@ param (
     @($Public) | ForEach-Object {
         . $_.FullName
     }
-
-    $configContent = (Get-Content $Config) | ConvertFrom-Json
 #>
 
-Write-Host "Deploying..."
+$configContent = (Get-Content $Config) | ConvertFrom-Json
 
+Write-Host "Deploying..."
+$count = 0
 foreach ($entity in $configContent.templateParameters.Entities){
+    $count++
+    Write-Host "Deploy the $entity [$($count)/$($configContent.templateParameters.Entities.count)]"
+    
     $templateParameters = @{
         DataFactoryName = $configContent.templateParameters.DataFactoryName; `
         SynapseWorkspace =$configContent.templateParameters.SynapseWorkspace; `
