@@ -5,18 +5,19 @@ param (
 )
 
 $configContent = (Get-Content $Config) | ConvertFrom-Json
-
-$Public  = @( Get-ChildItem -Path "$PSScriptRoot\Public\*.ps1" )
-@($Public) | ForEach-Object {
-    . $_.FullName
-}
-
+$storageAccount = $configContent.templateParameters.AdlsAccountForCdm
 
 # Create staging container, will be used in CDM to synapse pipline
 
-New-StagingContainer `
-    -StorageAccount $configContent.templateParameters.AdlsAccountForCdm `
-    -StagingContainer $configContent.stagingContainer
+$context = New-AzStorageContext -StorageAccountName $storageAccount -UseConnectedAccount
+$container = Get-AzStorageContainer -Name $configContent.stagingContainer -context $context -ErrorAction Ignore
+if(-not $container) {
+    Write-Host "Creating staging container..."
+    New-AzStorageContainer -Name $configContent.stagingContainer -Context $context
+}
+else {
+    Write-Host "Staging container exists"
+}
 
 
 # Deploy CDM to synapse pipelines
