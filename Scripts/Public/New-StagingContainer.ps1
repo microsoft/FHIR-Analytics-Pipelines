@@ -12,8 +12,13 @@ function New-StagingContainer {
     Import-Module Az.Storage
 
     $context = New-AzStorageContext -StorageAccountName $StorageAccount -UseConnectedAccount
-    $null = New-AzStorageContainer `
-        -Name $StagingContainer `
-        -Context $context `
+    $container = Get-AzStorageContainer -Name $StagingContainer -context $context -ErrorAction Ignore
+    if(-not $container) {
+        Write-Host "Creating staging container..."
+        New-AzStorageContainer -Name $StagingContainer -Context $context
+    }
+    else {
+        Write-Host "Staging container exists"
+    }
 }
 
