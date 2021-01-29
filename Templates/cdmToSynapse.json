@@ -32,6 +32,13 @@
           "description": "Name for CDM Local Entity."
         }
       },
+	  "StagingContainer": {
+        "type": "string",
+        "metadata": {
+          "description": "Container name for data flow staging."
+        },
+        "defaultValue": "adfstaging"
+      },
       "CdmRootLocation": {
         "type": "string",
         "metadata": {
@@ -195,7 +202,7 @@
                                 "referenceName": "StorageService",
                                 "type": "LinkedServiceReference"
                             },
-                            "folderPath": "staging"
+                            "folderPath": "[parameters('StagingContainer')]"
                         },
                         "compute": {
                             "coreCount": 8,
