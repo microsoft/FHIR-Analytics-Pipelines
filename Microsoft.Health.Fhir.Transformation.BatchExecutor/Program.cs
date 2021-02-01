@@ -4,9 +4,11 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Binding;
 using System.CommandLine.Invocation;
+using System.IO;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.CommonDataModel.ObjectModel.Cdm;
@@ -15,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Transformation.Cdm;
 using Microsoft.Health.Fhir.Transformation.Cdm.BatchExecutor;
 using Microsoft.Health.Fhir.Transformation.Core;
+using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Transformation.BatchExecutor
 {
@@ -51,15 +54,18 @@ namespace Microsoft.Health.Fhir.Transformation.BatchExecutor
                     ClientSecretCredential credential = GetClientSecretCredential(tenantId, clientId, clientSecret);
 
                     StorageDefinitionLoader configLoader = new StorageDefinitionLoader(GetStorageServiceEndpoint(adlsAccount), configurationContainer, credential, maxDepth);
-                    TabularMappingDefinition[] mappings = configLoader.Load(); 
-                    
+                    TabularMappingDefinition[] mappings = configLoader.Load();
+
                     AdlsCsvSink sink = new AdlsCsvSink(adlsAccount, cdmFileSystem, credential);
                     await sink.InitAsync();
                     await sink.CreateFileSystemClientIfNotExistAsync();
 
                     CdmCorpusDefinition defination = InitAdlscdmCorpusDefinition(adlsAccount, "/" + cdmFileSystem, tenantId, clientId, clientSecret);
                     CdmSchemaGenerator cdmSchemaGenerator = new CdmSchemaGenerator(defination);
-                    await cdmSchemaGenerator.InitializeCdmFolderAsync(mappings, "adls");
+                    List<string> entities = await cdmSchemaGenerator.InitializeCdmFolderAsync(mappings, "adls");
+
+                    WriteActivityOutputs(entities);
+
                     logger.LogInformation("Generate CDM schema completed.");
                 });
             rootCommand.AddCommand(generateSchemaCommand);
@@ -120,6 +126,13 @@ namespace Microsoft.Health.Fhir.Transformation.BatchExecutor
             rootCommand.AddCommand(transformDataCommand);
 
             await rootCommand.InvokeAsync(args);
+        }
+
+        private static void WriteActivityOutputs(List<string> entities)
+        {
+            dynamic outputs = new System.Dynamic.ExpandoObject();
+            outputs.Entities = entities;
+            File.WriteAllText("outputs.json", JsonConvert.SerializeObject(outputs));
         }
 
         private static CdmCorpusDefinition InitAdlscdmCorpusDefinition(string account, string fileSystemRoot, string tenantId, string clientId, string secret)
