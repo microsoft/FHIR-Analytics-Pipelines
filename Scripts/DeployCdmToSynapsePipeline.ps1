@@ -20,6 +20,7 @@ foreach ($entity in $configContent.TemplateParameters.Entities){
         DedicatedSqlPool = $configContent.TemplateParameters.DedicatedSqlPool; `
         AdlsAccountForCdm = $configContent.TemplateParameters.AdlsAccountForCdm; `
         CdmRootLocation = $configContent.TemplateParameters.CdmRootLocation; `
+        StagingContainer = $configContent.TemplateParameters.StagingContainer; `
         CdmLocalEntity = $entity
     }
 

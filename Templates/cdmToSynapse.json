@@ -57,6 +57,14 @@
     },
     "resources": [
         {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "name": "[concat(parameters('AdlsAccountForCdm'), '/default/', parameters('StagingContainer'))]",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
             "name": "[concat(variables('dataFactoryName'), '/StorageService')]",
             "type": "Microsoft.DataFactory/factories/linkedServices",
             "apiVersion": "2018-06-01",
@@ -65,32 +73,6 @@
                 "type": "AzureBlobStorage",
                 "typeProperties": {
                 "connectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',concat(listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')),'2015-05-01-preview').key1))]"
-                }
-            }
-        },
-		{
-            "apiVersion": "2019-05-01",
-            "name": "[parameters('StagingContainer')]",
-            "type": "Microsoft.Resources/deployments",
-            "subscriptionId": "[subscription().subscriptionId]",
-            "resourceGroup": "[resourceGroup().name]",
-            "properties": {
-                "mode": "Incremental",
-                "template": {
-                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                    "contentVersion": "1.0.0.0",
-                    "parameters": {},
-                    "variables": {},
-                    "resources": [
-                        {
-                            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-                            "name": "[concat(parameters('AdlsAccountForCdm'), '/default/', parameters('StagingContainer'))]",
-                            "apiVersion": "2018-02-01",
-                            "properties": {
-                                "publicAccess": "None"
-                            }
-                        }
-                    ]
                 }
             }
         },
