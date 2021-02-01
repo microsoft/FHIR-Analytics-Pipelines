@@ -32,6 +32,13 @@
           "description": "Name for CDM Local Entity."
         }
       },
+	  "StagingContainer": {
+        "type": "string",
+        "metadata": {
+          "description": "Container name for data flow staging."
+        },
+        "defaultValue": "adfstaging"
+      },
       "CdmRootLocation": {
         "type": "string",
         "metadata": {
@@ -49,6 +56,14 @@
       "blobContributorId": "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
     },
     "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "name": "[concat(parameters('AdlsAccountForCdm'), '/default/', parameters('StagingContainer'))]",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
         {
             "name": "[concat(variables('dataFactoryName'), '/StorageService')]",
             "type": "Microsoft.DataFactory/factories/linkedServices",
@@ -195,7 +210,7 @@
                                 "referenceName": "StorageService",
                                 "type": "LinkedServiceReference"
                             },
-                            "folderPath": "staging"
+                            "folderPath": "[parameters('StagingContainer')]"
                         },
                         "compute": {
                             "coreCount": 8,
