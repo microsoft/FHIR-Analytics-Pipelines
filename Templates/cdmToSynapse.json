@@ -68,6 +68,32 @@
                 }
             }
         },
+		{
+            "apiVersion": "2019-05-01",
+            "name": "[parameters('StagingContainer')]",
+            "type": "Microsoft.Resources/deployments",
+            "subscriptionId": "[subscription().subscriptionId]",
+            "resourceGroup": "[resourceGroup().name]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+                            "name": "[concat(parameters('AdlsAccountForCdm'), '/default/', parameters('StagingContainer'))]",
+                            "apiVersion": "2018-02-01",
+                            "properties": {
+                                "publicAccess": "None"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
         {
             "name": "[concat(variables('dataFactoryName'), '/AdlsStorage')]",
             "type": "Microsoft.DataFactory/factories/linkedServices",
