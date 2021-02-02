@@ -169,7 +169,7 @@
                         }
                     ],
                     "transformations": [],
-                    "script": "[concat('source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tentity: ''', parameters('CdmLocalEntity'), ''',\n\tformat: ''', parameters('CdmRootLocation'), ''',\n\tmanifestType: ''manifest'',\n\tlocal: true,\n\tfolderPath: '''',\n\tfileSystem: ''cdm'') ~> CDMSource\nCDMSource sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: ''table'',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SynapseSink')]"
+                    "script": "[concat('source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tentity: ''', parameters('CdmLocalEntity'), ''',\n\tformat: ''', parameters('CdmRootLocation'), ''',\n\tmanifestType: ''manifest'',\n\tlocal: true,\n\tfolderPath: '''',\n\tfileSystem: ''cdm'') ~> CDMSource\nCDMSource sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\trecreate:true,\n\tformat: ''table'',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SynapseSink')]"
                 }
             },
             "dependsOn": [
