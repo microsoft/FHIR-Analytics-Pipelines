@@ -166,7 +166,20 @@
           "keySource": "Microsoft.Storage"
         },
         "accessTier": "Hot"
-      }
+      },
+	  "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "name": "[concat(variables('storageAccountName'), '/default/', parameters('ConfigurationContainer'))]",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "publicAccess": "None"
+            },
+			"dependsOn": [
+				"[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
+			]
+        }
+	  ]
     },
     {
       "type": "Microsoft.Storage/storageAccounts/blobServices",
