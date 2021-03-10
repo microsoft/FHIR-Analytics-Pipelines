@@ -92,16 +92,18 @@ namespace Microsoft.Health.Fhir.Transformation.BatchExecutor
                     StorageDefinitionLoader configLoader = new StorageDefinitionLoader(GetStorageServiceEndpoint(adlsAccount), configurationContainer, credential, maxDepth);
                     TabularMappingDefinition[] mappings = configLoader.Load();
 
-                    ISource source = new StorageBlobNdjsonSource(new Uri(inputBlobUri), credential)
+                    Uri inputUri = new Uri(inputBlobUri);
+                    ISource source = new StorageBlobNdjsonSource(inputUri, credential)
                     {
                         ConcurrentCount = Environment.ProcessorCount * 2
                     };
 
+                    string fileName = Path.GetFileNameWithoutExtension(inputUri.AbsolutePath);
                     AdlsCsvSink sink = new AdlsCsvSink(adlsAccount, cdmFileSystem, credential)
                     {
                         CsvFilePath = (string tableName) =>
                         {
-                            return $"data/Local{tableName}/partition-data-{operationId}.csv";
+                            return $"data/Local{tableName}/partition-data-{fileName}-{operationId}.csv";
                         },
                         ConcurrentCount = Environment.ProcessorCount * 2
                     };
