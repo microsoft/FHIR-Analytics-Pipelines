@@ -35,6 +35,8 @@ GO
 EXEC sp_addrolemember db_owner, [datafactory-name]
 GO
 ```
+4. Ensure that your database master key is created on the Synapse SQL pool. For more details, read about how to [create a database master key](https://docs.microsoft.com/sql/t-sql/statements/create-master-key-transact-sql?view=sql-server-ver15). 
+
 Additionally, if you want to create a trigger with the pipeline dependency, here is a guideline from Azure Data Factory:
 [Create tumbling window trigger dependencies - Azure Data Factory | Microsoft Docs](https://docs.microsoft.com/en-us/azure/data-factory/tumbling-window-trigger-dependency)
 
