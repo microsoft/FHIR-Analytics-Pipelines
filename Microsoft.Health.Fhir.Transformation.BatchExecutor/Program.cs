@@ -103,7 +103,7 @@ namespace Microsoft.Health.Fhir.Transformation.BatchExecutor
                     {
                         CsvFilePath = (string tableName) =>
                         {
-                            return $"data/Local{tableName}/partition-data-{fileName}-{operationId}.csv";
+                            return $"data/Local{tableName}/partition-data-{tableName}-{fileName}-{operationId}.csv";
                         },
                         ConcurrentCount = Environment.ProcessorCount * 2
                     };

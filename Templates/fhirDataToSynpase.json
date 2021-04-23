@@ -496,7 +496,7 @@
                   "userProperties": [],
                   "typeProperties": {
                     "command": {
-                      "value": "@concat('cmd /c powershell -command \"Invoke-WebRequest -Uri ''' , pipeline().parameters.PackageLink, ''' -OutFile package.zip\"', ' && cmd /c powershell -command \"Expand-Archive -Path package.zip -DestinationPath .\" && cmd /c dir && cmd/c powershell RunAdfCustomActivity.ps1')",
+                      "value": "@concat('cmd /c powershell -command \"Invoke-WebRequest -Uri ''' , pipeline().parameters.PackageLink, ''' -OutFile package.zip\"', ' && cmd /c powershell -command \"Expand-Archive -Path package.zip -DestinationPath .\" && cmd /c dir && cmd/c powershell RunAdfCustomActivity.ps1 && cmd /c powershell -command \"remove-item * -recurse\"')",
                       "type": "Expression"
                     },
                     "extendedProperties": {
@@ -707,7 +707,7 @@
             "userProperties": [],
             "typeProperties": {
               "command": {
-                "value": "@concat('cmd /c powershell -command \"Invoke-WebRequest -Uri ''' , pipeline().parameters.PackageLink, ''' -OutFile package.zip\"', ' && cmd /c powershell -command \"Expand-Archive -Path package.zip -DestinationPath .\" && cmd /c dir && cmd/c powershell RunAdfCustomActivity.ps1 -schema')",
+                "value": "@concat('cmd /c powershell -command \"Invoke-WebRequest -Uri ''' , pipeline().parameters.PackageLink, ''' -OutFile package.zip\"', ' && cmd /c powershell -command \"Expand-Archive -Path package.zip -DestinationPath .\" && cmd /c dir && cmd/c powershell RunAdfCustomActivity.ps1 -schema && cmd /c powershell -command \"remove-item * -recurse\"')",
                 "type": "Expression"
               },
               "extendedProperties": {
