@@ -1,14 +1,54 @@
 ## Moving data from CDM folder to Azure Synapse
 
-### Prerequisite
+### Automatic Method: Using Scripts
+
+We provide the scripts to automate the process of building a pipeline from the CDM folder to a Synapse workspace.
+
+#### Prerequisite
+Have the data exported in a CDM format and stored in ADLS gen2 storage.
+
+#### Create pipeline
+1. Edit the configuration file by putting in custom values. A config file might look like this:
+```json
+{
+  "ResourceGroup": "",
+  "TemplateFilePath": "../Templates/cdmToSynapse.json",
+  "TemplateParameters": {
+    "DataFactoryName": "",
+    "SynapseWorkspace": "",
+    "DedicatedSqlPool": "",
+    "AdlsAccountForCdm": "",
+    "CdmRootLocation": "cdm",
+    "StagingContainer": "adfstaging",
+    "Entities": ["LocalPatient", "LocalPatientAddress"]
+  }
+}
+```
+2. Run the scripts with the configuration file: 
+```powershell
+.\DeployCdmToSynapsePipeline.ps1 -Config: config.json
+```
+3. Add data factory MI as SQL user into SQL DB. Here is a sample SQL script to create a user and an assign role:
+```sql
+CREATE USER [datafactory-name] FROM EXTERNAL PROVIDER
+GO
+EXEC sp_addrolemember db_owner, [datafactory-name]
+GO
+```
+Additionally, if you want to create a trigger with the pipeline dependency, here is a guideline from Azure Data Factory:
+[Create tumbling window trigger dependencies - Azure Data Factory | Microsoft Docs](https://docs.microsoft.com/en-us/azure/data-factory/tumbling-window-trigger-dependency)
+
+### Manual Method: Using Azure Portal and Synapse Studio
+
+#### Prerequisite
 1. A Synapse workspace. [Create](https://ms.portal.azure.com/#create/Microsoft.Synapse) one if you need. 
-1. Managed identity enabled on the Synapse workspace
-1. The managed identify has Synapse SQL Administrator role. Navigate to Synapse Studio >> Manage >> Access Control to verify. If needed, provide access.
-1. Database master key is created on the Synapse SQL pool. Refer the [documentation](https://docs.microsoft.com/en-us/sql/t-sql/statements/create-master-key-transact-sql?view=sql-server-ver15). 
-1. Pipelines are allowed to access SQL Pools. This is the default setting in Synapse.
+2. Managed identity enabled on the Synapse workspace
+3. The managed identity has a Synapse SQL Administrator role. Navigate to Synapse Studio >> Manage >> Access Control to verify. If needed, provide access.
+4. Database master key is created on the Synapse SQL pool. Refer the [documentation](https://docs.microsoft.com/en-us/sql/t-sql/statements/create-master-key-transact-sql?view=sql-server-ver15). 
+5. Pipelines are allowed to access SQL Pools. This is the default setting in Synapse.
 ![Pipelines allowed to access SQL pools](assets/synapse-pipeline-access-to-sql.png)
 
-### Create pipeline
+#### Create pipeline
 
 1. Open Synapse Studio. Go to Integrate => + => Pipeline. Provide details.
 
