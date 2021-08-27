@@ -1,7 +1,5 @@
 # FHIR Analytics Pipelines
 
-> This project is currently under private preview and is governed by its private preview terms of use. You should access this project only if you are participating in the private preview, or are a Microsoft FTE.
-
 FHIR objects are often nested JSON structures. While this nestedness helps capture detailed information in health care, it requires rectangularization before it can be used for machine learning and analytics, which work best with tabular data. **FHIR Analytics Pipelines** is an open source project with the goal to help build components and pipelines for rectangularizing and moving FHIR data from [Azure API for FHIR](https://azure.microsoft.com/en-us/services/azure-api-for-fhir/), and [FHIR server for Azure](https://github.com/microsoft/fhir-server) to analytical stores such as [CDM folder on ADLS Gen2](https://docs.microsoft.com/en-us/common-data-model/data-lake), [Azure Synapse](https://azure.microsoft.com/en-us/services/synapse-analytics/), [Azure SQL](https://azure.microsoft.com/en-us/services/sql-database/), and [Azure Machine Learning](https://azure.microsoft.com/en-us/services/machine-learning/).
 
 The project currently has the following solutions:

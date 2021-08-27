@@ -1,0 +1,13 @@
+{
+  "ResourceGroup": "",
+  "TemplateFilePath": "../Templates/cdmToSynapse.json",
+  "TemplateParameters": {
+    "DataFactoryName": "",
+    "SynapseWorkspace": "",
+    "DedicatedSqlPool": "",
+    "AdlsAccountForCdm": "",
+    "CdmRootLocation": "cdm",
+    "StagingContainer": "adfstaging",
+    "Entities": ["LocalPatient", "LocalPatientAddress"]
+  }
+}
