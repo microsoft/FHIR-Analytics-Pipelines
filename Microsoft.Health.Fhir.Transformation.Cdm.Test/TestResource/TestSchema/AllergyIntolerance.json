@@ -1,0 +1,131 @@
+{
+    "name": "AllergyIntolerance",
+    "resourceType": "AllergyIntolerance",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "id"
+        },
+        {
+            "path": "meta",
+            "name": "Meta",
+            "propertiesGroupRef": "Meta"
+        },
+        {
+            "path": "implicitRules",
+            "name": "ImplicitRules",
+            "type": "uri"
+        },
+        {
+            "path": "language",
+            "name": "Language",
+            "type": "code"
+        },
+        {
+            "path": "text",
+            "name": "Text",
+            "propertiesGroupRef": "Narrative"
+        },
+        {
+            "path": "identifier",
+            "name": "Identifier",
+            "propertiesGroupRef": "Identifier"
+        },
+        {
+            "path": "clinicalStatus",
+            "name": "ClinicalStatus",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "verificationStatus",
+            "name": "VerificationStatus",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "type",
+            "name": "Type",
+            "type": "string"
+        },
+        {
+            "path": "category",
+            "name": "Category",
+            "type": "string"
+        },
+        {
+            "path": "criticality",
+            "name": "Criticality",
+            "type": "string"
+        },
+        {
+            "path": "code",
+            "name": "Code",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "patient",
+            "name": "Patient",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "encounter",
+            "name": "Encounter",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "onsetDateTime",
+            "name": "OnsetDateTime",
+            "type": "string"
+        },
+        {
+            "path": "onsetAge",
+            "name": "OnsetAge",
+            "propertiesGroupRef": "Age"
+        },
+        {
+            "path": "onsetPeriod",
+            "name": "OnsetPeriod",
+            "propertiesGroupRef": "Period"
+        },
+        {
+            "path": "onsetRange",
+            "name": "OnsetRange",
+            "propertiesGroupRef": "Range"
+        },
+        {
+            "path": "onsetString",
+            "name": "OnsetString",
+            "type": "string"
+        },
+        {
+            "path": "recordedDate",
+            "name": "RecordedDate",
+            "type": "dateTime"
+        },
+        {
+            "path": "recorder",
+            "name": "Recorder",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "asserter",
+            "name": "Asserter",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "lastOccurrence",
+            "name": "LastOccurrence",
+            "type": "string"
+        },
+        {
+            "path": "note",
+            "name": "Note",
+            "propertiesGroupRef": "Annotation"
+        },
+        {
+            "path": "reaction",
+            "name": "Reaction",
+            "propertiesGroupRef": "AllergyIntolerance_Reaction"
+        }
+    ]
+}

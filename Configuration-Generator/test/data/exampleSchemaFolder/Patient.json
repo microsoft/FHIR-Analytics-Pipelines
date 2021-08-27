@@ -1,0 +1,26 @@
+{
+    "name": "Patient",
+    "resourceType": "Patient",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "id"
+        },
+		{
+            "path": "gender",
+            "name": "Gender",
+            "type": "string"
+        },
+        {
+            "path": "name",
+            "name": "Name",
+            "propertiesGroupRef": "HumanName"
+        },
+        {
+            "path": "address",
+            "name": "Address",
+            "propertiesGroupRef": "Address"
+        }
+    ]
+}

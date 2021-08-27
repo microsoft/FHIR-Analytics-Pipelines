@@ -1,0 +1,30 @@
+{
+    "propertiesGroupName": "Encounter_Location",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "string"
+        },
+        {
+            "path": "location",
+            "name": "Location",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "status",
+            "name": "Status",
+            "type": "string"
+        },
+        {
+            "path": "physicalType",
+            "name": "PhysicalType",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "period",
+            "name": "Period",
+            "propertiesGroupRef": "Period"
+        }
+    ]
+}
