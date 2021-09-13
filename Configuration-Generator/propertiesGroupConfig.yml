@@ -1,10 +1,27 @@
+# complex data types
 Address:
- propertiesByDefault: [use, text, city, district, state, postalCode, country]
+ propertiesByDefault: [use, type, text, city, district, state, postalCode, country, period]
  customProperties:
   - {name: line1, expression: "line[0]", type: string}
   - {name: line2, expression: "line[1]", type: string}
   - {name: line3, expression: "line[2]", type: string}
 
+Attachment:
+ propertiesByDefault: [contentType, language, data, url, size, hash, title, creation]
+
+Annotation:
+ propertiesByDefault: [time, text]
+ 
+HumanName:
+ propertiesByDefault: [use, text, family, period]
+ customProperties:
+  - {name: given1, expression: "given[0]", type: string}
+  - {name: given2, expression: "given[1]", type: string}
+  - {name: prefix1, expression: "prefix[0]", type: string}
+  - {name: prefix2, expression: "prefix[1]", type: string}
+  - {name: suffix1, expression: "suffix[0]", type: string}
+  - {name: suffix2, expression: "suffix[1]", type: string}
+ 
 CodeableConcept:
  propertiesByDefault: [coding, text]
 
@@ -12,29 +29,1119 @@ Coding:
  propertiesByDefault: [system, code, display]
 
 ContactPoint:
- propertiesByDefault: [system, value, use]
+ propertiesByDefault: [system, value, use, rank, period]
  
-HumanName:
- propertiesByDefault: [text, family]
- customProperties:
-  - {name: given, expression: "given[0]",type: string}
-  - {name: prefix, expression: "prefix[0]",type: string}
-  - {name: suffix, expression: "suffix[0]",type: string}
-
 Identifier:
-  propertiesByDefault: [use, type, system, value, assigner]
-
-Patient_Contact:
- propertiesByDefault: [relationship, name, address, gender, organization]
-
-Patient_Link:
- propertiesByDefault: [other, type]
+ propertiesByDefault: [use, type, system, value, period, assigner]
 
 Period:
  propertiesByDefault: [start, end]
 
-Practitioner_Qualification:
- propertiesByDefault: [identifier, code, issuer]
+Money:
+ propertiesByDefault: [value, currency]
+ 
+Quantity:
+ propertiesByDefault: [value, comparator, unit, system, code]
+ 
+Distance:
+ propertiesByDefault: [value, comparator, unit, system, code] 
+ 
+Age:
+ propertiesByDefault: [value, comparator, unit, system, code] 
+ 
+Count:
+ propertiesByDefault: [value, comparator, unit, system, code] 
+ 
+Duration:
+ propertiesByDefault: [value, comparator, unit, system, code] 
+ 
+Signature:
+ propertiesByDefault: [type, when, who, onBehalfOf, targetFormat, sigFormat, data]
 
+Timing_Repeat:
+ propertiesByDefault: [boundsDuration, boundsRange, boundsPeriod, count, countMax, duration, durationMax, durationUnit, frequency, frequencyMax, period, periodMax, periodUnit, dayOfWeek, timeOfDay, offset]
+ 
+Timing:
+ propertiesByDefault: [event, repeat, code] 
+ 
+Range:
+ propertiesByDefault: [low, high]
+ 
+Ratio:
+ propertiesByDefault: [numerator, denominator]
+ 
 Reference:
  propertiesByDefault: [reference, type]
+ 
+SampledData:
+ propertiesByDefault: [origin, period, factor, lowerLimit, upperLimit, dimensions, data] 
+ 
+ProductShelfLife: 
+ propertiesByDefault: [identifier, type, period, specialPrecautionsForStorage]
+ 
+UsageContext:
+ propertiesByDefault: [code] 
+ customProperties:
+  - {name: ValueCodeableConcept, path: value, type: codeableConcept}
+  - {name: ValueQuantity, path: value, type: quantity}
+  - {name: ValueRange, path: value, type: range}
+  - {name: ValueReference, path: value, type: reference}
+  
+RelatedArtifact:
+ propertiesByDefault: [type, label, display, citation, url, document, resource]  
+ 
+ParameterDefinition:
+ propertiesByDefault: [name, use, min, max, documentation, type, profile] 
+ 
+DataRequirement:
+ propertiesByDefault: [type, profile, mustSupport, codeFilter, dateFilter, limit, sort] 
+
+DataRequirement_CodeFilter:
+ propertiesByDefault: [path, searchParam, valueSet, code]
+ 
+DataRequirement_DateFilter:
+ propertiesByDefault: [path, searchParam] 
+ customProperties:
+  - {name: ValueDateTime, path: value, type: dateTime}
+  - {name: ValuePeriod, path: value, type: period}
+  - {name: ValueDuration, path: value, type: duration}
+  
+DataRequirement_Sort:
+ propertiesByDefault: [path, direction]  
+ 
+Contributor:
+ propertiesByDefault: [type, name, contact] 
+ 
+TriggerDefinition:
+ propertiesByDefault: [type, name, data, condition] 
+ customProperties:
+  - {name: TimingTiming, path: timing, type: timing}
+  - {name: TimingRefernce, path: timing, type: reference}
+  - {name: TimingDate, path: timing, type: date}
+  - {name: TimingDateTime, path: timing, type: dateTime}
+  
+Expression:
+ propertiesByDefault: [description, name, language, expression, reference]  
+ 
+ 
+# table unroll 
+Patient_Contact:
+ propertiesByDefault: [name, address, gender, organization, period]
+
+Patient_Link:
+ propertiesByDefault: [other, type] 
+ 
+Patient_Communication:
+ propertiesByDefault: [language, preferred] 
+ 
+Encounter_ClassHistory:
+ propertiesByDefault: [class, period] 
+ 
+Encounter_Diagnosis:
+ propertiesByDefault: [condition, use, rank]
+
+Encounter_Hospitalization:
+ propertiesByDefault: [preAdmissionIdentifier, origin, admitSource, reAdmission, dietPreference, specialCourtesy, specialArrangement, destination, dischargeDisposition]
+
+Encounter_Location:
+ propertiesByDefault: [location, status, physicalType, period]
+
+Encounter_Participant:
+ propertiesByDefault: [type, period, individual]
+
+Encounter_StatusHistory: 
+ propertiesByDefault: [status, period]
+ 
+AllergyIntolerance_Reaction: 
+ propertiesByDefault: [substance, manifestation, description, onset, severity, exposureRoute, note] 
+
+CarePlan_Activity:
+ propertiesByDefault: [outcomeCodeableConcept, outcomeReference, progress, reference, detail]
+ 
+CarePlan_Detail:
+ propertiesByDefault: [kind, instantiatesCanonical, instantiatesUri, code, reasonCode, reasonReference, goal, status, statusReason, doNotPerform, location, performer, dailyAmount, quantity, description] 
+ customProperties:
+  - {name: ScheduledTiming, path: scheduled, type: timing}  
+  - {name: ScheduledPeriod, path: scheduled, type: period}
+  - {name: ScheduledString, path: scheduled, type: string}
+  - {name: ProductCodeableConcept, path: product, type: codeableConcept}  
+  - {name: ProductReference, path: product, type: reference}
+ 
+CareTeam_Participant:
+ propertiesByDefault: [role, member, onBehalfOf, period] 
+ 
+ClinicalImpression_Investigation:
+ propertiesByDefault: [code, item]
+
+ClinicalImpression_Finding:
+ propertiesByDefault: [itemCodeableConcept, itemReference, basis]
+ 
+Dosage_DoseAndRate:
+ propertiesByDefault: [type] 
+ customProperties:
+  - {name: DoseRange, path: dose, type: range}  
+  - {name: DoseQuantity, path: dose, type: quantity} 
+  - {name: RateRatio, path: rate, type: ratio}
+  - {name: RateRange, path: rate, type: range}
+  - {name: RateQuantity, path: rate, type: quantity}
+ 
+FamilyMemberHistory_Condition:
+ propertiesByDefault: [code, outcome, contributedToDeath, note] 
+ customProperties:
+  - {name: OnsetAge, path: onset, type: age}  
+  - {name: OnsetRange, path: onset, type: range} 
+  - {name: OnsetPeriod, path: onset, type: period}
+  - {name: OnsetString, path: onset, type: string} 
+ 
+Medication_Batch:
+ propertiesByDefault: [lotNumber, expirationDate] 
+ 
+Medication_Ingredient:
+ propertiesByDefault: [isActive] # item
+ customProperties:
+  - {name: StrengthRatio, path: strength, type: ratio}  
+  - {name: StrengthCodeableConcept, path: strength, type: codeableConcept} 
+  - {name: StrengthQuantity, path: strength, type: quantity} 
+ 
+MedicationRequest_Substitution:
+ propertiesByDefault: [reason] 
+ customProperties:
+  - {name: AllowedBoolean, path: allowed, type: boolean}  
+  - {name: AllowedCodeableConcept, path: allowed, type: codeableConcept}
+  
+MedicationRequest_DispenseRequest:
+ propertiesByDefault: [initialFill, dispenseInterval, validityPeriod, numberOfRepeatsAllowed, quantity, expectedSupplyDuration, performer]  
+ 
+MedicationDispense_Performer:
+ propertiesByDefault: [function, actor] 
+ 
+MedicationDispense_Substitution:
+ propertiesByDefault: [wasSubstituted, type, reason, responsibleParty] 
+ 
+MedicationAdministration_Performer:
+ propertiesByDefault: [function, actor]  
+ 
+MedicationAdministration_Dosage:
+ propertiesByDefault: [text, site, route, method, dose] 
+ customProperties:
+  - {name: RateRatio, path: rate, type: ratio}  
+  - {name: RateQuantity, path: rate, type: simpleQuantity}
+
+MedicationKnowledge_Monograph:
+ propertiesByDefault: [type, source]
+  
+MedicationKnowledge_MonitoringProgram:
+ propertiesByDefault: [type, name]
+ 
+MedicationKnowledge_Ingredient:
+ propertiesByDefault: [isActive, strength]
+ customProperties:
+  - {name: ItemCodeableConcept, path: item, type: codeableConcept}
+  - {name: ItemReference, path: item, type: reference}  
+  
+MedicationKnowledge_Cost:
+ propertiesByDefault: [type, source, cost]  
+ 
+MedicationKnowledge_PatientCharacteristics:
+ propertiesByDefault: [value] 
+ customProperties:
+  - {name: CharacteristicCodeableConcept, path: characteristic, type: codeableConcept}
+  - {name: CharacteristicQuantity, path: characteristic, type: quantity}
+  
+MedicationKnowledge_Dosage:
+ propertiesByDefault: [type, dosage]
+  
+MedicationKnowledge_AdministrationGuidelines:
+ propertiesByDefault: [dosage, patientCharacteristics]
+ customProperties:
+  - {name: IndicationCodeableConcept, path: indication, type: codeableConcept}
+  - {name: IndicationReference, path: indication, type: reference}  
+  
+Immunization_ProtocolApplied:
+ propertiesByDefault: [series, authority, targetDisease]
+ customProperties:
+  - {name: DoseNumberPositiveInt, path: doseNumber, type: positiveInt}
+  - {name: DoseNumberString, path: doseNumber, type: string}
+  - {name: SeriesDosesPositiveInt, path: seriesDoses, type: positiveInt}
+  - {name: SeriesDosesString, path: seriesDoses, type: string}
+  
+Immunization_Reaction:
+ propertiesByDefault: [date, detail, reported]  
+ 
+Immunization_Education:
+ propertiesByDefault: [documentType, reference, publicationDate, presentationDate] 
+ 
+Immunization_Performer:
+ propertiesByDefault: [function, actor] 
+ 
+ImmunizationRecommendation_Recommendation:
+ propertiesByDefault: [vaccineCode, targetDisease, contraindicatedVaccineCode, forecastStatus, forecastReason, dateCriterion, description, series, supportingImmunization, supportingPatientInformation] 
+ customProperties:
+  - {name: DoseNumberPositiveInt, path: doseNumber, type: positiveInt}
+  - {name: DoseNumberString, path: doseNumber, type: string}
+  - {name: SeriesDosesPositiveInt, path: seriesDoses, type: positiveInt}
+  - {name: SeriesDosesString, path: seriesDoses, type: string}
+  
+ImmunizationRecommendation_DateCriterion:
+ propertiesByDefault: [code, value]  
+ 
+Observation_Component:
+ propertiesByDefault: [code, dataAbsentReason, interpretation, referenceRange] 
+ customProperties:
+  - {name: ValueQuantity, path: value, type: quantity}  
+  - {name: ValueCodeableConcept, path: value, type: codeableConcept} 
+  - {name: ValueString, path: value, type: string}  
+  - {name: ValueBoolean, path: value, type: boolean}
+  - {name: ValueInteger, path: value, type: integer}  
+  - {name: ValueRange, path: value, type: range} 
+  - {name: ValueRatio, path: value, type: ratio}  
+  - {name: ValueSampledData, path: value, type: sampledData}
+  - {name: ValueTime, path: value, type: time} 
+  - {name: ValueDateTime, path: value, type: dateTime}  
+  - {name: ValuePeriod, path: value, type: period}
+  
+Observation_ReferenceRange:
+ propertiesByDefault: [low, high, type, appliesTo, age, text]  
+ 
+DiagnosticReport_Media:
+ propertiesByDefault: [comment, link] 
+ 
+ImagingStudy_Performer:
+ propertiesByDefault: [function, actor]
+ 
+ImagingStudy_Series:
+ propertiesByDefault: [uid, number, modality, description, numberOfInstances, bodySite, laterality, started, performer, instance] # , endPoint
+
+ImagingStudy_Instance:
+ propertiesByDefault: [uid, sopClass, number, title] 
+ 
+MolecularSequence_StructureVariant:
+ propertiesByDefault: [variantType, exact, length, outer, inner]
+ 
+MolecularSequence_Quality:
+ propertiesByDefault: [type, standardSequence, start, end, score, method, truthTP, queryTP, gtFP, precision, recall, fScore, roc]
+ 
+MolecularSequence_Repository:
+ propertiesByDefault: [type, url, name, datasetId, variantsetId, readsetId] 
+ 
+MolecularSequence_ReferenceSeq:
+ propertiesByDefault: [chromosome, genomeBuild, orientation, referenceSeqId, referenceSeqPointer, referenceSeqString, strand, windowStart, windowEnd] 
+ 
+MolecularSequence_Outer:
+ propertiesByDefault: [start, end] 
+ 
+MolecularSequence_Inner:
+ propertiesByDefault: [start, end] 
+ 
+MolecularSequence_Variant:
+ propertiesByDefault: [start, end, observedAllele, referenceAllele, cigar, variantPointer] 
+ 
+MolecularSequence_Roc:
+ propertiesByDefault: [score, numTP, numFP, numFN, precision, sensitivity, fMeasure] 
+ 
+Specimen_Collection:
+ propertiesByDefault: [collector, duration, quantity, method, bodySite]
+ customProperties:
+  - {name: CollectedDateTime, path: collected, type: dateTime}  
+  - {name: CollectedPeriod, path: collected, type: period}
+  - {name: FastingStatusCodeableConcept, path: fastingStatus, type: codeableConcept}  
+  - {name: FastingStatusDuration, path: fastingStatus, type: duration}
+ 
+Specimen_Container:
+ propertiesByDefault: [identifier, description, type, capacity, specimenQuantity] 
+ customProperties:
+  - {name: AdditiveCodeableConcept, path: additive, type: codeableConcept}  
+  - {name: AdditiveReference, path: additive, type: reference} 
+ 
+Specimen_Processing: 
+ propertiesByDefault: [description, procedure, additive]
+ customProperties:
+  - {name: TimeDateTime, path: time, type: dateTime}  
+  - {name: TimePeriod, path: time, type: period} 
+  
+Procedure_FocalDevice: 
+ propertiesByDefault: [action, manipulated]
+
+Procedure_Performer:
+ propertiesByDefault: [function, actor, onBehalfOf]
+ 
+Goal_Target:
+ propertiesByDefault: [measure] 
+ customProperties:
+  - {name: DetailQuantity, path: detail, type: quantity}  
+  - {name: DetailRange, path: detail, type: range} 
+  - {name: DetailCodeableConcept, path: detail, type: codeableConcept}  
+  - {name: DetailString, path: detail, type: string} 
+  - {name: DetailBoolean, path: detail, type: boolean}  
+  - {name: DetailInteger, path: detail, type: integer} 
+  - {name: DetailRatio, path: detail, type: ratio}
+  - {name: DueDate, path: due, type: date}  
+  - {name: DueDuration, path: due, type: duration} 
+  
+AdverseEvent_SuspectEntity:
+ propertiesByDefault: [instance, causality]
+ 
+AdverseEvent_Causality:
+ propertiesByDefault: [assessment, productRelatedness, author, method]
+ 
+DetectedIssue_Evidence:
+ propertiesByDefault: [code, detail]
+ 
+DetectedIssue_Mitigation: 
+ propertiesByDefault: [action, date, author]
+ 
+RiskAssessment_Prediction:
+ propertiesByDefault: [outcome, qualitativeRisk, rationale]
+ customProperties:
+  - {name: ProbabilityDecimal, path: probability, type: decimal}  
+  - {name: ProbabilityRange, path: probability, type: range} 
+  - {name: WhenPeriod, path: when, type: period}  
+  - {name: WhenRange, path: when, type: range}  
+
+Practitioner_Qualification:
+ propertiesByDefault: [identifier, code, period, issuer] 
+ 
+PractitionerRole_AvailableTime:
+ propertiesByDefault: [daysOfWeek, allDay, availableStartTime, availableEndTime] 
+ 
+PractitionerRole_NotAvailable: 
+ propertiesByDefault: [description, during] 
+ 
+RelatedPerson_Communication: 
+ propertiesByDefault: [language, preferred] 
+ 
+Person_Link:
+ propertiesByDefault: [target, assurance] 
+ 
+Group_Member:
+ propertiesByDefault: [entity, period, inactive]
+ 
+Group_Characteristic: 
+ propertiesByDefault: [code, exclude, period]
+ customProperties:
+  - {name: ValueCodeableConcept, path: value, type: codeableConcept}  
+  - {name: ValueBoolean, path: value, type: boolean} 
+  - {name: ValueQuantity, path: value, type: quantity}  
+  - {name: ValueRange, path: value, type: range} 
+  - {name: ValueReference, path: value, type: reference}
+  
+Organization_Contact:
+ propertiesByDefault: [purpose, name, telecom, address]  
+ 
+Location_HoursOfOperation:
+ propertiesByDefault: [daysOfWeek, allDay, openingTime, closingTime]
+
+Location_Position: 
+ propertiesByDefault: [longitude, latitude, altitude]
+ 
+HealthcareService_AvailableTime:
+ propertiesByDefault: [allDay, availableStartTime, availableEndTime] # daysOfWeek
+
+HealthcareService_Eligibility:
+ propertiesByDefault: [code, comment]
+
+HealthcareService_NotAvailable: 
+ propertiesByDefault: [description, during]
+ 
+EpisodeOfCare_Diagnosis:
+ propertiesByDefault: [condition, role, rank] 
+ 
+EpisodeOfCare_StatusHistory:
+ propertiesByDefault: [status, period] 
+ 
+Appointment_Participant:
+ propertiesByDefault: [type, actor, required, status, period] 
+ 
+Account_Coverage:
+ propertiesByDefault: [coverage, priority]
+
+Account_Guarantor:
+ propertiesByDefault: [party, onHold, period] 
+ 
+Device_Version:
+ propertiesByDefault: [type, component, value]
+
+Device_DeviceName:
+ propertiesByDefault: [name, type]
+
+Device_Property:
+ propertiesByDefault: [type, valueQuantity, valueCode]
+
+Device_Specialization:
+ propertiesByDefault: [systemType, version]
+
+Device_UdiCarrier: 
+ propertiesByDefault: [deviceIdentifier, issuer, jurisdiction, carrierAIDC, carrierHRF, entryType]
+ 
+DeviceDefinition_Material:
+ propertiesByDefault: [substance, alternate, allergenicIndicator]
+
+DeviceDefinition_DeviceName:
+ propertiesByDefault: [name, type]
+
+DeviceDefinition_Capability:
+ propertiesByDefault: [type, description]
+
+DeviceDefinition_UdiDeviceIdentifier:
+ propertiesByDefault: [deviceIdentifier, issuer, jurisdiction]
+
+DeviceDefinition_Specialization: 
+ propertiesByDefault: [systemType, version]
+
+DeviceDefinition_Property:
+ propertiesByDefault: [type, valueQuantity, valueCode]
+ 
+DeviceMetric_Calibration:
+ propertiesByDefault: [type, state, time] 
+ 
+Substance_Instance:
+ propertiesByDefault: [identifier, expiry, quantity]
+
+Substance_Ingredient:
+ propertiesByDefault: [quantity] 
+ customProperties:
+  - {name: SubstanceCodeableConcept, path: substance, type: codeableConcept}  
+  - {name: SubstanceReference, path: substance, type: reference} 
+  
+List_Entry:
+ propertiesByDefault: [flag, deleted, date, item]  
+ 
+Composition_Attester:
+ propertiesByDefault: [mode, time, party] 
+ 
+Composition_Event:
+ propertiesByDefault: [code, period, detail]
+
+Composition_RelatesTo:
+ propertiesByDefault: [code]
+ customProperties:
+  - {name: TargetIdentifier, path: target, type: identifier}  
+  - {name: TargetReference, path: target, type: reference}
+
+Composition_Section:
+ propertiesByDefault: [title, code, author, focus, text, mode, orderedBy, entry, emptyReason, section] 
+ 
+DocumentReference_Content:
+ propertiesByDefault: [attachment, format]
+
+DocumentReference_Context:
+ propertiesByDefault: [encounter, event, period, facilityType, practiceSetting, sourcePatientInfo, related]
+ 
+DocumentReference_RelatesTo:
+ propertiesByDefault: [code, target] 
+ 
+DocumentManifest_Related:
+ propertiesByDefault: [identifier, ref] 
+ 
+Contract_SecurityLabel:
+ propertiesByDefault: [number, classification, category, control]
+
+Contract_ContentDefinition:
+ propertiesByDefault: [type, subType, publisher, publicationDate, publicationStatus, copyright] 
+ 
+Contract_Friendly:
+ propertiesByDefault: []
+ customProperties:
+  - {name: ContentAttachment, path: content, type: attachment}
+  - {name: ContentReference, path: content, type: reference}
+
+Contract_Legal:
+ propertiesByDefault: []
+ customProperties:
+  - {name: ContentAttachment, path: content, type: attachment}
+  - {name: ContentReference, path: content, type: reference} 
+ 
+Contract_Rule:
+ propertiesByDefault: []
+ customProperties:
+  - {name: ContentAttachment, path: content, type: attachment}
+  - {name: ContentReference, path: content, type: reference}
+
+Contract_Signer:
+ propertiesByDefault: [type, party, signature]
+
+Contract_Term:
+ propertiesByDefault: [identifier, issued, applies, type, subType, text, securityLabel, offer, asset, action, group]
+ customProperties:
+  - {name: TopicCodeableConcept, path: topic, type: codeableConcept}  
+  - {name: TopicReference, path: topic, type: reference}
+
+Contract_Action:
+ propertiesByDefault: [doNotPerform, type, subject, intent, linkId, status, context, contextLinkId, requester, requesterLinkId, performerType, performerRole, performer, performerLinkId, reasonCode, reasonReference, reason, reasonLinkId, note, securityLabelNumber] 
+ customProperties:
+  - {name: OccurrenceDateTime, path: occurrence, type: dateTime}  
+  - {name: OccurrencePeriod, path: occurrence, type: period}
+  - {name: OccurrenceTiming, path: occurrence, type: timing}
+ 
+Contract_Subject:
+ propertiesByDefault: [reference, role] 
+ 
+Contract_Asset:
+ propertiesByDefault: [scope, type, typeReference, subtype, relationship, context, condition, periodType, period, usePeriod, text, linkId, answer, valuedItem]
+
+Contract_Answer:
+ propertiesByDefault: []
+ customProperties:
+  - {name: ValueBoolean, path: value, type: boolean}  
+  - {name: ValueDecimal, path: value, type: decimal}
+  - {name: ValueInteger, path: value, type: integer}
+  - {name: ValueDate, path: value, type: date}  
+  - {name: ValueDateTime, path: value, type: dateTime}
+  - {name: ValueTime, path: value, type: time}
+  - {name: ValueString, path: value, type: string}  
+  - {name: ValueUri, path: value, type: uri}
+  - {name: ValueAttachment, path: value, type: attachment}
+  - {name: ValueCoding, path: value, type: coding}  
+  - {name: ValueQuantity, path: value, type: quantity}
+  - {name: ValueReference, path: value, type: reference}
+
+Contract_Context:
+ propertiesByDefault: [reference, code, text]
+
+Contract_ValuedItem:
+ propertiesByDefault: [identifier, effectiveTime, quantity, unitPrice, factor, points, net, payment, paymentDate, responsible, recipient, linkId, securityLabelNumber]
+ customProperties:
+  - {name: EntityCodeableConcept, path: entity, type: codeableConcept}  
+  - {name: EntityReference, path: entity, type: reference}
+
+Contract_Offer:
+ propertiesByDefault: [identifier, party, topic, type, decision, decisionMode, answer, text, linkId, securityLabelNumber] 
+ customProperties:
+  - {name: ValueBoolean, path: value, type: boolean}  
+  - {name: ValueDecimal, path: value, type: decimal}
+  - {name: ValueInteger, path: value, type: integer}
+  - {name: ValueDate, path: value, type: date}  
+  - {name: ValueDateTime, path: value, type: dateTime}
+  - {name: ValueTime, path: value, type: time}
+  - {name: ValueString, path: value, type: string}  
+  - {name: ValueUri, path: value, type: uri}
+  - {name: ValueAttachment, path: value, type: attachment}
+  - {name: ValueCoding, path: value, type: coding}  
+  - {name: ValueQuantity, path: value, type: quantity}
+  - {name: ValueReference, path: value, type: reference}
+ 
+Contract_Party:
+ propertiesByDefault: [reference, role] 
+ 
+Coverage_Class:
+ propertiesByDefault: [type, value, name]
+
+Coverage_CostToBeneficiary:
+ propertiesByDefault: [type, exception]
+ customProperties:
+  - {name: ValueQuantity, path: value, type: quantity}
+  - {name: ValueMoney, path: value, type: money}
+
+Coverage_Exception:
+ propertiesByDefault: [type, period] 
+ 
+CoverageEligibilityRequest_SupportingInfo:
+ propertiesByDefault: [sequence, information, appliesToAll]
+
+CoverageEligibilityRequest_Insurance:
+ propertiesByDefault: [focal, coverage, businessArrangement]
+
+CoverageEligibilityRequest_Item:
+ propertiesByDefault: [supportingInfoSequence, category, productOrService, modifier, provider, quantity, unitPrice, facility, diagnosis, detail]
+
+CoverageEligibilityRequest_Diagnosis:
+ propertiesByDefault: [] 
+ customProperties:
+  - {name: DiagnosisCodeableConcept, path: diagnosis, type: codeableConcept}
+  - {name: DiagnosisReference, path: diagnosis, type: reference}
+  
+CoverageEligibilityResponse_Insurance:
+ propertiesByDefault: [coverage, inforce, benefitPeriod, item]  
+ 
+CoverageEligibilityResponse_Error:
+ propertiesByDefault: [code]
+
+CoverageEligibilityResponse_Item:
+ propertiesByDefault: [category, productOrService, provider, excluded, name, description, network, unit, term, benefit, authorizationRequired, authorizationSupporting, authorizationUrl]
+
+CoverageEligibilityResponse_Benefit:
+ propertiesByDefault: [type] 
+ customProperties:
+  - {name: AllowedUnsignedInt, path: allowed, type: unsignedInt}
+  - {name: AllowedString, path: allowed, type: string}
+  - {name: AllowedMoney, path: allowed, type: money}
+  - {name: UsedUnsignedInt, path: used, type: unsignedInt}
+  - {name: UsedString, path: used, type: string}
+  - {name: UsedMoney, path: used, type: money}
+  
+Claim_SupportingInfo:
+ propertiesByDefault: [sequence, category, code, reason]
+ customProperties:
+  - {name: TimingDate, path: timing, type: date}
+  - {name: TimingPeriod, path: timing, type: period}
+  - {name: ValueBoolean, path: value, type: boolean}  
+  - {name: ValueString, path: value, type: string}
+  - {name: ValueQuantity, path: value, type: quantity}
+  - {name: ValueAttachment, path: value, type: attachment}  
+  - {name: ValueReference, path: value, type: reference}
+
+Claim_Accident:
+ propertiesByDefault: [date, type]
+ customProperties:
+  - {name: LocationAddress, path: location, type: address}
+  - {name: LocationReference, path: location, type: reference}
+
+Claim_CareTeam:
+ propertiesByDefault: [sequence, provider, responsible, role, qualification]
+
+Claim_Diagnosis:
+ propertiesByDefault: [sequence, type, onAdmission, packageCode]
+ customProperties:
+  - {name: DiagnosisCodeableConcept, path: diagnosis, type: codeableConcept}
+  - {name: DiagnosisReference, path: diagnosis, type: reference}
+
+Claim_Insurance:
+ propertiesByDefault: [sequence, focal, identifier, coverage, businessArrangement, preAuthRef, claimResponse]
+
+Claim_Item:
+ propertiesByDefault: [sequence, careTeamSequence, diagnosisSequence, procedureSequence, informationSequence, revenue, category, productOrService, modifier, programCode, quantity, unitPrice, factor, net, udi, bodySite, subSite, encounter, detail] 
+ customProperties:
+  - {name: ServicedDate, path: serviced, type: date}
+  - {name: ServicedPeriod, path: serviced, type: period}
+  - {name: LocationCodeableConcept, path: location, type: codeableConcept}
+  - {name: LocationAddress, path: location, type: address}
+  - {name: LocationReference, path: location, type: reference}
+ 
+Claim_Detail:
+ propertiesByDefault: [sequence, revenue, category, productOrService, modifier, programCode, quantity, unitPrice, factor, net, udi, subDetail]
+
+Claim_SubDetail:
+ propertiesByDefault: [sequence, revenue, category, productOrService, modifier, programCode, quantity, unitPrice, factor, net, udi]
+
+Claim_Payee:
+ propertiesByDefault: [type, party]
+
+Claim_Related:
+ propertiesByDefault: [claim, relationship, reference] 
+ 
+ClaimResponse_Total:
+ propertiesByDefault: [category, amount]
+
+ClaimResponse_AddItem:
+ propertiesByDefault: [itemSequence, detailSequence, subdetailSequence, provider, productOrService, modifier, programCode, quantity, unitPrice, factor, net, bodySite, subSite, noteNumber, adjudication, detail]
+ customProperties:
+  - {name: ServicedDate, path: serviced, type: date}
+  - {name: ServicedPeriod, path: serviced, type: period}
+  - {name: LocationCodeableConcept, path: location, type: codeableConcept}
+  - {name: LocationAddress, path: location, type: address}
+  - {name: LocationReference, path: location, type: reference}
+
+ClaimResponse_Detail1:
+ propertiesByDefault: [productOrService, modifier, quantity, unitPrice, factor, net, noteNumber, adjudication]
+
+ClaimResponse_SubDetail1:
+ propertiesByDefault: [productOrService, modifier, quantity, unitPrice, factor, net, noteNumber, adjudication]
+
+ClaimResponse_Adjudication:
+ propertiesByDefault: [category, reason, amount, value]
+
+ClaimResponse_Error:
+ propertiesByDefault: [itemSequence, detailSequence, subDetailSequence, code]
+
+ClaimResponse_Insurance:
+ propertiesByDefault: [sequence, focal, coverage, businessArrangement, claimResponse]
+
+ClaimResponse_Item:
+ propertiesByDefault: [itemSequence, noteNumber, adjudication, detail]
+ 
+ClaimResponse_Payment:
+ propertiesByDefault: [type, adjustment, adjustmentReason, date, amount, identifier]
+
+ClaimResponse_ProcessNote:
+ propertiesByDefault: [number, type, text, language] 
+ 
+PaymentReconciliation_ProcessNote:
+ propertiesByDefault: [type, text]
+
+PaymentReconciliation_Detail:
+ propertiesByDefault: [identifier, predecessor, type, request, submitter, response, date, responsible, payee, amount] 
+ 
+ExplanationOfBenefit_Total:
+ propertiesByDefault: [category, amount]
+
+ExplanationOfBenefit_Accident:
+ propertiesByDefault: [date, type]
+ customProperties:
+  - {name: LocationAddress, path: location, type: address}
+  - {name: LocationReference, path: location, type: reference}
+
+ExplanationOfBenefit_AddItem:
+ propertiesByDefault: [itemSequence, detailSequence, subDetailSequence, provider, productOrService, modifier, programCode, quantity, unitPrice, factor, net, bodySite, subSite, noteNumber, adjudication, detail]
+ customProperties:
+  - {name: ServicedDate, path: serviced, type: date}
+  - {name: ServicedPeriod, path: serviced, type: period}
+  - {name: LocationCodeableConcept, path: location, type: codeableConcept}
+  - {name: LocationAddress, path: location, type: address}
+  - {name: LocationReference, path: location, type: reference}
+  
+ExplanationOfBenefit_Detail:
+ propertiesByDefault: [productOrService, modifier, quantity, unitPrice, factor, net, noteNumber, adjudication, subDetail]  
+
+ExplanationOfBenefit_BenefitBalance:
+ propertiesByDefault: [category, excluded, name, description, network, unit, unit, term]
+
+ExplanationOfBenefit_Financial:
+ propertiesByDefault: [type]
+ customProperties:
+  - {name: AllowedUnsignedInt, path: allowed, type: unsignedInt}
+  - {name: AllowedString, path: allowed, type: string}
+  - {name: AllowedMoney, path: allowed, type: money}
+  - {name: UsedUnsignedInt, path: used, type: unsignedInt}
+  - {name: UsedString, path: used, type: string}
+  - {name: UsedMoney, path: used, type: money}
+
+ExplanationOfBenefit_CareTeam:
+ propertiesByDefault: [sequence, provider, responsible, role, qualification]
+
+ExplanationOfBenefit_Diagnosis:
+ propertiesByDefault: [sequence, onAdmission, packageCode]
+ customProperties:
+  - {name: DiagnosisCodeableConcept, path: diagnosis, type: codeableConcept}
+  - {name: DiagnosisReference, path: diagnosis, type: reference}
+
+ExplanationOfBenefit_Insurance:
+ propertiesByDefault: [focal, coverage]
+
+ExplanationOfBenefit_Item:
+ propertiesByDefault: [sequence, revenue, category, productOrService, quantity, unitPrice, factor, net, bodySite]
+ customProperties:
+  - {name: ServicedDate, path: serviced, type: date}
+  - {name: ServicedPeriod, path: serviced, type: period}
+  - {name: LocationCodeableConcept, path: location, type: codeableConcept}
+  - {name: LocationAddress, path: location, type: address}
+  - {name: LocationReference, path: location, type: reference}
+
+ExplanationOfBenefit_SubDetail:
+ propertiesByDefault: [sequence, revenue, category, productOrService, modifier, programCode, quantity, unitPrice, factor, net, udi, noteNumber, adjudication]
+
+ExplanationOfBenefit_Adjudication:
+ propertiesByDefault: [category, reason, amount, value]
+
+ExplanationOfBenefit_Payee:
+ propertiesByDefault: [type, party]
+
+ExplanationOfBenefit_Payment:
+ propertiesByDefault: [type, adjustment, adjustmentReason, date, amount, identifier]
+
+ExplanationOfBenefit_Procedure:
+ propertiesByDefault: [sequence, type, date, udi]
+ customProperties:
+  - {name: ProcedureCodeableConcept, path: procedure, type: codeableConcept}
+  - {name: ProcedureReference, path: procedure, type: reference}
+
+ExplanationOfBenefit_ProcessNote:
+ propertiesByDefault: [number, type, text, language]
+
+ExplanationOfBenefit_Related:
+ propertiesByDefault: [claim, relationship, reference]
+
+ExplanationOfBenefit_SupportingInfo:
+ propertiesByDefault: [sequence, category, code, reason]
+ customProperties:
+  - {name: TimingDate, path: timing, type: date}
+  - {name: TimingPeriod, path: timing, type: period}
+  - {name: ValueBoolean, path: value, type: boolean}  
+  - {name: ValueString, path: value, type: string}
+  - {name: ValueQuantity, path: value, type: quantity}
+  - {name: ValueAttachment, path: value, type: attachment}  
+  - {name: ValueReference, path: value, type: reference}
+  
+VisionPrescription_Prism:
+ propertiesByDefault: [amount, base]
+ 
+VisionPrescription_LensSpecification:
+ propertiesByDefault: [product, eye, sphere, cylinder, axis, prism, add, power, backCurve, diameter, duration, color, brand, note]
+ 
+Questionnaire_Item:
+ propertiesByDefault: [linkId, definition, code, prefix, text, type, enableWhen, enableBehavior, required, repeats, readOnly, maxLength, answerValueSet, answerOption, initial, item]
+
+Questionnaire_AnswerOption:
+ propertiesByDefault: [initialSelected]
+ customProperties:
+  - {name: ValueInteger, path: value, type: integer}
+  - {name: ValueDate, path: value, type: date}
+  - {name: ValueTime, path: value, type: time}  
+  - {name: ValueString, path: value, type: string}
+  - {name: ValueCoding, path: value, type: coding}
+  - {name: ValueReference, path: value, type: reference} 
+
+Questionnaire_EnableWhen:
+ propertiesByDefault: [question, operator]
+ customProperties:
+  - {name: AnswerBoolean, path: answer, type: boolean}  
+  - {name: AnswerDecimal, path: answer, type: decimal}
+  - {name: AnswerInteger, path: answer, type: integer}
+  - {name: AnswerDate, path: answer, type: date}  
+  - {name: AnswerDateTime, path: answer, type: dateTime}
+  - {name: AnswerTime, path: answer, type: time}
+  - {name: AnswerString, path: answer, type: string}  
+  - {name: AnswerUri, path: answer, type: uri}
+  - {name: AnswerAttachment, path: answer, type: attachment}
+  - {name: AnswerCoding, path: answer, type: coding}  
+  - {name: AnswerQuantity, path: answer, type: quantity}
+  - {name: AnswerReference, path: answer, type: reference}
+ 
+Questionnaire_Initial: 
+ propertiesByDefault: []
+ customProperties:
+  - {name: ValueBoolean, path: value, type: boolean}  
+  - {name: ValueDecimal, path: value, type: decimal}
+  - {name: ValueInteger, path: value, type: integer}
+  - {name: ValueDate, path: value, type: date}  
+  - {name: ValueDateTime, path: value, type: dateTime}
+  - {name: ValueTime, path: value, type: time}
+  - {name: ValueString, path: value, type: string}  
+  - {name: ValueUri, path: value, type: uri}
+  - {name: ValueAttachment, path: value, type: attachment}
+  - {name: ValueCoding, path: value, type: coding}  
+  - {name: ValueQuantity, path: value, type: quantity}
+  - {name: ValueReference, path: value, type: reference}
+  
+QuestionnaireResponse_Item:
+ propertiesByDefault: [linkId, definition, text, answer, item] 
+
+QuestionnaireResponse_Answer:
+ propertiesByDefault: [item] 
+ customProperties:
+  - {name: ValueBoolean, path: value, type: boolean}  
+  - {name: ValueDecimal, path: value, type: decimal}
+  - {name: ValueInteger, path: value, type: integer}
+  - {name: ValueDate, path: value, type: date}  
+  - {name: ValueDateTime, path: value, type: dateTime}
+  - {name: ValueTime, path: value, type: time}
+  - {name: ValueString, path: value, type: string}  
+  - {name: ValueUri, path: value, type: uri}
+  - {name: ValueAttachment, path: value, type: attachment}
+  - {name: ValueCoding, path: value, type: coding}  
+  - {name: ValueQuantity, path: value, type: quantity}
+  - {name: ValueReference, path: value, type: reference}
+  
+NutritionOrder_Supplement:
+ propertiesByDefault: [type, productName, schedule, quantity, instruction]
+
+NutritionOrder_EnteralFormula:
+ propertiesByDefault: [baseFormulaType, additiveType, baseFormulaProductName, additiveType, additiveProductName, caloricDensity, routeofAdministration, administration, maxVolumeToDeliver, administrationInstruction]
+
+NutritionOrder_Administration:
+ propertiesByDefault: [schedule, quantity]
+ customProperties:
+  - {name: RateQuantity, path: rate, type: quantity}  
+  - {name: RateRatio, path: rate, type: ratio}
+
+NutritionOrder_OralDiet:
+ propertiesByDefault: [type, schedule, nutrient, texture, fluidConsistencyType, instruction]
+
+NutritionOrder_Nutrient:
+ propertiesByDefault: [modifier, amount]
+
+NutritionOrder_Texture:
+ propertiesByDefault: [modifier, foodType] 
+ 
+Task_Input:
+ propertiesByDefault: [type]
+ customProperties:
+  - {name: Value, path: value, type: string}  
+ 
+Task_Output:
+ propertiesByDefault: [type]
+ customProperties:
+  - {name: Value, path: value, type: string}
+ 
+Task_Restriction: 
+ propertiesByDefault: [repetitions, period, recipient]
+ 
+RequestGroup_Action:
+ propertiesByDefault: [prefix, title, description, textEquivalent, priority, code, documentation, condition, relatedAction, participant, type, groupingBehavior, selectionBehavior, requiredBehavior, precheckBehavior, cardinalityBehavior, resource, action]
+ customProperties:
+  - {name: TimingDateTime, path: timing, type: dateTime}
+  - {name: TimingAge, path: timing, type: age}
+  - {name: TimingPeriod, path: timing, type: period}
+  - {name: TimingDuration, path: timing, type: duration}
+  - {name: TimingRange, path: timing, type: range}
+  - {name: TimingTiming, path: timing, type: timing}
+ 
+RequestGroup_Condition:
+ propertiesByDefault: [kind, expression]
+
+RequestGroup_RelatedAction:
+ propertiesByDefault: [actionId, relationship] 
+ customProperties:
+  - {name: OffsetDuration, path: offset, type: duration}  
+  - {name: OffsetRange, path: offset, type: range}
+  
+PlanDefinition_Target:
+ propertiesByDefault: [measure, due]  
+ customProperties:
+  - {name: DetailQuantity, path: detail, type: quantity}  
+  - {name: DetailRange, path: detail, type: range}
+  - {name: DetailCodeableConcept, path: detail, type: codeableConcept}
+ 
+PlanDefinition_Action:
+ propertiesByDefault: [prefix, title, description, textEquivalent, priority, code, reason, documentation, goalId, trigger, condition, input, output, relatedAction, participant, type, groupingBehavior, selectionBehavior, requiredBehavior, precheckBehavior, cardinalityBehavior, transform, dynamicValue, action]
+ customProperties:
+  - {name: SubjectCodeableConcept, path: subject, type: codeableConcept}  
+  - {name: SubjectReference, path: subject, type: reference}
+  - {name: DefinitionCanonical, path: definition, type: canonical}  
+  - {name: DefinitionUri, path: definition, type: uri}
+
+PlanDefinition_Condition:
+ propertiesByDefault: [kind, expression] 
+
+PlanDefinition_DynamicValue:
+ propertiesByDefault: [path, expression] 
+
+PlanDefinition_Participant:
+ propertiesByDefault: [type, role] 
+
+PlanDefinition_RelatedAction:
+ propertiesByDefault: [actionId, relationship]
+ customProperties:
+  - {name: OffsetDuration, path: offset, type: duration}  
+  - {name: OffsetRange, path: offset, type: range} 
+
+PlanDefinition_Goal:
+ propertiesByDefault: [category, description, priority, start, addresses, documentation, target] 
+ 
+ResearchStudy_Objective:
+ propertiesByDefault: [name, type]
+ 
+ResearchStudy_Arm:
+ propertiesByDefault: [name, type, description] 
+ 
+InsurancePlan_Cost:
+ propertiesByDefault: [type, applicability, qualifiers, value]
+
+InsurancePlan_Contact:
+ propertiesByDefault: [purpose, name, telecom, address]
+
+InsurancePlan_Coverage:
+ propertiesByDefault: [type, network, benefit]
+ 
+InsurancePlan_Benefit:
+ propertiesByDefault: [type, requirement, limit]
+ 
+InsurancePlan_Limit:
+ propertiesByDefault: [value, code]
+ 
+InsurancePlan_Plan:
+ propertiesByDefault: [identifier, type, coverageArea, network, generalCost, specificCost]
+ 
+InsurancePlan_GeneralCost:
+ propertiesByDefault: [type, groupSize, cost, comment]
+ 
+InsurancePlan_SpecificCost:
+ propertiesByDefault: [category, benefit]
+ 
+InsurancePlan_Benefit1:
+ propertiesByDefault: [type, cost]
+ 
+AuditEvent_Agent:
+ propertiesByDefault: [type, role, who, altId, name, requestor, location, policy, media, network, purposeOfUse] 
+ 
+AuditEvent_Source:
+ propertiesByDefault: [site, observer, type] 
+ 
+AuditEvent_Entity:
+ propertiesByDefault: [what, type, role, lifecycle, securityLabel, name, description, query, detail]
+
+AuditEvent_Detail:
+ propertiesByDefault: [type]
+ customProperties:
+  - {name: ValueString, path: value, type: string}  
+  - {name: ValueBase64Binary, path: value, type: base64Binary} 
+  
+BiologicallyDerivedProduct_Collection:
+ propertiesByDefault: [collector, source]
+ customProperties:
+  - {name: CollectedDateTime, path: collected, type: dateTime}  
+  - {name: CollectedPeriod, path: collected, type: period}  
+  
+BiologicallyDerivedProduct_Processing:
+ propertiesByDefault: [description, procedure, additive]
+ customProperties:
+  - {name: TimeDateTime, path: time, type: dateTime}  
+  - {name: TimePeriod, path: time, type: period}  
+  
+BiologicallyDerivedProduct_Manipulation:
+ propertiesByDefault: [description]
+ customProperties:
+  - {name: TimeDateTime, path: time, type: dateTime}  
+  - {name: TimePeriod, path: time, type: period}  
+
+BiologicallyDerivedProduct_Storage:
+ propertiesByDefault: [description, temperature, scale, duration]
+ 
+ChargeItem_Performer:
+ propertiesByDefault: [function, actor] 
+ 
+Consent_Policy:
+ propertiesByDefault: [authority, uri] 
+ 
+Consent_Verification:
+ propertiesByDefault: [verified, verifiedWith, verificationDate] 
+ 
+Consent_Provision:
+ propertiesByDefault: [type, period, actor, action, securityLabel, purpose, class, code, dataPeriod, data, provision] 
+ 
+Consent_Actor:
+ propertiesByDefault: [role, reference]
+ 
+Consent_Data:
+ propertiesByDefault: [meaning, reference] 
+ 
+DeviceRequest_Parameter:
+ propertiesByDefault: [code]
+ customProperties:
+  - {name: ValueCodeableConcept, path: value, type: codeableConcept}  
+  - {name: ValueQuantity, path: value, type: quantity}
+  - {name: ValueRange, path: value, type: range}  
+  - {name: ValueBoolean, path: value, type: boolean}
+
+Invoice_LineItem:
+ propertiesByDefault: [sequence, priceComponent] 
+ customProperties:
+  - {name: ChargeItemReference, path: chargeItem, type: reference}  
+  - {name: ChargeItemCodeableConcept, path: chargeItem, type: codeableConcept} 
+ 
+Invoice_PriceComponent:
+ propertiesByDefault: [type, code, factor, amount] 
+ 
+MeasureReport_Group:
+ propertiesByDefault: [code, population, measureScore, stratifier] 
+ 
+MeasureReport_Population:
+ propertiesByDefault: [code, count, subjectResults] 
+ 
+MeasureReport_Stratifier:
+ propertiesByDefault: [code, stratum]
+
+MeasureReport_Stratum:
+ propertiesByDefault: [value, component, population, measureScore]
+
+MeasureReport_Component:
+ propertiesByDefault: [code, value]
+ 
+Provenance_Agent:
+ propertiesByDefault: [type, role, who, onBehalfOf] 
+ 
+Provenance_Entity:
+ propertiesByDefault: [role, what, agent] 
+ 
+SupplyDelivery_SuppliedItem:
+ propertiesByDefault: [quantity] 
+ customProperties:
+  - {name: ItemCodeableConcept, item: chargeItem, type: codeableConcept}  
+  - {name: ItemReference, path: item, type: reference}
+  
+SupplyRequest_Parameter:
+ propertiesByDefault: [code] 
+ customProperties:
+  - {name: ValueCodeableConcept, path: value, type: codeableConcept}  
+  - {name: ValueQuantity, path: value, type: quantity}
+  - {name: ValueRange, path: value, type: range}  
+  - {name: ValueBoolean, path: value, type: boolean} 
