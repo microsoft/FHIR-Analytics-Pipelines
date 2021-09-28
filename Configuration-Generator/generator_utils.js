@@ -26,6 +26,22 @@ function initOutputFolder(destination, propertiesGroupPath) {
     }
 }
 
+function getTypeFromPropertiesDefinition(property) {
+    let typeRef
+
+    if (property.$ref) {
+        typeRef = property.$ref
+    }
+    else if (property.enum) {
+        typeRef = constants.reservedPropertyType.code
+    }
+    else {
+        typeRef = constants.reservedPropertyType.string
+    }
+
+    return typeRef
+}
+
 function getTypeByPath(path, schema) {
     let typeRef, result
 
@@ -36,16 +52,10 @@ function getTypeByPath(path, schema) {
             let property = schema.definitions[subType].properties;
 
             if ('array' == property[subName].type) {
-                typeRef = property[subName].items.$ref;
+                typeRef = getTypeFromPropertiesDefinition(property[subName].items)
             }
-            else if (property[subName].$ref) {
-                typeRef = property[subName].$ref
-            }
-            else if (property[subName].enum) {
-                typeRef = constants.reservedPropertyType.code
-            }
-            else{
-                typeRef = constants.reservedPropertyType.string
+            else {
+                typeRef = getTypeFromPropertiesDefinition(property[subName])
             }
             
             subType = extractTypeName(typeRef);
