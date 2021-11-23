@@ -1,0 +1,102 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "DataFactoryName": {
+        "type": "string",
+        "metadata": {
+          "description": "Data Factory name for egress pipeline."
+        }
+      },
+      "CdmLocalEntities": {
+        "type": "array",
+        "metadata": {
+          "description": "Name for CDM Local Entities."
+        }
+      },
+      "MasterPipelineName": {
+        "type": "string",
+        "metadata": {
+          "description": "Name for Master Pipeline."
+        }
+      }
+	},
+    "variables": {
+      "dataFactoryName": "[toLower(parameters('DataFactoryName'))]",
+      "factoryId": "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'))]",
+      "resourcesLocation": "[resourceGroup().location]",
+      "roleAssignmentIdDfOnStorage": "[guid(resourceGroup().id, variables('dataFactoryName'), variables('resourcesLocation'), 'Master111111')]",
+      "blobContributorId": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
+	  "resourceIdType": "Microsoft.DataFactory/factories/pipelines"
+    },
+    "resources": [
+		{
+			"name": "updatePipeline",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-06-01",
+			"properties": {
+				"mode": "Incremental",
+				"parameters": {},
+				"template": {
+					"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+					"contentVersion": "1.0.0.0",
+					"resources": [
+						{
+							"name": "[concat(variables('dataFactoryName'), '/', parameters('MasterPipelineName'))]",
+							"type": "Microsoft.DataFactory/factories/pipelines",
+							"apiVersion": "2018-06-01",
+							"location": "[resourceGroup().location]",
+							"properties": {
+								"copy": [
+									{
+										"name": "activities",
+										"count": 40,
+										"input": {
+											"name": "[concat('Dataflow', parameters('CdmLocalEntities')[copyIndex('activities')])]",
+											"type": "ExecuteDataFlow",
+											"dependsOn": [],
+											"policy": {
+												"timeout": "1.00:00:00",
+												"retry": 0,
+												"retryIntervalInSeconds": 30,
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"dataflow": {
+													"referenceName": "[concat('Dataflow', parameters('CdmLocalEntities')[copyIndex('activities')])]",
+													"type": "DataFlowReference",
+													"datasetParameters": {
+														"SynapseSink": {
+															"EntityName": "[parameters('CdmLocalEntities')[copyIndex('activities')]]"
+														}
+													}
+												},
+												"staging": {
+													"linkedService": {
+														"referenceName": "StorageService",
+														"type": "LinkedServiceReference"
+													},
+													"folderPath": "adfstaging"
+												},
+												"compute": {
+													"coreCount": 8,
+													"computeType": "General"
+												},
+												"tracelevel": "Fine"
+											}
+										}
+									}
+								]
+							}
+						}
+					],
+					"outputs": {
+					}
+				}
+			}
+		}
+    ]
+  }
+  
