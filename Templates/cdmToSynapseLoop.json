@@ -52,7 +52,7 @@
 										"name": "activities",
 										"count": 40,
 										"input": {
-											"name": "[concat('Dataflow', parameters('CdmLocalEntities')[copyIndex('activities')])]",
+											"name": "[parameters('CdmLocalEntities')[copyIndex('activities')]]",
 											"type": "ExecuteDataFlow",
 											"dependsOn": [],
 											"policy": {
@@ -65,7 +65,7 @@
 											"userProperties": [],
 											"typeProperties": {
 												"dataflow": {
-													"referenceName": "[concat('Dataflow', parameters('CdmLocalEntities')[copyIndex('activities')])]",
+													"referenceName": "[parameters('CdmLocalEntities')[copyIndex('activities')]]",
 													"type": "DataFlowReference",
 													"datasetParameters": {
 														"SynapseSink": {
