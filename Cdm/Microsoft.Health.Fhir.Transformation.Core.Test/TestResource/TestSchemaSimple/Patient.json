@@ -1,0 +1,62 @@
+{
+  "name": "Patient",
+  "resourceType": "Patient",
+  "properties": [
+    {
+      "path": "identifier",
+      "propertiesGroupRef": "Identifier",
+      "comments": "by default only pick first item of array"
+    },
+    {
+      "name": "Id",
+      "type": "string",
+      "path": "id"
+    },
+    {
+      "name": "Expression",
+      "type": "string",
+      "path": "",
+      "fhirExpression":  "id"
+    },
+    {
+      "name": "Dup_id",
+      "type": "string",
+      "path": "id"
+    },
+    {
+      "name": "Active",
+      "type": "boolean",
+      "path": "active"
+    },
+    {
+      "name": "Multi_seg_path",
+      "type": "string",
+      "path": "name.version"
+    },
+    {
+      "path": "name",
+      "propertiesGroupRef": "HumanName",
+      "comments": "by default only pick first item of array"
+    },
+    {
+      "path": "contact",
+      "propertiesGroupRef": "PatientContact",
+      "comments": "by default only pick first item of array"
+    },
+    {
+      "path": "telecom",
+      "propertiesGroupRef": "ContactPoint",
+      "comments": "by default only pick first item of array"
+    },
+    {
+      "path": "address",
+      "propertiesGroupRef": "Address",
+      "comments": "by default only pick first item of array"
+    },
+    {
+      "path": "generalPractitioner",
+      "propertiesGroupRef": "Reference",
+      "comments": "by default only pick first item of array"
+    }
+  ]
+}

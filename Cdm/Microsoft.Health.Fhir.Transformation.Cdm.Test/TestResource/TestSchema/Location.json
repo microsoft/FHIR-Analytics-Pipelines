@@ -1,0 +1,116 @@
+{
+    "name": "Location",
+    "resourceType": "Location",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "id"
+        },
+        {
+            "path": "meta",
+            "name": "Meta",
+            "propertiesGroupRef": "Meta"
+        },
+        {
+            "path": "implicitRules",
+            "name": "ImplicitRules",
+            "type": "uri"
+        },
+        {
+            "path": "language",
+            "name": "Language",
+            "type": "code"
+        },
+        {
+            "path": "text",
+            "name": "Text",
+            "propertiesGroupRef": "Narrative"
+        },
+        {
+            "path": "identifier",
+            "name": "Identifier",
+            "propertiesGroupRef": "Identifier"
+        },
+        {
+            "path": "status",
+            "name": "Status",
+            "type": "string"
+        },
+        {
+            "path": "operationalStatus",
+            "name": "OperationalStatus",
+            "propertiesGroupRef": "Coding"
+        },
+        {
+            "path": "name",
+            "name": "Name",
+            "type": "string"
+        },
+        {
+            "path": "alias",
+            "name": "Alias",
+            "type": "string"
+        },
+        {
+            "path": "description",
+            "name": "Description",
+            "type": "string"
+        },
+        {
+            "path": "mode",
+            "name": "Mode",
+            "type": "string"
+        },
+        {
+            "path": "type",
+            "name": "Type",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "telecom",
+            "name": "Telecom",
+            "propertiesGroupRef": "ContactPoint"
+        },
+        {
+            "path": "address",
+            "name": "Address",
+            "propertiesGroupRef": "Address"
+        },
+        {
+            "path": "physicalType",
+            "name": "PhysicalType",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "position",
+            "name": "Position",
+            "propertiesGroupRef": "Location_Position"
+        },
+        {
+            "path": "managingOrganization",
+            "name": "ManagingOrganization",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "partOf",
+            "name": "PartOf",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "hoursOfOperation",
+            "name": "HoursOfOperation",
+            "propertiesGroupRef": "Location_HoursOfOperation"
+        },
+        {
+            "path": "availabilityExceptions",
+            "name": "AvailabilityExceptions",
+            "type": "string"
+        },
+        {
+            "path": "endpoint",
+            "name": "Endpoint",
+            "propertiesGroupRef": "Reference"
+        }
+    ]
+}

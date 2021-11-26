@@ -1,0 +1,45 @@
+{
+    "propertiesGroupName": "Patient_Contact",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "string"
+        },
+        {
+            "path": "relationship",
+            "name": "Relationship",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "name",
+            "name": "Name",
+            "propertiesGroupRef": "HumanName"
+        },
+        {
+            "path": "telecom",
+            "name": "Telecom",
+            "propertiesGroupRef": "ContactPoint"
+        },
+        {
+            "path": "address",
+            "name": "Address",
+            "propertiesGroupRef": "Address"
+        },
+        {
+            "path": "gender",
+            "name": "Gender",
+            "type": "string"
+        },
+        {
+            "path": "organization",
+            "name": "Organization",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "period",
+            "name": "Period",
+            "propertiesGroupRef": "Period"
+        }
+    ]
+}

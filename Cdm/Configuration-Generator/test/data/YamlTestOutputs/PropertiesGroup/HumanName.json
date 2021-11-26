@@ -1,0 +1,30 @@
+{
+    "propertiesGroupName": "HumanName",
+    "properties": [
+        {
+            "path": "text",
+            "name": "Text",
+            "type": "string"
+        },
+        {
+            "path": "family",
+            "name": "Family",
+            "type": "string"
+        },
+        {
+            "name": "given",
+            "fhirExpression": "given[1]",
+            "type": "string"
+        },
+        {
+            "name": "prefix",
+            "fhirExpression": "prefix[1]",
+            "type": "string"
+        },
+        {
+            "name": "suffix",
+            "fhirExpression": "suffix[1]",
+            "type": "string"
+        }
+    ]
+}

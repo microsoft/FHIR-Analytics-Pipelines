@@ -1,0 +1,110 @@
+{
+    "propertiesGroupName": "CarePlan_Detail",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "string"
+        },
+        {
+            "path": "kind",
+            "name": "Kind",
+            "type": "code"
+        },
+        {
+            "path": "instantiatesCanonical",
+            "name": "InstantiatesCanonical",
+            "type": "canonical"
+        },
+        {
+            "path": "instantiatesUri",
+            "name": "InstantiatesUri",
+            "type": "uri"
+        },
+        {
+            "path": "code",
+            "name": "Code",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "reasonCode",
+            "name": "ReasonCode",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "reasonReference",
+            "name": "ReasonReference",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "goal",
+            "name": "Goal",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "status",
+            "name": "Status",
+            "type": "string"
+        },
+        {
+            "path": "statusReason",
+            "name": "StatusReason",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "doNotPerform",
+            "name": "DoNotPerform",
+            "type": "boolean"
+        },
+        {
+            "path": "scheduledTiming",
+            "name": "ScheduledTiming",
+            "propertiesGroupRef": "Timing"
+        },
+        {
+            "path": "scheduledPeriod",
+            "name": "ScheduledPeriod",
+            "propertiesGroupRef": "Period"
+        },
+        {
+            "path": "scheduledString",
+            "name": "ScheduledString",
+            "type": "string"
+        },
+        {
+            "path": "location",
+            "name": "Location",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "performer",
+            "name": "Performer",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "productCodeableConcept",
+            "name": "ProductCodeableConcept",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "productReference",
+            "name": "ProductReference",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "dailyAmount",
+            "name": "DailyAmount",
+            "propertiesGroupRef": "Quantity"
+        },
+        {
+            "path": "quantity",
+            "name": "Quantity",
+            "propertiesGroupRef": "Quantity"
+        },
+        {
+            "path": "description",
+            "name": "Description",
+            "type": "string"
+        }
+    ]
+}

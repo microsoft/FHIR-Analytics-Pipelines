@@ -1,0 +1,40 @@
+{
+    "propertiesGroupName": "Observation_ReferenceRange",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "string"
+        },
+        {
+            "path": "low",
+            "name": "Low",
+            "propertiesGroupRef": "Quantity"
+        },
+        {
+            "path": "high",
+            "name": "High",
+            "propertiesGroupRef": "Quantity"
+        },
+        {
+            "path": "type",
+            "name": "Type",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "appliesTo",
+            "name": "AppliesTo",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "age",
+            "name": "Age",
+            "propertiesGroupRef": "Range"
+        },
+        {
+            "path": "text",
+            "name": "Text",
+            "type": "string"
+        }
+    ]
+}

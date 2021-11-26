@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+    <OutputType>Exe</OutputType>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.0.1" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.0.3" OutputItemType="Analyzer" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Azure\Microsoft.Health.Fhir.Synapse.Azure.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Common\Microsoft.Health.Fhir.Synapse.Common.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.DataSerialization\Microsoft.Health.Fhir.Synapse.DataSerialization.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.DataSink\Microsoft.Health.Fhir.Synapse.DataSink.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.DataSource\Microsoft.Health.Fhir.Synapse.DataSource.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Scheduler\Microsoft.Health.Fhir.Synapse.Scheduler.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Schema\Microsoft.Health.Fhir.Synapse.Schema.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Message Text="PostBuild" Importance="high" />
+    <Exec Command="xcopy /y /d  &quot;..\..\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(TargetDir)&quot;" />
+  </Target>
+  <Target Name="CopyBeforePublish" BeforeTargets="Publish">
+    <Message Text="Inside BeforePublish" Importance="high" />
+    <Exec Command="xcopy /y /d  &quot;..\..\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(PublishDir)&quot;" />
+    <Exec Command="xcopy /y /d /E &quot;..\..\data\*.*&quot; &quot;$(PublishDir)&quot;" />
+  </Target>
+</Project>

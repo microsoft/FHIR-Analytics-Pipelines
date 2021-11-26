@@ -1,0 +1,62 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  testProjects: "**/*Test/*.csproj"
+  buildConfiguration: 'Release'
+  system_accesstoken: $(System.AccessToken)
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Build Engine Core
+  inputs:
+    command: build
+    projects: '$(solution)'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+  displayName: 'Component Detection'
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+  displayName: 'Run CredScan'
+  inputs:
+    outputFormat: sarif
+    debugMode: false
+  continueOnError: true
+  
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
+  displayName: 'Run BinSkim '
+  inputs:
+    InputType: Basic
+    AnalyzeTarget: '$(Build.SourcesDirectory)\Microsoft.Health.*.dll;$(Build.SourcesDirectory)\Microsoft.Health.*.exe'
+  continueOnError: true
+
+- task: Semmle@0
+  inputs:
+    sourceCodeDirectory: '$(Build.SourcesDirectory)'
+    language: 'csharp'
+    cleanupBuildCommands: 'echo ''complete'''
+    buildCommands: '"C:\Program Files\dotnet\dotnet.exe" build D:\a\1\s\Microsoft.Health.Fhir.Transformation.sln --configuration Release'
+    querySuite: 'Recommended'
+    timeout: '1800'
+    ram: '16384'
+    addProjectDirToScanningExclusionList: true
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
+  displayName: 'Run Vulnerability Assessment'
+  continueOnError: true
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+  displayName: 'Publish Security Analysis Logs'
+  env:
+    system_accesstoken: $(System.AccessToken)
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
+  displayName: 'Post Analysis'
+  inputs:
+    BinSkim: true
+    CredScan: true

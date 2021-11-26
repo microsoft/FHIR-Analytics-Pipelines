@@ -1,0 +1,25 @@
+{
+    "propertiesGroupName": "Encounter_Diagnosis",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "string"
+        },
+        {
+            "path": "condition",
+            "name": "Condition",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "use",
+            "name": "Use",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "rank",
+            "name": "Rank",
+            "type": "positiveInt"
+        }
+    ]
+}

@@ -1,0 +1,46 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  testProjects: "**/*Test/*.csproj"
+  buildConfiguration: 'Release'
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Build Engine Core
+  inputs:
+    command: build
+    projects: '$(solution)'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: NodeTool@0
+  inputs:
+    versionSpec: '12.x'
+    checkLatest: true
+
+- script: |
+    npm install --prefix Configuration-Generator $(System.DefaultWorkingDirectory)\Configuration-Generator
+    npm run build Configuration-Generator
+  displayName: 'Install & Build Configuartion Generator'
+
+- script: npm run citest --prefix Configuration-Generator
+  displayName: 'Run Configuartion Generator Tests'
+
+- task: DotNetCoreCLI@2
+  displayName: Run Engine Core Tests
+  inputs:
+    command: test
+    projects: '$(testProjects)'
+    arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
+
+- task: PublishTestResults@2
+  displayName: Publish Test Results
+  condition: succeededOrFailed()
+  inputs:
+    testRunner: JUnit
+    testResultsFiles: '**/TEST-RESULTS.xml'
+    
