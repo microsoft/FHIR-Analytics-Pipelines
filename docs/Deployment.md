@@ -3,7 +3,7 @@ To deploy and run the FHIR analytics pipeline agent, you will need a FHIR server
 
 ### Deployment
 1. Go to [Custom deployment](https://ms.portal.azure.com/#create/Microsoft.Template) on Azure, them select **Build your own template in the editor**.
-2. Use provided [template](../deploy/templates/FhirSynapseLinkTemplate.json) to deploy an analytics pipeline.
+2. Use provided [template](../deploy/templates/FhirSynapsePipelineTemplate.json) to deploy an analytics pipeline.
 
 ![image](./assets/template_parameters.png)
 
