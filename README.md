@@ -4,8 +4,8 @@ FHIR objects are often nested JSON structures. While this nestedness helps captu
 
 The project currently has the following solutions:
 
-1. [FHIR to CDM](docs/fhir-to-cdm.md) tool  to create an ADF pipeline for moving data from a FHIR server to a [CDM folder](https://docs.microsoft.com/en-us/common-data-model/data-lake) in Azure Data Lake Storage Gen 2.
-1. [Instructions](docs/cdm-to-synapse.md) for creating pipeline in Synapse workspace to move data from CDM folder to Synapse SQL.
+1. [FHIR to CDM](Cdm/docs/fhir-to-cdm.md) tool  to create an ADF pipeline for moving data from a FHIR server to a [CDM folder](https://docs.microsoft.com/en-us/common-data-model/data-lake) in Azure Data Lake Storage Gen 2.
+1. [Instructions](Cdm/docs/cdm-to-synapse.md) for creating pipeline in Synapse workspace to move data from CDM folder to Synapse SQL.
 
 ## Contributing
 
