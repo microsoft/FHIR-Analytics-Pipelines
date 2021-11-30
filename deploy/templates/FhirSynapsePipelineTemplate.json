@@ -4,7 +4,8 @@
     "parameters": {
         "appName": {
             "type": "string",
-            "defaultValue": "[concat('fnapp', uniqueString(resourceGroup().id))]",
+            "minLength": 3,
+            "maxLength": 24,
             "metadata": {
                 "description": "The name of the function app that you wish to create."
             }
@@ -23,7 +24,7 @@
             false
             ],
             "metadata": {
-                "description": "Whether fhir server enable authencation checkness, if true will set up managed identity authentication. set false when using an OSS public fhir server instance."
+                "description": "Whether to access Azure API for FHIR with managed identity authentication. Set false if you are using an OSS public FHIR server instance."
             }
         },
         "fhirVersion": {
@@ -87,13 +88,14 @@
         }
     },
     "variables": {
-        "functionAppName": "[parameters('appName')]",
-        "hostingPlanName": "[parameters('appName')]",
-        "applicationInsightsName": "[parameters('appName')]",
+        "appName": "[toLower(parameters('appName'))]",
+        "functionAppName": "[variables('appName')]",
+        "hostingPlanName": "[variables('appName')]",
+        "applicationInsightsName": "[concat('AppInsights-', variables('appName'))]",
         "synapseLinkTag": "fhir",
         "urlSplitDelimiters": [ ".", "//"],
         "fhirServerName": "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
-        "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'azfunctions')]",
+        "storageAccountName": "[concat(substring(replace(variables('appName'), '-', ''), 0, min(11, length(replace(variables('appName'), '-', '')))), uniquestring(resourceGroup().id, variables('appName')))]",
         "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
         "fhirDataReaderRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]"
     },
