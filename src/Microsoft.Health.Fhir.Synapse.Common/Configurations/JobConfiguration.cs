@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// Start time of the job.
         /// </summary>
         [JsonProperty("startTime")]
-        public DateTimeOffset StartTime { get; set; }
+        public DateTimeOffset StartTime { get; set; } = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
         /// <summary>
         /// End time of the job.
