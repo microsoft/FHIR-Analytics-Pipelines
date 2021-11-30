@@ -119,7 +119,7 @@ stages:
         ArtifactName: FhirAnalyticsBuild
 
 - stage: Release
-  #condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
+  condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
   jobs:
   - job: publish
     pool:
