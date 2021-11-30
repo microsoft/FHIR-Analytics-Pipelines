@@ -2,10 +2,11 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
 - main
-- dev
+- synapse
+- refs/heads/synapse
 pr:
 - main
-- dev
+- synapse
 
 variables:
   solution: '*.sln'
