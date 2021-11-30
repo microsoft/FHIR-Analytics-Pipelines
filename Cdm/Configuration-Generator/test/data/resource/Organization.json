@@ -1,0 +1,81 @@
+{
+    "name": "Organization",
+    "resourceType": "Organization",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "id"
+        },
+        {
+            "path": "meta",
+            "name": "Meta",
+            "propertiesGroupRef": "Meta"
+        },
+        {
+            "path": "implicitRules",
+            "name": "ImplicitRules",
+            "type": "uri"
+        },
+        {
+            "path": "language",
+            "name": "Language",
+            "type": "code"
+        },
+        {
+            "path": "text",
+            "name": "Text",
+            "propertiesGroupRef": "Narrative"
+        },
+        {
+            "path": "identifier",
+            "name": "Identifier",
+            "propertiesGroupRef": "Identifier"
+        },
+        {
+            "path": "active",
+            "name": "Active",
+            "type": "boolean"
+        },
+        {
+            "path": "type",
+            "name": "Type",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "name",
+            "name": "Name",
+            "type": "string"
+        },
+        {
+            "path": "alias",
+            "name": "Alias",
+            "type": "string"
+        },
+        {
+            "path": "telecom",
+            "name": "Telecom",
+            "propertiesGroupRef": "ContactPoint"
+        },
+        {
+            "path": "address",
+            "name": "Address",
+            "propertiesGroupRef": "Address"
+        },
+        {
+            "path": "partOf",
+            "name": "PartOf",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "contact",
+            "name": "Contact",
+            "propertiesGroupRef": "Organization_Contact"
+        },
+        {
+            "path": "endpoint",
+            "name": "Endpoint",
+            "propertiesGroupRef": "Reference"
+        }
+    ]
+}

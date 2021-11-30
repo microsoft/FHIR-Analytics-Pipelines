@@ -1,0 +1,146 @@
+{
+    "name": "CarePlan",
+    "resourceType": "CarePlan",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "id"
+        },
+        {
+            "path": "meta",
+            "name": "Meta",
+            "propertiesGroupRef": "Meta"
+        },
+        {
+            "path": "implicitRules",
+            "name": "ImplicitRules",
+            "type": "uri"
+        },
+        {
+            "path": "language",
+            "name": "Language",
+            "type": "code"
+        },
+        {
+            "path": "text",
+            "name": "Text",
+            "propertiesGroupRef": "Narrative"
+        },
+        {
+            "path": "identifier",
+            "name": "Identifier",
+            "propertiesGroupRef": "Identifier"
+        },
+        {
+            "path": "instantiatesCanonical",
+            "name": "InstantiatesCanonical",
+            "type": "canonical"
+        },
+        {
+            "path": "instantiatesUri",
+            "name": "InstantiatesUri",
+            "type": "uri"
+        },
+        {
+            "path": "basedOn",
+            "name": "BasedOn",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "replaces",
+            "name": "Replaces",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "partOf",
+            "name": "PartOf",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "status",
+            "name": "Status",
+            "type": "code"
+        },
+        {
+            "path": "intent",
+            "name": "Intent",
+            "type": "code"
+        },
+        {
+            "path": "category",
+            "name": "Category",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "title",
+            "name": "Title",
+            "type": "string"
+        },
+        {
+            "path": "description",
+            "name": "Description",
+            "type": "string"
+        },
+        {
+            "path": "subject",
+            "name": "Subject",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "encounter",
+            "name": "Encounter",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "period",
+            "name": "Period",
+            "propertiesGroupRef": "Period"
+        },
+        {
+            "path": "created",
+            "name": "Created",
+            "type": "string"
+        },
+        {
+            "path": "author",
+            "name": "Author",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "contributor",
+            "name": "Contributor",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "careTeam",
+            "name": "CareTeam",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "addresses",
+            "name": "Addresses",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "supportingInfo",
+            "name": "SupportingInfo",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "goal",
+            "name": "Goal",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "activity",
+            "name": "Activity",
+            "propertiesGroupRef": "CarePlan_Activity"
+        },
+        {
+            "path": "note",
+            "name": "Note",
+            "propertiesGroupRef": "Annotation"
+        }
+    ]
+}

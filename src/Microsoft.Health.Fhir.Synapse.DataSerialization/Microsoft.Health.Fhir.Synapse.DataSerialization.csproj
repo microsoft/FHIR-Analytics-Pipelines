@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+	<ItemGroup>
+    <PackageReference Include="Ensure.That" Version="10.1.0" />
+    <PackageReference Include="Hl7.Fhir.ElementModel" Version="3.5.0" />
+    <PackageReference Include="Hl7.Fhir.R4" Version="3.5.0">
+      <Aliases>FhirR4</Aliases>
+    </PackageReference>
+    <PackageReference Include="Hl7.Fhir.STU3" Version="3.5.0">
+      <Aliases>FhirStu3</Aliases>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
+  </ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Common\Microsoft.Health.Fhir.Synapse.Common.csproj" />
+	  <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Parquet.CLR\Microsoft.Health.Fhir.Synapse.Parquet.CLR.vcxproj" />
+	  <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Schema\Microsoft.Health.Fhir.Synapse.Schema.csproj" />
+	</ItemGroup>
+</Project>

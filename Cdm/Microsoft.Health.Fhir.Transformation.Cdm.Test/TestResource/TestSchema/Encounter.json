@@ -1,0 +1,146 @@
+{
+    "name": "Encounter",
+    "resourceType": "Encounter",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "id"
+        },
+        {
+            "path": "meta",
+            "name": "Meta",
+            "propertiesGroupRef": "Meta"
+        },
+        {
+            "path": "implicitRules",
+            "name": "ImplicitRules",
+            "type": "uri"
+        },
+        {
+            "path": "language",
+            "name": "Language",
+            "type": "code"
+        },
+        {
+            "path": "text",
+            "name": "Text",
+            "propertiesGroupRef": "Narrative"
+        },
+        {
+            "path": "identifier",
+            "name": "Identifier",
+            "propertiesGroupRef": "Identifier"
+        },
+        {
+            "path": "status",
+            "name": "Status",
+            "type": "string"
+        },
+        {
+            "path": "statusHistory",
+            "name": "StatusHistory",
+            "propertiesGroupRef": "Encounter_StatusHistory"
+        },
+        {
+            "path": "class",
+            "name": "Class",
+            "propertiesGroupRef": "Coding"
+        },
+        {
+            "path": "classHistory",
+            "name": "ClassHistory",
+            "propertiesGroupRef": "Encounter_ClassHistory"
+        },
+        {
+            "path": "type",
+            "name": "Type",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "serviceType",
+            "name": "ServiceType",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "priority",
+            "name": "Priority",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "subject",
+            "name": "Subject",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "episodeOfCare",
+            "name": "EpisodeOfCare",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "basedOn",
+            "name": "BasedOn",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "participant",
+            "name": "Participant",
+            "propertiesGroupRef": "Encounter_Participant"
+        },
+        {
+            "path": "appointment",
+            "name": "Appointment",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "period",
+            "name": "Period",
+            "propertiesGroupRef": "Period"
+        },
+        {
+            "path": "length",
+            "name": "Length",
+            "propertiesGroupRef": "Duration"
+        },
+        {
+            "path": "reasonCode",
+            "name": "ReasonCode",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "reasonReference",
+            "name": "ReasonReference",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "diagnosis",
+            "name": "Diagnosis",
+            "propertiesGroupRef": "Encounter_Diagnosis"
+        },
+        {
+            "path": "account",
+            "name": "Account",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "hospitalization",
+            "name": "Hospitalization",
+            "propertiesGroupRef": "Encounter_Hospitalization"
+        },
+        {
+            "path": "location",
+            "name": "Location",
+            "propertiesGroupRef": "Encounter_Location"
+        },
+        {
+            "path": "serviceProvider",
+            "name": "ServiceProvider",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "partOf",
+            "name": "PartOf",
+            "propertiesGroupRef": "Reference"
+        }
+    ]
+}

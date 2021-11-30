@@ -1,0 +1,35 @@
+{
+    "propertiesGroupName": "CarePlan_Activity",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "string"
+        },
+        {
+            "path": "outcomeCodeableConcept",
+            "name": "OutcomeCodeableConcept",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "outcomeReference",
+            "name": "OutcomeReference",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "progress",
+            "name": "Progress",
+            "propertiesGroupRef": "Annotation"
+        },
+        {
+            "path": "reference",
+            "name": "Reference",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "detail",
+            "name": "Detail",
+            "propertiesGroupRef": "CarePlan_Detail"
+        }
+    ]
+}

@@ -1,0 +1,431 @@
+CREATE EXTERNAL TABLE [fhir].[TestScript] (
+    [resourceType] NVARCHAR(4000),
+    [id] VARCHAR(64),
+    [meta.id] NVARCHAR(4000),
+    [meta.extension] NVARCHAR(MAX),
+    [meta.versionId] VARCHAR(64),
+    [meta.lastUpdated] VARCHAR(30),
+    [meta.source] VARCHAR(256),
+    [meta.profile] VARCHAR(MAX),
+    [meta.security] VARCHAR(MAX),
+    [meta.tag] VARCHAR(MAX),
+    [implicitRules] VARCHAR(256),
+    [language] NVARCHAR(4000),
+    [text.id] NVARCHAR(4000),
+    [text.extension] NVARCHAR(MAX),
+    [text.status] NVARCHAR(64),
+    [text.div] NVARCHAR(MAX),
+    [extension] NVARCHAR(MAX),
+    [modifierExtension] NVARCHAR(MAX),
+    [url] VARCHAR(256),
+    [identifier.id] NVARCHAR(4000),
+    [identifier.extension] NVARCHAR(MAX),
+    [identifier.use] NVARCHAR(64),
+    [identifier.type.id] NVARCHAR(4000),
+    [identifier.type.extension] NVARCHAR(MAX),
+    [identifier.type.coding] NVARCHAR(MAX),
+    [identifier.type.text] NVARCHAR(4000),
+    [identifier.system] VARCHAR(256),
+    [identifier.value] NVARCHAR(4000),
+    [identifier.period.id] NVARCHAR(4000),
+    [identifier.period.extension] NVARCHAR(MAX),
+    [identifier.period.start] VARCHAR(30),
+    [identifier.period.end] VARCHAR(30),
+    [identifier.assigner.id] NVARCHAR(4000),
+    [identifier.assigner.extension] NVARCHAR(MAX),
+    [identifier.assigner.reference] NVARCHAR(4000),
+    [identifier.assigner.type] VARCHAR(256),
+    [identifier.assigner.identifier] NVARCHAR(MAX),
+    [identifier.assigner.display] NVARCHAR(4000),
+    [version] NVARCHAR(4000),
+    [name] NVARCHAR(4000),
+    [title] NVARCHAR(4000),
+    [status] NVARCHAR(64),
+    [experimental] bit,
+    [date] VARCHAR(30),
+    [publisher] NVARCHAR(4000),
+    [contact] VARCHAR(MAX),
+    [description] NVARCHAR(MAX),
+    [useContext] VARCHAR(MAX),
+    [jurisdiction] VARCHAR(MAX),
+    [purpose] NVARCHAR(MAX),
+    [copyright] NVARCHAR(MAX),
+    [origin] VARCHAR(MAX),
+    [destination] VARCHAR(MAX),
+    [metadata.id] NVARCHAR(4000),
+    [metadata.extension] NVARCHAR(MAX),
+    [metadata.modifierExtension] NVARCHAR(MAX),
+    [metadata.link] VARCHAR(MAX),
+    [metadata.capability] VARCHAR(MAX),
+    [fixture] VARCHAR(MAX),
+    [profile] VARCHAR(MAX),
+    [variable] VARCHAR(MAX),
+    [setup.id] NVARCHAR(4000),
+    [setup.extension] NVARCHAR(MAX),
+    [setup.modifierExtension] NVARCHAR(MAX),
+    [setup.action] VARCHAR(MAX),
+    [test] VARCHAR(MAX),
+    [teardown.id] NVARCHAR(4000),
+    [teardown.extension] NVARCHAR(MAX),
+    [teardown.modifierExtension] NVARCHAR(MAX),
+    [teardown.action] VARCHAR(MAX),
+) WITH (
+    LOCATION='/TestScript/**',
+    DATA_SOURCE = ParquetSource,
+    FILE_FORMAT = ParquetFormat
+);
+
+GO
+
+CREATE VIEW fhir.TestScriptContact AS
+SELECT
+    [id],
+    [contact.JSON],
+    [contact.id],
+    [contact.extension],
+    [contact.name],
+    [contact.telecom]
+FROM openrowset (
+        BULK 'TestScript/**',
+        DATA_SOURCE = 'ParquetSource',
+        FORMAT = 'PARQUET'
+    ) WITH (
+        [id]   VARCHAR(64),
+       [contact.JSON]  VARCHAR(MAX) '$.contact'
+    ) AS rowset
+    CROSS APPLY openjson (rowset.[contact.JSON]) with (
+        [contact.id]                   NVARCHAR(4000)      '$.id',
+        [contact.extension]            NVARCHAR(MAX)       '$.extension',
+        [contact.name]                 NVARCHAR(4000)      '$.name',
+        [contact.telecom]              NVARCHAR(MAX)       '$.telecom' AS JSON
+    ) j
+
+GO
+
+CREATE VIEW fhir.TestScriptUseContext AS
+SELECT
+    [id],
+    [useContext.JSON],
+    [useContext.id],
+    [useContext.extension],
+    [useContext.code.id],
+    [useContext.code.extension],
+    [useContext.code.system],
+    [useContext.code.version],
+    [useContext.code.code],
+    [useContext.code.display],
+    [useContext.code.userSelected],
+    [useContext.value.CodeableConcept.id],
+    [useContext.value.CodeableConcept.extension],
+    [useContext.value.CodeableConcept.coding],
+    [useContext.value.CodeableConcept.text],
+    [useContext.value.Quantity.id],
+    [useContext.value.Quantity.extension],
+    [useContext.value.Quantity.value],
+    [useContext.value.Quantity.comparator],
+    [useContext.value.Quantity.unit],
+    [useContext.value.Quantity.system],
+    [useContext.value.Quantity.code],
+    [useContext.value.Range.id],
+    [useContext.value.Range.extension],
+    [useContext.value.Range.low],
+    [useContext.value.Range.high],
+    [useContext.value.Reference.id],
+    [useContext.value.Reference.extension],
+    [useContext.value.Reference.reference],
+    [useContext.value.Reference.type],
+    [useContext.value.Reference.identifier],
+    [useContext.value.Reference.display]
+FROM openrowset (
+        BULK 'TestScript/**',
+        DATA_SOURCE = 'ParquetSource',
+        FORMAT = 'PARQUET'
+    ) WITH (
+        [id]   VARCHAR(64),
+       [useContext.JSON]  VARCHAR(MAX) '$.useContext'
+    ) AS rowset
+    CROSS APPLY openjson (rowset.[useContext.JSON]) with (
+        [useContext.id]                NVARCHAR(4000)      '$.id',
+        [useContext.extension]         NVARCHAR(MAX)       '$.extension',
+        [useContext.code.id]           NVARCHAR(4000)      '$.code.id',
+        [useContext.code.extension]    NVARCHAR(MAX)       '$.code.extension',
+        [useContext.code.system]       VARCHAR(256)        '$.code.system',
+        [useContext.code.version]      NVARCHAR(4000)      '$.code.version',
+        [useContext.code.code]         NVARCHAR(4000)      '$.code.code',
+        [useContext.code.display]      NVARCHAR(4000)      '$.code.display',
+        [useContext.code.userSelected] bit                 '$.code.userSelected',
+        [useContext.value.CodeableConcept.id] NVARCHAR(4000)      '$.value.CodeableConcept.id',
+        [useContext.value.CodeableConcept.extension] NVARCHAR(MAX)       '$.value.CodeableConcept.extension',
+        [useContext.value.CodeableConcept.coding] NVARCHAR(MAX)       '$.value.CodeableConcept.coding',
+        [useContext.value.CodeableConcept.text] NVARCHAR(4000)      '$.value.CodeableConcept.text',
+        [useContext.value.Quantity.id] NVARCHAR(4000)      '$.value.Quantity.id',
+        [useContext.value.Quantity.extension] NVARCHAR(MAX)       '$.value.Quantity.extension',
+        [useContext.value.Quantity.value] float               '$.value.Quantity.value',
+        [useContext.value.Quantity.comparator] NVARCHAR(64)        '$.value.Quantity.comparator',
+        [useContext.value.Quantity.unit] NVARCHAR(4000)      '$.value.Quantity.unit',
+        [useContext.value.Quantity.system] VARCHAR(256)        '$.value.Quantity.system',
+        [useContext.value.Quantity.code] NVARCHAR(4000)      '$.value.Quantity.code',
+        [useContext.value.Range.id]    NVARCHAR(4000)      '$.value.Range.id',
+        [useContext.value.Range.extension] NVARCHAR(MAX)       '$.value.Range.extension',
+        [useContext.value.Range.low]   NVARCHAR(MAX)       '$.value.Range.low',
+        [useContext.value.Range.high]  NVARCHAR(MAX)       '$.value.Range.high',
+        [useContext.value.Reference.id] NVARCHAR(4000)      '$.value.Reference.id',
+        [useContext.value.Reference.extension] NVARCHAR(MAX)       '$.value.Reference.extension',
+        [useContext.value.Reference.reference] NVARCHAR(4000)      '$.value.Reference.reference',
+        [useContext.value.Reference.type] VARCHAR(256)        '$.value.Reference.type',
+        [useContext.value.Reference.identifier] NVARCHAR(MAX)       '$.value.Reference.identifier',
+        [useContext.value.Reference.display] NVARCHAR(4000)      '$.value.Reference.display'
+    ) j
+
+GO
+
+CREATE VIEW fhir.TestScriptJurisdiction AS
+SELECT
+    [id],
+    [jurisdiction.JSON],
+    [jurisdiction.id],
+    [jurisdiction.extension],
+    [jurisdiction.coding],
+    [jurisdiction.text]
+FROM openrowset (
+        BULK 'TestScript/**',
+        DATA_SOURCE = 'ParquetSource',
+        FORMAT = 'PARQUET'
+    ) WITH (
+        [id]   VARCHAR(64),
+       [jurisdiction.JSON]  VARCHAR(MAX) '$.jurisdiction'
+    ) AS rowset
+    CROSS APPLY openjson (rowset.[jurisdiction.JSON]) with (
+        [jurisdiction.id]              NVARCHAR(4000)      '$.id',
+        [jurisdiction.extension]       NVARCHAR(MAX)       '$.extension',
+        [jurisdiction.coding]          NVARCHAR(MAX)       '$.coding' AS JSON,
+        [jurisdiction.text]            NVARCHAR(4000)      '$.text'
+    ) j
+
+GO
+
+CREATE VIEW fhir.TestScriptOrigin AS
+SELECT
+    [id],
+    [origin.JSON],
+    [origin.id],
+    [origin.extension],
+    [origin.modifierExtension],
+    [origin.index],
+    [origin.profile.id],
+    [origin.profile.extension],
+    [origin.profile.system],
+    [origin.profile.version],
+    [origin.profile.code],
+    [origin.profile.display],
+    [origin.profile.userSelected]
+FROM openrowset (
+        BULK 'TestScript/**',
+        DATA_SOURCE = 'ParquetSource',
+        FORMAT = 'PARQUET'
+    ) WITH (
+        [id]   VARCHAR(64),
+       [origin.JSON]  VARCHAR(MAX) '$.origin'
+    ) AS rowset
+    CROSS APPLY openjson (rowset.[origin.JSON]) with (
+        [origin.id]                    NVARCHAR(4000)      '$.id',
+        [origin.extension]             NVARCHAR(MAX)       '$.extension',
+        [origin.modifierExtension]     NVARCHAR(MAX)       '$.modifierExtension',
+        [origin.index]                 bigint              '$.index',
+        [origin.profile.id]            NVARCHAR(4000)      '$.profile.id',
+        [origin.profile.extension]     NVARCHAR(MAX)       '$.profile.extension',
+        [origin.profile.system]        VARCHAR(256)        '$.profile.system',
+        [origin.profile.version]       NVARCHAR(4000)      '$.profile.version',
+        [origin.profile.code]          NVARCHAR(4000)      '$.profile.code',
+        [origin.profile.display]       NVARCHAR(4000)      '$.profile.display',
+        [origin.profile.userSelected]  bit                 '$.profile.userSelected'
+    ) j
+
+GO
+
+CREATE VIEW fhir.TestScriptDestination AS
+SELECT
+    [id],
+    [destination.JSON],
+    [destination.id],
+    [destination.extension],
+    [destination.modifierExtension],
+    [destination.index],
+    [destination.profile.id],
+    [destination.profile.extension],
+    [destination.profile.system],
+    [destination.profile.version],
+    [destination.profile.code],
+    [destination.profile.display],
+    [destination.profile.userSelected]
+FROM openrowset (
+        BULK 'TestScript/**',
+        DATA_SOURCE = 'ParquetSource',
+        FORMAT = 'PARQUET'
+    ) WITH (
+        [id]   VARCHAR(64),
+       [destination.JSON]  VARCHAR(MAX) '$.destination'
+    ) AS rowset
+    CROSS APPLY openjson (rowset.[destination.JSON]) with (
+        [destination.id]               NVARCHAR(4000)      '$.id',
+        [destination.extension]        NVARCHAR(MAX)       '$.extension',
+        [destination.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
+        [destination.index]            bigint              '$.index',
+        [destination.profile.id]       NVARCHAR(4000)      '$.profile.id',
+        [destination.profile.extension] NVARCHAR(MAX)       '$.profile.extension',
+        [destination.profile.system]   VARCHAR(256)        '$.profile.system',
+        [destination.profile.version]  NVARCHAR(4000)      '$.profile.version',
+        [destination.profile.code]     NVARCHAR(4000)      '$.profile.code',
+        [destination.profile.display]  NVARCHAR(4000)      '$.profile.display',
+        [destination.profile.userSelected] bit                 '$.profile.userSelected'
+    ) j
+
+GO
+
+CREATE VIEW fhir.TestScriptFixture AS
+SELECT
+    [id],
+    [fixture.JSON],
+    [fixture.id],
+    [fixture.extension],
+    [fixture.modifierExtension],
+    [fixture.autocreate],
+    [fixture.autodelete],
+    [fixture.resource.id],
+    [fixture.resource.extension],
+    [fixture.resource.reference],
+    [fixture.resource.type],
+    [fixture.resource.identifier],
+    [fixture.resource.display]
+FROM openrowset (
+        BULK 'TestScript/**',
+        DATA_SOURCE = 'ParquetSource',
+        FORMAT = 'PARQUET'
+    ) WITH (
+        [id]   VARCHAR(64),
+       [fixture.JSON]  VARCHAR(MAX) '$.fixture'
+    ) AS rowset
+    CROSS APPLY openjson (rowset.[fixture.JSON]) with (
+        [fixture.id]                   NVARCHAR(4000)      '$.id',
+        [fixture.extension]            NVARCHAR(MAX)       '$.extension',
+        [fixture.modifierExtension]    NVARCHAR(MAX)       '$.modifierExtension',
+        [fixture.autocreate]           bit                 '$.autocreate',
+        [fixture.autodelete]           bit                 '$.autodelete',
+        [fixture.resource.id]          NVARCHAR(4000)      '$.resource.id',
+        [fixture.resource.extension]   NVARCHAR(MAX)       '$.resource.extension',
+        [fixture.resource.reference]   NVARCHAR(4000)      '$.resource.reference',
+        [fixture.resource.type]        VARCHAR(256)        '$.resource.type',
+        [fixture.resource.identifier]  NVARCHAR(MAX)       '$.resource.identifier',
+        [fixture.resource.display]     NVARCHAR(4000)      '$.resource.display'
+    ) j
+
+GO
+
+CREATE VIEW fhir.TestScriptProfile AS
+SELECT
+    [id],
+    [profile.JSON],
+    [profile.id],
+    [profile.extension],
+    [profile.reference],
+    [profile.type],
+    [profile.identifier.id],
+    [profile.identifier.extension],
+    [profile.identifier.use],
+    [profile.identifier.type],
+    [profile.identifier.system],
+    [profile.identifier.value],
+    [profile.identifier.period],
+    [profile.identifier.assigner],
+    [profile.display]
+FROM openrowset (
+        BULK 'TestScript/**',
+        DATA_SOURCE = 'ParquetSource',
+        FORMAT = 'PARQUET'
+    ) WITH (
+        [id]   VARCHAR(64),
+       [profile.JSON]  VARCHAR(MAX) '$.profile'
+    ) AS rowset
+    CROSS APPLY openjson (rowset.[profile.JSON]) with (
+        [profile.id]                   NVARCHAR(4000)      '$.id',
+        [profile.extension]            NVARCHAR(MAX)       '$.extension',
+        [profile.reference]            NVARCHAR(4000)      '$.reference',
+        [profile.type]                 VARCHAR(256)        '$.type',
+        [profile.identifier.id]        NVARCHAR(4000)      '$.identifier.id',
+        [profile.identifier.extension] NVARCHAR(MAX)       '$.identifier.extension',
+        [profile.identifier.use]       NVARCHAR(64)        '$.identifier.use',
+        [profile.identifier.type]      NVARCHAR(MAX)       '$.identifier.type',
+        [profile.identifier.system]    VARCHAR(256)        '$.identifier.system',
+        [profile.identifier.value]     NVARCHAR(4000)      '$.identifier.value',
+        [profile.identifier.period]    NVARCHAR(MAX)       '$.identifier.period',
+        [profile.identifier.assigner]  NVARCHAR(MAX)       '$.identifier.assigner',
+        [profile.display]              NVARCHAR(4000)      '$.display'
+    ) j
+
+GO
+
+CREATE VIEW fhir.TestScriptVariable AS
+SELECT
+    [id],
+    [variable.JSON],
+    [variable.id],
+    [variable.extension],
+    [variable.modifierExtension],
+    [variable.name],
+    [variable.defaultValue],
+    [variable.description],
+    [variable.expression],
+    [variable.headerField],
+    [variable.hint],
+    [variable.path],
+    [variable.sourceId]
+FROM openrowset (
+        BULK 'TestScript/**',
+        DATA_SOURCE = 'ParquetSource',
+        FORMAT = 'PARQUET'
+    ) WITH (
+        [id]   VARCHAR(64),
+       [variable.JSON]  VARCHAR(MAX) '$.variable'
+    ) AS rowset
+    CROSS APPLY openjson (rowset.[variable.JSON]) with (
+        [variable.id]                  NVARCHAR(4000)      '$.id',
+        [variable.extension]           NVARCHAR(MAX)       '$.extension',
+        [variable.modifierExtension]   NVARCHAR(MAX)       '$.modifierExtension',
+        [variable.name]                NVARCHAR(4000)      '$.name',
+        [variable.defaultValue]        NVARCHAR(4000)      '$.defaultValue',
+        [variable.description]         NVARCHAR(4000)      '$.description',
+        [variable.expression]          NVARCHAR(4000)      '$.expression',
+        [variable.headerField]         NVARCHAR(4000)      '$.headerField',
+        [variable.hint]                NVARCHAR(4000)      '$.hint',
+        [variable.path]                NVARCHAR(4000)      '$.path',
+        [variable.sourceId]            VARCHAR(64)         '$.sourceId'
+    ) j
+
+GO
+
+CREATE VIEW fhir.TestScriptTest AS
+SELECT
+    [id],
+    [test.JSON],
+    [test.id],
+    [test.extension],
+    [test.modifierExtension],
+    [test.name],
+    [test.description],
+    [test.action]
+FROM openrowset (
+        BULK 'TestScript/**',
+        DATA_SOURCE = 'ParquetSource',
+        FORMAT = 'PARQUET'
+    ) WITH (
+        [id]   VARCHAR(64),
+       [test.JSON]  VARCHAR(MAX) '$.test'
+    ) AS rowset
+    CROSS APPLY openjson (rowset.[test.JSON]) with (
+        [test.id]                      NVARCHAR(4000)      '$.id',
+        [test.extension]               NVARCHAR(MAX)       '$.extension',
+        [test.modifierExtension]       NVARCHAR(MAX)       '$.modifierExtension',
+        [test.name]                    NVARCHAR(4000)      '$.name',
+        [test.description]             NVARCHAR(4000)      '$.description',
+        [test.action]                  NVARCHAR(MAX)       '$.action' AS JSON
+    ) j
