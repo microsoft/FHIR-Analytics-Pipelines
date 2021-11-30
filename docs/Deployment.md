@@ -23,4 +23,4 @@ Parameters:
 The agent will run automatically after deployment. You can find the data written to the target container on azure storage.
 ![blob result](./assets/ExportedData.png)
 
-Now you can try run our [script](../scripts) to set up your synapse workspace and explore the data. 
+Now you can try run our [script](../scripts/Set-SynapseEnvironment.ps1) to set up your synapse workspace and explore the data. 
