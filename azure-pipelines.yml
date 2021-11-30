@@ -12,8 +12,8 @@ variables:
   buildConfiguration: 'Release'
   buildPlatform: 'x64'
   major: 0
-  minor: 0
-  patch: 1
+  minor: 3
+  patch: 0
   buildnum: $[counter(format('{0}.{1}.{2}',variables['major'],variables['minor'], variables['patch']), 1)]
   version: $(major).$(minor).$(patch).$(buildnum)
 
@@ -36,7 +36,7 @@ stages:
       displayName: 'NuGet restore packages.config'
       inputs:
         restoreSolution: '**\*.Native\packages.config'
-        vstsFeed: 'Health/yanhon'
+        vstsFeed: 'FhirAnalytics/FhirAnalyticsPublic'
         restoreDirectory: '..\..\packages'
 
     - task: DotNetCoreCLI@2
@@ -117,3 +117,27 @@ stages:
       displayName: 'Publish Artifact'
       inputs:
         ArtifactName: FhirAnalyticsBuild
+
+- stage: Release
+  #condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
+  jobs:
+  - job: publish
+    pool:
+        vmImage: 'windows-latest'
+    steps:
+    - task: DownloadBuildArtifacts@0
+      displayName: 'Download Artifacts'
+      inputs:
+        artifactName: FhirAnalyticsBuild
+        downloadPath: $(System.DefaultWorkingDirectory)
+
+    - task: GithubRelease@0
+      displayName: 'Create GitHub Release'
+      inputs:
+        gitHubConnection: githubpipeline
+        repositoryName: microsoft/FHIR-Analytics-Pipelines
+        isDraft: true
+        tagSource: manual
+        tag: v$(major).$(minor).$(patch)
+        assets: |
+          $(System.DefaultWorkingDirectory)/FhirAnalyticsBuild/bin/Microsoft.Health.Fhir.Synapse.FunctionApp.zip
