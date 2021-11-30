@@ -5,22 +5,22 @@ To deploy and run the FHIR analytics pipeline agent, you will need a FHIR server
 1. Go to [Custom deployment](https://ms.portal.azure.com/#create/Microsoft.Template) on Azure, them select **Build your own template in the editor**.
 2. Use provided [template](../deploy/templates/FhirSynapsePipelineTemplate.json) to deploy an analytics pipeline.
 
-![image](./assets/template_parameters.png)
+![image](./assets/templateParameters.png)
 
 
 Parameters:
-- **App Name**: azure function name.
-- **Fhir Server Url**: fhir service endpoint. Managed FHIR service is recommended. You can try test with your PaaS fhir server.
+- **App Name**: Azure function name.
+- **Fhir Server Url**: Fhir service endpoint. Managed FHIR service is recommended.
 - **Authentication**: whether to access Azure API for FHIR with managed identity authentication. Set false if you are using an OSS public FHIR server instance.
-- **Fhir version**: currently R4 is supported.
-- **Data Start**: start time stamp to export the data.
+- **Fhir version**: Currently R4 is supported.
+- **Data Start**: Start time stamp to export the data.
 - **Data End**: End timestamp to export the data, leave it empty if you want to periodically export data in real time.
-- **Container name**: container in azure storage to store results. The Azure storage will be created by the arm template. You can find the output after deploy completes.
-- **Package url**: the build package of the agent.
-- **App Insight Location**: you can find logs in the deployed application insight resource.
+- **Container name**: Container in azure storage to store results. The Azure storage will be created by the ARM template. You can find the output after deploy completes.
+- **Package url**: The build package of the agent.
+- **App Insight Location**: You can find logs in the deployed application insight resource.
 
 ### Test
 The agent will run automatically after deployment. You can find the data written to the target container on azure storage.
-![blob result](./assets/Exported_Data.png)
+![blob result](./assets/ExportedData.png)
 
-Now you can try run our script to set up your synapse workspace and explore the data. 
+Now you can try run our [script](../scripts) to set up your synapse workspace and explore the data. 
