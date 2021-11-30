@@ -15,11 +15,15 @@
                 "description": "The fhir server endpoint you wish to get data."
             }
         },
-        "managedFhirServerName": {
-            "type": "string",
-            "defaultValue": "",
+        "authentication": {
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+            true,
+            false
+            ],
             "metadata": {
-                "description": "The name of the Azure API for FHIR resource. Used for managed identity authentication. Leave it empty if you are using an OSS server instance."
+                "description": "Whether fhir server enable authencation checkness, if true will set up managed identity authentication. set false when using an OSS public fhir server instance."
             }
         },
         "fhirVersion": {
@@ -29,7 +33,7 @@
         },
         "dataStart": {
             "type": "string",
-            "defaultValue": "2021-01-01 00:00:00 +00:00",
+            "defaultValue": "1970-01-01 00:00:00 +00:00",
             "metadata": {
                 "description": "Start timestamp of the data range you want to export."
             }
@@ -87,6 +91,8 @@
         "hostingPlanName": "[parameters('appName')]",
         "applicationInsightsName": "[parameters('appName')]",
         "synapseLinkTag": "fhir",
+        "urlSplitDelimiters": [ ".", "//"],
+        "fhirServerName": "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
         "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'azfunctions')]",
         "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
         "fhirDataReaderRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]"
@@ -120,9 +126,10 @@
             }
         },
         {
+            "condition": "[parameters('authentication')]",
             "type": "Microsoft.HealthcareApis/services/providers/roleAssignments",
             "apiVersion": "2018-09-01-preview",
-            "name": "[concat(parameters('managedFhirServerName'), '/Microsoft.Authorization/', guid(uniqueString(parameters('managedFhirServerName'), variables('functionAppName'))))]",
+            "name": "[concat(variables('fhirServerName'), '/Microsoft.Authorization/', guid(uniqueString(variables('fhirServerName'), variables('functionAppName'))))]",
             "dependsOn": [
                 "[variables('functionAppName')]"
             ],
@@ -237,7 +244,7 @@
                         },
                         {
                             "name": "fhirServer__authentication",
-                            "value": "[if(empty(parameters('managedFhirServerName')), 'None', 'ManagedIdentity')]"
+                            "value": "[if(parameters('authentication'), 'ManagedIdentity', 'None')]"
                         }
                     ]
                 }
