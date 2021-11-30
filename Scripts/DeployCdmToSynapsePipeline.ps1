@@ -1,14 +1,39 @@
 param (
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
-    [string]$Config
+    [string]$Config,
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$ConfigM,
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$ConfigL
 )
 
+$configContentM = (Get-Content $ConfigM) | ConvertFrom-Json
 $configContent = (Get-Content $Config) | ConvertFrom-Json
+$configContentL = (Get-Content $ConfigL) | ConvertFrom-Json
+$groupCount = 40
+$j = $groupCount
 
 # Deploy CDM to synapse pipelines
 
-Write-Host "Deploying..."
+Write-Host "Deploying Master..."
+   
+$templateParametersM = @{
+    DataFactoryName = $configContentM.TemplateParameters.DataFactoryName; `
+    MasterPipelineName = $configContentM.TemplateParameters.MasterPipelineName;
+}
+
+New-AzResourceGroupDeployment `
+    -Name DeployLocalTemplateM `
+    -ResourceGroupName $configContentM.ResourceGroup `
+    -TemplateFile $configContentM.TemplateFilePath `
+    -TemplateParameterObject $templateParametersM `
+    -verbose
+
+Write-Host "Deploying Children..."
+
 $count = 0
 foreach ($entity in $configContent.TemplateParameters.Entities){
     $count++
@@ -21,7 +46,8 @@ foreach ($entity in $configContent.TemplateParameters.Entities){
         AdlsAccountForCdm = $configContent.TemplateParameters.AdlsAccountForCdm; `
         CdmRootLocation = $configContent.TemplateParameters.CdmRootLocation; `
         StagingContainer = $configContent.TemplateParameters.StagingContainer; `
-        CdmLocalEntity = $entity
+        MasterPipelineName = $configContent.TemplateParameters.MasterPipelineName; `
+        CdmLocalEntity = $entity; 
     }
 
     New-AzResourceGroupDeployment `
@@ -31,4 +57,23 @@ foreach ($entity in $configContent.TemplateParameters.Entities){
         -TemplateParameterObject $templateParameters `
         -verbose
 }
+
+Write-Host "Deploying Loop..."
+
+for($i = 0; $i -le ($configContentL.TemplateParameters.Entities).length; ($i = $i + $groupCount), ($j = $j + $groupCount)){
+    
+    $templateParameters = @{
+        DataFactoryName = $configContentL.TemplateParameters.DataFactoryName; `
+        MasterPipelineName = $configContentL.TemplateParameters.MasterPipelineName; `
+        CdmLocalEntities = $configContentL.TemplateParameters.Entities[$i..$j]; 
+    }
+
+    New-AzResourceGroupDeployment `
+        -Name DeployLocalTemplateL `
+        -ResourceGroupName $configContentL.ResourceGroup `
+        -TemplateFile $configContentL.TemplateFilePath `
+        -TemplateParameterObject $templateParameters `
+        -verbose
+}
+
 Write-Host "Complete!"

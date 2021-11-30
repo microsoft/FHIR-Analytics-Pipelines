@@ -1,0 +1,43 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "DataFactoryName": {
+        "type": "string",
+        "metadata": {
+          "description": "Data Factory name for egress pipeline."
+        }
+      },
+      "MasterPipelineName": {
+        "type": "string",
+        "metadata": {
+          "description": "Name for Master Pipeline."
+        }
+      }
+    },
+    "variables": {
+      "dataFactoryName": "[toLower(parameters('DataFactoryName'))]",
+      "resourcesLocation": "[resourceGroup().location]",
+    },
+    "resources": [
+        {
+            "name": "[variables('dataFactoryName')]",
+            "type": "Microsoft.DataFactory/factories",
+            "apiVersion": "2018-06-01",
+            "properties": {},
+            "identity": {
+              "type": "SystemAssigned"
+            },
+            "location": "[variables('resourcesLocation')]",
+            "dependsOn": [ ]
+        },
+		{
+			"name": "[concat(variables('dataFactoryName'), '/', parameters('MasterPipelineName'))]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+			"location": "[resourceGroup().location]",
+			"properties": {}
+		}
+    ]
+  }
+  

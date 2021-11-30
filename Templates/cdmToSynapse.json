@@ -23,7 +23,7 @@
       "AdlsAccountForCdm": {
         "type": "string",
         "metadata": {
-          "description": "Name for Synapse Workspace."
+          "description": "Name for Storage Account."
         }
       },
       "CdmLocalEntity": {
@@ -45,15 +45,22 @@
           "description": "Name for Root Location."
         },
         "defaultValue": "cdm"
+      },
+      "MasterPipelineName": {
+        "type": "string",
+        "metadata": {
+          "description": "Name for Master Pipeline."
+        }
       }
-    },
+	},
     "variables": {
       "dataFactoryName": "[toLower(parameters('DataFactoryName'))]",
       "factoryId": "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'))]",
       "storageAccountName": "[toLower(parameters('AdlsAccountForCdm'))]",
       "resourcesLocation": "[resourceGroup().location]",
-      "roleAssignmentIdDfOnStorage": "[guid(resourceGroup().id, variables('dataFactoryName'))]",
-      "blobContributorId": "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
+      "roleAssignmentIdDfOnStorage": "[guid(resourceGroup().id, variables('dataFactoryName'), variables('resourcesLocation'), 'Master1111')]",
+      "blobContributorId": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
+	  "resourceIdType": "Microsoft.DataFactory/factories/pipelines"
     },
     "resources": [
         {
@@ -64,7 +71,7 @@
                 "publicAccess": "None"
             }
         },
-        {
+		{
             "name": "[concat(variables('dataFactoryName'), '/StorageService')]",
             "type": "Microsoft.DataFactory/factories/linkedServices",
             "apiVersion": "2018-06-01",
@@ -103,7 +110,7 @@
                 }
             }
         },
-        {
+		{
             "name": "[concat(variables('dataFactoryName'), '/SynapseWorkspaceDataset')]",
             "type": "Microsoft.DataFactory/factories/datasets",
             "apiVersion": "2018-06-01",
@@ -121,7 +128,7 @@
                 "type": "AzureSqlDWTable",
                 "schema": [],
                 "typeProperties": {
-                    "schema": "",
+                    "schema": "fhir",
                     "table": {
                         "value": "@dataset().EntityName",
                         "type": "Expression"
@@ -143,8 +150,8 @@
             "location": "[variables('resourcesLocation')]",
             "dependsOn": [ ]
         },
-        {
-            "name": "[concat(variables('dataFactoryName'), '/Dataflow', parameters('CdmLocalEntity'))]",
+		{
+            "name": "[concat(variables('dataFactoryName'), '/', parameters('CdmLocalEntity'))]",
             "type": "Microsoft.DataFactory/factories/dataflows",
             "apiVersion": "2018-06-01",
             "properties": {
@@ -178,55 +185,6 @@
             ]
         },
         {
-            "name": "[concat(variables('dataFactoryName'), '/Cdm2Synapse-', parameters('CdmLocalEntity'))]",
-            "type": "Microsoft.DataFactory/factories/pipelines",
-            "apiVersion": "2018-06-01",
-            "properties": {
-            "activities": [
-                {
-                    "name": "ToSynapse",
-                    "type": "ExecuteDataFlow",
-                    "dependsOn": [],
-                    "policy": {
-                        "timeout": "7.00:00:00",
-                        "retry": 0,
-                        "retryIntervalInSeconds": 30,
-                        "secureOutput": false,
-                        "secureInput": false
-                    },
-                    "userProperties": [],
-                    "typeProperties": {
-                        "dataflow": {
-                            "referenceName": "[concat('Dataflow', parameters('CdmLocalEntity'))]",
-                            "type": "DataFlowReference",
-                            "datasetParameters": {
-                                "SynapseSink": {
-                                    "EntityName": "[parameters('CdmLocalEntity')]"
-                                }
-                            }
-                        },
-                        "staging": {
-                            "linkedService": {
-                                "referenceName": "StorageService",
-                                "type": "LinkedServiceReference"
-                            },
-                            "folderPath": "[parameters('StagingContainer')]"
-                        },
-                        "compute": {
-                            "coreCount": 8,
-                            "computeType": "General"
-                        },
-                        "traceLevel": "Fine"
-                    }
-                }
-            ],
-            "annotations": []
-            },
-            "dependsOn": [
-            "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'), '/dataflows/Dataflow', parameters('CdmLocalEntity'))]"
-            ]
-        },
-        {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-04-01-preview",
             "name": "[variables('roleAssignmentIdDfOnStorage')]",
@@ -236,7 +194,7 @@
             "scope": "[resourceGroup().id]"
             },
             "dependsOn": [
-                "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'), '/dataflows/Dataflow', parameters('CdmLocalEntity'))]"
+                "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'), '/dataflows/', parameters('CdmLocalEntity'))]"
             ]
         }
     ]
