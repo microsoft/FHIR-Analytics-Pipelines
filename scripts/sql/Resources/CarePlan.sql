@@ -583,11 +583,11 @@ SELECT
     [activity.detail.dailyAmount],
     [activity.detail.quantity],
     [activity.detail.description],
-    [activity.detail.scheduled.Timing],
-    [activity.detail.scheduled.Period],
+    [activity.detail.scheduled.timing],
+    [activity.detail.scheduled.period],
     [activity.detail.scheduled.string],
-    [activity.detail.product.CodeableConcept],
-    [activity.detail.product.Reference]
+    [activity.detail.product.codeableConcept],
+    [activity.detail.product.reference]
 FROM openrowset (
         BULK 'CarePlan/**',
         DATA_SOURCE = 'ParquetSource',
@@ -627,11 +627,11 @@ FROM openrowset (
         [activity.detail.dailyAmount]  NVARCHAR(MAX)       '$.detail.dailyAmount',
         [activity.detail.quantity]     NVARCHAR(MAX)       '$.detail.quantity',
         [activity.detail.description]  NVARCHAR(4000)      '$.detail.description',
-        [activity.detail.scheduled.Timing] NVARCHAR(MAX)       '$.detail.scheduled.Timing',
-        [activity.detail.scheduled.Period] NVARCHAR(MAX)       '$.detail.scheduled.Period',
+        [activity.detail.scheduled.timing] NVARCHAR(MAX)       '$.detail.scheduled.timing',
+        [activity.detail.scheduled.period] NVARCHAR(MAX)       '$.detail.scheduled.period',
         [activity.detail.scheduled.string] NVARCHAR(4000)      '$.detail.scheduled.string',
-        [activity.detail.product.CodeableConcept] NVARCHAR(MAX)       '$.detail.product.CodeableConcept',
-        [activity.detail.product.Reference] NVARCHAR(MAX)       '$.detail.product.Reference'
+        [activity.detail.product.codeableConcept] NVARCHAR(MAX)       '$.detail.product.codeableConcept',
+        [activity.detail.product.reference] NVARCHAR(MAX)       '$.detail.product.reference'
     ) j
 
 GO
@@ -644,12 +644,12 @@ SELECT
     [note.extension],
     [note.time],
     [note.text],
-    [note.author.Reference.id],
-    [note.author.Reference.extension],
-    [note.author.Reference.reference],
-    [note.author.Reference.type],
-    [note.author.Reference.identifier],
-    [note.author.Reference.display],
+    [note.author.reference.id],
+    [note.author.reference.extension],
+    [note.author.reference.reference],
+    [note.author.reference.type],
+    [note.author.reference.identifier],
+    [note.author.reference.display],
     [note.author.string]
 FROM openrowset (
         BULK 'CarePlan/**',
@@ -664,11 +664,11 @@ FROM openrowset (
         [note.extension]               NVARCHAR(MAX)       '$.extension',
         [note.time]                    VARCHAR(30)         '$.time',
         [note.text]                    NVARCHAR(MAX)       '$.text',
-        [note.author.Reference.id]     NVARCHAR(4000)      '$.author.Reference.id',
-        [note.author.Reference.extension] NVARCHAR(MAX)       '$.author.Reference.extension',
-        [note.author.Reference.reference] NVARCHAR(4000)      '$.author.Reference.reference',
-        [note.author.Reference.type]   VARCHAR(256)        '$.author.Reference.type',
-        [note.author.Reference.identifier] NVARCHAR(MAX)       '$.author.Reference.identifier',
-        [note.author.Reference.display] NVARCHAR(4000)      '$.author.Reference.display',
+        [note.author.reference.id]     NVARCHAR(4000)      '$.author.reference.id',
+        [note.author.reference.extension] NVARCHAR(MAX)       '$.author.reference.extension',
+        [note.author.reference.reference] NVARCHAR(4000)      '$.author.reference.reference',
+        [note.author.reference.type]   VARCHAR(256)        '$.author.reference.type',
+        [note.author.reference.identifier] NVARCHAR(MAX)       '$.author.reference.identifier',
+        [note.author.reference.display] NVARCHAR(4000)      '$.author.reference.display',
         [note.author.string]           NVARCHAR(4000)      '$.author.string'
     ) j
