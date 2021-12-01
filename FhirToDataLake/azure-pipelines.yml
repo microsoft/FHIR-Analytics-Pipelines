@@ -9,7 +9,7 @@ pr:
 - synapse
 
 variables:
-  solution: '*.sln'
+  solution: 'FhirToDataLake\*.sln'
   buildConfiguration: 'Release'
   buildPlatform: 'x64'
   major: 0
@@ -81,7 +81,7 @@ stages:
       displayName: 'Run managed tests'
       inputs:
         testAssemblyVer2: |
-         **\*Tests.dll
+         FhirToDataLake\**\*Tests.dll
          !**\*Native*\**\*UnitTests.dll
          !**\obj\**
          !**\ref\**
@@ -101,7 +101,7 @@ stages:
     - task: MSBuild@1
       displayName: 'Publish function app'
       inputs:
-        solution: 'src\**\*.FunctionApp.csproj'
+        solution: 'FhirToDataLake\**\*.FunctionApp.csproj'
         msbuildArchitecture: $(BuildPlatform)
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
