@@ -131,7 +131,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.Jobs
         }
 
         [Fact]
-        public async Task GivenAFailedJob_WhenCompleteJob_JobShouldBeUpdated()
+        public async Task GivenAFailedJob_WhenCompleteJob_ExceptionShouldBeThrown()
         {
             var testTime = new DateTimeOffset(new DateTime(2021, 02, 02));
 
@@ -148,12 +148,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.Jobs
             var schedulerSetting = await jobStore.GetSchedulerMetadata();
             Assert.Null(schedulerSetting);
 
-            await jobStore.CompleteJobAsync(activeJob, default);
-
-            Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.ActiveJobFolder));
-            Assert.NotEmpty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.FailedJobFolder));
-            schedulerSetting = await jobStore.GetSchedulerMetadata();
-            Assert.Equal(schedulerSetting.LastScheduledTimestamp, testTime);
+            await Assert.ThrowsAsync<ArgumentException>(() => jobStore.CompleteJobAsync(activeJob, default));
         }
 
         [Fact]

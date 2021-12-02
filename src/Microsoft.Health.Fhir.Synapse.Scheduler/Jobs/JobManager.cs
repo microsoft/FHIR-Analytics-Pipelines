@@ -76,12 +76,16 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
                 // Resume an active job.
                 job = activeJobs.First();
 
-                if (job.Status == JobStatus.Completed || job.Status == JobStatus.Failed)
+                if (job.Status == JobStatus.Completed)
                 {
                     _logger.LogWarning("Job '{id}' is already completed.", job.Id);
                     await _jobStore.CompleteJobAsync(job);
                     return;
                 }
+
+                // Resume an inactive/failed job.
+                job.Status = JobStatus.Running;
+                job.FailedReason = null;
             }
             else
             {
@@ -93,17 +97,16 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
             {
                 await ExecuteJob(job, cancellationToken);
                 job.Status = JobStatus.Completed;
+                await _jobStore.CompleteJobAsync(job, cancellationToken);
             }
             catch (Exception exception)
             {
                 job.Status = JobStatus.Failed;
                 job.FailedReason = exception.ToString();
+                await _jobStore.UpdateJobAsync(job, cancellationToken);
                 _logger.LogError(exception, "Process job '{jobId}' failed.", job.Id);
-                await _jobStore.CompleteJobAsync(job, cancellationToken);
                 throw;
             }
-
-            await _jobStore.CompleteJobAsync(job, cancellationToken);
 
             // release job lock.
             await _jobStore.ReleaseJobLock(cancellationToken);
