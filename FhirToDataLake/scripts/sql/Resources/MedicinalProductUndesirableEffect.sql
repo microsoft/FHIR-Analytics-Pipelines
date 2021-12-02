@@ -101,14 +101,14 @@ SELECT
     [population.physiologicalCondition.extension],
     [population.physiologicalCondition.coding],
     [population.physiologicalCondition.text],
-    [population.age.Range.id],
-    [population.age.Range.extension],
-    [population.age.Range.low],
-    [population.age.Range.high],
-    [population.age.CodeableConcept.id],
-    [population.age.CodeableConcept.extension],
-    [population.age.CodeableConcept.coding],
-    [population.age.CodeableConcept.text]
+    [population.age.range.id],
+    [population.age.range.extension],
+    [population.age.range.low],
+    [population.age.range.high],
+    [population.age.codeableConcept.id],
+    [population.age.codeableConcept.extension],
+    [population.age.codeableConcept.coding],
+    [population.age.codeableConcept.text]
 FROM openrowset (
         BULK 'MedicinalProductUndesirableEffect/**',
         DATA_SOURCE = 'ParquetSource',
@@ -133,12 +133,12 @@ FROM openrowset (
         [population.physiologicalCondition.extension] NVARCHAR(MAX)       '$.physiologicalCondition.extension',
         [population.physiologicalCondition.coding] NVARCHAR(MAX)       '$.physiologicalCondition.coding',
         [population.physiologicalCondition.text] NVARCHAR(4000)      '$.physiologicalCondition.text',
-        [population.age.Range.id]      NVARCHAR(4000)      '$.age.Range.id',
-        [population.age.Range.extension] NVARCHAR(MAX)       '$.age.Range.extension',
-        [population.age.Range.low]     NVARCHAR(MAX)       '$.age.Range.low',
-        [population.age.Range.high]    NVARCHAR(MAX)       '$.age.Range.high',
-        [population.age.CodeableConcept.id] NVARCHAR(4000)      '$.age.CodeableConcept.id',
-        [population.age.CodeableConcept.extension] NVARCHAR(MAX)       '$.age.CodeableConcept.extension',
-        [population.age.CodeableConcept.coding] NVARCHAR(MAX)       '$.age.CodeableConcept.coding',
-        [population.age.CodeableConcept.text] NVARCHAR(4000)      '$.age.CodeableConcept.text'
+        [population.age.range.id]      NVARCHAR(4000)      '$.age.range.id',
+        [population.age.range.extension] NVARCHAR(MAX)       '$.age.range.extension',
+        [population.age.range.low]     NVARCHAR(MAX)       '$.age.range.low',
+        [population.age.range.high]    NVARCHAR(MAX)       '$.age.range.high',
+        [population.age.codeableConcept.id] NVARCHAR(4000)      '$.age.codeableConcept.id',
+        [population.age.codeableConcept.extension] NVARCHAR(MAX)       '$.age.codeableConcept.extension',
+        [population.age.codeableConcept.coding] NVARCHAR(MAX)       '$.age.codeableConcept.coding',
+        [population.age.codeableConcept.text] NVARCHAR(4000)      '$.age.codeableConcept.text'
     ) j
