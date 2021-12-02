@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Azure\Microsoft.Health.Fhir.Synapse.Azure.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Common\Microsoft.Health.Fhir.Synapse.Common.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.DataSerialization\Microsoft.Health.Fhir.Synapse.DataSerialization.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.DataSink\Microsoft.Health.Fhir.Synapse.DataSink.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.DataSource\Microsoft.Health.Fhir.Synapse.DataSource.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Scheduler\Microsoft.Health.Fhir.Synapse.Scheduler.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Schema\Microsoft.Health.Fhir.Synapse.Schema.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Message Text="PostBuild" Importance="high" />
+    <Exec Command="xcopy /y /d  &quot;..\..\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(TargetDir)&quot;" />
+  </Target>
+  <Target Name="CopyBeforePublish" BeforeTargets="Publish">
+    <Message Text="Inside BeforePublish" Importance="high" />
+    <Exec Command="xcopy /y /d  &quot;..\..\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(PublishDir)&quot;" />
+  </Target>
+</Project>

@@ -1,0 +1,126 @@
+{
+    "name": "Patient",
+    "resourceType": "Patient",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "id"
+        },
+        {
+            "path": "meta",
+            "name": "Meta",
+            "propertiesGroupRef": "Meta"
+        },
+        {
+            "path": "implicitRules",
+            "name": "ImplicitRules",
+            "type": "uri"
+        },
+        {
+            "path": "language",
+            "name": "Language",
+            "type": "code"
+        },
+        {
+            "path": "text",
+            "name": "Text",
+            "propertiesGroupRef": "Narrative"
+        },
+        {
+            "path": "modifierExtension",
+            "name": "ModifierExtension",
+            "type": "array"
+        },
+        {
+            "path": "identifier",
+            "name": "Identifier",
+            "type": "array"
+        },
+        {
+            "path": "active",
+            "name": "Active",
+            "type": "boolean"
+        },
+        {
+            "path": "name",
+            "name": "Name",
+            "type": "array"
+        },
+        {
+            "path": "telecom",
+            "name": "Telecom",
+            "type": "array"
+        },
+        {
+            "path": "gender",
+            "name": "Gender",
+            "type": "string"
+        },
+        {
+            "path": "birthDate",
+            "name": "BirthDate",
+            "type": "string"
+        },
+        {
+            "path": "deceasedBoolean",
+            "name": "DeceasedBoolean",
+            "type": "string"
+        },
+        {
+            "path": "deceasedDateTime",
+            "name": "DeceasedDateTime",
+            "type": "string"
+        },
+        {
+            "path": "address",
+            "name": "Address",
+            "type": "array"
+        },
+        {
+            "path": "maritalStatus",
+            "name": "MaritalStatus",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "multipleBirthBoolean",
+            "name": "MultipleBirthBoolean",
+            "type": "string"
+        },
+        {
+            "path": "multipleBirthInteger",
+            "name": "MultipleBirthInteger",
+            "type": "string"
+        },
+        {
+            "path": "photo",
+            "name": "Photo",
+            "type": "array"
+        },
+        {
+            "path": "contact",
+            "name": "Contact",
+            "type": "array"
+        },
+        {
+            "path": "communication",
+            "name": "Communication",
+            "type": "array"
+        },
+        {
+            "path": "generalPractitioner",
+            "name": "GeneralPractitioner",
+            "type": "array"
+        },
+        {
+            "path": "managingOrganization",
+            "name": "ManagingOrganization",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "link",
+            "name": "Link",
+            "type": "array"
+        }
+    ]
+}

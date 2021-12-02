@@ -1,0 +1,26 @@
+{
+  "name": "configuration-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "program.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "commander": "^6.1.0",
+    "js-yaml": "^3.14.1",
+    "lodash": "^4.17.20"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^9.0.0",
+    "mocha-junit-reporter": "2.0.0"
+  },
+  "scripts": {
+    "test": "node ./node_modules/mocha/bin/mocha",
+    "citest": "node ./node_modules/mocha/bin/mocha test --reporter mocha-junit-reporter",
+    "start": "node program.js generate-config -o output -r Patient"
+  },
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,25 @@
+{
+    "propertiesGroupName": "Encounter_Participant",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "string"
+        },
+        {
+            "path": "type",
+            "name": "Type",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "period",
+            "name": "Period",
+            "propertiesGroupRef": "Period"
+        },
+        {
+            "path": "individual",
+            "name": "Individual",
+            "propertiesGroupRef": "Reference"
+        }
+    ]
+}

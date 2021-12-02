@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.2.3" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.6.0" />
+    <PackageReference Include="Azure.Storage.Files.DataLake" Version="12.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20371.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.CommonDataModel.ObjectModel.Adapter.Adls\Microsoft.CommonDataModel.ObjectModel.Adapter.Adls.csproj" />
+    <ProjectReference Include="..\Microsoft.CommonDataModel.ObjectModel\Microsoft.CommonDataModel.ObjectModel.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Transformation.Cdm\Microsoft.Health.Fhir.Transformation.Cdm.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Transformation.Core\Microsoft.Health.Fhir.Transformation.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="RunAdfCustomActivity.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,11 +1,16 @@
 # FHIR Analytics Pipelines
 
-FHIR objects are often nested JSON structures. While this nestedness helps capture detailed information in health care, it requires rectangularization before it can be used for machine learning and analytics, which work best with tabular data. **FHIR Analytics Pipelines** is an open source project with the goal to help build components and pipelines for rectangularizing and moving FHIR data from [Azure API for FHIR](https://azure.microsoft.com/en-us/services/azure-api-for-fhir/), and [FHIR server for Azure](https://github.com/microsoft/fhir-server) to analytical stores such as [CDM folder on ADLS Gen2](https://docs.microsoft.com/en-us/common-data-model/data-lake), [Azure Synapse](https://azure.microsoft.com/en-us/services/synapse-analytics/), [Azure SQL](https://azure.microsoft.com/en-us/services/sql-database/), and [Azure Machine Learning](https://azure.microsoft.com/en-us/services/machine-learning/).
+ FHIR Analytics Pipelines is an open source project with the goal to help build components and pipelines for rectangularizing and moving FHIR data from Azure FHIR servers namely [Azure Healthcare APIs FHIR Server](https://docs.microsoft.com/en-us/azure/healthcare-apis/), [Azure API for FHIR](https://azure.microsoft.com/en-us/services/azure-api-for-fhir/), and [FHIR server for Azure](https://github.com/microsoft/fhir-server) to [Azure Data Lake](https://azure.microsoft.com/en-us/solutions/data-lake/) and thereby make it available for analytics with [Azure Synapse](https://azure.microsoft.com/en-us/services/synapse-analytics/), [Power BI](https://powerbi.microsoft.com/en-us/), and [Azure Machine Learning](https://azure.microsoft.com/en-us/services/machine-learning/).
 
-The project currently has the following solutions:
+This OSS project currently has the following two solutions:
 
-1. [FHIR to CDM](docs/fhir-to-cdm.md) tool  to create an ADF pipeline for moving data from a FHIR server to a [CDM folder](https://docs.microsoft.com/en-us/common-data-model/data-lake) in Azure Data Lake Storage Gen 2.
-1. [Instructions](docs/cdm-to-synapse.md) for creating pipeline in Synapse workspace to move data from CDM folder to Synapse SQL.
+1. [FHIR to Synapse sync agent](FhirToDataLake/docs/Deployment.md): This is an Azure function that extracts data from a FHIR server using FHIR Resource APIs, converts it to hierarchial Parquet files, and writes it to Azure Data Lake in near real time. This also contains a [script](FhirToDataLake/scripts/Set-SynapseEnvironment.ps1) to create external tables and views in Synapse Serverless SQL pool pointing to the Parquet files.
+
+    This solution enables you to query against the entire FHIR data with tools such as Synapse Studio, SSMS, and Power BI. You can also access the Parquet files directly from a Synapse Spark pool. You should consider this solution if you want to access all of your FHIR data in near real time, and want to defer custom transformation to downstream systems.
+
+1. [FHIR to CDM Pipeline Generator](FhirToCdm/docs/fhir-to-cdm.md): It is a tool to generate an ADF pipeline for moving a snapshot of data from a FHIR server using $export API to a [CDM folder](https://docs.microsoft.com/en-us/common-data-model/data-lake) in Azure Data Lake Storage Gen 2 in csv format. The tools requires a user-created configuration file containing instructions to project and flatten FHIR Resources and fields into tables. You can also follow the [instructions](FhirToCdm/docs/cdm-to-synapse.md) for creating a downstream pipeline in Synapse workspace to move data from CDM folder to Synapse dedicated SQL pool.
+
+    This solution enables you to transform the data into tabular format as it gets written to CDM folder. You should consider this solution if you want to transform FHIR data into a custom schema as it is extracted from the FHIR server.
 
 ## Contributing
 

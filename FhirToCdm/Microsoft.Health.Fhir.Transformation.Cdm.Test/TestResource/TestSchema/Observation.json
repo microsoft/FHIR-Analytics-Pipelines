@@ -1,0 +1,216 @@
+{
+    "name": "Observation",
+    "resourceType": "Observation",
+    "properties": [
+        {
+            "path": "id",
+            "name": "Id",
+            "type": "id"
+        },
+        {
+            "path": "meta",
+            "name": "Meta",
+            "propertiesGroupRef": "Meta"
+        },
+        {
+            "path": "implicitRules",
+            "name": "ImplicitRules",
+            "type": "uri"
+        },
+        {
+            "path": "language",
+            "name": "Language",
+            "type": "code"
+        },
+        {
+            "path": "text",
+            "name": "Text",
+            "propertiesGroupRef": "Narrative"
+        },
+        {
+            "path": "identifier",
+            "name": "Identifier",
+            "propertiesGroupRef": "Identifier"
+        },
+        {
+            "path": "basedOn",
+            "name": "BasedOn",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "partOf",
+            "name": "PartOf",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "status",
+            "name": "Status",
+            "type": "string"
+        },
+        {
+            "path": "category",
+            "name": "Category",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "code",
+            "name": "Code",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "subject",
+            "name": "Subject",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "focus",
+            "name": "Focus",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "encounter",
+            "name": "Encounter",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "effectiveDateTime",
+            "name": "EffectiveDateTime",
+            "type": "string"
+        },
+        {
+            "path": "effectivePeriod",
+            "name": "EffectivePeriod",
+            "propertiesGroupRef": "Period"
+        },
+        {
+            "path": "effectiveTiming",
+            "name": "EffectiveTiming",
+            "propertiesGroupRef": "Timing"
+        },
+        {
+            "path": "effectiveInstant",
+            "name": "EffectiveInstant",
+            "type": "string"
+        },
+        {
+            "path": "issued",
+            "name": "Issued",
+            "type": "string"
+        },
+        {
+            "path": "performer",
+            "name": "Performer",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "valueQuantity",
+            "name": "ValueQuantity",
+            "propertiesGroupRef": "Quantity"
+        },
+        {
+            "path": "valueCodeableConcept",
+            "name": "ValueCodeableConcept",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "valueString",
+            "name": "ValueString",
+            "type": "string"
+        },
+        {
+            "path": "valueBoolean",
+            "name": "ValueBoolean",
+            "type": "string"
+        },
+        {
+            "path": "valueInteger",
+            "name": "ValueInteger",
+            "type": "string"
+        },
+        {
+            "path": "valueRange",
+            "name": "ValueRange",
+            "propertiesGroupRef": "Range"
+        },
+        {
+            "path": "valueRatio",
+            "name": "ValueRatio",
+            "propertiesGroupRef": "Ratio"
+        },
+        {
+            "path": "valueSampledData",
+            "name": "ValueSampledData",
+            "propertiesGroupRef": "SampledData"
+        },
+        {
+            "path": "valueTime",
+            "name": "ValueTime",
+            "type": "string"
+        },
+        {
+            "path": "valueDateTime",
+            "name": "ValueDateTime",
+            "type": "string"
+        },
+        {
+            "path": "valuePeriod",
+            "name": "ValuePeriod",
+            "propertiesGroupRef": "Period"
+        },
+        {
+            "path": "dataAbsentReason",
+            "name": "DataAbsentReason",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "interpretation",
+            "name": "Interpretation",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "note",
+            "name": "Note",
+            "propertiesGroupRef": "Annotation"
+        },
+        {
+            "path": "bodySite",
+            "name": "BodySite",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "method",
+            "name": "Method",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "specimen",
+            "name": "Specimen",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "device",
+            "name": "Device",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "referenceRange",
+            "name": "ReferenceRange",
+            "propertiesGroupRef": "Observation_ReferenceRange"
+        },
+        {
+            "path": "hasMember",
+            "name": "HasMember",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "derivedFrom",
+            "name": "DerivedFrom",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "component",
+            "name": "Component",
+            "propertiesGroupRef": "Observation_Component"
+        }
+    ]
+}

@@ -1,0 +1,122 @@
+{
+    "name": "Patient",
+    "resourceType": "Patient",
+    "properties": [
+        {
+            "path": "",
+            "name": "Id",
+            "type": "id",
+            "fhirExpression":  "id"
+        },
+        {
+            "path": "meta",
+            "name": "Meta",
+            "propertiesGroupRef": "Meta"
+        },
+        {
+            "path": "implicitRules",
+            "name": "ImplicitRules",
+            "type": "uri"
+        },
+        {
+            "path": "language",
+            "name": "Language",
+            "type": "code"
+        },
+        {
+            "path": "text",
+            "name": "Text",
+            "propertiesGroupRef": "Narrative"
+        },
+        {
+            "path": "identifier",
+            "name": "Identifier",
+            "propertiesGroupRef": "Identifier"
+        },
+        {
+            "path": "active",
+            "name": "Active",
+            "type": "boolean"
+        },
+        {
+            "path": "name",
+            "name": "Name",
+            "propertiesGroupRef": "HumanName"
+        },
+        {
+            "path": "telecom",
+            "name": "Telecom",
+            "propertiesGroupRef": "ContactPoint"
+        },
+        {
+            "path": "gender",
+            "name": "Gender",
+            "type": "string"
+        },
+        {
+            "path": "birthDate",
+            "name": "BirthDate",
+            "type": "string"
+        },
+        {
+            "path": "deceasedBoolean",
+            "name": "DeceasedBoolean",
+            "type": "string"
+        },
+        {
+            "path": "deceasedDateTime",
+            "name": "DeceasedDateTime",
+            "type": "string"
+        },
+        {
+            "path": "address",
+            "name": "Address",
+            "propertiesGroupRef": "Address"
+        },
+        {
+            "path": "maritalStatus",
+            "name": "MaritalStatus",
+            "propertiesGroupRef": "CodeableConcept"
+        },
+        {
+            "path": "multipleBirthBoolean",
+            "name": "MultipleBirthBoolean",
+            "type": "string"
+        },
+        {
+            "path": "multipleBirthInteger",
+            "name": "MultipleBirthInteger",
+            "type": "string"
+        },
+        {
+            "path": "photo",
+            "name": "Photo",
+            "propertiesGroupRef": "Attachment"
+        },
+        {
+            "path": "contact",
+            "name": "Contact",
+            "propertiesGroupRef": "Patient_Contact"
+        },
+        {
+            "path": "communication",
+            "name": "Communication",
+            "propertiesGroupRef": "Patient_Communication"
+        },
+        {
+            "path": "generalPractitioner",
+            "name": "GeneralPractitioner",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "managingOrganization",
+            "name": "ManagingOrganization",
+            "propertiesGroupRef": "Reference"
+        },
+        {
+            "path": "link",
+            "name": "Link",
+            "propertiesGroupRef": "Patient_Link"
+        }
+    ]
+}

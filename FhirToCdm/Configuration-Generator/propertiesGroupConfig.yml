@@ -1,0 +1,40 @@
+Address:
+ propertiesByDefault: [use, text, city, district, state, postalCode, country]
+ customProperties:
+  - {name: line1, expression: "line[0]", type: string}
+  - {name: line2, expression: "line[1]", type: string}
+  - {name: line3, expression: "line[2]", type: string}
+
+CodeableConcept:
+ propertiesByDefault: [coding, text]
+
+Coding:
+ propertiesByDefault: [system, code, display]
+
+ContactPoint:
+ propertiesByDefault: [system, value, use]
+ 
+HumanName:
+ propertiesByDefault: [text, family]
+ customProperties:
+  - {name: given, expression: "given[0]",type: string}
+  - {name: prefix, expression: "prefix[0]",type: string}
+  - {name: suffix, expression: "suffix[0]",type: string}
+
+Identifier:
+  propertiesByDefault: [use, type, system, value, assigner]
+
+Patient_Contact:
+ propertiesByDefault: [relationship, name, address, gender, organization]
+
+Patient_Link:
+ propertiesByDefault: [other, type]
+
+Period:
+ propertiesByDefault: [start, end]
+
+Practitioner_Qualification:
+ propertiesByDefault: [identifier, code, issuer]
+
+Reference:
+ propertiesByDefault: [reference, type]

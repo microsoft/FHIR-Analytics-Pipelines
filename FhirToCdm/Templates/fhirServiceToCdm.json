@@ -1,0 +1,718 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "PipelineName": {
+      "type": "string",
+      "metadata": {
+        "description": "Data Factory name for egress pipeline."
+      }
+    },
+    "FhirServiceUrl": {
+      "type": "string",
+      "metadata": {
+        "description": "Service url for Azure FHIR API."
+      }
+    },
+    "PrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "PrincipalId Id for App to access source and sink data source."
+      }
+    },
+    "ClientId": {
+      "type": "string",
+      "metadata": {
+        "description": "Client Id for App to access source and sink data source."
+      }
+    },
+    "ClientSecret": {
+      "type": "secureString",
+      "metadata": {
+        "description": "Secret for App to access source and sink data source."
+      }
+    },
+    "ConfigurationContainer": {
+      "type": "string",
+      "metadata": {
+        "description": "Container name for configurations."
+      }
+    },
+    "BatchPoolVmSize": {
+      "type": "string",
+      "allowedValues": [
+        "STANDARD_A1_V2",
+        "STANDARD_A2_V2",
+        "STANDARD_A3_V2"
+      ],
+      "defaultValue": "STANDARD_A1_V2"
+    },
+    "BatchPoolNodeCount": {
+      "type": "int",
+      "defaultValue": 1
+    },
+    "PackageLink": {
+      "type": "string",
+      "defaultValue": "https://github.com/microsoft/FHIR-Analytics-Pipelines/releases/download/v0.2.0/BatchExecutor.zip"
+    }
+  },
+  "variables": {
+    "lowerCaseName": "[toLower(parameters('PipelineName'))]",
+    "factoryId": "[concat('Microsoft.DataFactory/factories/', variables('lowerCaseName'))]",
+    "resourcesLocation": "[resourceGroup().location]",
+    "batchAccountName": "[concat(variables('lowerCaseName'), 'batch')]",
+    "batchAccountUrl": "[concat('https://', variables('batchAccountName'), '.', variables('resourcesLocation'), '.batch.azure.com')]",
+    "batchPoolName": "egress-pool",
+    "storageAccountName": "[concat(variables('lowerCaseName'), 'storage')]",
+    "storageBlobServiceEndpoint": "[concat('https://', variables('storageAccountName'), '.blob.core.windows.net')]",
+    "keyVaultName": "[concat(variables('lowerCaseName'), '-kv')]",
+    "kvSecretName": "clientsecret",
+    "dataFactoryName": "[concat(variables('lowerCaseName'), '-df')]",
+    "roleAssignmentIdDfOnStorage": "[guid(resourceGroup().id, variables('dataFactoryName'))]",
+    "roleAssignmentIdSpOnStorage": "[guid(resourceGroup().id, parameters('PrincipalId'))]",
+    "blobContributorId": "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Batch/batchAccounts",
+      "apiVersion": "2020-09-01",
+      "name": "[variables('batchAccountName')]",
+      "location": "[variables('resourcesLocation')]",
+      "identity": {
+        "type": "None"
+      },
+      "properties": {
+        "poolAllocationMode": "BatchService",
+        "publicNetworkAccess": "Enabled",
+        "encryption": {
+          "keySource": "Microsoft.Batch"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Batch/batchAccounts/pools",
+      "apiVersion": "2020-09-01",
+      "name": "[concat(variables('batchAccountName'), '/', variables('batchPoolName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]"
+      ],
+      "properties": {
+        "vmSize": "[parameters('BatchPoolVmSize')]",
+        "interNodeCommunication": "Disabled",
+        "taskSlotsPerNode": 1,
+        "taskSchedulingPolicy": {
+          "nodeFillType": "Pack"
+        },
+        "deploymentConfiguration": {
+          "virtualMachineConfiguration": {
+            "imageReference": {
+              "publisher": "microsoftwindowsserver",
+              "offer": "windowsserver",
+              "sku": "2019-datacenter-core",
+              "version": "latest"
+            },
+            "nodeAgentSkuId": "batch.node.windows amd64",
+            "windowsConfiguration": {
+              "enableAutomaticUpdates": false
+            }
+          }
+        },
+        "networkConfiguration": {
+          "publicIPAddressConfiguration": {
+            "provision": "BatchManaged"
+          }
+        },
+        "scaleSettings": {
+          "fixedScale": {
+            "targetDedicatedNodes": "[parameters('BatchPoolNodeCount')]",
+            "targetLowPriorityNodes": 0,
+            "resizeTimeout": "PT15M"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-06-01",
+      "name": "[variables('storageAccountName')]",
+      "location": "[variables('resourcesLocation')]",
+      "sku": {
+        "name": "Standard_RAGRS",
+        "tier": "Standard"
+      },
+      "kind": "BlobStorage",
+      "properties": {
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": true,
+        "isHnsEnabled": true,
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [],
+          "ipRules": [],
+          "defaultAction": "Allow"
+        },
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "services": {
+            "file": {
+              "keyType": "Account",
+              "enabled": true
+            },
+            "blob": {
+              "keyType": "Account",
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        },
+        "accessTier": "Hot"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2019-06-01",
+      "name": "[concat(variables('storageAccountName'), '/default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts',variables('storageAccountName'))]"
+      ],
+      "sku": {
+        "name": "Standard_RAGRS",
+        "tier": "Standard"
+      },
+      "properties": {
+        "cors": {
+          "corsRules": []
+        },
+        "deleteRetentionPolicy": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "name": "[variables('dataFactoryName')]",
+      "type": "Microsoft.DataFactory/factories",
+      "apiVersion": "2018-06-01",
+      "properties": {},
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "location": "[variables('resourcesLocation')]",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "[concat('Microsoft.Batch/batchAccounts/', variables('batchAccountName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('dataFactoryName'), '/StorageService')]",
+      "type": "Microsoft.DataFactory/factories/linkedServices",
+      "apiVersion": "2018-06-01",
+      "properties": {
+        "annotations": [],
+        "type": "AzureBlobStorage",
+        "typeProperties": {
+          "connectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',concat(listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')),'2015-05-01-preview').key1))]"
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('dataFactoryName'), '/BatchService')]",
+      "type": "Microsoft.DataFactory/factories/linkedServices",
+      "apiVersion": "2018-06-01",
+      "properties": {
+        "annotations": [],
+        "type": "AzureBatch",
+        "typeProperties": {
+          "accountName": "[variables('batchAccountName')]",
+          "accessKey": {
+            "type": "SecureString",
+            "value": "[listKeys(resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName')), '2017-09-01').primary]"
+          },
+          "batchUri": "[variables('batchAccountUrl')]",
+          "poolName": "[variables('batchPoolName')]",
+          "linkedServiceName": {
+            "referenceName": "StorageService",
+            "type": "LinkedServiceReference"
+          }
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'), '/linkedServices/StorageService')]"
+      ]
+    },
+    {
+      "name": "[concat(variables('dataFactoryName'), '/egress-pipeline')]",
+      "type": "Microsoft.DataFactory/factories/pipelines",
+      "apiVersion": "2018-06-01",
+      "properties": {
+        "activities": [
+          {
+            "name": "StartExportTask",
+            "type": "WebActivity",
+            "dependsOn": [
+              {
+                "activity": "SetOperationId",
+                "dependencyConditions": [
+                  "Succeeded"
+                ]
+              }
+            ],
+            "policy": {
+              "timeout": "7.00:00:00",
+              "retry": 0,
+              "retryIntervalInSeconds": 30,
+              "secureOutput": false,
+              "secureInput": false
+            },
+            "userProperties": [],
+            "typeProperties": {
+              "url": {
+                "value": "@concat(pipeline().parameters.FhirServiceUrl, '/$export')",
+                "type": "Expression"
+              },
+              "method": "GET",
+              "headers": {
+                "Accept": "application/fhir+json",
+                "Prefer": "respond-async"
+              },
+              "authentication": {
+                "type": "MSI",
+                "resource": {
+                  "value": "@pipeline().parameters.FhirServiceUrl",
+                  "type": "Expression"
+                }
+              }
+            }
+          },
+          {
+            "name": "WaitExportComplete",
+            "type": "Until",
+            "dependsOn": [
+              {
+                "activity": "StartExportTask",
+                "dependencyConditions": [
+                  "Succeeded"
+                ]
+              }
+            ],
+            "userProperties": [],
+            "typeProperties": {
+              "expression": {
+                "value": "@contains(activity('CheckExportTaskStatus').output, 'transactionTime')",
+                "type": "Expression"
+              },
+              "activities": [
+                {
+                  "name": "CheckExportTaskStatus",
+                  "type": "WebActivity",
+                  "dependsOn": [],
+                  "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                  },
+                  "userProperties": [],
+                  "typeProperties": {
+                    "url": {
+                      "value": "@activity('StartExportTask').output.ADFWebActivityResponseHeaders['Content-Location']",
+                      "type": "Expression"
+                    },
+                    "method": "GET",
+                    "headers": {
+                      "Accept": "application/fhir+json"
+                    },
+                    "authentication": {
+                      "type": "MSI",
+                      "resource": {
+                        "value": "@pipeline().parameters.FhirServiceUrl",
+                        "type": "Expression"
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "Wait10Seconds",
+                  "type": "Wait",
+                  "dependsOn": [
+                    {
+                      "activity": "CheckExportTaskStatus",
+                      "dependencyConditions": [
+                        "Succeeded"
+                      ]
+                    }
+                  ],
+                  "userProperties": [],
+                  "typeProperties": {
+                    "waitTimeInSeconds": 10
+                  }
+                }
+              ],
+              "timeout": "7.00:00:00"
+            }
+          },
+          {
+            "name": "ForEachResource",
+            "type": "ForEach",
+            "dependsOn": [
+              {
+                "activity": "WaitExportComplete",
+                "dependencyConditions": [
+                  "Succeeded"
+                ]
+              },
+              {
+                "activity": "GenerateSchema",
+                "dependencyConditions": [
+                  "Succeeded"
+                ]
+              }
+            ],
+            "userProperties": [],
+            "typeProperties": {
+              "items": {
+                "value": "@activity('CheckExportTaskStatus').output.output",
+                "type": "Expression"
+              },
+              "batchCount": 3,
+              "activities": [
+                {
+                  "name": "TransformToCdm",
+                  "type": "Custom",
+                  "dependsOn": [],
+                  "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                  },
+                  "userProperties": [],
+                  "typeProperties": {
+                    "command": {
+                      "value": "@concat('cmd /c powershell -command \"Invoke-WebRequest -Uri ''' , pipeline().parameters.PackageLink, ''' -OutFile package.zip\"', ' && cmd /c powershell -command \"Expand-Archive -Path package.zip -DestinationPath .\" && cmd /c dir && cmd/c powershell RunAdfCustomActivity.ps1 && cmd /c powershell -command \"remove-item * -recurse\"')",
+                      "type": "Expression"
+                    },
+                    "extendedProperties": {
+                      "blobUrl": {
+                        "value": "@item().url",
+                        "type": "Expression"
+                      },
+                      "operationId": {
+                        "value": "@variables('OperationId')",
+                        "type": "Expression"
+                      },
+                      "clientSecret": {
+                        "value": "@variables('ClientSecret')",
+                        "type": "Expression"
+                      },
+                      "clientId": {
+                        "value": "@pipeline().parameters.ClientId",
+                        "type": "Expression"
+                      },
+                      "tenantId": {
+                        "value": "@pipeline().parameters.TenantId",
+                        "type": "Expression"
+                      },
+                      "adlsAccount": {
+                        "value": "@pipeline().parameters.AdlsAccount",
+                        "type": "Expression"
+                      },
+                      "adlsFileSystem": {
+                        "value": "@pipeline().parameters.AdlsFileSystem",
+                        "type": "Expression"
+                      },
+                      "configurationContainer": {
+                        "value": "@pipeline().parameters.ConfigurationContainer",
+                        "type": "Expression"
+                      },
+                      "maxDepth": {
+                        "value": "@pipeline().parameters.MaxDepth",
+                        "type": "Expression"
+                      }
+                    },
+                    "referenceObjects": {
+                      "linkedServices": [],
+                      "datasets": []
+                    }
+                  },
+                  "linkedServiceName": {
+                    "referenceName": "BatchService",
+                    "type": "LinkedServiceReference"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "GetSecret",
+            "type": "WebActivity",
+            "dependsOn": [
+              {
+                "activity": "SetOperationId",
+                "dependencyConditions": [
+                  "Succeeded"
+                ]
+              }
+            ],
+            "policy": {
+              "timeout": "7.00:00:00",
+              "retry": 0,
+              "retryIntervalInSeconds": 30,
+              "secureOutput": false,
+              "secureInput": false
+            },
+            "userProperties": [],
+            "typeProperties": {
+              "url": {
+                "value": "@concat('https://', pipeline().parameters.KeyVaultAccount, '.vault.azure.net/secrets/', pipeline().parameters.SecretKeyVaultSecretName, '?api-version=7.0')",
+                "type": "Expression"
+              },
+              "method": "GET",
+              "headers": {},
+              "authentication": {
+                "type": "MSI",
+                "resource": "https://vault.azure.net"
+              }
+            }
+          },
+          {
+            "name": "SetSecret",
+            "type": "SetVariable",
+            "dependsOn": [
+              {
+                "activity": "GetSecret",
+                "dependencyConditions": [
+                  "Succeeded"
+                ]
+              }
+            ],
+            "userProperties": [],
+            "typeProperties": {
+              "variableName": "ClientSecret",
+              "value": {
+                "value": "@activity('GetSecret').output.value",
+                "type": "Expression"
+              }
+            }
+          },
+          {
+              "name": "SetOperationId",
+              "type": "SetVariable",
+              "dependsOn": [],
+              "userProperties": [],
+              "typeProperties": {
+                  "variableName": "OperationId",
+                  "value": {
+                      "value": "@guid()",
+                      "type": "Expression"
+                  }
+              }
+          },
+          {
+            "name": "GenerateSchema",
+            "type": "Custom",
+            "dependsOn": [
+              {
+                "activity": "SetSecret",
+                "dependencyConditions": [
+                  "Succeeded"
+                ]
+              }
+            ],
+            "policy": {
+              "timeout": "7.00:00:00",
+              "retry": 0,
+              "retryIntervalInSeconds": 30,
+              "secureOutput": false,
+              "secureInput": false
+            },
+            "userProperties": [],
+            "typeProperties": {
+              "command": {
+                "value": "@concat('cmd /c powershell -command \"Invoke-WebRequest -Uri ''' , pipeline().parameters.PackageLink, ''' -OutFile package.zip\"', ' && cmd /c powershell -command \"Expand-Archive -Path package.zip -DestinationPath .\" && cmd /c dir && cmd/c powershell RunAdfCustomActivity.ps1 -schema && cmd /c powershell -command \"remove-item * -recurse\"')",
+                "type": "Expression"
+              },
+              "extendedProperties": {
+                "clientSecret": {
+                  "value": "@variables('ClientSecret')",
+                  "type": "Expression"
+                },
+                "operationId": {
+                  "value": "@variables('OperationId')",
+                  "type": "Expression"
+                },
+                "clientId": {
+                  "value": "@pipeline().parameters.ClientId",
+                  "type": "Expression"
+                },
+                "tenantId": {
+                  "value": "@pipeline().parameters.TenantId",
+                  "type": "Expression"
+                },
+                "adlsAccount": {
+                  "value": "@pipeline().parameters.AdlsAccount",
+                  "type": "Expression"
+                },
+                "adlsFileSystem": {
+                  "value": "@pipeline().parameters.AdlsFileSystem",
+                  "type": "Expression"
+                },
+                "configurationContainer": {
+                  "value": "@pipeline().parameters.ConfigurationContainer",
+                  "type": "Expression"
+                },
+                "maxDepth": {
+                  "value": "@pipeline().parameters.MaxDepth",
+                  "type": "Expression"
+                }
+              },
+              "referenceObjects": {
+                "linkedServices": [],
+                "datasets": []
+              }
+            },
+            "linkedServiceName": {
+              "referenceName": "BatchService",
+              "type": "LinkedServiceReference"
+            }
+          }
+        ],
+        "parameters": {
+          "ClientId": {
+            "type": "string",
+            "defaultValue": "[parameters('ClientId')]"
+          },
+          "TenantId": {
+            "type": "string",
+            "defaultValue": "[subscription().tenantId]"
+          },
+          "SecretKeyVaultSecretName": {
+            "type": "string",
+            "defaultValue": "[variables('kvSecretName')]"
+          },
+          "FhirServiceUrl": {
+            "type": "string",
+            "defaultValue": "[parameters('FhirServiceUrl')]"
+          },
+          "PackageLink": {
+            "type": "string",
+            "defaultValue": "[parameters('PackageLink')]"
+          },
+          "KeyVaultAccount": {
+            "type": "string",
+            "defaultValue": "[variables('keyVaultName')]"
+          },
+          "AdlsAccount": {
+            "type": "string",
+            "defaultValue": "[variables('storageAccountName')]"
+          },
+          "AdlsFileSystem": {
+            "type": "string",
+            "defaultValue": "cdm"
+          },
+          "ConfigurationContainer": {
+            "type": "string",
+            "defaultValue": "[parameters('ConfigurationContainer')]"
+          },
+          "MaxDepth": {
+            "type": "Int",
+            "defaultValue": 3
+          }
+        },
+        "variables": {
+          "ClientSecret": {
+            "type": "String"
+          },
+          "OperationId": {
+            "type": "String"
+          }
+        },
+        "annotations": [],
+        "lastPublishTime": "2020-11-09T04:34:50Z"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'), '/linkedServices/BatchService')]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2016-10-01",
+      "name": "[variables('keyVaultName')]",
+      "location": "[variables('resourcesLocation')]",
+      "dependsOn": [
+        "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
+      ],
+      "properties": {
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "family": "A",
+          "name": "Standard"
+        },
+        "accessPolicies": [
+          {
+            "tenantId": "[subscription().tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName')), '2018-06-01', 'Full').identity.principalId]",
+            "permissions": {
+              "keys": [],
+              "secrets": [
+                "Get",
+                "List"
+              ],
+              "certificates": []
+            }
+          }
+        ],
+        "enabledForDeployment": true,
+        "enabledForDiskEncryption": false,
+        "enabledForTemplateDeployment": true,
+        "enableSoftDelete": true
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2016-10-01",
+      "name": "[concat(variables('keyVaultName'), '/', variables('kvSecretName'))]",
+      "location": "[variables('resourcesLocation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+      ],
+      "properties": {
+        "value": "[parameters('ClientSecret')]",
+        "attributes": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2020-04-01-preview",
+      "name": "[variables('roleAssignmentIdSpOnStorage')]",
+      "properties": {
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('blobContributorId'))]",
+        "principalId": "[parameters('PrincipalId')]",
+        "scope": "[resourceGroup().id]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.KeyVault/vaults/', variables('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2020-04-01-preview",
+      "name": "[variables('roleAssignmentIdDfOnStorage')]",
+      "properties": {
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('blobContributorId'))]",
+        "principalId": "[reference(resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName')), '2018-06-01', 'Full').identity.principalId]",
+        "scope": "[resourceGroup().id]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.KeyVault/vaults/', variables('keyVaultName'))]"
+      ]
+    }
+  ]
+}
