@@ -141,8 +141,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         {
             EnsureArg.IsNotNull(job, nameof(job));
 
-            if (job.Status != JobStatus.Completed
-                && job.Status != JobStatus.Failed)
+            if (job.Status != JobStatus.Completed)
             {
                 // Should not happen.
                 _logger.LogWarning("Job has not been completed yet.");
