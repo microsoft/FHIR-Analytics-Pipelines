@@ -93,11 +93,8 @@
         "hostingPlanName": "[variables('appName')]",
         "applicationInsightsName": "[concat('AppInsights-', variables('appName'))]",
         "synapseLinkTag": "fhir",
-        "urlSplitDelimiters": [ ".", "//"],
-        "fhirServerName": "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
         "storageAccountName": "[concat(substring(replace(variables('appName'), '-', ''), 0, min(11, length(replace(variables('appName'), '-', '')))), uniquestring(resourceGroup().id, variables('appName')))]",
-        "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
-        "fhirDataReaderRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]"
+        "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]"
     },
     "resources": [
         {
@@ -123,20 +120,6 @@
             ],
             "properties": {
                 "roleDefinitionId": "[variables('storageBlobDataContributerRoleId')]",
-                "principalId": "[reference(concat('Microsoft.Web/sites/', variables('functionAppName')), '2020-06-01', 'full').identity.principalId]",
-                "principalType": "ServicePrincipal"
-            }
-        },
-        {
-            "condition": "[parameters('authentication')]",
-            "type": "Microsoft.HealthcareApis/services/providers/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
-            "name": "[concat(variables('fhirServerName'), '/Microsoft.Authorization/', guid(uniqueString(variables('fhirServerName'), variables('functionAppName'))))]",
-            "dependsOn": [
-                "[variables('functionAppName')]"
-            ],
-            "properties": {
-                "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
                 "principalId": "[reference(concat('Microsoft.Web/sites/', variables('functionAppName')), '2020-06-01', 'full').identity.principalId]",
                 "principalType": "ServicePrincipal"
             }
