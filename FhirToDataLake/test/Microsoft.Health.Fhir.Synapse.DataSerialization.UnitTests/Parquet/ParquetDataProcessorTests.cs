@@ -72,29 +72,25 @@ namespace Microsoft.Health.Fhir.Synapse.DataSerialization.UnitTests.Parquet
         }
 
         // It may takes few minutes to run this large input data test.
-        //[Fact]
-        //public static async Task GivenAValidMultipleLargeInputData_WhenProcess_CorrectResultShouldBeReturned()
-        //{
-        //    var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(_testDataFolder, "Large_Patient.ndjson"));
-        //    var largeTestData = new List<JObject>();
-        //    for (var i = 0; i < 100; i++)
-        //    {
-        //        largeTestData.AddRange(largePatientSingleSet);
-        //    }
+        [Fact]
+        public static async Task GivenAValidMultipleLargeInputData_WhenProcess_CorrectResultShouldBeReturned()
+        {
+            var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(_testDataFolder, "Large_Patient.ndjson"));
+            var largeTestData = Enumerable.Repeat(largePatientSingleSet, 100).SelectMany(x => x);
 
-        //    var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
+            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
 
-        //    var jsonBatchData = new JsonBatchData(largeTestData);
+            var jsonBatchData = new JsonBatchData(largeTestData);
 
-        //    var resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, TestUtils.GetTestTaskContext("Patient"));
+            var resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, TestUtils.GetTestTaskContext("Patient"));
 
-        //    var resultStream = new MemoryStream();
-        //    resultBatchData.Value.CopyTo(resultStream);
+            var resultStream = new MemoryStream();
+            resultBatchData.Value.CopyTo(resultStream);
 
-        //    var expectedResult = GetExpectedParquetStream(Path.Combine(_expectTestDataFolder, "Expected_Patient_MultipleLargeSize.parquet"));
+            var expectedResult = GetExpectedParquetStream(Path.Combine(_expectTestDataFolder, "Expected_Patient_MultipleLargeSize.parquet"));
 
-        //    Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
-        //}
+            Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
+        }
 
         // It may takes few minutes to run this large input data test.
         [Fact]
