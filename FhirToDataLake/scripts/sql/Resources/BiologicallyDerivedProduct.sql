@@ -43,20 +43,20 @@ CREATE EXTERNAL TABLE [fhir].[BiologicallyDerivedProduct] (
     [collection.source.identifier] NVARCHAR(MAX),
     [collection.source.display] NVARCHAR(4000),
     [collection.collected.dateTime] VARCHAR(30),
-    [collection.collected.Period.id] NVARCHAR(4000),
-    [collection.collected.Period.extension] NVARCHAR(MAX),
-    [collection.collected.Period.start] VARCHAR(30),
-    [collection.collected.Period.end] VARCHAR(30),
+    [collection.collected.period.id] NVARCHAR(4000),
+    [collection.collected.period.extension] NVARCHAR(MAX),
+    [collection.collected.period.start] VARCHAR(30),
+    [collection.collected.period.end] VARCHAR(30),
     [processing] VARCHAR(MAX),
     [manipulation.id] NVARCHAR(4000),
     [manipulation.extension] NVARCHAR(MAX),
     [manipulation.modifierExtension] NVARCHAR(MAX),
     [manipulation.description] NVARCHAR(4000),
     [manipulation.time.dateTime] VARCHAR(30),
-    [manipulation.time.Period.id] NVARCHAR(4000),
-    [manipulation.time.Period.extension] NVARCHAR(MAX),
-    [manipulation.time.Period.start] VARCHAR(30),
-    [manipulation.time.Period.end] VARCHAR(30),
+    [manipulation.time.period.id] NVARCHAR(4000),
+    [manipulation.time.period.extension] NVARCHAR(MAX),
+    [manipulation.time.period.start] VARCHAR(30),
+    [manipulation.time.period.end] VARCHAR(30),
     [storage] VARCHAR(MAX),
 ) WITH (
     LOCATION='/BiologicallyDerivedProduct/**',
@@ -226,10 +226,10 @@ SELECT
     [processing.additive.identifier],
     [processing.additive.display],
     [processing.time.dateTime],
-    [processing.time.Period.id],
-    [processing.time.Period.extension],
-    [processing.time.Period.start],
-    [processing.time.Period.end]
+    [processing.time.period.id],
+    [processing.time.period.extension],
+    [processing.time.period.start],
+    [processing.time.period.end]
 FROM openrowset (
         BULK 'BiologicallyDerivedProduct/**',
         DATA_SOURCE = 'ParquetSource',
@@ -254,10 +254,10 @@ FROM openrowset (
         [processing.additive.identifier] NVARCHAR(MAX)       '$.additive.identifier',
         [processing.additive.display]  NVARCHAR(4000)      '$.additive.display',
         [processing.time.dateTime]     VARCHAR(30)         '$.time.dateTime',
-        [processing.time.Period.id]    NVARCHAR(4000)      '$.time.Period.id',
-        [processing.time.Period.extension] NVARCHAR(MAX)       '$.time.Period.extension',
-        [processing.time.Period.start] VARCHAR(30)         '$.time.Period.start',
-        [processing.time.Period.end]   VARCHAR(30)         '$.time.Period.end'
+        [processing.time.period.id]    NVARCHAR(4000)      '$.time.period.id',
+        [processing.time.period.extension] NVARCHAR(MAX)       '$.time.period.extension',
+        [processing.time.period.start] VARCHAR(30)         '$.time.period.start',
+        [processing.time.period.end]   VARCHAR(30)         '$.time.period.end'
     ) j
 
 GO

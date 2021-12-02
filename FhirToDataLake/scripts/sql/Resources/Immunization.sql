@@ -232,12 +232,12 @@ SELECT
     [note.extension],
     [note.time],
     [note.text],
-    [note.author.Reference.id],
-    [note.author.Reference.extension],
-    [note.author.Reference.reference],
-    [note.author.Reference.type],
-    [note.author.Reference.identifier],
-    [note.author.Reference.display],
+    [note.author.reference.id],
+    [note.author.reference.extension],
+    [note.author.reference.reference],
+    [note.author.reference.type],
+    [note.author.reference.identifier],
+    [note.author.reference.display],
     [note.author.string]
 FROM openrowset (
         BULK 'Immunization/**',
@@ -252,12 +252,12 @@ FROM openrowset (
         [note.extension]               NVARCHAR(MAX)       '$.extension',
         [note.time]                    VARCHAR(30)         '$.time',
         [note.text]                    NVARCHAR(MAX)       '$.text',
-        [note.author.Reference.id]     NVARCHAR(4000)      '$.author.Reference.id',
-        [note.author.Reference.extension] NVARCHAR(MAX)       '$.author.Reference.extension',
-        [note.author.Reference.reference] NVARCHAR(4000)      '$.author.Reference.reference',
-        [note.author.Reference.type]   VARCHAR(256)        '$.author.Reference.type',
-        [note.author.Reference.identifier] NVARCHAR(MAX)       '$.author.Reference.identifier',
-        [note.author.Reference.display] NVARCHAR(4000)      '$.author.Reference.display',
+        [note.author.reference.id]     NVARCHAR(4000)      '$.author.reference.id',
+        [note.author.reference.extension] NVARCHAR(MAX)       '$.author.reference.extension',
+        [note.author.reference.reference] NVARCHAR(4000)      '$.author.reference.reference',
+        [note.author.reference.type]   VARCHAR(256)        '$.author.reference.type',
+        [note.author.reference.identifier] NVARCHAR(MAX)       '$.author.reference.identifier',
+        [note.author.reference.display] NVARCHAR(4000)      '$.author.reference.display',
         [note.author.string]           NVARCHAR(4000)      '$.author.string'
     ) j
 
