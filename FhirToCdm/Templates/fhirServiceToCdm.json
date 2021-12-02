@@ -38,18 +38,6 @@
         "description": "Container name for configurations."
       }
     },
-    "SynapseWorkspace": {
-      "type": "string",
-      "metadata": {
-        "description": "Name for Synapse Workspace."
-      }
-    },
-    "DedicatedSqlPool": {
-      "type": "string",
-      "metadata": {
-        "description": "Dedicated Sql Pool name for Synapse Workspace."
-      }
-    },
     "BatchPoolVmSize": {
       "type": "string",
       "allowedValues": [
@@ -65,7 +53,7 @@
     },
     "PackageLink": {
       "type": "string",
-      "defaultValue": "https://github.com/microsoft/FHIR-Analytics-Pipelines/releases/download/untagged-d8e03f9d7aef82990abe/BatchExecutor.zip"
+      "defaultValue": "https://github.com/microsoft/FHIR-Analytics-Pipelines/releases/download/v0.2.0/BatchExecutor.zip"
     }
   },
   "variables": {
@@ -252,97 +240,6 @@
       },
       "dependsOn": [
         "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'), '/linkedServices/StorageService')]"
-      ]
-    },
-    {
-      "name": "[concat(variables('dataFactoryName'), '/AdlsStorage')]",
-      "type": "Microsoft.DataFactory/factories/linkedServices",
-      "apiVersion": "2018-06-01",
-      "properties": {
-          "annotations": [],
-          "type": "AzureBlobFS",
-          "typeProperties": {
-              "url": "[concat('https://', variables('storageAccountName'), '.dfs.core.windows.net')]"
-          }
-      },
-      "dependsOn": [
-        "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'))]"
-      ]
-    },
-    {
-      "name": "[concat(variables('dataFactoryName'), '/SynapseWorkspace')]",
-      "type": "Microsoft.DataFactory/factories/linkedservices",
-      "apiVersion": "2018-06-01",
-      "properties": {
-          "annotations": [],
-          "type": "AzureSqlDW",
-          "typeProperties": {
-              "connectionString": "[concat('Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=', parameters('SynapseWorkspace'), '.sql.azuresynapse.net;Initial Catalog=', parameters('DedicatedSqlPool'))]"
-          }
-      },
-      "dependsOn": [
-        "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'))]"
-      ]
-    },
-		{
-			"name": "[concat(variables('dataFactoryName'), '/SynapseWorkspaceDataset')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "SynapseWorkspace",
-					"type": "LinkedServiceReference"
-        },
-        "parameters": {
-          "TableName": {
-              "type": "string"
-          }
-        },
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "",
-          "table": {
-            "value": "@dataset().TableName",
-            "type": "Expression"
-          }
-				}
-			},
-			"dependsOn": []
-		},
-    {
-      "name": "[concat(variables('dataFactoryName'), '/ToSynapseWorkspaceDataflow')]",
-      "type": "Microsoft.DataFactory/factories/dataflows",
-      "apiVersion": "2018-06-01",
-      "properties": {
-          "type": "MappingDataFlow",
-          "typeProperties": {
-              "sources": [
-                  {
-                      "linkedService": {
-                          "referenceName": "AdlsStorage",
-                          "type": "LinkedServiceReference"
-                      },
-                      "name": "CDMSource"
-                  }
-              ],
-              "sinks": [
-                  {
-                      "dataset": {
-                          "referenceName": "SynapseWorkspaceDataset",
-                          "type": "DatasetReference"
-                      },
-                      "name": "SynapseSink"
-                  }
-              ],
-              "transformations": [],
-              "script": "parameters{\n\tRootLocation as string,\n\tEntityName as string\n}\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tentity: (\"{$EntityName}\"),\n\tformat: 'cdm',\n\tmanifestType: 'manifest',\n\tlocal: true,\n\tfolderPath: '',\n\tfileSystem: (\"{$RootLocation}\")) ~> CDMSource\nCDMSource sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SynapseSink"
-          }
-      },
-      "dependsOn": [
-        "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'), '/linkedServices/SynapseWorkspace')]",
-        "[concat('Microsoft.DataFactory/factories/', variables('dataFactoryName'), '/linkedServices/AdlsStorage')]"
       ]
     },
     {
@@ -545,77 +442,6 @@
                   "linkedServiceName": {
                     "referenceName": "BatchService",
                     "type": "LinkedServiceReference"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "name": "ForEachTable",
-            "type": "ForEach",
-            "dependsOn": [
-              {
-                "activity": "ForEachResource",
-                "dependencyConditions": [
-                  "Succeeded"
-                ]
-              }
-            ],
-            "userProperties": [],
-            "typeProperties": {
-              "items": {
-                "value": "@activity('GenerateSchema').Output.customOutput.Entities",
-                "type": "Expression"
-              },
-              "batchCount": 3,
-              "activities": [
-                {
-                  "name": "ToSynapse",
-                  "type": "ExecuteDataFlow",
-                  "dependsOn": [],
-                  "policy": {
-                      "timeout": "7.00:00:00",
-                      "retry": 0,
-                      "retryIntervalInSeconds": 30,
-                      "secureOutput": false,
-                      "secureInput": false
-                  },
-                  "userProperties": [],
-                  "typeProperties": {
-                      "dataflow": {
-                          "referenceName": "ToSynapseWorkspaceDataflow",
-                          "type": "DataFlowReference",
-                          "parameters": {
-                              "RootLocation": {
-                                  "value": "'@pipeline().parameters.AdlsFileSystem'",
-                                  "type": "Expression"
-                              },
-                              "EntityName": {
-                                  "value": "@item()",
-                                  "type": "Expression"
-                              }
-                          },
-                          "datasetParameters": {
-                              "SynapseSink": {
-                                  "TableName": {
-                                      "value": "@item()",
-                                      "type": "Expression"
-                                  }
-                              }
-                          }
-                      },
-                      "staging": {
-                          "linkedService": {
-                              "referenceName": "StorageService",
-                              "type": "LinkedServiceReference"
-                          },
-                          "folderPath": "staging"
-                      },
-                      "compute": {
-                          "coreCount": 8,
-                          "computeType": "General"
-                      },
-                      "traceLevel": "Fine"
                   }
                 }
               ]
