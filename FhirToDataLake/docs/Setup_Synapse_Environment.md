@@ -7,11 +7,11 @@
 #### Access permissions
 1. In storage **Access Control (IAM)**, in “**Members**” select “**Managed identity**”, then select “Synapse workspace” in “Managed identity”, add your Synapse workspace as the “**Storage Blob Data Contributor**” role.
    
-    ![SetupSynapseMI](./assets/Setup_SynapseMI.png)
+    ![SetupSynapseMI](./assets/SetupSynapseMI.png)
 
 2. (Required for PowerShell script) In **Synapse Studio** -> **Manage** -> **Access Control**, add your Azure account as the “**Synapse Administrator**” role. 
    
-    ![WorkspaceAccessControl](./assets/Workspace_Access_Control.png)
+    ![WorkspaceAccessControl](./assets/WorkspaceAccessControl.png)
 
 3. (Required for PowerShell script) In storage **Access Control(IAM)**, in “**Members**” select “**User, group, or service principal**”, add your Azure account as the “**Storage Blob Data Contributor**” role.
 
@@ -51,7 +51,7 @@ Set-SynapseEnvironment
   [-SqlServerEndpoint] <string>
   [-Storage] <string> 
   [[-Database] <string>, default: “fhirdb”] 
-  [[-Container] <string>, default: “testsynapselink”]
+  [[-Container] <string>, default: “fhir”]
   [[-ResultPath] <string>, default: “result”]
   [[-MasterKey] <string>, default: ”FhirSynapseLink0!”]
   [[-Concurrent] <int>, default: 25]
@@ -59,9 +59,9 @@ Set-SynapseEnvironment
 
 The script will do 3 things: 
 
-1. Upload some hidden readme files to Storage, act as the "placeholder" files so that Synapse can listed folder in storage to create VIEWs.
-2. Create a new database on Synapse serverless SQL pool, and initialize its environment for later steps, creating data sources, creating storage credential, creating data format, e.t.
-3. Create EXTERNAL TABLEs and VIEWs by executing SQL scripts in “sql/resources” directory. 
+1. Upload hidden readme files to Storage, act as the "placeholder" files so that Synapse can list folder in storage to create VIEWs.
+2. Create a new database on Synapse serverless SQL pool, and initialize its environment for later steps. E.g. creating data sources, creating storage credential, creating data format.
+3. Create EXTERNAL TABLEs and VIEWs by executing SQL scripts in “scripts/sql/resources” directory. 
 
 For cleaning up, the script will try to drop the database (when successfully created) if fail to create EXTERNAL TABLEs and VIEWs.
 
@@ -86,7 +86,7 @@ Path to the parquet FHIR data.
 Master key that will be set in created database. Database need to have master key then we can create EXTERNAL TABLEs and VIEWs on it.
 
 ##### -Concurrent
-Max concurrent tasks number that will be used to upload place holder files and execute SQL scripts.
+Max concurrent tasks number that will be used to upload readme files and execute SQL scripts.
 
 
 ### Manually create EXTERNAL TABLEs/VIEWs on Synapse serverless SQL pool.
@@ -94,7 +94,7 @@ Max concurrent tasks number that will be used to upload place holder files and e
 1. Create a new serverless database.
    
 ```SQL
-CREATE DATABASE {your_database_name}
+CREATE DATABASE {Your_database_name}
 ```
 
 2. Initialize Synapse environments.
@@ -121,6 +121,6 @@ USE [master]
 
 3. Create EXTERNAL TABLES/VIEWs.
 
-    Refer to SQL scripts in "**scripts/sql/resources**" to create EXTERNAL TABLEs/VIEWs.
+    Refer to SQL scripts in "**scripts/sql/resources**" to create EXTERNAL TABLEs/VIEWs for different resource types.
 
     [All_TABLEs_VIEWs.sql](../scripts/sql/All_TABLEs_VIEWs.sql) contains summary of SQL language to create EXTERNAL TABLEs/VIEWs for all resource types.
