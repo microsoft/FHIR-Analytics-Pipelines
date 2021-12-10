@@ -77,7 +77,7 @@ To enable Synapse to read the data from the Storage Account, provide _Storage Bl
 Running the PowerShell script that creates following artifacts:
 
 1. Resource specific folders in the Azure Storage Account.
-1. A database in Synapse serverless pool with External Tables and Views pointing to the files in the Storage Account.
+1. A database in Synapse [serverless SQL pool](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/on-demand-workspace-overview) with [External Tables](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/develop-tables-external-tables?tabs=hadoop) and [Views](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/create-use-views) pointing to the files in the Storage Account.
 
 In order to run the PowerShell Script, use following steps:
 
@@ -85,23 +85,23 @@ In order to run the PowerShell Script, use following steps:
 1. Clone this repo to your local machine.
 1. Open Azure CLI and go to scripts folder.
 1. Login to your Azure account using `Connect-AzAccount -SubscriptionId 'yyyy-yyyy-yyyy-yyyy'`. Use your subscription id.
-1. Run `./Set-SynapseEnvironment.ps1 -SqlServerEndpoint "{Your Synapse serverless SQL pool endpoint}" -Storage "{Your storage account where Parquet files are written}"`. Refer to the complete syntax below.
+1. Run `./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName "{Name of your Synapse workspace instance}" -StorageName "{Name of your storage account where Parquet files are written}"`. Refer to the complete syntax below.
 
 ``` PowerShell
 Set-SynapseEnvironment
-  [-SqlServerEndpoint] <string>
-  [-Storage] <string>
+  [-SynapseWorkspaceName] <string>
+  [-StorageName] <string>
   [[-Database] <string>, default: “fhirdb”]
   [[-Container] <string>, default: “fhir”]
   [[-ResultPath] <string>, default: “result”]
   [[-MasterKey] <string>, default: ”FhirSynapseLink0!”]
-  [[-Concurrent] <int>, default: 25]
+  [[-Concurrent] <int>, default: 30]
 ```
 
 |Parameter   | Description   |
 |---|---|
-| SqlServerEndpoint | Synapse serverless SQL pool endpoint. E.g. example-ondemand.sql.azuresynapse.net |
-| Storage | Name of Storage Account where parquet files are stored. |
+| SynapseWorkspaceName | Name of Synapse workspace instance. |
+| StorageName | Name of Storage Account where parquet files are stored. |
 | Database | Name of database to be created on Synapse serverless SQL pool |
 | Container | Name of container on storage where parquet files are stored. |
 | ResultPath | Path to the parquet folder. |
@@ -110,6 +110,6 @@ Set-SynapseEnvironment
 
 ### 7. Query data from Synapse Studio
 
-Go to your Synapse workspace. You should see a new database named _fhirdb_. Expand _External Tables_ and _Views_ to see the entities. Your FHIR data is now ready to be queried.
+Go to your Synapse workspace serverless SQL pool. You should see a new database named _fhirdb_. Expand _External Tables_ and _Views_ to see the entities. Your FHIR data is now ready to be queried.
 
 As you add more data to the FHIR server, it will be fetched automatically to the Data Lake and become available for querying.

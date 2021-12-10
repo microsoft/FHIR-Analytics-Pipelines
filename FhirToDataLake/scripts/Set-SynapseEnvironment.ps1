@@ -6,7 +6,7 @@
     Create database on Synapse SQL pool, and create default EXTERNAL TABLEs and VIEWs for customers. 
     Customers can query data on created EXTERNAL TABLEs and VIEWs on Synapse. 
 .PARAMETER SynapseWorkspaceName
-    Name of Synapse workspace, will create tag on it and create EXTERNAL TABLEs and VIEWs in its serverless SQL pool.
+    Name of Synapse workspace instance, will create tag on it and create EXTERNAL TABLEs and VIEWs in its serverless SQL pool.
 .PARAMETER Database
     Default: fhirdb
     Name of database to be created on Synapse serverless SQL server pool.
