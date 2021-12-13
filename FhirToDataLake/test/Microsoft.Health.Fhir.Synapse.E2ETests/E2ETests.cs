@@ -31,7 +31,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private readonly BlobContainerClient _blobContainerClient;
         private const string _configurationPath = "appsettings.test.json";
         private int _triggerIntervalInMinutes = 5;
-        private string _dateTimeFormat = "yyyy-MM-ddThh:mm:ssZ";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="E2ETests"/> class.
@@ -72,9 +71,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
             // Load configuration and set endTime to yesterday
             var configuration = new ConfigurationBuilder().AddJsonFile(_configurationPath).Build();
-            var now = DateTime.Now;
-            configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["startTime"] = now.AddMinutes(-1 * _triggerIntervalInMinutes).ToString(_dateTimeFormat);
-            configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"] = now.ToString(_dateTimeFormat);
+            var now = DateTime.UtcNow;
+            configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["startTime"] = now.AddMinutes(-1 * _triggerIntervalInMinutes).ToString("o");
+            configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"] = now.ToString("o");
 
             // Run e2e
             var host = CreateHostBuilder(configuration).Build();
