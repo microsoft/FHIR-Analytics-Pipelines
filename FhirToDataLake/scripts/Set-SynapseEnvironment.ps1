@@ -22,7 +22,7 @@
     Default: "FhirSynapseLink0!"
     Master key that will be set in created database. Database need to have master key then we can create EXTERNAL TABLEs and VIEWs on it.
 .PARAMETER Concurrent
-    Default: 25
+    Default: 30
     Max concurrent tasks number that will be used to upload place holder files and execute SQL scripts.
 #>
 
@@ -36,7 +36,7 @@ Param(
     [string]$Container = "fhir",
     [string]$ResultPath = "result",
     [string]$MasterKey = "FhirSynapseLink0!",
-    [int]$Concurrent = 25
+    [int]$Concurrent = 30
 )
 
 $jobName = "FhirSynapseJob"
@@ -258,8 +258,8 @@ if ([string]$dbId.Column1)
 }
 
 # Create tag on Synapse
-Update-AzTag -ResourceId $synapse.Id -Tag $tag -Operation "Merge" | Out-Null 
-Write-Host " -> Created Tag on Synapse '$synapseWorkspaceName'." -ForegroundColor Green 
+Update-AzTag -ResourceId $synapse.Id -Tag $tags -Operation "Merge" | Out-Null 
+Write-Host " -> Created Tags on Synapse '$synapseWorkspaceName'." -ForegroundColor Green 
 
 try {
     ###
