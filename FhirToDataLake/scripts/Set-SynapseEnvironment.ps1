@@ -5,13 +5,12 @@
 .DESCRIPTION
     Create database on Synapse SQL pool, and create default EXTERNAL TABLEs and VIEWs for customers. 
     Customers can query data on created EXTERNAL TABLEs and VIEWs on Synapse. 
-.PARAMETER SqlServerEndpoint
-    Synapse SQL server endpoint, need to be the serverless SQL server otherwise cannot create EXTERNALE TABLEs and VIEWs on it.
-    E.g. "example.sql.azuresynapse.net".
+.PARAMETER SynapseWorkspaceName
+    Name of Synapse workspace instance, will create tag on it and create EXTERNAL TABLEs and VIEWs in its serverless SQL pool.
 .PARAMETER Database
     Default: fhirdb
-    Name of database name to be created on Synapse serverless SQL server pool.
-.PARAMETER Storage
+    Name of database to be created on Synapse serverless SQL server pool.
+.PARAMETER StorageName
     Name of storage where parquet FHIR data be exported to.
 .PARAMETER Container
     Default: fhir
@@ -23,26 +22,27 @@
     Default: "FhirSynapseLink0!"
     Master key that will be set in created database. Database need to have master key then we can create EXTERNAL TABLEs and VIEWs on it.
 .PARAMETER Concurrent
-    Default: 25
+    Default: 30
     Max concurrent tasks number that will be used to upload place holder files and execute SQL scripts.
 #>
 
 [cmdletbinding()]
 Param(
     [parameter(Mandatory=$true)]
-    [string]$SqlServerEndpoint,
+    [string]$SynapseWorkspaceName,
     [string]$Database = "fhirdb",
     [parameter(Mandatory=$true)]
-    [string]$Storage,
+    [string]$StorageName,
     [string]$Container = "fhir",
     [string]$ResultPath = "result",
     [string]$MasterKey = "FhirSynapseLink0!",
-    [int]$Concurrent = 25
+    [int]$Concurrent = 30
 )
 
 $jobName = "FhirSynapseJob"
 $readmePath = ".readme.txt"
 $sqlScriptCollectionPath = "sql/Resources"
+$tags = @{"SynapseLinkSolution" = "fhir"}
 
 function New-CustomDatabase
 {
@@ -77,9 +77,9 @@ function Remove-CustomDatabase
 
 function Set-InitializeEnvironment
 {
-    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$storage, [string]$container, [string]$resultPath)
+    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$storageName, [string]$container, [string]$resultPath)
 
-    $locationPath = "https://$storage.blob.core.windows.net/$container/$resultPath"
+    $locationPath = "https://$storageName.blob.core.windows.net/$container/$resultPath"
 
     $initializeEnvironmentSql = "
     CREATE MASTER KEY ENCRYPTION BY PASSWORD = '$masterKey';
@@ -129,7 +129,7 @@ function New-ContainerIfNotExists
 
 function New-PlaceHolderBlobs
 {
-    param([string]$storage, [string]$container, [string]$resultPath)
+    param([string]$storageName, [string]$container, [string]$resultPath)
     $files = Get-ChildItem $sqlScriptCollectionPath -Filter "*.sql" -Name
     foreach ($f in $files) {
         # Upload placeholder files.
@@ -160,7 +160,7 @@ function New-PlaceHolderBlobs
                 -Context $storageContext `
                 -Force `
                 -ErrorAction stop
-        } -ArgumentList "$(Get-Location)/$readmePath", $container, $blobName, $storage | Out-Null
+        } -ArgumentList "$(Get-Location)/$readmePath", $container, $blobName, $storageName | Out-Null
     }
 
     foreach ($finishedJob in (Get-Job -Name $jobName | Wait-Job)) {
@@ -176,7 +176,7 @@ function New-PlaceHolderBlobs
 
 function New-TableAndViewsForResources
 {
-    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$storage, [string]$container)
+    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$storageName, [string]$container)
 
     $files = Get-ChildItem $sqlScriptCollectionPath -Filter "*.sql" -Name
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
@@ -221,19 +221,34 @@ function New-TableAndViewsForResources
     }
 }
 
+
 $stopwatch =  [system.diagnostics.stopwatch]::StartNew()
 
 Get-Job -Name $jobName -ErrorAction Ignore | Remove-Job | Out-Null
 
+###
+# Try get Synapse instance.
+###
+try {
+    $synapse = Get-AzSynapseWorkspace -Name $SynapseWorkspaceName -ErrorAction Stop
+}
+catch {
+    Write-Host "Get Synapse instance '$synapseWorkspaceName' failed: $($_.ToString())."
+    throw
+}
+
+
+# Get synapse serverless SQL server endpoint
+$synapseSqlServerEndpoint = $synapse.ConnectivityEndpoints.sqlOnDemand
 
 # Test connection to Synapse SQL server.
 try {
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
-    $dbId = Invoke-Sqlcmd -ServerInstance $SqlServerEndpoint  -Database "master" -AccessToken $sqlAccessToken `
+    $dbId = Invoke-Sqlcmd -ServerInstance $synapseSqlServerEndpoint -Database "master" -AccessToken $sqlAccessToken `
         -Query "SELECT DB_ID('$Database')" -ErrorAction Stop
 }
 catch {
-    Write-Host "Failed to connect to '$SqlServerEndpoint': $($_.ToString())."
+    Write-Host "Failed to connect to '$synapseSqlServerEndpoint': $($_.ToString())."
     throw
 }
 # Throw exception if database already exists.
@@ -242,16 +257,20 @@ if ([string]$dbId.Column1)
     throw "Database '$Database' already exist, please use another database name or drop it."
 }
 
+# Create tag on Synapse
+Update-AzTag -ResourceId $synapse.Id -Tag $tags -Operation "Merge" | Out-Null 
+Write-Host " -> Created Tags on Synapse '$synapseWorkspaceName'." -ForegroundColor Green 
+
 try {
     ###
     # 1.Create container on Storage if not exists.
     ###
     New-ContainerIfNotExists `
-        -storageName $Storage `
+        -storageName $StorageName `
         -containerName $Container
 }
 catch {
-    Write-Host "Create container '$Container' on '$Storage' failed: $($_.ToString())."
+    Write-Host "Create container '$Container' on '$StorageName' failed: $($_.ToString())."
     throw
 }
 
@@ -259,7 +278,7 @@ try{
     ###
     # 2. Place holder blobs
     ###
-    New-PlaceHolderBlobs -storage $Storage -container $Container -resultPath $ResultPath
+    New-PlaceHolderBlobs -storage $StorageName -container $Container -resultPath $ResultPath
 }
 catch
 {
@@ -272,7 +291,7 @@ catch
 ###
 New-CustomDatabase `
     -databaseName $Database `
-    -serviceEndpoint $SqlServerEndpoint 
+    -serviceEndpoint $synapseSqlServerEndpoint
     
 # Try to create TABLEs and VIEWs for all resource types.
 # And will try to drop database if failed to create TABLEs and VIEWs.
@@ -281,10 +300,10 @@ try{
     # 2. Initialize database environment.
     ###
     Set-InitializeEnvironment `
-        -serviceEndpoint $SqlServerEndpoint `
+        -serviceEndpoint $synapseSqlServerEndpoint `
         -databaseName $Database `
         -masterKey $MasterKey `
-        -storage $Storage `
+        -storage $StorageName `
         -container $Container `
         -resultPath $ResultPath
 
@@ -292,16 +311,16 @@ try{
     # 3. Create TABLEs and VIEWs on Synapse.
     ###
     New-TableAndViewsForResources `
-        -serviceEndpoint $SqlServerEndpoint `
+        -serviceEndpoint $synapseSqlServerEndpoint `
         -databaseName $Database `
         -masterKey $MasterKey `
-        -storage $Storage `
+        -storage $StorageName `
         -container $Container
 
 }
 catch{
     Write-Host " -> Create TABLEs and VIEWs Failed, will try to drop database '$Database'." -ForegroundColor Red
-    Remove-CustomDatabase -serviceEndpoint $SqlServerEndpoint -databaseName $Database
+    Remove-CustomDatabase -serviceEndpoint $synapseSqlServerEndpoint -databaseName $Database
     throw
 }
 
