@@ -23,7 +23,7 @@ We will wrap some fields in raw Json data into single string in parquet file, yo
 
     Example:
     
-    ```Json
+    ```javascript
     /* Raw FHIR Json data */
     {
     "resourceType": "Patient",
@@ -56,7 +56,7 @@ We will wrap some fields in raw Json data into single string in parquet file, yo
     
     Example:
     
-    ```Json
+    ```javascript
     /* Raw FHIR Json data */
     {
     "resourceType": "Patient",
@@ -84,7 +84,7 @@ We will wrap some fields in raw Json data into single string in parquet file, yo
 
 Extensions on primitive types are usually begin with underline prefix in raw FHIR json data, and [line resources](https://www.hl7.org/fhir/resource.html#Resource) (E.g. "contained" and "outcome" properties.) are flexiable FHIR resource data properties, those 2 kind of fields will be excluded in parquet files.
 
-```Json
+```javascript
 /* Raw FHIR Json data */
 {
 "resourceType": "Patient",
@@ -115,7 +115,7 @@ Extensions on primitive types are usually begin with underline prefix in raw FHI
 
 From the recommandation on SQL-based projection of FHIR resources [Sql-On-Fhir](https://github.com/FHIR/sql-on-fhir/blob/master/sql-on-fhir.md#choice-types), choice types (denoted as elementName[x]), are represented as an SQL ```STRUCT``` of the elementName, where that struct contains a child for each type of the choice. We will add an additional level for choice types fields refer to [definitions](https://www.hl7.org/fhir/resourcelist.html) from HL7.
 
-```Json
+```javascript
 /* Raw FHIR Json data */
 {
 "resourceType": "Patient",
@@ -148,7 +148,7 @@ EXTERNAL TABLE can directly parse nested data in parquet files so we expand nest
 
 1. Columns for leaf fields.
 
-    ```json
+    ```javascript
     {
         // "text" is nested field contains sub fields.
         "text": {
@@ -167,7 +167,7 @@ EXTERNAL TABLE can directly parse nested data in parquet files so we expand nest
 
 2. Columns for repeated fields.
    
-    ```json
+    ```javascript
     {
         // "name" is repeated field contains multiple name instance.
         "name": [
