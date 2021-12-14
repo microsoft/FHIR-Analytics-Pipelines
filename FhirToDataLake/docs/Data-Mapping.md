@@ -229,13 +229,13 @@ Apache provide [pyarrow](https://arrow.apache.org/docs/python/index.html) librar
         print(table.to_pydict())
 
         # Read "resourceType", "id" and "text.div" columns.
-        # "text.div" is a structure column in "text".
+        # "text.div" is a nested column in "text".
         print("-"*20 + "Read table with structure columns." + "-"*20)
         table_struct_column = parquetFile.read(columns=["resourceType", "id", "text.div"])
         print(table_struct_column.to_pandas())
 
         # Read "resourceType", "id" and "name.use" columns.
-        # "name.use" is a structure column in "name".
+        # "name.use" is a repeated column in "name".
         print("-"*20 + "Read table with array columns." + "-"*20)
         table_array_column = parquetFile.read(columns=["resourceType", "id", "name.list.element.use"])
         print(table_array_column.to_pandas())
