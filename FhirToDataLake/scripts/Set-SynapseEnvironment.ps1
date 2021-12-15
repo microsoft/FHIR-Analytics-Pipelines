@@ -42,7 +42,10 @@ Param(
 $jobName = "FhirSynapseJob"
 $readmePath = ".readme.txt"
 $sqlScriptCollectionPath = "sql/Resources"
-$tags = @{"SynapseLinkSolution" = "fhir"}
+$tags = @{
+    "FhirToSynapsePipeline" = "FunctionV0.3.0"
+    "FhirSchema" = "R4_V1"
+}
 
 function New-CustomDatabase
 {
