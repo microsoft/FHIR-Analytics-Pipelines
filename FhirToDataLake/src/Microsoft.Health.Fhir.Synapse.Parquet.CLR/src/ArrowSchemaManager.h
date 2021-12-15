@@ -8,7 +8,7 @@
 
 using namespace System;
 using namespace Collections::Generic;
-using namespace Microsoft::Health::Fhir::Synapse::Schema;
+using namespace Microsoft::Health::Fhir::Synapse::SchemaManagement;
 
 namespace Microsoft
 {

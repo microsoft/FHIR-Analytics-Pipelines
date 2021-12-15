@@ -15,6 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.Azure
         {
             services.AddSingleton<IAccessTokenProvider, AzureAccessTokenProvider>();
             services.AddSingleton<IAzureBlobContainerClientFactory, AzureBlobContainerClientFactory>();
+            services.AddSingleton<IDataSink, AzureBlobDataSink>();
 
             return services;
         }

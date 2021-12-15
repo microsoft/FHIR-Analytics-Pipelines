@@ -7,8 +7,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 
-namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
+namespace Microsoft.Health.Fhir.Synapse.Tool
 {
     public class SynapseLinkService : BackgroundService
     {

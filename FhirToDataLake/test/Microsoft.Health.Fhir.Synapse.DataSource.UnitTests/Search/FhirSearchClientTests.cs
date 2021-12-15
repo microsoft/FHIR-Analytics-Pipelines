@@ -8,18 +8,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Azure;
 using Microsoft.Health.Fhir.Synapse.Azure.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
-using Microsoft.Health.Fhir.Synapse.DataSerialization;
 using Microsoft.Health.Fhir.Synapse.DataSource.Api;
 using Microsoft.Health.Fhir.Synapse.DataSource.Exceptions;
+using Microsoft.Health.Fhir.Synapse.DataSource.Fhir;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.DataSource.UnitTests.Search
@@ -29,8 +26,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataSource.UnitTests.Search
         private readonly AzureAccessTokenProvider _brokenProvider = new AzureAccessTokenProvider(new NullLogger<AzureAccessTokenProvider>());
         private readonly MockAccessTokenProvider _mockProvider = new MockAccessTokenProvider();
 
-        private const string SampleTaskId = "task123";
-        private const string SampleJobId = "job123";
         private const string SampleResourceType = "Patient";
         private const string SampleStartTime = "2021-08-01T12:00:00+08:00";
         private const string SampleEndTime = "2021-08-09T12:40:59+08:00";
@@ -39,28 +34,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataSource.UnitTests.Search
         [Fact]
         public async Task GivenAValidTaskContext_WhenSearchFhirData_CorrectBatchDataShouldBeReturned()
         {
-            var context = new TaskContext(
-                SampleTaskId,
-                SampleJobId,
-                SampleResourceType,
-                DateTimeOffset.Parse(SampleStartTime),
-                DateTimeOffset.Parse(SampleEndTime),
-                null,
-                0,
-                0,
-                0);
-
             var client = CreateDataClient(_mockProvider);
 
             // First batch
-            var batchData = await client.GetAsync(context);
+            var batchData = await client.GetAsync(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), null);
 
             Assert.Equal(2, batchData.Values.Count());
             Assert.Equal(SampleContinuationToken, batchData.ContinuationToken);
 
             // Second batch
-            context.ContinuationToken = batchData.ContinuationToken;
-            var newBatchData = await client.GetAsync(context);
+            var newBatchData = await client.GetAsync(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), batchData.ContinuationToken);
 
             Assert.Single(newBatchData.Values);
             Assert.Null(newBatchData.ContinuationToken);
@@ -71,39 +54,18 @@ namespace Microsoft.Health.Fhir.Synapse.DataSource.UnitTests.Search
         {
             // A different start time will result in an unknown url to mock http handler.
             // An HttpRequestException will throw during search.
-            var context = new TaskContext(
-                SampleTaskId,
-                SampleJobId,
-                SampleResourceType,
-                DateTimeOffset.Parse("2021-07-07T12:00:00+08:00"),
-                DateTimeOffset.Parse(SampleEndTime),
-                string.Empty,
-                0,
-                0,
-                0);
-
             var client = CreateDataClient(_mockProvider);
 
-            var exception = await Assert.ThrowsAsync<FhirSearchException>(() => client.GetAsync(context));
+            var exception = await Assert.ThrowsAsync<FhirSearchException>(() => client.GetAsync(SampleResourceType, DateTimeOffset.Parse("2021-07-07T12:00:00+08:00"), DateTimeOffset.Parse(SampleEndTime), string.Empty));
             Assert.IsType<HttpRequestException>(exception.InnerException);
         }
 
         [Fact]
         public async Task GivenAnInvalidTokenProvider_WhenSearchDataSourceFailed_ExceptionShouldBeThrown()
         {
-            var context = new TaskContext(
-                SampleTaskId,
-                SampleJobId,
-                SampleResourceType,
-                DateTimeOffset.Parse(SampleStartTime),
-                DateTimeOffset.Parse(SampleEndTime),
-                string.Empty,
-                0,
-                0,
-                0);
             var client = CreateDataClient(_brokenProvider);
 
-            await Assert.ThrowsAsync<FhirSearchException>(() => client.GetAsync(context));
+            await Assert.ThrowsAsync<FhirSearchException>(() => client.GetAsync(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), string.Empty));
         }
 
         [Theory]
@@ -111,20 +73,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataSource.UnitTests.Search
         [InlineData("invalidbundletest")]
         public async Task GivenAValidSearchInput_WhenSearchDataSource_AndGetInvalidResponse_ExceptionShouldBeThrown(string invalidCt)
         {
-            var context = new TaskContext(
-                SampleTaskId,
-                SampleJobId,
-                SampleResourceType,
-                DateTimeOffset.Parse(SampleStartTime),
-                DateTimeOffset.Parse(SampleEndTime),
-                invalidCt,
-                0,
-                0,
-                0);
-
             var client = CreateDataClient(_mockProvider);
 
-            await Assert.ThrowsAsync<FhirBundleParseException>(() => client.GetAsync(context));
+            await Assert.ThrowsAsync<FhirBundleParseException>(() => client.GetAsync(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), invalidCt));
         }
 
         private FhirDataClient CreateDataClient(IAccessTokenProvider accessTokenProvider)

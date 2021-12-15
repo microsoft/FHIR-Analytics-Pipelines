@@ -1,7 +1,7 @@
 #pragma once
 #include "ArrowSchemaManager.h"
 
-using namespace Microsoft::Health::Fhir::Synapse::Schema;
+using namespace Microsoft::Health::Fhir::Synapse::SchemaManagement;
 using namespace Microsoft::Health::Fhir::Synapse::Common::Configurations::Arrow;
 
 using namespace System;

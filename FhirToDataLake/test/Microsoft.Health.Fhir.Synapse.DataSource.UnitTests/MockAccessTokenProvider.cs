@@ -5,7 +5,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.Fhir.Synapse.Azure;
+using Microsoft.Health.Fhir.Synapse.Azure.Authentication;
 
 namespace Microsoft.Health.Fhir.Synapse.DataSource.UnitTests
 {

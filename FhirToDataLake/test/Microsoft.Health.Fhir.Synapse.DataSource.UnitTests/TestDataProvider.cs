@@ -6,9 +6,9 @@
 using System.IO;
 using Hl7.Fhir.ElementModel;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Fhir;
-using Microsoft.Health.Fhir.Synapse.DataSerialization;
+using Microsoft.Health.Fhir.Synapse.DataSource.Fhir;
 
 namespace Microsoft.Health.Fhir.Synapse.DataSource.UnitTests
 {

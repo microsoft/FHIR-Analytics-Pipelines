@@ -3,17 +3,20 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
+using Microsoft.Health.Fhir.Synapse.DataSource.Fhir;
 
 namespace Microsoft.Health.Fhir.Synapse.DataSource
 {
     public interface IFhirDataClient
     {
         public Task<FhirElementBatchData> GetAsync(
-            TaskContext context,
+            string resourceType,
+            DateTimeOffset startTime,
+            DateTimeOffset endTime,
+            string continuationToken,
             CancellationToken cancellationToken = default);
     }
 }

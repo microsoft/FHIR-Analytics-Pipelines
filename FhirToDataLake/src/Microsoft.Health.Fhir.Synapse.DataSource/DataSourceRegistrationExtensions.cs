@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.DataSource.Api;
+using Microsoft.Health.Fhir.Synapse.DataSource.Fhir;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
@@ -21,7 +22,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataSource
         public static IServiceCollection AddDataSource(this IServiceCollection services)
         {
             services.AddSingleton<IFhirDataSource, FhirApiDataSource>();
+            services.AddSingleton<IFhirSerializer, FhirSerializer>();
             services.AddSingleton<IFhirDataClient, FhirDataClient>();
+            services.AddSingleton<IFhirSpecificationProvider, R4FhirSpecificationProvider>();
 
             var fhirServerConfiguration = services
                 .BuildServiceProvider()

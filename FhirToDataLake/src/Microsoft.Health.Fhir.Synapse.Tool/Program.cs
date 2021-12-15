@@ -8,12 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Fhir.Synapse.Azure;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
-using Microsoft.Health.Fhir.Synapse.DataSerialization;
-using Microsoft.Health.Fhir.Synapse.DataSink;
+using Microsoft.Health.Fhir.Synapse.Core;
 using Microsoft.Health.Fhir.Synapse.DataSource;
-using Microsoft.Health.Fhir.Synapse.Scheduler;
-using Microsoft.Health.Fhir.Synapse.Scheduler.Jobs;
-using Microsoft.Health.Fhir.Synapse.Schema;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.Tool
 {
@@ -30,12 +27,9 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
                 .ConfigureServices((context, services) =>
                     services
                         .AddConfiguration(context.Configuration)
-                        .AddFhirSpecification()
                         .AddAzure()
                         .AddJobScheduler()
                         .AddDataSource()
-                        .AddDataSink()
-                        .AddDataSerialization()
                         .AddSchema()
                         .AddHostedService<SynapseLinkService>());
     }

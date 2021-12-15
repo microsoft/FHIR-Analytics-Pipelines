@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
-using Microsoft.Health.Fhir.Synapse.Schema;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests

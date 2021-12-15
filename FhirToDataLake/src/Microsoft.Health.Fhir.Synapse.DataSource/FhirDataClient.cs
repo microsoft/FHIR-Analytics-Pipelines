@@ -11,16 +11,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Azure;
+using Microsoft.Health.Fhir.Synapse.Azure.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
-using Microsoft.Health.Fhir.Synapse.DataSerialization;
 using Microsoft.Health.Fhir.Synapse.DataSource.Api;
-using Microsoft.Health.Fhir.Synapse.DataSource.Bundle;
 using Microsoft.Health.Fhir.Synapse.DataSource.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataSource.Extensions;
+using Microsoft.Health.Fhir.Synapse.DataSource.Fhir;
 
 namespace Microsoft.Health.Fhir.Synapse.DataSource
 {
@@ -55,13 +52,21 @@ namespace Microsoft.Health.Fhir.Synapse.DataSource
             _httpClient.Timeout = Timeout.InfiniteTimeSpan;
         }
 
-        public async Task<FhirElementBatchData> GetAsync(TaskContext context, CancellationToken cancellationToken = default)
+        public async Task<FhirElementBatchData> GetAsync(
+            string resourceType,
+            DateTimeOffset startTime,
+            DateTimeOffset endTime,
+            string continuationToken,
+            CancellationToken cancellationToken = default)
         {
-            return await SearchAsync(context, cancellationToken);
+            return await SearchAsync(resourceType, startTime, endTime, continuationToken, cancellationToken);
         }
 
         private async Task<FhirElementBatchData> SearchAsync(
-            TaskContext context,
+            string resourceType,
+            DateTimeOffset startTime,
+            DateTimeOffset endTime,
+            string continuationToken,
             CancellationToken cancellationToken = default)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -69,7 +74,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataSource
                 throw new OperationCanceledException();
             }
 
-            var searchUri = CreateSearchUri(context);
+            var searchUri = CreateSearchUri(resourceType, startTime, endTime, continuationToken);
             HttpResponseMessage response;
             string bundleContent;
 
@@ -121,24 +126,27 @@ namespace Microsoft.Health.Fhir.Synapse.DataSource
         /// <summary>
         /// Sample uri: http://{FhirServerUrl}/{ResourceType}?_lastUpdated=ge{StartTimestamp}&_lastUpdated=lt{EndTimestamp}&_count={PageCount}&_sort=_lastUpdated&ct={ContinuationToken}.
         /// </summary>
-        /// <param name="context">Task context.</param>
+        /// <param name="resourceType">The FHIR resource type for search.</param>
+        /// <param name="startTime">The start time of _lastUpdated parameter for search.</param>
+        /// <param name="endTime">The end time of _lastUpdated parameter for search.</param>
+        /// <param name="continuationToken">The continuation token for search.</param>
         /// <returns>Uri with search parameters.</returns>
-        private Uri CreateSearchUri(TaskContext context)
+        private Uri CreateSearchUri(string resourceType, DateTimeOffset startTime, DateTimeOffset endTime, string continuationToken)
         {
             var baseUri = new Uri(_dataSource.FhirServerUrl);
-            var uri = new Uri(baseUri, context.ResourceType);
+            var uri = new Uri(baseUri, resourceType);
 
             var parameters = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{context.StartTime.ToInstantString()}"),
-                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{context.EndTime.ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{startTime.ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{endTime.ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
                 new KeyValuePair<string, string>(FhirApiConstants.SortKey, FhirApiConstants.LastUpdatedKey),
             };
 
-            if (!string.IsNullOrEmpty(context.ContinuationToken))
+            if (!string.IsNullOrEmpty(continuationToken))
             {
-                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, context.ContinuationToken));
+                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, continuationToken));
             }
 
             return uri.AddQueryString(parameters);

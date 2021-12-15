@@ -7,7 +7,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Scheduler.Jobs;
+using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 
 namespace Microsoft.Health.Fhir.Synapse.FunctionApp
 {

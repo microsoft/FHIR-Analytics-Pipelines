@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Health.Fhir.Synapse.Schema;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests
 {
