@@ -105,7 +105,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.Jobs
             using var streamReader = new StreamReader(blob);
             var job = JsonConvert.DeserializeObject<Job>(streamReader.ReadToEnd());
 
-            Assert.Equal(JobStatus.Completed, job.Status);
+            Assert.Equal(JobStatus.Succeeded, job.Status);
             Assert.Equal(DateTimeOffset.MinValue, job.DataPeriod.Start);
 
             // Test end data period
@@ -180,6 +180,11 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.Jobs
                 new NullLogger<AzureBlobJobStore>());
         }
 
+        private TaskResult CreateTestTaskResult()
+        {
+            return new TaskResult("Patient", null, 0, 100, 0, 100, true, string.Empty);
+        }
+
         private JobManager CreateJobManager(IJobStore jobStore, JobConfiguration config = null)
         {
             var jobConfiguration = config;
@@ -199,7 +204,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.Jobs
             };
 
             var taskExecutor = Substitute.For<ITaskExecutor>();
-            taskExecutor.ExecuteAsync(Arg.Any<TaskContext>(), Arg.Any<IProgress<TaskContext>>(), Arg.Any<CancellationToken>()).Returns(new TaskResult());
+            taskExecutor.ExecuteAsync(Arg.Any<TaskContext>(), Arg.Any<IProgress<TaskContext>>(), Arg.Any<CancellationToken>()).Returns(CreateTestTaskResult());
             return new JobManager(
                 jobStore,
                 taskExecutor,
@@ -207,7 +212,6 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.Jobs
                 Options.Create(schedulerConfig),
                 Options.Create(jobConfiguration),
                 new NullLogger<JobManager>());
-
         }
     }
 }

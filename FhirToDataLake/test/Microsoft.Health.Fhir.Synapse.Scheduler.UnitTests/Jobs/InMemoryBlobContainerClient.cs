@@ -155,5 +155,37 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.Jobs
                 return Task.FromResult(leaseId);
             }
         }
+
+        public Task<bool> MoveDirectory(string sourceDirectory, string targetDirectory, CancellationToken cancellationToken = default)
+        {
+            foreach (var path in _blobStore.Keys)
+            {
+                if (path.StartsWith(sourceDirectory))
+                {
+                    var childPath = path.Substring(sourceDirectory.Length);
+                    var newPath = $"{targetDirectory}{childPath}";
+                    if (_blobStore.Remove(path, out Stream value))
+                    {
+                        _blobStore[newPath] = value;
+                    }
+                }
+            }
+
+            return Task.FromResult(true);
+        }
+
+        public Task<IEnumerable<string>> ListSubDirectories(string directory, CancellationToken cancellationToken = default)
+        {
+            var result = new List<string>();
+            foreach (var path in _blobStore.Keys)
+            {
+                if (path.StartsWith(directory) && !string.Equals(directory, path, StringComparison.OrdinalIgnoreCase))
+                {
+                    result.Add(path);
+                }
+            }
+
+            return Task.FromResult((IEnumerable<string>)result);
+        }
     }
 }

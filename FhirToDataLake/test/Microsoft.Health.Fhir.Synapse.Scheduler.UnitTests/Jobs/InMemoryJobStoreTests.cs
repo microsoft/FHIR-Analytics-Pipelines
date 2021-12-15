@@ -112,7 +112,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var activeJob = new Job(
                 ContainerName,
-                JobStatus.Completed,
+                JobStatus.Succeeded,
                 new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, testTime),
                 DateTimeOffset.Now.AddMinutes(-1));

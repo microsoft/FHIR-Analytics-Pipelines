@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Tasks
         private readonly IJsonDataProcessor _jsonDataProcessor;
         private readonly ILogger<TaskExecutor> _logger;
 
-        private const int ReportProgressBatchCount = 10000;
+        private const int ReportProgressBatchCount = 20000;
 
         // TODO: Refine TaskExecutor here, current TaskExecutor is more like a manager class.
         public TaskExecutor(
@@ -93,7 +93,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Tasks
 
                         taskContext.PartId += 1;
                         _logger.LogInformation(
-                            "{processedCount} resources are processed. {skippedCount} resources are skipped. Detail: {detail}",
+                            "{resourceCount} resources are searched in total. {processedCount} resources are processed. Detail: {detail}",
                             batchResult.ResourceCount,
                             batchResult.ProcessedCount,
                             batchResult.ToString());
@@ -114,21 +114,17 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Tasks
                 taskContext.IsCompleted = string.IsNullOrEmpty(taskContext.ContinuationToken);
 
                 processedCount += fhirElementsData.Values.Count();
-                if (processedCount % ReportProgressBatchCount == 0)
+                if (processedCount > 0 && processedCount % ReportProgressBatchCount == 0)
                 {
                     progress.Report(taskContext);
                 }
             }
 
-            progress.Report(taskContext);
             _logger.LogInformation(
-                "Finished processing resourceType {resourceType}.",
+                "Finished processing resource '{resourceType}'.",
                 taskContext.ResourceType);
 
-            return new TaskResult
-            {
-                Result = JsonConvert.SerializeObject(taskContext),
-            };
+            return TaskResult.CreateFromTaskContext(taskContext);
         }
     }
 }

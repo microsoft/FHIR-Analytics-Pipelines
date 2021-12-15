@@ -5,7 +5,6 @@
 
 using EnsureThat;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 
 namespace Microsoft.Health.Fhir.Synapse.DataSink

@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         /// <summary>
         /// Update a job in store.
         /// </summary>
-        /// <param name="job">the 0 job.</param>
+        /// <param name="job">the input job.</param>
         /// <param name="cancellationToken">the input cancellationToken.</param>
         /// <returns>Updated job.</returns>
         public Task<bool> UpdateJobAsync(Job job, CancellationToken cancellationToken = default);
@@ -58,5 +58,12 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         /// <returns>SchedulerSetting object, return null if not exists.</returns>
         public Task<SchedulerMetadata> GetSchedulerMetadata(CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Commit job data from staging folder to result folder.
+        /// </summary>
+        /// <param name="job">input job object.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>operation result.</returns>
+        public Task<bool> CommitJobDataAsync(Job job, CancellationToken cancellationToken = default);
     }
 }

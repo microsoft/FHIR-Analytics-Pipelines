@@ -41,8 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             string resourceType,
             Job job)
         {
-            var isCompleted = string.IsNullOrEmpty(job.ResourceProgresses[resourceType])
-                && job.TotalResourceCounts[resourceType] > 0;
+            var isCompleted = job.CompletedResources.Contains(resourceType);
 
             return new TaskContext(
                 Guid.NewGuid().ToString("N"),

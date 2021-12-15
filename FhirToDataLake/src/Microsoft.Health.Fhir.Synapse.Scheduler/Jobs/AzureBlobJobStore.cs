@@ -6,12 +6,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Azure;
 using Microsoft.Health.Fhir.Synapse.Azure.Blob;
 using Microsoft.Health.Fhir.Synapse.Azure.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -35,6 +38,8 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
 
         // Timer to renew job lock in a fixed interval
         private readonly Timer _renewLockTimer;
+
+        private readonly Regex _stagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/(?<partition>[A-Za-z]+/\d{4}/\d{2}/\d{2})$");
 
         public AzureBlobJobStore(
             IAzureBlobContainerClientFactory blobContainerFactory,
@@ -72,7 +77,10 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
                 cancellationToken);
 
             // Start renew timer.
-            _renewLockTimer.Start();
+            if (!string.IsNullOrEmpty(_jobLockLease))
+            {
+                _renewLockTimer.Start();
+            }
 
             // Returns true if lease id is not null.
             return !string.IsNullOrEmpty(_jobLockLease);
@@ -141,15 +149,14 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         {
             EnsureArg.IsNotNull(job, nameof(job));
 
-            if (job.Status != JobStatus.Completed)
+            if (job.Status != JobStatus.Succeeded)
             {
                 // Should not happen.
-                _logger.LogWarning("Job has not been completed yet.");
-                throw new ArgumentException("Input job to complete is not in completed state.");
+                _logger.LogWarning("Job has not succeeded yet.");
+                throw new ArgumentException("Input job to complete is not in succeeded state.");
             }
 
-            var completedBlobName = job.Status == JobStatus.Completed ?
-                GetJobBlobName(job, AzureBlobJobConstants.CompletedJobFolder) : GetJobBlobName(job, AzureBlobJobConstants.FailedJobFolder);
+            var completedBlobName = GetJobBlobName(job, AzureBlobJobConstants.CompletedJobFolder);
 
             job.LastHeartBeat = DateTimeOffset.UtcNow;
             job.CompletedTime = job.LastHeartBeat;
@@ -257,5 +264,25 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
             }
         }
 
+        public async Task<bool> CommitJobDataAsync(Job job, CancellationToken cancellationToken = default)
+        {
+            var stagingFolder = $"{AzureStorageConstants.StagingFolderName}/{job.Id}";
+            var subDirectories = await _blobContainerClient.ListSubDirectories(stagingFolder);
+            foreach (var subDirectory in subDirectories)
+            {
+                var match = _stagingDataFolderRegex.Match(subDirectory);
+                if (match.Success)
+                {
+                    var resultFolder = $"{AzureStorageConstants.ResultFolderName}/{match.Groups["partition"].Value}/{job.Id}";
+                    var moveResult = await _blobContainerClient.MoveDirectory(subDirectory, resultFolder, cancellationToken);
+                    if (!moveResult)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
     }
 }

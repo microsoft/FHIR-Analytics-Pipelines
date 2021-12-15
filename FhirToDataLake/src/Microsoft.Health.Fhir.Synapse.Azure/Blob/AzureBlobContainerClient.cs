@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -14,6 +15,7 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using Azure.Storage.Files.DataLake;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Azure.Exceptions;
@@ -23,8 +25,16 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
     public class AzureBlobContainerClient : IAzureBlobContainerClient
     {
         private readonly BlobContainerClient _blobContainerClient;
+        private readonly DataLakeFileSystemClient _dataLakeFileSystemClient;
         private readonly ILogger<AzureBlobContainerClient> _logger;
+
         private const int ListBlobPageCount = 20;
+
+        /// <summary>
+        /// Path not found error code for data lake api.
+        /// See https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/storage/Azure.Storage.Common/src/Shared/Constants.cs#L336.
+        /// </summary>
+        private const string DataLakePathNotFoundErrorCode = "PathNotFound";
 
         public AzureBlobContainerClient(
             Uri storageUri,
@@ -36,6 +46,9 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
             _logger = logger;
 
             _blobContainerClient = new BlobContainerClient(
+                storageUri,
+                new DefaultAzureCredential());
+            _dataLakeFileSystemClient = new DataLakeFileSystemClient(
                 storageUri,
                 new DefaultAzureCredential());
             InitializeBlobContainerClient();
@@ -62,6 +75,10 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
             _blobContainerClient = new BlobContainerClient(
                 connectionString,
                 containerName);
+            _dataLakeFileSystemClient = new DataLakeFileSystemClient(
+                connectionString,
+                containerName);
+
             InitializeBlobContainerClient();
         }
 
@@ -247,6 +264,61 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
             {
                 _logger.LogWarning("Failed to release lease on the blob '{0}'. Reason: '{1}'", blobName, ex);
                 return false;
+            }
+        }
+
+        public async Task<bool> MoveDirectory(string sourceDirectory, string targetDirectory, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var sourceDirectoryClient = _dataLakeFileSystemClient.GetDirectoryClient(sourceDirectory);
+
+                // Create target parent directory if not exists.
+                var targetParentDirectory = Path.GetDirectoryName(targetDirectory);
+                var targetParentDirectoryClient = _dataLakeFileSystemClient.GetDirectoryClient(targetParentDirectory);
+                await targetParentDirectoryClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
+
+                await sourceDirectoryClient.RenameAsync(targetDirectory);
+
+                _logger.LogInformation("Move blob directory '{0}' to '{1}' successfully.", sourceDirectory, targetDirectory);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("Failed to move blob directory '{0}' to '{1}'. Reason: '{2}'", sourceDirectory, targetDirectory, ex);
+                return false;
+            }
+        }
+
+        public async Task<IEnumerable<string>> ListSubDirectories(string directory, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var subDirectories = new List<string>();
+
+                var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
+                await foreach (var page in directoryClient.GetPathsAsync(true, cancellationToken: cancellationToken).AsPages())
+                {
+                    // Append sub directories to result
+                    subDirectories.AddRange(
+                        page.Values
+                            .Where(pathItem => pathItem.IsDirectory != false)
+                            .Select(pageItem => pageItem.Name));
+                }
+
+                _logger.LogInformation("Get '{0}' sub directories of '{1}' successfully.", subDirectories.Count(), directory);
+                return subDirectories;
+            }
+            catch (RequestFailedException ex)
+                when (ex.ErrorCode == DataLakePathNotFoundErrorCode)
+            {
+                _logger.LogInformation("Directory '{0}' is empty.", directory);
+                return new List<string>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to query sub directories of directory '{0}'. Reason: '{1}'", directory, ex);
+                throw new AzureBlobOperationFailedException($"Failed to query sub directories of directory '{directory}'.", ex);
             }
         }
     }
