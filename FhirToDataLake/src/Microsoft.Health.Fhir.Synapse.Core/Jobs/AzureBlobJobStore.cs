@@ -71,11 +71,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 TimeSpan.FromSeconds(AzureBlobJobConstants.JobLeaseExpirationInSeconds),
                 cancellationToken);
 
+            // Acquire lease failed, return false.
+            if (string.IsNullOrEmpty(_jobLockLease))
+            {
+                return false;
+            }
+
             // Start renew timer.
             _renewLockTimer.Start();
-
-            // Returns true if lease id is not null.
-            return !string.IsNullOrEmpty(_jobLockLease);
+            return true;
         }
 
         public async Task<bool> ReleaseJobLock(CancellationToken cancellationToken = default)
