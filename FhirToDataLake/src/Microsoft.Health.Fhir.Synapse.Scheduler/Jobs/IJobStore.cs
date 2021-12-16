@@ -63,7 +63,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         /// </summary>
         /// <param name="job">input job object.</param>
         /// <param name="cancellationToken">cancellation token.</param>
-        /// <returns>operation result.</returns>
-        public Task<bool> CommitJobDataAsync(Job job, CancellationToken cancellationToken = default);
+        /// <returns>completed task.</returns>
+        public Task CommitJobDataAsync(Job job, CancellationToken cancellationToken = default);
     }
 }

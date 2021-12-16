@@ -561,8 +561,7 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.UnitTests
 
             try
             {
-                var subDirectories = await adlsClient.ListSubDirectories("foldernotexist");
-                Assert.Empty(subDirectories);
+                await Assert.ThrowsAsync<AzureBlobOperationFailedException>(() => adlsClient.MoveDirectory("foldernotexist", "dest"));
             }
             finally
             {
@@ -593,6 +592,40 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.UnitTests
 
                 var subDirectories = await adlsClient.ListSubDirectories("foo");
                 Assert.Equal(expectedResult, subDirectories.ToHashSet());
+            }
+            finally
+            {
+                await blobContainerClient.DeleteAsync();
+            }
+        }
+
+        [SkippableFact]
+        public async void GivenADirectoryName_WhenMoveDirectoires_AllSubDirectoryShouldBeMoved()
+        {
+            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
+            Skip.If(adlsClient == null);
+
+            var connectionString = GetAdlsGen2StoreConnectionString();
+            var blobContainerClient = new BlobContainerClient(connectionString, uniqueContainerName);
+            blobContainerClient.CreateIfNotExists();
+
+            try
+            {
+                // Set up directory info
+                var blobList = new List<string> { "foo/bar/1.txt", "foo/bar1/1.txt", "foo/bar2/2.txt", "foo/bar2/2.1.txt", "foo/bar3/3.txt" };
+                var expectedBlobs = new List<string> { "boo/bar/1.txt", "boo/bar1/1.txt", "boo/bar2/2.txt", "boo/bar2/2.1.txt", "boo/bar3/3.txt" };
+                foreach (var blob in blobList)
+                {
+                    await blobContainerClient.UploadBlobAsync(blob, new MemoryStream(new byte[] { 1, 2, 3 }));
+                }
+
+                await adlsClient.MoveDirectory("foo", "boo");
+                foreach (var expectedBlob in expectedBlobs)
+                {
+                    var blob = blobContainerClient.GetBlobClient(expectedBlob);
+                    Assert.True(blob.Exists());
+                }
             }
             finally
             {

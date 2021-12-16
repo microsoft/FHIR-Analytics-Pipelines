@@ -156,7 +156,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.Jobs
             }
         }
 
-        public Task<bool> MoveDirectory(string sourceDirectory, string targetDirectory, CancellationToken cancellationToken = default)
+        public Task MoveDirectory(string sourceDirectory, string targetDirectory, CancellationToken cancellationToken = default)
         {
             foreach (var path in _blobStore.Keys)
             {

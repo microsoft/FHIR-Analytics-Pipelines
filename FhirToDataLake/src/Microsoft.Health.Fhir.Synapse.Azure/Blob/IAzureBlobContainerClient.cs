@@ -123,8 +123,8 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
         /// <param name="sourceDirectory">source directory.</param>
         /// <param name="targetDirectory">target directory.</param>
         /// <param name="cancellationToken">cancellation token.</param>
-        /// <returns>operation result.</returns>
-        public Task<bool> MoveDirectory(
+        /// <returns>completed task.</returns>
+        public Task MoveDirectory(
             string sourceDirectory,
             string targetDirectory,
             CancellationToken cancellationToken = default);

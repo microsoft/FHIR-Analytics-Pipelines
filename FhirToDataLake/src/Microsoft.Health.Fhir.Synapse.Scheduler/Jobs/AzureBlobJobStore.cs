@@ -264,7 +264,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
             }
         }
 
-        public async Task<bool> CommitJobDataAsync(Job job, CancellationToken cancellationToken = default)
+        public async Task CommitJobDataAsync(Job job, CancellationToken cancellationToken = default)
         {
             var stagingFolder = $"{AzureStorageConstants.StagingFolderName}/{job.Id}";
             var subDirectories = await _blobContainerClient.ListSubDirectories(stagingFolder);
@@ -274,15 +274,9 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
                 if (match.Success)
                 {
                     var resultFolder = $"{AzureStorageConstants.ResultFolderName}/{match.Groups["partition"].Value}/{job.Id}";
-                    var moveResult = await _blobContainerClient.MoveDirectory(subDirectory, resultFolder, cancellationToken);
-                    if (!moveResult)
-                    {
-                        return false;
-                    }
+                    await _blobContainerClient.MoveDirectory(subDirectory, resultFolder, cancellationToken);
                 }
             }
-
-            return true;
         }
     }
 }

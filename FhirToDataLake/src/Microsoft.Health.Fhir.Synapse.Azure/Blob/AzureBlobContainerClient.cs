@@ -267,7 +267,7 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
             }
         }
 
-        public async Task<bool> MoveDirectory(string sourceDirectory, string targetDirectory, CancellationToken cancellationToken = default)
+        public async Task MoveDirectory(string sourceDirectory, string targetDirectory, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -275,18 +275,20 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
 
                 // Create target parent directory if not exists.
                 var targetParentDirectory = Path.GetDirectoryName(targetDirectory);
-                var targetParentDirectoryClient = _dataLakeFileSystemClient.GetDirectoryClient(targetParentDirectory);
-                await targetParentDirectoryClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
+                if (!string.IsNullOrEmpty(targetParentDirectory))
+                {
+                    var targetParentDirectoryClient = _dataLakeFileSystemClient.GetDirectoryClient(targetParentDirectory);
+                    await targetParentDirectoryClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
+                }
 
                 await sourceDirectoryClient.RenameAsync(targetDirectory);
 
                 _logger.LogInformation("Move blob directory '{0}' to '{1}' successfully.", sourceDirectory, targetDirectory);
-                return true;
             }
             catch (Exception ex)
             {
                 _logger.LogWarning("Failed to move blob directory '{0}' to '{1}'. Reason: '{2}'", sourceDirectory, targetDirectory, ex);
-                return false;
+                throw new AzureBlobOperationFailedException($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'.", ex);
             }
         }
 
