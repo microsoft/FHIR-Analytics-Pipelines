@@ -33,6 +33,13 @@ stages:
       inputs:
         versionSpec: 5.11
 
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+         $Env:dataLakeStore:storageUrl="https://fhiranalyticspipeline.blob.core.windows.net/"
+      displayName: set environment variable for tests
+
     - task: NuGetCommand@2
       displayName: 'NuGet restore packages.config'
       inputs:
@@ -64,10 +71,6 @@ stages:
        docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
        docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
       displayName: start mock-data-source
-
-    - script: |
-       $Env:dataLakeStore:storageUrl="https://fhiranalyticspipeline.blob.core.windows.net/"
-      displayName: set environment variable for tests
 
     - task: VSTest@2
       displayName: 'Run native tests'
