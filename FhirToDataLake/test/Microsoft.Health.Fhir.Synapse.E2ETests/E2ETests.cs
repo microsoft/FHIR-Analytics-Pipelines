@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,64 +39,89 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         /// </summary>
         public E2ETests()
         {
-            _blobServiceClient = new BlobServiceClient(TestConstants.AzureStorageEmulatorConnectionString);
+            var storageUri = Environment.GetEnvironmentVariable("dataLakeStore:storageUrl");
+            if (!string.IsNullOrEmpty(storageUri))
+            {
+                _blobServiceClient = new BlobServiceClient(new Uri(storageUri), new DefaultAzureCredential());
+            }
+            else
+            {
+                _blobServiceClient = new BlobServiceClient(TestConstants.AzureStorageEmulatorConnectionString);
+            }
+
             _blobContainerClient = _blobServiceClient.GetBlobContainerClient(TestConstants.TestContainerName);
         }
 
         [Fact]
         public async Task GivenPreviousDateRange_WhenProcess_CorrectResultShouldBeReturnedAsync()
         {
-            // Reset test container
-            await ResetTestContainerAsync();
-
             // Load configuration
-            var configuration = new ConfigurationBuilder().AddJsonFile(_configurationPath).Build();
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile(_configurationPath)
+                .AddEnvironmentVariables()
+                .Build();
 
-            // Run e2e
-            var host = CreateHostBuilder(configuration).Build();
-            await host.RunAsync();
+            try
+            {
+                // Run e2e
+                var host = CreateHostBuilder(configuration).Build();
+                await host.RunAsync();
 
-            // Check job status
-            CheckJobStatus();
+                // Check job status
+                CheckJobStatus();
 
-            // Check result files
-            Assert.Equal(2, await GetResultFileCount("result/Observation/2000/09/01/Observation"));
-            Assert.Equal(2, await GetResultFileCount("result/Patient/2000/09/01/Patient"));
+                // Check result files
+                Assert.Equal(2, await GetResultFileCount("result/Observation/2000/09/01"));
+                Assert.Equal(2, await GetResultFileCount("result/Patient/2000/09/01"));
+            }
+            finally
+            {
+                _blobContainerClient.DeleteIfExists();
+            }
         }
 
         [Fact]
         public async Task GivenRecentDateRange_WhenProcess_CorrectResultShouldBeReturnedAsync()
         {
-            // Reset test container
-            await ResetTestContainerAsync();
-
             // Load configuration and set endTime to yesterday
-            var configuration = new ConfigurationBuilder().AddJsonFile(_configurationPath).Build();
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile(_configurationPath)
+                .AddEnvironmentVariables()
+                .Build();
             var now = DateTime.UtcNow;
             configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["startTime"] = now.AddMinutes(-1 * _triggerIntervalInMinutes).ToString("o");
             configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"] = now.ToString("o");
 
-            // Run e2e
-            var host = CreateHostBuilder(configuration).Build();
-            await host.RunAsync();
+            try
+            {
+                // Run e2e
+                var host = CreateHostBuilder(configuration).Build();
+                await host.RunAsync();
 
-            // Check job status
-            CheckJobStatus();
+                // Check job status
+                CheckJobStatus();
 
-            // Check parquet files
-            Assert.Equal(1, await GetResultFileCount("result/Observation/2000/09/01/Observation"));
-            Assert.Equal(0, await GetResultFileCount("result/Patient/2000/09/01/Patient"));
+                // Check parquet files
+                Assert.Equal(1, await GetResultFileCount("result/Observation/2000/09/01"));
+                Assert.Equal(0, await GetResultFileCount("result/Patient/2000/09/01"));
+            }
+            finally
+            {
+                _blobContainerClient.DeleteIfExists();
+            }
         }
 
         private async Task<int> GetResultFileCount(string filePrefix)
         {
             var resultFileCount = 0;
-            await foreach (var blobItem in _blobContainerClient.GetBlobsAsync())
+            await foreach (var page in _blobContainerClient.GetBlobsByHierarchyAsync(prefix: filePrefix).AsPages())
             {
-                var blobName = blobItem.Name;
-                if (blobName.StartsWith(filePrefix))
+                foreach (var blobItem in page.Values)
                 {
-                    resultFileCount++;
+                    if (blobItem.Blob.Name.EndsWith(".parquet"))
+                    {
+                        resultFileCount++;
+                    }
                 }
             }
 
@@ -125,10 +151,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
         private async Task ResetTestContainerAsync()
         {
-            if (await _blobContainerClient.ExistsAsync())
-            {
-                await _blobServiceClient.DeleteBlobContainerAsync(TestConstants.TestContainerName);
-            }
+            await _blobContainerClient.DeleteIfExistsAsync();
 
             // Make sure the container is deleted before running the tests
             Assert.False(await _blobContainerClient.ExistsAsync());
