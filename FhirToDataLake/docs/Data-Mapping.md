@@ -1,25 +1,25 @@
 # Data mapping from FHIR to Synapse
-The Synapse sync pipeline fetch, convert and save the FHIR data to Azure storage in [parquet format](https://docs.microsoft.com/en-us/azure/databricks/data/data-sources/read-parquet), which is an open source file format designed for efficient as well as performant flat columnar storage format of data compared to row based files like CSV or TSV files. Its detailed storage strategy can be found in this [document](https://parquet.apache.org/documentation/latest/).
+The Synapse sync pipeline fetches, converts, and saves FHIR data to the Azure storage in the [Apache Parquet format](https://docs.microsoft.com/en-us/azure/databricks/data/data-sources/read-parquet). The Apache Parquet format is an open source file format designed for efficient and performant flat columnar storage format of data compared to row based files like CSV or TSV files. For more information about its detailed storage strategy, see the [Apache Parquet](https://parquet.apache.org/documentation/latest/) documentation.
 
-Azure Synapse Analytics have well support for [read Parquet files](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/query-parquet-files) in serverless SQL pool, we provide PowerShell [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) for users to create default EXTERNAL TABLEs/VIEWs on Synapse, you can also refer our default [SQL scripts](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/scripts/sql/Resources) to create customized EXTERNAL TABLEs or VIEWs by themselves.
+Azure Synapse Analytics supports [Parquet files](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/query-parquet-files) in Serverless SQL pool. PowerShell [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) is provided to users to create default EXTERNAL TABLEs/VIEWs on Synapse. Refer to the default [SQL scripts](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/scripts/sql/Resources) for information about creating customized EXTERNAL TABLEs or VIEWs.
 
-Below shows how we convert raw FHIR Json data to parquet format, and how do we define the default EXTERNAL TABLEs/VIEWs.
+The information below descibes how to convert raw FHIR JSON data to Parquet format and how to define the default EXTERNAL TABLEs/VIEWs.
 
-## 1. FHIR Json data to parquet data
+## FHIR JSON data to Parquet data
 
-Parquet format support nested and repeated structure, theoretically a json data can be lossless convert to parquet format, but for stability and practical, we designed a piece schemas to transform FHIR raw Json data into parquet with belowing rules. The detailed schemas can be found in ["**data/schemas**"](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/data/schemas) directory.
+Parquet format supports nested and repeated structure. Theoretically, JSON data can be a lossless convert to Parquet format, but for stability and practical purposes, we designed piece schemas to transform FHIR raw JSON data into Parquet following the rules listed below. The detailed schemas are available in the [**data/schemas**](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/data/schemas) directory.
 
-Data saved in parquet format is human unreadable due to compressed and storage strategy, you can quickly confirm you FHIR parquet file refer this [section](#using-python-library-to-quickly-read-parquet-files).
+Data saved in Parquet format is human unreadable due to the compressed and storage strategy. To view a sample Python script read a Parquet file with specific columns for a patient resource, see  [Using Python library to quickly read Parquet files](#using-python-library-to-quickly-read-parquet-files).
 
-Here we use virtual Json example to show how the data be stored in parquet.
+Below is a JSON example that shows how the data is stored in Parquet.
 
-### A. Wrap raw Json fields into single string
+### Wrap raw JSON fields into single string
 
-We will wrap some fields in raw Json data into single string in parquet file, you can still use [JSON functions](https://docs.microsoft.com/en-us/sql/t-sql/functions/json-functions-transact-sql?view=sql-server-ver15) to parse and analyze them on Synapse. 
+First, wrap some of the fields in raw JSON data into a single string in the Parquet file. You can still use [JSON functions](https://docs.microsoft.com/en-us/sql/t-sql/functions/json-functions-transact-sql?view=sql-server-ver15) to parse and analyze them on Synapse. 
 
-1. **Fields with depth greater than 3.**
+**Fields with depth greater than 3.**
 
-    Fields with depth greater than 3 will be wrapped into single Json string, and be placed at they common root field.
+    Fields with depth greater than 3 will be wrapped into single JSON string and will be placed at the common root field.
 
     Example:
     
@@ -50,9 +50,9 @@ We will wrap some fields in raw Json data into single string in parquet file, yo
     }
     ```
     
-1. **Extensions.**
+**Extensions**
    
-    FHIR [extensions](https://www.hl7.org/fhir/extensibility.html#Extension) properties in raw Json data will be wrapped into single Json string.
+    [FHIR Extension](https://www.hl7.org/fhir/extensibility.html#Extension) properties in raw JSON data are wrapped into a single JSON string.
     
     Example:
     
@@ -80,9 +80,9 @@ We will wrap some fields in raw Json data into single string in parquet file, yo
     ```
    
 
-### B. Exclude primitive extensions and inline resources
+### Exclude primitive extensions and inline resources
 
-Extensions on primitive types are usually begin with underline prefix in raw FHIR json data, and [line resources](https://www.hl7.org/fhir/resource.html#Resource) (E.g. "contained" and "outcome" properties.) are flexiable FHIR resource data properties, those 2 kind of fields will be excluded in parquet files.
+Extensions on primitive types usually begin with a underline prefix in the raw FHIR JSON data. Line [Resources](https://www.hl7.org/fhir/resource.html#Resource) such as "contained" and "outcome" properties are flexiable FHIR resource data properties. These two kinds of fields are excluded in Parquet files.
 
 ```javascript
 /* Raw FHIR Json data */
@@ -111,9 +111,9 @@ Extensions on primitive types are usually begin with underline prefix in raw FHI
 }
 ```
 
-### C. Choice Types
+### Choice Types
 
-From the recommandation on SQL-based projection of FHIR resources [Sql-On-Fhir](https://github.com/FHIR/sql-on-fhir/blob/master/sql-on-fhir.md#choice-types), choice types (denoted as elementName[x]), are represented as an SQL ```STRUCT``` of the elementName, where that struct contains a child for each type of the choice. We will add an additional level for choice types fields refer to [definitions](https://www.hl7.org/fhir/resourcelist.html) from HL7.
+From the recommandation on SQL-based projection of FHIR resources [Sql-On-Fhir](https://github.com/FHIR/sql-on-fhir/blob/master/sql-on-fhir.md#choice-types), choice types (denoted as elementName[x]), are represented as an SQL ```STRUCT``` of the elementName, where that struct contains a child for each type of the choice. The code example below adds an additional level for choice type fields.  For more information, see [Resource Index](https://www.hl7.org/fhir/resourcelist.html) from HL7.
 
 ```javascript
 /* Raw FHIR Json data */
@@ -135,16 +135,16 @@ From the recommandation on SQL-based projection of FHIR resources [Sql-On-Fhir](
 }
 ```
 
-## 2. Query parquet data on Synapse
-We provide PowerShell script [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) to create default EXTERNAL TABLEs and VIEWs on Synapse serverless SQL pool. You can follow this [document](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/query-parquet-files) and refer to our default [SQL scripts](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/scripts/sql/Resources)  to manually create customized TABLEs and VIEWs step by step.
+## Query Parquet data on Synapse
+The PowerShell script [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) creates a default EXTERNAL TABLEs and VIEWs on Synapse serverless SQL pool. For more information, see [Query Parquet files using serverless SQL pool in Azure Synapse Analytics](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/query-parquet-files) and refer to the default [SQL scripts](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/scripts/sql/Resources) to manually create customized TABLEs and VIEWs.
 
-Here we show the general rules of our default TABLEs and VIEWs defintions.
+Below are general rules of the default TABLEs and VIEWs defintions.
 
-### A. Definitons for EXTERNAL TABLE
+### Definitons for EXTERNAL TABLE
 
-Each EXTERNAL TABLE linked to all parquet files for a specific resource type, they have names like ```"[fhir].[{resource type name}]"```. 
+Each EXTERNAL TABLE is linked to all Parquet files for a specific resource type. They have names such as ```"[fhir].[{resource type name}]"```. 
 
-EXTERNAL TABLE can directly parse nested data in parquet files so we expand nested data till the leaf field, but it cannot handle parse repeated data in parquet files, we define columns link to repeated root field, it can automaticly wrap them into single Json string when be queried.
+EXTERNAL TABLE can directly parse nested data in Parquet files. Nested data is expanded to the leaf field, but it can't handle parse repeated data in Parquet files. Columsn are defined and linked to the repeated root field. It automatically wraps them into single JSON string when they are queried.
 
 1. Columns for leaf fields.
 
@@ -184,28 +184,29 @@ EXTERNAL TABLE can directly parse nested data in parquet files so we expand nest
     ```
 
 
-Our default VIEWs help to analyze repeated fields in first depth.
+Default VIEWs help to analyze repeated fields in first depth.
 
-### B. Definitions for VIEW
+### Definitions for VIEW
 
-VIEWs are linked to repeated fields in first depth among parquet files of all resource types, they have names like ```"[fhir].[{resource type name}{property name}]"```.
+VIEWs are linked to repeated fields in first depth among Parquet files of all resource types. They have names such as ```"[fhir].[{resource type name}{property name}]"```.
 
-Most of properties in FHIR data can be repeated in first depth (E.g. ```"name"``` in ```"Patient"```, ```"category"``` in ```"Observation"```) and they will be wrapped into single string when be quired in EXTERNAL TABLEs, VIEWs provide a quick look for the detailed fields under those common used fields.
+Most of properties in FHIR data can be repeated in first depth (that is ```"name"``` in ```"Patient"```, ```"category"``` in ```"Observation"```), and they are wrapped into a single string when they're queired in EXTERNAL TABLEs. VIEWs provide a quick look for the detailed fields under those commonly used fields.
 
-In VIEWs, we also expand nested data till the leaf field, and we define columns link to repeated root field, let Synapse help use wrap them into single string when querying.
+In VIEWs, nested data is expanded to the leaf field, and we define columns link to repeated root field, and let Synapse wrap them into a single string when querying.
 
-## 3. Others
+## Others
 
 #### Using Python library to quickly read parquet files
-Apache provide [pyarrow](https://arrow.apache.org/docs/python/index.html) library to read/write parquet files, you can try it to quickly read and confirm your exported FHIR parquet files.
 
-1. Install [pyarrow](https://arrow.apache.org/docs/python/index.html) library.
+Apache provides a library called [PyArrow](https://arrow.apache.org/docs/python/index.html) that reads/writes Parquet files. Refer to the following steps to read and confirm your exported FHIR Parquet files.
+
+1. Install [PyArrow](https://arrow.apache.org/docs/python/index.html) library.
    
     ```Powershell
     python -m pip install pyarrow
     ```
 
-1. Sample python script to read entire parquet file or read parquet file with specific columns for **"Patient"** resource.
+1. The sample Python script below will read the entire Parquet file, or it will read the Parquet file with specific columns for **"Patient"** resource.
     
     ```Python
     import pyarrow.parquet as pq
