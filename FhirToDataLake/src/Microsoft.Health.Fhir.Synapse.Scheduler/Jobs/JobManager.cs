@@ -181,7 +181,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
             CancellationTokenSource executionTokenSource = new CancellationTokenSource();
             using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(executionTokenSource.Token, cancellationToken);
 
-            var progress = new Progress<TaskContext>(async context =>
+            var progress = new Progress<TaskContext>(context =>
             {
                 lock (_updateJobLock)
                 {
@@ -196,10 +196,10 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
                     job.ProcessedResourceCounts[context.ResourceType] = context.ProcessedCount;
                     job.SkippedResourceCounts[context.ResourceType] = context.SkippedCount;
                     job.PartIds[context.ResourceType] = context.PartId;
-                }
 
-                // Update job store.
-                await _jobStore.UpdateJobAsync(job, linkedTokenSource.Token);
+                    // Update job store.
+                    _jobStore.UpdateJob(job, linkedTokenSource.Token);
+                }
             });
 
             var tasks = new List<Task<TaskResult>>();

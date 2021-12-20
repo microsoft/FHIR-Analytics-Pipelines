@@ -187,5 +187,11 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.Jobs
 
             return Task.FromResult((IEnumerable<string>)result);
         }
+
+        public string UpdateBlob(string blobName, Stream stream, CancellationToken cancellationToken = default)
+        {
+            _blobStore[blobName] = stream;
+            return blobName;
+        }
     }
 }

@@ -29,6 +29,14 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         public Task<bool> UpdateJobAsync(Job job, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Update a job in store synchronously.
+        /// </summary>
+        /// <param name="job">the input job.</param>
+        /// <param name="cancellationToken">the input cancellationToken.</param>
+        /// <returns>Updated job.</returns>
+        public bool UpdateJob(Job job, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Complete the running job.
         /// It will first copy the job info to completed / failed store, then delete the running job instance.
         /// </summary>

@@ -191,6 +191,28 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
             }
         }
 
+        public string UpdateBlob(string blobName, Stream stream, CancellationToken cancellationToken = default)
+        {
+            EnsureArg.IsNotNull(blobName, nameof(blobName));
+            EnsureArg.IsNotNull(stream, nameof(stream));
+
+            var blob = _blobContainerClient.GetBlobClient(blobName);
+
+            try
+            {
+                // will overwrite when blob exists.
+                _ = blob.Upload(stream, true, cancellationToken);
+                _logger.LogInformation("Updated blob '{0}' successfully.", blobName);
+
+                return blob.Uri.AbsoluteUri;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Update blob '{blobName}' failed. Reason: '{ex}'");
+                throw new AzureBlobOperationFailedException($"Update blob '{blobName}' failed.", ex);
+            }
+        }
+
         public async Task<string> UpdateBlobAsync(string blobName, Stream stream, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(blobName, nameof(blobName));

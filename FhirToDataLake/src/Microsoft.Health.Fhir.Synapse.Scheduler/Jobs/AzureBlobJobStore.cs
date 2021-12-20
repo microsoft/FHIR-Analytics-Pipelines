@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -77,10 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
                 cancellationToken);
 
             // Start renew timer.
-            if (!string.IsNullOrEmpty(_jobLockLease))
-            {
-                _renewLockTimer.Start();
-            }
+            _renewLockTimer.Start();
 
             // Returns true if lease id is not null.
             return !string.IsNullOrEmpty(_jobLockLease);
@@ -121,6 +117,28 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
             }
 
             return jobs;
+        }
+
+        public bool UpdateJob(Job job, CancellationToken cancellationToken)
+        {
+            EnsureArg.IsNotNull(job, nameof(job));
+
+            job.LastHeartBeat = DateTimeOffset.UtcNow;
+
+            try
+            {
+                _blobContainerClient.UpdateBlob(
+                    $"{AzureBlobJobConstants.ActiveJobFolder}/{job.Id}.json",
+                    job.ToStream(),
+                    cancellationToken: cancellationToken);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Failed to update job '{job.Id}'.", job.Id);
+                return false;
+            }
         }
 
         public async Task<bool> UpdateJobAsync(Job job, CancellationToken cancellationToken = default)

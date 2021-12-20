@@ -78,6 +78,18 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
             CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Update blob.
+        /// </summary>
+        /// <param name="blobName">blob name.</param>
+        /// <param name="stream">data to upload.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>blob url.</returns>
+        public string UpdateBlob(
+            string blobName,
+            Stream stream,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Acquire lease for a blob.
         /// </summary>
         /// <param name="blobName">blob name.</param>

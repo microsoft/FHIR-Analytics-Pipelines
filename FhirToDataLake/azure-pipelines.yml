@@ -72,6 +72,14 @@ stages:
        docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
       displayName: start mock-data-source
 
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'ResoluteOpenSource'
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: 'az resource list --resource-group FhirAnalyticsPipeline'
+      displayName: Set up Azure account
+      
     - task: VSTest@2
       displayName: 'Run managed tests'
       inputs:
