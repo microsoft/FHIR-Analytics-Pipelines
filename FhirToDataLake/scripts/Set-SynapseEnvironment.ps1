@@ -43,7 +43,7 @@ $jobName = "FhirSynapseJob"
 $readmePath = ".readme.txt"
 $sqlScriptCollectionPath = "sql/Resources"
 $tags = @{
-    "FhirToSynapsePipeline" = "FunctionV0.3.0"
+    "FhirToSynapsePipeline" = "Function_V0.3.0"
     "FhirSchema" = "R4_V1"
 }
 
