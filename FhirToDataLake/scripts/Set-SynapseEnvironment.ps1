@@ -42,9 +42,11 @@ Param(
 $jobName = "FhirSynapseJob"
 $readmePath = ".readme.txt"
 $sqlScriptCollectionPath = "sql/Resources"
+
+# TODO: Align tags, SQL scripts and Storage data schemas.
 $tags = @{
-    "FhirToSynapsePipeline" = "Function_V0.3.0"
-    "FhirSchema" = "R4_V1"
+    "FhirAnalyticsPipeline" = "FhirToDataLake"
+    "FhirSchemaVersion" = "v0.3.0"
 }
 
 function New-CustomDatabase
