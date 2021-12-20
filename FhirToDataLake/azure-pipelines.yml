@@ -73,23 +73,10 @@ stages:
       displayName: start mock-data-source
 
     - task: VSTest@2
-      displayName: 'Run native tests'
-      inputs:
-        testAssemblyVer2: |
-         **\*Native*\**\*UnitTests.dll
-         !**\obj\**
-         !**\ref\**
-        searchFolder: '$(Build.SourcesDirectory)'
-        codeCoverageEnabled: true
-        platform: '$(buildPlatform)'
-        configuration: '$(buildConfiguration)'
-
-    - task: VSTest@2
       displayName: 'Run managed tests'
       inputs:
         testAssemblyVer2: |
-         FhirToDataLake\**\*Tests.dll
-         !**\*Native*\**\*UnitTests.dll
+         FhirToDataLake\**\E2ETests.dll
          !**\obj\**
          !**\ref\**
         searchFolder: '$(Build.SourcesDirectory)'

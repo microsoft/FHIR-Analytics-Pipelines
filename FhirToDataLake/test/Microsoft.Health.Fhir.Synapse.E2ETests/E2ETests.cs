@@ -23,13 +23,15 @@ using Microsoft.Health.Fhir.Synapse.Scheduler.Jobs;
 using Microsoft.Health.Fhir.Synapse.Schema;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Health.Fhir.Synapse.E2ETests
 {
     public class E2ETests
     {
         private readonly BlobServiceClient _blobServiceClient;
-        private readonly BlobContainerClient _blobContainerClient;
+        private readonly ITestOutputHelper _testOutputHelper;
+
         private const string _configurationPath = "appsettings.test.json";
         private int _triggerIntervalInMinutes = 5;
 
@@ -37,24 +39,25 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         /// Initializes a new instance of the <see cref="E2ETests"/> class.
         /// To run the tests locally, pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1 and run it in port 5000.
         /// </summary>
-        public E2ETests()
+        public E2ETests(ITestOutputHelper testOutputHelper)
         {
+            _testOutputHelper = testOutputHelper;
             var storageUri = Environment.GetEnvironmentVariable("dataLakeStore:storageUrl");
             if (!string.IsNullOrEmpty(storageUri))
             {
+                _testOutputHelper.WriteLine($"Using custom data lake storage uri {storageUri}");
                 _blobServiceClient = new BlobServiceClient(new Uri(storageUri), new DefaultAzureCredential());
             }
-            else
-            {
-                _blobServiceClient = new BlobServiceClient(TestConstants.AzureStorageEmulatorConnectionString);
-            }
-
-            _blobContainerClient = _blobServiceClient.GetBlobContainerClient(TestConstants.TestContainerName);
         }
 
-        [Fact]
+        [SkippableFact]
         public async Task GivenPreviousDateRange_WhenProcess_CorrectResultShouldBeReturnedAsync()
         {
+            Skip.If(_blobServiceClient == null);
+            BlobContainerClient blobContainerClient = _blobServiceClient.GetBlobContainerClient(TestConstants.TestContainerName);
+            // Make sure the container is deleted before running the tests
+            Assert.False(await blobContainerClient.ExistsAsync());
+
             // Load configuration
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile(_configurationPath)
@@ -68,21 +71,28 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 await host.RunAsync();
 
                 // Check job status
-                CheckJobStatus();
+                CheckJobStatus(blobContainerClient);
 
                 // Check result files
-                Assert.Equal(2, await GetResultFileCount("result/Observation/2000/09/01"));
-                Assert.Equal(2, await GetResultFileCount("result/Patient/2000/09/01"));
+                Assert.Equal(2, await GetResultFileCount(blobContainerClient, "result/Observation/2000/09/01"));
+                Assert.Equal(2, await GetResultFileCount(blobContainerClient, "result/Patient/2000/09/01"));
             }
             finally
             {
-                _blobContainerClient.DeleteIfExists();
+                blobContainerClient.DeleteIfExists();
             }
         }
 
-        [Fact]
+        [SkippableFact]
         public async Task GivenRecentDateRange_WhenProcess_CorrectResultShouldBeReturnedAsync()
         {
+            Skip.If(_blobServiceClient == null);
+            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            BlobContainerClient blobContainerClient = _blobServiceClient.GetBlobContainerClient(uniqueContainerName);
+
+            // Make sure the container is deleted before running the tests
+            Assert.False(await blobContainerClient.ExistsAsync());
+
             // Load configuration and set endTime to yesterday
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile(_configurationPath)
@@ -91,6 +101,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             var now = DateTime.UtcNow;
             configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["startTime"] = now.AddMinutes(-1 * _triggerIntervalInMinutes).ToString("o");
             configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"] = now.ToString("o");
+            configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["containerName"] = uniqueContainerName;
 
             try
             {
@@ -99,22 +110,22 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 await host.RunAsync();
 
                 // Check job status
-                CheckJobStatus();
+                CheckJobStatus(blobContainerClient);
 
                 // Check parquet files
-                Assert.Equal(1, await GetResultFileCount("result/Observation/2000/09/01"));
-                Assert.Equal(0, await GetResultFileCount("result/Patient/2000/09/01"));
+                Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Observation/2000/09/01"));
+                Assert.Equal(0, await GetResultFileCount(blobContainerClient, "result/Patient/2000/09/01"));
             }
             finally
             {
-                _blobContainerClient.DeleteIfExists();
+                blobContainerClient.DeleteIfExists();
             }
         }
 
-        private async Task<int> GetResultFileCount(string filePrefix)
+        private async Task<int> GetResultFileCount(BlobContainerClient blobContainerClient, string filePrefix)
         {
             var resultFileCount = 0;
-            await foreach (var page in _blobContainerClient.GetBlobsByHierarchyAsync(prefix: filePrefix).AsPages())
+            await foreach (var page in blobContainerClient.GetBlobsByHierarchyAsync(prefix: filePrefix).AsPages())
             {
                 foreach (var blobItem in page.Values)
                 {
@@ -128,15 +139,15 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             return resultFileCount;
         }
 
-        private async void CheckJobStatus()
+        private async void CheckJobStatus(BlobContainerClient blobContainerClient)
         {
             var hasCompletedJobs = false;
-            await foreach (var blobName in _blobContainerClient.GetBlobsAsync())
+            await foreach (var blobName in blobContainerClient.GetBlobsAsync())
             {
                 if (blobName.Name.StartsWith("jobs/completedJobs"))
                 {
                     hasCompletedJobs = true;
-                    var blobClient = _blobContainerClient.GetBlobClient(blobName.Name);
+                    var blobClient = blobContainerClient.GetBlobClient(blobName.Name);
                     var blobDownloadInfo = await blobClient.DownloadAsync();
                     using var reader = new StreamReader(blobDownloadInfo.Value.Content, Encoding.UTF8);
                     var content = await reader.ReadToEndAsync();
@@ -147,14 +158,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             }
 
             Assert.True(hasCompletedJobs);
-        }
-
-        private async Task ResetTestContainerAsync()
-        {
-            await _blobContainerClient.DeleteIfExistsAsync();
-
-            // Make sure the container is deleted before running the tests
-            Assert.False(await _blobContainerClient.ExistsAsync());
         }
 
         private static IHostBuilder CreateHostBuilder(IConfiguration configuration) =>
