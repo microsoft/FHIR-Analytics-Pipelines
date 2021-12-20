@@ -18,7 +18,7 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataWriter
 {
-    [Trait("Category", "Scheduler")]
+    [Trait("Category", "DataWriter")]
     public class DataWriterTests
     {
         private const string LocalTestStorageUrl = "UseDevelopmentStorage=true";

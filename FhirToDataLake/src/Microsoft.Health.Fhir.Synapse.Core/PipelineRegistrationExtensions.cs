@@ -12,7 +12,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Tasks;
 
 namespace Microsoft.Health.Fhir.Synapse.Core
 {
-    public static class SchedulerRegistrationExtensions
+    public static class PipelineRegistrationExtensions
     {
         public static IServiceCollection AddJobScheduler(
             this IServiceCollection services)
