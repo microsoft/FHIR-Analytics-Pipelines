@@ -76,7 +76,7 @@ stages:
       displayName: 'Run managed tests'
       inputs:
         testAssemblyVer2: |
-         FhirToDataLake\**\E2ETests.dll
+         FhirToDataLake\**\*E2ETests.dll
          !**\obj\**
          !**\ref\**
         searchFolder: '$(Build.SourcesDirectory)'
