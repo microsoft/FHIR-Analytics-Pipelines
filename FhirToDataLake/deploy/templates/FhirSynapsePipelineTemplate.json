@@ -92,7 +92,7 @@
         "functionAppName": "[variables('appName')]",
         "hostingPlanName": "[variables('appName')]",
         "applicationInsightsName": "[concat('AppInsights-', variables('appName'))]",
-        "synapseLinkTag": "fhir",
+        "resourceTags": {"FhirAnalyticsPipeline": "FhirToDataLake", "FhirSchemaVersion": "v0.3.0"},
         "storageAccountName": "[concat(substring(replace(variables('appName'), '-', ''), 0, min(11, length(replace(variables('appName'), '-', '')))), uniquestring(resourceGroup().id, variables('appName')))]",
         "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]"
     },
@@ -102,9 +102,7 @@
             "apiVersion": "2019-06-01",
             "name": "[variables('storageAccountName')]",
             "location": "[parameters('location')]",
-            "tags": {
-                "SynapseLinkSolution": "[variables('synapseLinkTag')]"
-            },
+            "tags": "[variables('resourceTags')]",
             "sku": {
                 "name": "[parameters('storageAccountType')]"
             },
@@ -129,9 +127,7 @@
             "apiVersion": "2020-06-01",
             "name": "[variables('hostingPlanName')]",
             "location": "[parameters('location')]",
-            "tags": {
-                "SynapseLinkSolution": "[variables('synapseLinkTag')]"
-            },
+            "tags": "[variables('resourceTags')]",
             "sku": {
                 "Tier": "ElasticPremium",
                 "Name": "EP1"
@@ -146,9 +142,7 @@
             "apiVersion": "2020-06-01",
             "name": "[variables('functionAppName')]",
             "location": "[parameters('location')]",
-            "tags": {
-                "SynapseLinkSolution": "[variables('synapseLinkTag')]"
-            },
+            "tags": "[variables('resourceTags')]",
             "identity": {
                 "type": "SystemAssigned"
             },
@@ -240,10 +234,7 @@
             "apiVersion": "2020-02-02-preview",
             "name": "[variables('applicationInsightsName')]",
             "location": "[parameters('appInsightsLocation')]",
-            "tags": {
-                "[concat('hidden-link:', resourceId('Microsoft.Web/sites', variables('applicationInsightsName')))]": "Resource",
-                "SynapseLinkSolution": "[variables('synapseLinkTag')]"
-            },
+            "tags": "[union(variables('resourceTags'), createObject(concat('hidden-link:', resourceId('Microsoft.Web/sites', variables('applicationInsightsName'))),'Resource'))]",
             "properties": {
                 "ApplicationId": "[variables('applicationInsightsName')]",
                 "Request_Source": "IbizaWebAppExtensionCreate"
