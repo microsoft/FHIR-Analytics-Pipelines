@@ -32,19 +32,19 @@ stages:
       inputs:
         versionSpec: 5.11
 
-    - task: PowerShell@2
-      inputs:
-        targetType: 'inline'
-        script: |
-         $Env:dataLakeStore:storageUrl="https://fhiranalyticspipeline.blob.core.windows.net/"
-      displayName: set environment variable for tests
-
     - task: NuGetCommand@2
       displayName: 'NuGet restore packages.config'
       inputs:
         restoreSolution: '**\*.Native\packages.config'
         vstsFeed: 'FhirAnalytics/FhirAnalyticsPublic'
         restoreDirectory: '..\..\packages'
+
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core sdk'
+      inputs:
+        packageType: sdk
+        version: 6.0.1
+        installationPath: $(Agent.ToolsDirectory)/dotnet
 
     - task: DotNetCoreCLI@2
       displayName: 'dotnet restore solution'
@@ -60,11 +60,17 @@ stages:
         platform: '$(buildPlatform)'
         configuration: '$(buildConfiguration)'
         msbuildArguments: '-p:ApplicationVersion=$(version)'
+        
+    - task: DockerInstaller@0
+      displayName: Docker Installer
+      inputs:
+        dockerVersion: 17.09.0-ce
+        releaseType: stable
 
     - script: |
-       "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" init /server "(localdb)\MsSqlLocalDb"
-       "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start
-      displayName: 'Start Azure Storage Emulator'
+       docker pull mcr.microsoft.com/azure-storage/azurite
+       docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite
+      displayName: 'Start Azurite Storage Emulator'
 
     - script: |
        docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
@@ -78,7 +84,11 @@ stages:
         scriptLocation: 'inlineScript'
         inlineScript: 'az resource list --resource-group FhirAnalyticsPipeline'
       displayName: Set up Azure account
-      
+
+    - task: VisualStudioTestPlatformInstaller@1
+      inputs:
+        packageFeedSelector: 'nugetOrg' # Options: nugetOrg, customFeed, netShare
+
     - task: VSTest@2
       displayName: 'Run managed tests'
       inputs:
