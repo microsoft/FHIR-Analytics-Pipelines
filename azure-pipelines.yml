@@ -31,7 +31,7 @@ stages:
     - template: FhirToDataLake/build.yml
 
 - stage: Release
-  #condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   pool:
     vmImage: 'windows-latest'
   jobs:

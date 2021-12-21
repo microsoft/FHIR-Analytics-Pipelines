@@ -75,7 +75,7 @@ steps:
 - task: MSBuild@1
   displayName: 'Publish function app'
   inputs:
-    solution: 'FhirToDataLake\**\*.FunctionApp.csproj'
+    solution: FhirToDataLake/**/*.FunctionApp.csproj
     msbuildArchitecture: $(BuildPlatform)
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
