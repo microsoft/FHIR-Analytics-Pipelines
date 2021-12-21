@@ -1,0 +1,237 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+- main
+- synapse
+- refs/heads/synapse
+pr:
+- main
+- synapse
+
+variables:
+  buildConfiguration: 'Release'
+  buildPlatform: 'x64'
+  major: 0
+  minor: 3
+  patch: 0
+  buildnum: $[counter(format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch']), 1)]
+  version: $(major).$(minor).$(patch).$(buildnum)
+
+stages:
+- stage: Build
+  pool:
+    vmImage: windows-latest
+  jobs:
+  - job: BuildFhirToCdm
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: Build Engine Core
+      inputs:
+        command: build
+        projects: FhirToCdm/*.sln
+        arguments: '--configuration $(buildConfiguration)'
+
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '12.x'
+        checkLatest: true
+
+    - script: |
+        npm install --prefix Configuration-Generator Configuration-Generator
+        npm run build Configuration-Generator
+      workingDirectory: FhirToCdm
+      displayName: 'Install & Build Configuartion Generator'
+
+    - script: npm run citest --prefix Configuration-Generator
+      workingDirectory: FhirToCdm
+      displayName: 'Run Configuartion Generator Tests'
+
+    - task: DotNetCoreCLI@2
+      displayName: Run Engine Core Tests
+      inputs:
+        command: test
+        projects: '**/*Test/*.csproj'
+        arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
+
+    - task: PublishTestResults@2
+      displayName: Publish Test Results
+      condition: succeededOrFailed()
+      inputs:
+        testRunner: JUnit
+        testResultsFiles: '**/TEST-RESULTS.xml'
+
+  - job: BuildFhirToDataLake
+    steps:
+    - task: NuGetAuthenticate@0
+      displayName: 'NuGet Authenticate'
+
+    - task: NuGetToolInstaller@1
+      displayName: 'Use NuGet 5.11'
+      inputs:
+        versionSpec: 5.11
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore packages.config'
+      inputs:
+        restoreSolution: '**/*.Native/packages.config'
+        vstsFeed: 'FhirAnalytics/FhirAnalyticsPublic'
+        restoreDirectory: '../../packages'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet restore solution'
+      inputs:
+        command: restore
+        projects: FhirToDataLake/*.sln
+
+    - task: MSBuild@1
+      displayName: 'Build solution'
+      inputs:
+        solution: FhirToDataLake/*.sln
+        msbuildArchitecture: $(buildPlatform)
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+        msbuildArguments: '-p:ApplicationVersion=$(version)'
+
+    - script: |
+       "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" init /server "(localdb)\MsSqlLocalDb"
+       "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start
+      displayName: 'Start Azure Storage Emulator'
+
+    - script: |
+       docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
+       docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
+      displayName: Start mock-data-source
+      
+    - task: VSTest@2
+      displayName: 'Run native tests'
+      inputs:
+        testAssemblyVer2: |
+         **\*Native*\**\*UnitTests.dll
+         !**\obj\**
+         !**\ref\**
+        searchFolder: '$(Build.SourcesDirectory)'
+        codeCoverageEnabled: true
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+
+    - task: VSTest@2
+      displayName: 'Run managed tests'
+      inputs:
+        testAssemblyVer2: |
+         FhirToDataLake\**\*Tests.dll
+         !**\*Native*\**\*UnitTests.dll
+         !**\obj\**
+         !**\ref\**
+        searchFolder: '$(Build.SourcesDirectory)'
+        codeCoverageEnabled: true
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+
+    - task: Docker@2
+      displayName: Stop mock-data-source
+      condition: succeededOrFailed()
+      inputs:
+        command: stop
+        container: mock-data-source
+
+    # ref: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-function-app?view=azure-devops#error-publish-using-zip-deploy-option-is-not-supported-for-msbuild-package-type
+    - task: MSBuild@1
+      displayName: 'Publish function app'
+      inputs:
+        solution: 'FhirToDataLake\**\*.FunctionApp.csproj'
+        msbuildArchitecture: $(BuildPlatform)
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArguments: '-p:DeployOnBuild=true -p:DeployDefaultTarget=WebPublish -p:WebPublishMethod=FileSystem -p:DeleteExistingFiles=True -p:publishUrl=$(Build.SourcesDirectory)/bin/publish/functionapp -p:ApplicationVersion=$(version)'
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive function app'
+      inputs:
+        rootFolderOrFile: '$(Build.SourcesDirectory)/bin/publish/functionapp'
+        includeRootFolder: false
+        archiveFile: '$(Build.ArtifactStagingDirectory)/FhirToDataLake/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/FhirToDataLake'
+        ArtifactName: FhirToDataLakeBuild
+
+- stage: Release
+  #condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - job: PublishFhirToCdm
+    pool:
+        vmImage: 'windows-latest'
+    steps:
+    - task: ArchiveFiles@2
+      displayName: 'Archive Configuration Generator'
+      inputs:
+        rootFolderOrFile: '$(Build.SourcesDirectory)/FhirToCdm/Configuration-Generator'
+        includeRootFolder: true
+        archiveFile: '$(Build.ArtifactStagingDirectory)/ConfigurationGenerator/ConfigurationGenerator.zip'
+        replaceExistingArchive: true
+
+    - task: DotNetCoreCLI@2
+      displayName: Build Batch Executor
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: 'FhirToCdm/Microsoft.Health.Fhir.Transformation.BatchExecutor/*.csproj'
+        arguments: '-c Release -r win10-x64 --self-contained true --output $(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Transformation.BatchExecutor'
+        modifyOutputPath: false
+
+    - task: DotNetCoreCLI@2
+      displayName: Build Local Tool
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: 'FhirToCdm/Microsoft.Health.Fhir.Transformation.Cdm.Tool/*.csproj'
+        arguments: '-c Release -r win10-x64 --self-contained true --output $(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Transformation.Cdm.Tool'
+        modifyOutputPath: false
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Batch Executor
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Transformation.BatchExecutor'
+        ArtifactName: FhirToCdmBuild
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Local Tool
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Transformation.Cdm.Tool'
+        ArtifactName: FhirToCdmBuild
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Configuration Generator
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/ConfigurationGenerator'
+        ArtifactName: FhirToCdmBuild
+
+  - job: PublishArtifactsToGitHub
+    pool:
+        vmImage: 'windows-latest'
+    steps:
+    - task: DownloadBuildArtifacts@0
+      displayName: 'Download FhirToDataLake Artifacts'
+      inputs:
+        artifactName: FhirToDataLakeBuild
+        downloadPath: $(System.DefaultWorkingDirectory)
+
+    - task: DownloadBuildArtifacts@0
+      displayName: 'Download FhirToCdm Artifacts'
+      inputs:
+        artifactName: FhirToCdmBuild
+        downloadPath: $(System.DefaultWorkingDirectory)
+
+    - task: GithubRelease@0
+      displayName: 'Create GitHub Release'
+      inputs:
+        gitHubConnection: githubpipeline
+        repositoryName: microsoft/FHIR-Analytics-Pipelines
+        isDraft: true
+        tagSource: manual
+        tag: v$(major).$(minor).$(patch)
+        assets: |
+          $(System.DefaultWorkingDirectory)/FhirToDataLakeBuild/**
+          $(System.DefaultWorkingDirectory)/FhirToCdmBuild/**
