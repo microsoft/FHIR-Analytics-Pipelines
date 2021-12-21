@@ -1,0 +1,44 @@
+steps:
+- task: ArchiveFiles@2
+  displayName: 'Archive Configuration Generator'
+  inputs:
+    rootFolderOrFile: '$(Build.SourcesDirectory)/FhirToCdm/Configuration-Generator'
+    includeRootFolder: true
+    archiveFile: '$(Build.ArtifactStagingDirectory)/ConfigurationGenerator/ConfigurationGenerator.zip'
+    replaceExistingArchive: true
+
+- task: DotNetCoreCLI@2
+  displayName: Build Batch Executor
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: 'FhirToCdm/Microsoft.Health.Fhir.Transformation.BatchExecutor/*.csproj'
+    arguments: '-c Release -r win10-x64 --self-contained true --output $(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Transformation.BatchExecutor'
+    modifyOutputPath: false
+
+- task: DotNetCoreCLI@2
+  displayName: Build Local Tool
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: 'FhirToCdm/Microsoft.Health.Fhir.Transformation.Cdm.Tool/*.csproj'
+    arguments: '-c Release -r win10-x64 --self-contained true --output $(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Transformation.Cdm.Tool'
+    modifyOutputPath: false
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Batch Executor
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Transformation.BatchExecutor'
+    ArtifactName: FhirToCdmBuild
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Local Tool
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Transformation.Cdm.Tool'
+    ArtifactName: FhirToCdmBuild
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Configuration Generator
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/ConfigurationGenerator'
+    ArtifactName: FhirToCdmBuild

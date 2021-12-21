@@ -1,20 +1,9 @@
-trigger:
-- main
-
-pool:
-  vmImage: 'windows-latest'
-
-variables:
-  solution: '**/*.sln'
-  testProjects: "**/*Test/*.csproj"
-  buildConfiguration: 'Release'
-
 steps:
 - task: DotNetCoreCLI@2
   displayName: Build Engine Core
   inputs:
     command: build
-    projects: '$(solution)'
+    projects: FhirToCdm/*.sln
     arguments: '--configuration $(buildConfiguration)'
 
 - task: NodeTool@0
@@ -23,18 +12,20 @@ steps:
     checkLatest: true
 
 - script: |
-    npm install --prefix Configuration-Generator $(System.DefaultWorkingDirectory)\Configuration-Generator
+    npm install --prefix Configuration-Generator Configuration-Generator
     npm run build Configuration-Generator
+  workingDirectory: FhirToCdm
   displayName: 'Install & Build Configuartion Generator'
 
 - script: npm run citest --prefix Configuration-Generator
+  workingDirectory: FhirToCdm
   displayName: 'Run Configuartion Generator Tests'
 
 - task: DotNetCoreCLI@2
   displayName: Run Engine Core Tests
   inputs:
     command: test
-    projects: '$(testProjects)'
+    projects: '**/*Test/*.csproj'
     arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
 
 - task: PublishTestResults@2
@@ -43,4 +34,3 @@ steps:
   inputs:
     testRunner: JUnit
     testResultsFiles: '**/TEST-RESULTS.xml'
-    
