@@ -10,13 +10,13 @@ This solution enables you to query against the entire FHIR data with tools such 
 
 ### Prerequisites
 
-- An instance of Azure API for FHIR, FHIR server for Azure, or the FHIR server in Azure Healthcare APIs. The pipeline will sync data from this FHIR server.
+- An instance of Azure API for FHIR, FHIR server for Azure, or the FHIR service in Azure Healthcare APIs. The pipeline will sync data from this FHIR server.
 - A Synapse workspace.
 
 ### Steps at high level
 
 1. Deploy the pipeline using the given ARM template.
-1. Provide access of the FHIR server to the Azure Function that was deployed in the previous step.
+1. Provide access of the FHIR service to the Azure Function that was deployed in the previous step.
 1. Verify that the data gets copied to the Storage Account. If data is copied to the Storage Account, then the pipeline is working successfully.
 1. Provide access of the Storage Account and the Synapse workspace to your account for running the PowerScript mentioned below.
 1. Provide access of the Storage Account to the Synapse Workspace to access the data from Synapse.
@@ -59,7 +59,7 @@ This solution enables you to query against the entire FHIR data with tools such 
 
 ### 2. Provide Access of the FHIR server to the Azure Function
 
-If you are using the Azure API for FHIR or the FHIR server in Azure Healthcare APIs, assign the **FHIR Data Reader** role to the Azure Function noted above.
+If you are using the Azure API for FHIR or the FHIR service in Azure Healthcare APIs, assign the **FHIR Data Reader** role to the Azure Function noted above.
 
 If you are using the FHIR server for Azure with anonymous access, then you can skip this step.
 
@@ -90,9 +90,11 @@ Running the PowerShell script that creates following artifacts:
 To run the PowerShell Script, perform the following steps:
 
 1. Ensure that you have the latest version of the PowerShell.
-1. Clone this [GitHub](https://github.com/microsoft/FHIR-Analytics-Pipelines) repo to your local machine.
-1. Open the Azure CLI and browse to the scripts folder.
+1. Open the Azure CLI.
 1. Sign in to your Azure account using `Connect-AzAccount -SubscriptionId 'yyyy-yyyy-yyyy-yyyy'`. Use your subscription ID.
+1. Run `Install-Module -Name Az.Synapse`. This is to ensure that you have the latest version of the Az.Synapse sub-module as it is not updated by default. 
+1. Clone this [GitHub](https://github.com/microsoft/FHIR-Analytics-Pipelines) repo inside your Azure CLI folder.
+1. Browse to the scripts folder under this path (..\FHIR-Analytics-Pipelines-main\FhirToDataLake\scripts).
 1. Run `./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName "{Name of your Synapse workspace instance}" -StorageName "{Name of your storage account where Parquet files are written}"`. Refer to the complete syntax below.
 
 ``` PowerShell
