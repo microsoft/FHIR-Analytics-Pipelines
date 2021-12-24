@@ -15,6 +15,13 @@ steps:
     restoreDirectory: '../../packages'
 
 - task: UseDotNet@2
+  displayName: 'Install .NET Core 3.1'
+  inputs:
+    packageType: sdk
+    version: 3.0.x
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+- task: UseDotNet@2
   displayName: 'Use .NET Core sdk'
   inputs:
     packageType: sdk
