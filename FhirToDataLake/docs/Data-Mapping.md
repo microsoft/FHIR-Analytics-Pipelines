@@ -1,15 +1,15 @@
 # Data mapping from FHIR to Synapse
 The Synapse sync pipeline fetches, converts, and saves FHIR data to the Azure storage in the [Apache Parquet format](https://docs.microsoft.com/en-us/azure/databricks/data/data-sources/read-parquet). The Apache Parquet format is an open source file format designed for efficient and performant flat columnar storage format of data compared to row based files like CSV or TSV files. For more information about its detailed storage strategy, see the [Apache Parquet](https://parquet.apache.org/documentation/latest/) documentation.
 
-Azure Synapse Analytics supports [Parquet files](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/query-parquet-files) in Serverless SQL pool. PowerShell [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) is provided to users to create default EXTERNAL TABLEs/VIEWs on Synapse. Refer to the default [SQL scripts](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/scripts/sql/Resources) for information about creating customized EXTERNAL TABLEs or VIEWs.
+Azure Synapse Analytics supports [Parquet files](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/query-parquet-files) in Serverless SQL pool. PowerShell [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) is provided to users to create default EXTERNAL TABLEs/VIEWs on Synapse. Refer to [CREATE EXTERNAL TABLE](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/create-use-external-tables) and [CREATE VIEW](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/create-use-views) for information about EXTERNAL TABLEs/VIEWs on Synapse.
 
-The information below descibes how to convert raw FHIR JSON data to Parquet format and how to define the default EXTERNAL TABLEs/VIEWs.
+The information below describes how the raw FHIR JSON is converted to Parquet format and subsequently mapped to EXTERNAL TABLEs/VIEWs.
 
 ## FHIR JSON data to Parquet data
 
-Parquet format supports nested and repeated structure. Theoretically, JSON data can be a lossless convert to Parquet format, but for stability and practical purposes, we designed piece schemas to transform FHIR raw JSON data into Parquet following the rules listed below. The detailed schemas are available in the [**data/schemas**](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/data/schemas) directory.
+Parquet format supports nested and repeated structure. Theoretically, JSON data can be converted losslessly to Parquet format, but for stability and practical purposes, we designed piece schemas to transform FHIR raw JSON data into Parquet following the rules listed below. The detailed schemas are available in the [**data/schemas**](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/data/schemas) directory.
 
-Data saved in Parquet format is human unreadable due to the compressed and storage strategy. To view a sample Python script read a Parquet file with specific columns for a patient resource, see  [Using Python library to quickly read Parquet files](#using-python-library-to-quickly-read-parquet-files).
+Data saved in Parquet format is unreadable by humans due to the way it is compressed and stored. Here is a sample [Python script](#using-python-library-to-quickly-read-parquet-files) read a Parquet file with specific columns for a patient resource.
 
 Below is a JSON example that shows how the data is stored in Parquet.
 
@@ -136,7 +136,7 @@ From the recommandation on SQL-based projection of FHIR resources [Sql-On-Fhir](
 ```
 
 ## Query Parquet data on Synapse
-The PowerShell script [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) creates a default EXTERNAL TABLEs and VIEWs on Synapse serverless SQL pool. For more information, see [Query Parquet files using serverless SQL pool in Azure Synapse Analytics](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/query-parquet-files) and refer to the default [SQL scripts](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/scripts/sql/Resources) to manually create customized TABLEs and VIEWs.
+The PowerShell script [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) creates default EXTERNAL TABLEs and VIEWs on Synapse serverless SQL pool. 
 
 Below are general rules of the default TABLEs and VIEWs defintions.
 
@@ -182,9 +182,6 @@ EXTERNAL TABLE can directly parse nested data in Parquet files. Nested data is e
     ```sql
     [name] VARCHAR(MAX)
     ```
-
-
-Default VIEWs help to analyze repeated fields in first depth.
 
 ### Definitions for VIEW
 
