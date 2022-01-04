@@ -16,7 +16,7 @@ using Microsoft.Health.Fhir.Synapse.Core.DataWriter;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.Models.Tasks;
-using Microsoft.Health.Fhir.Synapse.DataSource;
+using Microsoft.Health.Fhir.Synapse.DataClient;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Tasks

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Fhir.Synapse.Azure;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core;
-using Microsoft.Health.Fhir.Synapse.DataSource;
+using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.FunctionApp

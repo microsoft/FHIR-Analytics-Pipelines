@@ -15,7 +15,7 @@ using Microsoft.Health.Fhir.Synapse.Azure;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core;
-using Microsoft.Health.Fhir.Synapse.DataSource;
+using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.Tool;
 using Newtonsoft.Json.Linq;

@@ -18,7 +18,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
-using Microsoft.Health.Fhir.Synapse.DataSource.Fhir;
+using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
 using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
