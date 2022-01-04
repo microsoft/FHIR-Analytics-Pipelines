@@ -14,20 +14,6 @@ steps:
     vstsFeed: 'FhirAnalytics/FhirAnalyticsPublic'
     restoreDirectory: '../../packages'
 
-- task: UseDotNet@2
-  displayName: 'Install .NET Core 3.1'
-  inputs:
-    packageType: sdk
-    version: 3.1.x
-    installationPath: $(Agent.ToolsDirectory)/dotnet
-
-- task: UseDotNet@2
-  displayName: 'Use .NET Core sdk'
-  inputs:
-    packageType: sdk
-    version: 5.0.x
-    installationPath: $(Agent.ToolsDirectory)/dotnet
-
 - task: DotNetCoreCLI@2
   displayName: 'dotnet restore solution'
   inputs:
@@ -43,25 +29,25 @@ steps:
     configuration: '$(buildConfiguration)'
     msbuildArguments: '-p:ApplicationVersion=$(version)'
 
-- task: DockerInstaller@0
-  displayName: Docker Installer
-  inputs:
-    dockerVersion: 17.09.0-ce
-    releaseType: stable
-
 - script: |
-    docker pull mcr.microsoft.com/azure-storage/azurite
-    docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite
-  displayName: 'Start Azurite Storage Emulator'
+    "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" init /server "(localdb)\MsSqlLocalDb"
+    "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start
+  displayName: 'Start Azure Storage Emulator'
 
 - script: |
     docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
     docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
   displayName: Start mock-data-source
 
-- task: VisualStudioTestPlatformInstaller@1
+- task: AzureCLI@2
+  displayName: Azure CLI Login
   inputs:
-    packageFeedSelector: 'nugetOrg' # Options: nugetOrg, customFeed, netShare
+    azureSubscription: ResoluteOpenSource
+    scriptType: ps
+    scriptLocation: inlineScript
+    inlineScript: |
+      az --version
+      az account show
 
 - task: VSTest@2
   displayName: 'Run native tests'
@@ -79,7 +65,7 @@ steps:
   displayName: 'Run managed tests'
   inputs:
     testAssemblyVer2: |
-      FhirToDataLake\**\*E2ETests.dll
+      FhirToDataLake\**\*Tests.dll
       !**\*Native*\**\*UnitTests.dll
       !**\obj\**
       !**\ref\**

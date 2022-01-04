@@ -19,7 +19,8 @@ variables:
 
 stages:
 - stage: Build
-  pool: AzureVMSetAgent
+  pool:
+    vmImage: windows-latest
   jobs:
   - job: BuildFhirToCdm
     steps:
