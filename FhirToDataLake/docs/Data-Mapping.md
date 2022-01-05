@@ -9,7 +9,7 @@ The information below describes how the raw FHIR JSON is converted to Parquet fo
 
 Parquet format supports nested and repeated structure. Theoretically, JSON data can be converted losslessly to Parquet format, but for stability and practical purposes, we designed piece schemas to transform FHIR raw JSON data into Parquet following the rules listed below. The detailed schemas are available in the [**data/schemas**](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/data/schemas) directory.
 
-Data saved in Parquet format is unreadable by humans due to the way it is compressed and stored. Here is a sample [Python script](#using-python-library-to-quickly-read-parquet-files) read a Parquet file with specific columns for a patient resource.
+Data saved in the Parquet format is unreadable by humans due to the way it's compressed and stored. The sample [Python script](#using-python-library-to-quickly-read-parquet-files) reads a Parquet file with specific columns for a patient resource.
 
 Below is a JSON example that shows how the data is stored in Parquet.
 
