@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.Health.Fhir.Synapse.Core.Models.Tasks;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

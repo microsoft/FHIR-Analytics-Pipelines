@@ -13,22 +13,22 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
 {
     public class SynapseLinkService : BackgroundService
     {
-        private JobManager _jobManager;
+        private JobExecutor _jobExecutor;
         private IHostApplicationLifetime _hostApplicationLifetime;
 
         public SynapseLinkService(
             IHostApplicationLifetime hostApplicationLifetime,
-            JobManager jobManager)
+            JobExecutor jobExecutor)
         {
             _hostApplicationLifetime = hostApplicationLifetime;
-            _jobManager = jobManager;
+            _jobExecutor = jobExecutor;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
             {
-                await _jobManager.TriggerJobAsync(stoppingToken);
+                await _jobExecutor.TriggerJobAsync(stoppingToken);
             }
             catch (Exception ex)
             {
@@ -42,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            await _jobManager.DisposeAsync();
+            await _jobExecutor.DisposeAsync();
             Console.WriteLine("Jobmanager gracefully disposed.");
         }
     }

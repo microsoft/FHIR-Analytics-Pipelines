@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.Serialization;
-using Microsoft.Health.Fhir.Synapse.Core.Models.Data;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
 {

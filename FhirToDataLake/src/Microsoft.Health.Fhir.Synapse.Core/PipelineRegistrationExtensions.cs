@@ -4,9 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.Json;
-using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.Parquet;
-using Microsoft.Health.Fhir.Synapse.Core.DataWriter;
+using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
 
@@ -19,13 +17,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core
         {
             services.AddSingleton<IJobStore, AzureBlobJobStore>();
 
-            services.AddSingleton<JobManager, JobManager>();
+            services.AddSingleton<JobExecutor, JobExecutor>();
 
             services.AddSingleton<ITaskExecutor, TaskExecutor>();
-
-            services.AddSingleton<IFhirDataWriter, FhirDataWriter>();
-
-            services.AddSingleton<IJsonDataProcessor, JsonDataProcessor>();
 
             services.AddSingleton<IColumnDataProcessor, ParquetDataProcessor>();
 

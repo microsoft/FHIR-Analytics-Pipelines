@@ -6,7 +6,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.Fhir.Synapse.Core.Models.Tasks;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
 {

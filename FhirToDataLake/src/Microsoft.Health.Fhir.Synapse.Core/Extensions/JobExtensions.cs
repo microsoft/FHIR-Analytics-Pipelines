@@ -5,7 +5,7 @@
 
 using System.IO;
 using System.Text;
-using Microsoft.Health.Fhir.Synapse.Core.Models.Jobs;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Extensions

@@ -10,13 +10,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.Json;
-using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.Parquet;
-using Microsoft.Health.Fhir.Synapse.Core.DataWriter;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
+using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
-using Microsoft.Health.Fhir.Synapse.Core.Models.Data;
-using Microsoft.Health.Fhir.Synapse.Core.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
@@ -26,7 +25,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
         private readonly IFhirDataClient _dataClient;
         private readonly IFhirDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
-        private readonly IJsonDataProcessor _jsonDataProcessor;
         private readonly ILogger<TaskExecutor> _logger;
 
         private const int ReportProgressBatchCount = 10000;
@@ -36,19 +34,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             IFhirDataClient dataClient,
             IFhirDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
-            IJsonDataProcessor jsonDataProcessor,
             ILogger<TaskExecutor> logger)
         {
             EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
-            EnsureArg.IsNotNull(jsonDataProcessor, nameof(jsonDataProcessor));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _dataClient = dataClient;
             _dataWriter = dataWriter;
             _parquetDataProcessor = parquetDataProcessor;
-            _jsonDataProcessor = jsonDataProcessor;
             _logger = logger;
         }
 
@@ -78,9 +73,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
 
                 foreach (var data in partitionData)
                 {
+                    var originalSkippedCount = taskContext.SkippedCount;
                     var jObjectData = data.ToImmutableList().ToJsonBatchData();
-                    var normalizedJObjectBatchData = await _jsonDataProcessor.ProcessAsync(jObjectData, taskContext);
-                    var parquetStream = await _parquetDataProcessor.ProcessAsync(normalizedJObjectBatchData, taskContext, cancellationToken);
+                    var parquetStream = await _parquetDataProcessor.ProcessAsync(jObjectData, taskContext, cancellationToken);
+                    var skippedCount = taskContext.SkippedCount - originalSkippedCount;
+
                     if (parquetStream?.Value?.Length > 0)
                     {
                         var blobUrl = await _dataWriter.WriteAsync(parquetStream, taskContext, data.Key.Value, cancellationToken);
@@ -89,7 +86,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                             fhirElementsData.ContinuationToken,
                             blobUrl,
                             jObjectData.Values.Count(),
-                            normalizedJObjectBatchData.Values.Count());
+                            jObjectData.Values.Count() - skippedCount);
 
                         taskContext.PartId += 1;
                         _logger.LogInformation(

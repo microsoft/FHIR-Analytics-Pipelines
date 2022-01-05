@@ -15,9 +15,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Azure.Blob;
 using Microsoft.Health.Fhir.Synapse.Azure.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
-using Microsoft.Health.Fhir.Synapse.Core.Models.Jobs;
 using Newtonsoft.Json;
 using Timer = System.Timers.Timer;
 

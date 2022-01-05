@@ -24,21 +24,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Health.Fhir.Synapse.Azure\Microsoft.Health.Fhir.Synapse.Azure.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Health.Fhir.Synapse.Core\Microsoft.Health.Fhir.Synapse.Core.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Health.Fhir.Synapse.DataWriter\Microsoft.Health.Fhir.Synapse.DataWriter.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="DataProcessor\**\*.ndjson">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="DataProcessor\**\*.parquet">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="TestData\*.json">
+    <None Update="TestData\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
