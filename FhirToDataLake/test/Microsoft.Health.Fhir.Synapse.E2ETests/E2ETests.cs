@@ -56,7 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Skip.If(_blobServiceClient == null);
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             BlobContainerClient blobContainerClient = _blobServiceClient.GetBlobContainerClient(uniqueContainerName);
-            
+
             // Make sure the container is deleted before running the tests
             Assert.False(await blobContainerClient.ExistsAsync());
 

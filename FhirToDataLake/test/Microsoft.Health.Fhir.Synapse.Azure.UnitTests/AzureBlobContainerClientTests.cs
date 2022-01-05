@@ -527,7 +527,7 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.UnitTests
         }
 
         [SkippableFact]
-        public async void GivenANonExistDirectoryName_WhenGetSubDirectoires_NoSubDirectoryShouldReturn()
+        public async void GivenANonExistDirectoryName_WhenGetSubDirectories_NoSubDirectoryShouldBeReturned()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
@@ -549,7 +549,7 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.UnitTests
         }
 
         [SkippableFact]
-        public async void GivenANonExistDirectoryName_WhenMoveDirectory_NoSubDirectoryShouldReturn()
+        public async void GivenANonExistDirectoryName_WhenMoveDirectory_ExceptionShouldBeThrown()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
@@ -570,7 +570,7 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.UnitTests
         }
 
         [SkippableFact]
-        public async void GivenADirectoryName_WhenGetSubDirectoires_AllSubDirectoryShouldReturn()
+        public async void GivenADirectoryName_WhenGetSubDirectories_AllSubDirectoriesShouldBeReturned()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
@@ -600,7 +600,7 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.UnitTests
         }
 
         [SkippableFact]
-        public async void GivenADirectoryName_WhenMoveDirectoires_AllSubDirectoryShouldBeMoved()
+        public async void GivenADirectoryName_WhenMoveDirectories_AllSubDirectoriesShouldBeMoved()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
