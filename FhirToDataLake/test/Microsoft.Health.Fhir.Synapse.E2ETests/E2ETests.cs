@@ -61,6 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Assert.False(await blobContainerClient.ExistsAsync());
 
             // Load configuration
+            Environment.SetEnvironmentVariable("job:containerName", uniqueContainerName);
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile(_configurationPath)
                 .AddEnvironmentVariables()
@@ -96,6 +97,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Assert.False(await blobContainerClient.ExistsAsync());
 
             // Load configuration and set endTime to yesterday
+            Environment.SetEnvironmentVariable("job:containerName", uniqueContainerName);
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile(_configurationPath)
                 .AddEnvironmentVariables()
