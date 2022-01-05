@@ -39,15 +39,19 @@ steps:
     docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
   displayName: Start mock-data-source
 
-- task: AzureCLI@2
-  displayName: Azure CLI Login
+- task: AzureKeyVault@2
   inputs:
-    azureSubscription: ResoluteOpenSource
-    scriptType: ps
-    scriptLocation: inlineScript
-    inlineScript: |
-      az --version
-      az account show
+    azureSubscription: 'ResoluteOpenSource'
+    KeyVaultName: 'fhiranalyticspipeline'
+    SecretsFilter: '*'
+    RunAsPreJob: false
+
+- task: PowerShell@2
+  displayName: Login Azure Account
+  inputs:
+    targetType: 'inline'
+    script: |
+      az login -u $(pipeline-service-principal-name) -p $(pipeline-service-principal-password) --service-principal --tenant $(pipeline-tenant-id)
 
 - task: VSTest@2
   displayName: 'Run native tests'
@@ -73,6 +77,14 @@ steps:
     codeCoverageEnabled: true
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+
+- task: PowerShell@2
+  displayName: Logout Azure Account
+  inputs:
+    targetType: 'inline'
+    script: |
+      az logout
+      Write-Host "Cleared Azure Account successfully."
 
 - task: Docker@2
   displayName: Stop mock-data-source
