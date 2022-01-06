@@ -4,11 +4,9 @@
 // -------------------------------------------------------------------------------------------------
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Health.Fhir.Synapse.Azure.Blob;
-using Microsoft.Health.Fhir.Synapse.DataWriter;
-using Microsoft.Health.Fhir.Synapse.DataWriter.Blob;
+using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 
-namespace Microsoft.Health.Fhir.Synapse.Azure
+namespace Microsoft.Health.Fhir.Synapse.DataWriter
 {
     public static class DataWriterRegistrationExtensions
     {

@@ -7,7 +7,7 @@ using System;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
+namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
     public class AzureBlobContainerClientFactory : IAzureBlobContainerClientFactory
     {

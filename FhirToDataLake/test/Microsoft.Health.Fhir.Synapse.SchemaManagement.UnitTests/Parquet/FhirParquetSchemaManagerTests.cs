@@ -6,15 +6,17 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Xunit;
 
-namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
+namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
 {
-    public class FhirSchemaManagerTests
+    public class FhirParquetSchemaManagerTests
     {
         private static readonly IOptions<SchemaConfiguration> _schemaConfigurationOption;
 
-        static FhirSchemaManagerTests()
+        static FhirParquetSchemaManagerTests()
         {
             _schemaConfigurationOption = Options.Create(new SchemaConfiguration()
             {
@@ -29,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
         [Theory]
         public static void GivenAResourceType_WhenGetSchema_CorrectResultShouldBeReturned(string resourceType, int propertyCount)
         {
-            var schemaManager = new FhirSchemaManager(_schemaConfigurationOption, NullLogger<FhirSchemaManager>.Instance);
+            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
             var result = schemaManager.GetSchema(resourceType);
 
             Assert.Equal(resourceType, result.Name);
@@ -40,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
         [Fact]
         public static void GivenInvalidResourceType_WhenGetSchema_NullShouldBeReturned()
         {
-            var schemaManager = new FhirSchemaManager(_schemaConfigurationOption, NullLogger<FhirSchemaManager>.Instance);
+            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
 
             var resourceType = "InvalidResource";
 
@@ -51,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
         [Fact]
         public static void WhenGetAllSchemas_CorrectResultShouldBeReturned()
         {
-            var schemaManager = new FhirSchemaManager(_schemaConfigurationOption, NullLogger<FhirSchemaManager>.Instance);
+            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
 
             var schemas = schemaManager.GetAllSchemas();
             Assert.Equal(145, schemas.Count);
@@ -70,7 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
                 SchemaCollectionDirectory = schemaDirectoryPath,
             });
 
-            Assert.Throws<FhirSchemaException>(() => new FhirSchemaManager(invalidSchemaConfigurationOption, NullLogger<FhirSchemaManager>.Instance));
+            Assert.Throws<FhirSchemaException>(() => new FhirParquetSchemaManager(invalidSchemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance));
         }
     }
 }

@@ -11,9 +11,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.Fhir.Synapse.Azure.Blob;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
+using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs

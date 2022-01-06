@@ -20,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
             _jobExecutor = jobExecutor;
         }
 
-        [Function("JobManagerFunction")]
+        [Function("JobExecutorFunction")]
         public async Task Run(
             [TimerTrigger("0 */5 * * * *", RunOnStartup = true)] MyInfo myTimer,
             FunctionContext context)

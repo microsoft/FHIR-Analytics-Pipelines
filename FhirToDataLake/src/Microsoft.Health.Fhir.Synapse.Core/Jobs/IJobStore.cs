@@ -57,6 +57,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>SchedulerSetting object, return null if not exists.</returns>
         public Task<SchedulerMetadata> GetSchedulerMetadata(CancellationToken cancellationToken = default);
-
     }
 }

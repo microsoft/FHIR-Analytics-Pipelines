@@ -6,9 +6,8 @@
 using EnsureThat;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.DataWriter;
 
-namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
+namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
     public class AzureBlobDataSink : IDataSink
     {

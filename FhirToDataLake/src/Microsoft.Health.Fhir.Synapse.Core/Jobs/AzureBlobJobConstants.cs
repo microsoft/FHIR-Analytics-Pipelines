@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         /// <summary>
         /// For each triggered job, we will query all FHIR data in a certain time period.
-        /// But when the end time of a period is very close to utcNow, 
+        /// But when the end time of a period is very close to utcNow,
         /// we have a risk to lose data that have not been saved to FHIR DB.
         /// So we set a latency to query FHIR data.
         /// </summary>

@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
 {
@@ -11,7 +12,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
     {
         public static IServiceCollection AddSchema(this IServiceCollection services)
         {
-            services.AddSingleton<IFhirSchemaManager, FhirSchemaManager>();
+            services.AddSingleton<IFhirSchemaManager<FhirParquetSchemaNode>, FhirParquetSchemaManager>();
 
             return services;
         }

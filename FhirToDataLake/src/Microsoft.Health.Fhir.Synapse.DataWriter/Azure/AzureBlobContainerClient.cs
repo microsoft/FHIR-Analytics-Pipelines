@@ -16,9 +16,9 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Azure.Exceptions;
+using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 
-namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
+namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
     public class AzureBlobContainerClient : IAzureBlobContainerClient
     {

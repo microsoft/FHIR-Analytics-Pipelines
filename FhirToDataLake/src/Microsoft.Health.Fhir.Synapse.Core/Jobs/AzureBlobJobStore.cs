@@ -12,12 +12,12 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Azure.Blob;
-using Microsoft.Health.Fhir.Synapse.Azure.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
+using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
+using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 using Newtonsoft.Json;
 using Timer = System.Timers.Timer;
 
@@ -260,6 +260,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 throw new StartJobFailedException($"Parse blob file '{blobName}' failed.", ex);
             }
         }
-
     }
 }

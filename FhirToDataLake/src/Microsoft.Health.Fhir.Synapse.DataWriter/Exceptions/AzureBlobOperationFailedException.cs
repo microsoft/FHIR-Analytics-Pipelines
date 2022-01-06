@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Microsoft.Health.Fhir.Synapse.Azure.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions
 {
     public class AzureBlobOperationFailedException : Exception
     {

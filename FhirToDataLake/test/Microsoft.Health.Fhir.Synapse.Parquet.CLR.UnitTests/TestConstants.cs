@@ -1,19 +1,24 @@
-﻿using System;
+﻿// -------------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// -------------------------------------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 
 namespace Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests
 {
     public static class TestConstants
     {
-        public static Dictionary<string, FhirSchemaNode> TestSchemaMap = CreateSchemaMap();
+        public static Dictionary<string, FhirParquetSchemaNode> TestSchemaMap = CreateSchemaMap();
 
-        private static Dictionary<string, FhirSchemaNode> CreateSchemaMap()
+        private static Dictionary<string, FhirParquetSchemaNode> CreateSchemaMap()
         {
-            var schemaMap = new Dictionary<string, FhirSchemaNode>();
+            var schemaMap = new Dictionary<string, FhirParquetSchemaNode>();
 
             // Mock Patient schema node
-            var idSchemaNode = new FhirSchemaNode
+            var idSchemaNode = new FhirParquetSchemaNode
             {
                 ChoiceTypeNodes = null,
                 Depth = 1,
@@ -24,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests
                 Type = "id",
             };
 
-            schemaMap["Patient"] = new FhirSchemaNode
+            schemaMap["Patient"] = new FhirParquetSchemaNode
             {
                 ChoiceTypeNodes = new Dictionary<string, Tuple<string, string>>
                 {
@@ -34,7 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests
                 Depth = 0,
                 Name = "Patient",
                 IsRepeated = false,
-                SubNodes = new Dictionary<string, FhirSchemaNode>
+                SubNodes = new Dictionary<string, FhirParquetSchemaNode>
                 {
                     { "id", idSchemaNode },
                 },
@@ -43,7 +48,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests
 
             // Mock Observation schema node
             idSchemaNode.NodePaths[0] = "Observation";
-            schemaMap["Observation"] = new FhirSchemaNode
+            schemaMap["Observation"] = new FhirParquetSchemaNode
             {
                 ChoiceTypeNodes = new Dictionary<string, Tuple<string, string>>
                 {
@@ -54,7 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests
                 Name = "Observation",
                 NodePaths = new List<string> { "Observation" },
                 IsRepeated = false,
-                SubNodes = new Dictionary<string, FhirSchemaNode>
+                SubNodes = new Dictionary<string, FhirParquetSchemaNode>
                 {
                     { "id", idSchemaNode },
                 },

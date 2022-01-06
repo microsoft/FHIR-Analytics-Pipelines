@@ -3,10 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Fhir.Synapse.DataWriter.Blob
+namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
-    public static class AzureStorageConstants
+    public interface IAzureBlobContainerClientFactory
     {
-        public const string ResultFolderName = "result";
+        public IAzureBlobContainerClient Create(string storeUrl, string containerName);
     }
 }

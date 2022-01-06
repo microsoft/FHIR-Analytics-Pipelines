@@ -9,7 +9,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
+namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
     public interface IAzureBlobContainerClient
     {

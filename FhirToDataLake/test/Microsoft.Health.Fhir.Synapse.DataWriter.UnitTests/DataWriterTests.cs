@@ -8,12 +8,11 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Azure.Blob;
-using Microsoft.Health.Fhir.Synapse.Azure.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
-using Microsoft.Health.Fhir.Synapse.DataWriter.Blob;
+using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
+using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
@@ -120,7 +119,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
 
         private AzureBlobDataWriter GetLocalDataWriter()
         {
-
             return new AzureBlobDataWriter(
                 new AzureBlobContainerClientFactory(new NullLoggerFactory()),
                 GetLocalDataSink(),

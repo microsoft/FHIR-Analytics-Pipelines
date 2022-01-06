@@ -8,7 +8,7 @@
 
 using namespace System;
 using namespace Collections::Generic;
-using namespace Microsoft::Health::Fhir::Synapse::SchemaManagement;
+using namespace Microsoft::Health::Fhir::Synapse::SchemaManagement::Parquet;
 
 namespace Microsoft
 {
@@ -36,7 +36,7 @@ namespace Microsoft
 							/// Initialize an ArrowSchemaManager with specified FHIR schema map.
 							/// </summary>
 							/// <param name="schemaMap">An map of resource type string to FHIR schema node.</param>
-							ArrowSchemaManager(Dictionary<String^, FhirSchemaNode^>^ schemaMap);
+							ArrowSchemaManager(Dictionary<String^, FhirParquetSchemaNode^>^ schemaMap);
 
 							/// <summary>
 							/// Get the arrow schema of the specified resource type. An exception will be thrown if the schema is not found.
@@ -50,7 +50,7 @@ namespace Microsoft
 							/// </summary>
 							/// <param name="resourceType">The resource type.</param>
 							/// <param name="schemaNode">The FHIR schema node.</param>
-							void AddOrUpdateArrowSchema(String^ resourceType, FhirSchemaNode^ schemaNode);
+							void AddOrUpdateArrowSchema(String^ resourceType, FhirParquetSchemaNode^ schemaNode);
 
 						private:
 
@@ -58,33 +58,33 @@ namespace Microsoft
 							/// Generate vector of arrow fields from given schema node.
 							/// This method is designed to generate fields to initialize arrow::schema(), which takes vector of arrow fields as input.
 							/// </summary>
-							/// <param name="schemaNode">FhirSchemaNode that we need to generate arrow fields from its subNodes.</param>
+							/// <param name="schemaNode">FhirParquetSchemaNode that we need to generate arrow fields from its subNodes.</param>
 							/// <returns>Vector of arrow field.</returns>
-							std::vector<std::shared_ptr<arrow::Field>> GenerateArrowFieldsFromSchemaNode(FhirSchemaNode^ schemaNode);
+							std::vector<std::shared_ptr<arrow::Field>> GenerateArrowFieldsFromSchemaNode(FhirParquetSchemaNode^ schemaNode);
 
 							/// <summary>
 							/// Generate struct arrow field from struct FHIR schema node.
 							/// </summary>
-							/// <param name="schemaNode">Struct FhirSchemaNode.</param>
+							/// <param name="schemaNode">Struct FhirParquetSchemaNode.</param>
 							/// <param name="fieldName">Field name string.</param>
 							/// <returns>Generated struct arrow field.</returns>
-							std::shared_ptr<arrow::Field> GenerateStructArrowField(FhirSchemaNode^ schemaNode, std::string fieldName);
+							std::shared_ptr<arrow::Field> GenerateStructArrowField(FhirParquetSchemaNode^ schemaNode, std::string fieldName);
 
 							/// <summary>
 							/// Generate array arrow field from struct FHIR schema node.
 							/// </summary>
-							/// <param name="schemaNode">Array FhirSchemaNode.</param>
+							/// <param name="schemaNode">Array FhirParquetSchemaNode.</param>
 							/// <param name="fieldName">Field name string.</param>
 							/// <returns>Generated array arrow field.</returns>
-							std::shared_ptr<arrow::Field> GenerateArrayArrowField(FhirSchemaNode^ schemaNode, std::string fieldName);
+							std::shared_ptr<arrow::Field> GenerateArrayArrowField(FhirParquetSchemaNode^ schemaNode, std::string fieldName);
 
 							/// <summary>
 							/// Generate primitive arrow field from struct FHIR schema node.
 							/// </summary>
-							/// <param name="schemaNode">Primitive FhirSchemaNode.</param>
+							/// <param name="schemaNode">Primitive FhirParquetSchemaNode.</param>
 							/// <param name="fieldName">Field name string.</param>
 							/// <returns>Generated primitive arrow field.</returns>
-							std::shared_ptr<arrow::Field> GeneratePrimitiveArrowField(FhirSchemaNode^ schemaNode, std::string fieldName);
+							std::shared_ptr<arrow::Field> GeneratePrimitiveArrowField(FhirParquetSchemaNode^ schemaNode, std::string fieldName);
 						};
 					}
 				}

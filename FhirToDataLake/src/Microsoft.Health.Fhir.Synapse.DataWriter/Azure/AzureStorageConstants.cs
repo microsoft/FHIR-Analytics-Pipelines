@@ -3,20 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-
-namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
+namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
-    public class FhirSchemaException : Exception
+    public static class AzureStorageConstants
     {
-        public FhirSchemaException(string message)
-            : base(message)
-        {
-        }
-
-        public FhirSchemaException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+        public const string ResultFolderName = "result";
     }
 }

@@ -5,9 +5,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
+namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 {
-    public static class FhirSchemaNodeConstants
+    public static class FhirParquetSchemaNodeConstants
     {
         /// <summary>
         /// Fields with this type will be wrapped into single Json string.

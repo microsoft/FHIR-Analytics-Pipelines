@@ -11,17 +11,18 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 
-namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
+namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 {
-    public class FhirSchemaManager : IFhirSchemaManager
+    public class FhirParquetSchemaManager : IFhirSchemaManager<FhirParquetSchemaNode>
     {
-        private readonly Dictionary<string, FhirSchemaNode> _resourceSchemaNodesMap;
-        private readonly ILogger<FhirSchemaManager> _logger;
+        private readonly Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
+        private readonly ILogger<FhirParquetSchemaManager> _logger;
 
-        public FhirSchemaManager(
+        public FhirParquetSchemaManager(
             IOptions<SchemaConfiguration> schemaConfiguration,
-            ILogger<FhirSchemaManager> logger)
+            ILogger<FhirParquetSchemaManager> logger)
         {
             _logger = logger;
 
@@ -29,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
             _logger.LogInformation($"Initialize FHIR schemas completed, {_resourceSchemaNodesMap.Count} resource schemas been loaded.");
         }
 
-        public FhirSchemaNode GetSchema(string resourceType)
+        public FhirParquetSchemaNode GetSchema(string resourceType)
         {
             if (!_resourceSchemaNodesMap.ContainsKey(resourceType))
             {
@@ -40,12 +41,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
             return _resourceSchemaNodesMap[resourceType];
         }
 
-        public Dictionary<string, FhirSchemaNode> GetAllSchemas()
+        public Dictionary<string, FhirParquetSchemaNode> GetAllSchemas()
         {
-            return new Dictionary<string, FhirSchemaNode>(_resourceSchemaNodesMap);
+            return new Dictionary<string, FhirParquetSchemaNode>(_resourceSchemaNodesMap);
         }
 
-        private Dictionary<string, FhirSchemaNode> LoadSchemas(string schemaDirectoryPath)
+        private Dictionary<string, FhirParquetSchemaNode> LoadSchemas(string schemaDirectoryPath)
         {
             if (!Directory.Exists(schemaDirectoryPath))
             {
@@ -60,12 +61,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
                 throw new FhirSchemaException($"No schema can be found in \"{schemaDirectoryPath}\".");
             }
 
-            var schemaNodesMap = new Dictionary<string, FhirSchemaNode>();
+            var schemaNodesMap = new Dictionary<string, FhirParquetSchemaNode>();
 
             foreach (string file in schemaFiles)
             {
                 string schemaNodeString;
-                FhirSchemaNode schemaNode;
+                FhirParquetSchemaNode schemaNode;
                 try
                 {
                     schemaNodeString = File.ReadAllText(file);
@@ -78,7 +79,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
 
                 try
                 {
-                    schemaNode = JsonSerializer.Deserialize<FhirSchemaNode>(schemaNodeString);
+                    schemaNode = JsonSerializer.Deserialize<FhirParquetSchemaNode>(schemaNodeString);
                 }
                 catch (Exception ex)
                 {

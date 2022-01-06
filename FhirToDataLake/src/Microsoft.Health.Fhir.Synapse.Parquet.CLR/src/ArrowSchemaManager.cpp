@@ -20,10 +20,10 @@ namespace Microsoft
                         {
                         }
 
-                        ArrowSchemaManager::ArrowSchemaManager(Dictionary<String^, FhirSchemaNode^>^ schemaMap)
+                        ArrowSchemaManager::ArrowSchemaManager(Dictionary<String^, FhirParquetSchemaNode^>^ schemaMap)
                             : ManagedObject(new std::unordered_map<std::string, std::shared_ptr<arrow::Schema>>())
                         {
-                            for each (KeyValuePair<String^, FhirSchemaNode^> schemaPair in schemaMap)
+                            for each (KeyValuePair<String^, FhirParquetSchemaNode^> schemaPair in schemaMap)
                             {
                                 AddOrUpdateArrowSchema(schemaPair.Key, schemaPair.Value);
                             }
@@ -43,7 +43,7 @@ namespace Microsoft
                             return schemaIterator->second;
                         }
 
-                        void ArrowSchemaManager::AddOrUpdateArrowSchema(String^ resourceType, FhirSchemaNode^ schemaNode)
+                        void ArrowSchemaManager::AddOrUpdateArrowSchema(String^ resourceType, FhirParquetSchemaNode^ schemaNode)
                         {
                             std::string resourceTypeStr;
                             MarshalStringToAnsi(resourceType, resourceTypeStr);
@@ -51,11 +51,11 @@ namespace Microsoft
                             (*_instance)[resourceTypeStr] = arrow::schema(GenerateArrowFieldsFromSchemaNode(schemaNode));
                         }
 
-                        std::vector<std::shared_ptr<arrow::Field>> ArrowSchemaManager::GenerateArrowFieldsFromSchemaNode(FhirSchemaNode^ schemaNode)
+                        std::vector<std::shared_ptr<arrow::Field>> ArrowSchemaManager::GenerateArrowFieldsFromSchemaNode(FhirParquetSchemaNode^ schemaNode)
                         {
                             std::vector<std::shared_ptr<arrow::Field>> arrowFields;
 
-                            for each (KeyValuePair<String^, FhirSchemaNode^> ^ subNodeItem in schemaNode->SubNodes)
+                            for each (KeyValuePair<String^, FhirParquetSchemaNode^> ^ subNodeItem in schemaNode->SubNodes)
                             {
                                 auto subNode = subNodeItem->Value;
                                 std::string subFieldName;
@@ -81,12 +81,12 @@ namespace Microsoft
                             return arrowFields;
                         }
 
-                        std::shared_ptr<arrow::Field> ArrowSchemaManager::GenerateStructArrowField(FhirSchemaNode^ schemaNode, std::string fieldName)
+                        std::shared_ptr<arrow::Field> ArrowSchemaManager::GenerateStructArrowField(FhirParquetSchemaNode^ schemaNode, std::string fieldName)
                         {
                             return arrow::field(fieldName, arrow::struct_(GenerateArrowFieldsFromSchemaNode(schemaNode)));
                         }
 
-                        std::shared_ptr<arrow::Field> ArrowSchemaManager::GenerateArrayArrowField(FhirSchemaNode^ schemaNode, std::string fieldName)
+                        std::shared_ptr<arrow::Field> ArrowSchemaManager::GenerateArrayArrowField(FhirParquetSchemaNode^ schemaNode, std::string fieldName)
                         {
                             if (schemaNode->IsLeaf)
                             {
@@ -96,20 +96,20 @@ namespace Microsoft
                             return arrow::field(fieldName, arrow::list(GenerateStructArrowField(schemaNode, _elementNodeName)));
                         }
 
-                        std::shared_ptr<arrow::Field> ArrowSchemaManager::GeneratePrimitiveArrowField(FhirSchemaNode^ schemaNode, std::string fieldName)
+                        std::shared_ptr<arrow::Field> ArrowSchemaManager::GeneratePrimitiveArrowField(FhirParquetSchemaNode^ schemaNode, std::string fieldName)
                         {
                             // Pleaser refer to "Types" in https://parquet.apache.org/documentation/latest/ for data types of parquet format
-                            if (FhirSchemaNodeConstants::IntTypes->Contains(schemaNode->Type))
+                            if (FhirParquetSchemaNodeConstants::IntTypes->Contains(schemaNode->Type))
                             {
                                 return arrow::field(fieldName, arrow::int32());
                             }
 
-                            if (FhirSchemaNodeConstants::DecimalTypes->Contains(schemaNode->Type))
+                            if (FhirParquetSchemaNodeConstants::DecimalTypes->Contains(schemaNode->Type))
                             {
                                 return arrow::field(fieldName, arrow::float64());
                             }
 
-                            if (FhirSchemaNodeConstants::BooleanTypes->Contains(schemaNode->Type))
+                            if (FhirParquetSchemaNodeConstants::BooleanTypes->Contains(schemaNode->Type))
                             {
                                 return arrow::field(fieldName, arrow::boolean());
                             }

@@ -8,11 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Azure.Blob;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 
-namespace Microsoft.Health.Fhir.Synapse.DataWriter.Blob
+namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
     public class AzureBlobDataWriter : IFhirDataWriter
     {

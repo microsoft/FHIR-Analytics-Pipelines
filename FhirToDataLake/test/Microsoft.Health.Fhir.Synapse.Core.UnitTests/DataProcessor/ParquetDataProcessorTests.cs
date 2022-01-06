@@ -15,7 +15,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 {
     public class ParquetDataProcessorTests
     {
-        private static readonly FhirSchemaManager _fhirSchemaManager;
+        private static readonly FhirParquetSchemaManager _fhirSchemaManager;
         private static readonly IOptions<ArrowConfiguration> _arrowConfigurationOptions;
         private static readonly NullLogger<ParquetDataProcessor> _nullParquetDataProcessorLogger = NullLogger<ParquetDataProcessor>.Instance;
 
@@ -39,7 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
                 SchemaCollectionDirectory = TestUtils.SchemaDirectoryPath,
             });
 
-            _fhirSchemaManager = new FhirSchemaManager(schemaConfigurationOption, NullLogger<FhirSchemaManager>.Instance);
+            _fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
             _arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             _testPatient = TestUtils.LoadNdjsonData(Path.Combine(_testDataFolder, "Basic_Raw_Patient.ndjson")).First();

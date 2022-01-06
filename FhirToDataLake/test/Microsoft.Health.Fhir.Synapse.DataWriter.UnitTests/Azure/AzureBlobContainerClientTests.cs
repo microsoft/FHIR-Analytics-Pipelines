@@ -8,14 +8,13 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Health.Fhir.Synapse.Azure.Blob;
-using Microsoft.Health.Fhir.Synapse.Azure.Exceptions;
+using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
+using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 using Xunit;
 
-namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Blob
+namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 {
     [Trait("Category", "BlobTests")]
     public class AzureBlobContainerClientTests
@@ -420,7 +419,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Blob
 
             // create a new blob
             string blobContent = "example";
-            var blobUrl_1 = await blobProvider.UpdateBlobAsync(blobName, new MemoryStream(Encoding.ASCII.GetBytes(blobContent)), CancellationToken.None); ;
+            var blobUrl_1 = await blobProvider.UpdateBlobAsync(blobName, new MemoryStream(Encoding.ASCII.GetBytes(blobContent)), CancellationToken.None);
 
             Assert.True(blobClient.Exists());
 

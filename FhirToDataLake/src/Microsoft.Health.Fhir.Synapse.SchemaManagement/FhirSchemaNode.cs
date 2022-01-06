@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
@@ -16,17 +15,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets node type.
-        /// Array node type should be FhirSchemaNodeConstants.ArrayFlag.
-        /// Type for node that be wrapped into single JSON string should be "JSONSTRING".
-        /// Type for Choice type node should be "CHOICE".
-        /// Otherwise type is fetched from FHIR definitions. https://www.hl7.org/fhir/downloads.html.
-        /// </summary>
-        public string Type { get; set; }
-
-        /// <summary>
         /// Gets or sets depth of current FHIR schema node.
-        /// Choice root node doesn't have additional depth, and share same depth with it's children nodes.
+        /// Choice root node doesn't have additional depth, and share same depth with its children nodes.
         /// </summary>
         public int Depth { get; set; }
 
@@ -42,26 +32,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
         public bool IsRepeated { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether current FHIR schema node is leaf node.
-        /// A leaf node should not have subNodes, and its type should be "JSONSTRING" or normal primitive types.
-        /// </summary>
-        public bool IsLeaf => this.SubNodes == null;
-
-        /// <summary>
         /// Gets or sets node path for current FHIR schema node.
         /// </summary>
         public List<string> NodePaths { get; set; }
-
-        /// <summary>
-        /// Gets or sets subnodes under the current FHIR schema node, node that have subnodes should not be leaf node.
-        /// </summary>
-        public Dictionary<string, FhirSchemaNode> SubNodes { get; set; } = null;
-
-        /// <summary>
-        /// Gets or sets choice type nodes under the current FHIR schema node.
-        /// E.g. "Patient" schema node have {"deceasedBoolean": <deceased, boolean>} and {"deceasedDateTime": <deceased, datetime>} two choice type node.
-        /// </summary>
-        public Dictionary<string, Tuple<string, string>> ChoiceTypeNodes { get; set; } = null;
 
         /// <summary>
         /// Get path for current FHIR schema node.
@@ -70,16 +43,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
         public string GetNodePath()
         {
             return string.Join('.', this.NodePaths);
-        }
-
-        /// <summary>
-        /// Check if current FHIR schema node contains given choice data type node.
-        /// </summary>
-        /// <param name="choiceDataType">Choice data type string.</param>
-        /// <returns>A boolean value indicating whether current FHIR schema node contains given choice data type node.</returns>
-        public bool ContainsChoiceDataType(string choiceDataType)
-        {
-            return this.ChoiceTypeNodes != null && this.ChoiceTypeNodes.ContainsKey(choiceDataType);
         }
     }
 }

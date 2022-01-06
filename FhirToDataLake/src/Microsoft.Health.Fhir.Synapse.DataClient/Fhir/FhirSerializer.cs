@@ -35,7 +35,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Fhir
             string resourceContent,
             FhirJsonParsingSettings settings = null)
         {
-
             if (_fhirVersion == FhirVersion.Stu3)
             {
                 return FhirJsonNode.Parse(resourceContent, settings: settings).ToTypedElement(_stu3Provider);

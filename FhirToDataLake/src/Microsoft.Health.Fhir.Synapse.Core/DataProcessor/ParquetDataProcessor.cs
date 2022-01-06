@@ -19,6 +19,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Parquet.CLR;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -26,13 +27,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
 {
     public sealed class ParquetDataProcessor : IColumnDataProcessor
     {
-        private readonly IFhirSchemaManager _fhirSchemaManager;
+        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly ArrowConfiguration _arrowConfiguration;
         private readonly ILogger<ParquetDataProcessor> _logger;
         private readonly ParquetConverterWrapper _parquetConverterWrapper;
 
         public ParquetDataProcessor(
-            IFhirSchemaManager fhirSchemaManager,
+            IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             IOptions<ArrowConfiguration> arrowConfiguration,
             ILogger<ParquetDataProcessor> logger)
         {
@@ -121,7 +122,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             return new JsonBatchData(processedJsonData);
         }
 
-        private JObject ProcessStructObject(JToken structItem, FhirSchemaNode schemaNode)
+        private JObject ProcessStructObject(JToken structItem, FhirParquetSchemaNode schemaNode)
         {
             if (structItem is not JObject fhirJObject)
             {
@@ -158,7 +159,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
                         continue;
                     }
 
-                    FhirSchemaNode subNode = schemaNode.SubNodes[subItem.Key];
+                    FhirParquetSchemaNode subNode = schemaNode.SubNodes[subItem.Key];
 
                     if (subNode.IsRepeated)
                     {
@@ -181,7 +182,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             return processedObject;
         }
 
-        private JArray ProcessArrayObject(JToken arrayItem, FhirSchemaNode schemaNode)
+        private JArray ProcessArrayObject(JToken arrayItem, FhirParquetSchemaNode schemaNode)
         {
             if (arrayItem is not JArray fhirArrayObject)
             {
@@ -205,9 +206,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             return arrayObject;
         }
 
-        private JValue ProcessLeafObject(JToken fhirObject, FhirSchemaNode schemaNode)
+        private JValue ProcessLeafObject(JToken fhirObject, FhirParquetSchemaNode schemaNode)
         {
-            if (schemaNode.Type == FhirSchemaNodeConstants.JsonStringType)
+            if (schemaNode.Type == FhirParquetSchemaNodeConstants.JsonStringType)
             {
                 return new JValue(fhirObject.ToString(Formatting.None));
             }
@@ -221,7 +222,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             return fhirLeafObject;
         }
 
-        private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirSchemaNode schemaNode)
+        private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirParquetSchemaNode schemaNode)
         {
             JObject choiceRootObject = new JObject();
             if (schemaNode.IsLeaf)

@@ -3,10 +3,20 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
+using System;
+
+namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions
 {
-    public interface IAzureBlobContainerClientFactory
+    public class FhirSchemaException : Exception
     {
-        public IAzureBlobContainerClient Create(string storeUrl, string containerName);
+        public FhirSchemaException(string message)
+            : base(message)
+        {
+        }
+
+        public FhirSchemaException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
     }
 }
