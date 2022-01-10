@@ -34,23 +34,23 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         }
 
         public async Task<string> WriteAsync(
-            StreamBatchData inputData,
+            StreamBatchData data,
             TaskContext context,
             DateTime dateTime,
             CancellationToken cancellationToken = default)
         {
-            EnsureArg.IsNotNull(inputData, nameof(inputData));
+            EnsureArg.IsNotNull(data, nameof(data));
             EnsureArg.IsNotNull(context, nameof(context));
 
             var blobName = GetDataFileName(dateTime, context.ResourceType, context.JobId, context.PartId);
-            var blobUrl = await _containerClient.UpdateBlobAsync(blobName, inputData.Value, cancellationToken);
+            var blobUrl = await _containerClient.UpdateBlobAsync(blobName, data.Value, cancellationToken);
 
             _logger.LogInformation($"Write stream batch data to {blobUrl} successfully.");
 
             return blobUrl;
         }
 
-        private string GetDataFileName(
+        private static string GetDataFileName(
             DateTime dateTime,
             string resourceType,
             string jobId,

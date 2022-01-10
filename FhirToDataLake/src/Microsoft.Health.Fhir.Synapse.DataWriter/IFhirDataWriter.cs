@@ -14,7 +14,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter
     public interface IFhirDataWriter
     {
         public Task<string> WriteAsync(
-            StreamBatchData inputData,
+            StreamBatchData data,
             TaskContext context,
             DateTime dateTime,
             CancellationToken cancellationToken = default);

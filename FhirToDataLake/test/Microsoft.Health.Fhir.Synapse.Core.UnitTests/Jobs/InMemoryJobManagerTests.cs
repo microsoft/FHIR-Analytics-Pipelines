@@ -26,15 +26,15 @@ using Xunit;
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
     [Trait("Category", "Scheduler")]
-    public class InMemoryJobExecutorTests
+    public class InMemoryJobManagerTests
     {
         private const string ContainerName = "jobunittests";
 
         [Fact]
         public async Task GivenABrokenJobStore_WhenExecute_ExceptionShouldBeThrown()
         {
-            var jobManager = CreateJobExecutor(CreateBrokenJobStore());
-            await Assert.ThrowsAsync<Exception>(() => jobManager.TriggerJobAsync());
+            var jobManager = CreateJobManager(CreateBrokenJobStore());
+            await Assert.ThrowsAsync<Exception>(() => jobManager.Run());
         }
 
         [Fact]
@@ -51,8 +51,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 DateTimeOffset.Now.AddMinutes(-5));
             await blobClient.CreateJob(activeJob, "SampleLease");
 
-            var jobManager = CreateJobExecutor(jobStore);
-            await jobManager.TriggerJobAsync();
+            var jobManager = CreateJobManager(jobStore);
+            await jobManager.Run();
 
             // Only one job is running.
             var job = await blobClient.GetValue<Job>($"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
@@ -78,8 +78,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             await blobClient.ReleaseLeaseAsync(AzureBlobJobConstants.JobLockFileName, "SampleLease");
 
-            var jobManager = CreateJobExecutor(jobStore);
-            await jobManager.TriggerJobAsync();
+            var jobManager = CreateJobManager(jobStore);
+            await jobManager.Run();
 
             // The running job has been resumed and completed.
             var job = await blobClient.GetValue<Job>($"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
@@ -93,11 +93,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
-            var jobManager = CreateJobExecutor(jobStore);
+            var jobManager = CreateJobManager(jobStore);
 
             Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
-            await jobManager.TriggerJobAsync();
+            await jobManager.Run();
             Assert.NotEmpty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
             var blobName = (await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder)).First();
@@ -118,7 +118,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
-            var jobManager = CreateJobExecutor(jobStore, new JobConfiguration
+            var jobManager = CreateJobManager(jobStore, new JobConfiguration
             {
                 ContainerName = ContainerName,
                 StartTime = DateTimeOffset.UtcNow.AddDays(1),
@@ -127,7 +127,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
-            var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.TriggerJobAsync());
+            var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.Run());
             Assert.Contains("trigger is in the future", exception.Message);
         }
 
@@ -137,7 +137,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
             var time = DateTimeOffset.UtcNow.AddDays(-1);
-            var jobManager = CreateJobExecutor(jobStore, new JobConfiguration
+            var jobManager = CreateJobManager(jobStore, new JobConfiguration
             {
                 ContainerName = ContainerName,
                 StartTime = time,
@@ -147,11 +147,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
-            var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.TriggerJobAsync());
+            var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.Run());
             Assert.Contains("Job has been scheduled to end", exception.Message);
         }
 
-        private IJobStore CreateBrokenJobStore()
+        private static IJobStore CreateBrokenJobStore()
         {
             var jobStore = Substitute.For<IJobStore>();
             jobStore.AcquireJobLock().Returns(Task.FromException<bool>(new Exception()));
@@ -180,7 +180,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 new NullLogger<AzureBlobJobStore>());
         }
 
-        private static JobExecutor CreateJobExecutor(IJobStore jobStore, JobConfiguration config = null)
+        private static JobManager CreateJobManager(IJobStore jobStore, JobConfiguration config = null)
         {
             var jobConfiguration = config;
             if (jobConfiguration == null)
@@ -200,13 +200,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var taskExecutor = Substitute.For<ITaskExecutor>();
             taskExecutor.ExecuteAsync(Arg.Any<TaskContext>(), Arg.Any<IProgress<TaskContext>>(), Arg.Any<CancellationToken>()).Returns(new TaskResult());
-            return new JobExecutor(
+            var jobExecutor = new JobExecutor(jobStore, taskExecutor, Options.Create(schedulerConfig), new NullLogger<JobExecutor>());
+
+            return new JobManager(
                 jobStore,
-                taskExecutor,
+                jobExecutor,
                 new R4FhirSpecificationProvider(),
-                Options.Create(schedulerConfig),
                 Options.Create(jobConfiguration),
-                new NullLogger<JobExecutor>());
+                new NullLogger<JobManager>());
         }
     }
 }

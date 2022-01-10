@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient
+namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
 {
     public interface IAnonymizationProcessor
     {

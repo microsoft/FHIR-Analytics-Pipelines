@@ -11,16 +11,16 @@ using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 
 namespace Microsoft.Health.Fhir.Synapse.FunctionApp
 {
-    public class JobExecutorFunction
+    public class JobManagerFunction
     {
-        private JobExecutor _jobExecutor;
+        private JobManager _jobManager;
 
-        public JobExecutorFunction(JobExecutor jobExecutor)
+        public JobManagerFunction(JobManager jobManager)
         {
-            _jobExecutor = jobExecutor;
+            _jobManager = jobManager;
         }
 
-        [Function("JobExecutorFunction")]
+        [Function("JobManagerFunction")]
         public async Task Run(
             [TimerTrigger("0 */5 * * * *", RunOnStartup = true)] MyInfo myTimer,
             FunctionContext context)
@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
             logger.LogInformation("C# Timer trigger function executed at: {time}", DateTime.Now);
             logger.LogInformation("Next timer schedule at: {time}", myTimer.ScheduleStatus.Next);
 
-            await _jobExecutor.TriggerJobAsync();
+            await _jobManager.Run();
         }
     }
 

@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
 
         private const string TestResourceType = "Patient";
 
-        private readonly DateTime _testDate = new(2021, 10, 1);
+        private readonly DateTime _testDate = new (2021, 10, 1);
 
         [Fact]
         public async Task GivenAValidParameter_WhenWritingToBlob_CorrectContentShouldBeWritten()
@@ -63,7 +63,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         }
 
         [Fact]
-        public async Task GivenAnInvalidBlobContainerClient_WhenCreateDataWriter_ExceptionShouldBeThrown()
+        public void GivenAnInvalidBlobContainerClient_WhenCreateDataWriter_ExceptionShouldBeThrown()
         {
             Assert.Throws<AzureBlobOperationFailedException>(() => GetDataWriter());
         }

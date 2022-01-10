@@ -296,7 +296,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             using MemoryStream sourceStream = new MemoryStream();
             using StreamWriter writer = new StreamWriter(sourceStream);
 
-            int lineNumber = 1024 * 1024 + 3;
+            int lineNumber = (1024 * 1024) + 3;
             while (lineNumber-- > 0)
             {
                 await writer.WriteLineAsync(Guid.NewGuid().ToString("N"));
@@ -335,7 +335,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             using MemoryStream sourceStream = new MemoryStream();
             using StreamWriter writer = new StreamWriter(sourceStream);
 
-            int lineNumber = 1024 * 1024 + 3;
+            int lineNumber = (1024 * 1024) + 3;
             while (lineNumber-- > 0)
             {
                 await writer.WriteLineAsync(Guid.NewGuid().ToString("N"));
