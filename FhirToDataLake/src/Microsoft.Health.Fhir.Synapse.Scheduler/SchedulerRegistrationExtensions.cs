@@ -16,6 +16,8 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler
         {
             services.AddSingleton<IJobStore, AzureBlobJobStore>();
 
+            services.AddSingleton<JobProgressUpdaterFactory, JobProgressUpdaterFactory>();
+
             services.AddSingleton<JobManager, JobManager>();
 
             services.AddSingleton<ITaskExecutor, TaskExecutor>();

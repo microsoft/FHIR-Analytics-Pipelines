@@ -7,6 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
+using Microsoft.Health.Fhir.Synapse.Scheduler.Jobs;
 
 namespace Microsoft.Health.Fhir.Synapse.Scheduler.Tasks
 {
@@ -14,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Tasks
     {
         public Task<TaskResult> ExecuteAsync(
             TaskContext taskContext,
-            IProgress<TaskContext> progress,
+            JobProgressUpdater progressUpdater,
             CancellationToken cancellationToken = default);
     }
 }

@@ -204,11 +204,12 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.Jobs
             };
 
             var taskExecutor = Substitute.For<ITaskExecutor>();
-            taskExecutor.ExecuteAsync(Arg.Any<TaskContext>(), Arg.Any<IProgress<TaskContext>>(), Arg.Any<CancellationToken>()).Returns(CreateTestTaskResult());
+            taskExecutor.ExecuteAsync(Arg.Any<TaskContext>(), Arg.Any<JobProgressUpdater>(), Arg.Any<CancellationToken>()).Returns(CreateTestTaskResult());
             return new JobManager(
                 jobStore,
                 taskExecutor,
                 new R4FhirSpecificationProvider(),
+                new JobProgressUpdaterFactory(jobStore),
                 Options.Create(schedulerConfig),
                 Options.Create(jobConfiguration),
                 new NullLogger<JobManager>());

@@ -17,6 +17,7 @@ using Microsoft.Health.Fhir.Synapse.DataSerialization.Json;
 using Microsoft.Health.Fhir.Synapse.DataSerialization.Parquet;
 using Microsoft.Health.Fhir.Synapse.DataSink;
 using Microsoft.Health.Fhir.Synapse.DataSource;
+using Microsoft.Health.Fhir.Synapse.Scheduler.Jobs;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Scheduler.Tasks
@@ -56,10 +57,10 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Tasks
         // Add cancelling
         public async Task<TaskResult> ExecuteAsync(
             TaskContext taskContext,
-            IProgress<TaskContext> progress,
+            JobProgressUpdater progressUpdater,
             CancellationToken cancellationToken = default)
         {
-            int processedCount = 0;
+            int resourceCount = 0;
             while (!taskContext.IsCompleted)
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -113,10 +114,11 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Tasks
                 taskContext.ProcessedCount = taskContext.SearchCount - taskContext.SkippedCount;
                 taskContext.IsCompleted = string.IsNullOrEmpty(taskContext.ContinuationToken);
 
-                processedCount += fhirElementsData.Values.Count();
-                if (processedCount > 0 && processedCount % ReportProgressBatchCount == 0)
+                resourceCount += fhirElementsData.Values.Count();
+                if (resourceCount > 0 &&
+                    (resourceCount % ReportProgressBatchCount == 0 || taskContext.IsCompleted))
                 {
-                    progress.Report(taskContext);
+                    await progressUpdater.Produce(taskContext, cancellationToken);
                 }
             }
 

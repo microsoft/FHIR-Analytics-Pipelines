@@ -25,17 +25,16 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         private readonly IJobStore _jobStore;
         private readonly ITaskExecutor _taskExecutor;
         private readonly IFhirSpecificationProvider _fhirSpecificationProvider;
+        private readonly JobProgressUpdaterFactory _jobProgressUpdaterFactory;
         private readonly JobSchedulerConfiguration _schedulerConfiguration;
         private readonly JobConfiguration _jobConfiguration;
         private readonly ILogger<JobManager> _logger;
-
-        // Lock to ensure resource progresses in a job are consistent.
-        private readonly object _updateJobLock = new object();
 
         public JobManager(
             IJobStore jobStore,
             ITaskExecutor taskExecutor,
             IFhirSpecificationProvider fhirSpecificationProvider,
+            JobProgressUpdaterFactory jobProgressUpdaterFactory,
             IOptions<JobSchedulerConfiguration> schedulerConfiguration,
             IOptions<JobConfiguration> jobConfiguration,
             ILogger<JobManager> logger)
@@ -43,6 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
             EnsureArg.IsNotNull(jobStore, nameof(jobStore));
             EnsureArg.IsNotNull(taskExecutor, nameof(taskExecutor));
             EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
+            EnsureArg.IsNotNull(jobProgressUpdaterFactory, nameof(jobProgressUpdaterFactory));
             EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             EnsureArg.IsNotNull(logger, nameof(logger));
@@ -50,6 +50,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
             _jobStore = jobStore;
             _taskExecutor = taskExecutor;
             _fhirSpecificationProvider = fhirSpecificationProvider;
+            _jobProgressUpdaterFactory = jobProgressUpdaterFactory;
             _schedulerConfiguration = schedulerConfiguration.Value;
             _jobConfiguration = jobConfiguration.Value;
             _logger = logger;
@@ -177,30 +178,8 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         {
             _logger.LogInformation("Start executing job '{jobId}'.", job.Id);
 
-            // Add cancellation for job execution.
-            CancellationTokenSource executionTokenSource = new CancellationTokenSource();
-            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(executionTokenSource.Token, cancellationToken);
-
-            var progress = new Progress<TaskContext>(context =>
-            {
-                lock (_updateJobLock)
-                {
-                    // Should not update if the resource type has completed processing.
-                    if (job.CompletedResources.Contains(context.ResourceType))
-                    {
-                        return;
-                    }
-
-                    job.ResourceProgresses[context.ResourceType] = context.ContinuationToken;
-                    job.TotalResourceCounts[context.ResourceType] = context.SearchCount;
-                    job.ProcessedResourceCounts[context.ResourceType] = context.ProcessedCount;
-                    job.SkippedResourceCounts[context.ResourceType] = context.SkippedCount;
-                    job.PartIds[context.ResourceType] = context.PartId;
-
-                    // Update job store.
-                    _jobStore.UpdateJob(job, linkedTokenSource.Token);
-                }
-            });
+            var jobProgressUpdater = _jobProgressUpdaterFactory.Create(job);
+            var progressReportTask = Task.Run(() => jobProgressUpdater.Consume(cancellationToken), cancellationToken);
 
             var tasks = new List<Task<TaskResult>>();
             foreach (var resourceType in job.ResourceTypes)
@@ -214,7 +193,6 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
                         throw new ExecuteTaskFailedException("Task execution failed", finishedTask.Exception);
                     }
 
-                    UpdateJobTaskResult(job, finishedTask.Result);
                     tasks.Remove(finishedTask);
                 }
 
@@ -225,7 +203,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
                     continue;
                 }
 
-                tasks.Add(Task.Run(async () => await _taskExecutor.ExecuteAsync(context, progress, linkedTokenSource.Token)));
+                tasks.Add(Task.Run(async () => await _taskExecutor.ExecuteAsync(context, jobProgressUpdater, cancellationToken)));
 
                 _logger.LogInformation("Start processing resource '{resourceType}'", resourceType);
             }
@@ -233,10 +211,6 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
             try
             {
                 var taskResults = await Task.WhenAll(tasks);
-                foreach (var taskResult in taskResults)
-                {
-                    UpdateJobTaskResult(job, taskResult);
-                }
             }
             catch (Exception ex)
             {
@@ -244,34 +218,14 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
                 throw new ExecuteTaskFailedException("Task execution failed", ex);
             }
 
-            // Cancel on-going requests during execution (i.e. blob updates in async progress report).
-            executionTokenSource.Cancel();
-
-            // Update job status before committing data.
-            await _jobStore.UpdateJobAsync(job, cancellationToken);
+            jobProgressUpdater.Complete();
+            await progressReportTask;
             await _jobStore.CommitJobDataAsync(job, cancellationToken);
 
             // Update job status.
             job.Status = JobStatus.Succeeded;
             await _jobStore.CompleteJobAsync(job, cancellationToken);
             _logger.LogInformation("Finish scheduling job '{jobId}'", job.Id);
-        }
-
-        private void UpdateJobTaskResult(Job job, TaskResult taskResult)
-        {
-            lock (_updateJobLock)
-            {
-                if (taskResult.IsCompleted)
-                {
-                    job.CompletedResources.Add(taskResult.ResourceType);
-                }
-
-                job.ResourceProgresses[taskResult.ResourceType] = taskResult.ContinuationToken;
-                job.TotalResourceCounts[taskResult.ResourceType] = taskResult.SearchCount;
-                job.ProcessedResourceCounts[taskResult.ResourceType] = taskResult.ProcessedCount;
-                job.SkippedResourceCounts[taskResult.ResourceType] = taskResult.SkippedCount;
-                job.PartIds[taskResult.ResourceType] = taskResult.PartId;
-            }
         }
 
         public void Dispose()
