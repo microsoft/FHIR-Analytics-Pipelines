@@ -89,13 +89,19 @@ Running the PowerShell script that creates following artifacts:
 
 To run the PowerShell Script, perform the following steps:
 
-1. Ensure that you have the latest version of the PowerShell.
-1. Open the Azure CLI.
-1. Sign in to your Azure account using `Connect-AzAccount -SubscriptionId 'yyyy-yyyy-yyyy-yyyy'`. Use your subscription ID.
-1. Run `Install-Module -Name Az.Synapse`. This is to ensure that you have the latest version of the Az.Synapse sub-module as it is not updated by default. 
-1. Clone this [GitHub](https://github.com/microsoft/FHIR-Analytics-Pipelines) repo inside your Azure CLI folder.
-1. Browse to the scripts folder under this path (..\FHIR-Analytics-Pipelines-main\FhirToDataLake\scripts).
-1. Run `./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName "{Name of your Synapse workspace instance}" -StorageName "{Name of your storage account where Parquet files are written}"`. Refer to the complete syntax below.
+1. Clone this [FHIR-Analytics-Pipelines](https://github.com/microsoft/FHIR-Analytics-Pipelines) repo to your local machine.
+1. Open the PowerShell console, ensure that you have the latest version of the PowerShell.
+1. Install [Az](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-7.1.0) or separated [Az.Synapse](https://github.com/microsoft/FHIR-Analytics-Pipelines/pull/73/files/641b71ea3b96373e0f8880a5db64895d7882ebfc) if they don't exist.
+``` PowerShell
+Install-Module -Name Az
+Install-Module -Name Az.Synapse
+```
+1. Sign in to your Azure account to the subscription where synapse is located.
+``` PowerShell
+Connect-AzAccount -SubscriptionId 'yyyy-yyyy-yyyy-yyyy'
+```
+1. Browse to the scripts folder under this path (..\FhirToDataLake\scripts).
+1. Run the `./Set-SynapseEnvironment.ps1` script. Refer to the complete syntax below.
 
 ``` PowerShell
 Set-SynapseEnvironment
