@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
         {
             try
             {
-                await _jobManager.Run(stoppingToken);
+                await _jobManager.RunAsync(stoppingToken);
             }
             catch (Exception ex)
             {

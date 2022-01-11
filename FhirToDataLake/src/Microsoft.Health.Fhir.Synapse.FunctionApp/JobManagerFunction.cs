@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
             logger.LogInformation("C# Timer trigger function executed at: {time}", DateTime.Now);
             logger.LogInformation("Next timer schedule at: {time}", myTimer.ScheduleStatus.Next);
 
-            await _jobManager.Run();
+            await _jobManager.RunAsync();
         }
     }
 

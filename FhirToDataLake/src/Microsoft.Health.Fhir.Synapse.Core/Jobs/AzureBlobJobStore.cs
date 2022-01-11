@@ -209,7 +209,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 cancellationToken);
         }
 
-        private string GetJobBlobName(Job job, string prefix)
+        private static string GetJobBlobName(Job job, string prefix)
         {
             return $"{prefix}/{job.Id}.json";
         }

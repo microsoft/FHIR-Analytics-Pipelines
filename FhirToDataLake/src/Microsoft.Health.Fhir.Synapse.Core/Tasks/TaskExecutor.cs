@@ -15,6 +15,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Newtonsoft.Json;
 
@@ -62,7 +63,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                     throw new OperationCanceledException();
                 }
 
-                var fhirElementsData = await _dataClient.GetAsync(taskContext.ResourceType, taskContext.StartTime, taskContext.EndTime, taskContext.ContinuationToken, cancellationToken);
+                var searchParameters = new FhirSearchParameters(taskContext.ResourceType, taskContext.StartTime, taskContext.EndTime, taskContext.ContinuationToken);
+                var fhirElementsData = await _dataClient.GetAsync(searchParameters, cancellationToken);
 
                 // Partition batch data with day
                 var partitionData = from data in fhirElementsData.Values

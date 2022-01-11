@@ -37,9 +37,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             IOptions<ArrowConfiguration> arrowConfiguration,
             ILogger<ParquetDataProcessor> logger)
         {
-            EnsureArg.IsNotNull(fhirSchemaManager);
-            EnsureArg.IsNotNull(arrowConfiguration);
-            EnsureArg.IsNotNull(logger);
+            EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            EnsureArg.IsNotNull(arrowConfiguration, nameof(arrowConfiguration));
+            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _fhirSchemaManager = fhirSchemaManager;
             _arrowConfiguration = arrowConfiguration.Value;
@@ -80,7 +80,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             var inputStream = ConvertJsonDataToStream(context.ResourceType, preprocessedData.Values);
             if (inputStream == null)
             {
-                // Return null if no data been converted.
+                // Return null if no data has been converted.
                 return Task.FromResult<StreamBatchData>(null);
             }
 

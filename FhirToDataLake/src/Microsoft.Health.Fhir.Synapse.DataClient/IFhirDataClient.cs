@@ -13,10 +13,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
     public interface IFhirDataClient
     {
         public Task<FhirElementBatchData> GetAsync(
-            string resourceType,
-            DateTimeOffset startTime,
-            DateTimeOffset endTime,
-            string continuationToken,
+            FhirSearchParameters searchParameters,
             CancellationToken cancellationToken = default);
     }
 }

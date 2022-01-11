@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public async Task GivenABrokenJobStore_WhenExecute_ExceptionShouldBeThrown()
         {
             var jobManager = CreateJobManager(CreateBrokenJobStore());
-            await Assert.ThrowsAsync<Exception>(() => jobManager.Run());
+            await Assert.ThrowsAsync<Exception>(() => jobManager.RunAsync());
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await blobClient.CreateJob(activeJob, "SampleLease");
 
             var jobManager = CreateJobManager(jobStore);
-            await jobManager.Run();
+            await jobManager.RunAsync();
 
             // Only one job is running.
             var job = await blobClient.GetValue<Job>($"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
@@ -79,7 +79,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await blobClient.ReleaseLeaseAsync(AzureBlobJobConstants.JobLockFileName, "SampleLease");
 
             var jobManager = CreateJobManager(jobStore);
-            await jobManager.Run();
+            await jobManager.RunAsync();
 
             // The running job has been resumed and completed.
             var job = await blobClient.GetValue<Job>($"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
@@ -97,7 +97,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
-            await jobManager.Run();
+            await jobManager.RunAsync();
             Assert.NotEmpty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
             var blobName = (await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder)).First();
@@ -127,7 +127,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
-            var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.Run());
+            var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.RunAsync());
             Assert.Contains("trigger is in the future", exception.Message);
         }
 
@@ -147,7 +147,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
-            var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.Run());
+            var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.RunAsync());
             Assert.Contains("Job has been scheduled to end", exception.Message);
         }
 

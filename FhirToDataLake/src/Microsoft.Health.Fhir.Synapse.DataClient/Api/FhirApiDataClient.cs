@@ -51,20 +51,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         }
 
         public async Task<FhirElementBatchData> GetAsync(
-            string resourceType,
-            DateTimeOffset startTime,
-            DateTimeOffset endTime,
-            string continuationToken,
+            FhirSearchParameters searchParameters,
             CancellationToken cancellationToken = default)
         {
-            return await SearchAsync(resourceType, startTime, endTime, continuationToken, cancellationToken);
+            return await SearchAsync(searchParameters, cancellationToken);
         }
 
         private async Task<FhirElementBatchData> SearchAsync(
-            string resourceType,
-            DateTimeOffset startTime,
-            DateTimeOffset endTime,
-            string continuationToken,
+            FhirSearchParameters searchParameters,
             CancellationToken cancellationToken = default)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -72,7 +66,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 throw new OperationCanceledException();
             }
 
-            var searchUri = CreateSearchUri(resourceType, startTime, endTime, continuationToken);
+            var searchUri = CreateSearchUri(searchParameters);
             HttpResponseMessage response;
             string bundleContent;
 
@@ -124,30 +118,27 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         /// <summary>
         /// Sample uri: http://{FhirServerUrl}/{ResourceType}?_lastUpdated=ge{StartTimestamp}&_lastUpdated=lt{EndTimestamp}&_count={PageCount}&_sort=_lastUpdated&ct={ContinuationToken}.
         /// </summary>
-        /// <param name="resourceType">The FHIR resource type for search.</param>
-        /// <param name="startTime">The start time of _lastUpdated parameter for search.</param>
-        /// <param name="endTime">The end time of _lastUpdated parameter for search.</param>
-        /// <param name="continuationToken">The continuation token for search.</param>
+        /// <param name="searchParameters">The FHIR search parameters.</param>
         /// <returns>Uri with search parameters.</returns>
-        private Uri CreateSearchUri(string resourceType, DateTimeOffset startTime, DateTimeOffset endTime, string continuationToken)
+        private Uri CreateSearchUri(FhirSearchParameters searchParameters)
         {
             var baseUri = new Uri(_dataSource.FhirServerUrl);
-            var uri = new Uri(baseUri, resourceType);
+            var uri = new Uri(baseUri, searchParameters.ResourceType);
 
-            var parameters = new List<KeyValuePair<string, string>>
+            var queryParameters = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{startTime.ToInstantString()}"),
-                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{endTime.ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{searchParameters.StartTime.ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{searchParameters.EndTime.ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
                 new KeyValuePair<string, string>(FhirApiConstants.SortKey, FhirApiConstants.LastUpdatedKey),
             };
 
-            if (!string.IsNullOrEmpty(continuationToken))
+            if (!string.IsNullOrEmpty(searchParameters.ContinuationToken))
             {
-                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, continuationToken));
+                queryParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, searchParameters.ContinuationToken));
             }
 
-            return uri.AddQueryString(parameters);
+            return uri.AddQueryString(queryParameters);
         }
     }
 }

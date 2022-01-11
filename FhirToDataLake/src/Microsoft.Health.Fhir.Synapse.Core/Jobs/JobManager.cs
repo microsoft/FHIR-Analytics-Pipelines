@@ -52,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>Completed task.</returns>
-        public async Task Run(CancellationToken cancellationToken = default)
+        public async Task RunAsync(CancellationToken cancellationToken = default)
         {
             // Acquire lock to ensure the job store is changed from only one client.
             var lockResult = await _jobStore.AcquireJobLock(cancellationToken);
