@@ -91,17 +91,29 @@ To run the PowerShell Script, perform the following steps:
 
 1. Clone this [FHIR-Analytics-Pipelines](https://github.com/microsoft/FHIR-Analytics-Pipelines) repo to your local machine.
 1. Open the PowerShell console, ensure that you have the latest version of the PowerShell.
-1. Install [Az](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-7.1.0) or separated [Az.Synapse](https://github.com/microsoft/FHIR-Analytics-Pipelines/pull/73/files/641b71ea3b96373e0f8880a5db64895d7882ebfc) if they don't exist.
+1. Install [Az](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-7.1.0) or separated [Az.Synapse](https://docs.microsoft.com/en-us/cli/azure/synapse?view=azure-cli-latest) if they don't exist.
+
 ``` PowerShell
 Install-Module -Name Az
 Install-Module -Name Az.Synapse
 ```
+
 1. Sign in to your Azure account to the subscription where synapse is located.
+
 ``` PowerShell
 Connect-AzAccount -SubscriptionId 'yyyy-yyyy-yyyy-yyyy'
 ```
+
 1. Browse to the scripts folder under this path (..\FhirToDataLake\scripts).
-1. Run the `./Set-SynapseEnvironment.ps1` script. Refer to the complete syntax below.
+1. Run the following PowerShell script. 
+
+``` PowerShell
+```Powershell
+./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName "{Name of your Synapse workspace instance}" -StorageName "{Name of your storage account where Parquet files are written}".
+```
+```
+
+For more details, refer to the complete syntax below.
 
 ``` PowerShell
 Set-SynapseEnvironment
