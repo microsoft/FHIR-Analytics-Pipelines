@@ -115,7 +115,8 @@ To run the PowerShell Script, perform the following steps:
         [[-ResultPath] <string>, default: “result”]
         [[-MasterKey] <string>, default: ”FhirSynapseLink0!”]
         [[-Concurrent] <int>, default: 30]
-```
+    ```
+
 |Parameter   | Description   |
 |---|---|
 | SynapseWorkspaceName | Name of Synapse workspace instance. |
