@@ -327,7 +327,7 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
                     subDirectories.AddRange(
                         page.Values
                             .Where(pathItem => pathItem.IsDirectory != false)
-                            .Select(pageItem => pageItem.Name));
+                            .Select(pathItem => pathItem.Name));
                 }
 
                 _logger.LogInformation("Get '{0}' sub directories of '{1}' successfully.", subDirectories.Count(), directory);
