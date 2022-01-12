@@ -11,15 +11,13 @@ using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Health.Fhir.Synapse.Azure;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
-using Microsoft.Health.Fhir.Synapse.DataSerialization;
-using Microsoft.Health.Fhir.Synapse.DataSink;
-using Microsoft.Health.Fhir.Synapse.DataSource;
-using Microsoft.Health.Fhir.Synapse.Scheduler;
-using Microsoft.Health.Fhir.Synapse.Scheduler.Jobs;
-using Microsoft.Health.Fhir.Synapse.Schema;
+using Microsoft.Health.Fhir.Synapse.Core;
+using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataWriter;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement;
+using Microsoft.Health.Fhir.Synapse.Tool;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -139,12 +137,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 .ConfigureServices((context, services) =>
                     services
                         .AddConfiguration(configuration)
-                        .AddFhirSpecification()
                         .AddAzure()
                         .AddJobScheduler()
                         .AddDataSource()
-                        .AddDataSink()
-                        .AddDataSerialization()
                         .AddSchema()
                         .AddHostedService<SynapseLinkService>());
     }

@@ -1,9 +1,14 @@
+// -------------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// -------------------------------------------------------------------------------------------------
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
-using Microsoft.Health.Fhir.Synapse.Schema;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests
@@ -21,7 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests
         public void GivenANullSchemaMapOrArrowConfiguration_WhenCreateParquetConverterWrapper_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(() => new ParquetConverterWrapper(null, new ArrowConfiguration()));
-            Assert.Throws<ArgumentNullException>(() => new ParquetConverterWrapper(new Dictionary<string, FhirSchemaNode>(), null));
+            Assert.Throws<ArgumentNullException>(() => new ParquetConverterWrapper(new Dictionary<string, FhirParquetSchemaNode>(), null));
             Assert.Throws<ArgumentNullException>(() => new ParquetConverterWrapper(null, null));
         }
 

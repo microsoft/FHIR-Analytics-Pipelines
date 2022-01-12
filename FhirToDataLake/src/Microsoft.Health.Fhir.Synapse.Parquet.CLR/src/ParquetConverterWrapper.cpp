@@ -19,12 +19,12 @@ namespace Microsoft
                 {
                     namespace CLR
                     {
-                        ParquetConverterWrapper::ParquetConverterWrapper(Dictionary<String^, FhirSchemaNode^>^ schemaMap)
+                        ParquetConverterWrapper::ParquetConverterWrapper(Dictionary<String^, FhirParquetSchemaNode^>^ schemaMap)
                             : ParquetConverterWrapper(schemaMap, gcnew ArrowConfiguration())
                         {
                         }
 
-                        ParquetConverterWrapper::ParquetConverterWrapper(Dictionary<String^, FhirSchemaNode^>^ schemaMap, ArrowConfiguration^ arrowConfiguration)
+                        ParquetConverterWrapper::ParquetConverterWrapper(Dictionary<String^, FhirParquetSchemaNode^>^ schemaMap, ArrowConfiguration^ arrowConfiguration)
                             : ManagedObject(new Native::ParquetConverter(CreateNativeArrowParquetOption(arrowConfiguration)))
                         {
                             if (schemaMap == nullptr)

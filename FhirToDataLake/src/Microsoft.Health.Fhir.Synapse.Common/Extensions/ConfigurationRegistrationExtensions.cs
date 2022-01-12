@@ -48,7 +48,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException($"Fhir server url '{fhirServerConfiguration.ServerUrl}' can not be empty.");
             }
 
-            if (fhirServerConfiguration.Version != Fhir.FhirVersion.R4)
+            if (fhirServerConfiguration.Version != FhirVersion.R4)
             {
                 throw new ConfigurationErrorException($"Fhir version {fhirServerConfiguration.Version} is not supported.");
             }

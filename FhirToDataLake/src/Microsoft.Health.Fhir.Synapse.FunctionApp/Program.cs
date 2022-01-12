@@ -6,13 +6,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Health.Fhir.Synapse.Azure;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
-using Microsoft.Health.Fhir.Synapse.DataSerialization;
-using Microsoft.Health.Fhir.Synapse.DataSink;
-using Microsoft.Health.Fhir.Synapse.DataSource;
-using Microsoft.Health.Fhir.Synapse.Scheduler;
-using Microsoft.Health.Fhir.Synapse.Schema;
+using Microsoft.Health.Fhir.Synapse.Core;
+using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataWriter;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.FunctionApp
 {
@@ -30,11 +28,8 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
                     builder.Services
                         .AddHttpClient()
                         .AddConfiguration(context.Configuration)
-                        .AddFhirSpecification()
                         .AddJobScheduler()
                         .AddDataSource()
-                        .AddDataSerialization()
-                        .AddDataSink()
                         .AddAzure()
                         .AddSchema();
                 })

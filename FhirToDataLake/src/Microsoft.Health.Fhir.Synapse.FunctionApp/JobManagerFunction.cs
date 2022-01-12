@@ -7,7 +7,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Scheduler.Jobs;
+using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 
 namespace Microsoft.Health.Fhir.Synapse.FunctionApp
 {
@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
             logger.LogInformation("C# Timer trigger function executed at: {time}", DateTime.Now);
             logger.LogInformation("Next timer schedule at: {time}", myTimer.ScheduleStatus.Next);
 
-            await _jobManager.TriggerJobAsync();
+            await _jobManager.RunAsync();
         }
     }
 

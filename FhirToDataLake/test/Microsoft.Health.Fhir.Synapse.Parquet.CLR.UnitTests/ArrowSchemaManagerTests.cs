@@ -1,6 +1,11 @@
-﻿using System;
+﻿// -------------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// -------------------------------------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
-using Microsoft.Health.Fhir.Synapse.Schema;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests
@@ -18,14 +23,14 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests
         public void GivenArrowSchemaManager_WhenAddSchema_SchemaShouldBeAddedWithoutException()
         {
             // Mock Organization schema node
-            var organizationSchemaNode = new FhirSchemaNode
+            var organizationSchemaNode = new FhirParquetSchemaNode
             {
                 ChoiceTypeNodes = new Dictionary<string, Tuple<string, string>>(),
                 Depth = 0,
                 Name = "Organization",
                 NodePaths = new List<string> { "Organization" },
                 IsRepeated = false,
-                SubNodes = new Dictionary<string, FhirSchemaNode>(),
+                SubNodes = new Dictionary<string, FhirParquetSchemaNode>(),
                 Type = "Organization",
             };
 

@@ -13,7 +13,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow
     public enum CompressionOptions
     {
         UNCOMPRESSED,
-        SNAPPY
+        SNAPPY,
     }
 
     public class ArrowWriteOptionsConfiguration
