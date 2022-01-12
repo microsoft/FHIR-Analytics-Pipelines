@@ -22,7 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
 
         [Function("JobManagerFunction")]
         public async Task Run(
-            [TimerTrigger("0 */5 * * * *", RunOnStartup = true)] MyInfo myTimer,
+            [TimerTrigger("0 */5 * * * *", RunOnStartup = false)] MyInfo myTimer,
             FunctionContext context)
         {
             var logger = context.GetLogger("JobManagerFunction");
