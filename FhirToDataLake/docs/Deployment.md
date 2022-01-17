@@ -6,8 +6,6 @@ It is an Azure Function that extracts data from a FHIR server using FHIR Resourc
 
 This solution enables you to query against the entire FHIR data with tools such as Synapse Studio, SSMS, and Power BI. You can also access the Parquet files directly from a Synapse Spark pool. You should consider this solution if you want to access all of your FHIR data in near real time, and want to defer custom transformation to downstream systems.
 
-**Note**: An API usage charge will be incurred in the FHIR server if you use this tool to copy data from the FHIR server to Azure Data Lake.
-
 ## Deployment
 
 ### Prerequisites

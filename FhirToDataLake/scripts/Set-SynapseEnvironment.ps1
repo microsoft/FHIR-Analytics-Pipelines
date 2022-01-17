@@ -18,6 +18,9 @@
 .PARAMETER ResultPath
     Default: result
     Path to the parquet FHIR data.
+.PARAMETER SqlScriptCollectionPath
+    Default: sql/Resources
+    Path to the sql scripts directory to create EXTERNAL TABLEs and VIEWs.
 .PARAMETER MasterKey
     Default: "FhirSynapseLink0!"
     Master key that will be set in created database. Database need to have master key then we can create EXTERNAL TABLEs and VIEWs on it.
@@ -35,13 +38,13 @@ Param(
     [string]$StorageName,
     [string]$Container = "fhir",
     [string]$ResultPath = "result",
+    [string]$SqlScriptCollectionPath = "sql/Resources",
     [string]$MasterKey = "FhirSynapseLink0!",
     [int]$Concurrent = 30
 )
 
 $jobName = "FhirSynapseJob"
 $readmePath = ".readme.txt"
-$sqlScriptCollectionPath = "sql/Resources"
 
 # TODO: Align tags, SQL scripts and Storage data schemas.
 $tags = @{
@@ -135,7 +138,7 @@ function New-ContainerIfNotExists
 function New-PlaceHolderBlobs
 {
     param([string]$storageName, [string]$container, [string]$resultPath)
-    $files = Get-ChildItem $sqlScriptCollectionPath -Filter "*.sql" -Name
+    $files = Get-ChildItem $SqlScriptCollectionPath -Filter "*.sql" -Name
     foreach ($f in $files) {
         # Upload placeholder files.
         $resourceType = $($f -split "\.")[0]
@@ -183,7 +186,7 @@ function New-TableAndViewsForResources
 {
     param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$storageName, [string]$container)
 
-    $files = Get-ChildItem $sqlScriptCollectionPath -Filter "*.sql" -Name
+    $files = Get-ChildItem $SqlScriptCollectionPath -Filter "*.sql"
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
 
     Write-Host " -> Start creating TABLEs and VIEWs on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
@@ -200,7 +203,7 @@ function New-TableAndViewsForResources
                 throw "Creating Table and Views job failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
             }
         }
-        $filePath = "$sqlScriptCollectionPath/$file"
+        $filePath = $file.FullName
 
         # Create TABLES and VIEWs for resouces
         Write-Host " -> Executing script $filePath"
@@ -212,7 +215,7 @@ function New-TableAndViewsForResources
                 -InputFile $args[3] `
                 -ConnectionTimeout 120 `
                 -ErrorAction Stop
-        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, "$(Get-Location)/$filePath" | Out-Null
+        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $filePath | Out-Null
     }
 
     foreach ($finishedJob in (Get-Job -Name $jobName | Wait-Job)) {
@@ -225,7 +228,6 @@ function New-TableAndViewsForResources
         }
     }
 }
-
 
 $stopwatch =  [system.diagnostics.stopwatch]::StartNew()
 

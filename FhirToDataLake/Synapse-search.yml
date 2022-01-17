@@ -1,0 +1,210 @@
+steps:
+- powershell: |
+    $buildNumber = ([string]$(Build.BuildNumber)).replace('.', '')
+    $appName = 'test' + $buildNumber.substring($buildNumber.length - 7)
+
+    Write-Host $("Build number: " + $buildNumber)
+    Write-Host $("App name: " + $appName)
+    
+    $databaseName = $appName
+    $synapseWorkSpaceName = 'synapse' + $appName
+    $deploymentName = 'test-deployment-' + $buildNumber
+    Write-Host "##vso[task.setvariable variable=appName;]$appName"
+    Write-Host "##vso[task.setvariable variable=databaseName;]$databaseName"
+    Write-Host "##vso[task.setvariable variable=synapseWorkspaceName;]$synapseWorkSpaceName"
+    Write-Host "##vso[task.setvariable variable=deploymentName;]$deploymentName"
+  displayName: Initial pipeline appName and deploymentName
+
+- task: DownloadBuildArtifacts@0
+  displayName: 'Download Artifacts'
+  inputs:
+    artifactName: FhirToDataLakeBuild
+    downloadPath: $(Build.ArtifactStagingDirectory)
+
+- task: AzurePowerShell@5
+  displayName: Upload Azure Function zip package
+  inputs: 
+    azureSubscription: 'ResoluteOpenSource'
+    azurePowerShellVersion: latestVersion
+    ScriptType: inlineScript
+    Inline: |
+      $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(pipelineStorage)).Value[0]
+      $storageContext = New-AzStorageContext -StorageAccountName $(pipelineStorage) -StorageAccountKey $storageAccountKey
+      $blobName = '$(appName)' + 'FunctionApp.zip'
+      Set-AzStorageBlobContent -Container $(pipelineStoragePackageContainer) -Context $storageContext -File $(Build.ArtifactStagingDirectory)/FhirToDataLakeBuild/Microsoft.Health.Fhir.Synapse.FunctionApp.zip -Blob $blobName
+
+      # Get and set up SAS of Function.zip
+      $packageUrl = New-AzStorageBlobSASToken -Context $storageContext -Container @(pipelineStoragePackageContainer) -Blob $blobName -Permission racwd -FullUri
+      Write-Host "##vso[task.setvariable variable=packageUrl;]$packageUrl"
+
+- task: AzurePowerShell@5
+  displayName: Create Synapse workspace instance
+  inputs: 
+    azureSubscription: 'ResoluteOpenSource'
+    azurePowerShellVersion: latestVersion
+    ScriptType: inlineScript
+    Inline: |
+      Install-Module -Name Az.Synapse -RequiredVersion 0.7.0 -Force
+
+      $securedPassword = ConvertTo-SecureString $env:SQL_PASSWORD -AsPlainText -Force
+      $creds = New-Object System.Management.Automation.PSCredential ($env:SQL_USERNAME, $securedPassword)
+      New-AzSynapseWorkspace -ResourceGroupName $(resourceGroup) -Name $(synapseWorkspaceName) -Location eastus2 -SqlAdministratorLoginCredential $creds `
+        -DefaultDataLakeStorageAccountName $(pipelineStorage) -DefaultDataLakeStorageFilesystem $(pipelineStorageFileSystem) -ErrorAction Stop
+
+      # Creating Synapse via Azure portal will default allow all IP to access it, while creating via Powershell will not
+      # Here manually set it firewall rules, see https://docs.microsoft.com/en-us/azure/synapse-analytics/quickstart-create-workspace-powershell
+      $FirewallParams = @{
+        WorkspaceName = '$(synapseWorkspaceName)'
+        Name = 'allowAll'
+        ResourceGroupName = '$(resourceGroup)'
+        StartIpAddress = '0.0.0.0'
+        EndIpAddress = '255.255.255.255'
+      }
+      New-AzSynapseFirewallRule @FirewallParams
+  env:
+    SQL_USERNAME: $(SqlUsername)
+    SQL_PASSWORD: $(SqlPassword)
+
+- task: AzurePowerShell@5
+  displayName: Deploy Fhir Synapse sync pipeline
+  inputs: 
+    azureSubscription: 'ResoluteOpenSource'
+    azurePowerShellVersion: latestVersion
+    ScriptType: inlineScript
+    Inline: |
+      $templateParameters = @{
+          appName = "$(appName)"
+          fhirServerUrl = "$(fhirServerUrl)"
+          PackageUrl = "$(packageUrl)"
+      }
+
+      # Function will be triggered at second 0 of every 5th minute of every hour of each day (0, 5, 10,...,55)
+      # Deploy pipeline at (0, 5, 10,...,55) so that after pipeline been created, it will not be triggered immediately
+      $secondsDelay = 5*60 - ([int](Get-Date -Format ss) + 60*([int](Get-Date -Format mm)%5))
+      Start-Sleep -s $secondsDelay
+
+      New-AzResourceGroupDeployment -Name $(deploymentName) -ResourceGroupName $(resourceGroup) -TemplateFile $(System.DefaultWorkingDirectory)/FhirToDataLake/deploy/templates/FhirSynapsePipelineTemplate.json -TemplateParameterObject $templateParameters -Verbose
+      $storageAccountName = (Get-AzResource -ResourceGroupName $(resourceGroup) -Name $(appName)* -ResourceType Microsoft.Storage/storageAccounts).Name
+      
+      # Get storage name and inject it into pipeline variable
+      Write-Host "##vso[task.setvariable variable=storageAccountName;]$storageAccountName"
+
+- task: AzurePowerShell@5
+  displayName: Fetch data from FHIR server
+  inputs: 
+    azureSubscription: 'ResoluteOpenSource'
+    azurePowerShellVersion: latestVersion
+    ScriptType: inlineScript
+    Inline: |
+      # Here delay some time so that function be triggered twice
+      Write-Host 'Delay 7 minutes to fetch data from FHIR server'
+      Start-Sleep -s 420
+
+      Write-Host 'Stop function at $(Get-Date -Format hh:MM:ss)'
+      Stop-AzFunctionApp -Name $(appName) -ResourceGroupName $(resourceGroup) -Force
+  
+- task: AzureCLI@2
+  displayName: Assign access premission roles
+  inputs: 
+    azureSubscription: 'ResoluteOpenSource'
+    scriptType: 'ps'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      $subscriptionId = az account show --query 'id' -o tsv
+      $synapsePrincipalId = az synapse workspace show --name $(synapseWorkspaceName) --resource-group $(resourceGroup) --query 'identity.principalId' -o tsv
+      $serviceConnectionPrincipalId = az account show --query 'user.name' -o tsv
+
+      $storageScope = "/subscriptions/$($subscriptionId)/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageAccountName)"
+
+      Write-Host 'Assign Storage Blob Data Contributor for Synapse Workspace to Storage.'
+      az role assignment create --role "Storage Blob Data Contributor" --assignee-object-id $synapsePrincipalId --scope $storageScope --assignee-principal-type ServicePrincipal
+      
+      Write-Host 'Assign Storage Blob Data Contributor for service connection account to Storage.'
+      az role assignment create --role "Storage Blob Data Contributor" --assignee $serviceConnectionPrincipalId --scope $storageScope
+
+      Write-Host 'Assign Synapse SQL Administrator for service connection account to Synapse SQL pool.'
+      az synapse role assignment create --workspace-name $(synapseWorkspaceName) --role "Synapse SQL Administrator" --assignee $serviceConnectionPrincipalId
+      
+      # Wait 1 min in case the assignments don't enable.
+      Start-Sleep -s 60
+
+- task: AzurePowerShell@5
+  displayName: Set up EXTERNAL TABLEs and VIEWs on Synapse.
+  inputs: 
+    azureSubscription: 'ResoluteOpenSource'
+    azurePowerShellVersion: latestVersion
+    ScriptType: inlineScript
+    Inline: |
+      Install-Module -Name Az.Synapse -RequiredVersion 0.7.0 -Force
+      Import-Module Az.Synapse
+      Copy-Item "$(System.DefaultWorkingDirectory)\FhirToDataLake\scripts\.readme.txt" -Destination "."
+
+      # Retry to avoid the warming up of Synapse SQL pool and other potential issues
+      # see https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-42109-database-engine-error?view=sql-server-ver15
+
+      $attempts = 1
+      $maxAttempts = 3
+      do
+      {
+          try
+          {
+              . "$(System.DefaultWorkingDirectory)\FhirToDataLake\scripts\Set-SynapseEnvironment.ps1"  -SynapseWorkspaceName $(synapseWorkspaceName) -StorageName $(storageAccountName) -Database $(databaseName) -SqlScriptCollectionPath $(System.DefaultWorkingDirectory)\FhirToDataLake\scripts\sql\Resources
+              break;
+          }
+          catch [Exception]
+          {
+              Write-Host $_.Exception.Message
+          }
+
+          # exponential backoff delay
+          $attempts++
+          if ($attempts -le $maxAttempts) {
+              $retryDelaySeconds = [math]::Pow(2, $attempts)
+              $retryDelaySeconds = $retryDelaySeconds - 1  # Exponential Backoff Max == (2^n)-1
+              Write-Host("Set up EXTERNAL TABLEs and VIEWs failed. Waiting " + $retryDelaySeconds + " seconds before attempt " + $attempts + " of " + $maxAttempts + ".")
+              Start-Sleep $retryDelaySeconds 
+          }
+          else {
+              Write-Error $_.Exception.Message
+          }
+      } while ($attempts -le $maxAttempts)
+
+- script: python -m pip install requests pyodbc pandas
+  displayName: Install requirements for validate script
+
+- task: PythonScript@0
+  displayName: Validate results
+  inputs:
+    scriptSource: filePath
+    scriptPath: '$(Build.SourcesDirectory)\E2E\E2E_Validator.py'
+    arguments: --SynapseWorkspaceName $(synapseWorkspaceName) --FhirServerUrl $(fhirServerUrl) --Database $(databaseName) --SchemaCollectionDirectory  $(System.DefaultWorkingDirectory)\FhirToDataLake\data\schemas\
+  env:
+    SQL_USERNAME: $(SqlUsername)
+    SQL_PASSWORD: $(SqlPassword)
+
+- task: AzurePowerShell@5
+  displayName: Clean up test resources
+  inputs: 
+    azureSubscription: 'ResoluteOpenSource'
+    azurePowerShellVersion: latestVersion
+    ScriptType: inlineScript
+    Inline: |
+      ### Remove test resources in order
+      # Remove storage account
+      $storageId = (Get-AzResource -ResourceGroupName $(resourceGroup) -Name $(appName)* -ResourceType Microsoft.Storage/storageAccounts).ResourceId
+      Remove-AzResource -ResourceId $storageId -Force
+      Write-Host $("Delete test storage " + $storageId)
+      
+      # Remove web site, server farms will be auto deleted together
+      $webSiteId = (Get-AzResource -ResourceGroupName $(resourceGroup) -Name $(appName) -ResourceType Microsoft.Web/sites).ResourceId
+      Remove-AzResource -ResourceId $webSiteId -Force
+      Write-Host $("Delete test web site " + $webSiteId)
+      
+      # Remove app insight
+      $appInsightId = (Get-AzResource -ResourceGroupName $(resourceGroup) -Name *$(appName) -ResourceType microsoft.insights/components).ResourceId
+      Remove-AzResource -ResourceId $appInsightId -Force
+      Write-Host $("Delete test app insight " + $appInsightId)
+
+      # Remove Synapse
+      Remove-AzSynapseWorkspace -Name $(synapseWorkspaceName) -ResourceGroupName $(resourceGroup) -Force
+      Write-Host $("Delete test app insight " + $appInsightId)

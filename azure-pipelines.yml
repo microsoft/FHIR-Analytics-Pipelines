@@ -35,6 +35,10 @@ stages:
   pool:
     vmImage: 'windows-latest'
   jobs:
+  - job: SynapseSearchValidate
+    steps:
+    - template: FhirToDataLake/Synapse-search.yml
+
   - job: PublishFhirToCdm
     steps:
     - template: FhirToCdm/publish.yml
