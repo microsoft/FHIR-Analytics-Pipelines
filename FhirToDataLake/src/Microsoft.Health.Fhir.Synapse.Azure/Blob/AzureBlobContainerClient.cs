@@ -16,6 +16,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Files.DataLake;
+using Azure.Storage.Files.DataLake.Models;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Azure.Exceptions;
@@ -314,35 +315,48 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
             }
         }
 
-        public async Task<IEnumerable<string>> ListSubDirectories(string directory, CancellationToken cancellationToken = default)
+        public async Task DeleteDirectoryIfExists(string directory, CancellationToken cancellationToken = default)
         {
             try
             {
-                var subDirectories = new List<string>();
+                var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
+                await directoryClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
+
+                _logger.LogInformation("Delete blob directory '{0}' successfully.", directory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("Failed to delete blob directory '{0}'. Reason: '{1}'", directory, ex);
+                throw new AzureBlobOperationFailedException($"Failed to delete blob directory '{directory}'.", ex);
+            }
+        }
+
+        public async Task<IEnumerable<PathItem>> ListPathsAsync(string directory, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var subDirectories = new List<PathItem>();
 
                 var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
                 await foreach (var page in directoryClient.GetPathsAsync(true, cancellationToken: cancellationToken).AsPages())
                 {
                     // Append sub directories to result
-                    subDirectories.AddRange(
-                        page.Values
-                            .Where(pathItem => pathItem.IsDirectory != false)
-                            .Select(pathItem => pathItem.Name));
+                    subDirectories.AddRange(page.Values);
                 }
 
-                _logger.LogInformation("Get '{0}' sub directories of '{1}' successfully.", subDirectories.Count(), directory);
+                _logger.LogInformation("Get '{0}' paths of '{1}' successfully.", subDirectories.Count(), directory);
                 return subDirectories;
             }
             catch (RequestFailedException ex)
                 when (ex.ErrorCode == DataLakePathNotFoundErrorCode)
             {
                 _logger.LogInformation("Directory '{0}' is empty.", directory);
-                return new List<string>();
+                return new List<PathItem>();
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed to query sub directories of directory '{0}'. Reason: '{1}'", directory, ex);
-                throw new AzureBlobOperationFailedException($"Failed to query sub directories of directory '{directory}'.", ex);
+                _logger.LogError("Failed to query paths of directory '{0}'. Reason: '{1}'", directory, ex);
+                throw new AzureBlobOperationFailedException($"Failed to query paths of directory '{directory}'.", ex);
             }
         }
     }

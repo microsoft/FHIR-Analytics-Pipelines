@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Tasks
         private readonly IJsonDataProcessor _jsonDataProcessor;
         private readonly ILogger<TaskExecutor> _logger;
 
-        private const int ReportProgressBatchCount = 20000;
+        private const int ReportProgressBatchCount = 10;
 
         // TODO: Refine TaskExecutor here, current TaskExecutor is more like a manager class.
         public TaskExecutor(
@@ -60,7 +60,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Tasks
             JobProgressUpdater progressUpdater,
             CancellationToken cancellationToken = default)
         {
-            int resourceCount = 0;
+            int pageCount = 0;
             while (!taskContext.IsCompleted)
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -114,9 +114,8 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Tasks
                 taskContext.ProcessedCount = taskContext.SearchCount - taskContext.SkippedCount;
                 taskContext.IsCompleted = string.IsNullOrEmpty(taskContext.ContinuationToken);
 
-                resourceCount += fhirElementsData.Values.Count();
-                if (resourceCount > 0 &&
-                    (resourceCount % ReportProgressBatchCount == 0 || taskContext.IsCompleted))
+                pageCount++;
+                if (pageCount % ReportProgressBatchCount == 0 || taskContext.IsCompleted)
                 {
                     await progressUpdater.Produce(taskContext, cancellationToken);
                 }

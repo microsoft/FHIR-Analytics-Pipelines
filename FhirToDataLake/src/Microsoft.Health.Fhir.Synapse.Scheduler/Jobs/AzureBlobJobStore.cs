@@ -38,7 +38,10 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         // Timer to renew job lock in a fixed interval
         private readonly Timer _renewLockTimer;
 
+        // Concurrency to control how many folders are processed concurrently.
+        private const int StageFolderConcurrency = 20;
         private readonly Regex _stagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/(?<partition>[A-Za-z]+/\d{4}/\d{2}/\d{2})$");
+        private readonly Regex _stagingDataBlobRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/[A-Za-z]+/\d{4}/\d{2}/\d{2}/(?<resource>[A-Za-z]+)_[a-z0-9]{32}_(?<partId>\d+).parquet$");
 
         public AzureBlobJobStore(
             IAzureBlobContainerClientFactory blobContainerFactory,
@@ -119,28 +122,6 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
             return jobs;
         }
 
-        public bool UpdateJob(Job job, CancellationToken cancellationToken)
-        {
-            EnsureArg.IsNotNull(job, nameof(job));
-
-            job.LastHeartBeat = DateTimeOffset.UtcNow;
-
-            try
-            {
-                _blobContainerClient.UpdateBlob(
-                    $"{AzureBlobJobConstants.ActiveJobFolder}/{job.Id}.json",
-                    job.ToStream(),
-                    cancellationToken: cancellationToken);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogWarning(ex, "Failed to update job '{job.Id}'.", job.Id);
-                return false;
-            }
-        }
-
         public async Task<bool> UpdateJobAsync(Job job, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(job, nameof(job));
@@ -154,12 +135,13 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
                     job.ToStream(),
                     cancellationToken: cancellationToken);
 
+                _logger.LogInformation("Update job '{job.Id}' successfully.", job.Id);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning(ex, "Failed to update job '{job.Id}'.", job.Id);
-                return false;
+                _logger.LogError(ex, "Failed to update job '{job.Id}'", job.Id);
+                throw;
             }
         }
 
@@ -206,6 +188,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
                 // Remove job from active job list.
                 await _blobContainerClient.DeleteBlobAsync(GetJobBlobName(job, AzureBlobJobConstants.ActiveJobFolder), cancellationToken);
 
+                _logger.LogInformation("Complete job '{job.Id}' successfully.", job.Id);
                 return true;
             }
             catch (Exception ex)
@@ -285,16 +268,54 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         public async Task CommitJobDataAsync(Job job, CancellationToken cancellationToken = default)
         {
             var stagingFolder = $"{AzureStorageConstants.StagingFolderName}/{job.Id}";
-            var subDirectories = await _blobContainerClient.ListSubDirectories(stagingFolder);
-            foreach (var subDirectory in subDirectories)
+            var directoryPairs = new List<Tuple<string, string>>();
+
+            var pathItems = await _blobContainerClient.ListPathsAsync(stagingFolder);
+            foreach (var path in pathItems)
             {
-                var match = _stagingDataFolderRegex.Match(subDirectory);
-                if (match.Success)
+                if (path.IsDirectory == true)
                 {
-                    var resultFolder = $"{AzureStorageConstants.ResultFolderName}/{match.Groups["partition"].Value}/{job.Id}";
-                    await _blobContainerClient.MoveDirectory(subDirectory, resultFolder, cancellationToken);
+                    var match = _stagingDataFolderRegex.Match(path.Name);
+                    if (match.Success)
+                    {
+                        var destination = $"{AzureStorageConstants.ResultFolderName}/{match.Groups["partition"].Value}/{job.Id}";
+                        directoryPairs.Add(new Tuple<string, string>(path.Name, destination));
+                    }
+                }
+                else
+                {
+                    // remove parquet files not saved in this job.
+                    var match = _stagingDataBlobRegex.Match(path.Name);
+                    if (match.Success)
+                    {
+                        var resource = match.Groups["resource"].Value;
+                        var partId = int.Parse(match.Groups["partId"].Value);
+                        if (partId >= job.PartIds[resource])
+                        {
+                            await _blobContainerClient.DeleteBlobAsync(path.Name);
+                        }
+                    }
                 }
             }
+
+            // move directories from staging to result folder.
+            var moveTasks = new List<Task>();
+            foreach (var pair in directoryPairs)
+            {
+                if (moveTasks.Count >= StageFolderConcurrency)
+                {
+                    var completedTask = await Task.WhenAny(moveTasks);
+                    await completedTask;
+                    moveTasks.Remove(completedTask);
+                }
+
+                moveTasks.Add(_blobContainerClient.MoveDirectory(pair.Item1, pair.Item2, cancellationToken));
+            }
+
+            await Task.WhenAll(moveTasks);
+
+            // delete staging folder when success.
+            await _blobContainerClient.DeleteDirectoryIfExists(stagingFolder);
         }
     }
 }

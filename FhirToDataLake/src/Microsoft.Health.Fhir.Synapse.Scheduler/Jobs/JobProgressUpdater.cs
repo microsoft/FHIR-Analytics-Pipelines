@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -17,7 +18,9 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         private readonly IJobStore _jobStore;
         private readonly Job _job;
         private Channel<TaskContext> _progressChannel;
-        private const int UploadDataInterval = 10;
+
+        // Time interval to sync job to store.
+        private const int UploadDataIntervalInSeconds = 30;
 
         public JobProgressUpdater(IJobStore jobStore, Job job)
         {
@@ -36,8 +39,9 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
 
         public async Task Consume(CancellationToken cancellationToken = default)
         {
+            var uploadTime = DateTimeOffset.MinValue;
+
             var channelReader = _progressChannel.Reader;
-            var contextCount = 0;
             while (await channelReader.WaitToReadAsync(cancellationToken))
             {
                 if (channelReader.TryRead(out TaskContext context))
@@ -47,10 +51,14 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
                     _job.ProcessedResourceCounts[context.ResourceType] = context.ProcessedCount;
                     _job.SkippedResourceCounts[context.ResourceType] = context.SkippedCount;
                     _job.PartIds[context.ResourceType] = context.PartId;
-
-                    contextCount++;
-                    if (contextCount % UploadDataInterval == 0)
+                    if (context.IsCompleted)
                     {
+                        _job.CompletedResources.Add(context.ResourceType);
+                    }
+
+                    if (uploadTime.AddSeconds(UploadDataIntervalInSeconds) < DateTimeOffset.UtcNow)
+                    {
+                        uploadTime = DateTimeOffset.UtcNow;
                         // Upload to job store.
                         await _jobStore.UpdateJobAsync(_job, cancellationToken);
                     }

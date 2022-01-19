@@ -199,7 +199,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
                 var context = TaskContext.Create(resourceType, job);
                 if (context.IsCompleted)
                 {
-                    _logger.LogInformation("Skipping completed resource '{resourceType}'.");
+                    _logger.LogInformation("Skipping completed resource '{resourceType}'.", resourceType);
                     continue;
                 }
 

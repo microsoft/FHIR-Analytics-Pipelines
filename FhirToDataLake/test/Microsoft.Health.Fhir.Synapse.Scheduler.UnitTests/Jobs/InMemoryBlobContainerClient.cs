@@ -11,6 +11,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Storage.Files.DataLake.Models;
 using Microsoft.Health.Fhir.Synapse.Azure.Blob;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Scheduler.Jobs;
@@ -192,6 +194,66 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.Jobs
         {
             _blobStore[blobName] = stream;
             return blobName;
+        }
+
+        public Task<IEnumerable<string>> ListBlobs(string directory, CancellationToken cancellationToken = default)
+        {
+            var result = new List<string>();
+            foreach (var path in _blobStore.Keys)
+            {
+                if (path.StartsWith(directory) && !string.Equals(directory, path, StringComparison.OrdinalIgnoreCase))
+                {
+                    result.Add(path);
+                }
+            }
+
+            return Task.FromResult((IEnumerable<string>)result);
+        }
+
+        public Task DeleteDirectoryIfExists(string directory, CancellationToken cancellationToken = default)
+        {
+            foreach (var path in _blobStore.Keys)
+            {
+                if (path.StartsWith(directory) && !string.Equals(directory, path, StringComparison.OrdinalIgnoreCase))
+                {
+                    _blobStore.TryRemove(path, out _);
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task<IEnumerable<PathItem>> ListPathsAsync(string directory, CancellationToken cancellationToken = default)
+        {
+            var directorySet = new HashSet<string>();
+            var result = new List<PathItem>();
+            foreach (var path in _blobStore.Keys)
+            {
+                if (path.StartsWith(directory) && !string.Equals(directory, path, StringComparison.OrdinalIgnoreCase))
+                {
+                    var pathItem = DataLakeModelFactory.PathItem(path, false, DateTimeOffset.UtcNow, new ETag("test"), 100, string.Empty, string.Empty, string.Empty);
+                    result.Add(pathItem);
+
+                    var pathComponents = path.Split('/');
+                    string baseDir = pathComponents[0];
+                    int i = 1;
+                    while (i < pathComponents.Length - 1)
+                    {
+                        baseDir += $"/{pathComponents[i]}";
+                        i++;
+
+                        if (baseDir.StartsWith(directory)
+                            && !string.Equals(baseDir, path, StringComparison.OrdinalIgnoreCase)
+                            && !directorySet.Contains(baseDir))
+                        {
+                            var directoryItem = DataLakeModelFactory.PathItem(baseDir, true, DateTimeOffset.UtcNow, new ETag("test"), 100, string.Empty, string.Empty, string.Empty);
+                            result.Add(directoryItem);
+                        }
+                    }
+                }
+            }
+
+            return Task.FromResult((IEnumerable<PathItem>)result);
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Files.DataLake.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
 {
@@ -142,12 +143,22 @@ namespace Microsoft.Health.Fhir.Synapse.Azure.Blob
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// List sub directories of a blob directory.
+        /// Delete a blob directory if exists.
+        /// </summary>
+        /// <param name="directory">input directory.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>completed task.</returns>
+        public Task DeleteDirectoryIfExists(
+            string directory,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// List paths of a blob directory.
         /// </summary>
         /// <param name="directory">input directory.</param>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>sub directory names.</returns>
-        public Task<IEnumerable<string>> ListSubDirectories(
+        public Task<IEnumerable<PathItem>> ListPathsAsync(
             string directory,
             CancellationToken cancellationToken = default);
     }
