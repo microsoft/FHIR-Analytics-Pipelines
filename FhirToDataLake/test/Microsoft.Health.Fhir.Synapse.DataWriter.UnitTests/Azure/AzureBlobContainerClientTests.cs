@@ -527,7 +527,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         }
 
         [SkippableFact]
-        public async Task GivenANonExistDirectoryName_WhenDeleteIfExists_NoExceptionShouldBeThrown()
+        public async Task GivenANotExistingDirectoryName_WhenDeleteIfExists_NoExceptionShouldBeThrown()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
@@ -548,7 +548,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         }
 
         [SkippableFact]
-        public async Task GivenANonExistDirectoryName_WhenDeleteIfExists_DirectoryAndBlobsShouldBeDeleted()
+        public async Task GivenAValidDirectoryName_WhenDeleteIfExists_DirectoryAndBlobsShouldBeDeleted()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
@@ -573,7 +573,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         }
 
         [SkippableFact]
-        public async Task GivenANonExistDirectoryName_WhenListPaths_NoPathShouldBeReturned()
+        public async Task GivenANotExistingDirectoryName_WhenListPaths_NoPathShouldBeReturned()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
@@ -594,7 +594,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         }
 
         [SkippableFact]
-        public async Task GivenADirectoryName_WhenListPaths_AllSubDirectoriesShouldBeReturned()
+        public async Task GivenAValidDirectoryName_WhenListPaths_AllPathsShouldBeReturned()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
@@ -623,7 +623,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         }
 
         [SkippableFact]
-        public async Task GivenANonExistDirectoryName_WhenMoveDirectory_ExceptionShouldBeThrown()
+        public async Task GivenANotExistingDirectoryName_WhenMoveDirectory_ExceptionShouldBeThrown()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
