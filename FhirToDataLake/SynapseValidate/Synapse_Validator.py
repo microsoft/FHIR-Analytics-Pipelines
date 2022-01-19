@@ -17,37 +17,29 @@ parser.add_argument("--Database", help="Name of database.")
 parser.add_argument("--SchemaCollectionDirectory", help="Schema collection directory path.")
 args = parser.parse_args()
 
-Sql_Server_Endpoint = args.SynapseWorkspaceName + "-ondemand.sql.azuresynapse.net"
-Database = args.Database
-Schema_Collection_Directory = args.SchemaCollectionDirectory
-Fhir_Server_Base_Url = args.FhirServerUrl
-Sql_Username = os.getenv('SQL_USERNAME')
-Sql_Password = os.getenv('SQL_PASSWORD')
+sql_server_endpoint = args.SynapseWorkspaceName + "-ondemand.sql.azuresynapse.net"
+database = args.Database
+schema_collection_directory = args.SchemaCollectionDirectory
+fhir_server_base_url = args.FhirServerUrl
+
+sql_username = os.getenv('SQL_USERNAME')
+sql_password = os.getenv('SQL_PASSWORD')
 
 pyodbc.pooling = False
 
-class RawDataSource:
-    Headers = {'Accept': 'application/fhir+json', "Prefer": "respond-async"}
-    Start_Datetime = "1970-01-01T00:00:00-00:00"
+
+class FhirApiDataClient:
+    headers = {'Accept': 'application/fhir+json', "Prefer": "respond-async"}
+    start_datetime = "1970-01-01T00:00:00-00:00"
 
     def __init__(self, baseUrl):
         self.baseUrl = baseUrl
 
     def get_all_entries(self, resource_type):
         end_datetime = datetime.today().strftime('%Y-%m-%dT%H:%M:%S-00:00')
-        url = self.baseUrl + f"/{resource_type}?_lastUpdated=ge{RawDataSource.Start_Datetime}&_lastUpdated=lt{end_datetime}&_sort=_lastUpdated&_count=1000"
-        historical_data = self.get_entries(url)
+        url = self.baseUrl + f"/{resource_type}?_lastUpdated=ge{FhirApiDataClient.start_datetime}&_lastUpdated=lt{end_datetime}&_sort=_lastUpdated&_count=1000"
 
-        '''
-        url = self.baseUrl + f"/{resource_type}?_lastUpdated=ge{end_datetime}&_lastUpdated=lt{end_datetime}&_sort=_lastUpdated&_count=1000"
-        latest_data = self.get_entries(url)
-        return historical_data + latest_data
-        '''
-        return historical_data
-
-
-    def get_entries(self, url):
-        response = requests.get(url, headers=RawDataSource.Headers)
+        response = requests.get(url, headers=FhirApiDataClient.headers)
         if response.status_code != requests.codes.ok:
             raise Exception(f"Get data from {url} failed: " + response.text)
 
@@ -56,12 +48,12 @@ class RawDataSource:
         if "entry" not in response_object:
             return []
 
-        sumData = []
-        sumData.extend(response_object["entry"])
+        result = []
+        result.extend(response_object["entry"])
         continuation_token = self.parse_continuation_token(response_object)
 
         while continuation_token:
-            response = requests.get(url, headers=RawDataSource.Headers, params={"ct": continuation_token})
+            response = requests.get(url, headers=FhirApiDataClient.headers, params={"ct": continuation_token})
             if response.status_code != requests.codes.ok:
                 raise Exception(f"Get data from {url} failed: " + response.text)
 
@@ -70,9 +62,9 @@ class RawDataSource:
             if "entry" not in response_object:
                 continuation_token = None
             else:
-                sumData.extend(response_object["entry"])
+                result.extend(response_object["entry"])
                 continuation_token = self.parse_continuation_token(response_object)
-        return sumData
+        return result
 
     @staticmethod
     def parse_continuation_token(response_content):
@@ -132,7 +124,7 @@ class SchemaManager:
             return
 
 
-class SQLServerClient:
+class SqlServerClient:
     def __init__(self, sql_server_endpoint, database, sql_username, sql_password):
         self.connectionString = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' \
                     + sql_server_endpoint + ';DATABASE=' + database + ';UID=' + sql_username + ';PWD=' + sql_password
@@ -145,23 +137,23 @@ class SQLServerClient:
         return data_df
 
 
-class DataFactory:
-    ResourceType = "resourceType"
-    Expected = "expected"
-    Queried = "queried"
-    FieldDict = "field_mapping_dict"
+class DataClient:
+    resourceType = "resourceType"
+    expected = "expected"
+    queried = "queried"
+    field_dict = "field_mapping_dict"
 
-    def __init__(self, sql_client, expected_data_client, field_mapping_dicts):
+    def __init__(self, sql_client, fhir_api_client, field_mapping_dicts):
         self.sql_client = sql_client
-        self.expected_data_client = expected_data_client
+        self.fhir_api_client = fhir_api_client
         self.field_mapping_dicts = field_mapping_dicts
 
     def fetch(self, resource_type):
         result = {}
-        result[DataFactory.ResourceType] = resource_type
-        result[DataFactory.Queried] = self.sql_client.get_data(resource_type)
-        result[DataFactory.Expected] = self.expected_data_client.get_all_entries(resource_type)
-        result[DataFactory.FieldDict] = self.field_mapping_dicts[resource_type]
+        result[DataClient.resourceType] = resource_type
+        result[DataClient.queried] = self.sql_client.get_data(resource_type)
+        result[DataClient.expected] = self.fhir_api_client.get_all_entries(resource_type)
+        result[DataClient.field_dict] = self.field_mapping_dicts[resource_type]
         return result
 
 
@@ -169,39 +161,39 @@ if __name__ == "__main__":
     sys.stdout.flush()
 
     print('-> Executing script file: ', str(sys.argv[0]))
-    print('-> SynapseServerEndpoint: ', Sql_Server_Endpoint)
-    print('-> Database: ', Database)
-    print('-> FhirServerUrl: ', Fhir_Server_Base_Url)
+    print('-> SynapseServerEndpoint: ', sql_server_endpoint)
+    print('-> Database: ', database)
+    print('-> FhirServerUrl: ', fhir_server_base_url)
 
-    schema_manager = SchemaManager(Schema_Collection_Directory)
+    schema_manager = SchemaManager(schema_collection_directory)
     resource_types = schema_manager.get_all_resource_types()
 
-    data_source = RawDataSource(Fhir_Server_Base_Url)
-    sql_client = SQLServerClient(Sql_Server_Endpoint, Database, Sql_Username, Sql_Password)
+    fhir_api_client = FhirApiDataClient(fhir_server_base_url)
+    sql_client = SqlServerClient(sql_server_endpoint, database, sql_username, sql_password)
 
-    dataFactory = DataFactory(sql_client, data_source, schema_manager.generate_field_mapping_dicts())
+    dataFactory = DataClient(sql_client, fhir_api_client, schema_manager.generate_field_mapping_dicts())
 
     start_time = time.time()
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         futures = [executor.submit(dataFactory.fetch, resource_type) for resource_type in resource_types]
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
-            resource_type = result[DataFactory.ResourceType]
-            expected_entries = result[DataFactory.Expected]
-            queried_df = result[DataFactory.Queried]
-            field_mapping_dict = result[DataFactory.FieldDict]
+            resource_type = result[DataClient.resourceType]
+            expected_entries = result[DataClient.expected]
+            queried_df = result[DataClient.queried]
+            field_mapping_dict = result[DataClient.field_dict]
             print(f"Get {queried_df.shape[0]} resources from \"{resource_type}\", columns number is {queried_df.shape[1]}")
 
             if len(expected_entries) != queried_df.shape[0]:
-                raise Exception(f"Resource \"{resource_type}\" rows number is incorrect. "
+                raise Exception(f"The resource number of \"{resource_type}\" is incorrect."
                                 f"Expected resource number is {len(expected_entries)}, "
                                 f"while rows number on Synapse is {queried_df.shape[0]}.")
 
             if len(field_mapping_dict) != queried_df.shape[1]:
                 expected_columns = set(field_mapping_dict.keys())
                 queried_columns = set(queried_df.columns.tolist())
-                raise Exception(f"Resource \"{resource_type}\" columns number is incorrect. "
+                raise Exception(f"The columns number of \"{resource_type}\" is incorrect. "
                                 f"Expected column number is {len(field_mapping_dict)}, "
-                                f"while column number number on Synapse is {queried_df.shape[1]}.")
+                                f"while column number on Synapse is {queried_df.shape[1]}.")
 
-    print(f"Validate {len(resource_types)} resource types complete in " + str(time.time() - start_time), "seconds")
+    print(f"Validating {len(resource_types)} resource types, completes in {str(time.time() - start_time)} seconds.")
