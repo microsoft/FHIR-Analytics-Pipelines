@@ -7,13 +7,14 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 
-namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
+namespace Microsoft.Health.Fhir.Synapse.Tool
 {
     public class SynapseLinkService : BackgroundService
     {
-        private JobManager _jobManager;
-        private IHostApplicationLifetime _hostApplicationLifetime;
+        private readonly JobManager _jobManager;
+        private readonly IHostApplicationLifetime _hostApplicationLifetime;
 
         public SynapseLinkService(
             IHostApplicationLifetime hostApplicationLifetime,
@@ -27,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         {
             try
             {
-                await _jobManager.TriggerJobAsync(stoppingToken);
+                await _jobManager.RunAsync(stoppingToken);
             }
             catch (Exception ex)
             {
@@ -42,7 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.Scheduler.Jobs
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             await _jobManager.DisposeAsync();
-            Console.WriteLine("Jobmanager gracefully disposed.");
+            Console.WriteLine("JobManager gracefully disposed.");
         }
     }
 }

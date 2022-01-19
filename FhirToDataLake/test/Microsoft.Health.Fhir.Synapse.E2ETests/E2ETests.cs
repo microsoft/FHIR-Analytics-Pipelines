@@ -12,15 +12,13 @@ using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Health.Fhir.Synapse.Azure;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
-using Microsoft.Health.Fhir.Synapse.DataSerialization;
-using Microsoft.Health.Fhir.Synapse.DataSink;
-using Microsoft.Health.Fhir.Synapse.DataSource;
-using Microsoft.Health.Fhir.Synapse.Scheduler;
-using Microsoft.Health.Fhir.Synapse.Scheduler.Jobs;
-using Microsoft.Health.Fhir.Synapse.Schema;
+using Microsoft.Health.Fhir.Synapse.Core;
+using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataWriter;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement;
+using Microsoft.Health.Fhir.Synapse.Tool;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,12 +31,13 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private readonly ITestOutputHelper _testOutputHelper;
 
         private const string _configurationPath = "appsettings.test.json";
-        private int _triggerIntervalInMinutes = 5;
+        private const int TriggerIntervalInMinutes = 5;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="E2ETests"/> class.
         /// To run the tests locally, pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1 and run it in port 5000.
         /// </summary>
+        /// <param name="testOutputHelper">output helper.</param>
         public E2ETests(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
@@ -103,7 +102,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 .AddEnvironmentVariables()
                 .Build();
             var now = DateTime.UtcNow;
-            configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["startTime"] = now.AddMinutes(-1 * _triggerIntervalInMinutes).ToString("o");
+            configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["startTime"] = now.AddMinutes(-1 * TriggerIntervalInMinutes).ToString("o");
             configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"] = now.ToString("o");
             configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["containerName"] = uniqueContainerName;
 
@@ -169,12 +168,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 .ConfigureServices((context, services) =>
                     services
                         .AddConfiguration(configuration)
-                        .AddFhirSpecification()
                         .AddAzure()
                         .AddJobScheduler()
                         .AddDataSource()
-                        .AddDataSink()
-                        .AddDataSerialization()
                         .AddSchema()
                         .AddHostedService<SynapseLinkService>());
     }

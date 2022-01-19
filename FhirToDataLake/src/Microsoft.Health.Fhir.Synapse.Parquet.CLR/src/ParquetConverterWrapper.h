@@ -1,7 +1,7 @@
 #pragma once
 #include "ArrowSchemaManager.h"
 
-using namespace Microsoft::Health::Fhir::Synapse::Schema;
+using namespace Microsoft::Health::Fhir::Synapse::SchemaManagement::Parquet;
 using namespace Microsoft::Health::Fhir::Synapse::Common::Configurations::Arrow;
 
 using namespace System;
@@ -25,14 +25,14 @@ namespace Microsoft
 							/// Initialize a ParquetConverterWrapper with default arrow configuration and generate all arrow schemas.
 							/// </summary>
 							/// <param name="schemaMap">A map of resource type to FHIR schema node, used to generate arrow schemas.</param>
-							ParquetConverterWrapper(Dictionary<String^, FhirSchemaNode^>^ schemaMap);
+							ParquetConverterWrapper(Dictionary<String^, FhirParquetSchemaNode^>^ schemaMap);
 							
 							/// <summary>
 							/// Initialize a ParquetConverterWrapper with specified arrow configuration and generate all arrow schemas.
 							/// </summary>
 							/// <param name="schemaMap">A map of resource type to FHIR schema node, used to generate arrow schemas.</param>
 							/// <param name="arrowConfiguration">The specified arrow configuration.</param>
-							ParquetConverterWrapper(Dictionary<String^, FhirSchemaNode^>^ schemaMap, ArrowConfiguration^ arrowConfiguration);
+							ParquetConverterWrapper(Dictionary<String^, FhirParquetSchemaNode^>^ schemaMap, ArrowConfiguration^ arrowConfiguration);
 
 							/// <summary>
 							/// Convert a stream of specified resource type to parquet stream.

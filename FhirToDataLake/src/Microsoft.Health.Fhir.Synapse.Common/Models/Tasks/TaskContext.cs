@@ -37,26 +37,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             IsCompleted = isCompleted;
         }
 
-        public static TaskContext Create(
-            string resourceType,
-            Job job)
-        {
-            var isCompleted = job.CompletedResources.Contains(resourceType);
-
-            return new TaskContext(
-                Guid.NewGuid().ToString("N"),
-                job.Id,
-                resourceType,
-                job.DataPeriod.Start,
-                job.DataPeriod.End,
-                job.ResourceProgresses[resourceType],
-                job.TotalResourceCounts[resourceType],
-                job.ProcessedResourceCounts[resourceType],
-                job.SkippedResourceCounts[resourceType],
-                job.PartIds[resourceType],
-                isCompleted);
-        }
-
         /// <summary>
         /// Task id.
         /// </summary>
@@ -112,5 +92,25 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// Has completed all resources.
         /// </summary>
         public bool IsCompleted { get; set; }
+
+        public static TaskContext Create(
+            string resourceType,
+            Job job)
+        {
+            var isCompleted = job.CompletedResources.Contains(resourceType);
+
+            return new TaskContext(
+                Guid.NewGuid().ToString("N"),
+                job.Id,
+                resourceType,
+                job.DataPeriod.Start,
+                job.DataPeriod.End,
+                job.ResourceProgresses[resourceType],
+                job.TotalResourceCounts[resourceType],
+                job.ProcessedResourceCounts[resourceType],
+                job.SkippedResourceCounts[resourceType],
+                job.PartIds[resourceType],
+                isCompleted);
+        }
     }
 }

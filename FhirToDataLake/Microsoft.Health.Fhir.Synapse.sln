@@ -7,23 +7,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synap
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Tool", "src\Microsoft.Health.Fhir.Synapse.Tool\Microsoft.Health.Fhir.Synapse.Tool.csproj", "{55051294-EEFD-46BA-A97F-26EE43DFD372}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.DataSerialization", "src\Microsoft.Health.Fhir.Synapse.DataSerialization\Microsoft.Health.Fhir.Synapse.DataSerialization.csproj", "{3487EA9C-EC4E-4228-876B-5412A0C6D2A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Core", "src\Microsoft.Health.Fhir.Synapse.Core\Microsoft.Health.Fhir.Synapse.Core.csproj", "{DD67F501-C164-4045-9468-BBD8419DA987}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Scheduler", "src\Microsoft.Health.Fhir.Synapse.Scheduler\Microsoft.Health.Fhir.Synapse.Scheduler.csproj", "{DD67F501-C164-4045-9468-BBD8419DA987}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.DataSource", "src\Microsoft.Health.Fhir.Synapse.DataSource\Microsoft.Health.Fhir.Synapse.DataSource.csproj", "{E7D3EECB-0B8C-4284-B59B-FB4B422B8DAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.DataClient", "src\Microsoft.Health.Fhir.Synapse.DataClient\Microsoft.Health.Fhir.Synapse.DataClient.csproj", "{E7D3EECB-0B8C-4284-B59B-FB4B422B8DAC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Common", "src\Microsoft.Health.Fhir.Synapse.Common\Microsoft.Health.Fhir.Synapse.Common.csproj", "{83927F5E-D1FE-4AE1-B76A-C54C31CF0481}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Azure", "src\Microsoft.Health.Fhir.Synapse.Azure\Microsoft.Health.Fhir.Synapse.Azure.csproj", "{BF1F3E19-BD7E-4837-8D9F-D0A35E48E0D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.DataWriter", "src\Microsoft.Health.Fhir.Synapse.DataWriter\Microsoft.Health.Fhir.Synapse.DataWriter.csproj", "{BF1F3E19-BD7E-4837-8D9F-D0A35E48E0D9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Schema", "src\Microsoft.Health.Fhir.Synapse.Schema\Microsoft.Health.Fhir.Synapse.Schema.csproj", "{9FDDFEDC-D457-4C95-B225-5B5EDB49DD13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.SchemaManagement", "src\Microsoft.Health.Fhir.Synapse.SchemaManagement\Microsoft.Health.Fhir.Synapse.SchemaManagement.csproj", "{9FDDFEDC-D457-4C95-B225-5B5EDB49DD13}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Health.Fhir.Synapse.Parquet.CLR", "src\Microsoft.Health.Fhir.Synapse.Parquet.CLR\Microsoft.Health.Fhir.Synapse.Parquet.CLR.vcxproj", "{E0AEBDD2-F4DB-4CF4-BA42-4B5A320AB225}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Health.Fhir.Synapse.Parquet.Native", "src\Microsoft.Health.Fhir.Synapse.Parquet.Native\Microsoft.Health.Fhir.Synapse.Parquet.Native.vcxproj", "{6D5B77AF-BC8A-4EB4-8489-8803066E4AC6}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.DataSink", "src\Microsoft.Health.Fhir.Synapse.DataSink\Microsoft.Health.Fhir.Synapse.DataSink.csproj", "{1BCCF4CB-FFDD-43BA-B0C9-1E34BFAF38FD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7B25FB90-E4BD-4795-B98E-9904351F8DE5}"
 	ProjectSection(SolutionItems) = preProject
@@ -32,25 +28,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Schema.UnitTests", "test\Microsoft.Health.Fhir.Synapse.Schema.UnitTests\Microsoft.Health.Fhir.Synapse.Schema.UnitTests.csproj", "{8DB70E3D-BBD8-4298-A617-D7D06FF98E8E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests", "test\Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests\Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.csproj", "{8DB70E3D-BBD8-4298-A617-D7D06FF98E8E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.DataSource.UnitTests", "test\Microsoft.Health.Fhir.Synapse.DataSource.UnitTests\Microsoft.Health.Fhir.Synapse.DataSource.UnitTests.csproj", "{D22CB827-FA03-4032-AF41-2BD95F9FBC01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.DataClient.UnitTests", "test\Microsoft.Health.Fhir.Synapse.DataClient.UnitTests\Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.csproj", "{D22CB827-FA03-4032-AF41-2BD95F9FBC01}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Azure.UnitTests", "test\Microsoft.Health.Fhir.Synapse.Azure.UnitTests\Microsoft.Health.Fhir.Synapse.Azure.UnitTests.csproj", "{5C62D31B-BE20-4A86-9D04-ABC74F387C71}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.DataSerialization.UnitTests", "test\Microsoft.Health.Fhir.Synapse.DataSerialization.UnitTests\Microsoft.Health.Fhir.Synapse.DataSerialization.UnitTests.csproj", "{62BCFE52-5CCB-4FE7-9BBF-7ACD5CF5BB6A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Common.UnitTests", "test\Microsoft.Health.Fhir.Synapse.Common.UnitTests\Microsoft.Health.Fhir.Synapse.Common.UnitTests.csproj", "{D3C6F387-AD30-4BCF-870E-AFEE8F5C5C8C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests", "test\Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests\Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.csproj", "{5C62D31B-BE20-4A86-9D04-ABC74F387C71}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests", "test\Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests\Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests.csproj", "{67C35B59-5D0C-4846-BE4C-08BF580229E9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Health.Fhir.Synapse.Parquet.Native.UnitTests", "test\Microsoft.Health.Fhir.Synapse.Parquet.Native.UnitTests\Microsoft.Health.Fhir.Synapse.Parquet.Native.UnitTests.vcxproj", "{9AA63275-45BE-4019-B5F1-E371A985D045}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests", "test\Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests\Microsoft.Health.Fhir.Synapse.Scheduler.UnitTests.csproj", "{8805CF56-8937-4FF9-8CF0-3450258C9DE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Core.UnitTests", "test\Microsoft.Health.Fhir.Synapse.Core.UnitTests\Microsoft.Health.Fhir.Synapse.Core.UnitTests.csproj", "{8805CF56-8937-4FF9-8CF0-3450258C9DE6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.E2ETests", "test\Microsoft.Health.Fhir.Synapse.E2ETests\Microsoft.Health.Fhir.Synapse.E2ETests.csproj", "{01C19DA0-63E6-43E2-B421-12CC8BD7EB94}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.DataSink.UnitTests", "test\Microsoft.Health.Fhir.Synapse.DataSink.UnitTests\Microsoft.Health.Fhir.Synapse.DataSink.UnitTests.csproj", "{781CB3CF-9F2B-46EA-A081-0B3C510A90C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,10 +56,6 @@ Global
 		{55051294-EEFD-46BA-A97F-26EE43DFD372}.Debug|x64.Build.0 = Debug|x64
 		{55051294-EEFD-46BA-A97F-26EE43DFD372}.Release|x64.ActiveCfg = Release|x64
 		{55051294-EEFD-46BA-A97F-26EE43DFD372}.Release|x64.Build.0 = Release|x64
-		{3487EA9C-EC4E-4228-876B-5412A0C6D2A7}.Debug|x64.ActiveCfg = Debug|x64
-		{3487EA9C-EC4E-4228-876B-5412A0C6D2A7}.Debug|x64.Build.0 = Debug|x64
-		{3487EA9C-EC4E-4228-876B-5412A0C6D2A7}.Release|x64.ActiveCfg = Release|x64
-		{3487EA9C-EC4E-4228-876B-5412A0C6D2A7}.Release|x64.Build.0 = Release|x64
 		{DD67F501-C164-4045-9468-BBD8419DA987}.Debug|x64.ActiveCfg = Debug|x64
 		{DD67F501-C164-4045-9468-BBD8419DA987}.Debug|x64.Build.0 = Debug|x64
 		{DD67F501-C164-4045-9468-BBD8419DA987}.Release|x64.ActiveCfg = Release|x64
@@ -98,10 +84,6 @@ Global
 		{6D5B77AF-BC8A-4EB4-8489-8803066E4AC6}.Debug|x64.Build.0 = Debug|x64
 		{6D5B77AF-BC8A-4EB4-8489-8803066E4AC6}.Release|x64.ActiveCfg = Release|x64
 		{6D5B77AF-BC8A-4EB4-8489-8803066E4AC6}.Release|x64.Build.0 = Release|x64
-		{1BCCF4CB-FFDD-43BA-B0C9-1E34BFAF38FD}.Debug|x64.ActiveCfg = Debug|x64
-		{1BCCF4CB-FFDD-43BA-B0C9-1E34BFAF38FD}.Debug|x64.Build.0 = Debug|x64
-		{1BCCF4CB-FFDD-43BA-B0C9-1E34BFAF38FD}.Release|x64.ActiveCfg = Release|x64
-		{1BCCF4CB-FFDD-43BA-B0C9-1E34BFAF38FD}.Release|x64.Build.0 = Release|x64
 		{8DB70E3D-BBD8-4298-A617-D7D06FF98E8E}.Debug|x64.ActiveCfg = Debug|x64
 		{8DB70E3D-BBD8-4298-A617-D7D06FF98E8E}.Debug|x64.Build.0 = Debug|x64
 		{8DB70E3D-BBD8-4298-A617-D7D06FF98E8E}.Release|x64.ActiveCfg = Release|x64
@@ -114,14 +96,6 @@ Global
 		{5C62D31B-BE20-4A86-9D04-ABC74F387C71}.Debug|x64.Build.0 = Debug|x64
 		{5C62D31B-BE20-4A86-9D04-ABC74F387C71}.Release|x64.ActiveCfg = Release|x64
 		{5C62D31B-BE20-4A86-9D04-ABC74F387C71}.Release|x64.Build.0 = Release|x64
-		{62BCFE52-5CCB-4FE7-9BBF-7ACD5CF5BB6A}.Debug|x64.ActiveCfg = Debug|x64
-		{62BCFE52-5CCB-4FE7-9BBF-7ACD5CF5BB6A}.Debug|x64.Build.0 = Debug|x64
-		{62BCFE52-5CCB-4FE7-9BBF-7ACD5CF5BB6A}.Release|x64.ActiveCfg = Release|x64
-		{62BCFE52-5CCB-4FE7-9BBF-7ACD5CF5BB6A}.Release|x64.Build.0 = Release|x64
-		{D3C6F387-AD30-4BCF-870E-AFEE8F5C5C8C}.Debug|x64.ActiveCfg = Debug|x64
-		{D3C6F387-AD30-4BCF-870E-AFEE8F5C5C8C}.Debug|x64.Build.0 = Debug|x64
-		{D3C6F387-AD30-4BCF-870E-AFEE8F5C5C8C}.Release|x64.ActiveCfg = Release|x64
-		{D3C6F387-AD30-4BCF-870E-AFEE8F5C5C8C}.Release|x64.Build.0 = Release|x64
 		{67C35B59-5D0C-4846-BE4C-08BF580229E9}.Debug|x64.ActiveCfg = Debug|x64
 		{67C35B59-5D0C-4846-BE4C-08BF580229E9}.Debug|x64.Build.0 = Debug|x64
 		{67C35B59-5D0C-4846-BE4C-08BF580229E9}.Release|x64.ActiveCfg = Release|x64
@@ -138,10 +112,6 @@ Global
 		{01C19DA0-63E6-43E2-B421-12CC8BD7EB94}.Debug|x64.Build.0 = Debug|x64
 		{01C19DA0-63E6-43E2-B421-12CC8BD7EB94}.Release|x64.ActiveCfg = Release|x64
 		{01C19DA0-63E6-43E2-B421-12CC8BD7EB94}.Release|x64.Build.0 = Release|x64
-		{781CB3CF-9F2B-46EA-A081-0B3C510A90C5}.Debug|x64.ActiveCfg = Debug|x64
-		{781CB3CF-9F2B-46EA-A081-0B3C510A90C5}.Debug|x64.Build.0 = Debug|x64
-		{781CB3CF-9F2B-46EA-A081-0B3C510A90C5}.Release|x64.ActiveCfg = Release|x64
-		{781CB3CF-9F2B-46EA-A081-0B3C510A90C5}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -150,13 +120,10 @@ Global
 		{8DB70E3D-BBD8-4298-A617-D7D06FF98E8E} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 		{D22CB827-FA03-4032-AF41-2BD95F9FBC01} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 		{5C62D31B-BE20-4A86-9D04-ABC74F387C71} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
-		{62BCFE52-5CCB-4FE7-9BBF-7ACD5CF5BB6A} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
-		{D3C6F387-AD30-4BCF-870E-AFEE8F5C5C8C} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 		{67C35B59-5D0C-4846-BE4C-08BF580229E9} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 		{9AA63275-45BE-4019-B5F1-E371A985D045} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 		{8805CF56-8937-4FF9-8CF0-3450258C9DE6} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 		{01C19DA0-63E6-43E2-B421-12CC8BD7EB94} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
-		{781CB3CF-9F2B-46EA-A081-0B3C510A90C5} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D0EA8CE0-8DF8-4ADD-B31E-7A3CCEE49523}

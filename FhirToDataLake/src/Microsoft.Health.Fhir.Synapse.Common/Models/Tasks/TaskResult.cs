@@ -9,6 +9,24 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
 {
     public class TaskResult
     {
+        public TaskResult(
+            string resourceType,
+            string continuationToken,
+            int partId,
+            int searchCount,
+            int skippedCount,
+            int processedCount,
+            string result)
+        {
+            ResourceType = resourceType;
+            ContinuationToken = continuationToken;
+            PartId = partId;
+            SearchCount = searchCount;
+            SkippedCount = skippedCount;
+            ProcessedCount = processedCount;
+            Result = result;
+        }
+
         /// <summary>
         /// Resource type.
         /// </summary>
@@ -41,34 +59,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public int ProcessedCount { get; set; }
 
         /// <summary>
-        /// Has completed all resources.
-        /// </summary>
-        public bool IsCompleted { get; set; }
-
-        /// <summary>
         /// Text result message.
         /// </summary>
         public string Result { get; set; }
-
-        public TaskResult(
-            string resourceType,
-            string continuationToken,
-            int partId,
-            int searchCount,
-            int skippedCount,
-            int processedCount,
-            bool isCompleted,
-            string result)
-        {
-            ResourceType = resourceType;
-            ContinuationToken = continuationToken;
-            PartId = partId;
-            SearchCount = searchCount;
-            SkippedCount = skippedCount;
-            ProcessedCount = processedCount;
-            IsCompleted = isCompleted;
-            Result = result;
-        }
 
         public static TaskResult CreateFromTaskContext(TaskContext context)
         {
@@ -79,7 +72,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
                 context.SearchCount,
                 context.SkippedCount,
                 context.ProcessedCount,
-                context.IsCompleted,
                 JsonConvert.SerializeObject(context));
         }
     }
