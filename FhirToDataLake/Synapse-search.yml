@@ -176,7 +176,7 @@ steps:
   displayName: Validate results
   inputs:
     scriptSource: filePath
-    scriptPath: '$(Build.SourcesDirectory)\FhirToDataLake\SynapseValidate\Synapse_Validator.py'
+    scriptPath: '$(Build.SourcesDirectory)\FhirToDataLake\SynapseValidate\SynapseSearchValidate.py'
     arguments: --SynapseWorkspaceName $(synapseWorkspaceName) --FhirServerUrl $(fhirServerUrl) --Database $(databaseName) --SchemaCollectionDirectory  $(System.DefaultWorkingDirectory)\FhirToDataLake\data\schemas\
   env:
     SQL_USERNAME: $(SqlUsername)
