@@ -11,16 +11,16 @@ from urllib import parse as urlparse
 from datetime import datetime
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--SynapseWorkspaceName", help="Name of Synapse workspace.")
-parser.add_argument("--FhirServerUrl", help="Fhir server url.")
-parser.add_argument("--Database", help="Name of database.")
-parser.add_argument("--SchemaCollectionDirectory", help="Schema collection directory path.")
+parser.add_argument("--synapse_workspace", help="Name of Synapse workspace.")
+parser.add_argument("--fhir_server_url", help="Fhir server url.")
+parser.add_argument("--database", help="Name of database.")
+parser.add_argument("--schemas_path", help="Schemas directory path.")
 args = parser.parse_args()
 
-sql_server_endpoint = args.SynapseWorkspaceName + "-ondemand.sql.azuresynapse.net"
-database = args.Database
-schema_collection_directory = args.SchemaCollectionDirectory
-fhir_server_base_url = args.FhirServerUrl
+sql_server_endpoint = args.synapse_workspace + "-ondemand.sql.azuresynapse.net"
+database = args.database
+schema_collection_directory = args.schemas_path
+fhir_server_base_url = args.fhir_server_url
 
 sql_username = os.getenv('SQL_USERNAME')
 sql_password = os.getenv('SQL_PASSWORD')
@@ -126,11 +126,11 @@ class SchemaManager:
 
 class SqlServerClient:
     def __init__(self, sql_server_endpoint, database, sql_username, sql_password):
-        self.connectionString = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' \
+        self.connection_string = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' \
                     + sql_server_endpoint + ';DATABASE=' + database + ';UID=' + sql_username + ';PWD=' + sql_password
 
     def get_data(self, resource_type):
-        connection = pyodbc.connect(self.connectionString)
+        connection = pyodbc.connect(self.connection_string)
         sql = f"SELECT * FROM [fhir].[{resource_type}]"
         data_df = pd.read_sql(sql=sql, con=connection)
         connection.close()
@@ -138,7 +138,7 @@ class SqlServerClient:
 
 
 class DataClient:
-    resourceType = "resourceType"
+    resource_type = "resource_type"
     expected = "expected"
     queried = "queried"
     field_dict = "field_mapping_dict"
@@ -150,7 +150,7 @@ class DataClient:
 
     def fetch(self, resource_type):
         result = {}
-        result[DataClient.resourceType] = resource_type
+        result[DataClient.resource_type] = resource_type
         result[DataClient.queried] = self.sql_client.get_data(resource_type)
         result[DataClient.expected] = self.fhir_api_client.get_all_entries(resource_type)
         result[DataClient.field_dict] = self.field_mapping_dicts[resource_type]
@@ -161,9 +161,9 @@ if __name__ == "__main__":
     sys.stdout.flush()
 
     print('-> Executing script file: ', str(sys.argv[0]))
-    print('-> SynapseServerEndpoint: ', sql_server_endpoint)
+    print('-> Synapse SQL server endpoint: ', sql_server_endpoint)
     print('-> Database: ', database)
-    print('-> FhirServerUrl: ', fhir_server_base_url)
+    print('-> Fhir server url: ', fhir_server_base_url)
 
     schema_manager = SchemaManager(schema_collection_directory)
     resource_types = schema_manager.get_all_resource_types()
@@ -178,22 +178,22 @@ if __name__ == "__main__":
         futures = [executor.submit(dataFactory.fetch, resource_type) for resource_type in resource_types]
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
-            resource_type = result[DataClient.resourceType]
+            resource_type = result[DataClient.resource_type]
             expected_entries = result[DataClient.expected]
             queried_df = result[DataClient.queried]
             field_mapping_dict = result[DataClient.field_dict]
-            print(f"Get {queried_df.shape[0]} resources from \"{resource_type}\", columns number is {queried_df.shape[1]}")
+            print(f"Get {queried_df.shape[0]} resources from \"{resource_type}\" on Synapse, columns number is {queried_df.shape[1]}")
 
             if len(expected_entries) != queried_df.shape[0]:
                 raise Exception(f"The resource number of \"{resource_type}\" is incorrect."
                                 f"Expected resource number is {len(expected_entries)}, "
-                                f"while rows number on Synapse is {queried_df.shape[0]}.")
+                                f"while resources been queried on Synapse is {queried_df.shape[0]}.")
 
             if len(field_mapping_dict) != queried_df.shape[1]:
                 expected_columns = set(field_mapping_dict.keys())
                 queried_columns = set(queried_df.columns.tolist())
-                raise Exception(f"The columns number of \"{resource_type}\" is incorrect. "
+                raise Exception(f"The columns number of \"{resource_type}\" is incorrect."
                                 f"Expected column number is {len(field_mapping_dict)}, "
-                                f"while column number on Synapse is {queried_df.shape[1]}.")
+                                f"while column number been queried on Synapse is {queried_df.shape[1]}.")
 
     print(f"Validating {len(resource_types)} resource types, completes in {str(time.time() - start_time)} seconds.")

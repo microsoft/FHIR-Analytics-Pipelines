@@ -7,13 +7,13 @@ steps:
     Write-Host $("App name: " + $appName)
     
     $databaseName = $appName
-    $synapseWorkSpaceName = 'synapse' + $appName
+    $synapseWorkspaceName = 'synapse' + $appName
     $deploymentName = 'test-deployment-' + $buildNumber
     Write-Host "##vso[task.setvariable variable=appName;]$appName"
     Write-Host "##vso[task.setvariable variable=databaseName;]$databaseName"
-    Write-Host "##vso[task.setvariable variable=synapseWorkspaceName;]$synapseWorkSpaceName"
+    Write-Host "##vso[task.setvariable variable=synapseWorkspaceName;]$synapseWorkspaceName"
     Write-Host "##vso[task.setvariable variable=deploymentName;]$deploymentName"
-  displayName: Initial pipeline appName and deploymentName
+  displayName: Set deployment variables
 
 - task: DownloadBuildArtifacts@0
   displayName: 'Download Artifacts'
@@ -22,7 +22,7 @@ steps:
     downloadPath: $(Build.ArtifactStagingDirectory)
 
 - task: AzurePowerShell@5
-  displayName: Upload Azure Function zip package
+  displayName: Upload function app package
   inputs: 
     azureSubscription: 'ResoluteOpenSource'
     azurePowerShellVersion: latestVersion
@@ -34,11 +34,11 @@ steps:
       Set-AzStorageBlobContent -Container $(pipelineStoragePackageContainer) -Context $storageContext -File $(Build.ArtifactStagingDirectory)/FhirToDataLakeBuild/Microsoft.Health.Fhir.Synapse.FunctionApp.zip -Blob $blobName
 
       # Get and set up SAS of Function.zip
-      $packageUrl = New-AzStorageBlobSASToken -Context $storageContext -Container @(pipelineStoragePackageContainer) -Blob $blobName -Permission racwd -FullUri
+      $packageUrl = New-AzStorageBlobSASToken -Context $storageContext -Container $(pipelineStoragePackageContainer) -Blob $blobName -Permission racwd -FullUri
       Write-Host "##vso[task.setvariable variable=packageUrl;]$packageUrl"
 
 - task: AzurePowerShell@5
-  displayName: Create Synapse workspace instance
+  displayName: Deploy Synapse Workspace
   inputs: 
     azureSubscription: 'ResoluteOpenSource'
     azurePowerShellVersion: latestVersion
@@ -51,7 +51,7 @@ steps:
       New-AzSynapseWorkspace -ResourceGroupName $(resourceGroup) -Name $(synapseWorkspaceName) -Location eastus2 -SqlAdministratorLoginCredential $creds `
         -DefaultDataLakeStorageAccountName $(pipelineStorage) -DefaultDataLakeStorageFilesystem $(pipelineStorageFileSystem) -ErrorAction Stop
 
-      # Creating Synapse via Azure portal will default allow all IP to access it, while creating via Powershell will not
+      # Creating Synapse via Azure portal will default allow all IP to access it, while creating via Powershell will not.
       # Here manually set it firewall rules, see https://docs.microsoft.com/en-us/azure/synapse-analytics/quickstart-create-workspace-powershell
       $FirewallParams = @{
         WorkspaceName = '$(synapseWorkspaceName)'
@@ -66,7 +66,7 @@ steps:
     SQL_PASSWORD: $(SqlPassword)
 
 - task: AzurePowerShell@5
-  displayName: Deploy Fhir Synapse sync pipeline
+  displayName: Deploy FHIR to Synapse sync agent
   inputs: 
     azureSubscription: 'ResoluteOpenSource'
     azurePowerShellVersion: latestVersion
@@ -104,7 +104,7 @@ steps:
       Stop-AzFunctionApp -Name $(appName) -ResourceGroupName $(resourceGroup) -Force
   
 - task: AzureCLI@2
-  displayName: Assign access premission roles
+  displayName: Assign access roles
   inputs: 
     azureSubscription: 'ResoluteOpenSource'
     scriptType: 'ps'
@@ -125,11 +125,11 @@ steps:
       Write-Host 'Assign Synapse SQL Administrator for service connection account to Synapse SQL pool.'
       az synapse role assignment create --workspace-name $(synapseWorkspaceName) --role "Synapse SQL Administrator" --assignee $serviceConnectionPrincipalId
       
-      # Wait 1 min in case the assignments don't enable.
-      Start-Sleep -s 60
+      # Wait 3 minutes in case the assignments don't enable.
+      Start-Sleep -s 180
 
 - task: AzurePowerShell@5
-  displayName: Set up EXTERNAL TABLEs and VIEWs on Synapse.
+  displayName: Set up Synapse Environment
   inputs: 
     azureSubscription: 'ResoluteOpenSource'
     azurePowerShellVersion: latestVersion
@@ -176,8 +176,8 @@ steps:
   displayName: Validate results
   inputs:
     scriptSource: filePath
-    scriptPath: '$(Build.SourcesDirectory)\FhirToDataLake\SynapseValidate\SynapseSearchValidate.py'
-    arguments: --SynapseWorkspaceName $(synapseWorkspaceName) --FhirServerUrl $(fhirServerUrl) --Database $(databaseName) --SchemaCollectionDirectory  $(System.DefaultWorkingDirectory)\FhirToDataLake\data\schemas\
+    scriptPath: '$(Build.SourcesDirectory)\FhirToDataLake\SynapseValidate\SynapseValidator.py'
+    arguments: --synapse_workspace $(synapseWorkspaceName) --fhir_server_url $(fhirServerUrl) --database $(databaseName) --schemas_path  $(System.DefaultWorkingDirectory)\FhirToDataLake\data\schemas\
   env:
     SQL_USERNAME: $(SqlUsername)
     SQL_PASSWORD: $(SqlPassword)
@@ -207,4 +207,4 @@ steps:
 
       # Remove Synapse
       Remove-AzSynapseWorkspace -Name $(synapseWorkspaceName) -ResourceGroupName $(resourceGroup) -Force
-      Write-Host $("Delete test app insight " + $appInsightId)
+      Write-Host $("Deleted Synapse workspace " + $appInsightId)
