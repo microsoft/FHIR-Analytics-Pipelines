@@ -29,48 +29,6 @@ steps:
     configuration: '$(buildConfiguration)'
     msbuildArguments: '-p:ApplicationVersion=$(version)'
 
-- script: |
-    "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" init /server "(localdb)\MsSqlLocalDb"
-    "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start
-  displayName: 'Start Azure Storage Emulator'
-
-- script: |
-    docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
-    docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
-  displayName: Start mock-data-source
-  
-- task: VSTest@2
-  displayName: 'Run native tests'
-  inputs:
-    testAssemblyVer2: |
-      **\*Native*\**\*UnitTests.dll
-      !**\obj\**
-      !**\ref\**
-    searchFolder: '$(Build.SourcesDirectory)'
-    codeCoverageEnabled: true
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: VSTest@2
-  displayName: 'Run managed tests'
-  inputs:
-    testAssemblyVer2: |
-      FhirToDataLake\**\*Tests.dll
-      !**\*Native*\**\*UnitTests.dll
-      !**\obj\**
-      !**\ref\**
-    searchFolder: '$(Build.SourcesDirectory)'
-    codeCoverageEnabled: true
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: Docker@2
-  displayName: Stop mock-data-source
-  condition: succeededOrFailed()
-  inputs:
-    command: stop
-    container: mock-data-source
-
 # ref: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-function-app?view=azure-devops#error-publish-using-zip-deploy-option-is-not-supported-for-msbuild-package-type
 - task: MSBuild@1
   displayName: 'Publish function app'
