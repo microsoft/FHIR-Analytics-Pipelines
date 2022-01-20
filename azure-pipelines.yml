@@ -37,7 +37,7 @@ stages:
   jobs:
   - job: SynapseE2ETest
     steps:
-    - template: FhirToDataLake/Synapse-E2E-Test.yml
+    - template: FhirToDataLake/synapse-e2e-test.yml
 
   - job: PublishFhirToCdm
     steps:

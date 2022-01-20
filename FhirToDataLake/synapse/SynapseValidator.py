@@ -32,38 +32,30 @@ class FhirApiDataClient:
     headers = {'Accept': 'application/fhir+json', "Prefer": "respond-async"}
     start_datetime = "1970-01-01T00:00:00-00:00"
 
-    def __init__(self, baseUrl):
-        self.baseUrl = baseUrl
+    def __init__(self, fhir_server_base_url):
+        self.fhir_server_base_url = fhir_server_base_url
 
     def get_all_entries(self, resource_type):
-        end_datetime = datetime.today().strftime('%Y-%m-%dT%H:%M:%S-00:00')
-        url = self.baseUrl + f"/{resource_type}?_lastUpdated=ge{FhirApiDataClient.start_datetime}&_lastUpdated=lt{end_datetime}&_sort=_lastUpdated&_count=1000"
-
-        response = requests.get(url, headers=FhirApiDataClient.headers)
-        if response.status_code != requests.codes.ok:
-            raise Exception(f"Get data from {url} failed: " + response.text)
-
-        response_content = response.content
-        response_object = json.loads(response_content.decode('utf-8'))
-        if "entry" not in response_object:
-            return []
-
+        query_base_url = self.fhir_server_base_url + f"/{resource_type}?_lastUpdated=ge{FhirApiDataClient.start_datetime}&_lastUpdated=lt{datetime.today().strftime('%Y-%m-%dT%H:%M:%S-00:00')}&_sort=_lastUpdated&_count=1000"
+        
         result = []
-        result.extend(response_object["entry"])
-        continuation_token = self.parse_continuation_token(response_object)
-
-        while continuation_token:
-            response = requests.get(url, headers=FhirApiDataClient.headers, params={"ct": continuation_token})
+        query_url = query_base_url
+        while query_url:
+            response = requests.get(query_url, headers=FhirApiDataClient.headers)
             if response.status_code != requests.codes.ok:
-                raise Exception(f"Get data from {url} failed: " + response.text)
+                raise Exception(f"Get data from {query_url} failed: " + response.text)
 
             response_content = response.content
             response_object = json.loads(response_content.decode('utf-8'))
-            if "entry" not in response_object:
-                continuation_token = None
-            else:
+            if "entry" in response_object:
                 result.extend(response_object["entry"])
                 continuation_token = self.parse_continuation_token(response_object)
+                if continuation_token:
+                    query_url = query_base_url + f"&ct={continuation_token}"
+                else:
+                    query_url = None
+            else:
+                query_url = None
         return result
 
     @staticmethod
@@ -88,23 +80,19 @@ class SchemaManager:
                 schemas[schema["Type"]] = schema
         return schemas
 
-    def generate_field_mapping_dicts(self):
-        field_mapping_dicts = {}
+    def generate_external_table_column_dicts(self):
+        column_dicts = {}
         for resource_type, schema in self.schemas.items():
-            field_mapping_dicts[resource_type] = SchemaManager.generate_external_table_field_mapping_dict(schema)
-        return field_mapping_dicts
+            column_dict = {}
+            SchemaManager.parse_schema(schema, [], [], column_dict)
+            column_dicts[resource_type] = column_dict
+        return column_dicts
 
     def get_schema(self, resource_type):
         return self.schemas[resource_type]
 
     def get_all_resource_types(self):
         return list(self.schemas.keys())
-
-    @staticmethod
-    def generate_external_table_field_mapping_dict(schema):
-        field_mapping_dict = {}
-        SchemaManager.parse_schema(schema, [], [], field_mapping_dict)
-        return field_mapping_dict
 
     @staticmethod
     def parse_schema(node_schema, json_data_path, table_column_path, field_dict_result):
@@ -138,22 +126,23 @@ class SqlServerClient:
 
 
 class DataClient:
-    resource_type = "resource_type"
-    expected = "expected"
-    queried = "queried"
-    field_dict = "field_mapping_dict"
+    resource_type_key = "resource_type"
+    expected_data_key = "expected"
+    queried_data_key = "queried"
+    column_dict_key = "column_dict"
 
-    def __init__(self, sql_client, fhir_api_client, field_mapping_dicts):
+    def __init__(self, sql_client, fhir_api_client, column_dicts):
         self.sql_client = sql_client
         self.fhir_api_client = fhir_api_client
-        self.field_mapping_dicts = field_mapping_dicts
+        self.column_dicts = column_dicts
 
     def fetch(self, resource_type):
-        result = {}
-        result[DataClient.resource_type] = resource_type
-        result[DataClient.queried] = self.sql_client.get_data(resource_type)
-        result[DataClient.expected] = self.fhir_api_client.get_all_entries(resource_type)
-        result[DataClient.field_dict] = self.field_mapping_dicts[resource_type]
+        result = {
+            DataClient.resource_type_key: resource_type,
+            DataClient.queried_data_key: self.sql_client.get_data(resource_type),
+            DataClient.expected_data_key: self.fhir_api_client.get_all_entries(resource_type),
+            DataClient.column_dict_key: self.column_dicts[resource_type]
+        }
         return result
 
 
@@ -171,29 +160,29 @@ if __name__ == "__main__":
     fhir_api_client = FhirApiDataClient(fhir_server_base_url)
     sql_client = SqlServerClient(sql_server_endpoint, database, sql_username, sql_password)
 
-    dataFactory = DataClient(sql_client, fhir_api_client, schema_manager.generate_field_mapping_dicts())
+    dataFactory = DataClient(sql_client, fhir_api_client, schema_manager.generate_external_table_column_dicts())
 
     start_time = time.time()
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         futures = [executor.submit(dataFactory.fetch, resource_type) for resource_type in resource_types]
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
-            resource_type = result[DataClient.resource_type]
-            expected_entries = result[DataClient.expected]
-            queried_df = result[DataClient.queried]
-            field_mapping_dict = result[DataClient.field_dict]
-            print(f"Get {queried_df.shape[0]} resources from \"{resource_type}\" on Synapse, columns number is {queried_df.shape[1]}")
+            resource_type_name = result[DataClient.resource_type_key]
+            expected_entries = result[DataClient.expected_data_key]
+            queried_df = result[DataClient.queried_data_key]
+            column_dict = result[DataClient.column_dict_key]
+            print(f"Get {queried_df.shape[0]} resources from \"{resource_type_name}\" on Synapse, columns number is {queried_df.shape[1]}")
 
             if len(expected_entries) != queried_df.shape[0]:
-                raise Exception(f"The resource number of \"{resource_type}\" is incorrect."
+                raise Exception(f"The resource number of \"{resource_type_name}\" is incorrect."
                                 f"Expected resource number is {len(expected_entries)}, "
                                 f"while resources been queried on Synapse is {queried_df.shape[0]}.")
 
-            if len(field_mapping_dict) != queried_df.shape[1]:
-                expected_columns = set(field_mapping_dict.keys())
+            if len(column_dict) != queried_df.shape[1]:
+                expected_columns = set(column_dict.keys())
                 queried_columns = set(queried_df.columns.tolist())
-                raise Exception(f"The columns number of \"{resource_type}\" is incorrect."
-                                f"Expected column number is {len(field_mapping_dict)}, "
+                raise Exception(f"The columns number of \"{resource_type_name}\" is incorrect."
+                                f"Expected column number is {len(column_dict)}, "
                                 f"while column number been queried on Synapse is {queried_df.shape[1]}.")
 
     print(f"Validating {len(resource_types)} resource types, completes in {str(time.time() - start_time)} seconds.")
