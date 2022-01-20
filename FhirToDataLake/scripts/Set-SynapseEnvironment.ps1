@@ -46,7 +46,7 @@ Param(
 $jobName = "FhirSynapseJob"
 $readmePath = ".readme.txt"
 
-# TODO: Align tags, SQL scripts and Storage data schemas.
+# TODO: Align tags here and ARM template, maybe save schemas in Storage/ACR and run remotely.
 $tags = @{
     "FhirAnalyticsPipeline" = "FhirToDataLake"
     "FhirSchemaVersion" = "v0.3.0"
