@@ -30,7 +30,7 @@ This solution enables you to query against the entire FHIR data with tools such 
 1. To deploy the FHIR Synapse sync pipeline, use the buttons below to deploy through the Azure Portal.
    
     <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2FFHIR-Analytics-Pipelines%2Fmain%2FFhirToDataLake%2Fdeploy%2Ftemplates%2FFhirSynapsePipelineTemplate.json" target="_blank">
-        <img src="https://azuredeploy.net/deploybutton.png"/>
+        <img src="https://aka.ms/deploytoazurebutton"/>
     </a>
 
     Or you can browse to the [Custom deployment](https://ms.portal.Azure.com/#create/Microsoft.Template) page in the Azure portal, select **Build your own template in the editor**, then copy the content of the provided [ARM template](../deploy/templates/FhirSynapsePipelineTemplate.json) to the edit box and click **Save**.
