@@ -11,19 +11,25 @@ from urllib import parse as urlparse
 from datetime import datetime
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--synapse_workspace", help="Name of Synapse workspace.")
-parser.add_argument("--fhir_server_url", help="Fhir server url.")
-parser.add_argument("--database", help="Name of database.")
-parser.add_argument("--schemas_path", help="Schemas directory path.")
+parser.add_argument("--synapse_workspace", required=True, help="Name of Synapse workspace.")
+parser.add_argument("--fhir_server_url", required=True, help="Fhir server url.")
+parser.add_argument("--schemas_path", required=True, help="Schemas directory path.")
+parser.add_argument("--database", default='fhirdb', help="Name of database.")
+parser.add_argument("--sql_username", help="SQL username.")
+parser.add_argument("--sql_password", help="SQL password.")
 args = parser.parse_args()
 
 sql_server_endpoint = args.synapse_workspace + "-ondemand.sql.azuresynapse.net"
 database = args.database
 schema_collection_directory = args.schemas_path
 fhir_server_base_url = args.fhir_server_url
+sql_username = args.sql_username
+sql_password = args.sql_password
 
-sql_username = os.getenv('SQL_USERNAME')
-sql_password = os.getenv('SQL_PASSWORD')
+# Get SQL username and password from environment variables if not given them in script paramaters
+if (sql_username is None) or (sql_password is None):
+    sql_username = os.getenv('SQL_USERNAME')
+    sql_password = os.getenv('SQL_PASSWORD')
 
 pyodbc.pooling = False
 
