@@ -4,45 +4,32 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
-using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
-    public class JobManager : IDisposable, IAsyncDisposable
+    public class JobManager
     {
         private readonly IJobStore _jobStore;
         private readonly JobExecutor _jobExecutor;
-        private readonly IFhirSpecificationProvider _fhirSpecificationProvider;
-        private readonly JobConfiguration _jobConfiguration;
         private readonly ILogger<JobManager> _logger;
 
         public JobManager(
             IJobStore jobStore,
             JobExecutor jobExecutor,
-            IFhirSpecificationProvider fhirSpecificationProvider,
-            IOptions<JobConfiguration> jobConfiguration,
             ILogger<JobManager> logger)
         {
             EnsureArg.IsNotNull(jobStore, nameof(jobStore));
             EnsureArg.IsNotNull(jobExecutor, nameof(jobExecutor));
-            EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
-            EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _jobStore = jobStore;
             _jobExecutor = jobExecutor;
-            _fhirSpecificationProvider = fhirSpecificationProvider;
-            _jobConfiguration = jobConfiguration.Value;
+
             _logger = logger;
         }
 
@@ -55,37 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
             // Acquire lock to ensure the job store is changed from only one client.
-            var lockResult = await _jobStore.AcquireJobLock(cancellationToken);
-            if (!lockResult)
-            {
-                // Acquire lock failed.
-                _logger.LogWarning("Acquire job lock failed. Skipping this trigger.");
-                return;
-            }
-
-            Job job;
-            var activeJobs = await _jobStore.GetActiveJobsAsync(cancellationToken);
-            if (activeJobs.Any())
-            {
-                // Resume an active job.
-                job = activeJobs.First();
-
-                if (job.Status == JobStatus.Succeeded)
-                {
-                    _logger.LogWarning("Job '{id}' has already succeeded.", job.Id);
-                    await _jobStore.CompleteJobAsync(job, cancellationToken);
-                    return;
-                }
-
-                // Resume an inactive/failed job.
-                job.Status = JobStatus.Running;
-                job.FailedReason = null;
-            }
-            else
-            {
-                // No active job available, start new trigger.
-                job = await CreateNewJob(cancellationToken);
-            }
+            var job = await _jobStore.AcquireJobAsync(cancellationToken);
 
             try
             {
@@ -101,87 +58,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogError(exception, "Process job '{jobId}' failed.", job.Id);
                 throw;
             }
-
-            // release job lock.
-            await _jobStore.ReleaseJobLock(cancellationToken);
-        }
-
-        private async Task<Job> CreateNewJob(CancellationToken cancellationToken = default)
-        {
-            var schedulerSetting = await _jobStore.GetSchedulerMetadata(cancellationToken);
-            DateTimeOffset triggerStart = GetTriggerStartTime(schedulerSetting);
-            if (triggerStart >= _jobConfiguration.EndTime)
-            {
-                _logger.LogInformation("Job has been scheduled to end.");
-                throw new StartJobFailedException("Job has been scheduled to end.");
-            }
-
-            // End data period for this trigger
-            DateTimeOffset triggerEnd = GetTriggerEndTime();
-
-            if (triggerStart >= triggerEnd)
-            {
-                _logger.LogInformation("The start time '{triggerStart}' to trigger is in the future.", triggerStart);
-                throw new StartJobFailedException($"The start time '{triggerStart}' to trigger is in the future.");
-            }
-
-            IEnumerable<string> resourceTypes = _jobConfiguration.ResourceTypeFilters;
-            if (resourceTypes == null || !resourceTypes.Any())
-            {
-                resourceTypes = _fhirSpecificationProvider.GetAllResourceTypes();
-            }
-
-            var newJob = new Job(
-                _jobConfiguration.ContainerName,
-                JobStatus.New,
-                resourceTypes,
-                new DataPeriod(triggerStart, triggerEnd),
-                DateTimeOffset.UtcNow);
-            await _jobStore.UpdateJobAsync(newJob, cancellationToken);
-            return newJob;
-        }
-
-        private DateTimeOffset GetTriggerStartTime(SchedulerMetadata schedulerSetting)
-        {
-            var lastScheduledTo = schedulerSetting?.LastScheduledTimestamp;
-            return lastScheduledTo ?? _jobConfiguration.StartTime;
-        }
-
-        // Job end time could be null (which means runs forever) or a timestamp in the future like 2120/01/01.
-        // In this case, we will create a job to run with end time earlier that current timestamp.
-        // Also, FHIR data use processing time as lastUpdated timestamp, there might be some latency when saving to data store.
-        // Here we add a JobEndTimeLatencyInMinutes latency to avoid data missing due to latency in creation.
-        private DateTimeOffset GetTriggerEndTime()
-        {
-            // Add two minutes latency here to allow latency in saving resources to database.
-            var nowEnd = DateTimeOffset.Now.AddMinutes(-1 * AzureBlobJobConstants.JobQueryLatencyInMinutes);
-            if (_jobConfiguration.EndTime != null
-                && nowEnd > _jobConfiguration.EndTime)
-            {
-                return _jobConfiguration.EndTime.Value;
-            }
-            else
-            {
-                return nowEnd;
-            }
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await DisposeAsyncCore();
-
-            Dispose();
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual async ValueTask DisposeAsyncCore()
-        {
-            await _jobStore.ReleaseJobLock();
         }
     }
 }

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -17,6 +18,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
+using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 using Newtonsoft.Json;
@@ -24,9 +26,11 @@ using Timer = System.Timers.Timer;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
-    public class AzureBlobJobStore : IJobStore
+    public class AzureBlobJobStore : IJobStore, IDisposable, IAsyncDisposable
     {
         private readonly IAzureBlobContainerClient _blobContainerClient;
+        private readonly IFhirSpecificationProvider _fhirSpecificationProvider;
+        private readonly JobConfiguration _jobConfiguration;
         private readonly ILogger<AzureBlobJobStore> _logger;
 
         // When job starts, the process will acquire the lease for expiration
@@ -44,23 +48,147 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public AzureBlobJobStore(
             IAzureBlobContainerClientFactory blobContainerFactory,
+            IFhirSpecificationProvider fhirSpecificationProvider,
             IOptions<JobConfiguration> jobConfiguration,
             IOptions<DataLakeStoreConfiguration> storeConfiguration,
             ILogger<AzureBlobJobStore> logger)
         {
             EnsureArg.IsNotNull(blobContainerFactory, nameof(blobContainerFactory));
+            EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             EnsureArg.IsNotNull(storeConfiguration, nameof(storeConfiguration));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _blobContainerClient = blobContainerFactory.Create(storeConfiguration.Value.StorageUrl, jobConfiguration.Value.ContainerName);
+            _fhirSpecificationProvider = fhirSpecificationProvider;
+            _jobConfiguration = jobConfiguration.Value;
+            _blobContainerClient = blobContainerFactory.Create(storeConfiguration.Value.StorageUrl, _jobConfiguration.ContainerName);
             _logger = logger;
 
             _renewLockTimer = new Timer(TimeSpan.FromSeconds(AzureBlobJobConstants.JobLeaseRefreshIntervalInSeconds).TotalMilliseconds);
             _renewLockTimer.Elapsed += async (sender, e) => await RenewJobLockLeaseAsync();
         }
 
-        public async Task<bool> AcquireJobLock(CancellationToken cancellationToken = default)
+        public async Task<Job> AcquireJobAsync(CancellationToken cancellationToken = default)
+        {
+            var lockAcquired = await TryAcquireJobLock(cancellationToken);
+            if (!lockAcquired)
+            {
+                _logger.LogWarning("Start job conflicted. Failed to acquire job lock.");
+                throw new StartJobFailedException("Start job conflicted. Will skip this trigger.");
+            }
+
+            Job job = null;
+            var activeJobs = await GetActiveJobsAsync(cancellationToken);
+            if (activeJobs.Any())
+            {
+                // Resume an active job.
+                job = activeJobs.First();
+
+                if (job.Status == JobStatus.Succeeded)
+                {
+                    _logger.LogWarning("Job '{id}' has already succeeded.", job.Id);
+                    await CompleteJobInternal(job, false, cancellationToken);
+                }
+                else
+                {
+                    // Resume an inactive/failed job.
+                    job.Status = JobStatus.Running;
+                    job.FailedReason = null;
+                }
+            }
+
+            // No active job available, start new trigger.
+            if (job == null)
+            {
+                job = await CreateNewJob(cancellationToken);
+            }
+
+            return job;
+        }
+
+        public async Task UpdateJobAsync(Job job, CancellationToken cancellationToken = default)
+        {
+            EnsureArg.IsNotNull(job, nameof(job));
+
+            job.LastHeartBeat = DateTimeOffset.UtcNow;
+
+            try
+            {
+                await _blobContainerClient.UpdateBlobAsync(
+                    $"{AzureBlobJobConstants.ActiveJobFolder}/{job.Id}.json",
+                    job.ToStream(),
+                    cancellationToken: cancellationToken);
+
+                _logger.LogInformation("Update job '{job.Id}' successfully.", job.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update job '{job.Id}'", job.Id);
+                throw;
+            }
+        }
+
+        public async Task CompleteJobAsync(Job job, CancellationToken cancellationToken = default)
+        {
+            EnsureArg.IsNotNull(job, nameof(job));
+
+            await CompleteJobInternal(job, true, cancellationToken);
+        }
+
+        private async Task CommitJobDataAsync(Job job, CancellationToken cancellationToken = default)
+        {
+            var stagingFolder = $"{AzureStorageConstants.StagingFolderName}/{job.Id}";
+            var directoryPairs = new List<Tuple<string, string>>();
+
+            var pathItems = await _blobContainerClient.ListPathsAsync(stagingFolder, cancellationToken);
+            foreach (var path in pathItems)
+            {
+                if (path.IsDirectory == true)
+                {
+                    var match = _stagingDataFolderRegex.Match(path.Name);
+                    if (match.Success)
+                    {
+                        var destination = $"{AzureStorageConstants.ResultFolderName}/{match.Groups["partition"].Value}/{job.Id}";
+                        directoryPairs.Add(new Tuple<string, string>(path.Name, destination));
+                    }
+                }
+                else
+                {
+                    // remove parquet files not saved in this job.
+                    var match = _stagingDataBlobRegex.Match(path.Name);
+                    if (match.Success)
+                    {
+                        var resource = match.Groups["resource"].Value;
+                        var partId = int.Parse(match.Groups["partId"].Value);
+                        if (partId >= job.PartIds[resource])
+                        {
+                            await _blobContainerClient.DeleteBlobAsync(path.Name, cancellationToken);
+                        }
+                    }
+                }
+            }
+
+            // move directories from staging to result folder.
+            var moveTasks = new List<Task>();
+            foreach (var pair in directoryPairs)
+            {
+                if (moveTasks.Count >= StageFolderConcurrency)
+                {
+                    var completedTask = await Task.WhenAny(moveTasks);
+                    await completedTask;
+                    moveTasks.Remove(completedTask);
+                }
+
+                moveTasks.Add(_blobContainerClient.MoveDirectoryAsync(pair.Item1, pair.Item2, cancellationToken));
+            }
+
+            await Task.WhenAll(moveTasks);
+
+            // delete staging folder when success.
+            await _blobContainerClient.DeleteDirectoryIfExistsAsync(stagingFolder, cancellationToken);
+        }
+
+        private async Task<bool> TryAcquireJobLock(CancellationToken cancellationToken = default)
         {
             var blobName = AzureBlobJobConstants.JobLockFileName;
 
@@ -88,7 +216,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return true;
         }
 
-        public async Task<bool> ReleaseJobLock(CancellationToken cancellationToken = default)
+        private async Task<bool> TryReleaseJobLock(CancellationToken cancellationToken = default)
         {
             _renewLockTimer.Stop();
 
@@ -109,7 +237,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return result;
         }
 
-        public async Task<IEnumerable<Job>> GetActiveJobsAsync(CancellationToken cancellationToken = default)
+        private async Task<IEnumerable<Job>> GetActiveJobsAsync(CancellationToken cancellationToken = default)
         {
             var jobs = new List<Job>();
             var jobBlobs = await _blobContainerClient.ListBlobsAsync(AzureBlobJobConstants.ActiveJobFolder, cancellationToken);
@@ -125,33 +253,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return jobs;
         }
 
-        public async Task<bool> UpdateJobAsync(Job job, CancellationToken cancellationToken = default)
+        private async Task CompleteJobInternal(Job job, bool releaseLock, CancellationToken cancellationToken)
         {
-            EnsureArg.IsNotNull(job, nameof(job));
-
-            job.LastHeartBeat = DateTimeOffset.UtcNow;
-
-            try
-            {
-                await _blobContainerClient.UpdateBlobAsync(
-                    $"{AzureBlobJobConstants.ActiveJobFolder}/{job.Id}.json",
-                    job.ToStream(),
-                    cancellationToken: cancellationToken);
-
-                _logger.LogInformation("Update job '{job.Id}' successfully.", job.Id);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to update job '{job.Id}'", job.Id);
-                throw;
-            }
-        }
-
-        public async Task<bool> CompleteJobAsync(Job job, CancellationToken cancellationToken = default)
-        {
-            EnsureArg.IsNotNull(job, nameof(job));
-
             if (job.Status != JobStatus.Succeeded)
             {
                 // Should not happen.
@@ -159,8 +262,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 throw new ArgumentException("Input job to complete is not in succeeded state.");
             }
 
-            var completedBlobName = GetJobBlobName(job, AzureBlobJobConstants.CompletedJobFolder);
-
+            await CommitJobDataAsync(job, cancellationToken);
             job.LastHeartBeat = DateTimeOffset.UtcNow;
             job.CompletedTime = job.LastHeartBeat;
 
@@ -182,6 +284,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 await SaveSchedulerMetadata(schedulerSetting, cancellationToken);
 
+                var completedBlobName = GetJobBlobName(job, AzureBlobJobConstants.CompletedJobFolder);
                 // Add job to completed job list.
                 await _blobContainerClient.UpdateBlobAsync(
                     completedBlobName,
@@ -191,8 +294,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // Remove job from active job list.
                 await _blobContainerClient.DeleteBlobAsync(GetJobBlobName(job, AzureBlobJobConstants.ActiveJobFolder), cancellationToken);
 
+                if (releaseLock)
+                {
+                    await TryReleaseJobLock(cancellationToken);
+                }
+
                 _logger.LogInformation("Complete job '{job.Id}' successfully.", job.Id);
-                return true;
             }
             catch (Exception ex)
             {
@@ -201,7 +308,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
-        public async Task<SchedulerMetadata> GetSchedulerMetadata(CancellationToken cancellationToken = default)
+        private async Task<SchedulerMetadata> GetSchedulerMetadata(CancellationToken cancellationToken = default)
         {
             return await FromBlob<SchedulerMetadata>(AzureBlobJobConstants.SchedulerMetadataFileName, cancellationToken);
         }
@@ -268,57 +375,82 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
-        public async Task CommitJobDataAsync(Job job, CancellationToken cancellationToken = default)
+        private async Task<Job> CreateNewJob(CancellationToken cancellationToken = default)
         {
-            var stagingFolder = $"{AzureStorageConstants.StagingFolderName}/{job.Id}";
-            var directoryPairs = new List<Tuple<string, string>>();
-
-            var pathItems = await _blobContainerClient.ListPathsAsync(stagingFolder, cancellationToken);
-            foreach (var path in pathItems)
+            var schedulerSetting = await GetSchedulerMetadata(cancellationToken);
+            DateTimeOffset triggerStart = GetTriggerStartTime(schedulerSetting);
+            if (triggerStart >= _jobConfiguration.EndTime)
             {
-                if (path.IsDirectory == true)
-                {
-                    var match = _stagingDataFolderRegex.Match(path.Name);
-                    if (match.Success)
-                    {
-                        var destination = $"{AzureStorageConstants.ResultFolderName}/{match.Groups["partition"].Value}/{job.Id}";
-                        directoryPairs.Add(new Tuple<string, string>(path.Name, destination));
-                    }
-                }
-                else
-                {
-                    // remove parquet files not saved in this job.
-                    var match = _stagingDataBlobRegex.Match(path.Name);
-                    if (match.Success)
-                    {
-                        var resource = match.Groups["resource"].Value;
-                        var partId = int.Parse(match.Groups["partId"].Value);
-                        if (partId >= job.PartIds[resource])
-                        {
-                            await _blobContainerClient.DeleteBlobAsync(path.Name, cancellationToken);
-                        }
-                    }
-                }
+                _logger.LogInformation("Job has been scheduled to end.");
+                throw new StartJobFailedException("Job has been scheduled to end.");
             }
 
-            // move directories from staging to result folder.
-            var moveTasks = new List<Task>();
-            foreach (var pair in directoryPairs)
-            {
-                if (moveTasks.Count >= StageFolderConcurrency)
-                {
-                    var completedTask = await Task.WhenAny(moveTasks);
-                    await completedTask;
-                    moveTasks.Remove(completedTask);
-                }
+            // End data period for this trigger
+            DateTimeOffset triggerEnd = GetTriggerEndTime();
 
-                moveTasks.Add(_blobContainerClient.MoveDirectoryAsync(pair.Item1, pair.Item2, cancellationToken));
+            if (triggerStart >= triggerEnd)
+            {
+                _logger.LogInformation("The start time '{triggerStart}' to trigger is in the future.", triggerStart);
+                throw new StartJobFailedException($"The start time '{triggerStart}' to trigger is in the future.");
             }
 
-            await Task.WhenAll(moveTasks);
+            IEnumerable<string> resourceTypes = _jobConfiguration.ResourceTypeFilters;
+            if (resourceTypes == null || !resourceTypes.Any())
+            {
+                resourceTypes = _fhirSpecificationProvider.GetAllResourceTypes();
+            }
 
-            // delete staging folder when success.
-            await _blobContainerClient.DeleteDirectoryIfExistsAsync(stagingFolder, cancellationToken);
+            var newJob = new Job(
+                _jobConfiguration.ContainerName,
+                JobStatus.New,
+                resourceTypes,
+                new DataPeriod(triggerStart, triggerEnd),
+                DateTimeOffset.UtcNow);
+            await UpdateJobAsync(newJob, cancellationToken);
+            return newJob;
+        }
+
+        private DateTimeOffset GetTriggerStartTime(SchedulerMetadata schedulerSetting)
+        {
+            var lastScheduledTo = schedulerSetting?.LastScheduledTimestamp;
+            return lastScheduledTo ?? _jobConfiguration.StartTime;
+        }
+
+        // Job end time could be null (which means runs forever) or a timestamp in the future like 2120/01/01.
+        // In this case, we will create a job to run with end time earlier that current timestamp.
+        // Also, FHIR data use processing time as lastUpdated timestamp, there might be some latency when saving to data store.
+        // Here we add a JobEndTimeLatencyInMinutes latency to avoid data missing due to latency in creation.
+        private DateTimeOffset GetTriggerEndTime()
+        {
+            // Add two minutes latency here to allow latency in saving resources to database.
+            var nowEnd = DateTimeOffset.Now.AddMinutes(-1 * AzureBlobJobConstants.JobQueryLatencyInMinutes);
+            if (_jobConfiguration.EndTime != null
+                && nowEnd > _jobConfiguration.EndTime)
+            {
+                return _jobConfiguration.EndTime.Value;
+            }
+            else
+            {
+                return nowEnd;
+            }
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsyncCore();
+
+            Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual async ValueTask DisposeAsyncCore()
+        {
+            await TryReleaseJobLock();
         }
     }
 }
