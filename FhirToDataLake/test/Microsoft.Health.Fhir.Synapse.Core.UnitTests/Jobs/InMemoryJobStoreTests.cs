@@ -27,7 +27,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
     public class InMemoryJobStoreTests
     {
-        private const string ContainerName = "TestJobContainer";
+        private const string TestContainerName = "TestJobContainer";
+        private static readonly DateTimeOffset _testStartTime = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.FromHours(0));
+        private static readonly DateTimeOffset _testEndTime = new DateTimeOffset(2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0));
 
         [Fact]
         public async Task GivenJobLocked_WhenAcquireJob_ExceptionWillBeThrown()
@@ -43,7 +45,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenNoActiveJobRunning_WhenAcquireJob_NewJobShouldBeReturned()
         {
+            var blobClient = new InMemoryBlobContainerClient();
+            var jobStore = CreateInMemoryJobStore(blobClient);
+            var job = await jobStore.AcquireJobAsync();
 
+            Assert.NotNull(job);
+            Assert.Equal(JobStatus.New, job.Status);
+            Assert.Equal(job.ContainerName, TestContainerName);
+            Assert.Equal(job.DataPeriod.Start, _testStartTime);
+            Assert.Equal(job.DataPeriod.End, _testEndTime);
         }
 
         /*
@@ -204,7 +214,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var blobClient = new InMemoryBlobContainerClient();
             var activeJob = new Job(
-                ContainerName,
+                TestContainerName,
                 JobStatus.Succeeded,
                 new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
@@ -253,7 +263,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var blobClient = new InMemoryBlobContainerClient();
             var activeJob = new Job(
-                ContainerName,
+                TestContainerName,
                 JobStatus.Succeeded,
                 new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
@@ -302,9 +312,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var jobConfiguration = new JobConfiguration
             {
-                ContainerName = ContainerName,
-                StartTime = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.FromHours(0)),
-                EndTime = new DateTimeOffset(2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0)),
+                ContainerName = TestContainerName,
+                StartTime = _testStartTime,
+                EndTime = _testEndTime,
                 ResourceTypeFilters = new List<string> { "Patient", "Observation" },
             };
 
