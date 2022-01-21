@@ -146,7 +146,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         /// <param name="directory">input directory.</param>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>sub directory names.</returns>
-        public Task<IEnumerable<PathItem>> ListPathsAsync(
+        public IAsyncEnumerable<PathItem> ListPathsAsync(
             string directory,
             CancellationToken cancellationToken = default);
     }

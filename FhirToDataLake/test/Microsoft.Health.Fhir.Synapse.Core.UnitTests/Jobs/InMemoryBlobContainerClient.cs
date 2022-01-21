@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -189,7 +190,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return Task.CompletedTask;
         }
 
-        public Task<IEnumerable<PathItem>> ListPathsAsync(string directory, CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<PathItem> ListPathsAsync(string directory, [EnumeratorCancellation]CancellationToken cancellationToken)
         {
             var directorySet = new HashSet<string>();
             var result = new List<PathItem>();
@@ -198,7 +199,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 if (path.StartsWith(directory) && !string.Equals(directory, path, StringComparison.OrdinalIgnoreCase))
                 {
                     var pathItem = DataLakeModelFactory.PathItem(path, false, DateTimeOffset.UtcNow, new ETag("test"), 100, string.Empty, string.Empty, string.Empty);
-                    result.Add(pathItem);
+                    yield return await Task.FromResult(pathItem);
 
                     var pathComponents = path.Split('/');
                     string baseDir = pathComponents[0];
@@ -213,13 +214,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                             && !directorySet.Contains(baseDir))
                         {
                             var directoryItem = DataLakeModelFactory.PathItem(baseDir, true, DateTimeOffset.UtcNow, new ETag("test"), 100, string.Empty, string.Empty, string.Empty);
-                            result.Add(directoryItem);
+                            yield return await Task.FromResult(directoryItem);
                         }
                     }
                 }
             }
-
-            return Task.FromResult((IEnumerable<PathItem>)result);
         }
     }
 }

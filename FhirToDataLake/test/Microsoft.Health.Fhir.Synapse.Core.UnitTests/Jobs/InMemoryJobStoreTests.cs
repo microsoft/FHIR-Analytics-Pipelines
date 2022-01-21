@@ -13,7 +13,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
+using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Newtonsoft.Json;
 using NSubstitute;
@@ -28,49 +30,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private const string ContainerName = "TestJobContainer";
 
         [Fact]
-        public async Task GivenEmptyJobStore_WhenAcquireLock_OperationShouldSucceed()
+        public async Task GivenJobLocked_WhenAcquireJob_ExceptionWillBeThrown()
         {
             var blobClient = new InMemoryBlobContainerClient();
+            _ = await blobClient.AcquireLeaseAsync(AzureBlobJobConstants.JobLockFileName, null, TimeSpan.FromMinutes(1));
+
             var jobStore = CreateInMemoryJobStore(blobClient);
-            Assert.True(await jobStore.AcquireJobLock());
+            var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobStore.AcquireJobAsync());
+            Assert.StartsWith("Start job conflicted. Will skip this trigger.", exception.Message);
         }
 
         [Fact]
-        public async Task GivenLockedJobStore_WhenAcquireLock_OperationShouldFail()
+        public async Task GivenNoActiveJobRunning_WhenAcquireJob_NewJobShouldBeReturned()
         {
-            var blobClient = new InMemoryBlobContainerClient();
-            var jobStore = CreateInMemoryJobStore(blobClient);
-            Assert.True(await jobStore.AcquireJobLock());
 
-            var jobStore2 = CreateInMemoryJobStore(blobClient);
-            Assert.False(await jobStore2.AcquireJobLock());
         }
 
-        [Fact]
-        public async Task GivenReleasedJobStore_WhenAcquireLock_OperationShouldSucceed()
-        {
-            var blobClient = new InMemoryBlobContainerClient();
-            var jobStore = CreateInMemoryJobStore(blobClient);
-            Assert.True(await jobStore.AcquireJobLock());
-
-            Assert.True(await jobStore.ReleaseJobLock());
-
-            var jobStore2 = CreateInMemoryJobStore(blobClient);
-            Assert.True(await jobStore2.AcquireJobLock());
-        }
-
-        [Fact]
-        public async Task GivenReleasedJobStore_WhenReleaseLock_OperationShouldSucceed()
-        {
-            var blobClient = new InMemoryBlobContainerClient();
-            var jobStore = CreateInMemoryJobStore(blobClient);
-            Assert.True(await jobStore.AcquireJobLock());
-
-            Assert.True(await jobStore.ReleaseJobLock());
-
-            Assert.True(await jobStore.ReleaseJobLock());
-        }
-
+        /*
         [Fact]
         public async Task GivenASchedulerSettingObject_WhenGet_CorrectDataShouldBeReturned()
         {
@@ -221,6 +197,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             jobs = await jobStore.GetActiveJobsAsync();
             Assert.Equal(5, jobs.Count());
         }
+        */
 
         [Fact]
         public async Task GivenJobDataStaged_WhenCommit_CorrectResultShouldBeCommitted()
@@ -228,7 +205,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var activeJob = new Job(
                 ContainerName,
-                JobStatus.Running,
+                JobStatus.Succeeded,
                 new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.Now.AddMinutes(-1));
@@ -257,7 +234,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
 
             activeJob.PartIds["Patient"] = 4;
-            await jobStore.CommitJobDataAsync(activeJob);
+            await jobStore.CompleteJobAsync(activeJob);
 
             // Make sure data has been moved to result folder.
             foreach (var blobName in resultBlobList)
@@ -277,7 +254,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var activeJob = new Job(
                 ContainerName,
-                JobStatus.Running,
+                JobStatus.Succeeded,
                 new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.Now.AddMinutes(-1));
@@ -307,7 +284,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Only blobs of partId 0 and 1 should be kept.
             activeJob.PartIds["Patient"] = 2;
-            await jobStore.CommitJobDataAsync(activeJob);
+            await jobStore.CompleteJobAsync(activeJob);
 
             // Make sure data has been moved to result folder.
             Assert.NotNull(await blobClient.GetBlobAsync(resultBlobList[0]));
@@ -326,8 +303,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var jobConfiguration = new JobConfiguration
             {
                 ContainerName = ContainerName,
-                StartTime = DateTimeOffset.MinValue,
-                EndTime = DateTimeOffset.MaxValue,
+                StartTime = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.FromHours(0)),
+                EndTime = new DateTimeOffset(2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0)),
                 ResourceTypeFilters = new List<string> { "Patient", "Observation" },
             };
 
@@ -339,6 +316,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
             return new AzureBlobJobStore(
                 mockFactory,
+                new R4FhirSpecificationProvider(),
                 Options.Create(jobConfiguration),
                 Options.Create(storeConfiguration),
                 new NullLogger<AzureBlobJobStore>());

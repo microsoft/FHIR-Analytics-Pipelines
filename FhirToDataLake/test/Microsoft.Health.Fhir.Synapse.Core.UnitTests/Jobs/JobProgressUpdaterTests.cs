@@ -12,6 +12,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
+using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using NSubstitute;
 using Xunit;
@@ -115,6 +116,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(containerClient);
             var jobStore = new AzureBlobJobStore(
                 mockFactory,
+                new R4FhirSpecificationProvider(),
                 Options.Create(jobConfiguration),
                 Options.Create(storeConfiguration),
                 new NullLogger<AzureBlobJobStore>());

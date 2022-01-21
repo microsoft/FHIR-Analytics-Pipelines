@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using Azure.Storage.Files.DataLake.Models;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
@@ -527,7 +528,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         }
 
         [SkippableFact]
-        public async Task GivenANonExistDirectoryName_WhenDeleteIfExists_NoExceptionShouldBeThrown()
+        public async Task GivenANotExistingDirectoryName_WhenDeleteIfExists_NoExceptionShouldBeThrown()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
@@ -548,7 +549,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         }
 
         [SkippableFact]
-        public async Task GivenANonExistDirectoryName_WhenDeleteIfExists_DirectoryAndBlobsShouldBeDeleted()
+        public async Task GivenAValidDirectoryName_WhenDeleteIfExists_DirectoryAndBlobsShouldBeDeleted()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
@@ -573,7 +574,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         }
 
         [SkippableFact]
-        public async Task GivenANonExistDirectoryName_WhenListPaths_NoPathShouldBeReturned()
+        public async Task GivenANotExistingDirectoryName_WhenListPaths_NoPathShouldBeReturned()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
@@ -584,8 +585,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             try
             {
-                var subDirectories = await adlsClient.ListPathsAsync("foldernotexist");
-                Assert.Empty(subDirectories);
+                var paths = new List<PathItem>();
+                await foreach (var item in adlsClient.ListPathsAsync(uniqueContainerName))
+                {
+                    paths.Add(item);
+                }
+
+                Assert.Empty(paths);
             }
             finally
             {
@@ -594,7 +600,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         }
 
         [SkippableFact]
-        public async Task GivenADirectoryName_WhenListPaths_AllSubDirectoriesShouldBeReturned()
+        public async Task GivenAValidDirectoryName_WhenListPaths_AllPathsShouldBeReturned()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
@@ -613,7 +619,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
                     await blobContainerClient.UploadBlobAsync(blob, new MemoryStream(new byte[] { 1, 2, 3 }));
                 }
 
-                var paths = await adlsClient.ListPathsAsync("foo");
+                var paths = new List<PathItem>();
+                await foreach (var item in adlsClient.ListPathsAsync("foo"))
+                {
+                    paths.Add(item);
+                }
+
                 Assert.Equal(expectedResult, paths.Select(x => x.Name).ToHashSet());
             }
             finally
@@ -623,7 +634,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         }
 
         [SkippableFact]
-        public async Task GivenANonExistDirectoryName_WhenMoveDirectory_ExceptionShouldBeThrown()
+        public async Task GivenANotExistingDirectoryName_WhenMoveDirectory_ExceptionShouldBeThrown()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
