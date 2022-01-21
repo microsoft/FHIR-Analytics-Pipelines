@@ -312,35 +312,37 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         public async IAsyncEnumerable<PathItem> ListPathsAsync(string directory, [EnumeratorCancellation]CancellationToken cancellationToken = default)
         {
             // Enumerate all paths in folder, see List directory contents https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-directory-file-acl-dotnet#list-directory-contents
-            IAsyncEnumerator<PathItem> asyncEnumerator;
+            var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
+            IAsyncEnumerator<PathItem> asyncEnumerator = directoryClient.GetPathsAsync(true, cancellationToken: cancellationToken).GetAsyncEnumerator(cancellationToken);
 
-            try
+            PathItem item;
+            do
             {
-                var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
-                asyncEnumerator = directoryClient.GetPathsAsync(true, cancellationToken: cancellationToken).GetAsyncEnumerator(cancellationToken);
-            }
-            catch (RequestFailedException ex)
-                when (ex.ErrorCode == DataLakePathNotFoundErrorCode)
-            {
-                _logger.LogInformation("Directory '{0}' is empty.", directory);
-                yield break;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Failed to query paths of directory '{0}'. Reason: '{1}'", directory, ex);
-                throw new AzureBlobOperationFailedException($"Failed to query paths of directory '{directory}'.", ex);
-            }
-
-            while (await asyncEnumerator.MoveNextAsync())
-            {
-                var item = asyncEnumerator.Current;
-                if (item == null)
+                try
                 {
-                    break;
+                    // Exception might throw when querying data lake storage.
+                    if (!await asyncEnumerator.MoveNextAsync())
+                    {
+                        break;
+                    }
+
+                    item = asyncEnumerator.Current;
+                }
+                catch (RequestFailedException ex)
+                    when (ex.ErrorCode == DataLakePathNotFoundErrorCode)
+                {
+                    _logger.LogInformation("Directory '{0}' is empty.", directory);
+                    yield break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Failed to query paths of directory '{0}'. Reason: '{1}'", directory, ex);
+                    throw new AzureBlobOperationFailedException($"Failed to query paths of directory '{directory}'.", ex);
                 }
 
                 yield return item;
             }
+            while (item != null);
         }
     }
 }
