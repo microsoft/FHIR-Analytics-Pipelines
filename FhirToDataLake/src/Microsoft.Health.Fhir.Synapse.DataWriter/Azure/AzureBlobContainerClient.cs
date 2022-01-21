@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -309,33 +309,38 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
         }
 
-        public async Task<IEnumerable<PathItem>> ListPathsAsync(string directory, CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<PathItem> ListPathsAsync(string directory, [EnumeratorCancellation]CancellationToken cancellationToken = default)
         {
+            IAsyncEnumerator<PathItem> asyncEnumerator;
+
             try
             {
-                var subDirectories = new List<PathItem>();
-
                 var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
-                await foreach (var page in directoryClient.GetPathsAsync(true, cancellationToken: cancellationToken).AsPages())
-                {
-                    // Append sub directories to result
-                    subDirectories.AddRange(page.Values);
-                }
-
-                _logger.LogInformation("Get '{0}' paths of '{1}' successfully.", subDirectories.Count, directory);
-                return subDirectories;
+                asyncEnumerator = directoryClient.GetPathsAsync(true, cancellationToken: cancellationToken).GetAsyncEnumerator(cancellationToken);
             }
             catch (RequestFailedException ex)
                 when (ex.ErrorCode == DataLakePathNotFoundErrorCode)
             {
                 _logger.LogInformation("Directory '{0}' is empty.", directory);
-                return new List<PathItem>();
+                yield break;
             }
             catch (Exception ex)
             {
                 _logger.LogError("Failed to query paths of directory '{0}'. Reason: '{1}'", directory, ex);
                 throw new AzureBlobOperationFailedException($"Failed to query paths of directory '{directory}'.", ex);
             }
+
+            while (await asyncEnumerator.MoveNextAsync())
+            {
+                var item = asyncEnumerator.Current;
+                if (item == null)
+                {
+                    break;
+                }
+
+                yield return item;
+            }
+
         }
     }
 }
