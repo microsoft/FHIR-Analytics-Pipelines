@@ -199,7 +199,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 if (path.StartsWith(directory) && !string.Equals(directory, path, StringComparison.OrdinalIgnoreCase))
                 {
                     var pathItem = DataLakeModelFactory.PathItem(path, false, DateTimeOffset.UtcNow, new ETag("test"), 100, string.Empty, string.Empty, string.Empty);
-                    yield return pathItem;
+                    yield return await Task.FromResult(pathItem);
 
                     var pathComponents = path.Split('/');
                     string baseDir = pathComponents[0];
@@ -214,7 +214,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                             && !directorySet.Contains(baseDir))
                         {
                             var directoryItem = DataLakeModelFactory.PathItem(baseDir, true, DateTimeOffset.UtcNow, new ETag("test"), 100, string.Empty, string.Empty, string.Empty);
-                            yield return directoryItem;
+                            yield return await Task.FromResult(directoryItem);
                         }
                     }
                 }

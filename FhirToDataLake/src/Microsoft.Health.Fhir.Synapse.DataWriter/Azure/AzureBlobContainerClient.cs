@@ -311,6 +311,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         public async IAsyncEnumerable<PathItem> ListPathsAsync(string directory, [EnumeratorCancellation]CancellationToken cancellationToken = default)
         {
+            // Enumerate all paths in folder, see List directory contents https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-directory-file-acl-dotnet#list-directory-contents
             IAsyncEnumerator<PathItem> asyncEnumerator;
 
             try
@@ -340,7 +341,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
                 yield return item;
             }
-
         }
     }
 }

@@ -164,6 +164,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 throw new ArgumentException("Input job to complete is not in succeeded state.");
             }
 
+            // Commit staged parquet data.
+            await CommitJobDataAsync(job, cancellationToken);
+
             var completedBlobName = GetJobBlobName(job, AzureBlobJobConstants.CompletedJobFolder);
 
             job.LastHeartBeat = DateTimeOffset.UtcNow;

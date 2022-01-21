@@ -20,26 +20,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class JobExecutor
     {
-        private readonly IJobStore _jobStore;
         private readonly ITaskExecutor _taskExecutor;
         private readonly JobProgressUpdaterFactory _jobProgressUpdaterFactory;
         private readonly JobSchedulerConfiguration _schedulerConfiguration;
         private readonly ILogger<JobExecutor> _logger;
 
         public JobExecutor(
-            IJobStore jobStore,
             ITaskExecutor taskExecutor,
             JobProgressUpdaterFactory jobProgressUpdaterFactory,
             IOptions<JobSchedulerConfiguration> schedulerConfiguration,
             ILogger<JobExecutor> logger)
         {
-            EnsureArg.IsNotNull(jobStore, nameof(jobStore));
             EnsureArg.IsNotNull(taskExecutor, nameof(taskExecutor));
             EnsureArg.IsNotNull(jobProgressUpdaterFactory, nameof(jobProgressUpdaterFactory));
             EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _jobStore = jobStore;
             _taskExecutor = taskExecutor;
             _jobProgressUpdaterFactory = jobProgressUpdaterFactory;
             _schedulerConfiguration = schedulerConfiguration.Value;
@@ -92,7 +88,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             jobProgressUpdater.Complete();
             await progressReportTask;
-            await _jobStore.CommitJobDataAsync(job, cancellationToken);
 
             _logger.LogInformation("Finish scheduling job '{jobId}'", job.Id);
         }
