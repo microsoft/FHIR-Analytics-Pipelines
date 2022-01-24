@@ -13,15 +13,15 @@ from datetime import datetime
 parser = argparse.ArgumentParser()
 parser.add_argument("--synapse_workspace", required=True, help="Name of Synapse workspace.")
 parser.add_argument("--fhir_server_url", required=True, help="Fhir server url.")
-parser.add_argument("--schemas_path", required=True, help="Schemas directory path.")
-parser.add_argument("--database", default='fhirdb', help="Name of database.")
+parser.add_argument("--schema_directory", required=True, help="Schema directory path.")
+parser.add_argument("--database", default='fhirdb', help="Name of SQL database.")
 parser.add_argument("--sql_username", help="SQL username.")
 parser.add_argument("--sql_password", help="SQL password.")
 args = parser.parse_args()
 
 sql_server_endpoint = args.synapse_workspace + "-ondemand.sql.azuresynapse.net"
 database = args.database
-schema_collection_directory = args.schemas_path
+schema_directory = args.schema_directory
 fhir_server_base_url = args.fhir_server_url
 sql_username = args.sql_username
 sql_password = args.sql_password
@@ -74,14 +74,14 @@ class FhirApiDataClient:
 
 
 class SchemaManager:
-    def __init__(self, schema_collection_directory):
-        self.schemas = SchemaManager.load_schemas(schema_collection_directory)
+    def __init__(self, schema_directory):
+        self.schemas = SchemaManager.load_schemas(schema_directory)
 
     @staticmethod
-    def load_schemas(schema_collection_directory) -> dict:
+    def load_schemas(schema_directory) -> dict:
         schemas = {}
-        for schema_file in os.listdir(schema_collection_directory):
-            with open(os.path.join(schema_collection_directory, schema_file)) as f:
+        for schema_file in os.listdir(schema_directory):
+            with open(os.path.join(schema_directory, schema_file)) as f:
                 schema = json.load(f)
                 schemas[schema["Type"]] = schema
         return schemas
@@ -126,9 +126,9 @@ class SqlServerClient:
     def get_data(self, resource_type):
         connection = pyodbc.connect(self.connection_string)
         sql = f"SELECT * FROM [fhir].[{resource_type}]"
-        data_df = pd.read_sql(sql=sql, con=connection)
+        result_dataframe = pd.read_sql(sql=sql, con=connection)
         connection.close()
-        return data_df
+        return result_dataframe
 
 
 class DataClient:
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     print('-> Database: ', database)
     print('-> Fhir server url: ', fhir_server_base_url)
 
-    schema_manager = SchemaManager(schema_collection_directory)
+    schema_manager = SchemaManager(schema_directory)
     resource_types = schema_manager.get_all_resource_types()
 
     fhir_api_client = FhirApiDataClient(fhir_server_base_url)
