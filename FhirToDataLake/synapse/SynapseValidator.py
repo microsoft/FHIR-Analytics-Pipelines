@@ -166,11 +166,11 @@ if __name__ == "__main__":
     fhir_api_client = FhirApiDataClient(fhir_server_base_url)
     sql_client = SqlServerClient(sql_server_endpoint, database, sql_username, sql_password)
 
-    dataFactory = DataClient(sql_client, fhir_api_client, schema_manager.generate_external_table_column_dicts())
+    dataClient = DataClient(sql_client, fhir_api_client, schema_manager.generate_external_table_column_dicts())
 
     start_time = time.time()
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        futures = [executor.submit(dataFactory.fetch, resource_type) for resource_type in resource_types]
+        futures = [executor.submit(dataClient.fetch, resource_type) for resource_type in resource_types]
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
             resource_type_name = result[DataClient.resource_type_key]
