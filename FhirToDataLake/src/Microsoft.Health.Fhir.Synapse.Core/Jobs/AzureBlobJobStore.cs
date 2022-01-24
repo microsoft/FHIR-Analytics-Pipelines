@@ -233,7 +233,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <param name="job">input job.</param>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>completed task.</returns>
-        public async Task CommitJobDataAsync(Job job, CancellationToken cancellationToken = default)
+        private async Task CommitJobDataAsync(Job job, CancellationToken cancellationToken = default)
         {
             var stagingFolder = $"{AzureStorageConstants.StagingFolderName}/{job.Id}";
             var directoryPairs = new List<Tuple<string, string>>();

@@ -228,7 +228,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var activeJob = new Job(
                 ContainerName,
-                JobStatus.Running,
+                JobStatus.Succeeded,
                 new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.Now.AddMinutes(-1));
@@ -257,7 +257,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
 
             activeJob.PartIds["Patient"] = 4;
-            await jobStore.CommitJobDataAsync(activeJob);
+            await jobStore.CompleteJobAsync(activeJob);
 
             // Make sure data has been moved to result folder.
             foreach (var blobName in resultBlobList)
@@ -277,7 +277,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var activeJob = new Job(
                 ContainerName,
-                JobStatus.Running,
+                JobStatus.Succeeded,
                 new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.Now.AddMinutes(-1));
@@ -307,7 +307,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Only blobs of partId 0 and 1 should be kept.
             activeJob.PartIds["Patient"] = 2;
-            await jobStore.CommitJobDataAsync(activeJob);
+            await jobStore.CompleteJobAsync(activeJob);
 
             // Make sure data has been moved to result folder.
             Assert.NotNull(await blobClient.GetBlobAsync(resultBlobList[0]));

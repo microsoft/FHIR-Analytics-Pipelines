@@ -57,13 +57,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>SchedulerSetting object, return null if not exists.</returns>
         public Task<SchedulerMetadata> GetSchedulerMetadata(CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Commit job data from staging folder to result folder.
-        /// </summary>
-        /// <param name="job">input job object.</param>
-        /// <param name="cancellationToken">cancellation token.</param>
-        /// <returns>completed task.</returns>
-        public Task CommitJobDataAsync(Job job, CancellationToken cancellationToken = default);
     }
 }
