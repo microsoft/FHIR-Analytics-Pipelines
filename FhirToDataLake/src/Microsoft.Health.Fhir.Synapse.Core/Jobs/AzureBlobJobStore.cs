@@ -94,6 +94,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     _logger.LogWarning("Job '{id}' has already succeeded.", job.Id);
                     await CompleteJobInternal(job, false, cancellationToken);
+                    job = null;
                 }
                 else
                 {
@@ -154,7 +155,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _jobLockLease = await _blobContainerClient.AcquireLeaseAsync(
                 blobName,
-                _jobLockLease,
+                null,
                 TimeSpan.FromSeconds(AzureBlobJobConstants.JobLeaseExpirationInSeconds),
                 cancellationToken);
 
