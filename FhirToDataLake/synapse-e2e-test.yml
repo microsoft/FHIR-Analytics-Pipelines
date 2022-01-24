@@ -28,8 +28,8 @@ steps:
     azurePowerShellVersion: latestVersion
     ScriptType: inlineScript
     Inline: |
-      $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(pipelineStorage)).Value[0]
-      $storageContext = New-AzStorageContext -StorageAccountName $(pipelineStorage) -StorageAccountKey $storageAccountKey
+      $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(storageName)).Value[0]
+      $storageContext = New-AzStorageContext -StorageAccountName $(storageName) -StorageAccountKey $storageAccountKey
       $blobName = '$(appName)' + 'FunctionApp.zip'
       Set-AzStorageBlobContent -Container $(packageContainer) -Context $storageContext -File $(Build.ArtifactStagingDirectory)/FhirToDataLakeBuild/Microsoft.Health.Fhir.Synapse.FunctionApp.zip -Blob $blobName
 
@@ -49,7 +49,7 @@ steps:
       $securedPassword = ConvertTo-SecureString $env:SQL_PASSWORD -AsPlainText -Force
       $creds = New-Object System.Management.Automation.PSCredential ($env:SQL_USERNAME, $securedPassword)
       New-AzSynapseWorkspace -ResourceGroupName $(resourceGroup) -Name $(synapseWorkspaceName) -Location eastus2 -SqlAdministratorLoginCredential $creds `
-        -DefaultDataLakeStorageAccountName $(pipelineStorage) -DefaultDataLakeStorageFilesystem $(fileSystemContainer) -ErrorAction Stop
+        -DefaultDataLakeStorageAccountName $(storageName) -DefaultDataLakeStorageFilesystem $(fileSystemContainer) -ErrorAction Stop
 
       # Creating Synapse via Azure portal will default allow all IP to access it, while creating via Powershell will not.
       # Here manually set it firewall rules, see https://docs.microsoft.com/en-us/azure/synapse-analytics/quickstart-create-workspace-powershell
