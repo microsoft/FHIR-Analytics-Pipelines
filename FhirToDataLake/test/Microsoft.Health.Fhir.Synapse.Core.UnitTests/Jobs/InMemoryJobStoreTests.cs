@@ -40,6 +40,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var jobStore = CreateInMemoryJobStore(blobClient, _testStartTime, _testEndTime, _testResourceTypeFilters);
             var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobStore.AcquireJobAsync());
             Assert.StartsWith("Start job conflicted. Will skip this trigger.", exception.Message);
+
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -49,6 +51,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var jobStore = CreateInMemoryJobStore(blobClient, _testEndTime, _testStartTime, _testResourceTypeFilters);
             var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobStore.AcquireJobAsync());
             Assert.StartsWith("Job has been scheduled to end.", exception.Message);
+
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -58,6 +62,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var jobStore = CreateInMemoryJobStore(blobClient, DateTimeOffset.Now.AddDays(1), DateTimeOffset.MaxValue, _testResourceTypeFilters);
             var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobStore.AcquireJobAsync());
             Assert.EndsWith("is in the future.", exception.Message);
+
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -90,6 +96,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Assert end time is not in the future.
             Assert.True(job.DataPeriod.End < DateTimeOffset.UtcNow);
+
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -106,6 +114,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Assert ResourceTypes is not empty
             Assert.NotEmpty(job.ResourceTypes);
+
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -135,6 +145,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(activeJob.DataPeriod.Start, completedJob.DataPeriod.Start);
             Assert.Equal(activeJob.DataPeriod.End, completedJob.DataPeriod.End);
             Assert.Equal(activeJob.ResourceTypes, completedJob.ResourceTypes);
+
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -189,6 +201,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(2, activeJob.PartIds["Patient"]);
             Assert.Equal(100, activeJob.ProcessedResourceCounts["Patient"]);
             Assert.Equal(0, activeJob.SkippedResourceCounts["Patient"]);
+
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -199,6 +213,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var activeJob = await jobStore.AcquireJobAsync();
 
             await Assert.ThrowsAsync<ArgumentException>(() => jobStore.CompleteJobAsync(activeJob));
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -268,6 +283,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 Assert.Null(await blobClient.GetBlobAsync(blobName));
             }
+
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -318,6 +335,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 Assert.Null(await blobClient.GetBlobAsync(blobName));
             }
+
+            await jobStore.DisposeAsync();
         }
 
         private static async Task<Job> LoadJobFromBlob(InMemoryBlobContainerClient blobClient, string blobName)

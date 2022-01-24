@@ -58,6 +58,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // Only one job is running.
             var activeJobs = await blobClient.ListBlobsAsync(AzureBlobJobConstants.ActiveJobFolder);
             Assert.Single(activeJobs);
+
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -90,6 +92,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Null(job);
             var completedJob = await blobClient.GetValue<Job>($"{AzureBlobJobConstants.CompletedJobFolder}/{activeJob.Id}.json");
             Assert.NotNull(completedJob);
+
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -121,6 +125,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // Test end data period
             Assert.True(job.DataPeriod.End < DateTimeOffset.UtcNow.AddMinutes(-1 * AzureBlobJobConstants.JobQueryLatencyInMinutes));
             Assert.True(job.DataPeriod.End > DateTimeOffset.UtcNow.AddMinutes(-1 * AzureBlobJobConstants.JobQueryLatencyInMinutes).AddMinutes(-1));
+
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -139,6 +145,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.RunAsync());
             Assert.Contains("trigger is in the future", exception.Message);
+
+            await jobStore.DisposeAsync();
         }
 
         [Fact]
@@ -159,6 +167,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.RunAsync());
             Assert.Contains("Job has been scheduled to end", exception.Message);
+
+            await jobStore.DisposeAsync();
         }
 
         private static IJobStore CreateBrokenJobStore()
