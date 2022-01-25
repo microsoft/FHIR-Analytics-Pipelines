@@ -145,19 +145,18 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private async void CheckJobStatus(BlobContainerClient blobContainerClient)
         {
             var hasCompletedJobs = false;
-            await foreach (var blobName in blobContainerClient.GetBlobsAsync())
+            await foreach (var blobItem in blobContainerClient.GetBlobsAsync(prefix: "jobs/completedJobs"))
             {
-                if (blobName.Name.StartsWith("jobs/completedJobs"))
-                {
-                    hasCompletedJobs = true;
-                    var blobClient = blobContainerClient.GetBlobClient(blobName.Name);
-                    var blobDownloadInfo = await blobClient.DownloadAsync();
-                    using var reader = new StreamReader(blobDownloadInfo.Value.Content, Encoding.UTF8);
-                    var content = await reader.ReadToEndAsync();
+                hasCompletedJobs = true;
+                var blobClient = blobContainerClient.GetBlobClient(blobItem.Name);
+                var blobDownloadInfo = await blobClient.DownloadAsync();
+                using var reader = new StreamReader(blobDownloadInfo.Value.Content, Encoding.UTF8);
+                var content = await reader.ReadToEndAsync();
 
-                    // The status should be 2, which means succeeded
-                    Assert.Equal(2, JObject.Parse(content)["status"]?.Value<int>());
-                }
+                // The status should be 2, which means succeeded
+                Assert.Equal(2, JObject.Parse(content)["status"]?.Value<int>());
+
+                break;
             }
 
             Assert.True(hasCompletedJobs);
