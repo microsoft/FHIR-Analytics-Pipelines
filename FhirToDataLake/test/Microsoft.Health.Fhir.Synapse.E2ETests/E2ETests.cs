@@ -112,8 +112,12 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 var host = CreateHostBuilder(configuration).Build();
                 await host.RunAsync();
 
+                _testOutputHelper.WriteLine("Start checking status.");
+
                 // Check job status
                 CheckJobStatus(blobContainerClient);
+
+                _testOutputHelper.WriteLine("Start querying result files.");
 
                 // Check parquet files
                 Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Observation/2000/09/01"));
@@ -121,17 +125,22 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             }
             finally
             {
+                _testOutputHelper.WriteLine("Dispose.");
                 blobContainerClient.DeleteIfExists();
             }
         }
 
         private async Task<int> GetResultFileCount(BlobContainerClient blobContainerClient, string filePrefix)
         {
+            _testOutputHelper.WriteLine("Getting result file.");
+
             var resultFileCount = 0;
             await foreach (var page in blobContainerClient.GetBlobsByHierarchyAsync(prefix: filePrefix).AsPages())
             {
                 foreach (var blobItem in page.Values)
                 {
+                    _testOutputHelper.WriteLine($"Getting result file {blobItem.Blob.Name}.");
+
                     if (blobItem.Blob.Name.EndsWith(".parquet"))
                     {
                         resultFileCount++;
@@ -139,14 +148,20 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 }
             }
 
+            _testOutputHelper.WriteLine($"Getting result file count {resultFileCount}.");
+
             return resultFileCount;
         }
 
         private async void CheckJobStatus(BlobContainerClient blobContainerClient)
         {
+            _testOutputHelper.WriteLine("Checking job status.");
+
             var hasCompletedJobs = false;
             await foreach (var blobItem in blobContainerClient.GetBlobsAsync(prefix: "jobs/completedJobs"))
             {
+                _testOutputHelper.WriteLine($"Queried blob {blobItem}.");
+
                 hasCompletedJobs = true;
                 var blobClient = blobContainerClient.GetBlobClient(blobItem.Name);
                 var blobDownloadInfo = await blobClient.DownloadAsync();
@@ -158,6 +173,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
                 break;
             }
+
+            _testOutputHelper.WriteLine($"Checked job status {hasCompletedJobs}.");
 
             Assert.True(hasCompletedJobs);
         }
