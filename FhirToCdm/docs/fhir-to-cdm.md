@@ -16,7 +16,7 @@ Table configuration generator takes YAML instructions from user and generates a 
 
 First, ensure you already have Node.js and npm installed, see [Downloading and installing Node.js and npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) if they don't exist
 
-Then clone this FHIR-Analytics-Pipelines repo to your local machine, browse to the ```Configuration-Generator``` directory, use commands below to install the dependencies. 
+Then clone this [FHIR-Analytics-Pipelines](https://github.com/microsoft/FHIR-Analytics-Pipelines) repo to your local machine, browse to the ```FhirToCdm\Configuration-Generator``` directory, use command below to install the dependencies. 
 ```
 npm ci
 ```
