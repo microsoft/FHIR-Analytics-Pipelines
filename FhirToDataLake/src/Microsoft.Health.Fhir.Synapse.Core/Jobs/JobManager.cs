@@ -59,7 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var job = await _jobStore.AcquireJobAsync(cancellationToken);
             if (job == null)
             {
-                job = await CreateNewJob(cancellationToken);
+                job = await CreateNewJobAsync(cancellationToken);
             }
             else
             {
@@ -84,9 +84,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
-        private async Task<Job> CreateNewJob(CancellationToken cancellationToken = default)
+        private async Task<Job> CreateNewJobAsync(CancellationToken cancellationToken = default)
         {
-            var schedulerSetting = await _jobStore.GetSchedulerMetadata(cancellationToken);
+            var schedulerSetting = await _jobStore.GetSchedulerMetadataAsync(cancellationToken);
             DateTimeOffset triggerStart = GetTriggerStartTime(schedulerSetting);
             if (triggerStart >= _jobConfiguration.EndTime)
             {

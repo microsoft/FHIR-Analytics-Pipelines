@@ -69,7 +69,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<Job> AcquireJobAsync(CancellationToken cancellationToken = default)
         {
-            var lockAcquired = await TryAcquireJobLock(cancellationToken);
+            var lockAcquired = await TryAcquireJobLockAsync(cancellationToken);
             if (!lockAcquired)
             {
                 _logger.LogWarning("Start job conflicted. Failed to acquire job lock.");
@@ -82,7 +82,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Complete a succeeded job.
                 _logger.LogWarning("Job '{id}' has already succeeded.", job.Id);
-                await CompleteJobInternal(job, false, cancellationToken);
+                await CompleteJobAsyncInternal(job, false, cancellationToken);
                 job = null;
             }
 
@@ -115,15 +115,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             EnsureArg.IsNotNull(job, nameof(job));
 
-            await CompleteJobInternal(job, true, cancellationToken);
+            await CompleteJobAsyncInternal(job, true, cancellationToken);
         }
 
-        public async Task<SchedulerMetadata> GetSchedulerMetadata(CancellationToken cancellationToken = default)
+        public async Task<SchedulerMetadata> GetSchedulerMetadataAsync(CancellationToken cancellationToken = default)
         {
-            return await FromBlob<SchedulerMetadata>(AzureBlobJobConstants.SchedulerMetadataFileName, cancellationToken);
+            return await FromBlobAsync<SchedulerMetadata>(AzureBlobJobConstants.SchedulerMetadataFileName, cancellationToken);
         }
 
-        private async Task<bool> TryAcquireJobLock(CancellationToken cancellationToken = default)
+        private async Task<bool> TryAcquireJobLockAsync(CancellationToken cancellationToken = default)
         {
             var blobName = AzureBlobJobConstants.JobLockFileName;
 
@@ -151,7 +151,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return true;
         }
 
-        private async Task<bool> TryReleaseJobLock(CancellationToken cancellationToken = default)
+        private async Task<bool> TryReleaseJobLockAsync(CancellationToken cancellationToken = default)
         {
             _renewLockTimer.Stop();
 
@@ -178,7 +178,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var jobBlobs = await _blobContainerClient.ListBlobsAsync(AzureBlobJobConstants.ActiveJobFolder, cancellationToken);
             foreach (var blob in jobBlobs)
             {
-                var job = await FromBlob<Job>(blob, cancellationToken);
+                var job = await FromBlobAsync<Job>(blob, cancellationToken);
                 if (job != null)
                 {
                     jobs.Add(job);
@@ -188,7 +188,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return jobs;
         }
 
-        private async Task CompleteJobInternal(Job job, bool releaseLock, CancellationToken cancellationToken)
+        private async Task CompleteJobAsyncInternal(Job job, bool releaseLock, CancellationToken cancellationToken)
         {
             if (job.Status != JobStatus.Succeeded)
             {
@@ -204,7 +204,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             try
             {
                 // Update scheduler setting
-                var schedulerSetting = await GetSchedulerMetadata(cancellationToken);
+                var schedulerSetting = await GetSchedulerMetadataAsync(cancellationToken);
                 if (schedulerSetting != null)
                 {
                     schedulerSetting.LastScheduledTimestamp = job.DataPeriod.End;
@@ -217,7 +217,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     };
                 }
 
-                await SaveSchedulerMetadata(schedulerSetting, cancellationToken);
+                await SaveSchedulerMetadataAsync(schedulerSetting, cancellationToken);
 
                 // Add job to completed job list.
                 var completedBlobName = GetJobBlobName(job, AzureBlobJobConstants.CompletedJobFolder);
@@ -231,7 +231,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 if (releaseLock)
                 {
-                    await TryReleaseJobLock(cancellationToken);
+                    await TryReleaseJobLockAsync(cancellationToken);
                 }
 
                 _logger.LogInformation("Complete job '{job.Id}' successfully.", job.Id);
@@ -316,7 +316,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             await _blobContainerClient.DeleteDirectoryIfExistsAsync(stagingFolder, cancellationToken);
         }
 
-        private async Task SaveSchedulerMetadata(SchedulerMetadata setting, CancellationToken cancellationToken = default)
+        private async Task SaveSchedulerMetadataAsync(SchedulerMetadata setting, CancellationToken cancellationToken = default)
         {
             var content = JsonConvert.SerializeObject(setting);
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
@@ -324,11 +324,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 AzureBlobJobConstants.SchedulerMetadataFileName,
                 stream,
                 cancellationToken);
-        }
-
-        private static string GetJobBlobName(Job job, string prefix)
-        {
-            return $"{prefix}/{job.Id}.json";
         }
 
         private async Task RenewJobLockLeaseAsync(CancellationToken cancellationToken = default)
@@ -352,7 +347,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <param name="blobName">blob name.</param>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>result object.</returns>
-        private async Task<T> FromBlob<T>(string blobName, CancellationToken cancellationToken)
+        private async Task<T> FromBlobAsync<T>(string blobName, CancellationToken cancellationToken)
         {
             try
             {
@@ -378,6 +373,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
+        private static string GetJobBlobName(Job job, string prefix)
+        {
+            return $"{prefix}/{job.Id}.json";
+        }
 
         public void Dispose()
         {
@@ -394,7 +393,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         protected virtual async ValueTask DisposeAsyncCore()
         {
-            await TryReleaseJobLock();
+            await TryReleaseJobLockAsync();
         }
     }
 }
