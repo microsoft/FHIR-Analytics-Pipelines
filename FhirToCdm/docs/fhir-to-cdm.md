@@ -14,11 +14,20 @@ The FHIR to CDM tool has three components, shown in green in the diagram below:
 
 Table configuration generator takes YAML instructions from user and generates a table configuration folder. The schema viewer, described later, helps visualize the schema of the generated tables.
 
-First, use `npm install` to install the dependencies. Subsequently, you can run the following command from the _Configuration-Generator_ folder to generate table configuration. You may use the sample yaml files, [_resourcesConfig.yml_](../Configuration-Generator/resourcesConfig.yml) and [_propertiesGroupConfig.yml_](../Configuration-Generator/propertiesGroupConfig.yml) provided in the project. See the [YAML instructions format](yaml-instructions-format.md) document if you want to write yaml instructions as per your needs.
+First, ensure you already have Node.js and npm installed, see [Downloading and installing Node.js and npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) if they don't exist
 
-```Configuration-Generator> node .\generate_from_yaml.js -r {resource configuration file} -p {properties group file} -o {output folder}```
+Then clone this FHIR-Analytics-Pipelines repo to your local machine, browse to the ```Configuration-Generator``` directory, use commands below to install the dependencies. 
+```
+npm ci
+```
 
-Example:
+Subsequently, you can run the following command from the _Configuration-Generator_ folder to generate table configuration. You may use the sample yaml files, [_resourcesConfig.yml_](../Configuration-Generator/resourcesConfig.yml) and [_propertiesGroupConfig.yml_](../Configuration-Generator/propertiesGroupConfig.yml) provided in the project. See the [YAML instructions format](yaml-instructions-format.md) document if you want to write yaml instructions as per your needs.
+
+```
+Configuration-Generator> node .\generate_from_yaml.js -r {resource configuration file} -p {properties group file} -o {output folder}
+```
+
+Example: 
 
 ```Configuration-Generator> node .\generate_from_yaml.js -r resourcesConfig.yml -p propertiesGroupConfig.yml -o tableConfig```
 
