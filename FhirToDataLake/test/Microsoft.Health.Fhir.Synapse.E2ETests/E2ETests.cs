@@ -73,7 +73,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 await host.RunAsync();
 
                 // Check job status
-                CheckJobStatus(blobContainerClient);
+                await CheckJobStatus(blobContainerClient);
 
                 // Check result files
                 Assert.Equal(2, await GetResultFileCount(blobContainerClient, "result/Observation/2000/09/01"));
@@ -113,7 +113,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 await host.RunAsync();
 
                 // Check job status
-                CheckJobStatus(blobContainerClient);
+                await CheckJobStatus(blobContainerClient);
 
                 // Check parquet files
                 Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Observation/2000/09/01"));
@@ -121,6 +121,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             }
             finally
             {
+                _testOutputHelper.WriteLine("Dispose.");
                 blobContainerClient.DeleteIfExists();
             }
         }
@@ -132,6 +133,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             {
                 foreach (var blobItem in page.Values)
                 {
+                    _testOutputHelper.WriteLine($"Getting result file {blobItem.Blob.Name}.");
+
                     if (blobItem.Blob.Name.EndsWith(".parquet"))
                     {
                         resultFileCount++;
@@ -139,26 +142,33 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 }
             }
 
+            _testOutputHelper.WriteLine($"Getting result file count {resultFileCount}.");
             return resultFileCount;
         }
 
-        private async void CheckJobStatus(BlobContainerClient blobContainerClient)
+        private async Task CheckJobStatus(BlobContainerClient blobContainerClient)
         {
             var hasCompletedJobs = false;
-            await foreach (var blobName in blobContainerClient.GetBlobsAsync())
+            await foreach (var blobItem in blobContainerClient.GetBlobsAsync(prefix: "jobs/completedJobs"))
             {
-                if (blobName.Name.StartsWith("jobs/completedJobs"))
+                _testOutputHelper.WriteLine($"Queried blob {blobItem.Name}.");
+
+                if (blobItem.Name.EndsWith(".json"))
                 {
                     hasCompletedJobs = true;
-                    var blobClient = blobContainerClient.GetBlobClient(blobName.Name);
+                    var blobClient = blobContainerClient.GetBlobClient(blobItem.Name);
                     var blobDownloadInfo = await blobClient.DownloadAsync();
                     using var reader = new StreamReader(blobDownloadInfo.Value.Content, Encoding.UTF8);
                     var content = await reader.ReadToEndAsync();
 
                     // The status should be 2, which means succeeded
                     Assert.Equal(2, JObject.Parse(content)["status"]?.Value<int>());
+
+                    break;
                 }
             }
+
+            _testOutputHelper.WriteLine($"Checked job status {hasCompletedJobs}.");
 
             Assert.True(hasCompletedJobs);
         }
