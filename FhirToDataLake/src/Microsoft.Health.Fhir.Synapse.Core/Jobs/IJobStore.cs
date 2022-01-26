@@ -14,7 +14,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         /// <summary>
         ///  Acquire an active job from job store.
-        ///  If no active job found, will create a new job trigger and persist to job store.
+        ///  If no active job found, will return null.
         /// </summary>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>job lists.</returns>
@@ -36,5 +36,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>Completed task.</returns>
         public Task CompleteJobAsync(Job job, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get scheduler metadata from job store.
+        /// </summary>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>SchedulerMetadata object, return null if not exists.</returns>
+        public Task<SchedulerMetadata> GetSchedulerMetadata(CancellationToken cancellationToken = default);
     }
 }

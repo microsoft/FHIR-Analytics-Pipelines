@@ -18,7 +18,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
-using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 using Newtonsoft.Json;
@@ -29,8 +28,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class AzureBlobJobStore : IJobStore, IDisposable, IAsyncDisposable
     {
         private readonly IAzureBlobContainerClient _blobContainerClient;
-        private readonly IFhirSpecificationProvider _fhirSpecificationProvider;
-        private readonly JobConfiguration _jobConfiguration;
         private readonly ILogger<AzureBlobJobStore> _logger;
 
         // When job starts, the process will acquire the lease for expiration
@@ -54,20 +51,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public AzureBlobJobStore(
             IAzureBlobContainerClientFactory blobContainerFactory,
-            IFhirSpecificationProvider fhirSpecificationProvider,
             IOptions<JobConfiguration> jobConfiguration,
             IOptions<DataLakeStoreConfiguration> storeConfiguration,
             ILogger<AzureBlobJobStore> logger)
         {
             EnsureArg.IsNotNull(blobContainerFactory, nameof(blobContainerFactory));
-            EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             EnsureArg.IsNotNull(storeConfiguration, nameof(storeConfiguration));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _fhirSpecificationProvider = fhirSpecificationProvider;
-            _jobConfiguration = jobConfiguration.Value;
-            _blobContainerClient = blobContainerFactory.Create(storeConfiguration.Value.StorageUrl, _jobConfiguration.ContainerName);
+            _blobContainerClient = blobContainerFactory.Create(storeConfiguration.Value.StorageUrl, jobConfiguration.Value.ContainerName);
             _logger = logger;
 
             _renewLockTimer = new Timer(TimeSpan.FromSeconds(AzureBlobJobConstants.JobLeaseRefreshIntervalInSeconds).TotalMilliseconds);
@@ -104,12 +97,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
             }
 
-            // No active job available, start new trigger.
-            if (job == null)
-            {
-                job = await CreateNewJob(cancellationToken);
-            }
-
             return job;
         }
 
@@ -140,6 +127,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             EnsureArg.IsNotNull(job, nameof(job));
 
             await CompleteJobInternal(job, true, cancellationToken);
+        }
+
+        public async Task<SchedulerMetadata> GetSchedulerMetadata(CancellationToken cancellationToken = default)
+        {
+            return await FromBlob<SchedulerMetadata>(AzureBlobJobConstants.SchedulerMetadataFileName, cancellationToken);
         }
 
         private async Task<bool> TryAcquireJobLock(CancellationToken cancellationToken = default)
@@ -260,11 +252,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogError(ex, "Failed to complete job '{job.Id}'", job.Id);
                 throw new CompleteJobFailedException($"Complete job '{job.Id}' failed.", ex);
             }
-        }
-
-        private async Task<SchedulerMetadata> GetSchedulerMetadata(CancellationToken cancellationToken = default)
-        {
-            return await FromBlob<SchedulerMetadata>(AzureBlobJobConstants.SchedulerMetadataFileName, cancellationToken);
         }
 
         /// <summary>
@@ -402,65 +389,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
-        private async Task<Job> CreateNewJob(CancellationToken cancellationToken = default)
-        {
-            var schedulerSetting = await GetSchedulerMetadata(cancellationToken);
-            DateTimeOffset triggerStart = GetTriggerStartTime(schedulerSetting);
-            if (triggerStart >= _jobConfiguration.EndTime)
-            {
-                _logger.LogInformation("Job has been scheduled to end.");
-                throw new StartJobFailedException("Job has been scheduled to end.");
-            }
-
-            // End data period for this trigger
-            DateTimeOffset triggerEnd = GetTriggerEndTime();
-
-            if (triggerStart >= triggerEnd)
-            {
-                _logger.LogInformation("The start time '{triggerStart}' to trigger is in the future.", triggerStart);
-                throw new StartJobFailedException($"The start time '{triggerStart}' to trigger is in the future.");
-            }
-
-            IEnumerable<string> resourceTypes = _jobConfiguration.ResourceTypeFilters;
-            if (resourceTypes == null || !resourceTypes.Any())
-            {
-                resourceTypes = _fhirSpecificationProvider.GetAllResourceTypes();
-            }
-
-            var newJob = new Job(
-                _jobConfiguration.ContainerName,
-                JobStatus.New,
-                resourceTypes,
-                new DataPeriod(triggerStart, triggerEnd),
-                DateTimeOffset.UtcNow);
-            await UpdateJobAsync(newJob, cancellationToken);
-            return newJob;
-        }
-
-        private DateTimeOffset GetTriggerStartTime(SchedulerMetadata schedulerSetting)
-        {
-            var lastScheduledTo = schedulerSetting?.LastScheduledTimestamp;
-            return lastScheduledTo ?? _jobConfiguration.StartTime;
-        }
-
-        // Job end time could be null (which means runs forever) or a timestamp in the future like 2120/01/01.
-        // In this case, we will create a job to run with end time earlier that current timestamp.
-        // Also, FHIR data use processing time as lastUpdated timestamp, there might be some latency when saving to data store.
-        // Here we add a JobEndTimeLatencyInMinutes latency to avoid data missing due to latency in creation.
-        private DateTimeOffset GetTriggerEndTime()
-        {
-            // Add two minutes latency here to allow latency in saving resources to database.
-            var nowEnd = DateTimeOffset.Now.AddMinutes(-1 * AzureBlobJobConstants.JobQueryLatencyInMinutes);
-            if (_jobConfiguration.EndTime != null
-                && nowEnd > _jobConfiguration.EndTime)
-            {
-                return _jobConfiguration.EndTime.Value;
-            }
-            else
-            {
-                return nowEnd;
-            }
-        }
 
         public void Dispose()
         {

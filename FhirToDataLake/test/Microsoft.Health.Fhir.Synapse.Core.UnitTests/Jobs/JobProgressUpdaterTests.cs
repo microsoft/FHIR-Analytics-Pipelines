@@ -116,7 +116,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(containerClient);
             var jobStore = new AzureBlobJobStore(
                 mockFactory,
-                new R4FhirSpecificationProvider(),
                 Options.Create(jobConfiguration),
                 Options.Create(storeConfiguration),
                 new NullLogger<AzureBlobJobStore>());

@@ -28,12 +28,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
     [Trait("Category", "Job")]
     public class InMemoryJobManagerTests
     {
-        private const string ContainerName = "TestJobContainer";
+        private const string TestContainerName = "TestJobContainer";
+        private static readonly DateTimeOffset _testStartTime = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.FromHours(0));
+        private static readonly DateTimeOffset _testEndTime = new DateTimeOffset(2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0));
+        private static readonly List<string> _testResourceTypeFilters = new List<string> { "Patient", "Observation" };
 
         [Fact]
         public async Task GivenABrokenJobStore_WhenExecute_ExceptionShouldBeThrown()
         {
-            var jobManager = CreateJobManager(CreateBrokenJobStore());
+            var jobManager = CreateJobManager(CreateBrokenJobStore(), _testStartTime, _testEndTime, _testResourceTypeFilters);
             await Assert.ThrowsAsync<Exception>(() => jobManager.RunAsync());
         }
 
@@ -43,15 +46,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var jobConfig = new JobConfiguration()
             {
-                StartTime = DateTimeOffset.UtcNow.AddDays(-2),
-                EndTime = DateTimeOffset.UtcNow,
-                ResourceTypeFilters = new List<string> { "Patient" },
+                ContainerName = TestContainerName,
             };
             var jobStore = CreateInMemoryJobStore(blobClient, jobConfig);
 
-            // Create new job.
-            var job = await jobStore.AcquireJobAsync();
-            var jobManager = CreateJobManager(jobStore);
+            // Create an active job.
+            var activeJob = new Job(
+                TestContainerName,
+                JobStatus.Running,
+                _testResourceTypeFilters,
+                new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
+                DateTimeOffset.Now.AddMinutes(-11));
+            await blobClient.CreateJob(activeJob, "SampleLease");
+
+            var jobManager = CreateJobManager(jobStore, _testStartTime, _testEndTime, _testResourceTypeFilters);
 
             await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.RunAsync());
 
@@ -68,23 +76,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var jobConfig = new JobConfiguration()
             {
-                StartTime = DateTimeOffset.UtcNow.AddDays(-2),
-                EndTime = DateTimeOffset.UtcNow,
-                ResourceTypeFilters = new List<string> { "Patient" },
+                ContainerName = TestContainerName,
             };
             var jobStore = CreateInMemoryJobStore(blobClient, jobConfig);
 
             var activeJob = new Job(
-                ContainerName,
+                TestContainerName,
                 JobStatus.Running,
-                new List<string> { "Patient", "Observation" },
+                _testResourceTypeFilters,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.Now.AddMinutes(-11));
             await blobClient.CreateJob(activeJob, "SampleLease");
 
             await blobClient.ReleaseLeaseAsync(AzureBlobJobConstants.JobLockFileName, "SampleLease");
 
-            var jobManager = CreateJobManager(jobStore);
+            var jobManager = CreateJobManager(jobStore, _testStartTime, _testEndTime, _testResourceTypeFilters);
             await jobManager.RunAsync();
 
             // The running job has been resumed and completed.
@@ -102,12 +108,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var jobConfig = new JobConfiguration()
             {
-                StartTime = DateTimeOffset.UtcNow.AddDays(-2),
-                EndTime = DateTimeOffset.UtcNow,
-                ResourceTypeFilters = new List<string> { "Patient" },
+                ContainerName = TestContainerName,
             };
             var jobStore = CreateInMemoryJobStore(blobClient, jobConfig);
-            var jobManager = CreateJobManager(jobStore);
+            var jobManager = CreateJobManager(jobStore, _testStartTime, _testEndTime, _testResourceTypeFilters);
 
             Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
@@ -120,11 +124,41 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var job = JsonConvert.DeserializeObject<Job>(streamReader.ReadToEnd());
 
             Assert.Equal(JobStatus.Succeeded, job.Status);
-            Assert.Equal(jobConfig.StartTime, job.DataPeriod.Start);
+            Assert.Equal(_testStartTime, job.DataPeriod.Start);
 
             // Test end data period
-            Assert.True(job.DataPeriod.End < DateTimeOffset.UtcNow.AddMinutes(-1 * AzureBlobJobConstants.JobQueryLatencyInMinutes));
-            Assert.True(job.DataPeriod.End > DateTimeOffset.UtcNow.AddMinutes(-1 * AzureBlobJobConstants.JobQueryLatencyInMinutes).AddMinutes(-1));
+            Assert.Equal(_testEndTime, job.DataPeriod.End);
+
+            await jobStore.DisposeAsync();
+        }
+
+        [Fact]
+        public async Task GivenJobEndTimeInFuture_WhenCreateNewJob_NewJobEndTimeShouldBeCorrect()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+            var jobConfig = new JobConfiguration()
+            {
+                ContainerName = TestContainerName,
+            };
+            var jobStore = CreateInMemoryJobStore(blobClient, jobConfig);
+            var jobManager = CreateJobManager(jobStore, _testStartTime, DateTimeOffset.MaxValue, _testResourceTypeFilters);
+
+            Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
+
+            await jobManager.RunAsync();
+            Assert.NotEmpty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
+
+            var blobName = (await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder)).First();
+            var blob = await blobClient.GetBlobAsync(blobName);
+            using var streamReader = new StreamReader(blob);
+            var job = JsonConvert.DeserializeObject<Job>(streamReader.ReadToEnd());
+
+            Assert.Equal(JobStatus.Succeeded, job.Status);
+            Assert.Equal(_testStartTime, job.DataPeriod.Start);
+
+            // Test end data period
+            Assert.True(job.DataPeriod.End < DateTimeOffset.UtcNow.AddMinutes(-2));
+            Assert.True(job.DataPeriod.End > DateTimeOffset.UtcNow.AddMinutes(-3));
 
             await jobStore.DisposeAsync();
         }
@@ -135,13 +169,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient, new JobConfiguration
             {
-                ContainerName = ContainerName,
-                StartTime = DateTimeOffset.UtcNow.AddDays(1),
-                ResourceTypeFilters = new List<string> { "Patient", "Observation" },
+                ContainerName = TestContainerName,
             });
-            var jobManager = CreateJobManager(jobStore);
-
-            Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
+            var jobManager = CreateJobManager(jobStore, DateTimeOffset.UtcNow.AddDays(1), DateTimeOffset.MaxValue, _testResourceTypeFilters);
 
             var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.RunAsync());
             Assert.Contains("trigger is in the future", exception.Message);
@@ -152,16 +182,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCompletedTimeRange_WhenExecute_ExceptionWillBeThrown()
         {
-            var blobClient = new InMemoryBlobContainerClient();
-            var time = DateTimeOffset.UtcNow.AddDays(-1);
-            var jobStore = CreateInMemoryJobStore(blobClient, new JobConfiguration
+            var jobConfig = new JobConfiguration()
             {
-                ContainerName = ContainerName,
-                StartTime = time,
-                EndTime = time,
-                ResourceTypeFilters = new List<string> { "Patient", "Observation" },
-            });
-            var jobManager = CreateJobManager(jobStore);
+                ContainerName = TestContainerName,
+            };
+
+            var blobClient = new InMemoryBlobContainerClient();
+            var jobStore = CreateInMemoryJobStore(blobClient, jobConfig);
+            var jobManager = CreateJobManager(jobStore, _testEndTime, _testEndTime, _testResourceTypeFilters);
 
             Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
@@ -188,7 +216,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
             return new AzureBlobJobStore(
                 mockFactory,
-                new R4FhirSpecificationProvider(),
                 Options.Create(config),
                 Options.Create(storeConfiguration),
                 new NullLogger<AzureBlobJobStore>());
@@ -199,11 +226,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return new TaskResult("Patient", null, 0, 100, 0, 100, string.Empty);
         }
 
-        private JobManager CreateJobManager(IJobStore jobStore)
+        private JobManager CreateJobManager(
+            IJobStore jobStore,
+            DateTimeOffset start,
+            DateTimeOffset end,
+            IEnumerable<string> resourceTypeFilters)
         {
             var schedulerConfig = new JobSchedulerConfiguration
             {
-                MaxConcurrencyCount = 5,
+                MaxConcurrencyCount = 10,
+            };
+
+            var jobConfiguration = new JobConfiguration
+            {
+                ContainerName = TestContainerName,
+                StartTime = start,
+                EndTime = end,
+                ResourceTypeFilters = resourceTypeFilters,
             };
 
             var taskExecutor = Substitute.For<ITaskExecutor>();
@@ -213,6 +252,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return new JobManager(
                 jobStore,
                 jobExecutor,
+                new R4FhirSpecificationProvider(),
+                Options.Create<JobConfiguration>(jobConfiguration),
                 new NullLogger<JobManager>());
         }
     }
