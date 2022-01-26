@@ -1,17 +1,17 @@
 CREATE EXTERNAL TABLE [fhir].[EffectEvidenceSynthesis] (
     [resourceType] NVARCHAR(4000),
     [id] VARCHAR(64),
-    [meta.id] NVARCHAR(4000),
+    [meta.id] NVARCHAR(100),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(4000),
-    [text.id] NVARCHAR(4000),
+    [language] NVARCHAR(12),
+    [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
     [text.div] NVARCHAR(MAX),
@@ -19,43 +19,43 @@ CREATE EXTERNAL TABLE [fhir].[EffectEvidenceSynthesis] (
     [modifierExtension] NVARCHAR(MAX),
     [url] VARCHAR(256),
     [identifier] VARCHAR(MAX),
-    [version] NVARCHAR(4000),
-    [name] NVARCHAR(4000),
-    [title] NVARCHAR(4000),
+    [version] NVARCHAR(100),
+    [name] NVARCHAR(100),
+    [title] NVARCHAR(500),
     [status] NVARCHAR(64),
-    [date] VARCHAR(30),
-    [publisher] NVARCHAR(4000),
+    [date] VARCHAR(64),
+    [publisher] NVARCHAR(100),
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [note] VARCHAR(MAX),
     [useContext] VARCHAR(MAX),
     [jurisdiction] VARCHAR(MAX),
     [copyright] NVARCHAR(MAX),
-    [approvalDate] VARCHAR(10),
-    [lastReviewDate] VARCHAR(10),
-    [effectivePeriod.id] NVARCHAR(4000),
+    [approvalDate] VARCHAR(32),
+    [lastReviewDate] VARCHAR(32),
+    [effectivePeriod.id] NVARCHAR(100),
     [effectivePeriod.extension] NVARCHAR(MAX),
-    [effectivePeriod.start] VARCHAR(30),
-    [effectivePeriod.end] VARCHAR(30),
+    [effectivePeriod.start] VARCHAR(64),
+    [effectivePeriod.end] VARCHAR(64),
     [topic] VARCHAR(MAX),
     [author] VARCHAR(MAX),
     [editor] VARCHAR(MAX),
     [reviewer] VARCHAR(MAX),
     [endorser] VARCHAR(MAX),
     [relatedArtifact] VARCHAR(MAX),
-    [synthesisType.id] NVARCHAR(4000),
+    [synthesisType.id] NVARCHAR(100),
     [synthesisType.extension] NVARCHAR(MAX),
     [synthesisType.coding] VARCHAR(MAX),
     [synthesisType.text] NVARCHAR(4000),
-    [studyType.id] NVARCHAR(4000),
+    [studyType.id] NVARCHAR(100),
     [studyType.extension] NVARCHAR(MAX),
     [studyType.coding] VARCHAR(MAX),
     [studyType.text] NVARCHAR(4000),
-    [population.id] NVARCHAR(4000),
+    [population.id] NVARCHAR(100),
     [population.extension] NVARCHAR(MAX),
     [population.reference] NVARCHAR(4000),
     [population.type] VARCHAR(256),
-    [population.identifier.id] NVARCHAR(4000),
+    [population.identifier.id] NVARCHAR(100),
     [population.identifier.extension] NVARCHAR(MAX),
     [population.identifier.use] NVARCHAR(64),
     [population.identifier.type] NVARCHAR(MAX),
@@ -64,11 +64,11 @@ CREATE EXTERNAL TABLE [fhir].[EffectEvidenceSynthesis] (
     [population.identifier.period] NVARCHAR(MAX),
     [population.identifier.assigner] NVARCHAR(MAX),
     [population.display] NVARCHAR(4000),
-    [exposure.id] NVARCHAR(4000),
+    [exposure.id] NVARCHAR(100),
     [exposure.extension] NVARCHAR(MAX),
     [exposure.reference] NVARCHAR(4000),
     [exposure.type] VARCHAR(256),
-    [exposure.identifier.id] NVARCHAR(4000),
+    [exposure.identifier.id] NVARCHAR(100),
     [exposure.identifier.extension] NVARCHAR(MAX),
     [exposure.identifier.use] NVARCHAR(64),
     [exposure.identifier.type] NVARCHAR(MAX),
@@ -77,11 +77,11 @@ CREATE EXTERNAL TABLE [fhir].[EffectEvidenceSynthesis] (
     [exposure.identifier.period] NVARCHAR(MAX),
     [exposure.identifier.assigner] NVARCHAR(MAX),
     [exposure.display] NVARCHAR(4000),
-    [exposureAlternative.id] NVARCHAR(4000),
+    [exposureAlternative.id] NVARCHAR(100),
     [exposureAlternative.extension] NVARCHAR(MAX),
     [exposureAlternative.reference] NVARCHAR(4000),
     [exposureAlternative.type] VARCHAR(256),
-    [exposureAlternative.identifier.id] NVARCHAR(4000),
+    [exposureAlternative.identifier.id] NVARCHAR(100),
     [exposureAlternative.identifier.extension] NVARCHAR(MAX),
     [exposureAlternative.identifier.use] NVARCHAR(64),
     [exposureAlternative.identifier.type] NVARCHAR(MAX),
@@ -90,11 +90,11 @@ CREATE EXTERNAL TABLE [fhir].[EffectEvidenceSynthesis] (
     [exposureAlternative.identifier.period] NVARCHAR(MAX),
     [exposureAlternative.identifier.assigner] NVARCHAR(MAX),
     [exposureAlternative.display] NVARCHAR(4000),
-    [outcome.id] NVARCHAR(4000),
+    [outcome.id] NVARCHAR(100),
     [outcome.extension] NVARCHAR(MAX),
     [outcome.reference] NVARCHAR(4000),
     [outcome.type] VARCHAR(256),
-    [outcome.identifier.id] NVARCHAR(4000),
+    [outcome.identifier.id] NVARCHAR(100),
     [outcome.identifier.extension] NVARCHAR(MAX),
     [outcome.identifier.use] NVARCHAR(64),
     [outcome.identifier.type] NVARCHAR(MAX),
@@ -103,7 +103,7 @@ CREATE EXTERNAL TABLE [fhir].[EffectEvidenceSynthesis] (
     [outcome.identifier.period] NVARCHAR(MAX),
     [outcome.identifier.assigner] NVARCHAR(MAX),
     [outcome.display] NVARCHAR(4000),
-    [sampleSize.id] NVARCHAR(4000),
+    [sampleSize.id] NVARCHAR(100),
     [sampleSize.extension] NVARCHAR(MAX),
     [sampleSize.modifierExtension] NVARCHAR(MAX),
     [sampleSize.description] NVARCHAR(4000),
@@ -152,20 +152,20 @@ FROM openrowset (
        [identifier.JSON]  VARCHAR(MAX) '$.identifier'
     ) AS rowset
     CROSS APPLY openjson (rowset.[identifier.JSON]) with (
-        [identifier.id]                NVARCHAR(4000)      '$.id',
+        [identifier.id]                NVARCHAR(100)       '$.id',
         [identifier.extension]         NVARCHAR(MAX)       '$.extension',
         [identifier.use]               NVARCHAR(64)        '$.use',
-        [identifier.type.id]           NVARCHAR(4000)      '$.type.id',
+        [identifier.type.id]           NVARCHAR(100)       '$.type.id',
         [identifier.type.extension]    NVARCHAR(MAX)       '$.type.extension',
         [identifier.type.coding]       NVARCHAR(MAX)       '$.type.coding',
         [identifier.type.text]         NVARCHAR(4000)      '$.type.text',
         [identifier.system]            VARCHAR(256)        '$.system',
         [identifier.value]             NVARCHAR(4000)      '$.value',
-        [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
+        [identifier.period.id]         NVARCHAR(100)       '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
+        [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -192,9 +192,9 @@ FROM openrowset (
        [contact.JSON]  VARCHAR(MAX) '$.contact'
     ) AS rowset
     CROSS APPLY openjson (rowset.[contact.JSON]) with (
-        [contact.id]                   NVARCHAR(4000)      '$.id',
+        [contact.id]                   NVARCHAR(100)       '$.id',
         [contact.extension]            NVARCHAR(MAX)       '$.extension',
-        [contact.name]                 NVARCHAR(4000)      '$.name',
+        [contact.name]                 NVARCHAR(100)       '$.name',
         [contact.telecom]              NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -224,11 +224,11 @@ FROM openrowset (
        [note.JSON]  VARCHAR(MAX) '$.note'
     ) AS rowset
     CROSS APPLY openjson (rowset.[note.JSON]) with (
-        [note.id]                      NVARCHAR(4000)      '$.id',
+        [note.id]                      NVARCHAR(100)       '$.id',
         [note.extension]               NVARCHAR(MAX)       '$.extension',
-        [note.time]                    VARCHAR(30)         '$.time',
+        [note.time]                    VARCHAR(64)         '$.time',
         [note.text]                    NVARCHAR(MAX)       '$.text',
-        [note.author.reference.id]     NVARCHAR(4000)      '$.author.reference.id',
+        [note.author.reference.id]     NVARCHAR(100)       '$.author.reference.id',
         [note.author.reference.extension] NVARCHAR(MAX)       '$.author.reference.extension',
         [note.author.reference.reference] NVARCHAR(4000)      '$.author.reference.reference',
         [note.author.reference.type]   VARCHAR(256)        '$.author.reference.type',
@@ -282,31 +282,31 @@ FROM openrowset (
        [useContext.JSON]  VARCHAR(MAX) '$.useContext'
     ) AS rowset
     CROSS APPLY openjson (rowset.[useContext.JSON]) with (
-        [useContext.id]                NVARCHAR(4000)      '$.id',
+        [useContext.id]                NVARCHAR(100)       '$.id',
         [useContext.extension]         NVARCHAR(MAX)       '$.extension',
-        [useContext.code.id]           NVARCHAR(4000)      '$.code.id',
+        [useContext.code.id]           NVARCHAR(100)       '$.code.id',
         [useContext.code.extension]    NVARCHAR(MAX)       '$.code.extension',
         [useContext.code.system]       VARCHAR(256)        '$.code.system',
-        [useContext.code.version]      NVARCHAR(4000)      '$.code.version',
+        [useContext.code.version]      NVARCHAR(100)       '$.code.version',
         [useContext.code.code]         NVARCHAR(4000)      '$.code.code',
         [useContext.code.display]      NVARCHAR(4000)      '$.code.display',
         [useContext.code.userSelected] bit                 '$.code.userSelected',
-        [useContext.value.codeableConcept.id] NVARCHAR(4000)      '$.value.codeableConcept.id',
+        [useContext.value.codeableConcept.id] NVARCHAR(100)       '$.value.codeableConcept.id',
         [useContext.value.codeableConcept.extension] NVARCHAR(MAX)       '$.value.codeableConcept.extension',
         [useContext.value.codeableConcept.coding] NVARCHAR(MAX)       '$.value.codeableConcept.coding',
         [useContext.value.codeableConcept.text] NVARCHAR(4000)      '$.value.codeableConcept.text',
-        [useContext.value.quantity.id] NVARCHAR(4000)      '$.value.quantity.id',
+        [useContext.value.quantity.id] NVARCHAR(100)       '$.value.quantity.id',
         [useContext.value.quantity.extension] NVARCHAR(MAX)       '$.value.quantity.extension',
         [useContext.value.quantity.value] float               '$.value.quantity.value',
         [useContext.value.quantity.comparator] NVARCHAR(64)        '$.value.quantity.comparator',
-        [useContext.value.quantity.unit] NVARCHAR(4000)      '$.value.quantity.unit',
+        [useContext.value.quantity.unit] NVARCHAR(100)       '$.value.quantity.unit',
         [useContext.value.quantity.system] VARCHAR(256)        '$.value.quantity.system',
         [useContext.value.quantity.code] NVARCHAR(4000)      '$.value.quantity.code',
-        [useContext.value.range.id]    NVARCHAR(4000)      '$.value.range.id',
+        [useContext.value.range.id]    NVARCHAR(100)       '$.value.range.id',
         [useContext.value.range.extension] NVARCHAR(MAX)       '$.value.range.extension',
         [useContext.value.range.low]   NVARCHAR(MAX)       '$.value.range.low',
         [useContext.value.range.high]  NVARCHAR(MAX)       '$.value.range.high',
-        [useContext.value.reference.id] NVARCHAR(4000)      '$.value.reference.id',
+        [useContext.value.reference.id] NVARCHAR(100)       '$.value.reference.id',
         [useContext.value.reference.extension] NVARCHAR(MAX)       '$.value.reference.extension',
         [useContext.value.reference.reference] NVARCHAR(4000)      '$.value.reference.reference',
         [useContext.value.reference.type] VARCHAR(256)        '$.value.reference.type',
@@ -333,7 +333,7 @@ FROM openrowset (
        [jurisdiction.JSON]  VARCHAR(MAX) '$.jurisdiction'
     ) AS rowset
     CROSS APPLY openjson (rowset.[jurisdiction.JSON]) with (
-        [jurisdiction.id]              NVARCHAR(4000)      '$.id',
+        [jurisdiction.id]              NVARCHAR(100)       '$.id',
         [jurisdiction.extension]       NVARCHAR(MAX)       '$.extension',
         [jurisdiction.coding]          NVARCHAR(MAX)       '$.coding' AS JSON,
         [jurisdiction.text]            NVARCHAR(4000)      '$.text'
@@ -358,7 +358,7 @@ FROM openrowset (
        [topic.JSON]  VARCHAR(MAX) '$.topic'
     ) AS rowset
     CROSS APPLY openjson (rowset.[topic.JSON]) with (
-        [topic.id]                     NVARCHAR(4000)      '$.id',
+        [topic.id]                     NVARCHAR(100)       '$.id',
         [topic.extension]              NVARCHAR(MAX)       '$.extension',
         [topic.coding]                 NVARCHAR(MAX)       '$.coding' AS JSON,
         [topic.text]                   NVARCHAR(4000)      '$.text'
@@ -383,9 +383,9 @@ FROM openrowset (
        [author.JSON]  VARCHAR(MAX) '$.author'
     ) AS rowset
     CROSS APPLY openjson (rowset.[author.JSON]) with (
-        [author.id]                    NVARCHAR(4000)      '$.id',
+        [author.id]                    NVARCHAR(100)       '$.id',
         [author.extension]             NVARCHAR(MAX)       '$.extension',
-        [author.name]                  NVARCHAR(4000)      '$.name',
+        [author.name]                  NVARCHAR(100)       '$.name',
         [author.telecom]               NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -408,9 +408,9 @@ FROM openrowset (
        [editor.JSON]  VARCHAR(MAX) '$.editor'
     ) AS rowset
     CROSS APPLY openjson (rowset.[editor.JSON]) with (
-        [editor.id]                    NVARCHAR(4000)      '$.id',
+        [editor.id]                    NVARCHAR(100)       '$.id',
         [editor.extension]             NVARCHAR(MAX)       '$.extension',
-        [editor.name]                  NVARCHAR(4000)      '$.name',
+        [editor.name]                  NVARCHAR(100)       '$.name',
         [editor.telecom]               NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -433,9 +433,9 @@ FROM openrowset (
        [reviewer.JSON]  VARCHAR(MAX) '$.reviewer'
     ) AS rowset
     CROSS APPLY openjson (rowset.[reviewer.JSON]) with (
-        [reviewer.id]                  NVARCHAR(4000)      '$.id',
+        [reviewer.id]                  NVARCHAR(100)       '$.id',
         [reviewer.extension]           NVARCHAR(MAX)       '$.extension',
-        [reviewer.name]                NVARCHAR(4000)      '$.name',
+        [reviewer.name]                NVARCHAR(100)       '$.name',
         [reviewer.telecom]             NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -458,9 +458,9 @@ FROM openrowset (
        [endorser.JSON]  VARCHAR(MAX) '$.endorser'
     ) AS rowset
     CROSS APPLY openjson (rowset.[endorser.JSON]) with (
-        [endorser.id]                  NVARCHAR(4000)      '$.id',
+        [endorser.id]                  NVARCHAR(100)       '$.id',
         [endorser.extension]           NVARCHAR(MAX)       '$.extension',
-        [endorser.name]                NVARCHAR(4000)      '$.name',
+        [endorser.name]                NVARCHAR(100)       '$.name',
         [endorser.telecom]             NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -497,23 +497,23 @@ FROM openrowset (
        [relatedArtifact.JSON]  VARCHAR(MAX) '$.relatedArtifact'
     ) AS rowset
     CROSS APPLY openjson (rowset.[relatedArtifact.JSON]) with (
-        [relatedArtifact.id]           NVARCHAR(4000)      '$.id',
+        [relatedArtifact.id]           NVARCHAR(100)       '$.id',
         [relatedArtifact.extension]    NVARCHAR(MAX)       '$.extension',
         [relatedArtifact.type]         NVARCHAR(64)        '$.type',
-        [relatedArtifact.label]        NVARCHAR(4000)      '$.label',
+        [relatedArtifact.label]        NVARCHAR(100)       '$.label',
         [relatedArtifact.display]      NVARCHAR(4000)      '$.display',
         [relatedArtifact.citation]     NVARCHAR(MAX)       '$.citation',
         [relatedArtifact.url]          VARCHAR(256)        '$.url',
-        [relatedArtifact.document.id]  NVARCHAR(4000)      '$.document.id',
+        [relatedArtifact.document.id]  NVARCHAR(100)       '$.document.id',
         [relatedArtifact.document.extension] NVARCHAR(MAX)       '$.document.extension',
-        [relatedArtifact.document.contentType] NVARCHAR(4000)      '$.document.contentType',
-        [relatedArtifact.document.language] NVARCHAR(4000)      '$.document.language',
+        [relatedArtifact.document.contentType] NVARCHAR(64)        '$.document.contentType',
+        [relatedArtifact.document.language] NVARCHAR(12)        '$.document.language',
         [relatedArtifact.document.data] NVARCHAR(MAX)       '$.document.data',
         [relatedArtifact.document.url] VARCHAR(256)        '$.document.url',
         [relatedArtifact.document.size] bigint              '$.document.size',
         [relatedArtifact.document.hash] NVARCHAR(MAX)       '$.document.hash',
-        [relatedArtifact.document.title] NVARCHAR(4000)      '$.document.title',
-        [relatedArtifact.document.creation] VARCHAR(30)         '$.document.creation',
+        [relatedArtifact.document.title] NVARCHAR(500)       '$.document.title',
+        [relatedArtifact.document.creation] VARCHAR(64)         '$.document.creation',
         [relatedArtifact.resource]     VARCHAR(256)        '$.resource'
     ) j
 
@@ -547,16 +547,16 @@ FROM openrowset (
        [resultsByExposure.JSON]  VARCHAR(MAX) '$.resultsByExposure'
     ) AS rowset
     CROSS APPLY openjson (rowset.[resultsByExposure.JSON]) with (
-        [resultsByExposure.id]         NVARCHAR(4000)      '$.id',
+        [resultsByExposure.id]         NVARCHAR(100)       '$.id',
         [resultsByExposure.extension]  NVARCHAR(MAX)       '$.extension',
         [resultsByExposure.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
         [resultsByExposure.description] NVARCHAR(4000)      '$.description',
         [resultsByExposure.exposureState] NVARCHAR(64)        '$.exposureState',
-        [resultsByExposure.variantState.id] NVARCHAR(4000)      '$.variantState.id',
+        [resultsByExposure.variantState.id] NVARCHAR(100)       '$.variantState.id',
         [resultsByExposure.variantState.extension] NVARCHAR(MAX)       '$.variantState.extension',
         [resultsByExposure.variantState.coding] NVARCHAR(MAX)       '$.variantState.coding',
         [resultsByExposure.variantState.text] NVARCHAR(4000)      '$.variantState.text',
-        [resultsByExposure.riskEvidenceSynthesis.id] NVARCHAR(4000)      '$.riskEvidenceSynthesis.id',
+        [resultsByExposure.riskEvidenceSynthesis.id] NVARCHAR(100)       '$.riskEvidenceSynthesis.id',
         [resultsByExposure.riskEvidenceSynthesis.extension] NVARCHAR(MAX)       '$.riskEvidenceSynthesis.extension',
         [resultsByExposure.riskEvidenceSynthesis.reference] NVARCHAR(4000)      '$.riskEvidenceSynthesis.reference',
         [resultsByExposure.riskEvidenceSynthesis.type] VARCHAR(256)        '$.riskEvidenceSynthesis.type',
@@ -597,20 +597,20 @@ FROM openrowset (
        [effectEstimate.JSON]  VARCHAR(MAX) '$.effectEstimate'
     ) AS rowset
     CROSS APPLY openjson (rowset.[effectEstimate.JSON]) with (
-        [effectEstimate.id]            NVARCHAR(4000)      '$.id',
+        [effectEstimate.id]            NVARCHAR(100)       '$.id',
         [effectEstimate.extension]     NVARCHAR(MAX)       '$.extension',
         [effectEstimate.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
         [effectEstimate.description]   NVARCHAR(4000)      '$.description',
-        [effectEstimate.type.id]       NVARCHAR(4000)      '$.type.id',
+        [effectEstimate.type.id]       NVARCHAR(100)       '$.type.id',
         [effectEstimate.type.extension] NVARCHAR(MAX)       '$.type.extension',
         [effectEstimate.type.coding]   NVARCHAR(MAX)       '$.type.coding',
         [effectEstimate.type.text]     NVARCHAR(4000)      '$.type.text',
-        [effectEstimate.variantState.id] NVARCHAR(4000)      '$.variantState.id',
+        [effectEstimate.variantState.id] NVARCHAR(100)       '$.variantState.id',
         [effectEstimate.variantState.extension] NVARCHAR(MAX)       '$.variantState.extension',
         [effectEstimate.variantState.coding] NVARCHAR(MAX)       '$.variantState.coding',
         [effectEstimate.variantState.text] NVARCHAR(4000)      '$.variantState.text',
         [effectEstimate.value]         float               '$.value',
-        [effectEstimate.unitOfMeasure.id] NVARCHAR(4000)      '$.unitOfMeasure.id',
+        [effectEstimate.unitOfMeasure.id] NVARCHAR(100)       '$.unitOfMeasure.id',
         [effectEstimate.unitOfMeasure.extension] NVARCHAR(MAX)       '$.unitOfMeasure.extension',
         [effectEstimate.unitOfMeasure.coding] NVARCHAR(MAX)       '$.unitOfMeasure.coding',
         [effectEstimate.unitOfMeasure.text] NVARCHAR(4000)      '$.unitOfMeasure.text',
@@ -638,7 +638,7 @@ FROM openrowset (
        [certainty.JSON]  VARCHAR(MAX) '$.certainty'
     ) AS rowset
     CROSS APPLY openjson (rowset.[certainty.JSON]) with (
-        [certainty.id]                 NVARCHAR(4000)      '$.id',
+        [certainty.id]                 NVARCHAR(100)       '$.id',
         [certainty.extension]          NVARCHAR(MAX)       '$.extension',
         [certainty.modifierExtension]  NVARCHAR(MAX)       '$.modifierExtension',
         [certainty.rating]             NVARCHAR(MAX)       '$.rating' AS JSON,

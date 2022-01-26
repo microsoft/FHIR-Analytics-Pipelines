@@ -1,17 +1,17 @@
 CREATE EXTERNAL TABLE [fhir].[Organization] (
     [resourceType] NVARCHAR(4000),
     [id] VARCHAR(64),
-    [meta.id] NVARCHAR(4000),
+    [meta.id] NVARCHAR(100),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(4000),
-    [text.id] NVARCHAR(4000),
+    [language] NVARCHAR(12),
+    [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
     [text.div] NVARCHAR(MAX),
@@ -20,15 +20,15 @@ CREATE EXTERNAL TABLE [fhir].[Organization] (
     [identifier] VARCHAR(MAX),
     [active] bit,
     [type] VARCHAR(MAX),
-    [name] NVARCHAR(4000),
+    [name] NVARCHAR(100),
     [alias] VARCHAR(MAX),
     [telecom] VARCHAR(MAX),
     [address] VARCHAR(MAX),
-    [partOf.id] NVARCHAR(4000),
+    [partOf.id] NVARCHAR(100),
     [partOf.extension] NVARCHAR(MAX),
     [partOf.reference] NVARCHAR(4000),
     [partOf.type] VARCHAR(256),
-    [partOf.identifier.id] NVARCHAR(4000),
+    [partOf.identifier.id] NVARCHAR(100),
     [partOf.identifier.extension] NVARCHAR(MAX),
     [partOf.identifier.use] NVARCHAR(64),
     [partOf.identifier.type] NVARCHAR(MAX),
@@ -79,20 +79,20 @@ FROM openrowset (
        [identifier.JSON]  VARCHAR(MAX) '$.identifier'
     ) AS rowset
     CROSS APPLY openjson (rowset.[identifier.JSON]) with (
-        [identifier.id]                NVARCHAR(4000)      '$.id',
+        [identifier.id]                NVARCHAR(100)       '$.id',
         [identifier.extension]         NVARCHAR(MAX)       '$.extension',
         [identifier.use]               NVARCHAR(64)        '$.use',
-        [identifier.type.id]           NVARCHAR(4000)      '$.type.id',
+        [identifier.type.id]           NVARCHAR(100)       '$.type.id',
         [identifier.type.extension]    NVARCHAR(MAX)       '$.type.extension',
         [identifier.type.coding]       NVARCHAR(MAX)       '$.type.coding',
         [identifier.type.text]         NVARCHAR(4000)      '$.type.text',
         [identifier.system]            VARCHAR(256)        '$.system',
         [identifier.value]             NVARCHAR(4000)      '$.value',
-        [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
+        [identifier.period.id]         NVARCHAR(100)       '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
+        [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -119,7 +119,7 @@ FROM openrowset (
        [type.JSON]  VARCHAR(MAX) '$.type'
     ) AS rowset
     CROSS APPLY openjson (rowset.[type.JSON]) with (
-        [type.id]                      NVARCHAR(4000)      '$.id',
+        [type.id]                      NVARCHAR(100)       '$.id',
         [type.extension]               NVARCHAR(MAX)       '$.extension',
         [type.coding]                  NVARCHAR(MAX)       '$.coding' AS JSON,
         [type.text]                    NVARCHAR(4000)      '$.text'
@@ -169,16 +169,16 @@ FROM openrowset (
        [telecom.JSON]  VARCHAR(MAX) '$.telecom'
     ) AS rowset
     CROSS APPLY openjson (rowset.[telecom.JSON]) with (
-        [telecom.id]                   NVARCHAR(4000)      '$.id',
+        [telecom.id]                   NVARCHAR(100)       '$.id',
         [telecom.extension]            NVARCHAR(MAX)       '$.extension',
         [telecom.system]               NVARCHAR(64)        '$.system',
         [telecom.value]                NVARCHAR(4000)      '$.value',
         [telecom.use]                  NVARCHAR(64)        '$.use',
         [telecom.rank]                 bigint              '$.rank',
-        [telecom.period.id]            NVARCHAR(4000)      '$.period.id',
+        [telecom.period.id]            NVARCHAR(100)       '$.period.id',
         [telecom.period.extension]     NVARCHAR(MAX)       '$.period.extension',
-        [telecom.period.start]         VARCHAR(30)         '$.period.start',
-        [telecom.period.end]           VARCHAR(30)         '$.period.end'
+        [telecom.period.start]         VARCHAR(64)         '$.period.start',
+        [telecom.period.end]           VARCHAR(64)         '$.period.end'
     ) j
 
 GO
@@ -211,21 +211,21 @@ FROM openrowset (
        [address.JSON]  VARCHAR(MAX) '$.address'
     ) AS rowset
     CROSS APPLY openjson (rowset.[address.JSON]) with (
-        [address.id]                   NVARCHAR(4000)      '$.id',
+        [address.id]                   NVARCHAR(100)       '$.id',
         [address.extension]            NVARCHAR(MAX)       '$.extension',
         [address.use]                  NVARCHAR(64)        '$.use',
         [address.type]                 NVARCHAR(64)        '$.type',
         [address.text]                 NVARCHAR(4000)      '$.text',
         [address.line]                 NVARCHAR(MAX)       '$.line' AS JSON,
-        [address.city]                 NVARCHAR(4000)      '$.city',
-        [address.district]             NVARCHAR(4000)      '$.district',
-        [address.state]                NVARCHAR(4000)      '$.state',
-        [address.postalCode]           NVARCHAR(4000)      '$.postalCode',
-        [address.country]              NVARCHAR(4000)      '$.country',
-        [address.period.id]            NVARCHAR(4000)      '$.period.id',
+        [address.city]                 NVARCHAR(100)       '$.city',
+        [address.district]             NVARCHAR(100)       '$.district',
+        [address.state]                NVARCHAR(100)       '$.state',
+        [address.postalCode]           NVARCHAR(100)       '$.postalCode',
+        [address.country]              NVARCHAR(100)       '$.country',
+        [address.period.id]            NVARCHAR(100)       '$.period.id',
         [address.period.extension]     NVARCHAR(MAX)       '$.period.extension',
-        [address.period.start]         VARCHAR(30)         '$.period.start',
-        [address.period.end]           VARCHAR(30)         '$.period.end'
+        [address.period.start]         VARCHAR(64)         '$.period.start',
+        [address.period.end]           VARCHAR(64)         '$.period.end'
     ) j
 
 GO
@@ -272,34 +272,34 @@ FROM openrowset (
        [contact.JSON]  VARCHAR(MAX) '$.contact'
     ) AS rowset
     CROSS APPLY openjson (rowset.[contact.JSON]) with (
-        [contact.id]                   NVARCHAR(4000)      '$.id',
+        [contact.id]                   NVARCHAR(100)       '$.id',
         [contact.extension]            NVARCHAR(MAX)       '$.extension',
         [contact.modifierExtension]    NVARCHAR(MAX)       '$.modifierExtension',
-        [contact.purpose.id]           NVARCHAR(4000)      '$.purpose.id',
+        [contact.purpose.id]           NVARCHAR(100)       '$.purpose.id',
         [contact.purpose.extension]    NVARCHAR(MAX)       '$.purpose.extension',
         [contact.purpose.coding]       NVARCHAR(MAX)       '$.purpose.coding',
         [contact.purpose.text]         NVARCHAR(4000)      '$.purpose.text',
-        [contact.name.id]              NVARCHAR(4000)      '$.name.id',
+        [contact.name.id]              NVARCHAR(100)       '$.name.id',
         [contact.name.extension]       NVARCHAR(MAX)       '$.name.extension',
         [contact.name.use]             NVARCHAR(64)        '$.name.use',
         [contact.name.text]            NVARCHAR(4000)      '$.name.text',
-        [contact.name.family]          NVARCHAR(4000)      '$.name.family',
+        [contact.name.family]          NVARCHAR(100)       '$.name.family',
         [contact.name.given]           NVARCHAR(MAX)       '$.name.given',
         [contact.name.prefix]          NVARCHAR(MAX)       '$.name.prefix',
         [contact.name.suffix]          NVARCHAR(MAX)       '$.name.suffix',
         [contact.name.period]          NVARCHAR(MAX)       '$.name.period',
         [contact.telecom]              NVARCHAR(MAX)       '$.telecom' AS JSON,
-        [contact.address.id]           NVARCHAR(4000)      '$.address.id',
+        [contact.address.id]           NVARCHAR(100)       '$.address.id',
         [contact.address.extension]    NVARCHAR(MAX)       '$.address.extension',
         [contact.address.use]          NVARCHAR(64)        '$.address.use',
         [contact.address.type]         NVARCHAR(64)        '$.address.type',
         [contact.address.text]         NVARCHAR(4000)      '$.address.text',
         [contact.address.line]         NVARCHAR(MAX)       '$.address.line',
-        [contact.address.city]         NVARCHAR(4000)      '$.address.city',
-        [contact.address.district]     NVARCHAR(4000)      '$.address.district',
-        [contact.address.state]        NVARCHAR(4000)      '$.address.state',
-        [contact.address.postalCode]   NVARCHAR(4000)      '$.address.postalCode',
-        [contact.address.country]      NVARCHAR(4000)      '$.address.country',
+        [contact.address.city]         NVARCHAR(100)       '$.address.city',
+        [contact.address.district]     NVARCHAR(100)       '$.address.district',
+        [contact.address.state]        NVARCHAR(100)       '$.address.state',
+        [contact.address.postalCode]   NVARCHAR(100)       '$.address.postalCode',
+        [contact.address.country]      NVARCHAR(100)       '$.address.country',
         [contact.address.period]       NVARCHAR(MAX)       '$.address.period'
     ) j
 
@@ -331,11 +331,11 @@ FROM openrowset (
        [endpoint.JSON]  VARCHAR(MAX) '$.endpoint'
     ) AS rowset
     CROSS APPLY openjson (rowset.[endpoint.JSON]) with (
-        [endpoint.id]                  NVARCHAR(4000)      '$.id',
+        [endpoint.id]                  NVARCHAR(100)       '$.id',
         [endpoint.extension]           NVARCHAR(MAX)       '$.extension',
         [endpoint.reference]           NVARCHAR(4000)      '$.reference',
         [endpoint.type]                VARCHAR(256)        '$.type',
-        [endpoint.identifier.id]       NVARCHAR(4000)      '$.identifier.id',
+        [endpoint.identifier.id]       NVARCHAR(100)       '$.identifier.id',
         [endpoint.identifier.extension] NVARCHAR(MAX)       '$.identifier.extension',
         [endpoint.identifier.use]      NVARCHAR(64)        '$.identifier.use',
         [endpoint.identifier.type]     NVARCHAR(MAX)       '$.identifier.type',

@@ -1,17 +1,17 @@
 CREATE EXTERNAL TABLE [fhir].[EpisodeOfCare] (
     [resourceType] NVARCHAR(4000),
     [id] VARCHAR(64),
-    [meta.id] NVARCHAR(4000),
+    [meta.id] NVARCHAR(100),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(4000),
-    [text.id] NVARCHAR(4000),
+    [language] NVARCHAR(12),
+    [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
     [text.div] NVARCHAR(MAX),
@@ -22,11 +22,11 @@ CREATE EXTERNAL TABLE [fhir].[EpisodeOfCare] (
     [statusHistory] VARCHAR(MAX),
     [type] VARCHAR(MAX),
     [diagnosis] VARCHAR(MAX),
-    [patient.id] NVARCHAR(4000),
+    [patient.id] NVARCHAR(100),
     [patient.extension] NVARCHAR(MAX),
     [patient.reference] NVARCHAR(4000),
     [patient.type] VARCHAR(256),
-    [patient.identifier.id] NVARCHAR(4000),
+    [patient.identifier.id] NVARCHAR(100),
     [patient.identifier.extension] NVARCHAR(MAX),
     [patient.identifier.use] NVARCHAR(64),
     [patient.identifier.type] NVARCHAR(MAX),
@@ -35,11 +35,11 @@ CREATE EXTERNAL TABLE [fhir].[EpisodeOfCare] (
     [patient.identifier.period] NVARCHAR(MAX),
     [patient.identifier.assigner] NVARCHAR(MAX),
     [patient.display] NVARCHAR(4000),
-    [managingOrganization.id] NVARCHAR(4000),
+    [managingOrganization.id] NVARCHAR(100),
     [managingOrganization.extension] NVARCHAR(MAX),
     [managingOrganization.reference] NVARCHAR(4000),
     [managingOrganization.type] VARCHAR(256),
-    [managingOrganization.identifier.id] NVARCHAR(4000),
+    [managingOrganization.identifier.id] NVARCHAR(100),
     [managingOrganization.identifier.extension] NVARCHAR(MAX),
     [managingOrganization.identifier.use] NVARCHAR(64),
     [managingOrganization.identifier.type] NVARCHAR(MAX),
@@ -48,16 +48,16 @@ CREATE EXTERNAL TABLE [fhir].[EpisodeOfCare] (
     [managingOrganization.identifier.period] NVARCHAR(MAX),
     [managingOrganization.identifier.assigner] NVARCHAR(MAX),
     [managingOrganization.display] NVARCHAR(4000),
-    [period.id] NVARCHAR(4000),
+    [period.id] NVARCHAR(100),
     [period.extension] NVARCHAR(MAX),
-    [period.start] VARCHAR(30),
-    [period.end] VARCHAR(30),
+    [period.start] VARCHAR(64),
+    [period.end] VARCHAR(64),
     [referralRequest] VARCHAR(MAX),
-    [careManager.id] NVARCHAR(4000),
+    [careManager.id] NVARCHAR(100),
     [careManager.extension] NVARCHAR(MAX),
     [careManager.reference] NVARCHAR(4000),
     [careManager.type] VARCHAR(256),
-    [careManager.identifier.id] NVARCHAR(4000),
+    [careManager.identifier.id] NVARCHAR(100),
     [careManager.identifier.extension] NVARCHAR(MAX),
     [careManager.identifier.use] NVARCHAR(64),
     [careManager.identifier.type] NVARCHAR(MAX),
@@ -108,20 +108,20 @@ FROM openrowset (
        [identifier.JSON]  VARCHAR(MAX) '$.identifier'
     ) AS rowset
     CROSS APPLY openjson (rowset.[identifier.JSON]) with (
-        [identifier.id]                NVARCHAR(4000)      '$.id',
+        [identifier.id]                NVARCHAR(100)       '$.id',
         [identifier.extension]         NVARCHAR(MAX)       '$.extension',
         [identifier.use]               NVARCHAR(64)        '$.use',
-        [identifier.type.id]           NVARCHAR(4000)      '$.type.id',
+        [identifier.type.id]           NVARCHAR(100)       '$.type.id',
         [identifier.type.extension]    NVARCHAR(MAX)       '$.type.extension',
         [identifier.type.coding]       NVARCHAR(MAX)       '$.type.coding',
         [identifier.type.text]         NVARCHAR(4000)      '$.type.text',
         [identifier.system]            VARCHAR(256)        '$.system',
         [identifier.value]             NVARCHAR(4000)      '$.value',
-        [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
+        [identifier.period.id]         NVARCHAR(100)       '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
+        [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -152,14 +152,14 @@ FROM openrowset (
        [statusHistory.JSON]  VARCHAR(MAX) '$.statusHistory'
     ) AS rowset
     CROSS APPLY openjson (rowset.[statusHistory.JSON]) with (
-        [statusHistory.id]             NVARCHAR(4000)      '$.id',
+        [statusHistory.id]             NVARCHAR(100)       '$.id',
         [statusHistory.extension]      NVARCHAR(MAX)       '$.extension',
         [statusHistory.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
         [statusHistory.status]         NVARCHAR(64)        '$.status',
-        [statusHistory.period.id]      NVARCHAR(4000)      '$.period.id',
+        [statusHistory.period.id]      NVARCHAR(100)       '$.period.id',
         [statusHistory.period.extension] NVARCHAR(MAX)       '$.period.extension',
-        [statusHistory.period.start]   VARCHAR(30)         '$.period.start',
-        [statusHistory.period.end]     VARCHAR(30)         '$.period.end'
+        [statusHistory.period.start]   VARCHAR(64)         '$.period.start',
+        [statusHistory.period.end]     VARCHAR(64)         '$.period.end'
     ) j
 
 GO
@@ -181,7 +181,7 @@ FROM openrowset (
        [type.JSON]  VARCHAR(MAX) '$.type'
     ) AS rowset
     CROSS APPLY openjson (rowset.[type.JSON]) with (
-        [type.id]                      NVARCHAR(4000)      '$.id',
+        [type.id]                      NVARCHAR(100)       '$.id',
         [type.extension]               NVARCHAR(MAX)       '$.extension',
         [type.coding]                  NVARCHAR(MAX)       '$.coding' AS JSON,
         [type.text]                    NVARCHAR(4000)      '$.text'
@@ -216,16 +216,16 @@ FROM openrowset (
        [diagnosis.JSON]  VARCHAR(MAX) '$.diagnosis'
     ) AS rowset
     CROSS APPLY openjson (rowset.[diagnosis.JSON]) with (
-        [diagnosis.id]                 NVARCHAR(4000)      '$.id',
+        [diagnosis.id]                 NVARCHAR(100)       '$.id',
         [diagnosis.extension]          NVARCHAR(MAX)       '$.extension',
         [diagnosis.modifierExtension]  NVARCHAR(MAX)       '$.modifierExtension',
-        [diagnosis.condition.id]       NVARCHAR(4000)      '$.condition.id',
+        [diagnosis.condition.id]       NVARCHAR(100)       '$.condition.id',
         [diagnosis.condition.extension] NVARCHAR(MAX)       '$.condition.extension',
         [diagnosis.condition.reference] NVARCHAR(4000)      '$.condition.reference',
         [diagnosis.condition.type]     VARCHAR(256)        '$.condition.type',
         [diagnosis.condition.identifier] NVARCHAR(MAX)       '$.condition.identifier',
         [diagnosis.condition.display]  NVARCHAR(4000)      '$.condition.display',
-        [diagnosis.role.id]            NVARCHAR(4000)      '$.role.id',
+        [diagnosis.role.id]            NVARCHAR(100)       '$.role.id',
         [diagnosis.role.extension]     NVARCHAR(MAX)       '$.role.extension',
         [diagnosis.role.coding]        NVARCHAR(MAX)       '$.role.coding',
         [diagnosis.role.text]          NVARCHAR(4000)      '$.role.text',
@@ -260,11 +260,11 @@ FROM openrowset (
        [referralRequest.JSON]  VARCHAR(MAX) '$.referralRequest'
     ) AS rowset
     CROSS APPLY openjson (rowset.[referralRequest.JSON]) with (
-        [referralRequest.id]           NVARCHAR(4000)      '$.id',
+        [referralRequest.id]           NVARCHAR(100)       '$.id',
         [referralRequest.extension]    NVARCHAR(MAX)       '$.extension',
         [referralRequest.reference]    NVARCHAR(4000)      '$.reference',
         [referralRequest.type]         VARCHAR(256)        '$.type',
-        [referralRequest.identifier.id] NVARCHAR(4000)      '$.identifier.id',
+        [referralRequest.identifier.id] NVARCHAR(100)       '$.identifier.id',
         [referralRequest.identifier.extension] NVARCHAR(MAX)       '$.identifier.extension',
         [referralRequest.identifier.use] NVARCHAR(64)        '$.identifier.use',
         [referralRequest.identifier.type] NVARCHAR(MAX)       '$.identifier.type',
@@ -303,11 +303,11 @@ FROM openrowset (
        [team.JSON]  VARCHAR(MAX) '$.team'
     ) AS rowset
     CROSS APPLY openjson (rowset.[team.JSON]) with (
-        [team.id]                      NVARCHAR(4000)      '$.id',
+        [team.id]                      NVARCHAR(100)       '$.id',
         [team.extension]               NVARCHAR(MAX)       '$.extension',
         [team.reference]               NVARCHAR(4000)      '$.reference',
         [team.type]                    VARCHAR(256)        '$.type',
-        [team.identifier.id]           NVARCHAR(4000)      '$.identifier.id',
+        [team.identifier.id]           NVARCHAR(100)       '$.identifier.id',
         [team.identifier.extension]    NVARCHAR(MAX)       '$.identifier.extension',
         [team.identifier.use]          NVARCHAR(64)        '$.identifier.use',
         [team.identifier.type]         NVARCHAR(MAX)       '$.identifier.type',
@@ -346,11 +346,11 @@ FROM openrowset (
        [account.JSON]  VARCHAR(MAX) '$.account'
     ) AS rowset
     CROSS APPLY openjson (rowset.[account.JSON]) with (
-        [account.id]                   NVARCHAR(4000)      '$.id',
+        [account.id]                   NVARCHAR(100)       '$.id',
         [account.extension]            NVARCHAR(MAX)       '$.extension',
         [account.reference]            NVARCHAR(4000)      '$.reference',
         [account.type]                 VARCHAR(256)        '$.type',
-        [account.identifier.id]        NVARCHAR(4000)      '$.identifier.id',
+        [account.identifier.id]        NVARCHAR(100)       '$.identifier.id',
         [account.identifier.extension] NVARCHAR(MAX)       '$.identifier.extension',
         [account.identifier.use]       NVARCHAR(64)        '$.identifier.use',
         [account.identifier.type]      NVARCHAR(MAX)       '$.identifier.type',
