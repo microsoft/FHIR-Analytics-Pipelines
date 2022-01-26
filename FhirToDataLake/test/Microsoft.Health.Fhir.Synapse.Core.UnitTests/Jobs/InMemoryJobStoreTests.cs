@@ -100,7 +100,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Assert new job is equal to the active job.
             Assert.Equal(activeJob.Id, newjob.Id);
-            Assert.Equal(JobStatus.Running, newjob.Status);
+            Assert.Equal(JobStatus.Failed, newjob.Status);
             Assert.Equal(_testStartTime, newjob.DataPeriod.Start);
         }
 

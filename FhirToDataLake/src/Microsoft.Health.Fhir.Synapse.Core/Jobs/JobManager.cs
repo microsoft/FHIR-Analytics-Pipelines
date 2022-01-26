@@ -61,6 +61,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 job = await CreateNewJob(cancellationToken);
             }
+            else
+            {
+                // reset status for resumed jobs.
+                job.Status = JobStatus.Running;
+                job.FailedReason = null;
+            }
 
             try
             {

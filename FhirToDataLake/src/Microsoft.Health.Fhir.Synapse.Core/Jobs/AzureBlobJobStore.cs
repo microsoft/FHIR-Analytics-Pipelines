@@ -76,25 +76,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 throw new StartJobFailedException("Start job conflicted. Will skip this trigger.");
             }
 
-            Job job = null;
             var activeJobs = await GetActiveJobsAsync(cancellationToken);
-            if (activeJobs.Any())
+            Job job = activeJobs.FirstOrDefault();
+            if (job?.Status == JobStatus.Succeeded)
             {
-                // Resume an active job.
-                job = activeJobs.First();
-
-                if (job.Status == JobStatus.Succeeded)
-                {
-                    _logger.LogWarning("Job '{id}' has already succeeded.", job.Id);
-                    await CompleteJobInternal(job, false, cancellationToken);
-                    job = null;
-                }
-                else
-                {
-                    // Resume an inactive/failed job.
-                    job.Status = JobStatus.Running;
-                    job.FailedReason = null;
-                }
+                // Complete a succeeded job.
+                _logger.LogWarning("Job '{id}' has already succeeded.", job.Id);
+                await CompleteJobInternal(job, false, cancellationToken);
+                job = null;
             }
 
             return job;
