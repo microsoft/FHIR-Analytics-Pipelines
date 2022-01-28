@@ -39,5 +39,11 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
             Console.WriteLine("Execute finished sucessfully!");
             _hostApplicationLifetime.StopApplication();
         }
+
+        public override Task StopAsync(CancellationToken stoppingToken)
+        {
+            _jobManager.Dispose();
+            return Task.CompletedTask;
+        }
     }
 }

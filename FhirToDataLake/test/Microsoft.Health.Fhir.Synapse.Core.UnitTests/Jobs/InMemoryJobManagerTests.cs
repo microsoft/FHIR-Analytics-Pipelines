@@ -67,7 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var activeJobs = await blobClient.ListBlobsAsync(AzureBlobJobConstants.ActiveJobFolder);
             Assert.Single(activeJobs);
 
-            await jobStore.DisposeAsync();
+            jobManager.Dispose();
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var completedJob = await blobClient.GetValue<Job>($"{AzureBlobJobConstants.CompletedJobFolder}/{activeJob.Id}.json");
             Assert.NotNull(completedJob);
 
-            await jobStore.DisposeAsync();
+            jobManager.Dispose();
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // Test end data period
             Assert.Equal(_testEndTime, job.DataPeriod.End);
 
-            await jobStore.DisposeAsync();
+            jobManager.Dispose();
         }
 
         [Fact]
@@ -160,7 +160,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.True(job.DataPeriod.End < DateTimeOffset.UtcNow.AddMinutes(-2));
             Assert.True(job.DataPeriod.End > DateTimeOffset.UtcNow.AddMinutes(-3));
 
-            await jobStore.DisposeAsync();
+            jobManager.Dispose();
         }
 
         [Fact]
@@ -176,7 +176,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.RunAsync());
             Assert.Contains("trigger is in the future", exception.Message);
 
-            await jobStore.DisposeAsync();
+            jobManager.Dispose();
         }
 
         [Fact]
@@ -196,7 +196,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.RunAsync());
             Assert.Contains("Job has been scheduled to end", exception.Message);
 
-            await jobStore.DisposeAsync();
+            jobManager.Dispose();
         }
 
         private static IJobStore CreateBrokenJobStore()

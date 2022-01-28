@@ -18,7 +18,7 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
-    public class JobManager
+    public class JobManager : IDisposable
     {
         private readonly IJobStore _jobStore;
         private readonly JobExecutor _jobExecutor;
@@ -142,6 +142,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 return nowEnd;
             }
+        }
+
+        public void Dispose()
+        {
+            _jobStore.Dispose();
         }
     }
 }

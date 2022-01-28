@@ -40,7 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobStore.AcquireJobAsync());
             Assert.StartsWith("Start job conflicted. Will skip this trigger.", exception.Message);
 
-            await jobStore.DisposeAsync();
+            jobStore.Dispose();
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(activeJob.DataPeriod.End, completedJob.DataPeriod.End);
             Assert.Equal(activeJob.ResourceTypes, completedJob.ResourceTypes);
 
-            await jobStore.DisposeAsync();
+            jobStore.Dispose();
         }
 
         [Fact]
@@ -135,7 +135,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(100, activeJob.ProcessedResourceCounts["Patient"]);
             Assert.Equal(0, activeJob.SkippedResourceCounts["Patient"]);
 
-            await jobStore.DisposeAsync();
+            jobStore.Dispose();
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await blobClient.CreateJob(activeJob);
 
             await Assert.ThrowsAsync<ArgumentException>(() => jobStore.CompleteJobAsync(activeJob));
-            await jobStore.DisposeAsync();
+            jobStore.Dispose();
         }
 
         [Fact]
@@ -229,7 +229,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 Assert.Null(await blobClient.GetBlobAsync(blobName));
             }
 
-            await jobStore.DisposeAsync();
+            jobStore.Dispose();
         }
 
         [Fact]
@@ -281,7 +281,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 Assert.Null(await blobClient.GetBlobAsync(blobName));
             }
 
-            await jobStore.DisposeAsync();
+            jobStore.Dispose();
         }
 
         private static async Task<Job> LoadJobFromBlob(InMemoryBlobContainerClient blobClient, string blobName)

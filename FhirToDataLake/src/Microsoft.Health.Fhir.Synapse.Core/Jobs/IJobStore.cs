@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
@@ -10,14 +11,14 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     // ToDo: refine logic to multiple jobs
-    public interface IJobStore
+    public interface IJobStore : IDisposable
     {
         /// <summary>
         ///  Acquire an active job from job store.
         ///  If no active job found, will return null.
         /// </summary>
         /// <param name="cancellationToken">cancellation token.</param>
-        /// <returns>job lists.</returns>
+        /// <returns>An active job or null.</returns>
         public Task<Job> AcquireJobAsync(CancellationToken cancellationToken = default);
 
         /// <summary>

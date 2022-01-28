@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -25,7 +24,7 @@ using Timer = System.Timers.Timer;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
-    public class AzureBlobJobStore : IJobStore, IDisposable, IAsyncDisposable
+    public class AzureBlobJobStore : IJobStore
     {
         private readonly IAzureBlobContainerClient _blobContainerClient;
         private readonly ILogger<AzureBlobJobStore> _logger;
@@ -77,13 +76,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
 
             var activeJobs = await GetActiveJobsAsync(cancellationToken);
-            Job job = activeJobs.FirstOrDefault();
-            if (job?.Status == JobStatus.Succeeded)
+            Job job = null;
+
+            foreach (var activeJob in activeJobs)
             {
-                // Complete a succeeded job.
-                _logger.LogWarning("Job '{id}' has already succeeded.", job.Id);
-                await CompleteJobAsyncInternal(job, false, cancellationToken);
-                job = null;
+                // Complete job if it's already succeeded.
+                if (activeJob?.Status == JobStatus.Succeeded)
+                {
+                    _logger.LogWarning("Job '{id}' has already succeeded.", activeJob.Id);
+                    await CompleteJobAsyncInternal(activeJob, false, cancellationToken);
+                }
+                else
+                {
+                    job = activeJob;
+                    break;
+                }
             }
 
             return job;
@@ -380,20 +387,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await DisposeAsyncCore();
-
-            Dispose();
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual async ValueTask DisposeAsyncCore()
-        {
-            await TryReleaseJobLockAsync();
+            TryReleaseJobLockAsync().GetAwaiter().GetResult();
         }
     }
 }
