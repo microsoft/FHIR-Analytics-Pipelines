@@ -35,6 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
             }
             catch (Exception exception)
             {
+                logger.LogError(exception, "Function execution failed.");
                 _jobManager.Dispose();
                 throw;
             }
