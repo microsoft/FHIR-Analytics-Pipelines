@@ -13,8 +13,8 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
 {
     public class SynapseLinkService : BackgroundService
     {
-        private JobManager _jobManager;
-        private IHostApplicationLifetime _hostApplicationLifetime;
+        private readonly JobManager _jobManager;
+        private readonly IHostApplicationLifetime _hostApplicationLifetime;
 
         public SynapseLinkService(
             IHostApplicationLifetime hostApplicationLifetime,

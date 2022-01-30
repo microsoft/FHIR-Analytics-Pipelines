@@ -20,24 +20,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class JobExecutor
     {
-        private readonly IJobStore _jobStore;
         private readonly ITaskExecutor _taskExecutor;
+        private readonly JobProgressUpdaterFactory _jobProgressUpdaterFactory;
         private readonly JobSchedulerConfiguration _schedulerConfiguration;
         private readonly ILogger<JobExecutor> _logger;
 
         public JobExecutor(
-            IJobStore jobStore,
             ITaskExecutor taskExecutor,
+            JobProgressUpdaterFactory jobProgressUpdaterFactory,
             IOptions<JobSchedulerConfiguration> schedulerConfiguration,
             ILogger<JobExecutor> logger)
         {
-            EnsureArg.IsNotNull(jobStore, nameof(jobStore));
             EnsureArg.IsNotNull(taskExecutor, nameof(taskExecutor));
+            EnsureArg.IsNotNull(jobProgressUpdaterFactory, nameof(jobProgressUpdaterFactory));
             EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _jobStore = jobStore;
             _taskExecutor = taskExecutor;
+            _jobProgressUpdaterFactory = jobProgressUpdaterFactory;
             _schedulerConfiguration = schedulerConfiguration.Value;
             _logger = logger;
         }
@@ -46,18 +46,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             _logger.LogInformation("Start executing job '{jobId}'.", job.Id);
 
-            var progress = new Progress<TaskContext>(async context =>
-            {
-                job.ResourceProgresses[context.ResourceType] = context.ContinuationToken;
-                job.TotalResourceCounts[context.ResourceType] = context.SearchCount;
-                job.ProcessedResourceCounts[context.ResourceType] = context.ProcessedCount;
-                job.SkippedResourceCounts[context.ResourceType] = context.SkippedCount;
-                job.PartIds[context.ResourceType] = context.PartId;
+            var jobProgressUpdater = _jobProgressUpdaterFactory.Create(job);
+            var progressReportTask = Task.Run(() => jobProgressUpdater.Consume(cancellationToken), cancellationToken);
 
-                await _jobStore.UpdateJobAsync(job, cancellationToken);
-            });
-
-            var tasks = new List<Task>();
+            var tasks = new List<Task<TaskResult>>();
             foreach (var resourceType in job.ResourceTypes)
             {
                 if (tasks.Count >= _schedulerConfiguration.MaxConcurrencyCount)
@@ -65,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     var finishedTask = await Task.WhenAny(tasks);
                     if (finishedTask.IsFaulted)
                     {
-                        _logger.LogError("Process task failed.");
+                        _logger.LogError(finishedTask.Exception, "Process task failed.");
                         throw new ExecuteTaskFailedException("Task execution failed", finishedTask.Exception);
                     }
 
@@ -73,20 +65,29 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
 
                 var context = TaskContext.Create(resourceType, job);
-                tasks.Add(Task.Run(async () => await _taskExecutor.ExecuteAsync(context, progress, cancellationToken)));
+                if (context.IsCompleted)
+                {
+                    _logger.LogInformation("Skipping completed resource '{resourceType}'.", resourceType);
+                    continue;
+                }
+
+                tasks.Add(Task.Run(async () => await _taskExecutor.ExecuteAsync(context, jobProgressUpdater, cancellationToken)));
 
                 _logger.LogInformation("Start processing resource '{resourceType}'", resourceType);
             }
 
             try
             {
-                await Task.WhenAll(tasks);
+                var taskResults = await Task.WhenAll(tasks);
             }
             catch (Exception ex)
             {
-                _logger.LogError("Process task failed.");
+                _logger.LogError(ex, "Process task failed.");
                 throw new ExecuteTaskFailedException("Task execution failed", ex);
             }
+
+            jobProgressUpdater.Complete();
+            await progressReportTask;
 
             _logger.LogInformation("Finish scheduling job '{jobId}'", job.Id);
         }

@@ -8,9 +8,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Storage.Files.DataLake.Models;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
@@ -22,7 +25,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
     {
         private ConcurrentDictionary<string, Stream> _blobStore = new ConcurrentDictionary<string, Stream>();
         private ConcurrentDictionary<string, Tuple<string, DateTimeOffset>> _blobLeaseStore = new ConcurrentDictionary<string, Tuple<string, DateTimeOffset>>();
-        private object _leaseLock = new object();
+        private readonly object _leaseLock = new object();
 
         public async Task<T> GetValue<T>(string objectName)
         {
@@ -153,6 +156,68 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 _blobLeaseStore[blobName] = new Tuple<string, DateTimeOffset>(leaseId, DateTimeOffset.UtcNow.Add(TimeSpan.FromSeconds(AzureBlobJobConstants.JobLeaseExpirationInSeconds)));
                 return Task.FromResult(leaseId);
+            }
+        }
+
+        public Task MoveDirectoryAsync(string sourceDirectory, string targetDirectory, CancellationToken cancellationToken = default)
+        {
+            foreach (var path in _blobStore.Keys)
+            {
+                if (path.StartsWith(sourceDirectory))
+                {
+                    var childPath = path.Substring(sourceDirectory.Length);
+                    var newPath = $"{targetDirectory}{childPath}";
+                    if (_blobStore.Remove(path, out Stream value))
+                    {
+                        _blobStore[newPath] = value;
+                    }
+                }
+            }
+
+            return Task.FromResult(true);
+        }
+
+        public Task DeleteDirectoryIfExistsAsync(string directory, CancellationToken cancellationToken = default)
+        {
+            foreach (var path in _blobStore.Keys)
+            {
+                if (path.StartsWith(directory) && !string.Equals(directory, path, StringComparison.OrdinalIgnoreCase))
+                {
+                    _blobStore.TryRemove(path, out _);
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public async IAsyncEnumerable<PathItem> ListPathsAsync(string directory, [EnumeratorCancellation]CancellationToken cancellationToken)
+        {
+            var directorySet = new HashSet<string>();
+            var result = new List<PathItem>();
+            foreach (var path in _blobStore.Keys)
+            {
+                if (path.StartsWith(directory) && !string.Equals(directory, path, StringComparison.OrdinalIgnoreCase))
+                {
+                    var pathItem = DataLakeModelFactory.PathItem(path, false, DateTimeOffset.UtcNow, new ETag("test"), 100, string.Empty, string.Empty, string.Empty);
+                    yield return await Task.FromResult(pathItem);
+
+                    var pathComponents = path.Split('/');
+                    string baseDir = pathComponents[0];
+                    int i = 1;
+                    while (i < pathComponents.Length - 1)
+                    {
+                        baseDir += $"/{pathComponents[i]}";
+                        i++;
+
+                        if (baseDir.StartsWith(directory)
+                            && !string.Equals(baseDir, path, StringComparison.OrdinalIgnoreCase)
+                            && !directorySet.Contains(baseDir))
+                        {
+                            var directoryItem = DataLakeModelFactory.PathItem(baseDir, true, DateTimeOffset.UtcNow, new ETag("test"), 100, string.Empty, string.Empty, string.Empty);
+                            yield return await Task.FromResult(directoryItem);
+                        }
+                    }
+                }
             }
         }
     }

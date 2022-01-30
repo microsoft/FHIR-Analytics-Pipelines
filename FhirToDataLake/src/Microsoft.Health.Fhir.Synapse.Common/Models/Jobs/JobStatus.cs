@@ -18,9 +18,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         Running,
 
         /// <summary>
-        /// Job has completed.
+        /// Job has succeeded.
         /// </summary>
-        Completed,
+        Succeeded,
 
         /// <summary>
         /// Job has failed.

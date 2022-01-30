@@ -21,7 +21,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             Dictionary<string, int> totalResourceCounts = null,
             Dictionary<string, int> processedResourceCounts = null,
             Dictionary<string, int> skippedResourceCounts = null,
-            Dictionary<string, int> partIds = null)
+            Dictionary<string, int> partIds = null,
+            HashSet<string> completedResources = null)
         {
             Id = Guid.NewGuid().ToString("N");
             CreatedTime = DateTimeOffset.UtcNow;
@@ -35,6 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             ProcessedResourceCounts = processedResourceCounts ?? new Dictionary<string, int>();
             SkippedResourceCounts = skippedResourceCounts ?? new Dictionary<string, int>();
             PartIds = partIds ?? new Dictionary<string, int>();
+            CompletedResources = completedResources ?? new HashSet<string>();
 
             foreach (var resource in ResourceTypes)
             {
@@ -118,6 +120,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// </summary>
         [JsonProperty("skippedResourceCounts")]
         public Dictionary<string, int> SkippedResourceCounts { get; }
+
+        /// <summary>
+        /// Resource set that has completed processing.
+        /// </summary>
+        [JsonProperty("completedResources")]
+        public HashSet<string> CompletedResources { get; }
 
         /// <summary>
         /// Part id for each resource type.

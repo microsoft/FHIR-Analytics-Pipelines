@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Files.DataLake.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
@@ -113,6 +114,40 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         public Task<string> RenewLeaseAsync(
             string blobName,
             string leaseId,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Move source blob directory to target directory.
+        /// We process the directory with the benefit of hierarchical namespace.
+        /// See https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-namespace.
+        /// </summary>
+        /// <param name="sourceDirectory">source directory.</param>
+        /// <param name="targetDirectory">target directory.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>completed task.</returns>
+        public Task MoveDirectoryAsync(
+            string sourceDirectory,
+            string targetDirectory,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Delete a blob directory if exists.
+        /// </summary>
+        /// <param name="directory">input directory.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>completed task.</returns>
+        public Task DeleteDirectoryIfExistsAsync(
+            string directory,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// List paths of a blob directory.
+        /// </summary>
+        /// <param name="directory">input directory.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>sub directory names.</returns>
+        public IAsyncEnumerable<PathItem> ListPathsAsync(
+            string directory,
             CancellationToken cancellationToken = default);
     }
 }

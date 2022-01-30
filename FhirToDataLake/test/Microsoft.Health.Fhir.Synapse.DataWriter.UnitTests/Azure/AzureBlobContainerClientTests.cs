@@ -4,11 +4,15 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Azure.Storage.Blobs;
+using Azure.Storage.Files.DataLake.Models;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
@@ -32,7 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             var container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
             Assert.False(container.Exists());
 
-            AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
+            _ = GetTestBlobProvider(ConnectionString, uniqueContainerName);
 
             // once blob provider instance is created, the container should exists
             container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
@@ -60,7 +64,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             Assert.True(container.Exists());
 
             // no exception should be thrown if the container exists
-            AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
+            _ = GetTestBlobProvider(ConnectionString, uniqueContainerName);
 
             container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
             Assert.True(container.Exists());
@@ -72,7 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         }
 
         [Fact]
-        public void CreateTwoBlobProvides_NoExceptionshouldBeThrown()
+        public void CreateTwoBlobProviders_NoExceptionshouldBeThrown()
         {
             var uniqueContainerName = Guid.NewGuid().ToString("N");
 
@@ -82,13 +86,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             var container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
             Assert.False(container.Exists());
 
-            AzureBlobContainerClient blobProvider_1 = GetTestBlobProvider(ConnectionString, uniqueContainerName);
+            _ = GetTestBlobProvider(ConnectionString, uniqueContainerName);
 
             // once blob provider instance is created, the container should exists
             container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
             Assert.True(container.Exists());
 
-            AzureBlobContainerClient blobProvider_2 = GetTestBlobProvider(ConnectionString, uniqueContainerName);
+            _ = GetTestBlobProvider(ConnectionString, uniqueContainerName);
 
             container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
             Assert.True(container.Exists());
@@ -523,9 +527,197 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             await blobContainerClient.DeleteIfExistsAsync();
         }
 
+        [SkippableFact]
+        public async Task GivenANotExistingDirectoryName_WhenDeleteIfExists_NoExceptionShouldBeThrown()
+        {
+            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
+            Skip.If(adlsClient == null);
+
+            var blobContainerClient = GetBlobContainerClient(uniqueContainerName);
+            blobContainerClient.CreateIfNotExists();
+
+            try
+            {
+                var exception = await Record.ExceptionAsync(async () => await adlsClient.DeleteDirectoryIfExistsAsync("foldernotexist"));
+                Assert.Null(exception);
+            }
+            finally
+            {
+                await blobContainerClient.DeleteAsync();
+            }
+        }
+
+        [SkippableFact]
+        public async Task GivenAValidDirectoryName_WhenDeleteIfExists_DirectoryAndBlobsShouldBeDeleted()
+        {
+            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
+            Skip.If(adlsClient == null);
+
+            var blobContainerClient = GetBlobContainerClient(uniqueContainerName);
+            blobContainerClient.CreateIfNotExists();
+
+            try
+            {
+                var blobName = "foo/bar1/1.txt";
+                await blobContainerClient.UploadBlobAsync(blobName, new MemoryStream(new byte[] { 1, 2, 3 }));
+                var blobClient = blobContainerClient.GetBlobClient(blobName);
+                Assert.True(blobClient.Exists());
+                await adlsClient.DeleteDirectoryIfExistsAsync("foo/bar1");
+                Assert.False(blobClient.Exists());
+            }
+            finally
+            {
+                await blobContainerClient.DeleteAsync();
+            }
+        }
+
+        [SkippableFact]
+        public async Task GivenANotExistingDirectoryName_WhenListPaths_NoPathShouldBeReturned()
+        {
+            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
+            Skip.If(adlsClient == null);
+
+            var blobContainerClient = GetBlobContainerClient(uniqueContainerName);
+            blobContainerClient.CreateIfNotExists();
+
+            try
+            {
+                var paths = new List<PathItem>();
+                await foreach (var item in adlsClient.ListPathsAsync(uniqueContainerName))
+                {
+                    paths.Add(item);
+                }
+
+                Assert.Empty(paths);
+            }
+            finally
+            {
+                await blobContainerClient.DeleteAsync();
+            }
+        }
+
+        [SkippableFact]
+        public async Task GivenAValidDirectoryName_WhenListPaths_AllPathsShouldBeReturned()
+        {
+            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
+            Skip.If(adlsClient == null);
+
+            var blobContainerClient = GetBlobContainerClient(uniqueContainerName);
+            blobContainerClient.CreateIfNotExists();
+
+            try
+            {
+                // Set up directory info
+                var blobList = new List<string> { "foo/bar/1.txt", "foo/bar1/1.txt", "foo/bar2/2.txt", "foo/bar2/2.1.txt", "foo/bar3/3.txt" };
+                var expectedResult = new HashSet<string> { "foo/bar", "foo/bar1", "foo/bar2", "foo/bar3", "foo/bar/1.txt", "foo/bar1/1.txt", "foo/bar2/2.txt", "foo/bar2/2.1.txt", "foo/bar3/3.txt" };
+                foreach (var blob in blobList)
+                {
+                    await blobContainerClient.UploadBlobAsync(blob, new MemoryStream(new byte[] { 1, 2, 3 }));
+                }
+
+                var paths = new List<PathItem>();
+                await foreach (var item in adlsClient.ListPathsAsync("foo"))
+                {
+                    paths.Add(item);
+                }
+
+                Assert.Equal(expectedResult, paths.Select(x => x.Name).ToHashSet());
+            }
+            finally
+            {
+                await blobContainerClient.DeleteAsync();
+            }
+        }
+
+        [SkippableFact]
+        public async Task GivenANotExistingDirectoryName_WhenMoveDirectory_ExceptionShouldBeThrown()
+        {
+            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
+            Skip.If(adlsClient == null);
+
+            var blobContainerClient = GetBlobContainerClient(uniqueContainerName);
+            blobContainerClient.CreateIfNotExists();
+
+            try
+            {
+                await Assert.ThrowsAsync<AzureBlobOperationFailedException>(() => adlsClient.MoveDirectoryAsync("foldernotexist", "dest"));
+            }
+            finally
+            {
+                await blobContainerClient.DeleteAsync();
+            }
+        }
+
+        [SkippableFact]
+        public async Task GivenADirectoryName_WhenMoveDirectories_AllSubDirectoriesShouldBeMoved()
+        {
+            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
+            Skip.If(adlsClient == null);
+
+            var blobContainerClient = GetBlobContainerClient(uniqueContainerName);
+            blobContainerClient.CreateIfNotExists();
+
+            try
+            {
+                // Set up directory info
+                var blobList = new List<string> { "foo/bar/1.txt", "foo/bar1/1.txt", "foo/bar2/2.txt", "foo/bar2/2.1.txt", "foo/bar3/3.txt" };
+                var expectedBlobs = new List<string> { "boo/bar/1.txt", "boo/bar1/1.txt", "boo/bar2/2.txt", "boo/bar2/2.1.txt", "boo/bar3/3.txt" };
+                foreach (var blob in blobList)
+                {
+                    await blobContainerClient.UploadBlobAsync(blob, new MemoryStream(new byte[] { 1, 2, 3 }));
+                }
+
+                await adlsClient.MoveDirectoryAsync("foo", "boo");
+                foreach (var expectedBlob in expectedBlobs)
+                {
+                    var blob = blobContainerClient.GetBlobClient(expectedBlob);
+                    Assert.True(blob.Exists());
+                }
+            }
+            finally
+            {
+                await blobContainerClient.DeleteAsync();
+            }
+        }
+
         private AzureBlobContainerClient GetTestBlobProvider(string connectionString, string containerName)
         {
             return new AzureBlobContainerClient(connectionString, containerName, new NullLogger<AzureBlobContainerClient>());
+        }
+
+        // Get Azure Data Lake store gen2 account connection string.
+        // Some operations like GetSubDirectories and MoveDirectory is not suppported in Azure Storage Emulator.
+        private AzureBlobContainerClient GetTestAdlsGen2Client(string containerName)
+        {
+            var storageUrl = GetAdlsGen2StoreUrl();
+            if (string.IsNullOrEmpty(storageUrl))
+            {
+                return null;
+            }
+
+            return new AzureBlobContainerClient(new Uri(new Uri(storageUrl), containerName), new NullLogger<AzureBlobContainerClient>());
+        }
+
+        private BlobContainerClient GetBlobContainerClient(string containerName)
+        {
+            var storageUrl = GetAdlsGen2StoreUrl();
+            if (string.IsNullOrEmpty(storageUrl))
+            {
+                return null;
+            }
+
+            return new BlobContainerClient(new Uri(new Uri(storageUrl), containerName), new DefaultAzureCredential());
+        }
+
+        private string GetAdlsGen2StoreUrl()
+        {
+            return Environment.GetEnvironmentVariable("dataLakeStore:storageUrl");
         }
     }
 }
