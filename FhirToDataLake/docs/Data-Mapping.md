@@ -3,7 +3,7 @@ The Synapse sync pipeline fetches, converts, and saves FHIR data to the Azure st
 
 Azure Synapse Analytics supports [Parquet files](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/query-parquet-files) in Serverless SQL pool. PowerShell [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) is provided to users to create default EXTERNAL TABLEs/VIEWs on Synapse. Refer to [CREATE EXTERNAL TABLE](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/create-use-external-tables) and [CREATE VIEW](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/create-use-views) for information about EXTERNAL TABLEs/VIEWs on Synapse.
 
-The information below describes how the raw FHIR JSON is converted to Parquet format and subsequently mapped to EXTERNAL TABLEs/VIEWs.
+The information below describes how the raw FHIR JSON is converted to Parquet format and subsequently mapped to EXTERNAL TABLEs/VIEWs on Synapse workspace.
 
 ## FHIR JSON data to Parquet data
 
@@ -15,74 +15,74 @@ Below is a JSON example that shows how the data is stored in Parquet.
 
 ### Wrap raw JSON fields into single string
 
-First, wrap some of the fields in raw JSON data into a single string in the Parquet file. You can still use [JSON functions](https://docs.microsoft.com/en-us/sql/t-sql/functions/json-functions-transact-sql?view=sql-server-ver15) to parse and analyze them on Synapse. 
+First, wrap below kind of fields in raw JSON data into a single string in the Parquet file. You can still use [JSON functions](https://docs.microsoft.com/en-us/sql/t-sql/functions/json-functions-transact-sql?view=sql-server-ver15) to parse and analyze them on Synapse workspace. 
 
 **Fields with depth greater than 3.**
 
-    Fields with depth greater than 3 will be wrapped into single JSON string and will be placed at the common root field.
+Fields with depth greater than 3 will be wrapped into single JSON string and will be placed at the common root field.
 
-    Example:
-    
-    ```javascript
-    /* Raw FHIR Json data */
-    {
-    "resourceType": "Patient",
-    "id": "example",
-    "identifier": [{
-        "type": {
-            // Depth of "coding" is 3, its sub fields will be wrapped
-            "coding": [{
-                "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                "code": "MR" 
-            }]
-        }}]
-    }
-    
-    /* Converted data in parquet file */
-    {
-    "resourceType": "Patient",
-    "id": "example",
-    "identifier": [{
-        "type": {
-            // Depth of "coding" is 3, its sub fields will be wrapped
-            "coding": "[{\"system\": \"http://terminology.hl7.org/CodeSystem/v2-0203\",\"code\": \"MR\"}]"
-        }}]
-    }
-    ```
+Example:
+
+```javascript
+/* Raw FHIR Json data */
+{
+"resourceType": "Patient",
+"id": "example",
+"identifier": [{
+    "type": {
+        // Depth of "coding" is 3, its sub fields will be wrapped
+        "coding": [{
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "MR" 
+        }]
+    }}]
+}
+
+/* Converted data in parquet file */
+{
+"resourceType": "Patient",
+"id": "example",
+"identifier": [{
+    "type": {
+        // Depth of "coding" is 3, its sub fields will be wrapped
+        "coding": "[{\"system\": \"http://terminology.hl7.org/CodeSystem/v2-0203\",\"code\": \"MR\"}]"
+    }}]
+}
+```
     
 **Extensions**
    
-    [FHIR Extension](https://www.hl7.org/fhir/extensibility.html#Extension) properties in raw JSON data are wrapped into a single JSON string.
-    
-    Example:
-    
-    ```javascript
-    /* Raw FHIR Json data */
-    {
-    "resourceType": "Patient",
-    "id": "example",
-    // Extension properties will be wrapped into single Json string
-    "extension": [{
-        "url": "http://nema.org/fhir/extensions#0010:1010",
-        "valueQuantity": {
-        "value": 56,
-        "unit": "Y"
-    }}]
-    }
-    
-    /* Converted data in parquet file */
-    {
-    "resourceType": "Patient",
-    "id": "example",
-    // Extension properties will be wrapped into single Json string
-    "extension": "[{\"url\": \"http://nema.org/fhir/extensions#0010:1010\",\"valueQuantity\": {\"value\": 56,\"unit\": \"Y\"}}]"
-    }
-    ```
+[FHIR Extension](https://www.hl7.org/fhir/extensibility.html#Extension) properties in raw JSON data will be wrapped into a single string.
+
+Example:
+
+```javascript
+/* Raw FHIR Json data */
+{
+"resourceType": "Patient",
+"id": "example",
+// Extension properties will be wrapped into single Json string
+"extension": [{
+    "url": "http://nema.org/fhir/extensions#0010:1010",
+    "valueQuantity": {
+    "value": 56,
+    "unit": "Y"
+}}]
+}
+
+/* Converted data in parquet file */
+{
+"resourceType": "Patient",
+"id": "example",
+// Extension properties will be wrapped into single Json string
+"extension": "[{\"url\": \"http://nema.org/fhir/extensions#0010:1010\",\"valueQuantity\": {\"value\": 56,\"unit\": \"Y\"}}]"
+}
+```
    
 
 ### Exclude primitive extensions and inline resources
 
-Extensions on primitive types usually begin with a underline prefix in the raw FHIR JSON data. Line [Resources](https://www.hl7.org/fhir/resource.html#Resource) such as "contained" and "outcome" properties are flexiable FHIR resource data properties. These two kinds of fields are excluded in Parquet files.
+Extensions on primitive types usually begin with a underline prefix in the raw FHIR JSON data. Inline [Resources](https://www.hl7.org/fhir/resource.html#Resource) such as "contained" and "outcome" properties are flexiable FHIR resource data properties. These two kinds of fields are excluded in Parquet files.
 
 ```javascript
 /* Raw FHIR Json data */
@@ -98,7 +98,6 @@ Extensions on primitive types usually begin with a underline prefix in the raw F
             "code": "M"
     }}]
 },
-
 // Inline resources will be excluded
 "contained" : {...}
 }
@@ -113,7 +112,7 @@ Extensions on primitive types usually begin with a underline prefix in the raw F
 
 ### Choice Types
 
-From the recommandation on SQL-based projection of FHIR resources [Sql-On-Fhir](https://github.com/FHIR/sql-on-fhir/blob/master/sql-on-fhir.md#choice-types), choice types (denoted as elementName[x]), are represented as an SQL ```STRUCT``` of the elementName, where that struct contains a child for each type of the choice. The code example below adds an additional level for choice type fields.  For more information, see [Resource Index](https://www.hl7.org/fhir/resourcelist.html) from HL7.
+From the recommandation on SQL-based projection of FHIR resources [Sql-On-Fhir](https://github.com/FHIR/sql-on-fhir/blob/master/sql-on-fhir.md#choice-types), choice types (denoted as elementName[x]) are represented as an SQL ```STRUCT``` of the elementName, where that struct contains a child for each type of the choice. The code example below adds an additional level for choice type fields.  For more information, see [Resource Index](https://www.hl7.org/fhir/resourcelist.html) from HL7.
 
 ```javascript
 /* Raw FHIR Json data */
@@ -144,9 +143,16 @@ Below are general rules of the default TABLEs and VIEWs defintions.
 
 Each EXTERNAL TABLE is linked to all Parquet files for a specific resource type. They have names such as ```"[fhir].[{resource type name}]"```. 
 
-EXTERNAL TABLE can directly parse nested data in Parquet files. Nested data is expanded to the leaf field, but it can't handle parse repeated data in Parquet files. Columsn are defined and linked to the repeated root field. It automatically wraps them into single JSON string when they are queried.
+EXTERNAL TABLE can directly parse nested data in Parquet files, so nested data is expanded to the leaf field. But it can't parse repeated data in Parquet files, Synapse workspace automatically wraps repeated columns into single JSON string when they are queried.
 
 1. Columns for leaf fields.
+
+    ```sql
+    [text.id] NVARCHAR(4000),
+    [text.extension] NVARCHAR(MAX),
+    [text.status] NVARCHAR(64),
+    [text.div] NVARCHAR(MAX)
+    ```
 
     ```javascript
     {
@@ -158,15 +164,12 @@ EXTERNAL TABLE can directly parse nested data in Parquet files. Nested data is e
     }
     ```
 
-    ```sql
-    [text.id] NVARCHAR(4000),
-    [text.extension] NVARCHAR(MAX),
-    [text.status] NVARCHAR(64),
-    [text.div] NVARCHAR(MAX)
-    ```
-
 2. Columns for repeated fields.
    
+    ```sql
+    [name] VARCHAR(MAX)
+    ```
+
     ```javascript
     {
         // "name" is repeated field contains multiple name instance.
@@ -177,10 +180,6 @@ EXTERNAL TABLE can directly parse nested data in Parquet files. Nested data is e
             "given": [ "Peter", "James" ]
         }]
     }
-    ```
-
-    ```sql
-    [name] VARCHAR(MAX)
     ```
 
 ### Definitions for VIEW
