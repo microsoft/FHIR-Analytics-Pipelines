@@ -1,9 +1,9 @@
 # Data mapping from FHIR to Synapse
 The Synapse sync pipeline fetches, converts, and saves FHIR data to the Azure storage in the [Apache Parquet format](https://docs.microsoft.com/en-us/azure/databricks/data/data-sources/read-parquet). The Apache Parquet format is an open source file format designed for efficient and performant flat columnar storage format of data compared to row based files like CSV or TSV files. For more information about its detailed storage strategy, see the [Apache Parquet](https://parquet.apache.org/documentation/latest/) documentation.
 
-Azure Synapse Analytics supports [Parquet files](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/query-parquet-files) in Serverless SQL pool. PowerShell [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) is provided to users to create default EXTERNAL TABLEs/VIEWs on Synapse. Refer to [CREATE EXTERNAL TABLE](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/create-use-external-tables) and [CREATE VIEW](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/create-use-views) for information about EXTERNAL TABLEs/VIEWs on Synapse.
+Azure Synapse Analytics supports [Parquet files](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/query-parquet-files) in Serverless SQL pool. PowerShell [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) is provided to users to create default EXTERNAL TABLEs/VIEWs on Synapse. Refer to [CREATE EXTERNAL TABLE](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/create-use-external-tables) and [CREATE VIEW](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/create-use-views) for information about EXTERNAL TABLEs/VIEWs on Synapse Serverless SQL pool.
 
-The information below describes how the raw FHIR JSON is converted to Parquet format and subsequently mapped to EXTERNAL TABLEs/VIEWs on Synapse workspace.
+The information below describes how the raw FHIR JSON is converted to Parquet format and subsequently mapped to EXTERNAL TABLEs/VIEWs on Synapse Serverless SQL pool.
 
 ## FHIR JSON data to Parquet data
 
@@ -15,7 +15,7 @@ Below is a JSON example that shows how the data is stored in Parquet.
 
 ### Wrap raw JSON fields into single string
 
-First, wrap below kind of fields in raw JSON data into a single string in the Parquet file. You can still use [JSON functions](https://docs.microsoft.com/en-us/sql/t-sql/functions/json-functions-transact-sql?view=sql-server-ver15) to parse and analyze them on Synapse workspace. 
+First, wrap the following fields in raw JSON data into a single string in the Parquet file. You can still use [JSON functions](https://docs.microsoft.com/en-us/sql/t-sql/functions/json-functions-transact-sql?view=sql-server-ver15) to parse and analyze them with Synapse Serverless SQL pool. 
 
 **Fields with depth greater than 3.**
 
@@ -135,7 +135,7 @@ From the recommandation on SQL-based projection of FHIR resources [Sql-On-Fhir](
 ```
 
 ## Query Parquet data on Synapse
-The PowerShell script [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) creates default EXTERNAL TABLEs and VIEWs on Synapse serverless SQL pool. 
+The PowerShell script [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) creates default EXTERNAL TABLEs and VIEWs on Synapse Serverless SQL pool. 
 
 Below are general rules of the default TABLEs and VIEWs defintions.
 
@@ -143,7 +143,7 @@ Below are general rules of the default TABLEs and VIEWs defintions.
 
 Each EXTERNAL TABLE is linked to all Parquet files for a specific resource type. They have names such as ```"[fhir].[{resource type name}]"```. 
 
-EXTERNAL TABLE can directly parse nested data in Parquet files, so nested data is expanded to the leaf field. But it can't parse repeated data in Parquet files, Synapse workspace automatically wraps repeated columns into single JSON string when they are queried.
+EXTERNAL TABLE can directly parse nested data in Parquet files, so nested data is expanded to the leaf field. But it can't parse repeated data in Parquet files, Synapse Serverless SQL pool automatically wraps repeated columns into single JSON string when they are queried.
 
 1. Columns for leaf fields.
 
