@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[Invoice] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -83,11 +83,11 @@ CREATE EXTERNAL TABLE [fhir].[Invoice] (
     [totalNet.id] NVARCHAR(100),
     [totalNet.extension] NVARCHAR(MAX),
     [totalNet.value] float,
-    [totalNet.currency] NVARCHAR(8),
+    [totalNet.currency] NVARCHAR(100),
     [totalGross.id] NVARCHAR(100),
     [totalGross.extension] NVARCHAR(MAX),
     [totalGross.value] float,
-    [totalGross.currency] NVARCHAR(8),
+    [totalGross.currency] NVARCHAR(100),
     [paymentTerms] NVARCHAR(MAX),
     [note] VARCHAR(MAX),
 ) WITH (
@@ -281,7 +281,7 @@ FROM openrowset (
         [totalPriceComponent.amount.id] NVARCHAR(100)       '$.amount.id',
         [totalPriceComponent.amount.extension] NVARCHAR(MAX)       '$.amount.extension',
         [totalPriceComponent.amount.value] float               '$.amount.value',
-        [totalPriceComponent.amount.currency] NVARCHAR(8)         '$.amount.currency'
+        [totalPriceComponent.amount.currency] NVARCHAR(100)       '$.amount.currency'
     ) j
 
 GO

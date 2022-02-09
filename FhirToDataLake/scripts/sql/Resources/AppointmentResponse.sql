@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[AppointmentResponse] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -47,7 +47,7 @@ CREATE EXTERNAL TABLE [fhir].[AppointmentResponse] (
     [actor.identifier.period] NVARCHAR(MAX),
     [actor.identifier.assigner] NVARCHAR(MAX),
     [actor.display] NVARCHAR(4000),
-    [participantStatus] NVARCHAR(64),
+    [participantStatus] NVARCHAR(100),
     [comment] NVARCHAR(4000),
 ) WITH (
     LOCATION='/AppointmentResponse/**',

@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[Bundle] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [identifier.id] NVARCHAR(100),
     [identifier.extension] NVARCHAR(MAX),
     [identifier.use] NVARCHAR(64),
@@ -51,8 +51,8 @@ CREATE EXTERNAL TABLE [fhir].[Bundle] (
     [signature.onBehalfOf.type] VARCHAR(256),
     [signature.onBehalfOf.identifier] NVARCHAR(MAX),
     [signature.onBehalfOf.display] NVARCHAR(4000),
-    [signature.targetFormat] NVARCHAR(500),
-    [signature.sigFormat] NVARCHAR(500),
+    [signature.targetFormat] NVARCHAR(100),
+    [signature.sigFormat] NVARCHAR(100),
     [signature.data] NVARCHAR(MAX),
 ) WITH (
     LOCATION='/Bundle/**',
@@ -150,7 +150,7 @@ FROM openrowset (
         [entry.response.id]            NVARCHAR(100)       '$.response.id',
         [entry.response.extension]     NVARCHAR(MAX)       '$.response.extension',
         [entry.response.modifierExtension] NVARCHAR(MAX)       '$.response.modifierExtension',
-        [entry.response.status]        NVARCHAR(64)        '$.response.status',
+        [entry.response.status]        NVARCHAR(100)       '$.response.status',
         [entry.response.location]      VARCHAR(256)        '$.response.location',
         [entry.response.etag]          NVARCHAR(100)       '$.response.etag',
         [entry.response.lastModified]  VARCHAR(64)         '$.response.lastModified'

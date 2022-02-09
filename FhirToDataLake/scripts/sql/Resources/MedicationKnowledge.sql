@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[MedicationKnowledge] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -21,7 +21,7 @@ CREATE EXTERNAL TABLE [fhir].[MedicationKnowledge] (
     [code.extension] NVARCHAR(MAX),
     [code.coding] VARCHAR(MAX),
     [code.text] NVARCHAR(4000),
-    [status] NVARCHAR(64),
+    [status] NVARCHAR(100),
     [manufacturer.id] NVARCHAR(100),
     [manufacturer.extension] NVARCHAR(MAX),
     [manufacturer.reference] NVARCHAR(4000),
@@ -361,7 +361,7 @@ FROM openrowset (
         [cost.cost.id]                 NVARCHAR(100)       '$.cost.id',
         [cost.cost.extension]          NVARCHAR(MAX)       '$.cost.extension',
         [cost.cost.value]              float               '$.cost.value',
-        [cost.cost.currency]           NVARCHAR(8)         '$.cost.currency'
+        [cost.cost.currency]           NVARCHAR(100)       '$.cost.currency'
     ) j
 
 GO

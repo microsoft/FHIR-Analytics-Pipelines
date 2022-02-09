@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[Provenance] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -285,7 +285,7 @@ FROM openrowset (
         [signature.onBehalfOf.type]    VARCHAR(256)        '$.onBehalfOf.type',
         [signature.onBehalfOf.identifier] NVARCHAR(MAX)       '$.onBehalfOf.identifier',
         [signature.onBehalfOf.display] NVARCHAR(4000)      '$.onBehalfOf.display',
-        [signature.targetFormat]       NVARCHAR(500)       '$.targetFormat',
-        [signature.sigFormat]          NVARCHAR(500)       '$.sigFormat',
+        [signature.targetFormat]       NVARCHAR(100)       '$.targetFormat',
+        [signature.sigFormat]          NVARCHAR(100)       '$.sigFormat',
         [signature.data]               NVARCHAR(MAX)       '$.data'
     ) j

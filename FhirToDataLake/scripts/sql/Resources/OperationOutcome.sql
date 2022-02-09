@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[OperationOutcome] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -60,7 +60,7 @@ FROM openrowset (
         [issue.details.extension]      NVARCHAR(MAX)       '$.details.extension',
         [issue.details.coding]         NVARCHAR(MAX)       '$.details.coding',
         [issue.details.text]           NVARCHAR(4000)      '$.details.text',
-        [issue.diagnostics]            NVARCHAR(500)       '$.diagnostics',
+        [issue.diagnostics]            NVARCHAR(4000)      '$.diagnostics',
         [issue.location]               NVARCHAR(MAX)       '$.location' AS JSON,
         [issue.expression]             NVARCHAR(MAX)       '$.expression' AS JSON
     ) j

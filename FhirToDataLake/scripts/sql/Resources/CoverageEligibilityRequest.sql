@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[CoverageEligibilityRequest] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -18,7 +18,7 @@ CREATE EXTERNAL TABLE [fhir].[CoverageEligibilityRequest] (
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
     [identifier] VARCHAR(MAX),
-    [status] NVARCHAR(64),
+    [status] NVARCHAR(100),
     [priority.id] NVARCHAR(100),
     [priority.extension] NVARCHAR(MAX),
     [priority.coding] VARCHAR(MAX),
@@ -253,7 +253,7 @@ FROM openrowset (
         [insurance.coverage.type]      VARCHAR(256)        '$.coverage.type',
         [insurance.coverage.identifier] NVARCHAR(MAX)       '$.coverage.identifier',
         [insurance.coverage.display]   NVARCHAR(4000)      '$.coverage.display',
-        [insurance.businessArrangement] NVARCHAR(500)       '$.businessArrangement'
+        [insurance.businessArrangement] NVARCHAR(4000)      '$.businessArrangement'
     ) j
 
 GO
@@ -338,7 +338,7 @@ FROM openrowset (
         [item.unitPrice.id]            NVARCHAR(100)       '$.unitPrice.id',
         [item.unitPrice.extension]     NVARCHAR(MAX)       '$.unitPrice.extension',
         [item.unitPrice.value]         float               '$.unitPrice.value',
-        [item.unitPrice.currency]      NVARCHAR(8)         '$.unitPrice.currency',
+        [item.unitPrice.currency]      NVARCHAR(100)       '$.unitPrice.currency',
         [item.facility.id]             NVARCHAR(100)       '$.facility.id',
         [item.facility.extension]      NVARCHAR(MAX)       '$.facility.extension',
         [item.facility.reference]      NVARCHAR(4000)      '$.facility.reference',

@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[DiagnosticReport] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -499,12 +499,12 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[presentedForm.JSON]) with (
         [presentedForm.id]             NVARCHAR(100)       '$.id',
         [presentedForm.extension]      NVARCHAR(MAX)       '$.extension',
-        [presentedForm.contentType]    NVARCHAR(64)        '$.contentType',
-        [presentedForm.language]       NVARCHAR(12)        '$.language',
+        [presentedForm.contentType]    NVARCHAR(100)       '$.contentType',
+        [presentedForm.language]       NVARCHAR(100)       '$.language',
         [presentedForm.data]           NVARCHAR(MAX)       '$.data',
         [presentedForm.url]            VARCHAR(256)        '$.url',
         [presentedForm.size]           bigint              '$.size',
         [presentedForm.hash]           NVARCHAR(MAX)       '$.hash',
-        [presentedForm.title]          NVARCHAR(500)       '$.title',
+        [presentedForm.title]          NVARCHAR(4000)      '$.title',
         [presentedForm.creation]       VARCHAR(64)         '$.creation'
     ) j

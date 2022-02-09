@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[BodyStructure] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -156,12 +156,12 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[image.JSON]) with (
         [image.id]                     NVARCHAR(100)       '$.id',
         [image.extension]              NVARCHAR(MAX)       '$.extension',
-        [image.contentType]            NVARCHAR(64)        '$.contentType',
-        [image.language]               NVARCHAR(12)        '$.language',
+        [image.contentType]            NVARCHAR(100)       '$.contentType',
+        [image.language]               NVARCHAR(100)       '$.language',
         [image.data]                   NVARCHAR(MAX)       '$.data',
         [image.url]                    VARCHAR(256)        '$.url',
         [image.size]                   bigint              '$.size',
         [image.hash]                   NVARCHAR(MAX)       '$.hash',
-        [image.title]                  NVARCHAR(500)       '$.title',
+        [image.title]                  NVARCHAR(4000)      '$.title',
         [image.creation]               VARCHAR(64)         '$.creation'
     ) j

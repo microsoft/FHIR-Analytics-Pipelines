@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[ClinicalImpression] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -18,7 +18,7 @@ CREATE EXTERNAL TABLE [fhir].[ClinicalImpression] (
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
     [identifier] VARCHAR(MAX),
-    [status] NVARCHAR(64),
+    [status] NVARCHAR(100),
     [statusReason.id] NVARCHAR(100),
     [statusReason.extension] NVARCHAR(MAX),
     [statusReason.coding] VARCHAR(MAX),
@@ -293,7 +293,7 @@ FROM openrowset (
         [finding.itemReference.type]   VARCHAR(256)        '$.itemReference.type',
         [finding.itemReference.identifier] NVARCHAR(MAX)       '$.itemReference.identifier',
         [finding.itemReference.display] NVARCHAR(4000)      '$.itemReference.display',
-        [finding.basis]                NVARCHAR(500)       '$.basis'
+        [finding.basis]                NVARCHAR(4000)      '$.basis'
     ) j
 
 GO

@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[PaymentReconciliation] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -18,7 +18,7 @@ CREATE EXTERNAL TABLE [fhir].[PaymentReconciliation] (
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
     [identifier] VARCHAR(MAX),
-    [status] NVARCHAR(64),
+    [status] NVARCHAR(100),
     [period.id] NVARCHAR(100),
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
@@ -69,7 +69,7 @@ CREATE EXTERNAL TABLE [fhir].[PaymentReconciliation] (
     [paymentAmount.id] NVARCHAR(100),
     [paymentAmount.extension] NVARCHAR(MAX),
     [paymentAmount.value] float,
-    [paymentAmount.currency] NVARCHAR(8),
+    [paymentAmount.currency] NVARCHAR(100),
     [paymentIdentifier.id] NVARCHAR(100),
     [paymentIdentifier.extension] NVARCHAR(MAX),
     [paymentIdentifier.use] NVARCHAR(64),
@@ -286,7 +286,7 @@ FROM openrowset (
         [detail.amount.id]             NVARCHAR(100)       '$.amount.id',
         [detail.amount.extension]      NVARCHAR(MAX)       '$.amount.extension',
         [detail.amount.value]          float               '$.amount.value',
-        [detail.amount.currency]       NVARCHAR(8)         '$.amount.currency'
+        [detail.amount.currency]       NVARCHAR(100)       '$.amount.currency'
     ) j
 
 GO

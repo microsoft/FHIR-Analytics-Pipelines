@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[RelatedPerson] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -282,13 +282,13 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[photo.JSON]) with (
         [photo.id]                     NVARCHAR(100)       '$.id',
         [photo.extension]              NVARCHAR(MAX)       '$.extension',
-        [photo.contentType]            NVARCHAR(64)        '$.contentType',
-        [photo.language]               NVARCHAR(12)        '$.language',
+        [photo.contentType]            NVARCHAR(100)       '$.contentType',
+        [photo.language]               NVARCHAR(100)       '$.language',
         [photo.data]                   NVARCHAR(MAX)       '$.data',
         [photo.url]                    VARCHAR(256)        '$.url',
         [photo.size]                   bigint              '$.size',
         [photo.hash]                   NVARCHAR(MAX)       '$.hash',
-        [photo.title]                  NVARCHAR(500)       '$.title',
+        [photo.title]                  NVARCHAR(4000)      '$.title',
         [photo.creation]               VARCHAR(64)         '$.creation'
     ) j
 

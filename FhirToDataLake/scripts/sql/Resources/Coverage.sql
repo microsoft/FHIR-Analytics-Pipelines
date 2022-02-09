@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[Coverage] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -18,7 +18,7 @@ CREATE EXTERNAL TABLE [fhir].[Coverage] (
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
     [identifier] VARCHAR(MAX),
-    [status] NVARCHAR(64),
+    [status] NVARCHAR(100),
     [type.id] NVARCHAR(100),
     [type.extension] NVARCHAR(MAX),
     [type.coding] VARCHAR(MAX),
@@ -63,7 +63,7 @@ CREATE EXTERNAL TABLE [fhir].[Coverage] (
     [beneficiary.identifier.period] NVARCHAR(MAX),
     [beneficiary.identifier.assigner] NVARCHAR(MAX),
     [beneficiary.display] NVARCHAR(4000),
-    [dependent] NVARCHAR(100),
+    [dependent] NVARCHAR(500),
     [relationship.id] NVARCHAR(100),
     [relationship.extension] NVARCHAR(MAX),
     [relationship.coding] VARCHAR(MAX),
@@ -75,7 +75,7 @@ CREATE EXTERNAL TABLE [fhir].[Coverage] (
     [payor] VARCHAR(MAX),
     [class] VARCHAR(MAX),
     [order] bigint,
-    [network] NVARCHAR(100),
+    [network] NVARCHAR(500),
     [costToBeneficiary] VARCHAR(MAX),
     [subrogation] bit,
     [contract] VARCHAR(MAX),
@@ -284,7 +284,7 @@ FROM openrowset (
         [costToBeneficiary.value.money.id] NVARCHAR(100)       '$.value.money.id',
         [costToBeneficiary.value.money.extension] NVARCHAR(MAX)       '$.value.money.extension',
         [costToBeneficiary.value.money.value] float               '$.value.money.value',
-        [costToBeneficiary.value.money.currency] NVARCHAR(8)         '$.value.money.currency'
+        [costToBeneficiary.value.money.currency] NVARCHAR(100)       '$.value.money.currency'
     ) j
 
 GO

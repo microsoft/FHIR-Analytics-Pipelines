@@ -10,7 +10,7 @@ CREATE EXTERNAL TABLE [fhir].[TestScript] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(12),
+    [language] NVARCHAR(100),
     [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
@@ -39,7 +39,7 @@ CREATE EXTERNAL TABLE [fhir].[TestScript] (
     [identifier.assigner.display] NVARCHAR(4000),
     [version] NVARCHAR(100),
     [name] NVARCHAR(100),
-    [title] NVARCHAR(500),
+    [title] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
@@ -392,12 +392,12 @@ FROM openrowset (
         [variable.extension]           NVARCHAR(MAX)       '$.extension',
         [variable.modifierExtension]   NVARCHAR(MAX)       '$.modifierExtension',
         [variable.name]                NVARCHAR(100)       '$.name',
-        [variable.defaultValue]        NVARCHAR(500)       '$.defaultValue',
+        [variable.defaultValue]        NVARCHAR(4000)      '$.defaultValue',
         [variable.description]         NVARCHAR(4000)      '$.description',
         [variable.expression]          NVARCHAR(500)       '$.expression',
-        [variable.headerField]         NVARCHAR(500)       '$.headerField',
+        [variable.headerField]         NVARCHAR(4000)      '$.headerField',
         [variable.hint]                NVARCHAR(500)       '$.hint',
-        [variable.path]                NVARCHAR(500)       '$.path',
+        [variable.path]                NVARCHAR(4000)      '$.path',
         [variable.sourceId]            VARCHAR(64)         '$.sourceId'
     ) j
 
