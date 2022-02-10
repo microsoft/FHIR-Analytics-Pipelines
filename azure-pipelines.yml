@@ -35,10 +35,18 @@ stages:
   pool:
     vmImage: 'windows-latest'
   jobs:
+  - job: SynapseE2ETest
+    steps:
+    - template: FhirToDataLake/synapse-e2e-test.yml
+
   - job: PublishFhirToCdm
+    dependsOn: SynapseE2ETest
+    condition: succeeded()
     steps:
     - template: FhirToCdm/publish.yml
 
   - job: PublishArtifactsToGitHub
+    dependsOn: PublishFhirToCdm
+    condition: succeeded()
     steps:
     - template: publish.yml

@@ -17,6 +17,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core
         {
             services.AddSingleton<IJobStore, AzureBlobJobStore>();
 
+            services.AddSingleton<JobProgressUpdaterFactory, JobProgressUpdaterFactory>();
+
             services.AddSingleton<JobManager, JobManager>();
 
             services.AddSingleton<JobExecutor, JobExecutor>();

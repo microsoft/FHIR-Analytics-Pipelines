@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -14,6 +15,8 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using Azure.Storage.Files.DataLake;
+using Azure.Storage.Files.DataLake.Models;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
@@ -23,8 +26,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
     public class AzureBlobContainerClient : IAzureBlobContainerClient
     {
         private readonly BlobContainerClient _blobContainerClient;
+        private readonly DataLakeFileSystemClient _dataLakeFileSystemClient;
         private readonly ILogger<AzureBlobContainerClient> _logger;
+
         private const int ListBlobPageCount = 20;
+
+        /// <summary>
+        /// Path not found error code for data lake api.
+        /// See https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/storage/Azure.Storage.Common/src/Shared/Constants.cs#L336.
+        /// </summary>
+        private const string DataLakePathNotFoundErrorCode = "PathNotFound";
 
         public AzureBlobContainerClient(
             Uri storageUri,
@@ -36,6 +47,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             _logger = logger;
 
             _blobContainerClient = new BlobContainerClient(
+                storageUri,
+                new DefaultAzureCredential());
+            _dataLakeFileSystemClient = new DataLakeFileSystemClient(
                 storageUri,
                 new DefaultAzureCredential());
             InitializeBlobContainerClient();
@@ -62,6 +76,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             _blobContainerClient = new BlobContainerClient(
                 connectionString,
                 containerName);
+            _dataLakeFileSystemClient = new DataLakeFileSystemClient(
+                connectionString,
+                containerName);
+
             InitializeBlobContainerClient();
         }
 
@@ -248,6 +266,83 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 _logger.LogWarning("Failed to release lease on the blob '{0}'. Reason: '{1}'", blobName, ex);
                 return false;
             }
+        }
+
+        public async Task MoveDirectoryAsync(string sourceDirectory, string targetDirectory, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var sourceDirectoryClient = _dataLakeFileSystemClient.GetDirectoryClient(sourceDirectory);
+
+                // Create target parent directory if not exists.
+                var targetParentDirectory = Path.GetDirectoryName(targetDirectory);
+                if (!string.IsNullOrEmpty(targetParentDirectory))
+                {
+                    var targetParentDirectoryClient = _dataLakeFileSystemClient.GetDirectoryClient(targetParentDirectory);
+                    await targetParentDirectoryClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
+                }
+
+                await sourceDirectoryClient.RenameAsync(targetDirectory, cancellationToken: cancellationToken);
+
+                _logger.LogInformation("Move blob directory '{0}' to '{1}' successfully.", sourceDirectory, targetDirectory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("Failed to move blob directory '{0}' to '{1}'. Reason: '{2}'", sourceDirectory, targetDirectory, ex);
+                throw new AzureBlobOperationFailedException($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'.", ex);
+            }
+        }
+
+        public async Task DeleteDirectoryIfExistsAsync(string directory, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
+                await directoryClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
+
+                _logger.LogInformation("Delete blob directory '{0}' successfully.", directory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("Failed to delete blob directory '{0}'. Reason: '{1}'", directory, ex);
+                throw new AzureBlobOperationFailedException($"Failed to delete blob directory '{directory}'.", ex);
+            }
+        }
+
+        public async IAsyncEnumerable<PathItem> ListPathsAsync(string directory, [EnumeratorCancellation]CancellationToken cancellationToken = default)
+        {
+            // Enumerate all paths in folder, see List directory contents https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-directory-file-acl-dotnet#list-directory-contents
+            var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
+            IAsyncEnumerator<PathItem> asyncEnumerator = directoryClient.GetPathsAsync(true, cancellationToken: cancellationToken).GetAsyncEnumerator(cancellationToken);
+
+            PathItem item;
+            do
+            {
+                try
+                {
+                    // Exception might throw when querying data lake storage.
+                    if (!await asyncEnumerator.MoveNextAsync())
+                    {
+                        break;
+                    }
+
+                    item = asyncEnumerator.Current;
+                }
+                catch (RequestFailedException ex)
+                    when (ex.ErrorCode == DataLakePathNotFoundErrorCode)
+                {
+                    _logger.LogInformation("Directory '{0}' is empty.", directory);
+                    yield break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Failed to query paths of directory '{0}'. Reason: '{1}'", directory, ex);
+                    throw new AzureBlobOperationFailedException($"Failed to query paths of directory '{directory}'.", ex);
+                }
+
+                yield return item;
+            }
+            while (item != null);
         }
     }
 }

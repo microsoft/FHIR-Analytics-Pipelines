@@ -13,7 +13,7 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
 {
     public class JobManagerFunction
     {
-        private JobManager _jobManager;
+        private readonly JobManager _jobManager;
 
         public JobManagerFunction(JobManager jobManager)
         {
@@ -33,14 +33,18 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
         }
     }
 
+#pragma warning disable SA1402 // File may only contain a single type
     public class MyInfo
+#pragma warning restore SA1402 // File may only contain a single type
     {
         public MyScheduleStatus ScheduleStatus { get; set; }
 
         public bool IsPastDue { get; set; }
     }
 
+#pragma warning disable SA1402 // File may only contain a single type
     public class MyScheduleStatus
+#pragma warning restore SA1402 // File may only contain a single type
     {
         public DateTime Last { get; set; }
 

@@ -23,10 +23,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <summary>
         /// Update a job in store.
         /// </summary>
-        /// <param name="job">the 0 job.</param>
+        /// <param name="job">the input job.</param>
         /// <param name="cancellationToken">the input cancellationToken.</param>
-        /// <returns>Updated job.</returns>
-        public Task<bool> UpdateJobAsync(Job job, CancellationToken cancellationToken = default);
+        /// <returns>Completed task.</returns>
+        public Task UpdateJobAsync(Job job, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Complete the running job.
@@ -34,8 +34,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         /// <param name="job">job to complete.</param>
         /// <param name="cancellationToken">cancellation token.</param>
-        /// <returns>Completed job.</returns>
-        public Task<bool> CompleteJobAsync(Job job, CancellationToken cancellationToken = default);
+        /// <returns>Completed task.</returns>
+        public Task CompleteJobAsync(Job job, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Acquire job lock in job store.

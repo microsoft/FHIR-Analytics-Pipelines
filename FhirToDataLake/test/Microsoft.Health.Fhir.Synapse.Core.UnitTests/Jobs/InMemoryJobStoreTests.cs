@@ -112,7 +112,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var activeJob = new Job(
                 ContainerName,
-                JobStatus.Completed,
+                JobStatus.Succeeded,
                 new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, testTime),
                 DateTimeOffset.Now.AddMinutes(-1));
@@ -220,6 +220,105 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             jobs = await jobStore.GetActiveJobsAsync();
             Assert.Equal(5, jobs.Count());
+        }
+
+        [Fact]
+        public async Task GivenJobDataStaged_WhenCommit_CorrectResultShouldBeCommitted()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+            var activeJob = new Job(
+                ContainerName,
+                JobStatus.Succeeded,
+                new List<string> { "Patient", "Observation" },
+                new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
+                DateTimeOffset.Now.AddMinutes(-1));
+
+            // Upload parquet data
+            var jobStore = CreateInMemoryJobStore(blobClient);
+            var data = Encoding.UTF8.GetBytes("test");
+            var stageBlobList = new List<string>
+            {
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/01/Patient_{activeJob.Id}_00000.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/02/Patient_{activeJob.Id}_00001.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/03/Patient_{activeJob.Id}_00002.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/04/Patient_{activeJob.Id}_00003.parquet",
+            };
+            var resultBlobList = new List<string>
+            {
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/01/{activeJob.Id}/Patient_{activeJob.Id}_00000.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/02/{activeJob.Id}/Patient_{activeJob.Id}_00001.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/03/{activeJob.Id}/Patient_{activeJob.Id}_00002.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/04/{activeJob.Id}/Patient_{activeJob.Id}_00003.parquet",
+            };
+
+            foreach (var blobName in stageBlobList)
+            {
+                await blobClient.CreateBlobAsync(blobName, new MemoryStream(data));
+            }
+
+            activeJob.PartIds["Patient"] = 4;
+            await jobStore.CompleteJobAsync(activeJob);
+
+            // Make sure data has been moved to result folder.
+            foreach (var blobName in resultBlobList)
+            {
+                Assert.NotNull(await blobClient.GetBlobAsync(blobName));
+            }
+
+            foreach (var blobName in stageBlobList)
+            {
+                Assert.Null(await blobClient.GetBlobAsync(blobName));
+            }
+        }
+
+        [Fact]
+        public async Task GivenJobDataStaged_WhenCommit_UnrecordedDataShouldBeRemoved()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+            var activeJob = new Job(
+                ContainerName,
+                JobStatus.Succeeded,
+                new List<string> { "Patient", "Observation" },
+                new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
+                DateTimeOffset.Now.AddMinutes(-1));
+
+            // Upload parquet data
+            var jobStore = CreateInMemoryJobStore(blobClient);
+            var data = Encoding.UTF8.GetBytes("test");
+            var stageBlobList = new List<string>
+            {
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/01/Patient_{activeJob.Id}_00000.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/02/Patient_{activeJob.Id}_00001.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/03/Patient_{activeJob.Id}_00002.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/04/Patient_{activeJob.Id}_00003.parquet",
+            };
+            var resultBlobList = new List<string>
+            {
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/01/{activeJob.Id}/Patient_{activeJob.Id}_00000.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/02/{activeJob.Id}/Patient_{activeJob.Id}_00001.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/03/{activeJob.Id}/Patient_{activeJob.Id}_00002.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/04/{activeJob.Id}/Patient_{activeJob.Id}_00003.parquet",
+            };
+
+            foreach (var blobName in stageBlobList)
+            {
+                await blobClient.CreateBlobAsync(blobName, new MemoryStream(data));
+            }
+
+            // Only blobs of partId 0 and 1 should be kept.
+            activeJob.PartIds["Patient"] = 2;
+            await jobStore.CompleteJobAsync(activeJob);
+
+            // Make sure data has been moved to result folder.
+            Assert.NotNull(await blobClient.GetBlobAsync(resultBlobList[0]));
+            Assert.NotNull(await blobClient.GetBlobAsync(resultBlobList[1]));
+            Assert.Null(await blobClient.GetBlobAsync(resultBlobList[2]));
+            Assert.Null(await blobClient.GetBlobAsync(resultBlobList[3]));
+
+            foreach (var blobName in stageBlobList)
+            {
+                Assert.Null(await blobClient.GetBlobAsync(blobName));
+            }
         }
 
         private AzureBlobJobStore CreateInMemoryJobStore(InMemoryBlobContainerClient blobClient)

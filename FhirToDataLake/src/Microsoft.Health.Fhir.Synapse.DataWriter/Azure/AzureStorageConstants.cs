@@ -8,5 +8,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
     public static class AzureStorageConstants
     {
         public const string ResultFolderName = "result";
+        public const string StagingFolderName = "staging";
     }
 }
