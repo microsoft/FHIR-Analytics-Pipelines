@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[Appointment] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -35,11 +35,11 @@ CREATE EXTERNAL TABLE [fhir].[Appointment] (
     [priority] bigint,
     [description] NVARCHAR(4000),
     [supportingInformation] VARCHAR(MAX),
-    [start] VARCHAR(30),
-    [end] VARCHAR(30),
+    [start] VARCHAR(64),
+    [end] VARCHAR(64),
     [minutesDuration] bigint,
     [slot] VARCHAR(MAX),
-    [created] VARCHAR(30),
+    [created] VARCHAR(64),
     [comment] NVARCHAR(4000),
     [patientInstruction] NVARCHAR(4000),
     [basedOn] VARCHAR(MAX),
@@ -96,8 +96,8 @@ FROM openrowset (
         [identifier.value]             NVARCHAR(4000)      '$.value',
         [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
         [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
@@ -423,8 +423,8 @@ FROM openrowset (
         [participant.status]           NVARCHAR(64)        '$.status',
         [participant.period.id]        NVARCHAR(4000)      '$.period.id',
         [participant.period.extension] NVARCHAR(MAX)       '$.period.extension',
-        [participant.period.start]     VARCHAR(30)         '$.period.start',
-        [participant.period.end]       VARCHAR(30)         '$.period.end'
+        [participant.period.start]     VARCHAR(64)         '$.period.start',
+        [participant.period.end]       VARCHAR(64)         '$.period.end'
     ) j
 
 GO
@@ -448,6 +448,6 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[requestedPeriod.JSON]) with (
         [requestedPeriod.id]           NVARCHAR(4000)      '$.id',
         [requestedPeriod.extension]    NVARCHAR(MAX)       '$.extension',
-        [requestedPeriod.start]        VARCHAR(30)         '$.start',
-        [requestedPeriod.end]          VARCHAR(30)         '$.end'
+        [requestedPeriod.start]        VARCHAR(64)         '$.start',
+        [requestedPeriod.end]          VARCHAR(64)         '$.end'
     ) j

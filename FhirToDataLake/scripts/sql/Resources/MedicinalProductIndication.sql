@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[MedicinalProductIndication] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),

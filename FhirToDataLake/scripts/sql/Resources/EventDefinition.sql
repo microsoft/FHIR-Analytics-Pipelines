@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[EventDefinition] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -25,7 +25,7 @@ CREATE EXTERNAL TABLE [fhir].[EventDefinition] (
     [subtitle] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [experimental] bit,
-    [date] VARCHAR(30),
+    [date] VARCHAR(64),
     [publisher] NVARCHAR(4000),
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
@@ -34,12 +34,12 @@ CREATE EXTERNAL TABLE [fhir].[EventDefinition] (
     [purpose] NVARCHAR(MAX),
     [usage] NVARCHAR(4000),
     [copyright] NVARCHAR(MAX),
-    [approvalDate] VARCHAR(10),
-    [lastReviewDate] VARCHAR(10),
+    [approvalDate] VARCHAR(32),
+    [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(4000),
     [effectivePeriod.extension] NVARCHAR(MAX),
-    [effectivePeriod.start] VARCHAR(30),
-    [effectivePeriod.end] VARCHAR(30),
+    [effectivePeriod.start] VARCHAR(64),
+    [effectivePeriod.end] VARCHAR(64),
     [topic] VARCHAR(MAX),
     [author] VARCHAR(MAX),
     [editor] VARCHAR(MAX),
@@ -115,8 +115,8 @@ FROM openrowset (
         [identifier.value]             NVARCHAR(4000)      '$.value',
         [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
         [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
@@ -426,7 +426,7 @@ FROM openrowset (
         [relatedArtifact.document.size] bigint              '$.document.size',
         [relatedArtifact.document.hash] NVARCHAR(MAX)       '$.document.hash',
         [relatedArtifact.document.title] NVARCHAR(4000)      '$.document.title',
-        [relatedArtifact.document.creation] VARCHAR(30)         '$.document.creation',
+        [relatedArtifact.document.creation] VARCHAR(64)         '$.document.creation',
         [relatedArtifact.resource]     VARCHAR(256)        '$.resource'
     ) j
 
@@ -495,6 +495,6 @@ FROM openrowset (
         [trigger.timing.reference.type] VARCHAR(256)        '$.timing.reference.type',
         [trigger.timing.reference.identifier] NVARCHAR(MAX)       '$.timing.reference.identifier',
         [trigger.timing.reference.display] NVARCHAR(4000)      '$.timing.reference.display',
-        [trigger.timing.date]          VARCHAR(10)         '$.timing.date',
-        [trigger.timing.dateTime]      VARCHAR(30)         '$.timing.dateTime'
+        [trigger.timing.date]          VARCHAR(32)         '$.timing.date',
+        [trigger.timing.dateTime]      VARCHAR(64)         '$.timing.dateTime'
     ) j

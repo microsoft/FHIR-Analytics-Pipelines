@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[OrganizationAffiliation] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -21,8 +21,8 @@ CREATE EXTERNAL TABLE [fhir].[OrganizationAffiliation] (
     [active] bit,
     [period.id] NVARCHAR(4000),
     [period.extension] NVARCHAR(MAX),
-    [period.start] VARCHAR(30),
-    [period.end] VARCHAR(30),
+    [period.start] VARCHAR(64),
+    [period.end] VARCHAR(64),
     [organization.id] NVARCHAR(4000),
     [organization.extension] NVARCHAR(MAX),
     [organization.reference] NVARCHAR(4000),
@@ -107,8 +107,8 @@ FROM openrowset (
         [identifier.value]             NVARCHAR(4000)      '$.value',
         [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
         [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
@@ -329,8 +329,8 @@ FROM openrowset (
         [telecom.rank]                 bigint              '$.rank',
         [telecom.period.id]            NVARCHAR(4000)      '$.period.id',
         [telecom.period.extension]     NVARCHAR(MAX)       '$.period.extension',
-        [telecom.period.start]         VARCHAR(30)         '$.period.start',
-        [telecom.period.end]           VARCHAR(30)         '$.period.end'
+        [telecom.period.start]         VARCHAR(64)         '$.period.start',
+        [telecom.period.end]           VARCHAR(64)         '$.period.end'
     ) j
 
 GO

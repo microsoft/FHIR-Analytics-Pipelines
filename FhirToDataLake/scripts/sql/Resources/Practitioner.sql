@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[Practitioner] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -23,7 +23,7 @@ CREATE EXTERNAL TABLE [fhir].[Practitioner] (
     [telecom] VARCHAR(MAX),
     [address] VARCHAR(MAX),
     [gender] NVARCHAR(64),
-    [birthDate] VARCHAR(10),
+    [birthDate] VARCHAR(32),
     [photo] VARCHAR(MAX),
     [qualification] VARCHAR(MAX),
     [communication] VARCHAR(MAX),
@@ -78,8 +78,8 @@ FROM openrowset (
         [identifier.value]             NVARCHAR(4000)      '$.value',
         [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
         [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
@@ -125,8 +125,8 @@ FROM openrowset (
         [name.suffix]                  NVARCHAR(MAX)       '$.suffix' AS JSON,
         [name.period.id]               NVARCHAR(4000)      '$.period.id',
         [name.period.extension]        NVARCHAR(MAX)       '$.period.extension',
-        [name.period.start]            VARCHAR(30)         '$.period.start',
-        [name.period.end]              VARCHAR(30)         '$.period.end'
+        [name.period.start]            VARCHAR(64)         '$.period.start',
+        [name.period.end]              VARCHAR(64)         '$.period.end'
     ) j
 
 GO
@@ -162,8 +162,8 @@ FROM openrowset (
         [telecom.rank]                 bigint              '$.rank',
         [telecom.period.id]            NVARCHAR(4000)      '$.period.id',
         [telecom.period.extension]     NVARCHAR(MAX)       '$.period.extension',
-        [telecom.period.start]         VARCHAR(30)         '$.period.start',
-        [telecom.period.end]           VARCHAR(30)         '$.period.end'
+        [telecom.period.start]         VARCHAR(64)         '$.period.start',
+        [telecom.period.end]           VARCHAR(64)         '$.period.end'
     ) j
 
 GO
@@ -209,8 +209,8 @@ FROM openrowset (
         [address.country]              NVARCHAR(4000)      '$.country',
         [address.period.id]            NVARCHAR(4000)      '$.period.id',
         [address.period.extension]     NVARCHAR(MAX)       '$.period.extension',
-        [address.period.start]         VARCHAR(30)         '$.period.start',
-        [address.period.end]           VARCHAR(30)         '$.period.end'
+        [address.period.start]         VARCHAR(64)         '$.period.start',
+        [address.period.end]           VARCHAR(64)         '$.period.end'
     ) j
 
 GO
@@ -247,7 +247,7 @@ FROM openrowset (
         [photo.size]                   bigint              '$.size',
         [photo.hash]                   NVARCHAR(MAX)       '$.hash',
         [photo.title]                  NVARCHAR(4000)      '$.title',
-        [photo.creation]               VARCHAR(30)         '$.creation'
+        [photo.creation]               VARCHAR(64)         '$.creation'
     ) j
 
 GO
@@ -293,8 +293,8 @@ FROM openrowset (
         [qualification.code.text]      NVARCHAR(4000)      '$.code.text',
         [qualification.period.id]      NVARCHAR(4000)      '$.period.id',
         [qualification.period.extension] NVARCHAR(MAX)       '$.period.extension',
-        [qualification.period.start]   VARCHAR(30)         '$.period.start',
-        [qualification.period.end]     VARCHAR(30)         '$.period.end',
+        [qualification.period.start]   VARCHAR(64)         '$.period.start',
+        [qualification.period.end]     VARCHAR(64)         '$.period.end',
         [qualification.issuer.id]      NVARCHAR(4000)      '$.issuer.id',
         [qualification.issuer.extension] NVARCHAR(MAX)       '$.issuer.extension',
         [qualification.issuer.reference] NVARCHAR(4000)      '$.issuer.reference',

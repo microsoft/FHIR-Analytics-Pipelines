@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[SubstanceSpecification] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -28,8 +28,8 @@ CREATE EXTERNAL TABLE [fhir].[SubstanceSpecification] (
     [identifier.value] NVARCHAR(4000),
     [identifier.period.id] NVARCHAR(4000),
     [identifier.period.extension] NVARCHAR(MAX),
-    [identifier.period.start] VARCHAR(30),
-    [identifier.period.end] VARCHAR(30),
+    [identifier.period.start] VARCHAR(64),
+    [identifier.period.end] VARCHAR(64),
     [identifier.assigner.id] NVARCHAR(4000),
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
@@ -393,7 +393,7 @@ FROM openrowset (
         [code.status.extension]        NVARCHAR(MAX)       '$.status.extension',
         [code.status.coding]           NVARCHAR(MAX)       '$.status.coding',
         [code.status.text]             NVARCHAR(4000)      '$.status.text',
-        [code.statusDate]              VARCHAR(30)         '$.statusDate',
+        [code.statusDate]              VARCHAR(64)         '$.statusDate',
         [code.comment]                 NVARCHAR(4000)      '$.comment',
         [code.source]                  NVARCHAR(MAX)       '$.source' AS JSON
     ) j

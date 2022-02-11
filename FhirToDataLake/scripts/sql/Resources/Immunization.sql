@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[Immunization] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -53,7 +53,7 @@ CREATE EXTERNAL TABLE [fhir].[Immunization] (
     [encounter.identifier.period] NVARCHAR(MAX),
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
-    [recorded] VARCHAR(30),
+    [recorded] VARCHAR(64),
     [primarySource] bit,
     [reportOrigin.id] NVARCHAR(4000),
     [reportOrigin.extension] NVARCHAR(MAX),
@@ -86,7 +86,7 @@ CREATE EXTERNAL TABLE [fhir].[Immunization] (
     [manufacturer.identifier.assigner] NVARCHAR(MAX),
     [manufacturer.display] NVARCHAR(4000),
     [lotNumber] NVARCHAR(4000),
-    [expirationDate] VARCHAR(10),
+    [expirationDate] VARCHAR(32),
     [site.id] NVARCHAR(4000),
     [site.extension] NVARCHAR(MAX),
     [site.coding] VARCHAR(MAX),
@@ -116,7 +116,7 @@ CREATE EXTERNAL TABLE [fhir].[Immunization] (
     [fundingSource.text] NVARCHAR(4000),
     [reaction] VARCHAR(MAX),
     [protocolApplied] VARCHAR(MAX),
-    [occurrence.dateTime] VARCHAR(30),
+    [occurrence.dateTime] VARCHAR(64),
     [occurrence.string] NVARCHAR(4000),
 ) WITH (
     LOCATION='/Immunization/**',
@@ -169,8 +169,8 @@ FROM openrowset (
         [identifier.value]             NVARCHAR(4000)      '$.value',
         [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
         [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
@@ -250,7 +250,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[note.JSON]) with (
         [note.id]                      NVARCHAR(4000)      '$.id',
         [note.extension]               NVARCHAR(MAX)       '$.extension',
-        [note.time]                    VARCHAR(30)         '$.time',
+        [note.time]                    VARCHAR(64)         '$.time',
         [note.text]                    NVARCHAR(MAX)       '$.text',
         [note.author.reference.id]     NVARCHAR(4000)      '$.author.reference.id',
         [note.author.reference.extension] NVARCHAR(MAX)       '$.author.reference.extension',
@@ -381,8 +381,8 @@ FROM openrowset (
         [education.modifierExtension]  NVARCHAR(MAX)       '$.modifierExtension',
         [education.documentType]       NVARCHAR(4000)      '$.documentType',
         [education.reference]          VARCHAR(256)        '$.reference',
-        [education.publicationDate]    VARCHAR(30)         '$.publicationDate',
-        [education.presentationDate]   VARCHAR(30)         '$.presentationDate'
+        [education.publicationDate]    VARCHAR(64)         '$.publicationDate',
+        [education.presentationDate]   VARCHAR(64)         '$.presentationDate'
     ) j
 
 GO
@@ -439,7 +439,7 @@ FROM openrowset (
         [reaction.id]                  NVARCHAR(4000)      '$.id',
         [reaction.extension]           NVARCHAR(MAX)       '$.extension',
         [reaction.modifierExtension]   NVARCHAR(MAX)       '$.modifierExtension',
-        [reaction.date]                VARCHAR(30)         '$.date',
+        [reaction.date]                VARCHAR(64)         '$.date',
         [reaction.detail.id]           NVARCHAR(4000)      '$.detail.id',
         [reaction.detail.extension]    NVARCHAR(MAX)       '$.detail.extension',
         [reaction.detail.reference]    NVARCHAR(4000)      '$.detail.reference',
