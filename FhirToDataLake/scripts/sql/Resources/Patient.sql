@@ -22,7 +22,7 @@ CREATE EXTERNAL TABLE [fhir].[Patient] (
     [name] VARCHAR(MAX),
     [telecom] VARCHAR(MAX),
     [gender] NVARCHAR(64),
-    [birthDate] VARCHAR(32),
+    [birthDate] VARCHAR(64),
     [address] VARCHAR(MAX),
     [maritalStatus.id] NVARCHAR(4000),
     [maritalStatus.extension] NVARCHAR(MAX),

@@ -34,8 +34,8 @@ CREATE EXTERNAL TABLE [fhir].[EventDefinition] (
     [purpose] NVARCHAR(MAX),
     [usage] NVARCHAR(4000),
     [copyright] NVARCHAR(MAX),
-    [approvalDate] VARCHAR(32),
-    [lastReviewDate] VARCHAR(32),
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
     [effectivePeriod.id] NVARCHAR(4000),
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
@@ -495,6 +495,6 @@ FROM openrowset (
         [trigger.timing.reference.type] VARCHAR(256)        '$.timing.reference.type',
         [trigger.timing.reference.identifier] NVARCHAR(MAX)       '$.timing.reference.identifier',
         [trigger.timing.reference.display] NVARCHAR(4000)      '$.timing.reference.display',
-        [trigger.timing.date]          VARCHAR(32)         '$.timing.date',
+        [trigger.timing.date]          VARCHAR(64)         '$.timing.date',
         [trigger.timing.dateTime]      VARCHAR(64)         '$.timing.dateTime'
     ) j

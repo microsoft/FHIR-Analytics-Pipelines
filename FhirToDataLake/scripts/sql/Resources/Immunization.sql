@@ -86,7 +86,7 @@ CREATE EXTERNAL TABLE [fhir].[Immunization] (
     [manufacturer.identifier.assigner] NVARCHAR(MAX),
     [manufacturer.display] NVARCHAR(4000),
     [lotNumber] NVARCHAR(4000),
-    [expirationDate] VARCHAR(32),
+    [expirationDate] VARCHAR(64),
     [site.id] NVARCHAR(4000),
     [site.extension] NVARCHAR(MAX),
     [site.coding] VARCHAR(MAX),

@@ -23,7 +23,7 @@ CREATE EXTERNAL TABLE [fhir].[Practitioner] (
     [telecom] VARCHAR(MAX),
     [address] VARCHAR(MAX),
     [gender] NVARCHAR(64),
-    [birthDate] VARCHAR(32),
+    [birthDate] VARCHAR(64),
     [photo] VARCHAR(MAX),
     [qualification] VARCHAR(MAX),
     [communication] VARCHAR(MAX),

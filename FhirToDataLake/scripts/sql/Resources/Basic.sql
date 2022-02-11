@@ -35,7 +35,7 @@ CREATE EXTERNAL TABLE [fhir].[Basic] (
     [subject.identifier.period] NVARCHAR(MAX),
     [subject.identifier.assigner] NVARCHAR(MAX),
     [subject.display] NVARCHAR(4000),
-    [created] VARCHAR(32),
+    [created] VARCHAR(64),
     [author.id] NVARCHAR(4000),
     [author.extension] NVARCHAR(MAX),
     [author.reference] NVARCHAR(4000),

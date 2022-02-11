@@ -93,7 +93,7 @@ CREATE EXTERNAL TABLE [fhir].[CoverageEligibilityRequest] (
     [supportingInfo] VARCHAR(MAX),
     [insurance] VARCHAR(MAX),
     [item] VARCHAR(MAX),
-    [serviced.date] VARCHAR(32),
+    [serviced.date] VARCHAR(64),
     [serviced.period.id] NVARCHAR(4000),
     [serviced.period.extension] NVARCHAR(MAX),
     [serviced.period.start] VARCHAR(64),

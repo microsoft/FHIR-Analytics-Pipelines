@@ -72,7 +72,7 @@ CREATE EXTERNAL TABLE [fhir].[PaymentNotice] (
     [payment.identifier.period] NVARCHAR(MAX),
     [payment.identifier.assigner] NVARCHAR(MAX),
     [payment.display] NVARCHAR(4000),
-    [paymentDate] VARCHAR(32),
+    [paymentDate] VARCHAR(64),
     [payee.id] NVARCHAR(4000),
     [payee.extension] NVARCHAR(MAX),
     [payee.reference] NVARCHAR(4000),

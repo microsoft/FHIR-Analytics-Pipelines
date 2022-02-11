@@ -21,7 +21,7 @@ CREATE EXTERNAL TABLE [fhir].[Person] (
     [name] VARCHAR(MAX),
     [telecom] VARCHAR(MAX),
     [gender] NVARCHAR(64),
-    [birthDate] VARCHAR(32),
+    [birthDate] VARCHAR(64),
     [address] VARCHAR(MAX),
     [photo.id] NVARCHAR(4000),
     [photo.extension] NVARCHAR(MAX),

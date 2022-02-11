@@ -36,7 +36,7 @@ CREATE EXTERNAL TABLE [fhir].[RelatedPerson] (
     [name] VARCHAR(MAX),
     [telecom] VARCHAR(MAX),
     [gender] NVARCHAR(64),
-    [birthDate] VARCHAR(32),
+    [birthDate] VARCHAR(64),
     [address] VARCHAR(MAX),
     [photo] VARCHAR(MAX),
     [period.id] NVARCHAR(4000),

@@ -57,7 +57,7 @@ CREATE EXTERNAL TABLE [fhir].[FamilyMemberHistory] (
     [born.period.extension] NVARCHAR(MAX),
     [born.period.start] VARCHAR(64),
     [born.period.end] VARCHAR(64),
-    [born.date] VARCHAR(32),
+    [born.date] VARCHAR(64),
     [born.string] NVARCHAR(4000),
     [age.age.id] NVARCHAR(4000),
     [age.age.extension] NVARCHAR(MAX),
@@ -107,7 +107,7 @@ CREATE EXTERNAL TABLE [fhir].[FamilyMemberHistory] (
     [deceased.range.high.unit] NVARCHAR(4000),
     [deceased.range.high.system] VARCHAR(256),
     [deceased.range.high.code] NVARCHAR(4000),
-    [deceased.date] VARCHAR(32),
+    [deceased.date] VARCHAR(64),
     [deceased.string] NVARCHAR(4000),
 ) WITH (
     LOCATION='/FamilyMemberHistory/**',

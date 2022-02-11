@@ -508,7 +508,7 @@ FROM openrowset (
         [parameter.valueTriggerDefinition.condition] NVARCHAR(MAX)       '$.valueTriggerDefinition.condition',
         [parameter.valueTriggerDefinition.timing.timing] NVARCHAR(MAX)       '$.valueTriggerDefinition.timing.timing',
         [parameter.valueTriggerDefinition.timing.reference] NVARCHAR(MAX)       '$.valueTriggerDefinition.timing.reference',
-        [parameter.valueTriggerDefinition.timing.date] VARCHAR(32)         '$.valueTriggerDefinition.timing.date',
+        [parameter.valueTriggerDefinition.timing.date] VARCHAR(64)         '$.valueTriggerDefinition.timing.date',
         [parameter.valueTriggerDefinition.timing.dateTime] VARCHAR(64)         '$.valueTriggerDefinition.timing.dateTime',
         [parameter.valueUsageContext.id] NVARCHAR(4000)      '$.valueUsageContext.id',
         [parameter.valueUsageContext.extension] NVARCHAR(MAX)       '$.valueUsageContext.extension',

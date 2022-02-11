@@ -36,7 +36,7 @@ CREATE EXTERNAL TABLE [fhir].[ValueSet] (
     [compose.id] NVARCHAR(4000),
     [compose.extension] NVARCHAR(MAX),
     [compose.modifierExtension] NVARCHAR(MAX),
-    [compose.lockedDate] VARCHAR(32),
+    [compose.lockedDate] VARCHAR(64),
     [compose.inactive] bit,
     [compose.include] VARCHAR(MAX),
     [compose.exclude] VARCHAR(MAX),

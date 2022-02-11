@@ -82,7 +82,7 @@ CREATE EXTERNAL TABLE [fhir].[CoverageEligibilityResponse] (
     [form.coding] VARCHAR(MAX),
     [form.text] NVARCHAR(4000),
     [error] VARCHAR(MAX),
-    [serviced.date] VARCHAR(32),
+    [serviced.date] VARCHAR(64),
     [serviced.period.id] NVARCHAR(4000),
     [serviced.period.extension] NVARCHAR(MAX),
     [serviced.period.start] VARCHAR(64),
