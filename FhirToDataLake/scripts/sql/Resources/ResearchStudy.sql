@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[ResearchStudy] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -41,8 +41,8 @@ CREATE EXTERNAL TABLE [fhir].[ResearchStudy] (
     [enrollment] VARCHAR(MAX),
     [period.id] NVARCHAR(4000),
     [period.extension] NVARCHAR(MAX),
-    [period.start] VARCHAR(30),
-    [period.end] VARCHAR(30),
+    [period.start] VARCHAR(64),
+    [period.end] VARCHAR(64),
     [sponsor.id] NVARCHAR(4000),
     [sponsor.extension] NVARCHAR(MAX),
     [sponsor.reference] NVARCHAR(4000),
@@ -128,8 +128,8 @@ FROM openrowset (
         [identifier.value]             NVARCHAR(4000)      '$.value',
         [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
         [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
@@ -373,7 +373,7 @@ FROM openrowset (
         [relatedArtifact.document.size] bigint              '$.document.size',
         [relatedArtifact.document.hash] NVARCHAR(MAX)       '$.document.hash',
         [relatedArtifact.document.title] NVARCHAR(4000)      '$.document.title',
-        [relatedArtifact.document.creation] VARCHAR(30)         '$.document.creation',
+        [relatedArtifact.document.creation] VARCHAR(64)         '$.document.creation',
         [relatedArtifact.resource]     VARCHAR(256)        '$.resource'
     ) j
 
@@ -541,7 +541,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[note.JSON]) with (
         [note.id]                      NVARCHAR(4000)      '$.id',
         [note.extension]               NVARCHAR(MAX)       '$.extension',
-        [note.time]                    VARCHAR(30)         '$.time',
+        [note.time]                    VARCHAR(64)         '$.time',
         [note.text]                    NVARCHAR(MAX)       '$.text',
         [note.author.reference.id]     NVARCHAR(4000)      '$.author.reference.id',
         [note.author.reference.extension] NVARCHAR(MAX)       '$.author.reference.extension',

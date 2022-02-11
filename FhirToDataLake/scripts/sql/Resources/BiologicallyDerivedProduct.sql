@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[BiologicallyDerivedProduct] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -42,21 +42,21 @@ CREATE EXTERNAL TABLE [fhir].[BiologicallyDerivedProduct] (
     [collection.source.type] VARCHAR(256),
     [collection.source.identifier] NVARCHAR(MAX),
     [collection.source.display] NVARCHAR(4000),
-    [collection.collected.dateTime] VARCHAR(30),
+    [collection.collected.dateTime] VARCHAR(64),
     [collection.collected.period.id] NVARCHAR(4000),
     [collection.collected.period.extension] NVARCHAR(MAX),
-    [collection.collected.period.start] VARCHAR(30),
-    [collection.collected.period.end] VARCHAR(30),
+    [collection.collected.period.start] VARCHAR(64),
+    [collection.collected.period.end] VARCHAR(64),
     [processing] VARCHAR(MAX),
     [manipulation.id] NVARCHAR(4000),
     [manipulation.extension] NVARCHAR(MAX),
     [manipulation.modifierExtension] NVARCHAR(MAX),
     [manipulation.description] NVARCHAR(4000),
-    [manipulation.time.dateTime] VARCHAR(30),
+    [manipulation.time.dateTime] VARCHAR(64),
     [manipulation.time.period.id] NVARCHAR(4000),
     [manipulation.time.period.extension] NVARCHAR(MAX),
-    [manipulation.time.period.start] VARCHAR(30),
-    [manipulation.time.period.end] VARCHAR(30),
+    [manipulation.time.period.start] VARCHAR(64),
+    [manipulation.time.period.end] VARCHAR(64),
     [storage] VARCHAR(MAX),
 ) WITH (
     LOCATION='/BiologicallyDerivedProduct/**',
@@ -109,8 +109,8 @@ FROM openrowset (
         [identifier.value]             NVARCHAR(4000)      '$.value',
         [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
         [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
@@ -253,11 +253,11 @@ FROM openrowset (
         [processing.additive.type]     VARCHAR(256)        '$.additive.type',
         [processing.additive.identifier] NVARCHAR(MAX)       '$.additive.identifier',
         [processing.additive.display]  NVARCHAR(4000)      '$.additive.display',
-        [processing.time.dateTime]     VARCHAR(30)         '$.time.dateTime',
+        [processing.time.dateTime]     VARCHAR(64)         '$.time.dateTime',
         [processing.time.period.id]    NVARCHAR(4000)      '$.time.period.id',
         [processing.time.period.extension] NVARCHAR(MAX)       '$.time.period.extension',
-        [processing.time.period.start] VARCHAR(30)         '$.time.period.start',
-        [processing.time.period.end]   VARCHAR(30)         '$.time.period.end'
+        [processing.time.period.start] VARCHAR(64)         '$.time.period.start',
+        [processing.time.period.end]   VARCHAR(64)         '$.time.period.end'
     ) j
 
 GO
@@ -293,6 +293,6 @@ FROM openrowset (
         [storage.scale]                NVARCHAR(64)        '$.scale',
         [storage.duration.id]          NVARCHAR(4000)      '$.duration.id',
         [storage.duration.extension]   NVARCHAR(MAX)       '$.duration.extension',
-        [storage.duration.start]       VARCHAR(30)         '$.duration.start',
-        [storage.duration.end]         VARCHAR(30)         '$.duration.end'
+        [storage.duration.start]       VARCHAR(64)         '$.duration.start',
+        [storage.duration.end]         VARCHAR(64)         '$.duration.end'
     ) j

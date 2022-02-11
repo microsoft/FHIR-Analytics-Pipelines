@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[Encounter] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -56,8 +56,8 @@ CREATE EXTERNAL TABLE [fhir].[Encounter] (
     [appointment] VARCHAR(MAX),
     [period.id] NVARCHAR(4000),
     [period.extension] NVARCHAR(MAX),
-    [period.start] VARCHAR(30),
-    [period.end] VARCHAR(30),
+    [period.start] VARCHAR(64),
+    [period.end] VARCHAR(64),
     [length.id] NVARCHAR(4000),
     [length.extension] NVARCHAR(MAX),
     [length.value] float,
@@ -185,8 +185,8 @@ FROM openrowset (
         [identifier.value]             NVARCHAR(4000)      '$.value',
         [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
         [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
@@ -224,8 +224,8 @@ FROM openrowset (
         [statusHistory.status]         NVARCHAR(64)        '$.status',
         [statusHistory.period.id]      NVARCHAR(4000)      '$.period.id',
         [statusHistory.period.extension] NVARCHAR(MAX)       '$.period.extension',
-        [statusHistory.period.start]   VARCHAR(30)         '$.period.start',
-        [statusHistory.period.end]     VARCHAR(30)         '$.period.end'
+        [statusHistory.period.start]   VARCHAR(64)         '$.period.start',
+        [statusHistory.period.end]     VARCHAR(64)         '$.period.end'
     ) j
 
 GO
@@ -269,8 +269,8 @@ FROM openrowset (
         [classHistory.class.userSelected] bit                 '$.class.userSelected',
         [classHistory.period.id]       NVARCHAR(4000)      '$.period.id',
         [classHistory.period.extension] NVARCHAR(MAX)       '$.period.extension',
-        [classHistory.period.start]    VARCHAR(30)         '$.period.start',
-        [classHistory.period.end]      VARCHAR(30)         '$.period.end'
+        [classHistory.period.start]    VARCHAR(64)         '$.period.start',
+        [classHistory.period.end]      VARCHAR(64)         '$.period.end'
     ) j
 
 GO
@@ -419,8 +419,8 @@ FROM openrowset (
         [participant.type]             NVARCHAR(MAX)       '$.type' AS JSON,
         [participant.period.id]        NVARCHAR(4000)      '$.period.id',
         [participant.period.extension] NVARCHAR(MAX)       '$.period.extension',
-        [participant.period.start]     VARCHAR(30)         '$.period.start',
-        [participant.period.end]       VARCHAR(30)         '$.period.end',
+        [participant.period.start]     VARCHAR(64)         '$.period.start',
+        [participant.period.end]       VARCHAR(64)         '$.period.end',
         [participant.individual.id]    NVARCHAR(4000)      '$.individual.id',
         [participant.individual.extension] NVARCHAR(MAX)       '$.individual.extension',
         [participant.individual.reference] NVARCHAR(4000)      '$.individual.reference',
@@ -677,6 +677,6 @@ FROM openrowset (
         [location.physicalType.text]   NVARCHAR(4000)      '$.physicalType.text',
         [location.period.id]           NVARCHAR(4000)      '$.period.id',
         [location.period.extension]    NVARCHAR(MAX)       '$.period.extension',
-        [location.period.start]        VARCHAR(30)         '$.period.start',
-        [location.period.end]          VARCHAR(30)         '$.period.end'
+        [location.period.start]        VARCHAR(64)         '$.period.start',
+        [location.period.end]          VARCHAR(64)         '$.period.end'
     ) j

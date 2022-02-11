@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[MedicinalProductPackaged] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -92,8 +92,8 @@ FROM openrowset (
         [identifier.value]             NVARCHAR(4000)      '$.value',
         [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
         [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
@@ -197,9 +197,9 @@ FROM openrowset (
         [marketingStatus.status.text]  NVARCHAR(4000)      '$.status.text',
         [marketingStatus.dateRange.id] NVARCHAR(4000)      '$.dateRange.id',
         [marketingStatus.dateRange.extension] NVARCHAR(MAX)       '$.dateRange.extension',
-        [marketingStatus.dateRange.start] VARCHAR(30)         '$.dateRange.start',
-        [marketingStatus.dateRange.end] VARCHAR(30)         '$.dateRange.end',
-        [marketingStatus.restoreDate]  VARCHAR(30)         '$.restoreDate'
+        [marketingStatus.dateRange.start] VARCHAR(64)         '$.dateRange.start',
+        [marketingStatus.dateRange.end] VARCHAR(64)         '$.dateRange.end',
+        [marketingStatus.restoreDate]  VARCHAR(64)         '$.restoreDate'
     ) j
 
 GO

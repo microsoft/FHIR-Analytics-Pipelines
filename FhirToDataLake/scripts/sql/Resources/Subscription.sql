@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[Subscription] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -19,7 +19,7 @@ CREATE EXTERNAL TABLE [fhir].[Subscription] (
     [modifierExtension] NVARCHAR(MAX),
     [status] NVARCHAR(64),
     [contact] VARCHAR(MAX),
-    [end] VARCHAR(30),
+    [end] VARCHAR(64),
     [reason] NVARCHAR(4000),
     [criteria] NVARCHAR(4000),
     [error] NVARCHAR(4000),
@@ -69,6 +69,6 @@ FROM openrowset (
         [contact.rank]                 bigint              '$.rank',
         [contact.period.id]            NVARCHAR(4000)      '$.period.id',
         [contact.period.extension]     NVARCHAR(MAX)       '$.period.extension',
-        [contact.period.start]         VARCHAR(30)         '$.period.start',
-        [contact.period.end]           VARCHAR(30)         '$.period.end'
+        [contact.period.start]         VARCHAR(64)         '$.period.start',
+        [contact.period.end]           VARCHAR(64)         '$.period.end'
     ) j

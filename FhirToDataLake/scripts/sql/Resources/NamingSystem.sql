@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[NamingSystem] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -20,7 +20,7 @@ CREATE EXTERNAL TABLE [fhir].[NamingSystem] (
     [name] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [kind] NVARCHAR(64),
-    [date] VARCHAR(30),
+    [date] VARCHAR(64),
     [publisher] NVARCHAR(4000),
     [contact] VARCHAR(MAX),
     [responsible] NVARCHAR(4000),
@@ -201,6 +201,6 @@ FROM openrowset (
         [uniqueId.comment]             NVARCHAR(4000)      '$.comment',
         [uniqueId.period.id]           NVARCHAR(4000)      '$.period.id',
         [uniqueId.period.extension]    NVARCHAR(MAX)       '$.period.extension',
-        [uniqueId.period.start]        VARCHAR(30)         '$.period.start',
-        [uniqueId.period.end]          VARCHAR(30)         '$.period.end'
+        [uniqueId.period.start]        VARCHAR(64)         '$.period.start',
+        [uniqueId.period.end]          VARCHAR(64)         '$.period.end'
     ) j

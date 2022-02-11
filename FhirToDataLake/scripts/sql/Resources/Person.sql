@@ -4,7 +4,7 @@ CREATE EXTERNAL TABLE [fhir].[Person] (
     [meta.id] NVARCHAR(4000),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
@@ -21,7 +21,7 @@ CREATE EXTERNAL TABLE [fhir].[Person] (
     [name] VARCHAR(MAX),
     [telecom] VARCHAR(MAX),
     [gender] NVARCHAR(64),
-    [birthDate] VARCHAR(10),
+    [birthDate] VARCHAR(64),
     [address] VARCHAR(MAX),
     [photo.id] NVARCHAR(4000),
     [photo.extension] NVARCHAR(MAX),
@@ -32,7 +32,7 @@ CREATE EXTERNAL TABLE [fhir].[Person] (
     [photo.size] bigint,
     [photo.hash] NVARCHAR(MAX),
     [photo.title] NVARCHAR(4000),
-    [photo.creation] VARCHAR(30),
+    [photo.creation] VARCHAR(64),
     [managingOrganization.id] NVARCHAR(4000),
     [managingOrganization.extension] NVARCHAR(MAX),
     [managingOrganization.reference] NVARCHAR(4000),
@@ -99,8 +99,8 @@ FROM openrowset (
         [identifier.value]             NVARCHAR(4000)      '$.value',
         [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
         [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
@@ -146,8 +146,8 @@ FROM openrowset (
         [name.suffix]                  NVARCHAR(MAX)       '$.suffix' AS JSON,
         [name.period.id]               NVARCHAR(4000)      '$.period.id',
         [name.period.extension]        NVARCHAR(MAX)       '$.period.extension',
-        [name.period.start]            VARCHAR(30)         '$.period.start',
-        [name.period.end]              VARCHAR(30)         '$.period.end'
+        [name.period.start]            VARCHAR(64)         '$.period.start',
+        [name.period.end]              VARCHAR(64)         '$.period.end'
     ) j
 
 GO
@@ -183,8 +183,8 @@ FROM openrowset (
         [telecom.rank]                 bigint              '$.rank',
         [telecom.period.id]            NVARCHAR(4000)      '$.period.id',
         [telecom.period.extension]     NVARCHAR(MAX)       '$.period.extension',
-        [telecom.period.start]         VARCHAR(30)         '$.period.start',
-        [telecom.period.end]           VARCHAR(30)         '$.period.end'
+        [telecom.period.start]         VARCHAR(64)         '$.period.start',
+        [telecom.period.end]           VARCHAR(64)         '$.period.end'
     ) j
 
 GO
@@ -230,8 +230,8 @@ FROM openrowset (
         [address.country]              NVARCHAR(4000)      '$.country',
         [address.period.id]            NVARCHAR(4000)      '$.period.id',
         [address.period.extension]     NVARCHAR(MAX)       '$.period.extension',
-        [address.period.start]         VARCHAR(30)         '$.period.start',
-        [address.period.end]           VARCHAR(30)         '$.period.end'
+        [address.period.start]         VARCHAR(64)         '$.period.start',
+        [address.period.end]           VARCHAR(64)         '$.period.end'
     ) j
 
 GO
