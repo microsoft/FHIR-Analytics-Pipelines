@@ -60,7 +60,11 @@ CREATE EXTERNAL TABLE [fhir].[Media] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [issued] VARCHAR(64),
+<<<<<<< HEAD
     [operator.id] NVARCHAR(100),
+=======
+    [operator.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [operator.extension] NVARCHAR(MAX),
     [operator.reference] NVARCHAR(4000),
     [operator.type] VARCHAR(256),
@@ -108,7 +112,11 @@ CREATE EXTERNAL TABLE [fhir].[Media] (
     [content.creation] VARCHAR(64),
     [note] VARCHAR(MAX),
     [created.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [created.period.id] NVARCHAR(100),
+=======
+    [created.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [created.period.extension] NVARCHAR(MAX),
     [created.period.start] VARCHAR(64),
     [created.period.end] VARCHAR(64),
@@ -165,7 +173,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

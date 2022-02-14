@@ -30,7 +30,11 @@ CREATE EXTERNAL TABLE [fhir].[Composition] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -194,7 +198,11 @@ FROM openrowset (
         [attester.modifierExtension]   NVARCHAR(MAX)       '$.modifierExtension',
         [attester.mode]                NVARCHAR(64)        '$.mode',
         [attester.time]                VARCHAR(64)         '$.time',
+<<<<<<< HEAD
         [attester.party.id]            NVARCHAR(100)       '$.party.id',
+=======
+        [attester.party.id]            NVARCHAR(4000)      '$.party.id',
+>>>>>>> origin/main
         [attester.party.extension]     NVARCHAR(MAX)       '$.party.extension',
         [attester.party.reference]     NVARCHAR(4000)      '$.party.reference',
         [attester.party.type]          VARCHAR(256)        '$.party.type',

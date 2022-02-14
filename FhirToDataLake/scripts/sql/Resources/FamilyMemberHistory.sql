@@ -39,8 +39,13 @@ CREATE EXTERNAL TABLE [fhir].[FamilyMemberHistory] (
     [patient.identifier.assigner] NVARCHAR(MAX),
     [patient.display] NVARCHAR(4000),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [name] NVARCHAR(100),
     [relationship.id] NVARCHAR(100),
+=======
+    [name] NVARCHAR(4000),
+    [relationship.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [relationship.extension] NVARCHAR(MAX),
     [relationship.coding] VARCHAR(MAX),
     [relationship.text] NVARCHAR(4000),
@@ -57,7 +62,11 @@ CREATE EXTERNAL TABLE [fhir].[FamilyMemberHistory] (
     [born.period.extension] NVARCHAR(MAX),
     [born.period.start] VARCHAR(64),
     [born.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [born.date] VARCHAR(32),
+=======
+    [born.date] VARCHAR(64),
+>>>>>>> origin/main
     [born.string] NVARCHAR(4000),
     [age.age.id] NVARCHAR(100),
     [age.age.extension] NVARCHAR(MAX),
@@ -107,7 +116,11 @@ CREATE EXTERNAL TABLE [fhir].[FamilyMemberHistory] (
     [deceased.range.high.unit] NVARCHAR(100),
     [deceased.range.high.system] VARCHAR(256),
     [deceased.range.high.code] NVARCHAR(4000),
+<<<<<<< HEAD
     [deceased.date] VARCHAR(32),
+=======
+    [deceased.date] VARCHAR(64),
+>>>>>>> origin/main
     [deceased.string] NVARCHAR(4000),
 ) WITH (
     LOCATION='/FamilyMemberHistory/**',
@@ -162,7 +175,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

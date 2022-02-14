@@ -23,7 +23,11 @@ CREATE EXTERNAL TABLE [fhir].[GraphDefinition] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),

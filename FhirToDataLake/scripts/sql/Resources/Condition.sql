@@ -63,7 +63,11 @@ CREATE EXTERNAL TABLE [fhir].[Condition] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [recordedDate] VARCHAR(64),
+<<<<<<< HEAD
     [recorder.id] NVARCHAR(100),
+=======
+    [recorder.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [recorder.extension] NVARCHAR(MAX),
     [recorder.reference] NVARCHAR(4000),
     [recorder.type] VARCHAR(256),
@@ -93,7 +97,11 @@ CREATE EXTERNAL TABLE [fhir].[Condition] (
     [evidence] VARCHAR(MAX),
     [note] VARCHAR(MAX),
     [onset.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [onset.age.id] NVARCHAR(100),
+=======
+    [onset.age.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [onset.age.extension] NVARCHAR(MAX),
     [onset.age.value] float,
     [onset.age.comparator] NVARCHAR(64),
@@ -104,7 +112,11 @@ CREATE EXTERNAL TABLE [fhir].[Condition] (
     [onset.period.extension] NVARCHAR(MAX),
     [onset.period.start] VARCHAR(64),
     [onset.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [onset.range.id] NVARCHAR(100),
+=======
+    [onset.range.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [onset.range.extension] NVARCHAR(MAX),
     [onset.range.low.id] NVARCHAR(100),
     [onset.range.low.extension] NVARCHAR(MAX),
@@ -122,7 +134,11 @@ CREATE EXTERNAL TABLE [fhir].[Condition] (
     [onset.range.high.code] NVARCHAR(4000),
     [onset.string] NVARCHAR(4000),
     [abatement.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [abatement.age.id] NVARCHAR(100),
+=======
+    [abatement.age.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [abatement.age.extension] NVARCHAR(MAX),
     [abatement.age.value] float,
     [abatement.age.comparator] NVARCHAR(64),
@@ -133,7 +149,11 @@ CREATE EXTERNAL TABLE [fhir].[Condition] (
     [abatement.period.extension] NVARCHAR(MAX),
     [abatement.period.start] VARCHAR(64),
     [abatement.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [abatement.range.id] NVARCHAR(100),
+=======
+    [abatement.range.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [abatement.range.extension] NVARCHAR(MAX),
     [abatement.range.low.id] NVARCHAR(100),
     [abatement.range.low.extension] NVARCHAR(MAX),
@@ -203,7 +223,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

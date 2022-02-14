@@ -46,7 +46,11 @@ CREATE EXTERNAL TABLE [fhir].[ExplanationOfBenefit] (
     [billablePeriod.start] VARCHAR(64),
     [billablePeriod.end] VARCHAR(64),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [enterer.id] NVARCHAR(100),
+=======
+    [enterer.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [enterer.extension] NVARCHAR(MAX),
     [enterer.reference] NVARCHAR(4000),
     [enterer.type] VARCHAR(256),
@@ -202,8 +206,13 @@ CREATE EXTERNAL TABLE [fhir].[ExplanationOfBenefit] (
     [accident.id] NVARCHAR(100),
     [accident.extension] NVARCHAR(MAX),
     [accident.modifierExtension] NVARCHAR(MAX),
+<<<<<<< HEAD
     [accident.date] VARCHAR(32),
     [accident.type.id] NVARCHAR(100),
+=======
+    [accident.date] VARCHAR(64),
+    [accident.type.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [accident.type.extension] NVARCHAR(MAX),
     [accident.type.coding] NVARCHAR(MAX),
     [accident.type.text] NVARCHAR(4000),
@@ -244,8 +253,13 @@ CREATE EXTERNAL TABLE [fhir].[ExplanationOfBenefit] (
     [payment.adjustmentReason.extension] NVARCHAR(MAX),
     [payment.adjustmentReason.coding] NVARCHAR(MAX),
     [payment.adjustmentReason.text] NVARCHAR(4000),
+<<<<<<< HEAD
     [payment.date] VARCHAR(32),
     [payment.amount.id] NVARCHAR(100),
+=======
+    [payment.date] VARCHAR(64),
+    [payment.amount.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [payment.amount.extension] NVARCHAR(MAX),
     [payment.amount.value] float,
     [payment.amount.currency] NVARCHAR(100),
@@ -330,7 +344,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -579,8 +597,13 @@ FROM openrowset (
         [supportingInfo.reason.code]   NVARCHAR(4000)      '$.reason.code',
         [supportingInfo.reason.display] NVARCHAR(4000)      '$.reason.display',
         [supportingInfo.reason.userSelected] bit                 '$.reason.userSelected',
+<<<<<<< HEAD
         [supportingInfo.timing.date]   VARCHAR(32)         '$.timing.date',
         [supportingInfo.timing.period.id] NVARCHAR(100)       '$.timing.period.id',
+=======
+        [supportingInfo.timing.date]   VARCHAR(64)         '$.timing.date',
+        [supportingInfo.timing.period.id] NVARCHAR(4000)      '$.timing.period.id',
+>>>>>>> origin/main
         [supportingInfo.timing.period.extension] NVARCHAR(MAX)       '$.timing.period.extension',
         [supportingInfo.timing.period.start] VARCHAR(64)         '$.timing.period.start',
         [supportingInfo.timing.period.end] VARCHAR(64)         '$.timing.period.end',
@@ -603,7 +626,11 @@ FROM openrowset (
         [supportingInfo.value.attachment.hash] NVARCHAR(MAX)       '$.value.attachment.hash',
         [supportingInfo.value.attachment.title] NVARCHAR(4000)      '$.value.attachment.title',
         [supportingInfo.value.attachment.creation] VARCHAR(64)         '$.value.attachment.creation',
+<<<<<<< HEAD
         [supportingInfo.value.reference.id] NVARCHAR(100)       '$.value.reference.id',
+=======
+        [supportingInfo.value.reference.id] NVARCHAR(4000)      '$.value.reference.id',
+>>>>>>> origin/main
         [supportingInfo.value.reference.extension] NVARCHAR(MAX)       '$.value.reference.extension',
         [supportingInfo.value.reference.reference] NVARCHAR(4000)      '$.value.reference.reference',
         [supportingInfo.value.reference.type] VARCHAR(256)        '$.value.reference.type',
@@ -902,12 +929,21 @@ FROM openrowset (
         [item.noteNumber]              NVARCHAR(MAX)       '$.noteNumber' AS JSON,
         [item.adjudication]            NVARCHAR(MAX)       '$.adjudication' AS JSON,
         [item.detail]                  NVARCHAR(MAX)       '$.detail' AS JSON,
+<<<<<<< HEAD
         [item.serviced.date]           VARCHAR(32)         '$.serviced.date',
         [item.serviced.period.id]      NVARCHAR(100)       '$.serviced.period.id',
         [item.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
         [item.serviced.period.start]   VARCHAR(64)         '$.serviced.period.start',
         [item.serviced.period.end]     VARCHAR(64)         '$.serviced.period.end',
         [item.location.codeableConcept.id] NVARCHAR(100)       '$.location.codeableConcept.id',
+=======
+        [item.serviced.date]           VARCHAR(64)         '$.serviced.date',
+        [item.serviced.period.id]      NVARCHAR(4000)      '$.serviced.period.id',
+        [item.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
+        [item.serviced.period.start]   VARCHAR(64)         '$.serviced.period.start',
+        [item.serviced.period.end]     VARCHAR(64)         '$.serviced.period.end',
+        [item.location.codeableConcept.id] NVARCHAR(4000)      '$.location.codeableConcept.id',
+>>>>>>> origin/main
         [item.location.codeableConcept.extension] NVARCHAR(MAX)       '$.location.codeableConcept.extension',
         [item.location.codeableConcept.coding] NVARCHAR(MAX)       '$.location.codeableConcept.coding',
         [item.location.codeableConcept.text] NVARCHAR(4000)      '$.location.codeableConcept.text',
@@ -1047,12 +1083,21 @@ FROM openrowset (
         [addItem.noteNumber]           NVARCHAR(MAX)       '$.noteNumber' AS JSON,
         [addItem.adjudication]         NVARCHAR(MAX)       '$.adjudication' AS JSON,
         [addItem.detail]               NVARCHAR(MAX)       '$.detail' AS JSON,
+<<<<<<< HEAD
         [addItem.serviced.date]        VARCHAR(32)         '$.serviced.date',
         [addItem.serviced.period.id]   NVARCHAR(100)       '$.serviced.period.id',
         [addItem.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
         [addItem.serviced.period.start] VARCHAR(64)         '$.serviced.period.start',
         [addItem.serviced.period.end]  VARCHAR(64)         '$.serviced.period.end',
         [addItem.location.codeableConcept.id] NVARCHAR(100)       '$.location.codeableConcept.id',
+=======
+        [addItem.serviced.date]        VARCHAR(64)         '$.serviced.date',
+        [addItem.serviced.period.id]   NVARCHAR(4000)      '$.serviced.period.id',
+        [addItem.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
+        [addItem.serviced.period.start] VARCHAR(64)         '$.serviced.period.start',
+        [addItem.serviced.period.end]  VARCHAR(64)         '$.serviced.period.end',
+        [addItem.location.codeableConcept.id] NVARCHAR(4000)      '$.location.codeableConcept.id',
+>>>>>>> origin/main
         [addItem.location.codeableConcept.extension] NVARCHAR(MAX)       '$.location.codeableConcept.extension',
         [addItem.location.codeableConcept.coding] NVARCHAR(MAX)       '$.location.codeableConcept.coding',
         [addItem.location.codeableConcept.text] NVARCHAR(4000)      '$.location.codeableConcept.text',

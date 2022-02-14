@@ -24,7 +24,11 @@ CREATE EXTERNAL TABLE [fhir].[Bundle] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -39,7 +43,11 @@ CREATE EXTERNAL TABLE [fhir].[Bundle] (
     [signature.extension] NVARCHAR(MAX),
     [signature.type] VARCHAR(MAX),
     [signature.when] VARCHAR(64),
+<<<<<<< HEAD
     [signature.who.id] NVARCHAR(100),
+=======
+    [signature.who.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [signature.who.extension] NVARCHAR(MAX),
     [signature.who.reference] NVARCHAR(4000),
     [signature.who.type] VARCHAR(256),
@@ -143,15 +151,27 @@ FROM openrowset (
         [entry.request.modifierExtension] NVARCHAR(MAX)       '$.request.modifierExtension',
         [entry.request.method]         NVARCHAR(64)        '$.request.method',
         [entry.request.url]            VARCHAR(256)        '$.request.url',
+<<<<<<< HEAD
         [entry.request.ifNoneMatch]    NVARCHAR(100)       '$.request.ifNoneMatch',
         [entry.request.ifModifiedSince] VARCHAR(64)         '$.request.ifModifiedSince',
         [entry.request.ifMatch]        NVARCHAR(100)       '$.request.ifMatch',
         [entry.request.ifNoneExist]    NVARCHAR(100)       '$.request.ifNoneExist',
         [entry.response.id]            NVARCHAR(100)       '$.response.id',
+=======
+        [entry.request.ifNoneMatch]    NVARCHAR(4000)      '$.request.ifNoneMatch',
+        [entry.request.ifModifiedSince] VARCHAR(64)         '$.request.ifModifiedSince',
+        [entry.request.ifMatch]        NVARCHAR(4000)      '$.request.ifMatch',
+        [entry.request.ifNoneExist]    NVARCHAR(4000)      '$.request.ifNoneExist',
+        [entry.response.id]            NVARCHAR(4000)      '$.response.id',
+>>>>>>> origin/main
         [entry.response.extension]     NVARCHAR(MAX)       '$.response.extension',
         [entry.response.modifierExtension] NVARCHAR(MAX)       '$.response.modifierExtension',
         [entry.response.status]        NVARCHAR(100)       '$.response.status',
         [entry.response.location]      VARCHAR(256)        '$.response.location',
+<<<<<<< HEAD
         [entry.response.etag]          NVARCHAR(100)       '$.response.etag',
+=======
+        [entry.response.etag]          NVARCHAR(4000)      '$.response.etag',
+>>>>>>> origin/main
         [entry.response.lastModified]  VARCHAR(64)         '$.response.lastModified'
     ) j

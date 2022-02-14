@@ -52,7 +52,11 @@ CREATE EXTERNAL TABLE [fhir].[List] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [source.id] NVARCHAR(100),
+=======
+    [source.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [source.extension] NVARCHAR(MAX),
     [source.reference] NVARCHAR(4000),
     [source.type] VARCHAR(256),
@@ -128,7 +132,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -214,7 +222,11 @@ FROM openrowset (
         [entry.flag.text]              NVARCHAR(4000)      '$.flag.text',
         [entry.deleted]                bit                 '$.deleted',
         [entry.date]                   VARCHAR(64)         '$.date',
+<<<<<<< HEAD
         [entry.item.id]                NVARCHAR(100)       '$.item.id',
+=======
+        [entry.item.id]                NVARCHAR(4000)      '$.item.id',
+>>>>>>> origin/main
         [entry.item.extension]         NVARCHAR(MAX)       '$.item.extension',
         [entry.item.reference]         NVARCHAR(4000)      '$.item.reference',
         [entry.item.type]              VARCHAR(256)        '$.item.type',

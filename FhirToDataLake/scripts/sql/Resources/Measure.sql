@@ -26,7 +26,11 @@ CREATE EXTERNAL TABLE [fhir].[Measure] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -34,9 +38,15 @@ CREATE EXTERNAL TABLE [fhir].[Measure] (
     [purpose] NVARCHAR(MAX),
     [usage] NVARCHAR(4000),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -139,7 +149,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

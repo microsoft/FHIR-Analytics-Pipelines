@@ -30,7 +30,11 @@ CREATE EXTERNAL TABLE [fhir].[GuidanceResponse] (
     [requestIdentifier.period.extension] NVARCHAR(MAX),
     [requestIdentifier.period.start] VARCHAR(64),
     [requestIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [requestIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [requestIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [requestIdentifier.assigner.extension] NVARCHAR(MAX),
     [requestIdentifier.assigner.reference] NVARCHAR(4000),
     [requestIdentifier.assigner.type] VARCHAR(256),
@@ -65,7 +69,11 @@ CREATE EXTERNAL TABLE [fhir].[GuidanceResponse] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [occurrenceDateTime] VARCHAR(64),
+<<<<<<< HEAD
     [performer.id] NVARCHAR(100),
+=======
+    [performer.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [performer.extension] NVARCHAR(MAX),
     [performer.reference] NVARCHAR(4000),
     [performer.type] VARCHAR(256),
@@ -168,7 +176,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

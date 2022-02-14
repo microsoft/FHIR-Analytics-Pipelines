@@ -34,7 +34,11 @@ CREATE EXTERNAL TABLE [fhir].[Task] (
     [groupIdentifier.period.extension] NVARCHAR(MAX),
     [groupIdentifier.period.start] VARCHAR(64),
     [groupIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [groupIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [groupIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [groupIdentifier.assigner.extension] NVARCHAR(MAX),
     [groupIdentifier.assigner.reference] NVARCHAR(4000),
     [groupIdentifier.assigner.type] VARCHAR(256),
@@ -102,7 +106,11 @@ CREATE EXTERNAL TABLE [fhir].[Task] (
     [executionPeriod.end] VARCHAR(64),
     [authoredOn] VARCHAR(64),
     [lastModified] VARCHAR(64),
+<<<<<<< HEAD
     [requester.id] NVARCHAR(100),
+=======
+    [requester.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [requester.extension] NVARCHAR(MAX),
     [requester.reference] NVARCHAR(4000),
     [requester.type] VARCHAR(256),
@@ -226,7 +234,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -753,7 +765,11 @@ FROM openrowset (
         [input.value.boolean]          bit                 '$.value.boolean',
         [input.value.canonical]        VARCHAR(256)        '$.value.canonical',
         [input.value.code]             NVARCHAR(4000)      '$.value.code',
+<<<<<<< HEAD
         [input.value.date]             VARCHAR(32)         '$.value.date',
+=======
+        [input.value.date]             VARCHAR(64)         '$.value.date',
+>>>>>>> origin/main
         [input.value.dateTime]         VARCHAR(64)         '$.value.dateTime',
         [input.value.decimal]          float               '$.value.decimal',
         [input.value.id]               VARCHAR(64)         '$.value.id',
@@ -803,7 +819,11 @@ FROM openrowset (
         [input.value.attachment.hash]  NVARCHAR(MAX)       '$.value.attachment.hash',
         [input.value.attachment.title] NVARCHAR(4000)      '$.value.attachment.title',
         [input.value.attachment.creation] VARCHAR(64)         '$.value.attachment.creation',
+<<<<<<< HEAD
         [input.value.codeableConcept.id] NVARCHAR(100)       '$.value.codeableConcept.id',
+=======
+        [input.value.codeableConcept.id] NVARCHAR(4000)      '$.value.codeableConcept.id',
+>>>>>>> origin/main
         [input.value.codeableConcept.extension] NVARCHAR(MAX)       '$.value.codeableConcept.extension',
         [input.value.codeableConcept.coding] NVARCHAR(MAX)       '$.value.codeableConcept.coding',
         [input.value.codeableConcept.text] NVARCHAR(4000)      '$.value.codeableConcept.text',
@@ -867,7 +887,11 @@ FROM openrowset (
         [input.value.period.extension] NVARCHAR(MAX)       '$.value.period.extension',
         [input.value.period.start]     VARCHAR(64)         '$.value.period.start',
         [input.value.period.end]       VARCHAR(64)         '$.value.period.end',
+<<<<<<< HEAD
         [input.value.quantity.id]      NVARCHAR(100)       '$.value.quantity.id',
+=======
+        [input.value.quantity.id]      NVARCHAR(4000)      '$.value.quantity.id',
+>>>>>>> origin/main
         [input.value.quantity.extension] NVARCHAR(MAX)       '$.value.quantity.extension',
         [input.value.quantity.value]   float               '$.value.quantity.value',
         [input.value.quantity.comparator] NVARCHAR(64)        '$.value.quantity.comparator',
@@ -965,9 +989,15 @@ FROM openrowset (
         [input.value.triggerDefinition.condition] NVARCHAR(MAX)       '$.value.triggerDefinition.condition',
         [input.value.triggerDefinition.timing.timing] NVARCHAR(MAX)       '$.value.triggerDefinition.timing.timing',
         [input.value.triggerDefinition.timing.reference] NVARCHAR(MAX)       '$.value.triggerDefinition.timing.reference',
+<<<<<<< HEAD
         [input.value.triggerDefinition.timing.date] VARCHAR(32)         '$.value.triggerDefinition.timing.date',
         [input.value.triggerDefinition.timing.dateTime] VARCHAR(64)         '$.value.triggerDefinition.timing.dateTime',
         [input.value.usageContext.id]  NVARCHAR(100)       '$.value.usageContext.id',
+=======
+        [input.value.triggerDefinition.timing.date] VARCHAR(64)         '$.value.triggerDefinition.timing.date',
+        [input.value.triggerDefinition.timing.dateTime] VARCHAR(64)         '$.value.triggerDefinition.timing.dateTime',
+        [input.value.usageContext.id]  NVARCHAR(4000)      '$.value.usageContext.id',
+>>>>>>> origin/main
         [input.value.usageContext.extension] NVARCHAR(MAX)       '$.value.usageContext.extension',
         [input.value.usageContext.code] NVARCHAR(MAX)       '$.value.usageContext.code',
         [input.value.usageContext.value.codeableConcept] NVARCHAR(MAX)       '$.value.usageContext.value.codeableConcept',
@@ -1284,7 +1314,11 @@ FROM openrowset (
         [output.value.boolean]         bit                 '$.value.boolean',
         [output.value.canonical]       VARCHAR(256)        '$.value.canonical',
         [output.value.code]            NVARCHAR(4000)      '$.value.code',
+<<<<<<< HEAD
         [output.value.date]            VARCHAR(32)         '$.value.date',
+=======
+        [output.value.date]            VARCHAR(64)         '$.value.date',
+>>>>>>> origin/main
         [output.value.dateTime]        VARCHAR(64)         '$.value.dateTime',
         [output.value.decimal]         float               '$.value.decimal',
         [output.value.id]              VARCHAR(64)         '$.value.id',
@@ -1334,7 +1368,11 @@ FROM openrowset (
         [output.value.attachment.hash] NVARCHAR(MAX)       '$.value.attachment.hash',
         [output.value.attachment.title] NVARCHAR(4000)      '$.value.attachment.title',
         [output.value.attachment.creation] VARCHAR(64)         '$.value.attachment.creation',
+<<<<<<< HEAD
         [output.value.codeableConcept.id] NVARCHAR(100)       '$.value.codeableConcept.id',
+=======
+        [output.value.codeableConcept.id] NVARCHAR(4000)      '$.value.codeableConcept.id',
+>>>>>>> origin/main
         [output.value.codeableConcept.extension] NVARCHAR(MAX)       '$.value.codeableConcept.extension',
         [output.value.codeableConcept.coding] NVARCHAR(MAX)       '$.value.codeableConcept.coding',
         [output.value.codeableConcept.text] NVARCHAR(4000)      '$.value.codeableConcept.text',
@@ -1398,7 +1436,11 @@ FROM openrowset (
         [output.value.period.extension] NVARCHAR(MAX)       '$.value.period.extension',
         [output.value.period.start]    VARCHAR(64)         '$.value.period.start',
         [output.value.period.end]      VARCHAR(64)         '$.value.period.end',
+<<<<<<< HEAD
         [output.value.quantity.id]     NVARCHAR(100)       '$.value.quantity.id',
+=======
+        [output.value.quantity.id]     NVARCHAR(4000)      '$.value.quantity.id',
+>>>>>>> origin/main
         [output.value.quantity.extension] NVARCHAR(MAX)       '$.value.quantity.extension',
         [output.value.quantity.value]  float               '$.value.quantity.value',
         [output.value.quantity.comparator] NVARCHAR(64)        '$.value.quantity.comparator',
@@ -1496,9 +1538,15 @@ FROM openrowset (
         [output.value.triggerDefinition.condition] NVARCHAR(MAX)       '$.value.triggerDefinition.condition',
         [output.value.triggerDefinition.timing.timing] NVARCHAR(MAX)       '$.value.triggerDefinition.timing.timing',
         [output.value.triggerDefinition.timing.reference] NVARCHAR(MAX)       '$.value.triggerDefinition.timing.reference',
+<<<<<<< HEAD
         [output.value.triggerDefinition.timing.date] VARCHAR(32)         '$.value.triggerDefinition.timing.date',
         [output.value.triggerDefinition.timing.dateTime] VARCHAR(64)         '$.value.triggerDefinition.timing.dateTime',
         [output.value.usageContext.id] NVARCHAR(100)       '$.value.usageContext.id',
+=======
+        [output.value.triggerDefinition.timing.date] VARCHAR(64)         '$.value.triggerDefinition.timing.date',
+        [output.value.triggerDefinition.timing.dateTime] VARCHAR(64)         '$.value.triggerDefinition.timing.dateTime',
+        [output.value.usageContext.id] NVARCHAR(4000)      '$.value.usageContext.id',
+>>>>>>> origin/main
         [output.value.usageContext.extension] NVARCHAR(MAX)       '$.value.usageContext.extension',
         [output.value.usageContext.code] NVARCHAR(MAX)       '$.value.usageContext.code',
         [output.value.usageContext.value.codeableConcept] NVARCHAR(MAX)       '$.value.usageContext.value.codeableConcept',

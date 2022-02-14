@@ -44,11 +44,19 @@ CREATE EXTERNAL TABLE [fhir].[Contract] (
     [contentDerivative.coding] VARCHAR(MAX),
     [contentDerivative.text] NVARCHAR(4000),
     [issued] VARCHAR(64),
+<<<<<<< HEAD
     [applies.id] NVARCHAR(100),
     [applies.extension] NVARCHAR(MAX),
     [applies.start] VARCHAR(64),
     [applies.end] VARCHAR(64),
     [expirationType.id] NVARCHAR(100),
+=======
+    [applies.id] NVARCHAR(4000),
+    [applies.extension] NVARCHAR(MAX),
+    [applies.start] VARCHAR(64),
+    [applies.end] VARCHAR(64),
+    [expirationType.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [expirationType.extension] NVARCHAR(MAX),
     [expirationType.coding] VARCHAR(MAX),
     [expirationType.text] NVARCHAR(4000),
@@ -100,7 +108,11 @@ CREATE EXTERNAL TABLE [fhir].[Contract] (
     [contentDefinition.publisher.identifier] NVARCHAR(MAX),
     [contentDefinition.publisher.display] NVARCHAR(4000),
     [contentDefinition.publicationDate] VARCHAR(64),
+<<<<<<< HEAD
     [contentDefinition.publicationStatus] NVARCHAR(100),
+=======
+    [contentDefinition.publicationStatus] NVARCHAR(4000),
+>>>>>>> origin/main
     [contentDefinition.copyright] NVARCHAR(MAX),
     [term] VARCHAR(MAX),
     [supportingInfo] VARCHAR(MAX),
@@ -136,7 +148,11 @@ CREATE EXTERNAL TABLE [fhir].[Contract] (
     [legallyBinding.attachment.hash] NVARCHAR(MAX),
     [legallyBinding.attachment.title] NVARCHAR(4000),
     [legallyBinding.attachment.creation] VARCHAR(64),
+<<<<<<< HEAD
     [legallyBinding.reference.id] NVARCHAR(100),
+=======
+    [legallyBinding.reference.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [legallyBinding.reference.extension] NVARCHAR(MAX),
     [legallyBinding.reference.reference] NVARCHAR(4000),
     [legallyBinding.reference.type] VARCHAR(256),
@@ -202,7 +218,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -505,11 +525,19 @@ FROM openrowset (
         [term.identifier.period]       NVARCHAR(MAX)       '$.identifier.period',
         [term.identifier.assigner]     NVARCHAR(MAX)       '$.identifier.assigner',
         [term.issued]                  VARCHAR(64)         '$.issued',
+<<<<<<< HEAD
         [term.applies.id]              NVARCHAR(100)       '$.applies.id',
         [term.applies.extension]       NVARCHAR(MAX)       '$.applies.extension',
         [term.applies.start]           VARCHAR(64)         '$.applies.start',
         [term.applies.end]             VARCHAR(64)         '$.applies.end',
         [term.type.id]                 NVARCHAR(100)       '$.type.id',
+=======
+        [term.applies.id]              NVARCHAR(4000)      '$.applies.id',
+        [term.applies.extension]       NVARCHAR(MAX)       '$.applies.extension',
+        [term.applies.start]           VARCHAR(64)         '$.applies.start',
+        [term.applies.end]             VARCHAR(64)         '$.applies.end',
+        [term.type.id]                 NVARCHAR(4000)      '$.type.id',
+>>>>>>> origin/main
         [term.type.extension]          NVARCHAR(MAX)       '$.type.extension',
         [term.type.coding]             NVARCHAR(MAX)       '$.type.coding',
         [term.type.text]               NVARCHAR(4000)      '$.type.text',
@@ -731,7 +759,11 @@ FROM openrowset (
         [friendly.content.attachment.hash] NVARCHAR(MAX)       '$.content.attachment.hash',
         [friendly.content.attachment.title] NVARCHAR(4000)      '$.content.attachment.title',
         [friendly.content.attachment.creation] VARCHAR(64)         '$.content.attachment.creation',
+<<<<<<< HEAD
         [friendly.content.reference.id] NVARCHAR(100)       '$.content.reference.id',
+=======
+        [friendly.content.reference.id] NVARCHAR(4000)      '$.content.reference.id',
+>>>>>>> origin/main
         [friendly.content.reference.extension] NVARCHAR(MAX)       '$.content.reference.extension',
         [friendly.content.reference.reference] NVARCHAR(4000)      '$.content.reference.reference',
         [friendly.content.reference.type] VARCHAR(256)        '$.content.reference.type',
@@ -786,7 +818,11 @@ FROM openrowset (
         [legal.content.attachment.hash] NVARCHAR(MAX)       '$.content.attachment.hash',
         [legal.content.attachment.title] NVARCHAR(4000)      '$.content.attachment.title',
         [legal.content.attachment.creation] VARCHAR(64)         '$.content.attachment.creation',
+<<<<<<< HEAD
         [legal.content.reference.id]   NVARCHAR(100)       '$.content.reference.id',
+=======
+        [legal.content.reference.id]   NVARCHAR(4000)      '$.content.reference.id',
+>>>>>>> origin/main
         [legal.content.reference.extension] NVARCHAR(MAX)       '$.content.reference.extension',
         [legal.content.reference.reference] NVARCHAR(4000)      '$.content.reference.reference',
         [legal.content.reference.type] VARCHAR(256)        '$.content.reference.type',
@@ -841,7 +877,11 @@ FROM openrowset (
         [rule.content.attachment.hash] NVARCHAR(MAX)       '$.content.attachment.hash',
         [rule.content.attachment.title] NVARCHAR(4000)      '$.content.attachment.title',
         [rule.content.attachment.creation] VARCHAR(64)         '$.content.attachment.creation',
+<<<<<<< HEAD
         [rule.content.reference.id]    NVARCHAR(100)       '$.content.reference.id',
+=======
+        [rule.content.reference.id]    NVARCHAR(4000)      '$.content.reference.id',
+>>>>>>> origin/main
         [rule.content.reference.extension] NVARCHAR(MAX)       '$.content.reference.extension',
         [rule.content.reference.reference] NVARCHAR(4000)      '$.content.reference.reference',
         [rule.content.reference.type]  VARCHAR(256)        '$.content.reference.type',

@@ -30,7 +30,11 @@ CREATE EXTERNAL TABLE [fhir].[MedicinalProductIngredient] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),

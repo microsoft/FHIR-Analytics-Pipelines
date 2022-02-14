@@ -59,7 +59,11 @@ CREATE EXTERNAL TABLE [fhir].[CarePlan] (
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [author.id] NVARCHAR(100),
+=======
+    [author.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [author.extension] NVARCHAR(MAX),
     [author.reference] NVARCHAR(4000),
     [author.type] VARCHAR(256),
@@ -132,7 +136,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

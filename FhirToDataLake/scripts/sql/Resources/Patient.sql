@@ -22,7 +22,11 @@ CREATE EXTERNAL TABLE [fhir].[Patient] (
     [name] VARCHAR(MAX),
     [telecom] VARCHAR(MAX),
     [gender] NVARCHAR(64),
+<<<<<<< HEAD
     [birthDate] VARCHAR(32),
+=======
+    [birthDate] VARCHAR(64),
+>>>>>>> origin/main
     [address] VARCHAR(MAX),
     [maritalStatus.id] NVARCHAR(100),
     [maritalStatus.extension] NVARCHAR(MAX),
@@ -103,7 +107,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

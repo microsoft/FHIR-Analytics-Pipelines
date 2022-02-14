@@ -18,9 +18,15 @@ CREATE EXTERNAL TABLE [fhir].[VisionPrescription] (
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
     [identifier] VARCHAR(MAX),
+<<<<<<< HEAD
     [status] NVARCHAR(100),
     [created] VARCHAR(64),
     [patient.id] NVARCHAR(100),
+=======
+    [status] NVARCHAR(4000),
+    [created] VARCHAR(64),
+    [patient.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [patient.extension] NVARCHAR(MAX),
     [patient.reference] NVARCHAR(4000),
     [patient.type] VARCHAR(256),
@@ -47,7 +53,11 @@ CREATE EXTERNAL TABLE [fhir].[VisionPrescription] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [dateWritten] VARCHAR(64),
+<<<<<<< HEAD
     [prescriber.id] NVARCHAR(100),
+=======
+    [prescriber.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [prescriber.extension] NVARCHAR(MAX),
     [prescriber.reference] NVARCHAR(4000),
     [prescriber.type] VARCHAR(256),
@@ -114,7 +124,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

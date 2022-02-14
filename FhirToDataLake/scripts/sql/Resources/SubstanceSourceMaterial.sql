@@ -42,7 +42,11 @@ CREATE EXTERNAL TABLE [fhir].[SubstanceSourceMaterial] (
     [organismId.period.extension] NVARCHAR(MAX),
     [organismId.period.start] VARCHAR(64),
     [organismId.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [organismId.assigner.id] NVARCHAR(100),
+=======
+    [organismId.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [organismId.assigner.extension] NVARCHAR(MAX),
     [organismId.assigner.reference] NVARCHAR(4000),
     [organismId.assigner.type] VARCHAR(256),
@@ -148,7 +152,11 @@ FROM openrowset (
         [parentSubstanceId.period.extension] NVARCHAR(MAX)       '$.period.extension',
         [parentSubstanceId.period.start] VARCHAR(64)         '$.period.start',
         [parentSubstanceId.period.end] VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [parentSubstanceId.assigner.id] NVARCHAR(100)       '$.assigner.id',
+=======
+        [parentSubstanceId.assigner.id] NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [parentSubstanceId.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [parentSubstanceId.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [parentSubstanceId.assigner.type] VARCHAR(256)        '$.assigner.type',

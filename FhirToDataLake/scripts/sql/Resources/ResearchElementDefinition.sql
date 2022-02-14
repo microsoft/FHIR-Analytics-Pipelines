@@ -27,7 +27,11 @@ CREATE EXTERNAL TABLE [fhir].[ResearchElementDefinition] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [comment] VARCHAR(MAX),
@@ -36,9 +40,15 @@ CREATE EXTERNAL TABLE [fhir].[ResearchElementDefinition] (
     [purpose] NVARCHAR(MAX),
     [usage] NVARCHAR(4000),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -122,7 +132,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -625,11 +639,19 @@ FROM openrowset (
         [characteristic.definition.dataRequirement.subject.codeableConcept] NVARCHAR(MAX)       '$.definition.dataRequirement.subject.codeableConcept',
         [characteristic.definition.dataRequirement.subject.reference] NVARCHAR(MAX)       '$.definition.dataRequirement.subject.reference',
         [characteristic.studyEffective.dateTime] VARCHAR(64)         '$.studyEffective.dateTime',
+<<<<<<< HEAD
         [characteristic.studyEffective.period.id] NVARCHAR(100)       '$.studyEffective.period.id',
         [characteristic.studyEffective.period.extension] NVARCHAR(MAX)       '$.studyEffective.period.extension',
         [characteristic.studyEffective.period.start] VARCHAR(64)         '$.studyEffective.period.start',
         [characteristic.studyEffective.period.end] VARCHAR(64)         '$.studyEffective.period.end',
         [characteristic.studyEffective.duration.id] NVARCHAR(100)       '$.studyEffective.duration.id',
+=======
+        [characteristic.studyEffective.period.id] NVARCHAR(4000)      '$.studyEffective.period.id',
+        [characteristic.studyEffective.period.extension] NVARCHAR(MAX)       '$.studyEffective.period.extension',
+        [characteristic.studyEffective.period.start] VARCHAR(64)         '$.studyEffective.period.start',
+        [characteristic.studyEffective.period.end] VARCHAR(64)         '$.studyEffective.period.end',
+        [characteristic.studyEffective.duration.id] NVARCHAR(4000)      '$.studyEffective.duration.id',
+>>>>>>> origin/main
         [characteristic.studyEffective.duration.extension] NVARCHAR(MAX)       '$.studyEffective.duration.extension',
         [characteristic.studyEffective.duration.value] float               '$.studyEffective.duration.value',
         [characteristic.studyEffective.duration.comparator] NVARCHAR(64)        '$.studyEffective.duration.comparator',
@@ -643,11 +665,19 @@ FROM openrowset (
         [characteristic.studyEffective.timing.repeat] NVARCHAR(MAX)       '$.studyEffective.timing.repeat',
         [characteristic.studyEffective.timing.code] NVARCHAR(MAX)       '$.studyEffective.timing.code',
         [characteristic.participantEffective.dateTime] VARCHAR(64)         '$.participantEffective.dateTime',
+<<<<<<< HEAD
         [characteristic.participantEffective.period.id] NVARCHAR(100)       '$.participantEffective.period.id',
         [characteristic.participantEffective.period.extension] NVARCHAR(MAX)       '$.participantEffective.period.extension',
         [characteristic.participantEffective.period.start] VARCHAR(64)         '$.participantEffective.period.start',
         [characteristic.participantEffective.period.end] VARCHAR(64)         '$.participantEffective.period.end',
         [characteristic.participantEffective.duration.id] NVARCHAR(100)       '$.participantEffective.duration.id',
+=======
+        [characteristic.participantEffective.period.id] NVARCHAR(4000)      '$.participantEffective.period.id',
+        [characteristic.participantEffective.period.extension] NVARCHAR(MAX)       '$.participantEffective.period.extension',
+        [characteristic.participantEffective.period.start] VARCHAR(64)         '$.participantEffective.period.start',
+        [characteristic.participantEffective.period.end] VARCHAR(64)         '$.participantEffective.period.end',
+        [characteristic.participantEffective.duration.id] NVARCHAR(4000)      '$.participantEffective.duration.id',
+>>>>>>> origin/main
         [characteristic.participantEffective.duration.extension] NVARCHAR(MAX)       '$.participantEffective.duration.extension',
         [characteristic.participantEffective.duration.value] float               '$.participantEffective.duration.value',
         [characteristic.participantEffective.duration.comparator] NVARCHAR(64)        '$.participantEffective.duration.comparator',

@@ -24,7 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public const string ActiveJobFolder = "jobs/activeJobs";
 
         /// <summary>
-        /// Blob folder for completed jobs.
+        /// Blob folder for succeeded jobs.
         /// </summary>
         public const string CompletedJobFolder = "jobs/completedJobs";
 

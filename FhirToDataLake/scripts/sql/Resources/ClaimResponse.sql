@@ -42,7 +42,11 @@ CREATE EXTERNAL TABLE [fhir].[ClaimResponse] (
     [patient.identifier.assigner] NVARCHAR(MAX),
     [patient.display] NVARCHAR(4000),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [insurer.id] NVARCHAR(100),
+=======
+    [insurer.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [insurer.extension] NVARCHAR(MAX),
     [insurer.reference] NVARCHAR(4000),
     [insurer.type] VARCHAR(256),
@@ -88,7 +92,11 @@ CREATE EXTERNAL TABLE [fhir].[ClaimResponse] (
     [preAuthPeriod.extension] NVARCHAR(MAX),
     [preAuthPeriod.start] VARCHAR(64),
     [preAuthPeriod.end] VARCHAR(64),
+<<<<<<< HEAD
     [payeeType.id] NVARCHAR(100),
+=======
+    [payeeType.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [payeeType.extension] NVARCHAR(MAX),
     [payeeType.coding] VARCHAR(MAX),
     [payeeType.text] NVARCHAR(4000),
@@ -111,8 +119,13 @@ CREATE EXTERNAL TABLE [fhir].[ClaimResponse] (
     [payment.adjustmentReason.extension] NVARCHAR(MAX),
     [payment.adjustmentReason.coding] NVARCHAR(MAX),
     [payment.adjustmentReason.text] NVARCHAR(4000),
+<<<<<<< HEAD
     [payment.date] VARCHAR(32),
     [payment.amount.id] NVARCHAR(100),
+=======
+    [payment.date] VARCHAR(64),
+    [payment.amount.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [payment.amount.extension] NVARCHAR(MAX),
     [payment.amount.value] float,
     [payment.amount.currency] NVARCHAR(100),
@@ -199,7 +212,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -354,12 +371,21 @@ FROM openrowset (
         [addItem.noteNumber]           NVARCHAR(MAX)       '$.noteNumber' AS JSON,
         [addItem.adjudication]         NVARCHAR(MAX)       '$.adjudication' AS JSON,
         [addItem.detail]               NVARCHAR(MAX)       '$.detail' AS JSON,
+<<<<<<< HEAD
         [addItem.serviced.date]        VARCHAR(32)         '$.serviced.date',
         [addItem.serviced.period.id]   NVARCHAR(100)       '$.serviced.period.id',
         [addItem.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
         [addItem.serviced.period.start] VARCHAR(64)         '$.serviced.period.start',
         [addItem.serviced.period.end]  VARCHAR(64)         '$.serviced.period.end',
         [addItem.location.codeableConcept.id] NVARCHAR(100)       '$.location.codeableConcept.id',
+=======
+        [addItem.serviced.date]        VARCHAR(64)         '$.serviced.date',
+        [addItem.serviced.period.id]   NVARCHAR(4000)      '$.serviced.period.id',
+        [addItem.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
+        [addItem.serviced.period.start] VARCHAR(64)         '$.serviced.period.start',
+        [addItem.serviced.period.end]  VARCHAR(64)         '$.serviced.period.end',
+        [addItem.location.codeableConcept.id] NVARCHAR(4000)      '$.location.codeableConcept.id',
+>>>>>>> origin/main
         [addItem.location.codeableConcept.extension] NVARCHAR(MAX)       '$.location.codeableConcept.extension',
         [addItem.location.codeableConcept.coding] NVARCHAR(MAX)       '$.location.codeableConcept.coding',
         [addItem.location.codeableConcept.text] NVARCHAR(4000)      '$.location.codeableConcept.text',

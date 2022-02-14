@@ -112,7 +112,11 @@ CREATE EXTERNAL TABLE [fhir].[RiskAssessment] (
     [mitigation] NVARCHAR(4000),
     [note] VARCHAR(MAX),
     [occurrence.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [occurrence.period.id] NVARCHAR(100),
+=======
+    [occurrence.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [occurrence.period.extension] NVARCHAR(MAX),
     [occurrence.period.start] VARCHAR(64),
     [occurrence.period.end] VARCHAR(64),
@@ -169,7 +173,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -351,7 +359,11 @@ FROM openrowset (
         [prediction.when.period.extension] NVARCHAR(MAX)       '$.when.period.extension',
         [prediction.when.period.start] VARCHAR(64)         '$.when.period.start',
         [prediction.when.period.end]   VARCHAR(64)         '$.when.period.end',
+<<<<<<< HEAD
         [prediction.when.range.id]     NVARCHAR(100)       '$.when.range.id',
+=======
+        [prediction.when.range.id]     NVARCHAR(4000)      '$.when.range.id',
+>>>>>>> origin/main
         [prediction.when.range.extension] NVARCHAR(MAX)       '$.when.range.extension',
         [prediction.when.range.low]    NVARCHAR(MAX)       '$.when.range.low',
         [prediction.when.range.high]   NVARCHAR(MAX)       '$.when.range.high'

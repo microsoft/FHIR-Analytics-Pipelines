@@ -114,7 +114,11 @@ FROM openrowset (
         [subunit.sequenceAttachment.hash] NVARCHAR(MAX)       '$.sequenceAttachment.hash',
         [subunit.sequenceAttachment.title] NVARCHAR(4000)      '$.sequenceAttachment.title',
         [subunit.sequenceAttachment.creation] VARCHAR(64)         '$.sequenceAttachment.creation',
+<<<<<<< HEAD
         [subunit.nTerminalModificationId.id] NVARCHAR(100)       '$.nTerminalModificationId.id',
+=======
+        [subunit.nTerminalModificationId.id] NVARCHAR(4000)      '$.nTerminalModificationId.id',
+>>>>>>> origin/main
         [subunit.nTerminalModificationId.extension] NVARCHAR(MAX)       '$.nTerminalModificationId.extension',
         [subunit.nTerminalModificationId.use] NVARCHAR(64)        '$.nTerminalModificationId.use',
         [subunit.nTerminalModificationId.type] NVARCHAR(MAX)       '$.nTerminalModificationId.type',

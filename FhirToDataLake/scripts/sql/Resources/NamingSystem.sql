@@ -21,7 +21,11 @@ CREATE EXTERNAL TABLE [fhir].[NamingSystem] (
     [status] NVARCHAR(64),
     [kind] NVARCHAR(64),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [responsible] NVARCHAR(100),
     [type.id] NVARCHAR(100),

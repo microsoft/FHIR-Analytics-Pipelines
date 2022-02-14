@@ -26,16 +26,26 @@ CREATE EXTERNAL TABLE [fhir].[EvidenceVariable] (
     [subtitle] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [note] VARCHAR(MAX),
     [useContext] VARCHAR(MAX),
     [jurisdiction] VARCHAR(MAX),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -100,7 +110,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -589,6 +603,7 @@ FROM openrowset (
         [characteristic.definition.triggerDefinition.condition] NVARCHAR(MAX)       '$.definition.triggerDefinition.condition',
         [characteristic.definition.triggerDefinition.timing.timing] NVARCHAR(MAX)       '$.definition.triggerDefinition.timing.timing',
         [characteristic.definition.triggerDefinition.timing.reference] NVARCHAR(MAX)       '$.definition.triggerDefinition.timing.reference',
+<<<<<<< HEAD
         [characteristic.definition.triggerDefinition.timing.date] VARCHAR(32)         '$.definition.triggerDefinition.timing.date',
         [characteristic.definition.triggerDefinition.timing.dateTime] VARCHAR(64)         '$.definition.triggerDefinition.timing.dateTime',
         [characteristic.participantEffective.dateTime] VARCHAR(64)         '$.participantEffective.dateTime',
@@ -597,6 +612,16 @@ FROM openrowset (
         [characteristic.participantEffective.period.start] VARCHAR(64)         '$.participantEffective.period.start',
         [characteristic.participantEffective.period.end] VARCHAR(64)         '$.participantEffective.period.end',
         [characteristic.participantEffective.duration.id] NVARCHAR(100)       '$.participantEffective.duration.id',
+=======
+        [characteristic.definition.triggerDefinition.timing.date] VARCHAR(64)         '$.definition.triggerDefinition.timing.date',
+        [characteristic.definition.triggerDefinition.timing.dateTime] VARCHAR(64)         '$.definition.triggerDefinition.timing.dateTime',
+        [characteristic.participantEffective.dateTime] VARCHAR(64)         '$.participantEffective.dateTime',
+        [characteristic.participantEffective.period.id] NVARCHAR(4000)      '$.participantEffective.period.id',
+        [characteristic.participantEffective.period.extension] NVARCHAR(MAX)       '$.participantEffective.period.extension',
+        [characteristic.participantEffective.period.start] VARCHAR(64)         '$.participantEffective.period.start',
+        [characteristic.participantEffective.period.end] VARCHAR(64)         '$.participantEffective.period.end',
+        [characteristic.participantEffective.duration.id] NVARCHAR(4000)      '$.participantEffective.duration.id',
+>>>>>>> origin/main
         [characteristic.participantEffective.duration.extension] NVARCHAR(MAX)       '$.participantEffective.duration.extension',
         [characteristic.participantEffective.duration.value] float               '$.participantEffective.duration.value',
         [characteristic.participantEffective.duration.comparator] NVARCHAR(64)        '$.participantEffective.duration.comparator',

@@ -26,16 +26,26 @@ CREATE EXTERNAL TABLE [fhir].[Evidence] (
     [subtitle] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [note] VARCHAR(MAX),
     [useContext] VARCHAR(MAX),
     [jurisdiction] VARCHAR(MAX),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -113,7 +123,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

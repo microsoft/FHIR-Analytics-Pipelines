@@ -95,7 +95,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -164,7 +168,11 @@ FROM openrowset (
         [characteristic.period.extension] NVARCHAR(MAX)       '$.period.extension',
         [characteristic.period.start]  VARCHAR(64)         '$.period.start',
         [characteristic.period.end]    VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [characteristic.value.codeableConcept.id] NVARCHAR(100)       '$.value.codeableConcept.id',
+=======
+        [characteristic.value.codeableConcept.id] NVARCHAR(4000)      '$.value.codeableConcept.id',
+>>>>>>> origin/main
         [characteristic.value.codeableConcept.extension] NVARCHAR(MAX)       '$.value.codeableConcept.extension',
         [characteristic.value.codeableConcept.coding] NVARCHAR(MAX)       '$.value.codeableConcept.coding',
         [characteristic.value.codeableConcept.text] NVARCHAR(4000)      '$.value.codeableConcept.text',

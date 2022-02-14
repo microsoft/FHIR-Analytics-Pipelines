@@ -34,12 +34,21 @@ CREATE EXTERNAL TABLE [fhir].[Device] (
     [udiCarrier] VARCHAR(MAX),
     [status] NVARCHAR(64),
     [statusReason] VARCHAR(MAX),
+<<<<<<< HEAD
     [distinctIdentifier] NVARCHAR(500),
     [manufacturer] NVARCHAR(100),
     [manufactureDate] VARCHAR(64),
     [expirationDate] VARCHAR(64),
     [lotNumber] NVARCHAR(100),
     [serialNumber] NVARCHAR(100),
+=======
+    [distinctIdentifier] NVARCHAR(4000),
+    [manufacturer] NVARCHAR(4000),
+    [manufactureDate] VARCHAR(64),
+    [expirationDate] VARCHAR(64),
+    [lotNumber] NVARCHAR(4000),
+    [serialNumber] NVARCHAR(4000),
+>>>>>>> origin/main
     [deviceName] VARCHAR(MAX),
     [modelNumber] NVARCHAR(100),
     [partNumber] NVARCHAR(100),
@@ -159,7 +168,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

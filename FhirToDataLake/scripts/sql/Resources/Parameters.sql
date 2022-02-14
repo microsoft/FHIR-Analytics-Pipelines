@@ -346,7 +346,11 @@ FROM openrowset (
         [parameter.valueAttachment.hash] NVARCHAR(MAX)       '$.valueAttachment.hash',
         [parameter.valueAttachment.title] NVARCHAR(4000)      '$.valueAttachment.title',
         [parameter.valueAttachment.creation] VARCHAR(64)         '$.valueAttachment.creation',
+<<<<<<< HEAD
         [parameter.valueCodeableConcept.id] NVARCHAR(100)       '$.valueCodeableConcept.id',
+=======
+        [parameter.valueCodeableConcept.id] NVARCHAR(4000)      '$.valueCodeableConcept.id',
+>>>>>>> origin/main
         [parameter.valueCodeableConcept.extension] NVARCHAR(MAX)       '$.valueCodeableConcept.extension',
         [parameter.valueCodeableConcept.coding] NVARCHAR(MAX)       '$.valueCodeableConcept.coding',
         [parameter.valueCodeableConcept.text] NVARCHAR(4000)      '$.valueCodeableConcept.text',
@@ -410,7 +414,11 @@ FROM openrowset (
         [parameter.valuePeriod.extension] NVARCHAR(MAX)       '$.valuePeriod.extension',
         [parameter.valuePeriod.start]  VARCHAR(64)         '$.valuePeriod.start',
         [parameter.valuePeriod.end]    VARCHAR(64)         '$.valuePeriod.end',
+<<<<<<< HEAD
         [parameter.valueQuantity.id]   NVARCHAR(100)       '$.valueQuantity.id',
+=======
+        [parameter.valueQuantity.id]   NVARCHAR(4000)      '$.valueQuantity.id',
+>>>>>>> origin/main
         [parameter.valueQuantity.extension] NVARCHAR(MAX)       '$.valueQuantity.extension',
         [parameter.valueQuantity.value] float               '$.valueQuantity.value',
         [parameter.valueQuantity.comparator] NVARCHAR(64)        '$.valueQuantity.comparator',
@@ -508,9 +516,15 @@ FROM openrowset (
         [parameter.valueTriggerDefinition.condition] NVARCHAR(MAX)       '$.valueTriggerDefinition.condition',
         [parameter.valueTriggerDefinition.timing.timing] NVARCHAR(MAX)       '$.valueTriggerDefinition.timing.timing',
         [parameter.valueTriggerDefinition.timing.reference] NVARCHAR(MAX)       '$.valueTriggerDefinition.timing.reference',
+<<<<<<< HEAD
         [parameter.valueTriggerDefinition.timing.date] VARCHAR(32)         '$.valueTriggerDefinition.timing.date',
         [parameter.valueTriggerDefinition.timing.dateTime] VARCHAR(64)         '$.valueTriggerDefinition.timing.dateTime',
         [parameter.valueUsageContext.id] NVARCHAR(100)       '$.valueUsageContext.id',
+=======
+        [parameter.valueTriggerDefinition.timing.date] VARCHAR(64)         '$.valueTriggerDefinition.timing.date',
+        [parameter.valueTriggerDefinition.timing.dateTime] VARCHAR(64)         '$.valueTriggerDefinition.timing.dateTime',
+        [parameter.valueUsageContext.id] NVARCHAR(4000)      '$.valueUsageContext.id',
+>>>>>>> origin/main
         [parameter.valueUsageContext.extension] NVARCHAR(MAX)       '$.valueUsageContext.extension',
         [parameter.valueUsageContext.code] NVARCHAR(MAX)       '$.valueUsageContext.code',
         [parameter.valueUsageContext.value.codeableConcept] NVARCHAR(MAX)       '$.valueUsageContext.value.codeableConcept',

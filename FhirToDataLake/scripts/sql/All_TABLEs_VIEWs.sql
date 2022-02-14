@@ -111,7 +111,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -274,7 +278,11 @@ CREATE EXTERNAL TABLE [fhir].[ActivityDefinition] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -282,9 +290,15 @@ CREATE EXTERNAL TABLE [fhir].[ActivityDefinition] (
     [purpose] NVARCHAR(MAX),
     [usage] NVARCHAR(4000),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -378,7 +392,11 @@ CREATE EXTERNAL TABLE [fhir].[ActivityDefinition] (
     [timing.timing.code.coding] NVARCHAR(MAX),
     [timing.timing.code.text] NVARCHAR(4000),
     [timing.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [timing.age.id] NVARCHAR(100),
+=======
+    [timing.age.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [timing.age.extension] NVARCHAR(MAX),
     [timing.age.value] float,
     [timing.age.comparator] NVARCHAR(64),
@@ -389,7 +407,11 @@ CREATE EXTERNAL TABLE [fhir].[ActivityDefinition] (
     [timing.period.extension] NVARCHAR(MAX),
     [timing.period.start] VARCHAR(64),
     [timing.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [timing.range.id] NVARCHAR(100),
+=======
+    [timing.range.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [timing.range.extension] NVARCHAR(MAX),
     [timing.range.low.id] NVARCHAR(100),
     [timing.range.low.extension] NVARCHAR(MAX),
@@ -482,7 +504,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -1189,7 +1215,11 @@ CREATE EXTERNAL TABLE [fhir].[AdverseEvent] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -1621,7 +1651,11 @@ CREATE EXTERNAL TABLE [fhir].[AllergyIntolerance] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [recordedDate] VARCHAR(64),
+<<<<<<< HEAD
     [recorder.id] NVARCHAR(100),
+=======
+    [recorder.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [recorder.extension] NVARCHAR(MAX),
     [recorder.reference] NVARCHAR(4000),
     [recorder.type] VARCHAR(256),
@@ -1651,7 +1685,11 @@ CREATE EXTERNAL TABLE [fhir].[AllergyIntolerance] (
     [note] VARCHAR(MAX),
     [reaction] VARCHAR(MAX),
     [onset.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [onset.age.id] NVARCHAR(100),
+=======
+    [onset.age.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [onset.age.extension] NVARCHAR(MAX),
     [onset.age.value] float,
     [onset.age.comparator] NVARCHAR(64),
@@ -1662,7 +1700,11 @@ CREATE EXTERNAL TABLE [fhir].[AllergyIntolerance] (
     [onset.period.extension] NVARCHAR(MAX),
     [onset.period.start] VARCHAR(64),
     [onset.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [onset.range.id] NVARCHAR(100),
+=======
+    [onset.range.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [onset.range.extension] NVARCHAR(MAX),
     [onset.range.low.id] NVARCHAR(100),
     [onset.range.low.extension] NVARCHAR(MAX),
@@ -1732,7 +1774,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -1949,7 +1995,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -2409,7 +2459,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -2772,8 +2826,13 @@ CREATE EXTERNAL TABLE [fhir].[Basic] (
     [subject.identifier.period] NVARCHAR(MAX),
     [subject.identifier.assigner] NVARCHAR(MAX),
     [subject.display] NVARCHAR(4000),
+<<<<<<< HEAD
     [created] VARCHAR(32),
     [author.id] NVARCHAR(100),
+=======
+    [created] VARCHAR(64),
+    [author.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [author.extension] NVARCHAR(MAX),
     [author.reference] NVARCHAR(4000),
     [author.type] VARCHAR(256),
@@ -2839,7 +2898,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -2930,7 +2993,11 @@ CREATE EXTERNAL TABLE [fhir].[BiologicallyDerivedProduct] (
     [collection.source.identifier] NVARCHAR(MAX),
     [collection.source.display] NVARCHAR(4000),
     [collection.collected.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [collection.collected.period.id] NVARCHAR(100),
+=======
+    [collection.collected.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [collection.collected.period.extension] NVARCHAR(MAX),
     [collection.collected.period.start] VARCHAR(64),
     [collection.collected.period.end] VARCHAR(64),
@@ -2940,7 +3007,11 @@ CREATE EXTERNAL TABLE [fhir].[BiologicallyDerivedProduct] (
     [manipulation.modifierExtension] NVARCHAR(MAX),
     [manipulation.description] NVARCHAR(4000),
     [manipulation.time.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [manipulation.time.period.id] NVARCHAR(100),
+=======
+    [manipulation.time.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [manipulation.time.period.extension] NVARCHAR(MAX),
     [manipulation.time.period.start] VARCHAR(64),
     [manipulation.time.period.end] VARCHAR(64),
@@ -2998,7 +3069,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -3141,7 +3216,11 @@ FROM openrowset (
         [processing.additive.identifier] NVARCHAR(MAX)       '$.additive.identifier',
         [processing.additive.display]  NVARCHAR(4000)      '$.additive.display',
         [processing.time.dateTime]     VARCHAR(64)         '$.time.dateTime',
+<<<<<<< HEAD
         [processing.time.period.id]    NVARCHAR(100)       '$.time.period.id',
+=======
+        [processing.time.period.id]    NVARCHAR(4000)      '$.time.period.id',
+>>>>>>> origin/main
         [processing.time.period.extension] NVARCHAR(MAX)       '$.time.period.extension',
         [processing.time.period.start] VARCHAR(64)         '$.time.period.start',
         [processing.time.period.end]   VARCHAR(64)         '$.time.period.end'
@@ -3284,7 +3363,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -3382,7 +3465,11 @@ CREATE EXTERNAL TABLE [fhir].[Bundle] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -3397,7 +3484,11 @@ CREATE EXTERNAL TABLE [fhir].[Bundle] (
     [signature.extension] NVARCHAR(MAX),
     [signature.type] VARCHAR(MAX),
     [signature.when] VARCHAR(64),
+<<<<<<< HEAD
     [signature.who.id] NVARCHAR(100),
+=======
+    [signature.who.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [signature.who.extension] NVARCHAR(MAX),
     [signature.who.reference] NVARCHAR(4000),
     [signature.who.type] VARCHAR(256),
@@ -3501,16 +3592,28 @@ FROM openrowset (
         [entry.request.modifierExtension] NVARCHAR(MAX)       '$.request.modifierExtension',
         [entry.request.method]         NVARCHAR(64)        '$.request.method',
         [entry.request.url]            VARCHAR(256)        '$.request.url',
+<<<<<<< HEAD
         [entry.request.ifNoneMatch]    NVARCHAR(100)       '$.request.ifNoneMatch',
         [entry.request.ifModifiedSince] VARCHAR(64)         '$.request.ifModifiedSince',
         [entry.request.ifMatch]        NVARCHAR(100)       '$.request.ifMatch',
         [entry.request.ifNoneExist]    NVARCHAR(100)       '$.request.ifNoneExist',
         [entry.response.id]            NVARCHAR(100)       '$.response.id',
+=======
+        [entry.request.ifNoneMatch]    NVARCHAR(4000)      '$.request.ifNoneMatch',
+        [entry.request.ifModifiedSince] VARCHAR(64)         '$.request.ifModifiedSince',
+        [entry.request.ifMatch]        NVARCHAR(4000)      '$.request.ifMatch',
+        [entry.request.ifNoneExist]    NVARCHAR(4000)      '$.request.ifNoneExist',
+        [entry.response.id]            NVARCHAR(4000)      '$.response.id',
+>>>>>>> origin/main
         [entry.response.extension]     NVARCHAR(MAX)       '$.response.extension',
         [entry.response.modifierExtension] NVARCHAR(MAX)       '$.response.modifierExtension',
         [entry.response.status]        NVARCHAR(100)       '$.response.status',
         [entry.response.location]      VARCHAR(256)        '$.response.location',
+<<<<<<< HEAD
         [entry.response.etag]          NVARCHAR(100)       '$.response.etag',
+=======
+        [entry.response.etag]          NVARCHAR(4000)      '$.response.etag',
+>>>>>>> origin/main
         [entry.response.lastModified]  VARCHAR(64)         '$.response.lastModified'
     ) j
 
@@ -3542,7 +3645,11 @@ CREATE EXTERNAL TABLE [fhir].[CapabilityStatement] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -3555,10 +3662,17 @@ CREATE EXTERNAL TABLE [fhir].[CapabilityStatement] (
     [software.id] NVARCHAR(100),
     [software.extension] NVARCHAR(MAX),
     [software.modifierExtension] NVARCHAR(MAX),
+<<<<<<< HEAD
     [software.name] NVARCHAR(100),
     [software.version] NVARCHAR(100),
     [software.releaseDate] VARCHAR(64),
     [implementation.id] NVARCHAR(100),
+=======
+    [software.name] NVARCHAR(4000),
+    [software.version] NVARCHAR(4000),
+    [software.releaseDate] VARCHAR(64),
+    [implementation.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [implementation.extension] NVARCHAR(MAX),
     [implementation.modifierExtension] NVARCHAR(MAX),
     [implementation.description] NVARCHAR(4000),
@@ -3976,7 +4090,11 @@ CREATE EXTERNAL TABLE [fhir].[CarePlan] (
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [author.id] NVARCHAR(100),
+=======
+    [author.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [author.extension] NVARCHAR(MAX),
     [author.reference] NVARCHAR(4000),
     [author.type] VARCHAR(256),
@@ -4049,7 +4167,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -4704,7 +4826,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -5086,7 +5212,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -5141,7 +5271,11 @@ FROM openrowset (
         [additionalIdentifier.period.extension] NVARCHAR(MAX)       '$.period.extension',
         [additionalIdentifier.period.start] VARCHAR(64)         '$.period.start',
         [additionalIdentifier.period.end] VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [additionalIdentifier.assigner.id] NVARCHAR(100)       '$.assigner.id',
+=======
+        [additionalIdentifier.assigner.id] NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [additionalIdentifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [additionalIdentifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [additionalIdentifier.assigner.type] VARCHAR(256)        '$.assigner.type',
@@ -5391,11 +5525,19 @@ CREATE EXTERNAL TABLE [fhir].[ChargeItem] (
     [note] VARCHAR(MAX),
     [supportingInformation] VARCHAR(MAX),
     [occurrence.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [occurrence.period.id] NVARCHAR(100),
     [occurrence.period.extension] NVARCHAR(MAX),
     [occurrence.period.start] VARCHAR(64),
     [occurrence.period.end] VARCHAR(64),
     [occurrence.timing.id] NVARCHAR(100),
+=======
+    [occurrence.period.id] NVARCHAR(4000),
+    [occurrence.period.extension] NVARCHAR(MAX),
+    [occurrence.period.start] VARCHAR(64),
+    [occurrence.period.end] VARCHAR(64),
+    [occurrence.timing.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [occurrence.timing.extension] NVARCHAR(MAX),
     [occurrence.timing.modifierExtension] NVARCHAR(MAX),
     [occurrence.timing.event] VARCHAR(MAX),
@@ -5493,7 +5635,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -5874,12 +6020,17 @@ CREATE EXTERNAL TABLE [fhir].[ChargeItemDefinition] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
     [jurisdiction] VARCHAR(MAX),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
@@ -5887,6 +6038,15 @@ CREATE EXTERNAL TABLE [fhir].[ChargeItemDefinition] (
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
     [code.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+    [effectivePeriod.extension] NVARCHAR(MAX),
+    [effectivePeriod.start] VARCHAR(64),
+    [effectivePeriod.end] VARCHAR(64),
+    [code.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [code.extension] NVARCHAR(MAX),
     [code.coding] VARCHAR(MAX),
     [code.text] NVARCHAR(4000),
@@ -5946,7 +6106,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -6287,7 +6451,11 @@ CREATE EXTERNAL TABLE [fhir].[Claim] (
     [billablePeriod.start] VARCHAR(64),
     [billablePeriod.end] VARCHAR(64),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [enterer.id] NVARCHAR(100),
+=======
+    [enterer.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [enterer.extension] NVARCHAR(MAX),
     [enterer.reference] NVARCHAR(4000),
     [enterer.type] VARCHAR(256),
@@ -6408,8 +6576,13 @@ CREATE EXTERNAL TABLE [fhir].[Claim] (
     [accident.id] NVARCHAR(100),
     [accident.extension] NVARCHAR(MAX),
     [accident.modifierExtension] NVARCHAR(MAX),
+<<<<<<< HEAD
     [accident.date] VARCHAR(32),
     [accident.type.id] NVARCHAR(100),
+=======
+    [accident.date] VARCHAR(64),
+    [accident.type.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [accident.type.extension] NVARCHAR(MAX),
     [accident.type.coding] NVARCHAR(MAX),
     [accident.type.text] NVARCHAR(4000),
@@ -6489,7 +6662,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -6688,8 +6865,13 @@ FROM openrowset (
         [supportingInfo.reason.extension] NVARCHAR(MAX)       '$.reason.extension',
         [supportingInfo.reason.coding] NVARCHAR(MAX)       '$.reason.coding',
         [supportingInfo.reason.text]   NVARCHAR(4000)      '$.reason.text',
+<<<<<<< HEAD
         [supportingInfo.timing.date]   VARCHAR(32)         '$.timing.date',
         [supportingInfo.timing.period.id] NVARCHAR(100)       '$.timing.period.id',
+=======
+        [supportingInfo.timing.date]   VARCHAR(64)         '$.timing.date',
+        [supportingInfo.timing.period.id] NVARCHAR(4000)      '$.timing.period.id',
+>>>>>>> origin/main
         [supportingInfo.timing.period.extension] NVARCHAR(MAX)       '$.timing.period.extension',
         [supportingInfo.timing.period.start] VARCHAR(64)         '$.timing.period.start',
         [supportingInfo.timing.period.end] VARCHAR(64)         '$.timing.period.end',
@@ -6712,7 +6894,11 @@ FROM openrowset (
         [supportingInfo.value.attachment.hash] NVARCHAR(MAX)       '$.value.attachment.hash',
         [supportingInfo.value.attachment.title] NVARCHAR(4000)      '$.value.attachment.title',
         [supportingInfo.value.attachment.creation] VARCHAR(64)         '$.value.attachment.creation',
+<<<<<<< HEAD
         [supportingInfo.value.reference.id] NVARCHAR(100)       '$.value.reference.id',
+=======
+        [supportingInfo.value.reference.id] NVARCHAR(4000)      '$.value.reference.id',
+>>>>>>> origin/main
         [supportingInfo.value.reference.extension] NVARCHAR(MAX)       '$.value.reference.extension',
         [supportingInfo.value.reference.reference] NVARCHAR(4000)      '$.value.reference.reference',
         [supportingInfo.value.reference.type] VARCHAR(256)        '$.value.reference.type',
@@ -7039,12 +7225,21 @@ FROM openrowset (
         [item.subSite]                 NVARCHAR(MAX)       '$.subSite' AS JSON,
         [item.encounter]               NVARCHAR(MAX)       '$.encounter' AS JSON,
         [item.detail]                  NVARCHAR(MAX)       '$.detail' AS JSON,
+<<<<<<< HEAD
         [item.serviced.date]           VARCHAR(32)         '$.serviced.date',
         [item.serviced.period.id]      NVARCHAR(100)       '$.serviced.period.id',
         [item.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
         [item.serviced.period.start]   VARCHAR(64)         '$.serviced.period.start',
         [item.serviced.period.end]     VARCHAR(64)         '$.serviced.period.end',
         [item.location.codeableConcept.id] NVARCHAR(100)       '$.location.codeableConcept.id',
+=======
+        [item.serviced.date]           VARCHAR(64)         '$.serviced.date',
+        [item.serviced.period.id]      NVARCHAR(4000)      '$.serviced.period.id',
+        [item.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
+        [item.serviced.period.start]   VARCHAR(64)         '$.serviced.period.start',
+        [item.serviced.period.end]     VARCHAR(64)         '$.serviced.period.end',
+        [item.location.codeableConcept.id] NVARCHAR(4000)      '$.location.codeableConcept.id',
+>>>>>>> origin/main
         [item.location.codeableConcept.extension] NVARCHAR(MAX)       '$.location.codeableConcept.extension',
         [item.location.codeableConcept.coding] NVARCHAR(MAX)       '$.location.codeableConcept.coding',
         [item.location.codeableConcept.text] NVARCHAR(4000)      '$.location.codeableConcept.text',
@@ -7114,7 +7309,11 @@ CREATE EXTERNAL TABLE [fhir].[ClaimResponse] (
     [patient.identifier.assigner] NVARCHAR(MAX),
     [patient.display] NVARCHAR(4000),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [insurer.id] NVARCHAR(100),
+=======
+    [insurer.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [insurer.extension] NVARCHAR(MAX),
     [insurer.reference] NVARCHAR(4000),
     [insurer.type] VARCHAR(256),
@@ -7160,7 +7359,11 @@ CREATE EXTERNAL TABLE [fhir].[ClaimResponse] (
     [preAuthPeriod.extension] NVARCHAR(MAX),
     [preAuthPeriod.start] VARCHAR(64),
     [preAuthPeriod.end] VARCHAR(64),
+<<<<<<< HEAD
     [payeeType.id] NVARCHAR(100),
+=======
+    [payeeType.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [payeeType.extension] NVARCHAR(MAX),
     [payeeType.coding] VARCHAR(MAX),
     [payeeType.text] NVARCHAR(4000),
@@ -7183,8 +7386,13 @@ CREATE EXTERNAL TABLE [fhir].[ClaimResponse] (
     [payment.adjustmentReason.extension] NVARCHAR(MAX),
     [payment.adjustmentReason.coding] NVARCHAR(MAX),
     [payment.adjustmentReason.text] NVARCHAR(4000),
+<<<<<<< HEAD
     [payment.date] VARCHAR(32),
     [payment.amount.id] NVARCHAR(100),
+=======
+    [payment.date] VARCHAR(64),
+    [payment.amount.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [payment.amount.extension] NVARCHAR(MAX),
     [payment.amount.value] float,
     [payment.amount.currency] NVARCHAR(100),
@@ -7271,7 +7479,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -7426,12 +7638,21 @@ FROM openrowset (
         [addItem.noteNumber]           NVARCHAR(MAX)       '$.noteNumber' AS JSON,
         [addItem.adjudication]         NVARCHAR(MAX)       '$.adjudication' AS JSON,
         [addItem.detail]               NVARCHAR(MAX)       '$.detail' AS JSON,
+<<<<<<< HEAD
         [addItem.serviced.date]        VARCHAR(32)         '$.serviced.date',
         [addItem.serviced.period.id]   NVARCHAR(100)       '$.serviced.period.id',
         [addItem.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
         [addItem.serviced.period.start] VARCHAR(64)         '$.serviced.period.start',
         [addItem.serviced.period.end]  VARCHAR(64)         '$.serviced.period.end',
         [addItem.location.codeableConcept.id] NVARCHAR(100)       '$.location.codeableConcept.id',
+=======
+        [addItem.serviced.date]        VARCHAR(64)         '$.serviced.date',
+        [addItem.serviced.period.id]   NVARCHAR(4000)      '$.serviced.period.id',
+        [addItem.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
+        [addItem.serviced.period.start] VARCHAR(64)         '$.serviced.period.start',
+        [addItem.serviced.period.end]  VARCHAR(64)         '$.serviced.period.end',
+        [addItem.location.codeableConcept.id] NVARCHAR(4000)      '$.location.codeableConcept.id',
+>>>>>>> origin/main
         [addItem.location.codeableConcept.extension] NVARCHAR(MAX)       '$.location.codeableConcept.extension',
         [addItem.location.codeableConcept.coding] NVARCHAR(MAX)       '$.location.codeableConcept.coding',
         [addItem.location.codeableConcept.text] NVARCHAR(4000)      '$.location.codeableConcept.text',
@@ -7772,7 +7993,11 @@ CREATE EXTERNAL TABLE [fhir].[ClinicalImpression] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [assessor.id] NVARCHAR(100),
+=======
+    [assessor.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [assessor.extension] NVARCHAR(MAX),
     [assessor.reference] NVARCHAR(4000),
     [assessor.type] VARCHAR(256),
@@ -7808,7 +8033,11 @@ CREATE EXTERNAL TABLE [fhir].[ClinicalImpression] (
     [supportingInfo] VARCHAR(MAX),
     [note] VARCHAR(MAX),
     [effective.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [effective.period.id] NVARCHAR(100),
+=======
+    [effective.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effective.period.extension] NVARCHAR(MAX),
     [effective.period.start] VARCHAR(64),
     [effective.period.end] VARCHAR(64),
@@ -7865,7 +8094,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -8192,7 +8425,11 @@ CREATE EXTERNAL TABLE [fhir].[CodeSystem] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -8263,7 +8500,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -8634,7 +8875,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -9062,7 +9307,11 @@ FROM openrowset (
         [payload.content.attachment.hash] NVARCHAR(MAX)       '$.content.attachment.hash',
         [payload.content.attachment.title] NVARCHAR(4000)      '$.content.attachment.title',
         [payload.content.attachment.creation] VARCHAR(64)         '$.content.attachment.creation',
+<<<<<<< HEAD
         [payload.content.reference.id] NVARCHAR(100)       '$.content.reference.id',
+=======
+        [payload.content.reference.id] NVARCHAR(4000)      '$.content.reference.id',
+>>>>>>> origin/main
         [payload.content.reference.extension] NVARCHAR(MAX)       '$.content.reference.extension',
         [payload.content.reference.reference] NVARCHAR(4000)      '$.content.reference.reference',
         [payload.content.reference.type] VARCHAR(256)        '$.content.reference.type',
@@ -9146,7 +9395,11 @@ CREATE EXTERNAL TABLE [fhir].[CommunicationRequest] (
     [groupIdentifier.period.extension] NVARCHAR(MAX),
     [groupIdentifier.period.start] VARCHAR(64),
     [groupIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [groupIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [groupIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [groupIdentifier.assigner.extension] NVARCHAR(MAX),
     [groupIdentifier.assigner.reference] NVARCHAR(4000),
     [groupIdentifier.assigner.type] VARCHAR(256),
@@ -9190,7 +9443,11 @@ CREATE EXTERNAL TABLE [fhir].[CommunicationRequest] (
     [encounter.display] NVARCHAR(4000),
     [payload] VARCHAR(MAX),
     [authoredOn] VARCHAR(64),
+<<<<<<< HEAD
     [requester.id] NVARCHAR(100),
+=======
+    [requester.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [requester.extension] NVARCHAR(MAX),
     [requester.reference] NVARCHAR(4000),
     [requester.type] VARCHAR(256),
@@ -9221,7 +9478,11 @@ CREATE EXTERNAL TABLE [fhir].[CommunicationRequest] (
     [reasonReference] VARCHAR(MAX),
     [note] VARCHAR(MAX),
     [occurrence.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [occurrence.period.id] NVARCHAR(100),
+=======
+    [occurrence.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [occurrence.period.extension] NVARCHAR(MAX),
     [occurrence.period.start] VARCHAR(64),
     [occurrence.period.end] VARCHAR(64),
@@ -9278,7 +9539,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -9514,7 +9779,11 @@ FROM openrowset (
         [payload.content.attachment.hash] NVARCHAR(MAX)       '$.content.attachment.hash',
         [payload.content.attachment.title] NVARCHAR(4000)      '$.content.attachment.title',
         [payload.content.attachment.creation] VARCHAR(64)         '$.content.attachment.creation',
+<<<<<<< HEAD
         [payload.content.reference.id] NVARCHAR(100)       '$.content.reference.id',
+=======
+        [payload.content.reference.id] NVARCHAR(4000)      '$.content.reference.id',
+>>>>>>> origin/main
         [payload.content.reference.extension] NVARCHAR(MAX)       '$.content.reference.extension',
         [payload.content.reference.reference] NVARCHAR(4000)      '$.content.reference.reference',
         [payload.content.reference.type] VARCHAR(256)        '$.content.reference.type',
@@ -9699,7 +9968,11 @@ CREATE EXTERNAL TABLE [fhir].[CompartmentDefinition] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -9878,7 +10151,11 @@ CREATE EXTERNAL TABLE [fhir].[Composition] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -10042,7 +10319,11 @@ FROM openrowset (
         [attester.modifierExtension]   NVARCHAR(MAX)       '$.modifierExtension',
         [attester.mode]                NVARCHAR(64)        '$.mode',
         [attester.time]                VARCHAR(64)         '$.time',
+<<<<<<< HEAD
         [attester.party.id]            NVARCHAR(100)       '$.party.id',
+=======
+        [attester.party.id]            NVARCHAR(4000)      '$.party.id',
+>>>>>>> origin/main
         [attester.party.extension]     NVARCHAR(MAX)       '$.party.extension',
         [attester.party.reference]     NVARCHAR(4000)      '$.party.reference',
         [attester.party.type]          VARCHAR(256)        '$.party.type',
@@ -10250,7 +10531,11 @@ CREATE EXTERNAL TABLE [fhir].[ConceptMap] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -10262,7 +10547,11 @@ CREATE EXTERNAL TABLE [fhir].[ConceptMap] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -10521,7 +10810,11 @@ CREATE EXTERNAL TABLE [fhir].[Condition] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [recordedDate] VARCHAR(64),
+<<<<<<< HEAD
     [recorder.id] NVARCHAR(100),
+=======
+    [recorder.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [recorder.extension] NVARCHAR(MAX),
     [recorder.reference] NVARCHAR(4000),
     [recorder.type] VARCHAR(256),
@@ -10551,7 +10844,11 @@ CREATE EXTERNAL TABLE [fhir].[Condition] (
     [evidence] VARCHAR(MAX),
     [note] VARCHAR(MAX),
     [onset.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [onset.age.id] NVARCHAR(100),
+=======
+    [onset.age.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [onset.age.extension] NVARCHAR(MAX),
     [onset.age.value] float,
     [onset.age.comparator] NVARCHAR(64),
@@ -10562,7 +10859,11 @@ CREATE EXTERNAL TABLE [fhir].[Condition] (
     [onset.period.extension] NVARCHAR(MAX),
     [onset.period.start] VARCHAR(64),
     [onset.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [onset.range.id] NVARCHAR(100),
+=======
+    [onset.range.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [onset.range.extension] NVARCHAR(MAX),
     [onset.range.low.id] NVARCHAR(100),
     [onset.range.low.extension] NVARCHAR(MAX),
@@ -10580,7 +10881,11 @@ CREATE EXTERNAL TABLE [fhir].[Condition] (
     [onset.range.high.code] NVARCHAR(4000),
     [onset.string] NVARCHAR(4000),
     [abatement.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [abatement.age.id] NVARCHAR(100),
+=======
+    [abatement.age.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [abatement.age.extension] NVARCHAR(MAX),
     [abatement.age.value] float,
     [abatement.age.comparator] NVARCHAR(64),
@@ -10591,7 +10896,11 @@ CREATE EXTERNAL TABLE [fhir].[Condition] (
     [abatement.period.extension] NVARCHAR(MAX),
     [abatement.period.start] VARCHAR(64),
     [abatement.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [abatement.range.id] NVARCHAR(100),
+=======
+    [abatement.range.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [abatement.range.extension] NVARCHAR(MAX),
     [abatement.range.low.id] NVARCHAR(100),
     [abatement.range.low.extension] NVARCHAR(MAX),
@@ -10661,7 +10970,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -10906,7 +11219,11 @@ CREATE EXTERNAL TABLE [fhir].[Consent] (
     [source.attachment.hash] NVARCHAR(MAX),
     [source.attachment.title] NVARCHAR(4000),
     [source.attachment.creation] VARCHAR(64),
+<<<<<<< HEAD
     [source.reference.id] NVARCHAR(100),
+=======
+    [source.reference.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [source.reference.extension] NVARCHAR(MAX),
     [source.reference.reference] NVARCHAR(4000),
     [source.reference.type] VARCHAR(256),
@@ -10972,7 +11289,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -11205,11 +11526,19 @@ CREATE EXTERNAL TABLE [fhir].[Contract] (
     [contentDerivative.coding] VARCHAR(MAX),
     [contentDerivative.text] NVARCHAR(4000),
     [issued] VARCHAR(64),
+<<<<<<< HEAD
     [applies.id] NVARCHAR(100),
     [applies.extension] NVARCHAR(MAX),
     [applies.start] VARCHAR(64),
     [applies.end] VARCHAR(64),
     [expirationType.id] NVARCHAR(100),
+=======
+    [applies.id] NVARCHAR(4000),
+    [applies.extension] NVARCHAR(MAX),
+    [applies.start] VARCHAR(64),
+    [applies.end] VARCHAR(64),
+    [expirationType.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [expirationType.extension] NVARCHAR(MAX),
     [expirationType.coding] VARCHAR(MAX),
     [expirationType.text] NVARCHAR(4000),
@@ -11261,7 +11590,11 @@ CREATE EXTERNAL TABLE [fhir].[Contract] (
     [contentDefinition.publisher.identifier] NVARCHAR(MAX),
     [contentDefinition.publisher.display] NVARCHAR(4000),
     [contentDefinition.publicationDate] VARCHAR(64),
+<<<<<<< HEAD
     [contentDefinition.publicationStatus] NVARCHAR(100),
+=======
+    [contentDefinition.publicationStatus] NVARCHAR(4000),
+>>>>>>> origin/main
     [contentDefinition.copyright] NVARCHAR(MAX),
     [term] VARCHAR(MAX),
     [supportingInfo] VARCHAR(MAX),
@@ -11297,7 +11630,11 @@ CREATE EXTERNAL TABLE [fhir].[Contract] (
     [legallyBinding.attachment.hash] NVARCHAR(MAX),
     [legallyBinding.attachment.title] NVARCHAR(4000),
     [legallyBinding.attachment.creation] VARCHAR(64),
+<<<<<<< HEAD
     [legallyBinding.reference.id] NVARCHAR(100),
+=======
+    [legallyBinding.reference.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [legallyBinding.reference.extension] NVARCHAR(MAX),
     [legallyBinding.reference.reference] NVARCHAR(4000),
     [legallyBinding.reference.type] VARCHAR(256),
@@ -11363,7 +11700,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -11666,11 +12007,19 @@ FROM openrowset (
         [term.identifier.period]       NVARCHAR(MAX)       '$.identifier.period',
         [term.identifier.assigner]     NVARCHAR(MAX)       '$.identifier.assigner',
         [term.issued]                  VARCHAR(64)         '$.issued',
+<<<<<<< HEAD
         [term.applies.id]              NVARCHAR(100)       '$.applies.id',
         [term.applies.extension]       NVARCHAR(MAX)       '$.applies.extension',
         [term.applies.start]           VARCHAR(64)         '$.applies.start',
         [term.applies.end]             VARCHAR(64)         '$.applies.end',
         [term.type.id]                 NVARCHAR(100)       '$.type.id',
+=======
+        [term.applies.id]              NVARCHAR(4000)      '$.applies.id',
+        [term.applies.extension]       NVARCHAR(MAX)       '$.applies.extension',
+        [term.applies.start]           VARCHAR(64)         '$.applies.start',
+        [term.applies.end]             VARCHAR(64)         '$.applies.end',
+        [term.type.id]                 NVARCHAR(4000)      '$.type.id',
+>>>>>>> origin/main
         [term.type.extension]          NVARCHAR(MAX)       '$.type.extension',
         [term.type.coding]             NVARCHAR(MAX)       '$.type.coding',
         [term.type.text]               NVARCHAR(4000)      '$.type.text',
@@ -11892,7 +12241,11 @@ FROM openrowset (
         [friendly.content.attachment.hash] NVARCHAR(MAX)       '$.content.attachment.hash',
         [friendly.content.attachment.title] NVARCHAR(4000)      '$.content.attachment.title',
         [friendly.content.attachment.creation] VARCHAR(64)         '$.content.attachment.creation',
+<<<<<<< HEAD
         [friendly.content.reference.id] NVARCHAR(100)       '$.content.reference.id',
+=======
+        [friendly.content.reference.id] NVARCHAR(4000)      '$.content.reference.id',
+>>>>>>> origin/main
         [friendly.content.reference.extension] NVARCHAR(MAX)       '$.content.reference.extension',
         [friendly.content.reference.reference] NVARCHAR(4000)      '$.content.reference.reference',
         [friendly.content.reference.type] VARCHAR(256)        '$.content.reference.type',
@@ -11947,7 +12300,11 @@ FROM openrowset (
         [legal.content.attachment.hash] NVARCHAR(MAX)       '$.content.attachment.hash',
         [legal.content.attachment.title] NVARCHAR(4000)      '$.content.attachment.title',
         [legal.content.attachment.creation] VARCHAR(64)         '$.content.attachment.creation',
+<<<<<<< HEAD
         [legal.content.reference.id]   NVARCHAR(100)       '$.content.reference.id',
+=======
+        [legal.content.reference.id]   NVARCHAR(4000)      '$.content.reference.id',
+>>>>>>> origin/main
         [legal.content.reference.extension] NVARCHAR(MAX)       '$.content.reference.extension',
         [legal.content.reference.reference] NVARCHAR(4000)      '$.content.reference.reference',
         [legal.content.reference.type] VARCHAR(256)        '$.content.reference.type',
@@ -12002,7 +12359,11 @@ FROM openrowset (
         [rule.content.attachment.hash] NVARCHAR(MAX)       '$.content.attachment.hash',
         [rule.content.attachment.title] NVARCHAR(4000)      '$.content.attachment.title',
         [rule.content.attachment.creation] VARCHAR(64)         '$.content.attachment.creation',
+<<<<<<< HEAD
         [rule.content.reference.id]    NVARCHAR(100)       '$.content.reference.id',
+=======
+        [rule.content.reference.id]    NVARCHAR(4000)      '$.content.reference.id',
+>>>>>>> origin/main
         [rule.content.reference.extension] NVARCHAR(MAX)       '$.content.reference.extension',
         [rule.content.reference.reference] NVARCHAR(4000)      '$.content.reference.reference',
         [rule.content.reference.type]  VARCHAR(256)        '$.content.reference.type',
@@ -12146,7 +12507,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -12386,7 +12751,11 @@ CREATE EXTERNAL TABLE [fhir].[CoverageEligibilityRequest] (
     [patient.identifier.assigner] NVARCHAR(MAX),
     [patient.display] NVARCHAR(4000),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [enterer.id] NVARCHAR(100),
+=======
+    [enterer.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [enterer.extension] NVARCHAR(MAX),
     [enterer.reference] NVARCHAR(4000),
     [enterer.type] VARCHAR(256),
@@ -12441,8 +12810,13 @@ CREATE EXTERNAL TABLE [fhir].[CoverageEligibilityRequest] (
     [supportingInfo] VARCHAR(MAX),
     [insurance] VARCHAR(MAX),
     [item] VARCHAR(MAX),
+<<<<<<< HEAD
     [serviced.date] VARCHAR(32),
     [serviced.period.id] NVARCHAR(100),
+=======
+    [serviced.date] VARCHAR(64),
+    [serviced.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [serviced.period.extension] NVARCHAR(MAX),
     [serviced.period.start] VARCHAR(64),
     [serviced.period.end] VARCHAR(64),
@@ -12499,7 +12873,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -12735,7 +13113,11 @@ CREATE EXTERNAL TABLE [fhir].[CoverageEligibilityResponse] (
     [patient.identifier.assigner] NVARCHAR(MAX),
     [patient.display] NVARCHAR(4000),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [requestor.id] NVARCHAR(100),
+=======
+    [requestor.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [requestor.extension] NVARCHAR(MAX),
     [requestor.reference] NVARCHAR(4000),
     [requestor.type] VARCHAR(256),
@@ -12783,8 +13165,13 @@ CREATE EXTERNAL TABLE [fhir].[CoverageEligibilityResponse] (
     [form.coding] VARCHAR(MAX),
     [form.text] NVARCHAR(4000),
     [error] VARCHAR(MAX),
+<<<<<<< HEAD
     [serviced.date] VARCHAR(32),
     [serviced.period.id] NVARCHAR(100),
+=======
+    [serviced.date] VARCHAR(64),
+    [serviced.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [serviced.period.extension] NVARCHAR(MAX),
     [serviced.period.start] VARCHAR(64),
     [serviced.period.end] VARCHAR(64),
@@ -12841,7 +13228,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -13006,7 +13397,11 @@ CREATE EXTERNAL TABLE [fhir].[DetectedIssue] (
     [reference] VARCHAR(256),
     [mitigation] VARCHAR(MAX),
     [identified.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [identified.period.id] NVARCHAR(100),
+=======
+    [identified.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identified.period.extension] NVARCHAR(MAX),
     [identified.period.start] VARCHAR(64),
     [identified.period.end] VARCHAR(64),
@@ -13063,7 +13458,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -13178,7 +13577,11 @@ FROM openrowset (
         [mitigation.action.coding]     NVARCHAR(MAX)       '$.action.coding',
         [mitigation.action.text]       NVARCHAR(4000)      '$.action.text',
         [mitigation.date]              VARCHAR(64)         '$.date',
+<<<<<<< HEAD
         [mitigation.author.id]         NVARCHAR(100)       '$.author.id',
+=======
+        [mitigation.author.id]         NVARCHAR(4000)      '$.author.id',
+>>>>>>> origin/main
         [mitigation.author.extension]  NVARCHAR(MAX)       '$.author.extension',
         [mitigation.author.reference]  NVARCHAR(4000)      '$.author.reference',
         [mitigation.author.type]       VARCHAR(256)        '$.author.type',
@@ -13224,12 +13627,21 @@ CREATE EXTERNAL TABLE [fhir].[Device] (
     [udiCarrier] VARCHAR(MAX),
     [status] NVARCHAR(64),
     [statusReason] VARCHAR(MAX),
+<<<<<<< HEAD
     [distinctIdentifier] NVARCHAR(500),
     [manufacturer] NVARCHAR(100),
     [manufactureDate] VARCHAR(64),
     [expirationDate] VARCHAR(64),
     [lotNumber] NVARCHAR(100),
     [serialNumber] NVARCHAR(100),
+=======
+    [distinctIdentifier] NVARCHAR(4000),
+    [manufacturer] NVARCHAR(4000),
+    [manufactureDate] VARCHAR(64),
+    [expirationDate] VARCHAR(64),
+    [lotNumber] NVARCHAR(4000),
+    [serialNumber] NVARCHAR(4000),
+>>>>>>> origin/main
     [deviceName] VARCHAR(MAX),
     [modelNumber] NVARCHAR(100),
     [partNumber] NVARCHAR(100),
@@ -13349,7 +13761,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -13856,7 +14272,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -14399,7 +14819,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -14475,7 +14899,11 @@ CREATE EXTERNAL TABLE [fhir].[DeviceRequest] (
     [groupIdentifier.period.extension] NVARCHAR(MAX),
     [groupIdentifier.period.start] VARCHAR(64),
     [groupIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [groupIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [groupIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [groupIdentifier.assigner.extension] NVARCHAR(MAX),
     [groupIdentifier.assigner.reference] NVARCHAR(4000),
     [groupIdentifier.assigner.type] VARCHAR(256),
@@ -14512,7 +14940,11 @@ CREATE EXTERNAL TABLE [fhir].[DeviceRequest] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [authoredOn] VARCHAR(64),
+<<<<<<< HEAD
     [requester.id] NVARCHAR(100),
+=======
+    [requester.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [requester.extension] NVARCHAR(MAX),
     [requester.reference] NVARCHAR(4000),
     [requester.type] VARCHAR(256),
@@ -14566,11 +14998,19 @@ CREATE EXTERNAL TABLE [fhir].[DeviceRequest] (
     [code.codeableConcept.coding] VARCHAR(MAX),
     [code.codeableConcept.text] NVARCHAR(4000),
     [occurrence.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [occurrence.period.id] NVARCHAR(100),
     [occurrence.period.extension] NVARCHAR(MAX),
     [occurrence.period.start] VARCHAR(64),
     [occurrence.period.end] VARCHAR(64),
     [occurrence.timing.id] NVARCHAR(100),
+=======
+    [occurrence.period.id] NVARCHAR(4000),
+    [occurrence.period.extension] NVARCHAR(MAX),
+    [occurrence.period.start] VARCHAR(64),
+    [occurrence.period.end] VARCHAR(64),
+    [occurrence.timing.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [occurrence.timing.extension] NVARCHAR(MAX),
     [occurrence.timing.modifierExtension] NVARCHAR(MAX),
     [occurrence.timing.event] VARCHAR(MAX),
@@ -14651,7 +15091,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -15121,7 +15565,11 @@ CREATE EXTERNAL TABLE [fhir].[DeviceUseStatement] (
     [subject.display] NVARCHAR(4000),
     [derivedFrom] VARCHAR(MAX),
     [recordedOn] VARCHAR(64),
+<<<<<<< HEAD
     [source.id] NVARCHAR(100),
+=======
+    [source.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [source.extension] NVARCHAR(MAX),
     [source.reference] NVARCHAR(4000),
     [source.type] VARCHAR(256),
@@ -15240,7 +15688,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -15507,7 +15959,11 @@ CREATE EXTERNAL TABLE [fhir].[DiagnosticReport] (
     [conclusionCode] VARCHAR(MAX),
     [presentedForm] VARCHAR(MAX),
     [effective.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [effective.period.id] NVARCHAR(100),
+=======
+    [effective.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effective.period.extension] NVARCHAR(MAX),
     [effective.period.start] VARCHAR(64),
     [effective.period.end] VARCHAR(64),
@@ -15564,7 +16020,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -15988,7 +16448,11 @@ CREATE EXTERNAL TABLE [fhir].[DocumentManifest] (
     [masterIdentifier.period.extension] NVARCHAR(MAX),
     [masterIdentifier.period.start] VARCHAR(64),
     [masterIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [masterIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [masterIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [masterIdentifier.assigner.extension] NVARCHAR(MAX),
     [masterIdentifier.assigner.reference] NVARCHAR(4000),
     [masterIdentifier.assigner.type] VARCHAR(256),
@@ -16073,7 +16537,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -16295,7 +16763,11 @@ CREATE EXTERNAL TABLE [fhir].[DocumentReference] (
     [masterIdentifier.period.extension] NVARCHAR(MAX),
     [masterIdentifier.period.start] VARCHAR(64),
     [masterIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [masterIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [masterIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [masterIdentifier.assigner.extension] NVARCHAR(MAX),
     [masterIdentifier.assigner.reference] NVARCHAR(4000),
     [masterIdentifier.assigner.type] VARCHAR(256),
@@ -16363,7 +16835,11 @@ CREATE EXTERNAL TABLE [fhir].[DocumentReference] (
     [context.period.extension] NVARCHAR(MAX),
     [context.period.start] VARCHAR(64),
     [context.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [context.facilityType.id] NVARCHAR(100),
+=======
+    [context.facilityType.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [context.facilityType.extension] NVARCHAR(MAX),
     [context.facilityType.coding] NVARCHAR(MAX),
     [context.facilityType.text] NVARCHAR(4000),
@@ -16431,7 +16907,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -16617,7 +17097,11 @@ FROM openrowset (
         [content.attachment.hash]      NVARCHAR(MAX)       '$.attachment.hash',
         [content.attachment.title]     NVARCHAR(4000)      '$.attachment.title',
         [content.attachment.creation]  VARCHAR(64)         '$.attachment.creation',
+<<<<<<< HEAD
         [content.format.id]            NVARCHAR(100)       '$.format.id',
+=======
+        [content.format.id]            NVARCHAR(4000)      '$.format.id',
+>>>>>>> origin/main
         [content.format.extension]     NVARCHAR(MAX)       '$.format.extension',
         [content.format.system]        VARCHAR(256)        '$.format.system',
         [content.format.version]       NVARCHAR(100)       '$.format.version',
@@ -16654,16 +17138,26 @@ CREATE EXTERNAL TABLE [fhir].[EffectEvidenceSynthesis] (
     [title] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [note] VARCHAR(MAX),
     [useContext] VARCHAR(MAX),
     [jurisdiction] VARCHAR(MAX),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -16795,7 +17289,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -17338,7 +17836,11 @@ CREATE EXTERNAL TABLE [fhir].[Encounter] (
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
+<<<<<<< HEAD
     [length.id] NVARCHAR(100),
+=======
+    [length.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [length.extension] NVARCHAR(MAX),
     [length.value] float,
     [length.comparator] NVARCHAR(64),
@@ -17467,7 +17969,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -17701,7 +18207,11 @@ FROM openrowset (
         [participant.period.extension] NVARCHAR(MAX)       '$.period.extension',
         [participant.period.start]     VARCHAR(64)         '$.period.start',
         [participant.period.end]       VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [participant.individual.id]    NVARCHAR(100)       '$.individual.id',
+=======
+        [participant.individual.id]    NVARCHAR(4000)      '$.individual.id',
+>>>>>>> origin/main
         [participant.individual.extension] NVARCHAR(MAX)       '$.individual.extension',
         [participant.individual.reference] NVARCHAR(4000)      '$.individual.reference',
         [participant.individual.type]  VARCHAR(256)        '$.individual.type',
@@ -18067,7 +18577,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -18197,9 +18711,15 @@ CREATE EXTERNAL TABLE [fhir].[EnrollmentRequest] (
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
     [identifier] VARCHAR(MAX),
+<<<<<<< HEAD
     [status] NVARCHAR(100),
     [created] VARCHAR(64),
     [insurer.id] NVARCHAR(100),
+=======
+    [status] NVARCHAR(4000),
+    [created] VARCHAR(64),
+    [insurer.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [insurer.extension] NVARCHAR(MAX),
     [insurer.reference] NVARCHAR(4000),
     [insurer.type] VARCHAR(256),
@@ -18304,7 +18824,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -18351,7 +18875,11 @@ CREATE EXTERNAL TABLE [fhir].[EnrollmentResponse] (
     [outcome] NVARCHAR(64),
     [disposition] NVARCHAR(4000),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [organization.id] NVARCHAR(100),
+=======
+    [organization.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [organization.extension] NVARCHAR(MAX),
     [organization.reference] NVARCHAR(4000),
     [organization.type] VARCHAR(256),
@@ -18430,7 +18958,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -18563,7 +19095,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -18833,7 +19369,11 @@ CREATE EXTERNAL TABLE [fhir].[EventDefinition] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -18841,9 +19381,15 @@ CREATE EXTERNAL TABLE [fhir].[EventDefinition] (
     [purpose] NVARCHAR(MAX),
     [usage] NVARCHAR(4000),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -18924,7 +19470,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -19302,7 +19852,11 @@ FROM openrowset (
         [trigger.timing.reference.type] VARCHAR(256)        '$.timing.reference.type',
         [trigger.timing.reference.identifier] NVARCHAR(MAX)       '$.timing.reference.identifier',
         [trigger.timing.reference.display] NVARCHAR(4000)      '$.timing.reference.display',
+<<<<<<< HEAD
         [trigger.timing.date]          VARCHAR(32)         '$.timing.date',
+=======
+        [trigger.timing.date]          VARCHAR(64)         '$.timing.date',
+>>>>>>> origin/main
         [trigger.timing.dateTime]      VARCHAR(64)         '$.timing.dateTime'
     ) j
 
@@ -19336,16 +19890,26 @@ CREATE EXTERNAL TABLE [fhir].[Evidence] (
     [subtitle] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [note] VARCHAR(MAX),
     [useContext] VARCHAR(MAX),
     [jurisdiction] VARCHAR(MAX),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -19423,7 +19987,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -19891,16 +20459,26 @@ CREATE EXTERNAL TABLE [fhir].[EvidenceVariable] (
     [subtitle] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [note] VARCHAR(MAX),
     [useContext] VARCHAR(MAX),
     [jurisdiction] VARCHAR(MAX),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -19965,7 +20543,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -20454,6 +21036,7 @@ FROM openrowset (
         [characteristic.definition.triggerDefinition.condition] NVARCHAR(MAX)       '$.definition.triggerDefinition.condition',
         [characteristic.definition.triggerDefinition.timing.timing] NVARCHAR(MAX)       '$.definition.triggerDefinition.timing.timing',
         [characteristic.definition.triggerDefinition.timing.reference] NVARCHAR(MAX)       '$.definition.triggerDefinition.timing.reference',
+<<<<<<< HEAD
         [characteristic.definition.triggerDefinition.timing.date] VARCHAR(32)         '$.definition.triggerDefinition.timing.date',
         [characteristic.definition.triggerDefinition.timing.dateTime] VARCHAR(64)         '$.definition.triggerDefinition.timing.dateTime',
         [characteristic.participantEffective.dateTime] VARCHAR(64)         '$.participantEffective.dateTime',
@@ -20462,6 +21045,16 @@ FROM openrowset (
         [characteristic.participantEffective.period.start] VARCHAR(64)         '$.participantEffective.period.start',
         [characteristic.participantEffective.period.end] VARCHAR(64)         '$.participantEffective.period.end',
         [characteristic.participantEffective.duration.id] NVARCHAR(100)       '$.participantEffective.duration.id',
+=======
+        [characteristic.definition.triggerDefinition.timing.date] VARCHAR(64)         '$.definition.triggerDefinition.timing.date',
+        [characteristic.definition.triggerDefinition.timing.dateTime] VARCHAR(64)         '$.definition.triggerDefinition.timing.dateTime',
+        [characteristic.participantEffective.dateTime] VARCHAR(64)         '$.participantEffective.dateTime',
+        [characteristic.participantEffective.period.id] NVARCHAR(4000)      '$.participantEffective.period.id',
+        [characteristic.participantEffective.period.extension] NVARCHAR(MAX)       '$.participantEffective.period.extension',
+        [characteristic.participantEffective.period.start] VARCHAR(64)         '$.participantEffective.period.start',
+        [characteristic.participantEffective.period.end] VARCHAR(64)         '$.participantEffective.period.end',
+        [characteristic.participantEffective.duration.id] NVARCHAR(4000)      '$.participantEffective.duration.id',
+>>>>>>> origin/main
         [characteristic.participantEffective.duration.extension] NVARCHAR(MAX)       '$.participantEffective.duration.extension',
         [characteristic.participantEffective.duration.value] float               '$.participantEffective.duration.value',
         [characteristic.participantEffective.duration.comparator] NVARCHAR(64)        '$.participantEffective.duration.comparator',
@@ -20504,7 +21097,11 @@ CREATE EXTERNAL TABLE [fhir].[ExampleScenario] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [useContext] VARCHAR(MAX),
     [jurisdiction] VARCHAR(MAX),
@@ -20567,7 +21164,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -20870,7 +21471,11 @@ CREATE EXTERNAL TABLE [fhir].[ExplanationOfBenefit] (
     [billablePeriod.start] VARCHAR(64),
     [billablePeriod.end] VARCHAR(64),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [enterer.id] NVARCHAR(100),
+=======
+    [enterer.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [enterer.extension] NVARCHAR(MAX),
     [enterer.reference] NVARCHAR(4000),
     [enterer.type] VARCHAR(256),
@@ -21026,8 +21631,13 @@ CREATE EXTERNAL TABLE [fhir].[ExplanationOfBenefit] (
     [accident.id] NVARCHAR(100),
     [accident.extension] NVARCHAR(MAX),
     [accident.modifierExtension] NVARCHAR(MAX),
+<<<<<<< HEAD
     [accident.date] VARCHAR(32),
     [accident.type.id] NVARCHAR(100),
+=======
+    [accident.date] VARCHAR(64),
+    [accident.type.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [accident.type.extension] NVARCHAR(MAX),
     [accident.type.coding] NVARCHAR(MAX),
     [accident.type.text] NVARCHAR(4000),
@@ -21068,8 +21678,13 @@ CREATE EXTERNAL TABLE [fhir].[ExplanationOfBenefit] (
     [payment.adjustmentReason.extension] NVARCHAR(MAX),
     [payment.adjustmentReason.coding] NVARCHAR(MAX),
     [payment.adjustmentReason.text] NVARCHAR(4000),
+<<<<<<< HEAD
     [payment.date] VARCHAR(32),
     [payment.amount.id] NVARCHAR(100),
+=======
+    [payment.date] VARCHAR(64),
+    [payment.amount.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [payment.amount.extension] NVARCHAR(MAX),
     [payment.amount.value] float,
     [payment.amount.currency] NVARCHAR(100),
@@ -21154,7 +21769,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -21403,8 +22022,13 @@ FROM openrowset (
         [supportingInfo.reason.code]   NVARCHAR(4000)      '$.reason.code',
         [supportingInfo.reason.display] NVARCHAR(4000)      '$.reason.display',
         [supportingInfo.reason.userSelected] bit                 '$.reason.userSelected',
+<<<<<<< HEAD
         [supportingInfo.timing.date]   VARCHAR(32)         '$.timing.date',
         [supportingInfo.timing.period.id] NVARCHAR(100)       '$.timing.period.id',
+=======
+        [supportingInfo.timing.date]   VARCHAR(64)         '$.timing.date',
+        [supportingInfo.timing.period.id] NVARCHAR(4000)      '$.timing.period.id',
+>>>>>>> origin/main
         [supportingInfo.timing.period.extension] NVARCHAR(MAX)       '$.timing.period.extension',
         [supportingInfo.timing.period.start] VARCHAR(64)         '$.timing.period.start',
         [supportingInfo.timing.period.end] VARCHAR(64)         '$.timing.period.end',
@@ -21427,7 +22051,11 @@ FROM openrowset (
         [supportingInfo.value.attachment.hash] NVARCHAR(MAX)       '$.value.attachment.hash',
         [supportingInfo.value.attachment.title] NVARCHAR(4000)      '$.value.attachment.title',
         [supportingInfo.value.attachment.creation] VARCHAR(64)         '$.value.attachment.creation',
+<<<<<<< HEAD
         [supportingInfo.value.reference.id] NVARCHAR(100)       '$.value.reference.id',
+=======
+        [supportingInfo.value.reference.id] NVARCHAR(4000)      '$.value.reference.id',
+>>>>>>> origin/main
         [supportingInfo.value.reference.extension] NVARCHAR(MAX)       '$.value.reference.extension',
         [supportingInfo.value.reference.reference] NVARCHAR(4000)      '$.value.reference.reference',
         [supportingInfo.value.reference.type] VARCHAR(256)        '$.value.reference.type',
@@ -21726,12 +22354,21 @@ FROM openrowset (
         [item.noteNumber]              NVARCHAR(MAX)       '$.noteNumber' AS JSON,
         [item.adjudication]            NVARCHAR(MAX)       '$.adjudication' AS JSON,
         [item.detail]                  NVARCHAR(MAX)       '$.detail' AS JSON,
+<<<<<<< HEAD
         [item.serviced.date]           VARCHAR(32)         '$.serviced.date',
         [item.serviced.period.id]      NVARCHAR(100)       '$.serviced.period.id',
         [item.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
         [item.serviced.period.start]   VARCHAR(64)         '$.serviced.period.start',
         [item.serviced.period.end]     VARCHAR(64)         '$.serviced.period.end',
         [item.location.codeableConcept.id] NVARCHAR(100)       '$.location.codeableConcept.id',
+=======
+        [item.serviced.date]           VARCHAR(64)         '$.serviced.date',
+        [item.serviced.period.id]      NVARCHAR(4000)      '$.serviced.period.id',
+        [item.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
+        [item.serviced.period.start]   VARCHAR(64)         '$.serviced.period.start',
+        [item.serviced.period.end]     VARCHAR(64)         '$.serviced.period.end',
+        [item.location.codeableConcept.id] NVARCHAR(4000)      '$.location.codeableConcept.id',
+>>>>>>> origin/main
         [item.location.codeableConcept.extension] NVARCHAR(MAX)       '$.location.codeableConcept.extension',
         [item.location.codeableConcept.coding] NVARCHAR(MAX)       '$.location.codeableConcept.coding',
         [item.location.codeableConcept.text] NVARCHAR(4000)      '$.location.codeableConcept.text',
@@ -21871,12 +22508,21 @@ FROM openrowset (
         [addItem.noteNumber]           NVARCHAR(MAX)       '$.noteNumber' AS JSON,
         [addItem.adjudication]         NVARCHAR(MAX)       '$.adjudication' AS JSON,
         [addItem.detail]               NVARCHAR(MAX)       '$.detail' AS JSON,
+<<<<<<< HEAD
         [addItem.serviced.date]        VARCHAR(32)         '$.serviced.date',
         [addItem.serviced.period.id]   NVARCHAR(100)       '$.serviced.period.id',
         [addItem.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
         [addItem.serviced.period.start] VARCHAR(64)         '$.serviced.period.start',
         [addItem.serviced.period.end]  VARCHAR(64)         '$.serviced.period.end',
         [addItem.location.codeableConcept.id] NVARCHAR(100)       '$.location.codeableConcept.id',
+=======
+        [addItem.serviced.date]        VARCHAR(64)         '$.serviced.date',
+        [addItem.serviced.period.id]   NVARCHAR(4000)      '$.serviced.period.id',
+        [addItem.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
+        [addItem.serviced.period.start] VARCHAR(64)         '$.serviced.period.start',
+        [addItem.serviced.period.end]  VARCHAR(64)         '$.serviced.period.end',
+        [addItem.location.codeableConcept.id] NVARCHAR(4000)      '$.location.codeableConcept.id',
+>>>>>>> origin/main
         [addItem.location.codeableConcept.extension] NVARCHAR(MAX)       '$.location.codeableConcept.extension',
         [addItem.location.codeableConcept.coding] NVARCHAR(MAX)       '$.location.codeableConcept.coding',
         [addItem.location.codeableConcept.text] NVARCHAR(4000)      '$.location.codeableConcept.text',
@@ -22131,8 +22777,13 @@ CREATE EXTERNAL TABLE [fhir].[FamilyMemberHistory] (
     [patient.identifier.assigner] NVARCHAR(MAX),
     [patient.display] NVARCHAR(4000),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [name] NVARCHAR(100),
     [relationship.id] NVARCHAR(100),
+=======
+    [name] NVARCHAR(4000),
+    [relationship.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [relationship.extension] NVARCHAR(MAX),
     [relationship.coding] VARCHAR(MAX),
     [relationship.text] NVARCHAR(4000),
@@ -22149,7 +22800,11 @@ CREATE EXTERNAL TABLE [fhir].[FamilyMemberHistory] (
     [born.period.extension] NVARCHAR(MAX),
     [born.period.start] VARCHAR(64),
     [born.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [born.date] VARCHAR(32),
+=======
+    [born.date] VARCHAR(64),
+>>>>>>> origin/main
     [born.string] NVARCHAR(4000),
     [age.age.id] NVARCHAR(100),
     [age.age.extension] NVARCHAR(MAX),
@@ -22199,7 +22854,11 @@ CREATE EXTERNAL TABLE [fhir].[FamilyMemberHistory] (
     [deceased.range.high.unit] NVARCHAR(100),
     [deceased.range.high.system] VARCHAR(256),
     [deceased.range.high.code] NVARCHAR(4000),
+<<<<<<< HEAD
     [deceased.date] VARCHAR(32),
+=======
+    [deceased.date] VARCHAR(64),
+>>>>>>> origin/main
     [deceased.string] NVARCHAR(4000),
 ) WITH (
     LOCATION='/FamilyMemberHistory/**',
@@ -22254,7 +22913,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -22527,7 +23190,11 @@ CREATE EXTERNAL TABLE [fhir].[Flag] (
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
+<<<<<<< HEAD
     [encounter.id] NVARCHAR(100),
+=======
+    [encounter.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [encounter.extension] NVARCHAR(MAX),
     [encounter.reference] NVARCHAR(4000),
     [encounter.type] VARCHAR(256),
@@ -22606,7 +23273,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -22689,7 +23360,11 @@ CREATE EXTERNAL TABLE [fhir].[Goal] (
     [subject.identifier.assigner] NVARCHAR(MAX),
     [subject.display] NVARCHAR(4000),
     [target] VARCHAR(MAX),
+<<<<<<< HEAD
     [statusDate] VARCHAR(32),
+=======
+    [statusDate] VARCHAR(64),
+>>>>>>> origin/main
     [statusReason] NVARCHAR(4000),
     [expressedBy.id] NVARCHAR(100),
     [expressedBy.extension] NVARCHAR(MAX),
@@ -22708,8 +23383,13 @@ CREATE EXTERNAL TABLE [fhir].[Goal] (
     [note] VARCHAR(MAX),
     [outcomeCode] VARCHAR(MAX),
     [outcomeReference] VARCHAR(MAX),
+<<<<<<< HEAD
     [start.date] VARCHAR(32),
     [start.codeableConcept.id] NVARCHAR(100),
+=======
+    [start.date] VARCHAR(64),
+    [start.codeableConcept.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [start.codeableConcept.extension] NVARCHAR(MAX),
     [start.codeableConcept.coding] VARCHAR(MAX),
     [start.codeableConcept.text] NVARCHAR(4000),
@@ -22766,7 +23446,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -22880,8 +23564,13 @@ FROM openrowset (
         [target.detail.ratio.extension] NVARCHAR(MAX)       '$.detail.ratio.extension',
         [target.detail.ratio.numerator] NVARCHAR(MAX)       '$.detail.ratio.numerator',
         [target.detail.ratio.denominator] NVARCHAR(MAX)       '$.detail.ratio.denominator',
+<<<<<<< HEAD
         [target.due.date]              VARCHAR(32)         '$.due.date',
         [target.due.duration.id]       NVARCHAR(100)       '$.due.duration.id',
+=======
+        [target.due.date]              VARCHAR(64)         '$.due.date',
+        [target.due.duration.id]       NVARCHAR(4000)      '$.due.duration.id',
+>>>>>>> origin/main
         [target.due.duration.extension] NVARCHAR(MAX)       '$.due.duration.extension',
         [target.due.duration.value]    float               '$.due.duration.value',
         [target.due.duration.comparator] NVARCHAR(64)        '$.due.duration.comparator',
@@ -23067,7 +23756,11 @@ CREATE EXTERNAL TABLE [fhir].[GraphDefinition] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -23343,7 +24036,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -23412,7 +24109,11 @@ FROM openrowset (
         [characteristic.period.extension] NVARCHAR(MAX)       '$.period.extension',
         [characteristic.period.start]  VARCHAR(64)         '$.period.start',
         [characteristic.period.end]    VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [characteristic.value.codeableConcept.id] NVARCHAR(100)       '$.value.codeableConcept.id',
+=======
+        [characteristic.value.codeableConcept.id] NVARCHAR(4000)      '$.value.codeableConcept.id',
+>>>>>>> origin/main
         [characteristic.value.codeableConcept.extension] NVARCHAR(MAX)       '$.value.codeableConcept.extension',
         [characteristic.value.codeableConcept.coding] NVARCHAR(MAX)       '$.value.codeableConcept.coding',
         [characteristic.value.codeableConcept.text] NVARCHAR(4000)      '$.value.codeableConcept.text',
@@ -23515,7 +24216,11 @@ CREATE EXTERNAL TABLE [fhir].[GuidanceResponse] (
     [requestIdentifier.period.extension] NVARCHAR(MAX),
     [requestIdentifier.period.start] VARCHAR(64),
     [requestIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [requestIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [requestIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [requestIdentifier.assigner.extension] NVARCHAR(MAX),
     [requestIdentifier.assigner.reference] NVARCHAR(4000),
     [requestIdentifier.assigner.type] VARCHAR(256),
@@ -23550,7 +24255,11 @@ CREATE EXTERNAL TABLE [fhir].[GuidanceResponse] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [occurrenceDateTime] VARCHAR(64),
+<<<<<<< HEAD
     [performer.id] NVARCHAR(100),
+=======
+    [performer.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [performer.extension] NVARCHAR(MAX),
     [performer.reference] NVARCHAR(4000),
     [performer.type] VARCHAR(256),
@@ -23653,7 +24362,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -23985,7 +24698,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -24610,7 +25327,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -25082,9 +25803,15 @@ CREATE EXTERNAL TABLE [fhir].[Immunization] (
     [manufacturer.identifier.period] NVARCHAR(MAX),
     [manufacturer.identifier.assigner] NVARCHAR(MAX),
     [manufacturer.display] NVARCHAR(4000),
+<<<<<<< HEAD
     [lotNumber] NVARCHAR(100),
     [expirationDate] VARCHAR(32),
     [site.id] NVARCHAR(100),
+=======
+    [lotNumber] NVARCHAR(4000),
+    [expirationDate] VARCHAR(64),
+    [site.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [site.extension] NVARCHAR(MAX),
     [site.coding] VARCHAR(MAX),
     [site.text] NVARCHAR(4000),
@@ -25168,7 +25895,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -25437,7 +26168,11 @@ FROM openrowset (
         [reaction.extension]           NVARCHAR(MAX)       '$.extension',
         [reaction.modifierExtension]   NVARCHAR(MAX)       '$.modifierExtension',
         [reaction.date]                VARCHAR(64)         '$.date',
+<<<<<<< HEAD
         [reaction.detail.id]           NVARCHAR(100)       '$.detail.id',
+=======
+        [reaction.detail.id]           NVARCHAR(4000)      '$.detail.id',
+>>>>>>> origin/main
         [reaction.detail.extension]    NVARCHAR(MAX)       '$.detail.extension',
         [reaction.detail.reference]    NVARCHAR(4000)      '$.detail.reference',
         [reaction.detail.type]         VARCHAR(256)        '$.detail.type',
@@ -25530,7 +26265,11 @@ CREATE EXTERNAL TABLE [fhir].[ImmunizationEvaluation] (
     [patient.identifier.assigner] NVARCHAR(MAX),
     [patient.display] NVARCHAR(4000),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [authority.id] NVARCHAR(100),
+=======
+    [authority.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [authority.extension] NVARCHAR(MAX),
     [authority.reference] NVARCHAR(4000),
     [authority.type] VARCHAR(256),
@@ -25624,7 +26363,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -25693,7 +26436,11 @@ CREATE EXTERNAL TABLE [fhir].[ImmunizationRecommendation] (
     [patient.identifier.assigner] NVARCHAR(MAX),
     [patient.display] NVARCHAR(4000),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [authority.id] NVARCHAR(100),
+=======
+    [authority.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [authority.extension] NVARCHAR(MAX),
     [authority.reference] NVARCHAR(4000),
     [authority.type] VARCHAR(256),
@@ -25760,7 +26507,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -25859,7 +26610,11 @@ CREATE EXTERNAL TABLE [fhir].[ImplementationGuide] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -26131,7 +26886,11 @@ CREATE EXTERNAL TABLE [fhir].[InsurancePlan] (
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
+<<<<<<< HEAD
     [ownedBy.id] NVARCHAR(100),
+=======
+    [ownedBy.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [ownedBy.extension] NVARCHAR(MAX),
     [ownedBy.reference] NVARCHAR(4000),
     [ownedBy.type] VARCHAR(256),
@@ -26216,7 +26975,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -26695,7 +27458,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -26909,7 +27676,11 @@ CREATE EXTERNAL TABLE [fhir].[Library] (
     [type.coding] VARCHAR(MAX),
     [type.text] NVARCHAR(4000),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -26917,9 +27688,15 @@ CREATE EXTERNAL TABLE [fhir].[Library] (
     [purpose] NVARCHAR(MAX),
     [usage] NVARCHAR(4000),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -27002,7 +27779,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -27577,7 +28358,11 @@ CREATE EXTERNAL TABLE [fhir].[List] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [source.id] NVARCHAR(100),
+=======
+    [source.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [source.extension] NVARCHAR(MAX),
     [source.reference] NVARCHAR(4000),
     [source.type] VARCHAR(256),
@@ -27653,7 +28438,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -27739,7 +28528,11 @@ FROM openrowset (
         [entry.flag.text]              NVARCHAR(4000)      '$.flag.text',
         [entry.deleted]                bit                 '$.deleted',
         [entry.date]                   VARCHAR(64)         '$.date',
+<<<<<<< HEAD
         [entry.item.id]                NVARCHAR(100)       '$.item.id',
+=======
+        [entry.item.id]                NVARCHAR(4000)      '$.item.id',
+>>>>>>> origin/main
         [entry.item.extension]         NVARCHAR(MAX)       '$.item.extension',
         [entry.item.reference]         NVARCHAR(4000)      '$.item.reference',
         [entry.item.type]              VARCHAR(256)        '$.item.type',
@@ -27798,7 +28591,11 @@ CREATE EXTERNAL TABLE [fhir].[Location] (
     [address.period.extension] NVARCHAR(MAX),
     [address.period.start] VARCHAR(64),
     [address.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [physicalType.id] NVARCHAR(100),
+=======
+    [physicalType.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [physicalType.extension] NVARCHAR(MAX),
     [physicalType.coding] VARCHAR(MAX),
     [physicalType.text] NVARCHAR(4000),
@@ -27890,7 +28687,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -28083,7 +28884,11 @@ CREATE EXTERNAL TABLE [fhir].[Measure] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -28091,9 +28896,15 @@ CREATE EXTERNAL TABLE [fhir].[Measure] (
     [purpose] NVARCHAR(MAX),
     [usage] NVARCHAR(4000),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -28196,7 +29007,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -28697,7 +29512,11 @@ CREATE EXTERNAL TABLE [fhir].[MeasureReport] (
     [subject.identifier.assigner] NVARCHAR(MAX),
     [subject.display] NVARCHAR(4000),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [reporter.id] NVARCHAR(100),
+=======
+    [reporter.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [reporter.extension] NVARCHAR(MAX),
     [reporter.reference] NVARCHAR(4000),
     [reporter.type] VARCHAR(256),
@@ -28714,7 +29533,11 @@ CREATE EXTERNAL TABLE [fhir].[MeasureReport] (
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
+<<<<<<< HEAD
     [improvementNotation.id] NVARCHAR(100),
+=======
+    [improvementNotation.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [improvementNotation.extension] NVARCHAR(MAX),
     [improvementNotation.coding] VARCHAR(MAX),
     [improvementNotation.text] NVARCHAR(4000),
@@ -28773,7 +29596,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -28937,7 +29764,11 @@ CREATE EXTERNAL TABLE [fhir].[Media] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [issued] VARCHAR(64),
+<<<<<<< HEAD
     [operator.id] NVARCHAR(100),
+=======
+    [operator.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [operator.extension] NVARCHAR(MAX),
     [operator.reference] NVARCHAR(4000),
     [operator.type] VARCHAR(256),
@@ -28985,7 +29816,11 @@ CREATE EXTERNAL TABLE [fhir].[Media] (
     [content.creation] VARCHAR(64),
     [note] VARCHAR(MAX),
     [created.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [created.period.id] NVARCHAR(100),
+=======
+    [created.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [created.period.extension] NVARCHAR(MAX),
     [created.period.start] VARCHAR(64),
     [created.period.end] VARCHAR(64),
@@ -29042,7 +29877,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -29264,7 +30103,11 @@ CREATE EXTERNAL TABLE [fhir].[Medication] (
     [batch.id] NVARCHAR(100),
     [batch.extension] NVARCHAR(MAX),
     [batch.modifierExtension] NVARCHAR(MAX),
+<<<<<<< HEAD
     [batch.lotNumber] NVARCHAR(100),
+=======
+    [batch.lotNumber] NVARCHAR(4000),
+>>>>>>> origin/main
     [batch.expirationDate] VARCHAR(64),
 ) WITH (
     LOCATION='/Medication/**',
@@ -29319,7 +30162,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -29515,7 +30362,11 @@ CREATE EXTERNAL TABLE [fhir].[MedicationAdministration] (
     [medication.reference.identifier.assigner] NVARCHAR(MAX),
     [medication.reference.display] NVARCHAR(4000),
     [effective.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [effective.period.id] NVARCHAR(100),
+=======
+    [effective.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effective.period.extension] NVARCHAR(MAX),
     [effective.period.start] VARCHAR(64),
     [effective.period.end] VARCHAR(64),
@@ -29572,7 +30423,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -30036,7 +30891,11 @@ CREATE EXTERNAL TABLE [fhir].[MedicationDispense] (
     [daysSupply.code] NVARCHAR(4000),
     [whenPrepared] VARCHAR(64),
     [whenHandedOver] VARCHAR(64),
+<<<<<<< HEAD
     [destination.id] NVARCHAR(100),
+=======
+    [destination.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [destination.extension] NVARCHAR(MAX),
     [destination.reference] NVARCHAR(4000),
     [destination.type] VARCHAR(256),
@@ -30151,7 +31010,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -31358,7 +32221,11 @@ CREATE EXTERNAL TABLE [fhir].[MedicationRequest] (
     [encounter.display] NVARCHAR(4000),
     [supportingInformation] VARCHAR(MAX),
     [authoredOn] VARCHAR(64),
+<<<<<<< HEAD
     [requester.id] NVARCHAR(100),
+=======
+    [requester.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [requester.extension] NVARCHAR(MAX),
     [requester.reference] NVARCHAR(4000),
     [requester.type] VARCHAR(256),
@@ -31419,7 +32286,11 @@ CREATE EXTERNAL TABLE [fhir].[MedicationRequest] (
     [groupIdentifier.period.extension] NVARCHAR(MAX),
     [groupIdentifier.period.start] VARCHAR(64),
     [groupIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [groupIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [groupIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [groupIdentifier.assigner.extension] NVARCHAR(MAX),
     [groupIdentifier.assigner.reference] NVARCHAR(4000),
     [groupIdentifier.assigner.type] VARCHAR(256),
@@ -31583,7 +32454,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -32148,7 +33023,11 @@ CREATE EXTERNAL TABLE [fhir].[MedicationStatement] (
     [context.identifier.assigner] NVARCHAR(MAX),
     [context.display] NVARCHAR(4000),
     [dateAsserted] VARCHAR(64),
+<<<<<<< HEAD
     [informationSource.id] NVARCHAR(100),
+=======
+    [informationSource.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [informationSource.extension] NVARCHAR(MAX),
     [informationSource.reference] NVARCHAR(4000),
     [informationSource.type] VARCHAR(256),
@@ -32184,7 +33063,11 @@ CREATE EXTERNAL TABLE [fhir].[MedicationStatement] (
     [medication.reference.identifier.assigner] NVARCHAR(MAX),
     [medication.reference.display] NVARCHAR(4000),
     [effective.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [effective.period.id] NVARCHAR(100),
+=======
+    [effective.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effective.period.extension] NVARCHAR(MAX),
     [effective.period.start] VARCHAR(64),
     [effective.period.end] VARCHAR(64),
@@ -32241,7 +33124,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -32740,7 +33627,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -33183,7 +34074,11 @@ FROM openrowset (
         [crossReference.period.extension] NVARCHAR(MAX)       '$.period.extension',
         [crossReference.period.start]  VARCHAR(64)         '$.period.start',
         [crossReference.period.end]    VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [crossReference.assigner.id]   NVARCHAR(100)       '$.assigner.id',
+=======
+        [crossReference.assigner.id]   NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [crossReference.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [crossReference.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [crossReference.assigner.type] VARCHAR(256)        '$.assigner.type',
@@ -33249,7 +34144,11 @@ FROM openrowset (
         [manufacturingBusinessOperation.authorisationReferenceNumber.period] NVARCHAR(MAX)       '$.authorisationReferenceNumber.period',
         [manufacturingBusinessOperation.authorisationReferenceNumber.assigner] NVARCHAR(MAX)       '$.authorisationReferenceNumber.assigner',
         [manufacturingBusinessOperation.effectiveDate] VARCHAR(64)         '$.effectiveDate',
+<<<<<<< HEAD
         [manufacturingBusinessOperation.confidentialityIndicator.id] NVARCHAR(100)       '$.confidentialityIndicator.id',
+=======
+        [manufacturingBusinessOperation.confidentialityIndicator.id] NVARCHAR(4000)      '$.confidentialityIndicator.id',
+>>>>>>> origin/main
         [manufacturingBusinessOperation.confidentialityIndicator.extension] NVARCHAR(MAX)       '$.confidentialityIndicator.extension',
         [manufacturingBusinessOperation.confidentialityIndicator.coding] NVARCHAR(MAX)       '$.confidentialityIndicator.coding',
         [manufacturingBusinessOperation.confidentialityIndicator.text] NVARCHAR(4000)      '$.confidentialityIndicator.text',
@@ -33325,7 +34224,11 @@ FROM openrowset (
         [specialDesignation.status.coding] NVARCHAR(MAX)       '$.status.coding',
         [specialDesignation.status.text] NVARCHAR(4000)      '$.status.text',
         [specialDesignation.date]      VARCHAR(64)         '$.date',
+<<<<<<< HEAD
         [specialDesignation.species.id] NVARCHAR(100)       '$.species.id',
+=======
+        [specialDesignation.species.id] NVARCHAR(4000)      '$.species.id',
+>>>>>>> origin/main
         [specialDesignation.species.extension] NVARCHAR(MAX)       '$.species.extension',
         [specialDesignation.species.coding] NVARCHAR(MAX)       '$.species.coding',
         [specialDesignation.species.text] NVARCHAR(4000)      '$.species.text',
@@ -33384,17 +34287,29 @@ CREATE EXTERNAL TABLE [fhir].[MedicinalProductAuthorization] (
     [status.text] NVARCHAR(4000),
     [statusDate] VARCHAR(64),
     [restoreDate] VARCHAR(64),
+<<<<<<< HEAD
     [validityPeriod.id] NVARCHAR(100),
     [validityPeriod.extension] NVARCHAR(MAX),
     [validityPeriod.start] VARCHAR(64),
     [validityPeriod.end] VARCHAR(64),
     [dataExclusivityPeriod.id] NVARCHAR(100),
+=======
+    [validityPeriod.id] NVARCHAR(4000),
+    [validityPeriod.extension] NVARCHAR(MAX),
+    [validityPeriod.start] VARCHAR(64),
+    [validityPeriod.end] VARCHAR(64),
+    [dataExclusivityPeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [dataExclusivityPeriod.extension] NVARCHAR(MAX),
     [dataExclusivityPeriod.start] VARCHAR(64),
     [dataExclusivityPeriod.end] VARCHAR(64),
     [dateOfFirstAuthorization] VARCHAR(64),
     [internationalBirthDate] VARCHAR(64),
+<<<<<<< HEAD
     [legalBasis.id] NVARCHAR(100),
+=======
+    [legalBasis.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [legalBasis.extension] NVARCHAR(MAX),
     [legalBasis.coding] VARCHAR(MAX),
     [legalBasis.text] NVARCHAR(4000),
@@ -33499,7 +34414,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -34183,7 +35102,11 @@ CREATE EXTERNAL TABLE [fhir].[MedicinalProductIngredient] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -34741,7 +35664,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -35125,7 +36052,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -35532,7 +36463,11 @@ CREATE EXTERNAL TABLE [fhir].[MessageDefinition] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -35607,7 +36542,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -36236,7 +37175,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -36542,7 +37485,11 @@ CREATE EXTERNAL TABLE [fhir].[NamingSystem] (
     [status] NVARCHAR(64),
     [kind] NVARCHAR(64),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [responsible] NVARCHAR(100),
     [type.id] NVARCHAR(100),
@@ -36780,7 +37727,11 @@ CREATE EXTERNAL TABLE [fhir].[NutritionOrder] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [orderer.id] NVARCHAR(100),
+=======
+    [orderer.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [orderer.extension] NVARCHAR(MAX),
     [orderer.reference] NVARCHAR(4000),
     [orderer.type] VARCHAR(256),
@@ -36893,7 +37844,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -37245,11 +38200,19 @@ CREATE EXTERNAL TABLE [fhir].[Observation] (
     [derivedFrom] VARCHAR(MAX),
     [component] VARCHAR(MAX),
     [effective.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [effective.period.id] NVARCHAR(100),
     [effective.period.extension] NVARCHAR(MAX),
     [effective.period.start] VARCHAR(64),
     [effective.period.end] VARCHAR(64),
     [effective.timing.id] NVARCHAR(100),
+=======
+    [effective.period.id] NVARCHAR(4000),
+    [effective.period.extension] NVARCHAR(MAX),
+    [effective.period.start] VARCHAR(64),
+    [effective.period.end] VARCHAR(64),
+    [effective.timing.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effective.timing.extension] NVARCHAR(MAX),
     [effective.timing.modifierExtension] NVARCHAR(MAX),
     [effective.timing.event] VARCHAR(MAX),
@@ -37278,7 +38241,11 @@ CREATE EXTERNAL TABLE [fhir].[Observation] (
     [effective.timing.code.coding] NVARCHAR(MAX),
     [effective.timing.code.text] NVARCHAR(4000),
     [effective.instant] VARCHAR(64),
+<<<<<<< HEAD
     [value.quantity.id] NVARCHAR(100),
+=======
+    [value.quantity.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [value.quantity.extension] NVARCHAR(MAX),
     [value.quantity.value] float,
     [value.quantity.comparator] NVARCHAR(64),
@@ -37341,7 +38308,11 @@ CREATE EXTERNAL TABLE [fhir].[Observation] (
     [value.sampledData.data] NVARCHAR(4000),
     [value.time] NVARCHAR(MAX),
     [value.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [value.period.id] NVARCHAR(100),
+=======
+    [value.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [value.period.extension] NVARCHAR(MAX),
     [value.period.start] VARCHAR(64),
     [value.period.end] VARCHAR(64),
@@ -37398,7 +38369,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -37935,7 +38910,11 @@ FROM openrowset (
         [component.value.sampledData.data] NVARCHAR(4000)      '$.value.sampledData.data',
         [component.value.time]         NVARCHAR(MAX)       '$.value.time',
         [component.value.dateTime]     VARCHAR(64)         '$.value.dateTime',
+<<<<<<< HEAD
         [component.value.period.id]    NVARCHAR(100)       '$.value.period.id',
+=======
+        [component.value.period.id]    NVARCHAR(4000)      '$.value.period.id',
+>>>>>>> origin/main
         [component.value.period.extension] NVARCHAR(MAX)       '$.value.period.extension',
         [component.value.period.start] VARCHAR(64)         '$.value.period.start',
         [component.value.period.end]   VARCHAR(64)         '$.value.period.end'
@@ -38119,7 +39098,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -38238,7 +39221,11 @@ CREATE EXTERNAL TABLE [fhir].[OperationDefinition] (
     [kind] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -38653,7 +39640,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -38934,7 +39925,11 @@ CREATE EXTERNAL TABLE [fhir].[OrganizationAffiliation] (
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
+<<<<<<< HEAD
     [organization.id] NVARCHAR(100),
+=======
+    [organization.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [organization.extension] NVARCHAR(MAX),
     [organization.reference] NVARCHAR(4000),
     [organization.type] VARCHAR(256),
@@ -39020,7 +40015,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -39637,7 +40636,11 @@ FROM openrowset (
         [parameter.valueAttachment.hash] NVARCHAR(MAX)       '$.valueAttachment.hash',
         [parameter.valueAttachment.title] NVARCHAR(4000)      '$.valueAttachment.title',
         [parameter.valueAttachment.creation] VARCHAR(64)         '$.valueAttachment.creation',
+<<<<<<< HEAD
         [parameter.valueCodeableConcept.id] NVARCHAR(100)       '$.valueCodeableConcept.id',
+=======
+        [parameter.valueCodeableConcept.id] NVARCHAR(4000)      '$.valueCodeableConcept.id',
+>>>>>>> origin/main
         [parameter.valueCodeableConcept.extension] NVARCHAR(MAX)       '$.valueCodeableConcept.extension',
         [parameter.valueCodeableConcept.coding] NVARCHAR(MAX)       '$.valueCodeableConcept.coding',
         [parameter.valueCodeableConcept.text] NVARCHAR(4000)      '$.valueCodeableConcept.text',
@@ -39701,7 +40704,11 @@ FROM openrowset (
         [parameter.valuePeriod.extension] NVARCHAR(MAX)       '$.valuePeriod.extension',
         [parameter.valuePeriod.start]  VARCHAR(64)         '$.valuePeriod.start',
         [parameter.valuePeriod.end]    VARCHAR(64)         '$.valuePeriod.end',
+<<<<<<< HEAD
         [parameter.valueQuantity.id]   NVARCHAR(100)       '$.valueQuantity.id',
+=======
+        [parameter.valueQuantity.id]   NVARCHAR(4000)      '$.valueQuantity.id',
+>>>>>>> origin/main
         [parameter.valueQuantity.extension] NVARCHAR(MAX)       '$.valueQuantity.extension',
         [parameter.valueQuantity.value] float               '$.valueQuantity.value',
         [parameter.valueQuantity.comparator] NVARCHAR(64)        '$.valueQuantity.comparator',
@@ -39799,9 +40806,15 @@ FROM openrowset (
         [parameter.valueTriggerDefinition.condition] NVARCHAR(MAX)       '$.valueTriggerDefinition.condition',
         [parameter.valueTriggerDefinition.timing.timing] NVARCHAR(MAX)       '$.valueTriggerDefinition.timing.timing',
         [parameter.valueTriggerDefinition.timing.reference] NVARCHAR(MAX)       '$.valueTriggerDefinition.timing.reference',
+<<<<<<< HEAD
         [parameter.valueTriggerDefinition.timing.date] VARCHAR(32)         '$.valueTriggerDefinition.timing.date',
         [parameter.valueTriggerDefinition.timing.dateTime] VARCHAR(64)         '$.valueTriggerDefinition.timing.dateTime',
         [parameter.valueUsageContext.id] NVARCHAR(100)       '$.valueUsageContext.id',
+=======
+        [parameter.valueTriggerDefinition.timing.date] VARCHAR(64)         '$.valueTriggerDefinition.timing.date',
+        [parameter.valueTriggerDefinition.timing.dateTime] VARCHAR(64)         '$.valueTriggerDefinition.timing.dateTime',
+        [parameter.valueUsageContext.id] NVARCHAR(4000)      '$.valueUsageContext.id',
+>>>>>>> origin/main
         [parameter.valueUsageContext.extension] NVARCHAR(MAX)       '$.valueUsageContext.extension',
         [parameter.valueUsageContext.code] NVARCHAR(MAX)       '$.valueUsageContext.code',
         [parameter.valueUsageContext.value.codeableConcept] NVARCHAR(MAX)       '$.valueUsageContext.value.codeableConcept',
@@ -39862,7 +40875,11 @@ CREATE EXTERNAL TABLE [fhir].[Patient] (
     [name] VARCHAR(MAX),
     [telecom] VARCHAR(MAX),
     [gender] NVARCHAR(64),
+<<<<<<< HEAD
     [birthDate] VARCHAR(32),
+=======
+    [birthDate] VARCHAR(64),
+>>>>>>> origin/main
     [address] VARCHAR(MAX),
     [maritalStatus.id] NVARCHAR(100),
     [maritalStatus.extension] NVARCHAR(MAX),
@@ -39943,7 +40960,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -40367,7 +41388,11 @@ CREATE EXTERNAL TABLE [fhir].[PaymentNotice] (
     [response.identifier.assigner] NVARCHAR(MAX),
     [response.display] NVARCHAR(4000),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [provider.id] NVARCHAR(100),
+=======
+    [provider.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [provider.extension] NVARCHAR(MAX),
     [provider.reference] NVARCHAR(4000),
     [provider.type] VARCHAR(256),
@@ -40393,8 +41418,13 @@ CREATE EXTERNAL TABLE [fhir].[PaymentNotice] (
     [payment.identifier.period] NVARCHAR(MAX),
     [payment.identifier.assigner] NVARCHAR(MAX),
     [payment.display] NVARCHAR(4000),
+<<<<<<< HEAD
     [paymentDate] VARCHAR(32),
     [payee.id] NVARCHAR(100),
+=======
+    [paymentDate] VARCHAR(64),
+    [payee.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [payee.extension] NVARCHAR(MAX),
     [payee.reference] NVARCHAR(4000),
     [payee.type] VARCHAR(256),
@@ -40481,7 +41511,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -40517,7 +41551,11 @@ CREATE EXTERNAL TABLE [fhir].[PaymentReconciliation] (
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [paymentIssuer.id] NVARCHAR(100),
+=======
+    [paymentIssuer.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [paymentIssuer.extension] NVARCHAR(MAX),
     [paymentIssuer.reference] NVARCHAR(4000),
     [paymentIssuer.type] VARCHAR(256),
@@ -40558,8 +41596,13 @@ CREATE EXTERNAL TABLE [fhir].[PaymentReconciliation] (
     [requestor.display] NVARCHAR(4000),
     [outcome] NVARCHAR(64),
     [disposition] NVARCHAR(4000),
+<<<<<<< HEAD
     [paymentDate] VARCHAR(32),
     [paymentAmount.id] NVARCHAR(100),
+=======
+    [paymentDate] VARCHAR(64),
+    [paymentAmount.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [paymentAmount.extension] NVARCHAR(MAX),
     [paymentAmount.value] float,
     [paymentAmount.currency] NVARCHAR(100),
@@ -40576,7 +41619,11 @@ CREATE EXTERNAL TABLE [fhir].[PaymentReconciliation] (
     [paymentIdentifier.period.extension] NVARCHAR(MAX),
     [paymentIdentifier.period.start] VARCHAR(64),
     [paymentIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [paymentIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [paymentIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [paymentIdentifier.assigner.extension] NVARCHAR(MAX),
     [paymentIdentifier.assigner.reference] NVARCHAR(4000),
     [paymentIdentifier.assigner.type] VARCHAR(256),
@@ -40641,7 +41688,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -40763,8 +41814,13 @@ FROM openrowset (
         [detail.response.type]         VARCHAR(256)        '$.response.type',
         [detail.response.identifier]   NVARCHAR(MAX)       '$.response.identifier',
         [detail.response.display]      NVARCHAR(4000)      '$.response.display',
+<<<<<<< HEAD
         [detail.date]                  VARCHAR(32)         '$.date',
         [detail.responsible.id]        NVARCHAR(100)       '$.responsible.id',
+=======
+        [detail.date]                  VARCHAR(64)         '$.date',
+        [detail.responsible.id]        NVARCHAR(4000)      '$.responsible.id',
+>>>>>>> origin/main
         [detail.responsible.extension] NVARCHAR(MAX)       '$.responsible.extension',
         [detail.responsible.reference] NVARCHAR(4000)      '$.responsible.reference',
         [detail.responsible.type]      VARCHAR(256)        '$.responsible.type',
@@ -40834,7 +41890,11 @@ CREATE EXTERNAL TABLE [fhir].[Person] (
     [name] VARCHAR(MAX),
     [telecom] VARCHAR(MAX),
     [gender] NVARCHAR(64),
+<<<<<<< HEAD
     [birthDate] VARCHAR(32),
+=======
+    [birthDate] VARCHAR(64),
+>>>>>>> origin/main
     [address] VARCHAR(MAX),
     [photo.id] NVARCHAR(100),
     [photo.extension] NVARCHAR(MAX),
@@ -40846,7 +41906,11 @@ CREATE EXTERNAL TABLE [fhir].[Person] (
     [photo.hash] NVARCHAR(MAX),
     [photo.title] NVARCHAR(4000),
     [photo.creation] VARCHAR(64),
+<<<<<<< HEAD
     [managingOrganization.id] NVARCHAR(100),
+=======
+    [managingOrganization.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [managingOrganization.extension] NVARCHAR(MAX),
     [managingOrganization.reference] NVARCHAR(4000),
     [managingOrganization.type] VARCHAR(256),
@@ -40914,7 +41978,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -41118,7 +42186,11 @@ CREATE EXTERNAL TABLE [fhir].[PlanDefinition] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -41126,9 +42198,15 @@ CREATE EXTERNAL TABLE [fhir].[PlanDefinition] (
     [purpose] NVARCHAR(MAX),
     [usage] NVARCHAR(4000),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -41211,7 +42289,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -41731,7 +42813,11 @@ FROM openrowset (
         [action.subject.reference.identifier] NVARCHAR(MAX)       '$.subject.reference.identifier',
         [action.subject.reference.display] NVARCHAR(4000)      '$.subject.reference.display',
         [action.timing.dateTime]       VARCHAR(64)         '$.timing.dateTime',
+<<<<<<< HEAD
         [action.timing.age.id]         NVARCHAR(100)       '$.timing.age.id',
+=======
+        [action.timing.age.id]         NVARCHAR(4000)      '$.timing.age.id',
+>>>>>>> origin/main
         [action.timing.age.extension]  NVARCHAR(MAX)       '$.timing.age.extension',
         [action.timing.age.value]      float               '$.timing.age.value',
         [action.timing.age.comparator] NVARCHAR(64)        '$.timing.age.comparator',
@@ -41742,7 +42828,11 @@ FROM openrowset (
         [action.timing.period.extension] NVARCHAR(MAX)       '$.timing.period.extension',
         [action.timing.period.start]   VARCHAR(64)         '$.timing.period.start',
         [action.timing.period.end]     VARCHAR(64)         '$.timing.period.end',
+<<<<<<< HEAD
         [action.timing.duration.id]    NVARCHAR(100)       '$.timing.duration.id',
+=======
+        [action.timing.duration.id]    NVARCHAR(4000)      '$.timing.duration.id',
+>>>>>>> origin/main
         [action.timing.duration.extension] NVARCHAR(MAX)       '$.timing.duration.extension',
         [action.timing.duration.value] float               '$.timing.duration.value',
         [action.timing.duration.comparator] NVARCHAR(64)        '$.timing.duration.comparator',
@@ -41790,7 +42880,11 @@ CREATE EXTERNAL TABLE [fhir].[Practitioner] (
     [telecom] VARCHAR(MAX),
     [address] VARCHAR(MAX),
     [gender] NVARCHAR(64),
+<<<<<<< HEAD
     [birthDate] VARCHAR(32),
+=======
+    [birthDate] VARCHAR(64),
+>>>>>>> origin/main
     [photo] VARCHAR(MAX),
     [qualification] VARCHAR(MAX),
     [communication] VARCHAR(MAX),
@@ -41847,7 +42941,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -42062,7 +43160,11 @@ FROM openrowset (
         [qualification.period.extension] NVARCHAR(MAX)       '$.period.extension',
         [qualification.period.start]   VARCHAR(64)         '$.period.start',
         [qualification.period.end]     VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [qualification.issuer.id]      NVARCHAR(100)       '$.issuer.id',
+=======
+        [qualification.issuer.id]      NVARCHAR(4000)      '$.issuer.id',
+>>>>>>> origin/main
         [qualification.issuer.extension] NVARCHAR(MAX)       '$.issuer.extension',
         [qualification.issuer.reference] NVARCHAR(4000)      '$.issuer.reference',
         [qualification.issuer.type]    VARCHAR(256)        '$.issuer.type',
@@ -42122,7 +43224,11 @@ CREATE EXTERNAL TABLE [fhir].[PractitionerRole] (
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
+<<<<<<< HEAD
     [practitioner.id] NVARCHAR(100),
+=======
+    [practitioner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [practitioner.extension] NVARCHAR(MAX),
     [practitioner.reference] NVARCHAR(4000),
     [practitioner.type] VARCHAR(256),
@@ -42210,7 +43316,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -42619,7 +43729,11 @@ CREATE EXTERNAL TABLE [fhir].[Procedure] (
     [usedReference] VARCHAR(MAX),
     [usedCode] VARCHAR(MAX),
     [performed.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [performed.period.id] NVARCHAR(100),
+=======
+    [performed.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [performed.period.extension] NVARCHAR(MAX),
     [performed.period.start] VARCHAR(64),
     [performed.period.end] VARCHAR(64),
@@ -42700,7 +43814,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -43543,7 +44661,11 @@ FROM openrowset (
         [signature.extension]          NVARCHAR(MAX)       '$.extension',
         [signature.type]               NVARCHAR(MAX)       '$.type' AS JSON,
         [signature.when]               VARCHAR(64)         '$.when',
+<<<<<<< HEAD
         [signature.who.id]             NVARCHAR(100)       '$.who.id',
+=======
+        [signature.who.id]             NVARCHAR(4000)      '$.who.id',
+>>>>>>> origin/main
         [signature.who.extension]      NVARCHAR(MAX)       '$.who.extension',
         [signature.who.reference]      NVARCHAR(4000)      '$.who.reference',
         [signature.who.type]           VARCHAR(256)        '$.who.type',
@@ -43591,16 +44713,26 @@ CREATE EXTERNAL TABLE [fhir].[Questionnaire] (
     [experimental] bit,
     [subjectType] VARCHAR(MAX),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
     [jurisdiction] VARCHAR(MAX),
     [purpose] NVARCHAR(MAX),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -43659,7 +44791,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -43952,7 +45088,11 @@ CREATE EXTERNAL TABLE [fhir].[QuestionnaireResponse] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -43989,7 +45129,11 @@ CREATE EXTERNAL TABLE [fhir].[QuestionnaireResponse] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [authored] VARCHAR(64),
+<<<<<<< HEAD
     [author.id] NVARCHAR(100),
+=======
+    [author.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [author.extension] NVARCHAR(MAX),
     [author.reference] NVARCHAR(4000),
     [author.type] VARCHAR(256),
@@ -44181,7 +45325,11 @@ CREATE EXTERNAL TABLE [fhir].[RelatedPerson] (
     [name] VARCHAR(MAX),
     [telecom] VARCHAR(MAX),
     [gender] NVARCHAR(64),
+<<<<<<< HEAD
     [birthDate] VARCHAR(32),
+=======
+    [birthDate] VARCHAR(64),
+>>>>>>> origin/main
     [address] VARCHAR(MAX),
     [photo] VARCHAR(MAX),
     [period.id] NVARCHAR(100),
@@ -44242,7 +45390,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -44509,7 +45661,11 @@ CREATE EXTERNAL TABLE [fhir].[RequestGroup] (
     [groupIdentifier.period.extension] NVARCHAR(MAX),
     [groupIdentifier.period.start] VARCHAR(64),
     [groupIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [groupIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [groupIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [groupIdentifier.assigner.extension] NVARCHAR(MAX),
     [groupIdentifier.assigner.reference] NVARCHAR(4000),
     [groupIdentifier.assigner.type] VARCHAR(256),
@@ -44549,7 +45705,11 @@ CREATE EXTERNAL TABLE [fhir].[RequestGroup] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [authoredOn] VARCHAR(64),
+<<<<<<< HEAD
     [author.id] NVARCHAR(100),
+=======
+    [author.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [author.extension] NVARCHAR(MAX),
     [author.reference] NVARCHAR(4000),
     [author.type] VARCHAR(256),
@@ -44619,7 +45779,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -44961,7 +46125,11 @@ FROM openrowset (
         [action.resource.display]      NVARCHAR(4000)      '$.resource.display',
         [action.action]                NVARCHAR(MAX)       '$.action' AS JSON,
         [action.timing.dateTime]       VARCHAR(64)         '$.timing.dateTime',
+<<<<<<< HEAD
         [action.timing.age.id]         NVARCHAR(100)       '$.timing.age.id',
+=======
+        [action.timing.age.id]         NVARCHAR(4000)      '$.timing.age.id',
+>>>>>>> origin/main
         [action.timing.age.extension]  NVARCHAR(MAX)       '$.timing.age.extension',
         [action.timing.age.value]      float               '$.timing.age.value',
         [action.timing.age.comparator] NVARCHAR(64)        '$.timing.age.comparator',
@@ -44972,7 +46140,11 @@ FROM openrowset (
         [action.timing.period.extension] NVARCHAR(MAX)       '$.timing.period.extension',
         [action.timing.period.start]   VARCHAR(64)         '$.timing.period.start',
         [action.timing.period.end]     VARCHAR(64)         '$.timing.period.end',
+<<<<<<< HEAD
         [action.timing.duration.id]    NVARCHAR(100)       '$.timing.duration.id',
+=======
+        [action.timing.duration.id]    NVARCHAR(4000)      '$.timing.duration.id',
+>>>>>>> origin/main
         [action.timing.duration.extension] NVARCHAR(MAX)       '$.timing.duration.extension',
         [action.timing.duration.value] float               '$.timing.duration.value',
         [action.timing.duration.comparator] NVARCHAR(64)        '$.timing.duration.comparator',
@@ -45022,7 +46194,11 @@ CREATE EXTERNAL TABLE [fhir].[ResearchDefinition] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [comment] VARCHAR(MAX),
@@ -45031,9 +46207,15 @@ CREATE EXTERNAL TABLE [fhir].[ResearchDefinition] (
     [purpose] NVARCHAR(MAX),
     [usage] NVARCHAR(4000),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -45166,7 +46348,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -45548,7 +46734,11 @@ CREATE EXTERNAL TABLE [fhir].[ResearchElementDefinition] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [comment] VARCHAR(MAX),
@@ -45557,9 +46747,15 @@ CREATE EXTERNAL TABLE [fhir].[ResearchElementDefinition] (
     [purpose] NVARCHAR(MAX),
     [usage] NVARCHAR(4000),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -45643,7 +46839,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -46146,11 +47346,19 @@ FROM openrowset (
         [characteristic.definition.dataRequirement.subject.codeableConcept] NVARCHAR(MAX)       '$.definition.dataRequirement.subject.codeableConcept',
         [characteristic.definition.dataRequirement.subject.reference] NVARCHAR(MAX)       '$.definition.dataRequirement.subject.reference',
         [characteristic.studyEffective.dateTime] VARCHAR(64)         '$.studyEffective.dateTime',
+<<<<<<< HEAD
         [characteristic.studyEffective.period.id] NVARCHAR(100)       '$.studyEffective.period.id',
         [characteristic.studyEffective.period.extension] NVARCHAR(MAX)       '$.studyEffective.period.extension',
         [characteristic.studyEffective.period.start] VARCHAR(64)         '$.studyEffective.period.start',
         [characteristic.studyEffective.period.end] VARCHAR(64)         '$.studyEffective.period.end',
         [characteristic.studyEffective.duration.id] NVARCHAR(100)       '$.studyEffective.duration.id',
+=======
+        [characteristic.studyEffective.period.id] NVARCHAR(4000)      '$.studyEffective.period.id',
+        [characteristic.studyEffective.period.extension] NVARCHAR(MAX)       '$.studyEffective.period.extension',
+        [characteristic.studyEffective.period.start] VARCHAR(64)         '$.studyEffective.period.start',
+        [characteristic.studyEffective.period.end] VARCHAR(64)         '$.studyEffective.period.end',
+        [characteristic.studyEffective.duration.id] NVARCHAR(4000)      '$.studyEffective.duration.id',
+>>>>>>> origin/main
         [characteristic.studyEffective.duration.extension] NVARCHAR(MAX)       '$.studyEffective.duration.extension',
         [characteristic.studyEffective.duration.value] float               '$.studyEffective.duration.value',
         [characteristic.studyEffective.duration.comparator] NVARCHAR(64)        '$.studyEffective.duration.comparator',
@@ -46164,11 +47372,19 @@ FROM openrowset (
         [characteristic.studyEffective.timing.repeat] NVARCHAR(MAX)       '$.studyEffective.timing.repeat',
         [characteristic.studyEffective.timing.code] NVARCHAR(MAX)       '$.studyEffective.timing.code',
         [characteristic.participantEffective.dateTime] VARCHAR(64)         '$.participantEffective.dateTime',
+<<<<<<< HEAD
         [characteristic.participantEffective.period.id] NVARCHAR(100)       '$.participantEffective.period.id',
         [characteristic.participantEffective.period.extension] NVARCHAR(MAX)       '$.participantEffective.period.extension',
         [characteristic.participantEffective.period.start] VARCHAR(64)         '$.participantEffective.period.start',
         [characteristic.participantEffective.period.end] VARCHAR(64)         '$.participantEffective.period.end',
         [characteristic.participantEffective.duration.id] NVARCHAR(100)       '$.participantEffective.duration.id',
+=======
+        [characteristic.participantEffective.period.id] NVARCHAR(4000)      '$.participantEffective.period.id',
+        [characteristic.participantEffective.period.extension] NVARCHAR(MAX)       '$.participantEffective.period.extension',
+        [characteristic.participantEffective.period.start] VARCHAR(64)         '$.participantEffective.period.start',
+        [characteristic.participantEffective.period.end] VARCHAR(64)         '$.participantEffective.period.end',
+        [characteristic.participantEffective.duration.id] NVARCHAR(4000)      '$.participantEffective.duration.id',
+>>>>>>> origin/main
         [characteristic.participantEffective.duration.extension] NVARCHAR(MAX)       '$.participantEffective.duration.extension',
         [characteristic.participantEffective.duration.value] float               '$.participantEffective.duration.value',
         [characteristic.participantEffective.duration.comparator] NVARCHAR(64)        '$.participantEffective.duration.comparator',
@@ -46230,7 +47446,11 @@ CREATE EXTERNAL TABLE [fhir].[ResearchStudy] (
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
+<<<<<<< HEAD
     [sponsor.id] NVARCHAR(100),
+=======
+    [sponsor.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [sponsor.extension] NVARCHAR(MAX),
     [sponsor.reference] NVARCHAR(4000),
     [sponsor.type] VARCHAR(256),
@@ -46317,7 +47537,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -46834,7 +48058,11 @@ CREATE EXTERNAL TABLE [fhir].[ResearchSubject] (
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
+<<<<<<< HEAD
     [study.id] NVARCHAR(100),
+=======
+    [study.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [study.extension] NVARCHAR(MAX),
     [study.reference] NVARCHAR(4000),
     [study.type] VARCHAR(256),
@@ -46928,7 +48156,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -47052,7 +48284,11 @@ CREATE EXTERNAL TABLE [fhir].[RiskAssessment] (
     [mitigation] NVARCHAR(4000),
     [note] VARCHAR(MAX),
     [occurrence.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [occurrence.period.id] NVARCHAR(100),
+=======
+    [occurrence.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [occurrence.period.extension] NVARCHAR(MAX),
     [occurrence.period.start] VARCHAR(64),
     [occurrence.period.end] VARCHAR(64),
@@ -47109,7 +48345,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -47291,7 +48531,11 @@ FROM openrowset (
         [prediction.when.period.extension] NVARCHAR(MAX)       '$.when.period.extension',
         [prediction.when.period.start] VARCHAR(64)         '$.when.period.start',
         [prediction.when.period.end]   VARCHAR(64)         '$.when.period.end',
+<<<<<<< HEAD
         [prediction.when.range.id]     NVARCHAR(100)       '$.when.range.id',
+=======
+        [prediction.when.range.id]     NVARCHAR(4000)      '$.when.range.id',
+>>>>>>> origin/main
         [prediction.when.range.extension] NVARCHAR(MAX)       '$.when.range.extension',
         [prediction.when.range.low]    NVARCHAR(MAX)       '$.when.range.low',
         [prediction.when.range.high]   NVARCHAR(MAX)       '$.when.range.high'
@@ -47364,16 +48608,26 @@ CREATE EXTERNAL TABLE [fhir].[RiskEvidenceSynthesis] (
     [title] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [note] VARCHAR(MAX),
     [useContext] VARCHAR(MAX),
     [jurisdiction] VARCHAR(MAX),
     [copyright] NVARCHAR(MAX),
+<<<<<<< HEAD
     [approvalDate] VARCHAR(32),
     [lastReviewDate] VARCHAR(32),
     [effectivePeriod.id] NVARCHAR(100),
+=======
+    [approvalDate] VARCHAR(64),
+    [lastReviewDate] VARCHAR(64),
+    [effectivePeriod.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -47506,7 +48760,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -47972,7 +49230,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -48126,7 +49388,11 @@ CREATE EXTERNAL TABLE [fhir].[SearchParameter] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -48439,7 +49705,11 @@ CREATE EXTERNAL TABLE [fhir].[ServiceRequest] (
     [requisition.period.extension] NVARCHAR(MAX),
     [requisition.period.start] VARCHAR(64),
     [requisition.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [requisition.assigner.id] NVARCHAR(100),
+=======
+    [requisition.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [requisition.assigner.extension] NVARCHAR(MAX),
     [requisition.assigner.reference] NVARCHAR(4000),
     [requisition.assigner.type] VARCHAR(256),
@@ -48482,7 +49752,11 @@ CREATE EXTERNAL TABLE [fhir].[ServiceRequest] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [authoredOn] VARCHAR(64),
+<<<<<<< HEAD
     [requester.id] NVARCHAR(100),
+=======
+    [requester.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [requester.extension] NVARCHAR(MAX),
     [requester.reference] NVARCHAR(4000),
     [requester.type] VARCHAR(256),
@@ -48551,11 +49825,19 @@ CREATE EXTERNAL TABLE [fhir].[ServiceRequest] (
     [quantity.range.high.system] VARCHAR(256),
     [quantity.range.high.code] NVARCHAR(4000),
     [occurrence.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [occurrence.period.id] NVARCHAR(100),
     [occurrence.period.extension] NVARCHAR(MAX),
     [occurrence.period.start] VARCHAR(64),
     [occurrence.period.end] VARCHAR(64),
     [occurrence.timing.id] NVARCHAR(100),
+=======
+    [occurrence.period.id] NVARCHAR(4000),
+    [occurrence.period.extension] NVARCHAR(MAX),
+    [occurrence.period.start] VARCHAR(64),
+    [occurrence.period.end] VARCHAR(64),
+    [occurrence.timing.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [occurrence.timing.extension] NVARCHAR(MAX),
     [occurrence.timing.modifierExtension] NVARCHAR(MAX),
     [occurrence.timing.event] VARCHAR(MAX),
@@ -48641,7 +49923,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -49338,7 +50624,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -49456,7 +50746,11 @@ CREATE EXTERNAL TABLE [fhir].[Specimen] (
     [accessionIdentifier.period.extension] NVARCHAR(MAX),
     [accessionIdentifier.period.start] VARCHAR(64),
     [accessionIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [accessionIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [accessionIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [accessionIdentifier.assigner.extension] NVARCHAR(MAX),
     [accessionIdentifier.assigner.reference] NVARCHAR(4000),
     [accessionIdentifier.assigner.type] VARCHAR(256),
@@ -49515,11 +50809,19 @@ CREATE EXTERNAL TABLE [fhir].[Specimen] (
     [collection.bodySite.coding] NVARCHAR(MAX),
     [collection.bodySite.text] NVARCHAR(4000),
     [collection.collected.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [collection.collected.period.id] NVARCHAR(100),
     [collection.collected.period.extension] NVARCHAR(MAX),
     [collection.collected.period.start] VARCHAR(64),
     [collection.collected.period.end] VARCHAR(64),
     [collection.fastingStatus.codeableConcept.id] NVARCHAR(100),
+=======
+    [collection.collected.period.id] NVARCHAR(4000),
+    [collection.collected.period.extension] NVARCHAR(MAX),
+    [collection.collected.period.start] VARCHAR(64),
+    [collection.collected.period.end] VARCHAR(64),
+    [collection.fastingStatus.codeableConcept.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [collection.fastingStatus.codeableConcept.extension] NVARCHAR(MAX),
     [collection.fastingStatus.codeableConcept.coding] NVARCHAR(MAX),
     [collection.fastingStatus.codeableConcept.text] NVARCHAR(4000),
@@ -49587,7 +50889,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -49720,7 +51026,11 @@ FROM openrowset (
         [processing.procedure.text]    NVARCHAR(4000)      '$.procedure.text',
         [processing.additive]          NVARCHAR(MAX)       '$.additive' AS JSON,
         [processing.time.dateTime]     VARCHAR(64)         '$.time.dateTime',
+<<<<<<< HEAD
         [processing.time.period.id]    NVARCHAR(100)       '$.time.period.id',
+=======
+        [processing.time.period.id]    NVARCHAR(4000)      '$.time.period.id',
+>>>>>>> origin/main
         [processing.time.period.extension] NVARCHAR(MAX)       '$.time.period.extension',
         [processing.time.period.start] VARCHAR(64)         '$.time.period.start',
         [processing.time.period.end]   VARCHAR(64)         '$.time.period.end'
@@ -49907,7 +51217,11 @@ CREATE EXTERNAL TABLE [fhir].[SpecimenDefinition] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -50087,7 +51401,11 @@ CREATE EXTERNAL TABLE [fhir].[StructureMap] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -50150,7 +51468,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -50531,7 +51853,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -50610,7 +51936,11 @@ FROM openrowset (
         [instance.identifier.period]   NVARCHAR(MAX)       '$.identifier.period',
         [instance.identifier.assigner] NVARCHAR(MAX)       '$.identifier.assigner',
         [instance.expiry]              VARCHAR(64)         '$.expiry',
+<<<<<<< HEAD
         [instance.quantity.id]         NVARCHAR(100)       '$.quantity.id',
+=======
+        [instance.quantity.id]         NVARCHAR(4000)      '$.quantity.id',
+>>>>>>> origin/main
         [instance.quantity.extension]  NVARCHAR(MAX)       '$.quantity.extension',
         [instance.quantity.value]      float               '$.quantity.value',
         [instance.quantity.comparator] NVARCHAR(64)        '$.quantity.comparator',
@@ -50765,7 +52095,11 @@ FROM openrowset (
         [subunit.sequenceAttachment.hash] NVARCHAR(MAX)       '$.sequenceAttachment.hash',
         [subunit.sequenceAttachment.title] NVARCHAR(4000)      '$.sequenceAttachment.title',
         [subunit.sequenceAttachment.creation] VARCHAR(64)         '$.sequenceAttachment.creation',
+<<<<<<< HEAD
         [subunit.fivePrime.id]         NVARCHAR(100)       '$.fivePrime.id',
+=======
+        [subunit.fivePrime.id]         NVARCHAR(4000)      '$.fivePrime.id',
+>>>>>>> origin/main
         [subunit.fivePrime.extension]  NVARCHAR(MAX)       '$.fivePrime.extension',
         [subunit.fivePrime.coding]     NVARCHAR(MAX)       '$.fivePrime.coding',
         [subunit.fivePrime.text]       NVARCHAR(4000)      '$.fivePrime.text',
@@ -51048,7 +52382,11 @@ FROM openrowset (
         [subunit.sequenceAttachment.hash] NVARCHAR(MAX)       '$.sequenceAttachment.hash',
         [subunit.sequenceAttachment.title] NVARCHAR(4000)      '$.sequenceAttachment.title',
         [subunit.sequenceAttachment.creation] VARCHAR(64)         '$.sequenceAttachment.creation',
+<<<<<<< HEAD
         [subunit.nTerminalModificationId.id] NVARCHAR(100)       '$.nTerminalModificationId.id',
+=======
+        [subunit.nTerminalModificationId.id] NVARCHAR(4000)      '$.nTerminalModificationId.id',
+>>>>>>> origin/main
         [subunit.nTerminalModificationId.extension] NVARCHAR(MAX)       '$.nTerminalModificationId.extension',
         [subunit.nTerminalModificationId.use] NVARCHAR(64)        '$.nTerminalModificationId.use',
         [subunit.nTerminalModificationId.type] NVARCHAR(MAX)       '$.nTerminalModificationId.type',
@@ -51384,7 +52722,11 @@ CREATE EXTERNAL TABLE [fhir].[SubstanceSourceMaterial] (
     [organismId.period.extension] NVARCHAR(MAX),
     [organismId.period.start] VARCHAR(64),
     [organismId.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [organismId.assigner.id] NVARCHAR(100),
+=======
+    [organismId.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [organismId.assigner.extension] NVARCHAR(MAX),
     [organismId.assigner.reference] NVARCHAR(4000),
     [organismId.assigner.type] VARCHAR(256),
@@ -51490,7 +52832,11 @@ FROM openrowset (
         [parentSubstanceId.period.extension] NVARCHAR(MAX)       '$.period.extension',
         [parentSubstanceId.period.start] VARCHAR(64)         '$.period.start',
         [parentSubstanceId.period.end] VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [parentSubstanceId.assigner.id] NVARCHAR(100)       '$.assigner.id',
+=======
+        [parentSubstanceId.assigner.id] NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [parentSubstanceId.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [parentSubstanceId.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [parentSubstanceId.assigner.type] VARCHAR(256)        '$.assigner.type',
@@ -51667,7 +53013,11 @@ CREATE EXTERNAL TABLE [fhir].[SubstanceSpecification] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -52338,11 +53688,19 @@ CREATE EXTERNAL TABLE [fhir].[SupplyDelivery] (
     [destination.display] NVARCHAR(4000),
     [receiver] VARCHAR(MAX),
     [occurrence.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [occurrence.period.id] NVARCHAR(100),
     [occurrence.period.extension] NVARCHAR(MAX),
     [occurrence.period.start] VARCHAR(64),
     [occurrence.period.end] VARCHAR(64),
     [occurrence.timing.id] NVARCHAR(100),
+=======
+    [occurrence.period.id] NVARCHAR(4000),
+    [occurrence.period.extension] NVARCHAR(MAX),
+    [occurrence.period.start] VARCHAR(64),
+    [occurrence.period.end] VARCHAR(64),
+    [occurrence.timing.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [occurrence.timing.extension] NVARCHAR(MAX),
     [occurrence.timing.modifierExtension] NVARCHAR(MAX),
     [occurrence.timing.event] VARCHAR(MAX),
@@ -52423,7 +53781,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -52597,7 +53959,11 @@ CREATE EXTERNAL TABLE [fhir].[SupplyRequest] (
     [quantity.code] NVARCHAR(4000),
     [parameter] VARCHAR(MAX),
     [authoredOn] VARCHAR(64),
+<<<<<<< HEAD
     [requester.id] NVARCHAR(100),
+=======
+    [requester.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [requester.extension] NVARCHAR(MAX),
     [requester.reference] NVARCHAR(4000),
     [requester.type] VARCHAR(256),
@@ -52657,11 +54023,19 @@ CREATE EXTERNAL TABLE [fhir].[SupplyRequest] (
     [item.reference.identifier.assigner] NVARCHAR(MAX),
     [item.reference.display] NVARCHAR(4000),
     [occurrence.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [occurrence.period.id] NVARCHAR(100),
     [occurrence.period.extension] NVARCHAR(MAX),
     [occurrence.period.start] VARCHAR(64),
     [occurrence.period.end] VARCHAR(64),
     [occurrence.timing.id] NVARCHAR(100),
+=======
+    [occurrence.period.id] NVARCHAR(4000),
+    [occurrence.period.extension] NVARCHAR(MAX),
+    [occurrence.period.start] VARCHAR(64),
+    [occurrence.period.end] VARCHAR(64),
+    [occurrence.timing.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [occurrence.timing.extension] NVARCHAR(MAX),
     [occurrence.timing.modifierExtension] NVARCHAR(MAX),
     [occurrence.timing.event] VARCHAR(MAX),
@@ -52742,7 +54116,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -52962,7 +54340,11 @@ CREATE EXTERNAL TABLE [fhir].[Task] (
     [groupIdentifier.period.extension] NVARCHAR(MAX),
     [groupIdentifier.period.start] VARCHAR(64),
     [groupIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [groupIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [groupIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [groupIdentifier.assigner.extension] NVARCHAR(MAX),
     [groupIdentifier.assigner.reference] NVARCHAR(4000),
     [groupIdentifier.assigner.type] VARCHAR(256),
@@ -53030,7 +54412,11 @@ CREATE EXTERNAL TABLE [fhir].[Task] (
     [executionPeriod.end] VARCHAR(64),
     [authoredOn] VARCHAR(64),
     [lastModified] VARCHAR(64),
+<<<<<<< HEAD
     [requester.id] NVARCHAR(100),
+=======
+    [requester.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [requester.extension] NVARCHAR(MAX),
     [requester.reference] NVARCHAR(4000),
     [requester.type] VARCHAR(256),
@@ -53154,7 +54540,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -53681,7 +55071,11 @@ FROM openrowset (
         [input.value.boolean]          bit                 '$.value.boolean',
         [input.value.canonical]        VARCHAR(256)        '$.value.canonical',
         [input.value.code]             NVARCHAR(4000)      '$.value.code',
+<<<<<<< HEAD
         [input.value.date]             VARCHAR(32)         '$.value.date',
+=======
+        [input.value.date]             VARCHAR(64)         '$.value.date',
+>>>>>>> origin/main
         [input.value.dateTime]         VARCHAR(64)         '$.value.dateTime',
         [input.value.decimal]          float               '$.value.decimal',
         [input.value.id]               VARCHAR(64)         '$.value.id',
@@ -53731,7 +55125,11 @@ FROM openrowset (
         [input.value.attachment.hash]  NVARCHAR(MAX)       '$.value.attachment.hash',
         [input.value.attachment.title] NVARCHAR(4000)      '$.value.attachment.title',
         [input.value.attachment.creation] VARCHAR(64)         '$.value.attachment.creation',
+<<<<<<< HEAD
         [input.value.codeableConcept.id] NVARCHAR(100)       '$.value.codeableConcept.id',
+=======
+        [input.value.codeableConcept.id] NVARCHAR(4000)      '$.value.codeableConcept.id',
+>>>>>>> origin/main
         [input.value.codeableConcept.extension] NVARCHAR(MAX)       '$.value.codeableConcept.extension',
         [input.value.codeableConcept.coding] NVARCHAR(MAX)       '$.value.codeableConcept.coding',
         [input.value.codeableConcept.text] NVARCHAR(4000)      '$.value.codeableConcept.text',
@@ -53795,7 +55193,11 @@ FROM openrowset (
         [input.value.period.extension] NVARCHAR(MAX)       '$.value.period.extension',
         [input.value.period.start]     VARCHAR(64)         '$.value.period.start',
         [input.value.period.end]       VARCHAR(64)         '$.value.period.end',
+<<<<<<< HEAD
         [input.value.quantity.id]      NVARCHAR(100)       '$.value.quantity.id',
+=======
+        [input.value.quantity.id]      NVARCHAR(4000)      '$.value.quantity.id',
+>>>>>>> origin/main
         [input.value.quantity.extension] NVARCHAR(MAX)       '$.value.quantity.extension',
         [input.value.quantity.value]   float               '$.value.quantity.value',
         [input.value.quantity.comparator] NVARCHAR(64)        '$.value.quantity.comparator',
@@ -53893,9 +55295,15 @@ FROM openrowset (
         [input.value.triggerDefinition.condition] NVARCHAR(MAX)       '$.value.triggerDefinition.condition',
         [input.value.triggerDefinition.timing.timing] NVARCHAR(MAX)       '$.value.triggerDefinition.timing.timing',
         [input.value.triggerDefinition.timing.reference] NVARCHAR(MAX)       '$.value.triggerDefinition.timing.reference',
+<<<<<<< HEAD
         [input.value.triggerDefinition.timing.date] VARCHAR(32)         '$.value.triggerDefinition.timing.date',
         [input.value.triggerDefinition.timing.dateTime] VARCHAR(64)         '$.value.triggerDefinition.timing.dateTime',
         [input.value.usageContext.id]  NVARCHAR(100)       '$.value.usageContext.id',
+=======
+        [input.value.triggerDefinition.timing.date] VARCHAR(64)         '$.value.triggerDefinition.timing.date',
+        [input.value.triggerDefinition.timing.dateTime] VARCHAR(64)         '$.value.triggerDefinition.timing.dateTime',
+        [input.value.usageContext.id]  NVARCHAR(4000)      '$.value.usageContext.id',
+>>>>>>> origin/main
         [input.value.usageContext.extension] NVARCHAR(MAX)       '$.value.usageContext.extension',
         [input.value.usageContext.code] NVARCHAR(MAX)       '$.value.usageContext.code',
         [input.value.usageContext.value.codeableConcept] NVARCHAR(MAX)       '$.value.usageContext.value.codeableConcept',
@@ -54212,7 +55620,11 @@ FROM openrowset (
         [output.value.boolean]         bit                 '$.value.boolean',
         [output.value.canonical]       VARCHAR(256)        '$.value.canonical',
         [output.value.code]            NVARCHAR(4000)      '$.value.code',
+<<<<<<< HEAD
         [output.value.date]            VARCHAR(32)         '$.value.date',
+=======
+        [output.value.date]            VARCHAR(64)         '$.value.date',
+>>>>>>> origin/main
         [output.value.dateTime]        VARCHAR(64)         '$.value.dateTime',
         [output.value.decimal]         float               '$.value.decimal',
         [output.value.id]              VARCHAR(64)         '$.value.id',
@@ -54262,7 +55674,11 @@ FROM openrowset (
         [output.value.attachment.hash] NVARCHAR(MAX)       '$.value.attachment.hash',
         [output.value.attachment.title] NVARCHAR(4000)      '$.value.attachment.title',
         [output.value.attachment.creation] VARCHAR(64)         '$.value.attachment.creation',
+<<<<<<< HEAD
         [output.value.codeableConcept.id] NVARCHAR(100)       '$.value.codeableConcept.id',
+=======
+        [output.value.codeableConcept.id] NVARCHAR(4000)      '$.value.codeableConcept.id',
+>>>>>>> origin/main
         [output.value.codeableConcept.extension] NVARCHAR(MAX)       '$.value.codeableConcept.extension',
         [output.value.codeableConcept.coding] NVARCHAR(MAX)       '$.value.codeableConcept.coding',
         [output.value.codeableConcept.text] NVARCHAR(4000)      '$.value.codeableConcept.text',
@@ -54326,7 +55742,11 @@ FROM openrowset (
         [output.value.period.extension] NVARCHAR(MAX)       '$.value.period.extension',
         [output.value.period.start]    VARCHAR(64)         '$.value.period.start',
         [output.value.period.end]      VARCHAR(64)         '$.value.period.end',
+<<<<<<< HEAD
         [output.value.quantity.id]     NVARCHAR(100)       '$.value.quantity.id',
+=======
+        [output.value.quantity.id]     NVARCHAR(4000)      '$.value.quantity.id',
+>>>>>>> origin/main
         [output.value.quantity.extension] NVARCHAR(MAX)       '$.value.quantity.extension',
         [output.value.quantity.value]  float               '$.value.quantity.value',
         [output.value.quantity.comparator] NVARCHAR(64)        '$.value.quantity.comparator',
@@ -54424,9 +55844,15 @@ FROM openrowset (
         [output.value.triggerDefinition.condition] NVARCHAR(MAX)       '$.value.triggerDefinition.condition',
         [output.value.triggerDefinition.timing.timing] NVARCHAR(MAX)       '$.value.triggerDefinition.timing.timing',
         [output.value.triggerDefinition.timing.reference] NVARCHAR(MAX)       '$.value.triggerDefinition.timing.reference',
+<<<<<<< HEAD
         [output.value.triggerDefinition.timing.date] VARCHAR(32)         '$.value.triggerDefinition.timing.date',
         [output.value.triggerDefinition.timing.dateTime] VARCHAR(64)         '$.value.triggerDefinition.timing.dateTime',
         [output.value.usageContext.id] NVARCHAR(100)       '$.value.usageContext.id',
+=======
+        [output.value.triggerDefinition.timing.date] VARCHAR(64)         '$.value.triggerDefinition.timing.date',
+        [output.value.triggerDefinition.timing.dateTime] VARCHAR(64)         '$.value.triggerDefinition.timing.dateTime',
+        [output.value.usageContext.id] NVARCHAR(4000)      '$.value.usageContext.id',
+>>>>>>> origin/main
         [output.value.usageContext.extension] NVARCHAR(MAX)       '$.value.usageContext.extension',
         [output.value.usageContext.code] NVARCHAR(MAX)       '$.value.usageContext.code',
         [output.value.usageContext.value.codeableConcept] NVARCHAR(MAX)       '$.value.usageContext.value.codeableConcept',
@@ -54488,7 +55914,11 @@ CREATE EXTERNAL TABLE [fhir].[TerminologyCapabilities] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -54725,7 +56155,11 @@ CREATE EXTERNAL TABLE [fhir].[TestReport] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -54748,7 +56182,11 @@ CREATE EXTERNAL TABLE [fhir].[TestReport] (
     [testScript.display] NVARCHAR(4000),
     [result] NVARCHAR(64),
     [score] float,
+<<<<<<< HEAD
     [tester] NVARCHAR(100),
+=======
+    [tester] NVARCHAR(4000),
+>>>>>>> origin/main
     [issued] VARCHAR(64),
     [participant] VARCHAR(MAX),
     [setup.id] NVARCHAR(100),
@@ -54859,7 +56297,11 @@ CREATE EXTERNAL TABLE [fhir].[TestScript] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -54871,7 +56313,11 @@ CREATE EXTERNAL TABLE [fhir].[TestScript] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -55287,7 +56733,11 @@ CREATE EXTERNAL TABLE [fhir].[ValueSet] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -55298,7 +56748,11 @@ CREATE EXTERNAL TABLE [fhir].[ValueSet] (
     [compose.id] NVARCHAR(100),
     [compose.extension] NVARCHAR(MAX),
     [compose.modifierExtension] NVARCHAR(MAX),
+<<<<<<< HEAD
     [compose.lockedDate] VARCHAR(32),
+=======
+    [compose.lockedDate] VARCHAR(64),
+>>>>>>> origin/main
     [compose.inactive] bit,
     [compose.include] VARCHAR(MAX),
     [compose.exclude] VARCHAR(MAX),
@@ -55364,7 +56818,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -55526,9 +56984,15 @@ CREATE EXTERNAL TABLE [fhir].[VerificationResult] (
     [need.extension] NVARCHAR(MAX),
     [need.coding] VARCHAR(MAX),
     [need.text] NVARCHAR(4000),
+<<<<<<< HEAD
     [status] NVARCHAR(100),
     [statusDate] VARCHAR(64),
     [validationType.id] NVARCHAR(100),
+=======
+    [status] NVARCHAR(4000),
+    [statusDate] VARCHAR(64),
+    [validationType.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [validationType.extension] NVARCHAR(MAX),
     [validationType.coding] VARCHAR(MAX),
     [validationType.text] NVARCHAR(4000),
@@ -55562,8 +57026,13 @@ CREATE EXTERNAL TABLE [fhir].[VerificationResult] (
     [frequency.code.coding] NVARCHAR(MAX),
     [frequency.code.text] NVARCHAR(4000),
     [lastPerformed] VARCHAR(64),
+<<<<<<< HEAD
     [nextScheduled] VARCHAR(32),
     [failureAction.id] NVARCHAR(100),
+=======
+    [nextScheduled] VARCHAR(64),
+    [failureAction.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [failureAction.extension] NVARCHAR(MAX),
     [failureAction.coding] VARCHAR(MAX),
     [failureAction.text] NVARCHAR(4000),
@@ -55587,7 +57056,11 @@ CREATE EXTERNAL TABLE [fhir].[VerificationResult] (
     [attestation.communicationMethod.extension] NVARCHAR(MAX),
     [attestation.communicationMethod.coding] NVARCHAR(MAX),
     [attestation.communicationMethod.text] NVARCHAR(4000),
+<<<<<<< HEAD
     [attestation.date] VARCHAR(32),
+=======
+    [attestation.date] VARCHAR(64),
+>>>>>>> origin/main
     [attestation.sourceIdentityCertificate] NVARCHAR(4000),
     [attestation.proxyIdentityCertificate] NVARCHAR(4000),
     [attestation.proxySignature.id] NVARCHAR(100),
@@ -55754,7 +57227,11 @@ FROM openrowset (
         [primarySource.validationStatus.coding] NVARCHAR(MAX)       '$.validationStatus.coding',
         [primarySource.validationStatus.text] NVARCHAR(4000)      '$.validationStatus.text',
         [primarySource.validationDate] VARCHAR(64)         '$.validationDate',
+<<<<<<< HEAD
         [primarySource.canPushUpdates.id] NVARCHAR(100)       '$.canPushUpdates.id',
+=======
+        [primarySource.canPushUpdates.id] NVARCHAR(4000)      '$.canPushUpdates.id',
+>>>>>>> origin/main
         [primarySource.canPushUpdates.extension] NVARCHAR(MAX)       '$.canPushUpdates.extension',
         [primarySource.canPushUpdates.coding] NVARCHAR(MAX)       '$.canPushUpdates.coding',
         [primarySource.canPushUpdates.text] NVARCHAR(4000)      '$.canPushUpdates.text',
@@ -55838,9 +57315,15 @@ CREATE EXTERNAL TABLE [fhir].[VisionPrescription] (
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
     [identifier] VARCHAR(MAX),
+<<<<<<< HEAD
     [status] NVARCHAR(100),
     [created] VARCHAR(64),
     [patient.id] NVARCHAR(100),
+=======
+    [status] NVARCHAR(4000),
+    [created] VARCHAR(64),
+    [patient.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [patient.extension] NVARCHAR(MAX),
     [patient.reference] NVARCHAR(4000),
     [patient.type] VARCHAR(256),
@@ -55867,7 +57350,11 @@ CREATE EXTERNAL TABLE [fhir].[VisionPrescription] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [dateWritten] VARCHAR(64),
+<<<<<<< HEAD
     [prescriber.id] NVARCHAR(100),
+=======
+    [prescriber.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [prescriber.extension] NVARCHAR(MAX),
     [prescriber.reference] NVARCHAR(4000),
     [prescriber.type] VARCHAR(256),
@@ -55934,7 +57421,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

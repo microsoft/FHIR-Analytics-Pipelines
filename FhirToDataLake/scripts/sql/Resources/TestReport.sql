@@ -30,7 +30,11 @@ CREATE EXTERNAL TABLE [fhir].[TestReport] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -53,7 +57,11 @@ CREATE EXTERNAL TABLE [fhir].[TestReport] (
     [testScript.display] NVARCHAR(4000),
     [result] NVARCHAR(64),
     [score] float,
+<<<<<<< HEAD
     [tester] NVARCHAR(100),
+=======
+    [tester] NVARCHAR(4000),
+>>>>>>> origin/main
     [issued] VARCHAR(64),
     [participant] VARCHAR(MAX),
     [setup.id] NVARCHAR(100),

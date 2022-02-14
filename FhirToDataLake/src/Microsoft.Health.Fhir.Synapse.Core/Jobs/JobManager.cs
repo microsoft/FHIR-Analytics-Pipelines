@@ -64,16 +64,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
 
             Job job;
-            var activeJobs = await _jobStore.GetActiveJobsAsync();
+            var activeJobs = await _jobStore.GetActiveJobsAsync(cancellationToken);
             if (activeJobs.Any())
             {
                 // Resume an active job.
                 job = activeJobs.First();
 
-                if (job.Status == JobStatus.Completed)
+                if (job.Status == JobStatus.Succeeded)
                 {
-                    _logger.LogWarning("Job '{id}' is already completed.", job.Id);
-                    await _jobStore.CompleteJobAsync(job);
+                    _logger.LogWarning("Job '{id}' has already succeeded.", job.Id);
+                    await _jobStore.CompleteJobAsync(job, cancellationToken);
                     return;
                 }
 
@@ -90,7 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             try
             {
                 await _jobExecutor.ExecuteAsync(job, cancellationToken);
-                job.Status = JobStatus.Completed;
+                job.Status = JobStatus.Succeeded;
                 await _jobStore.CompleteJobAsync(job, cancellationToken);
             }
             catch (Exception exception)
@@ -176,9 +176,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             await DisposeAsyncCore();
 
             Dispose();
-            #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
             GC.SuppressFinalize(this);
-            #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
         }
 
         protected virtual async ValueTask DisposeAsyncCore()

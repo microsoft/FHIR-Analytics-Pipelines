@@ -30,7 +30,11 @@ CREATE EXTERNAL TABLE [fhir].[QuestionnaireResponse] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
+=======
+    [identifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -67,7 +71,11 @@ CREATE EXTERNAL TABLE [fhir].[QuestionnaireResponse] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [authored] VARCHAR(64),
+<<<<<<< HEAD
     [author.id] NVARCHAR(100),
+=======
+    [author.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [author.extension] NVARCHAR(MAX),
     [author.reference] NVARCHAR(4000),
     [author.type] VARCHAR(256),

@@ -58,7 +58,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             var dateTimeKey = dateTime.ToString(DateKeyFormat);
 
-            return $"{AzureStorageConstants.ResultFolderName}/{resourceType}/{dateTimeKey}/{resourceType}_{jobId}_{partId:d5}.parquet";
+            return $"{AzureStorageConstants.StagingFolderName}/{jobId}/{resourceType}/{dateTimeKey}/{resourceType}_{jobId}_{partId:d5}.parquet";
         }
     }
 }

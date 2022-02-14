@@ -100,11 +100,19 @@ CREATE EXTERNAL TABLE [fhir].[Observation] (
     [derivedFrom] VARCHAR(MAX),
     [component] VARCHAR(MAX),
     [effective.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [effective.period.id] NVARCHAR(100),
     [effective.period.extension] NVARCHAR(MAX),
     [effective.period.start] VARCHAR(64),
     [effective.period.end] VARCHAR(64),
     [effective.timing.id] NVARCHAR(100),
+=======
+    [effective.period.id] NVARCHAR(4000),
+    [effective.period.extension] NVARCHAR(MAX),
+    [effective.period.start] VARCHAR(64),
+    [effective.period.end] VARCHAR(64),
+    [effective.timing.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [effective.timing.extension] NVARCHAR(MAX),
     [effective.timing.modifierExtension] NVARCHAR(MAX),
     [effective.timing.event] VARCHAR(MAX),
@@ -133,7 +141,11 @@ CREATE EXTERNAL TABLE [fhir].[Observation] (
     [effective.timing.code.coding] NVARCHAR(MAX),
     [effective.timing.code.text] NVARCHAR(4000),
     [effective.instant] VARCHAR(64),
+<<<<<<< HEAD
     [value.quantity.id] NVARCHAR(100),
+=======
+    [value.quantity.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [value.quantity.extension] NVARCHAR(MAX),
     [value.quantity.value] float,
     [value.quantity.comparator] NVARCHAR(64),
@@ -196,7 +208,11 @@ CREATE EXTERNAL TABLE [fhir].[Observation] (
     [value.sampledData.data] NVARCHAR(4000),
     [value.time] NVARCHAR(MAX),
     [value.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [value.period.id] NVARCHAR(100),
+=======
+    [value.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [value.period.extension] NVARCHAR(MAX),
     [value.period.start] VARCHAR(64),
     [value.period.end] VARCHAR(64),
@@ -253,7 +269,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -790,7 +810,11 @@ FROM openrowset (
         [component.value.sampledData.data] NVARCHAR(4000)      '$.value.sampledData.data',
         [component.value.time]         NVARCHAR(MAX)       '$.value.time',
         [component.value.dateTime]     VARCHAR(64)         '$.value.dateTime',
+<<<<<<< HEAD
         [component.value.period.id]    NVARCHAR(100)       '$.value.period.id',
+=======
+        [component.value.period.id]    NVARCHAR(4000)      '$.value.period.id',
+>>>>>>> origin/main
         [component.value.period.extension] NVARCHAR(MAX)       '$.value.period.extension',
         [component.value.period.start] VARCHAR(64)         '$.value.period.start',
         [component.value.period.end]   VARCHAR(64)         '$.value.period.end'

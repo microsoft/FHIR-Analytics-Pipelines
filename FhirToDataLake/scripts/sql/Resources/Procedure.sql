@@ -117,7 +117,11 @@ CREATE EXTERNAL TABLE [fhir].[Procedure] (
     [usedReference] VARCHAR(MAX),
     [usedCode] VARCHAR(MAX),
     [performed.dateTime] VARCHAR(64),
+<<<<<<< HEAD
     [performed.period.id] NVARCHAR(100),
+=======
+    [performed.period.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [performed.period.extension] NVARCHAR(MAX),
     [performed.period.start] VARCHAR(64),
     [performed.period.end] VARCHAR(64),
@@ -198,7 +202,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

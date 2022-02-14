@@ -24,7 +24,11 @@ CREATE EXTERNAL TABLE [fhir].[CapabilityStatement] (
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
+<<<<<<< HEAD
     [publisher] NVARCHAR(100),
+=======
+    [publisher] NVARCHAR(4000),
+>>>>>>> origin/main
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -37,10 +41,17 @@ CREATE EXTERNAL TABLE [fhir].[CapabilityStatement] (
     [software.id] NVARCHAR(100),
     [software.extension] NVARCHAR(MAX),
     [software.modifierExtension] NVARCHAR(MAX),
+<<<<<<< HEAD
     [software.name] NVARCHAR(100),
     [software.version] NVARCHAR(100),
     [software.releaseDate] VARCHAR(64),
     [implementation.id] NVARCHAR(100),
+=======
+    [software.name] NVARCHAR(4000),
+    [software.version] NVARCHAR(4000),
+    [software.releaseDate] VARCHAR(64),
+    [implementation.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [implementation.extension] NVARCHAR(MAX),
     [implementation.modifierExtension] NVARCHAR(MAX),
     [implementation.description] NVARCHAR(4000),

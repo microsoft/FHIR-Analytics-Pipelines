@@ -24,7 +24,11 @@ CREATE EXTERNAL TABLE [fhir].[PaymentReconciliation] (
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
     [created] VARCHAR(64),
+<<<<<<< HEAD
     [paymentIssuer.id] NVARCHAR(100),
+=======
+    [paymentIssuer.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [paymentIssuer.extension] NVARCHAR(MAX),
     [paymentIssuer.reference] NVARCHAR(4000),
     [paymentIssuer.type] VARCHAR(256),
@@ -65,8 +69,13 @@ CREATE EXTERNAL TABLE [fhir].[PaymentReconciliation] (
     [requestor.display] NVARCHAR(4000),
     [outcome] NVARCHAR(64),
     [disposition] NVARCHAR(4000),
+<<<<<<< HEAD
     [paymentDate] VARCHAR(32),
     [paymentAmount.id] NVARCHAR(100),
+=======
+    [paymentDate] VARCHAR(64),
+    [paymentAmount.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [paymentAmount.extension] NVARCHAR(MAX),
     [paymentAmount.value] float,
     [paymentAmount.currency] NVARCHAR(100),
@@ -83,7 +92,11 @@ CREATE EXTERNAL TABLE [fhir].[PaymentReconciliation] (
     [paymentIdentifier.period.extension] NVARCHAR(MAX),
     [paymentIdentifier.period.start] VARCHAR(64),
     [paymentIdentifier.period.end] VARCHAR(64),
+<<<<<<< HEAD
     [paymentIdentifier.assigner.id] NVARCHAR(100),
+=======
+    [paymentIdentifier.assigner.id] NVARCHAR(4000),
+>>>>>>> origin/main
     [paymentIdentifier.assigner.extension] NVARCHAR(MAX),
     [paymentIdentifier.assigner.reference] NVARCHAR(4000),
     [paymentIdentifier.assigner.type] VARCHAR(256),
@@ -148,7 +161,11 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
+<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
+=======
+        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+>>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -270,8 +287,13 @@ FROM openrowset (
         [detail.response.type]         VARCHAR(256)        '$.response.type',
         [detail.response.identifier]   NVARCHAR(MAX)       '$.response.identifier',
         [detail.response.display]      NVARCHAR(4000)      '$.response.display',
+<<<<<<< HEAD
         [detail.date]                  VARCHAR(32)         '$.date',
         [detail.responsible.id]        NVARCHAR(100)       '$.responsible.id',
+=======
+        [detail.date]                  VARCHAR(64)         '$.date',
+        [detail.responsible.id]        NVARCHAR(4000)      '$.responsible.id',
+>>>>>>> origin/main
         [detail.responsible.extension] NVARCHAR(MAX)       '$.responsible.extension',
         [detail.responsible.reference] NVARCHAR(4000)      '$.responsible.reference',
         [detail.responsible.type]      VARCHAR(256)        '$.responsible.type',
