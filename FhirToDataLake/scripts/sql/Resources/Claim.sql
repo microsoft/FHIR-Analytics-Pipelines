@@ -46,11 +46,7 @@ CREATE EXTERNAL TABLE [fhir].[Claim] (
     [billablePeriod.start] VARCHAR(64),
     [billablePeriod.end] VARCHAR(64),
     [created] VARCHAR(64),
-<<<<<<< HEAD
     [enterer.id] NVARCHAR(100),
-=======
-    [enterer.id] NVARCHAR(4000),
->>>>>>> origin/main
     [enterer.extension] NVARCHAR(MAX),
     [enterer.reference] NVARCHAR(4000),
     [enterer.type] VARCHAR(256),
@@ -171,13 +167,8 @@ CREATE EXTERNAL TABLE [fhir].[Claim] (
     [accident.id] NVARCHAR(100),
     [accident.extension] NVARCHAR(MAX),
     [accident.modifierExtension] NVARCHAR(MAX),
-<<<<<<< HEAD
-    [accident.date] VARCHAR(32),
-    [accident.type.id] NVARCHAR(100),
-=======
     [accident.date] VARCHAR(64),
-    [accident.type.id] NVARCHAR(4000),
->>>>>>> origin/main
+    [accident.type.id] NVARCHAR(100),
     [accident.type.extension] NVARCHAR(MAX),
     [accident.type.coding] NVARCHAR(MAX),
     [accident.type.text] NVARCHAR(4000),
@@ -187,11 +178,11 @@ CREATE EXTERNAL TABLE [fhir].[Claim] (
     [accident.location.address.type] NVARCHAR(64),
     [accident.location.address.text] NVARCHAR(4000),
     [accident.location.address.line] NVARCHAR(MAX),
-    [accident.location.address.city] NVARCHAR(100),
-    [accident.location.address.district] NVARCHAR(100),
-    [accident.location.address.state] NVARCHAR(100),
+    [accident.location.address.city] NVARCHAR(500),
+    [accident.location.address.district] NVARCHAR(500),
+    [accident.location.address.state] NVARCHAR(500),
     [accident.location.address.postalCode] NVARCHAR(100),
-    [accident.location.address.country] NVARCHAR(100),
+    [accident.location.address.country] NVARCHAR(500),
     [accident.location.address.period] NVARCHAR(MAX),
     [accident.location.reference.id] NVARCHAR(100),
     [accident.location.reference.extension] NVARCHAR(MAX),
@@ -257,11 +248,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -460,13 +447,8 @@ FROM openrowset (
         [supportingInfo.reason.extension] NVARCHAR(MAX)       '$.reason.extension',
         [supportingInfo.reason.coding] NVARCHAR(MAX)       '$.reason.coding',
         [supportingInfo.reason.text]   NVARCHAR(4000)      '$.reason.text',
-<<<<<<< HEAD
-        [supportingInfo.timing.date]   VARCHAR(32)         '$.timing.date',
-        [supportingInfo.timing.period.id] NVARCHAR(100)       '$.timing.period.id',
-=======
         [supportingInfo.timing.date]   VARCHAR(64)         '$.timing.date',
-        [supportingInfo.timing.period.id] NVARCHAR(4000)      '$.timing.period.id',
->>>>>>> origin/main
+        [supportingInfo.timing.period.id] NVARCHAR(100)       '$.timing.period.id',
         [supportingInfo.timing.period.extension] NVARCHAR(MAX)       '$.timing.period.extension',
         [supportingInfo.timing.period.start] VARCHAR(64)         '$.timing.period.start',
         [supportingInfo.timing.period.end] VARCHAR(64)         '$.timing.period.end',
@@ -489,11 +471,7 @@ FROM openrowset (
         [supportingInfo.value.attachment.hash] NVARCHAR(MAX)       '$.value.attachment.hash',
         [supportingInfo.value.attachment.title] NVARCHAR(4000)      '$.value.attachment.title',
         [supportingInfo.value.attachment.creation] VARCHAR(64)         '$.value.attachment.creation',
-<<<<<<< HEAD
         [supportingInfo.value.reference.id] NVARCHAR(100)       '$.value.reference.id',
-=======
-        [supportingInfo.value.reference.id] NVARCHAR(4000)      '$.value.reference.id',
->>>>>>> origin/main
         [supportingInfo.value.reference.extension] NVARCHAR(MAX)       '$.value.reference.extension',
         [supportingInfo.value.reference.reference] NVARCHAR(4000)      '$.value.reference.reference',
         [supportingInfo.value.reference.type] VARCHAR(256)        '$.value.reference.type',
@@ -820,21 +798,12 @@ FROM openrowset (
         [item.subSite]                 NVARCHAR(MAX)       '$.subSite' AS JSON,
         [item.encounter]               NVARCHAR(MAX)       '$.encounter' AS JSON,
         [item.detail]                  NVARCHAR(MAX)       '$.detail' AS JSON,
-<<<<<<< HEAD
-        [item.serviced.date]           VARCHAR(32)         '$.serviced.date',
+        [item.serviced.date]           VARCHAR(64)         '$.serviced.date',
         [item.serviced.period.id]      NVARCHAR(100)       '$.serviced.period.id',
         [item.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
         [item.serviced.period.start]   VARCHAR(64)         '$.serviced.period.start',
         [item.serviced.period.end]     VARCHAR(64)         '$.serviced.period.end',
         [item.location.codeableConcept.id] NVARCHAR(100)       '$.location.codeableConcept.id',
-=======
-        [item.serviced.date]           VARCHAR(64)         '$.serviced.date',
-        [item.serviced.period.id]      NVARCHAR(4000)      '$.serviced.period.id',
-        [item.serviced.period.extension] NVARCHAR(MAX)       '$.serviced.period.extension',
-        [item.serviced.period.start]   VARCHAR(64)         '$.serviced.period.start',
-        [item.serviced.period.end]     VARCHAR(64)         '$.serviced.period.end',
-        [item.location.codeableConcept.id] NVARCHAR(4000)      '$.location.codeableConcept.id',
->>>>>>> origin/main
         [item.location.codeableConcept.extension] NVARCHAR(MAX)       '$.location.codeableConcept.extension',
         [item.location.codeableConcept.coding] NVARCHAR(MAX)       '$.location.codeableConcept.coding',
         [item.location.codeableConcept.text] NVARCHAR(4000)      '$.location.codeableConcept.text',
@@ -844,11 +813,11 @@ FROM openrowset (
         [item.location.address.type]   NVARCHAR(64)        '$.location.address.type',
         [item.location.address.text]   NVARCHAR(4000)      '$.location.address.text',
         [item.location.address.line]   NVARCHAR(MAX)       '$.location.address.line',
-        [item.location.address.city]   NVARCHAR(100)       '$.location.address.city',
-        [item.location.address.district] NVARCHAR(100)       '$.location.address.district',
-        [item.location.address.state]  NVARCHAR(100)       '$.location.address.state',
+        [item.location.address.city]   NVARCHAR(500)       '$.location.address.city',
+        [item.location.address.district] NVARCHAR(500)       '$.location.address.district',
+        [item.location.address.state]  NVARCHAR(500)       '$.location.address.state',
         [item.location.address.postalCode] NVARCHAR(100)       '$.location.address.postalCode',
-        [item.location.address.country] NVARCHAR(100)       '$.location.address.country',
+        [item.location.address.country] NVARCHAR(500)       '$.location.address.country',
         [item.location.address.period] NVARCHAR(MAX)       '$.location.address.period',
         [item.location.reference.id]   NVARCHAR(100)       '$.location.reference.id',
         [item.location.reference.extension] NVARCHAR(MAX)       '$.location.reference.extension',

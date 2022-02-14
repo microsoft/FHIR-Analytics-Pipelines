@@ -30,17 +30,13 @@ CREATE EXTERNAL TABLE [fhir].[TestReport] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
-=======
-    [identifier.assigner.id] NVARCHAR(4000),
->>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
     [identifier.assigner.identifier] NVARCHAR(MAX),
     [identifier.assigner.display] NVARCHAR(4000),
-    [name] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [status] NVARCHAR(64),
     [testScript.id] NVARCHAR(100),
     [testScript.extension] NVARCHAR(MAX),
@@ -57,11 +53,7 @@ CREATE EXTERNAL TABLE [fhir].[TestReport] (
     [testScript.display] NVARCHAR(4000),
     [result] NVARCHAR(64),
     [score] float,
-<<<<<<< HEAD
-    [tester] NVARCHAR(100),
-=======
-    [tester] NVARCHAR(4000),
->>>>>>> origin/main
+    [tester] NVARCHAR(500),
     [issued] VARCHAR(64),
     [participant] VARCHAR(MAX),
     [setup.id] NVARCHAR(100),
@@ -132,7 +124,7 @@ FROM openrowset (
         [test.id]                      NVARCHAR(100)       '$.id',
         [test.extension]               NVARCHAR(MAX)       '$.extension',
         [test.modifierExtension]       NVARCHAR(MAX)       '$.modifierExtension',
-        [test.name]                    NVARCHAR(100)       '$.name',
+        [test.name]                    NVARCHAR(500)       '$.name',
         [test.description]             NVARCHAR(4000)      '$.description',
         [test.action]                  NVARCHAR(MAX)       '$.action' AS JSON
     ) j

@@ -18,15 +18,9 @@ CREATE EXTERNAL TABLE [fhir].[EnrollmentRequest] (
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
     [identifier] VARCHAR(MAX),
-<<<<<<< HEAD
     [status] NVARCHAR(100),
     [created] VARCHAR(64),
     [insurer.id] NVARCHAR(100),
-=======
-    [status] NVARCHAR(4000),
-    [created] VARCHAR(64),
-    [insurer.id] NVARCHAR(4000),
->>>>>>> origin/main
     [insurer.extension] NVARCHAR(MAX),
     [insurer.reference] NVARCHAR(4000),
     [insurer.type] VARCHAR(256),
@@ -131,11 +125,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

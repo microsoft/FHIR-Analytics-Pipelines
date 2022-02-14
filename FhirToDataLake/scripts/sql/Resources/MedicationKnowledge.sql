@@ -394,7 +394,7 @@ FROM openrowset (
         [monitoringProgram.type.extension] NVARCHAR(MAX)       '$.type.extension',
         [monitoringProgram.type.coding] NVARCHAR(MAX)       '$.type.coding',
         [monitoringProgram.type.text]  NVARCHAR(4000)      '$.type.text',
-        [monitoringProgram.name]       NVARCHAR(100)       '$.name'
+        [monitoringProgram.name]       NVARCHAR(500)       '$.name'
     ) j
 
 GO

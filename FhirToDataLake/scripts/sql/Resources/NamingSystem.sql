@@ -17,17 +17,13 @@ CREATE EXTERNAL TABLE [fhir].[NamingSystem] (
     [text.div] NVARCHAR(MAX),
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
-    [name] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [status] NVARCHAR(64),
     [kind] NVARCHAR(64),
     [date] VARCHAR(64),
-<<<<<<< HEAD
-    [publisher] NVARCHAR(100),
-=======
-    [publisher] NVARCHAR(4000),
->>>>>>> origin/main
+    [publisher] NVARCHAR(500),
     [contact] VARCHAR(MAX),
-    [responsible] NVARCHAR(100),
+    [responsible] NVARCHAR(500),
     [type.id] NVARCHAR(100),
     [type.extension] NVARCHAR(MAX),
     [type.coding] VARCHAR(MAX),
@@ -64,7 +60,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[contact.JSON]) with (
         [contact.id]                   NVARCHAR(100)       '$.id',
         [contact.extension]            NVARCHAR(MAX)       '$.extension',
-        [contact.name]                 NVARCHAR(100)       '$.name',
+        [contact.name]                 NVARCHAR(500)       '$.name',
         [contact.telecom]              NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 

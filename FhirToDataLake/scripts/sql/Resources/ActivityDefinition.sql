@@ -20,17 +20,13 @@ CREATE EXTERNAL TABLE [fhir].[ActivityDefinition] (
     [url] VARCHAR(256),
     [identifier] VARCHAR(MAX),
     [version] NVARCHAR(100),
-    [name] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [title] NVARCHAR(4000),
     [subtitle] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
-<<<<<<< HEAD
-    [publisher] NVARCHAR(100),
-=======
-    [publisher] NVARCHAR(4000),
->>>>>>> origin/main
+    [publisher] NVARCHAR(500),
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -38,15 +34,9 @@ CREATE EXTERNAL TABLE [fhir].[ActivityDefinition] (
     [purpose] NVARCHAR(MAX),
     [usage] NVARCHAR(4000),
     [copyright] NVARCHAR(MAX),
-<<<<<<< HEAD
-    [approvalDate] VARCHAR(32),
-    [lastReviewDate] VARCHAR(32),
-    [effectivePeriod.id] NVARCHAR(100),
-=======
     [approvalDate] VARCHAR(64),
     [lastReviewDate] VARCHAR(64),
-    [effectivePeriod.id] NVARCHAR(4000),
->>>>>>> origin/main
+    [effectivePeriod.id] NVARCHAR(100),
     [effectivePeriod.extension] NVARCHAR(MAX),
     [effectivePeriod.start] VARCHAR(64),
     [effectivePeriod.end] VARCHAR(64),
@@ -140,11 +130,7 @@ CREATE EXTERNAL TABLE [fhir].[ActivityDefinition] (
     [timing.timing.code.coding] NVARCHAR(MAX),
     [timing.timing.code.text] NVARCHAR(4000),
     [timing.dateTime] VARCHAR(64),
-<<<<<<< HEAD
     [timing.age.id] NVARCHAR(100),
-=======
-    [timing.age.id] NVARCHAR(4000),
->>>>>>> origin/main
     [timing.age.extension] NVARCHAR(MAX),
     [timing.age.value] float,
     [timing.age.comparator] NVARCHAR(64),
@@ -155,11 +141,7 @@ CREATE EXTERNAL TABLE [fhir].[ActivityDefinition] (
     [timing.period.extension] NVARCHAR(MAX),
     [timing.period.start] VARCHAR(64),
     [timing.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [timing.range.id] NVARCHAR(100),
-=======
-    [timing.range.id] NVARCHAR(4000),
->>>>>>> origin/main
     [timing.range.extension] NVARCHAR(MAX),
     [timing.range.low.id] NVARCHAR(100),
     [timing.range.low.extension] NVARCHAR(MAX),
@@ -252,11 +234,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -285,7 +263,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[contact.JSON]) with (
         [contact.id]                   NVARCHAR(100)       '$.id',
         [contact.extension]            NVARCHAR(MAX)       '$.extension',
-        [contact.name]                 NVARCHAR(100)       '$.name',
+        [contact.name]                 NVARCHAR(500)       '$.name',
         [contact.telecom]              NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -437,7 +415,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[author.JSON]) with (
         [author.id]                    NVARCHAR(100)       '$.id',
         [author.extension]             NVARCHAR(MAX)       '$.extension',
-        [author.name]                  NVARCHAR(100)       '$.name',
+        [author.name]                  NVARCHAR(500)       '$.name',
         [author.telecom]               NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -462,7 +440,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[editor.JSON]) with (
         [editor.id]                    NVARCHAR(100)       '$.id',
         [editor.extension]             NVARCHAR(MAX)       '$.extension',
-        [editor.name]                  NVARCHAR(100)       '$.name',
+        [editor.name]                  NVARCHAR(500)       '$.name',
         [editor.telecom]               NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -487,7 +465,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[reviewer.JSON]) with (
         [reviewer.id]                  NVARCHAR(100)       '$.id',
         [reviewer.extension]           NVARCHAR(MAX)       '$.extension',
-        [reviewer.name]                NVARCHAR(100)       '$.name',
+        [reviewer.name]                NVARCHAR(500)       '$.name',
         [reviewer.telecom]             NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -512,7 +490,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[endorser.JSON]) with (
         [endorser.id]                  NVARCHAR(100)       '$.id',
         [endorser.extension]           NVARCHAR(MAX)       '$.extension',
-        [endorser.name]                NVARCHAR(100)       '$.name',
+        [endorser.name]                NVARCHAR(500)       '$.name',
         [endorser.telecom]             NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -925,6 +903,6 @@ FROM openrowset (
         [dynamicValue.expression.description] NVARCHAR(4000)      '$.expression.description',
         [dynamicValue.expression.name] VARCHAR(64)         '$.expression.name',
         [dynamicValue.expression.language] NVARCHAR(64)        '$.expression.language',
-        [dynamicValue.expression.expression] NVARCHAR(500)       '$.expression.expression',
+        [dynamicValue.expression.expression] NVARCHAR(4000)      '$.expression.expression',
         [dynamicValue.expression.reference] VARCHAR(256)        '$.expression.reference'
     ) j

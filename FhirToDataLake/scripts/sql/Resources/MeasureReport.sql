@@ -35,11 +35,7 @@ CREATE EXTERNAL TABLE [fhir].[MeasureReport] (
     [subject.identifier.assigner] NVARCHAR(MAX),
     [subject.display] NVARCHAR(4000),
     [date] VARCHAR(64),
-<<<<<<< HEAD
     [reporter.id] NVARCHAR(100),
-=======
-    [reporter.id] NVARCHAR(4000),
->>>>>>> origin/main
     [reporter.extension] NVARCHAR(MAX),
     [reporter.reference] NVARCHAR(4000),
     [reporter.type] VARCHAR(256),
@@ -56,11 +52,7 @@ CREATE EXTERNAL TABLE [fhir].[MeasureReport] (
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
-<<<<<<< HEAD
     [improvementNotation.id] NVARCHAR(100),
-=======
-    [improvementNotation.id] NVARCHAR(4000),
->>>>>>> origin/main
     [improvementNotation.extension] NVARCHAR(MAX),
     [improvementNotation.coding] VARCHAR(MAX),
     [improvementNotation.text] NVARCHAR(4000),
@@ -119,11 +111,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

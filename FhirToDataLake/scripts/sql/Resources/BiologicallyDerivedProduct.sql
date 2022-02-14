@@ -43,11 +43,7 @@ CREATE EXTERNAL TABLE [fhir].[BiologicallyDerivedProduct] (
     [collection.source.identifier] NVARCHAR(MAX),
     [collection.source.display] NVARCHAR(4000),
     [collection.collected.dateTime] VARCHAR(64),
-<<<<<<< HEAD
     [collection.collected.period.id] NVARCHAR(100),
-=======
-    [collection.collected.period.id] NVARCHAR(4000),
->>>>>>> origin/main
     [collection.collected.period.extension] NVARCHAR(MAX),
     [collection.collected.period.start] VARCHAR(64),
     [collection.collected.period.end] VARCHAR(64),
@@ -57,11 +53,7 @@ CREATE EXTERNAL TABLE [fhir].[BiologicallyDerivedProduct] (
     [manipulation.modifierExtension] NVARCHAR(MAX),
     [manipulation.description] NVARCHAR(4000),
     [manipulation.time.dateTime] VARCHAR(64),
-<<<<<<< HEAD
     [manipulation.time.period.id] NVARCHAR(100),
-=======
-    [manipulation.time.period.id] NVARCHAR(4000),
->>>>>>> origin/main
     [manipulation.time.period.extension] NVARCHAR(MAX),
     [manipulation.time.period.start] VARCHAR(64),
     [manipulation.time.period.end] VARCHAR(64),
@@ -119,11 +111,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -266,11 +254,7 @@ FROM openrowset (
         [processing.additive.identifier] NVARCHAR(MAX)       '$.additive.identifier',
         [processing.additive.display]  NVARCHAR(4000)      '$.additive.display',
         [processing.time.dateTime]     VARCHAR(64)         '$.time.dateTime',
-<<<<<<< HEAD
         [processing.time.period.id]    NVARCHAR(100)       '$.time.period.id',
-=======
-        [processing.time.period.id]    NVARCHAR(4000)      '$.time.period.id',
->>>>>>> origin/main
         [processing.time.period.extension] NVARCHAR(MAX)       '$.time.period.extension',
         [processing.time.period.start] VARCHAR(64)         '$.time.period.start',
         [processing.time.period.end]   VARCHAR(64)         '$.time.period.end'

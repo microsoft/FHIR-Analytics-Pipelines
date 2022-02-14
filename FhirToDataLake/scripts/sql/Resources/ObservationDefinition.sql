@@ -29,7 +29,7 @@ CREATE EXTERNAL TABLE [fhir].[ObservationDefinition] (
     [method.extension] NVARCHAR(MAX),
     [method.coding] VARCHAR(MAX),
     [method.text] NVARCHAR(4000),
-    [preferredReportName] NVARCHAR(100),
+    [preferredReportName] NVARCHAR(500),
     [quantitativeDetails.id] NVARCHAR(100),
     [quantitativeDetails.extension] NVARCHAR(MAX),
     [quantitativeDetails.modifierExtension] NVARCHAR(MAX),
@@ -174,11 +174,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -265,5 +261,5 @@ FROM openrowset (
         [qualifiedInterval.gestationalAge.extension] NVARCHAR(MAX)       '$.gestationalAge.extension',
         [qualifiedInterval.gestationalAge.low] NVARCHAR(MAX)       '$.gestationalAge.low',
         [qualifiedInterval.gestationalAge.high] NVARCHAR(MAX)       '$.gestationalAge.high',
-        [qualifiedInterval.condition]  NVARCHAR(100)       '$.condition'
+        [qualifiedInterval.condition]  NVARCHAR(500)       '$.condition'
     ) j

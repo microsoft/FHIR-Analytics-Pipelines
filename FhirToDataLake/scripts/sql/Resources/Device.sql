@@ -34,21 +34,12 @@ CREATE EXTERNAL TABLE [fhir].[Device] (
     [udiCarrier] VARCHAR(MAX),
     [status] NVARCHAR(64),
     [statusReason] VARCHAR(MAX),
-<<<<<<< HEAD
     [distinctIdentifier] NVARCHAR(500),
-    [manufacturer] NVARCHAR(100),
+    [manufacturer] NVARCHAR(500),
     [manufactureDate] VARCHAR(64),
     [expirationDate] VARCHAR(64),
     [lotNumber] NVARCHAR(100),
     [serialNumber] NVARCHAR(100),
-=======
-    [distinctIdentifier] NVARCHAR(4000),
-    [manufacturer] NVARCHAR(4000),
-    [manufactureDate] VARCHAR(64),
-    [expirationDate] VARCHAR(64),
-    [lotNumber] NVARCHAR(4000),
-    [serialNumber] NVARCHAR(4000),
->>>>>>> origin/main
     [deviceName] VARCHAR(MAX),
     [modelNumber] NVARCHAR(100),
     [partNumber] NVARCHAR(100),
@@ -168,11 +159,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -207,7 +194,7 @@ FROM openrowset (
         [udiCarrier.id]                NVARCHAR(100)       '$.id',
         [udiCarrier.extension]         NVARCHAR(MAX)       '$.extension',
         [udiCarrier.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [udiCarrier.deviceIdentifier]  NVARCHAR(100)       '$.deviceIdentifier',
+        [udiCarrier.deviceIdentifier]  NVARCHAR(500)       '$.deviceIdentifier',
         [udiCarrier.issuer]            VARCHAR(256)        '$.issuer',
         [udiCarrier.jurisdiction]      VARCHAR(256)        '$.jurisdiction',
         [udiCarrier.carrierAIDC]       NVARCHAR(MAX)       '$.carrierAIDC',
@@ -263,7 +250,7 @@ FROM openrowset (
         [deviceName.id]                NVARCHAR(100)       '$.id',
         [deviceName.extension]         NVARCHAR(MAX)       '$.extension',
         [deviceName.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [deviceName.name]              NVARCHAR(100)       '$.name',
+        [deviceName.name]              NVARCHAR(500)       '$.name',
         [deviceName.type]              NVARCHAR(64)        '$.type'
     ) j
 

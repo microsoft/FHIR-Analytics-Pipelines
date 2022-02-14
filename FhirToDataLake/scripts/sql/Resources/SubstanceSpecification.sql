@@ -30,11 +30,7 @@ CREATE EXTERNAL TABLE [fhir].[SubstanceSpecification] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
-=======
-    [identifier.assigner.id] NVARCHAR(4000),
->>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -260,7 +256,7 @@ FROM openrowset (
         [moiety.identifier.value]      NVARCHAR(4000)      '$.identifier.value',
         [moiety.identifier.period]     NVARCHAR(MAX)       '$.identifier.period',
         [moiety.identifier.assigner]   NVARCHAR(MAX)       '$.identifier.assigner',
-        [moiety.name]                  NVARCHAR(100)       '$.name',
+        [moiety.name]                  NVARCHAR(500)       '$.name',
         [moiety.stereochemistry.id]    NVARCHAR(100)       '$.stereochemistry.id',
         [moiety.stereochemistry.extension] NVARCHAR(MAX)       '$.stereochemistry.extension',
         [moiety.stereochemistry.coding] NVARCHAR(MAX)       '$.stereochemistry.coding',
@@ -440,7 +436,7 @@ FROM openrowset (
         [name.id]                      NVARCHAR(100)       '$.id',
         [name.extension]               NVARCHAR(MAX)       '$.extension',
         [name.modifierExtension]       NVARCHAR(MAX)       '$.modifierExtension',
-        [name.name]                    NVARCHAR(100)       '$.name',
+        [name.name]                    NVARCHAR(500)       '$.name',
         [name.type.id]                 NVARCHAR(100)       '$.type.id',
         [name.type.extension]          NVARCHAR(MAX)       '$.type.extension',
         [name.type.coding]             NVARCHAR(MAX)       '$.type.coding',

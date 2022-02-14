@@ -19,15 +19,11 @@ CREATE EXTERNAL TABLE [fhir].[GraphDefinition] (
     [modifierExtension] NVARCHAR(MAX),
     [url] VARCHAR(256),
     [version] NVARCHAR(100),
-    [name] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
-<<<<<<< HEAD
-    [publisher] NVARCHAR(100),
-=======
-    [publisher] NVARCHAR(4000),
->>>>>>> origin/main
+    [publisher] NVARCHAR(500),
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -63,7 +59,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[contact.JSON]) with (
         [contact.id]                   NVARCHAR(100)       '$.id',
         [contact.extension]            NVARCHAR(MAX)       '$.extension',
-        [contact.name]                 NVARCHAR(100)       '$.name',
+        [contact.name]                 NVARCHAR(500)       '$.name',
         [contact.telecom]              NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -197,7 +193,7 @@ FROM openrowset (
         [link.extension]               NVARCHAR(MAX)       '$.extension',
         [link.modifierExtension]       NVARCHAR(MAX)       '$.modifierExtension',
         [link.path]                    NVARCHAR(4000)      '$.path',
-        [link.sliceName]               NVARCHAR(100)       '$.sliceName',
+        [link.sliceName]               NVARCHAR(500)       '$.sliceName',
         [link.min]                     bigint              '$.min',
         [link.max]                     NVARCHAR(100)       '$.max',
         [link.description]             NVARCHAR(4000)      '$.description',

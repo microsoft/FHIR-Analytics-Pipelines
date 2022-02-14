@@ -50,11 +50,7 @@ CREATE EXTERNAL TABLE [fhir].[NutritionOrder] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [dateTime] VARCHAR(64),
-<<<<<<< HEAD
     [orderer.id] NVARCHAR(100),
-=======
-    [orderer.id] NVARCHAR(4000),
->>>>>>> origin/main
     [orderer.extension] NVARCHAR(MAX),
     [orderer.reference] NVARCHAR(4000),
     [orderer.type] VARCHAR(256),
@@ -87,12 +83,12 @@ CREATE EXTERNAL TABLE [fhir].[NutritionOrder] (
     [enteralFormula.baseFormulaType.extension] NVARCHAR(MAX),
     [enteralFormula.baseFormulaType.coding] NVARCHAR(MAX),
     [enteralFormula.baseFormulaType.text] NVARCHAR(4000),
-    [enteralFormula.baseFormulaProductName] NVARCHAR(100),
+    [enteralFormula.baseFormulaProductName] NVARCHAR(500),
     [enteralFormula.additiveType.id] NVARCHAR(100),
     [enteralFormula.additiveType.extension] NVARCHAR(MAX),
     [enteralFormula.additiveType.coding] NVARCHAR(MAX),
     [enteralFormula.additiveType.text] NVARCHAR(4000),
-    [enteralFormula.additiveProductName] NVARCHAR(100),
+    [enteralFormula.additiveProductName] NVARCHAR(500),
     [enteralFormula.caloricDensity.id] NVARCHAR(100),
     [enteralFormula.caloricDensity.extension] NVARCHAR(MAX),
     [enteralFormula.caloricDensity.value] float,
@@ -167,11 +163,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -368,7 +360,7 @@ FROM openrowset (
         [supplement.type.extension]    NVARCHAR(MAX)       '$.type.extension',
         [supplement.type.coding]       NVARCHAR(MAX)       '$.type.coding',
         [supplement.type.text]         NVARCHAR(4000)      '$.type.text',
-        [supplement.productName]       NVARCHAR(100)       '$.productName',
+        [supplement.productName]       NVARCHAR(500)       '$.productName',
         [supplement.schedule]          NVARCHAR(MAX)       '$.schedule' AS JSON,
         [supplement.quantity.id]       NVARCHAR(100)       '$.quantity.id',
         [supplement.quantity.extension] NVARCHAR(MAX)       '$.quantity.extension',

@@ -26,7 +26,7 @@ CREATE EXTERNAL TABLE [fhir].[Endpoint] (
     [connectionType.code] NVARCHAR(4000),
     [connectionType.display] NVARCHAR(4000),
     [connectionType.userSelected] bit,
-    [name] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [managingOrganization.id] NVARCHAR(100),
     [managingOrganization.extension] NVARCHAR(MAX),
     [managingOrganization.reference] NVARCHAR(4000),
@@ -102,11 +102,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

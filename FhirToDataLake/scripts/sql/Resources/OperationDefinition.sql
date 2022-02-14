@@ -19,17 +19,13 @@ CREATE EXTERNAL TABLE [fhir].[OperationDefinition] (
     [modifierExtension] NVARCHAR(MAX),
     [url] VARCHAR(256),
     [version] NVARCHAR(100),
-    [name] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [title] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [kind] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
-<<<<<<< HEAD
-    [publisher] NVARCHAR(100),
-=======
-    [publisher] NVARCHAR(4000),
->>>>>>> origin/main
+    [publisher] NVARCHAR(500),
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -74,7 +70,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[contact.JSON]) with (
         [contact.id]                   NVARCHAR(100)       '$.id',
         [contact.extension]            NVARCHAR(MAX)       '$.extension',
-        [contact.name]                 NVARCHAR(100)       '$.name',
+        [contact.name]                 NVARCHAR(500)       '$.name',
         [contact.telecom]              NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -235,7 +231,7 @@ FROM openrowset (
         [parameter.id]                 NVARCHAR(100)       '$.id',
         [parameter.extension]          NVARCHAR(MAX)       '$.extension',
         [parameter.modifierExtension]  NVARCHAR(MAX)       '$.modifierExtension',
-        [parameter.name]               NVARCHAR(100)       '$.name',
+        [parameter.name]               NVARCHAR(500)       '$.name',
         [parameter.use]                NVARCHAR(64)        '$.use',
         [parameter.min]                bigint              '$.min',
         [parameter.max]                NVARCHAR(100)       '$.max',

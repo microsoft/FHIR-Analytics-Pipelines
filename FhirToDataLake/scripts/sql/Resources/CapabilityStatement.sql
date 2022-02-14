@@ -19,16 +19,12 @@ CREATE EXTERNAL TABLE [fhir].[CapabilityStatement] (
     [modifierExtension] NVARCHAR(MAX),
     [url] VARCHAR(256),
     [version] NVARCHAR(100),
-    [name] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [title] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
-<<<<<<< HEAD
-    [publisher] NVARCHAR(100),
-=======
-    [publisher] NVARCHAR(4000),
->>>>>>> origin/main
+    [publisher] NVARCHAR(500),
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -41,17 +37,10 @@ CREATE EXTERNAL TABLE [fhir].[CapabilityStatement] (
     [software.id] NVARCHAR(100),
     [software.extension] NVARCHAR(MAX),
     [software.modifierExtension] NVARCHAR(MAX),
-<<<<<<< HEAD
-    [software.name] NVARCHAR(100),
+    [software.name] NVARCHAR(500),
     [software.version] NVARCHAR(100),
     [software.releaseDate] VARCHAR(64),
     [implementation.id] NVARCHAR(100),
-=======
-    [software.name] NVARCHAR(4000),
-    [software.version] NVARCHAR(4000),
-    [software.releaseDate] VARCHAR(64),
-    [implementation.id] NVARCHAR(4000),
->>>>>>> origin/main
     [implementation.extension] NVARCHAR(MAX),
     [implementation.modifierExtension] NVARCHAR(MAX),
     [implementation.description] NVARCHAR(4000),
@@ -96,7 +85,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[contact.JSON]) with (
         [contact.id]                   NVARCHAR(100)       '$.id',
         [contact.extension]            NVARCHAR(MAX)       '$.extension',
-        [contact.name]                 NVARCHAR(100)       '$.name',
+        [contact.name]                 NVARCHAR(500)       '$.name',
         [contact.telecom]              NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 

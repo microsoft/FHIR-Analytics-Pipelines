@@ -190,11 +190,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -226,7 +222,7 @@ FROM openrowset (
         [udiDeviceIdentifier.id]       NVARCHAR(100)       '$.id',
         [udiDeviceIdentifier.extension] NVARCHAR(MAX)       '$.extension',
         [udiDeviceIdentifier.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [udiDeviceIdentifier.deviceIdentifier] NVARCHAR(100)       '$.deviceIdentifier',
+        [udiDeviceIdentifier.deviceIdentifier] NVARCHAR(500)       '$.deviceIdentifier',
         [udiDeviceIdentifier.issuer]   VARCHAR(256)        '$.issuer',
         [udiDeviceIdentifier.jurisdiction] VARCHAR(256)        '$.jurisdiction'
     ) j
@@ -254,7 +250,7 @@ FROM openrowset (
         [deviceName.id]                NVARCHAR(100)       '$.id',
         [deviceName.extension]         NVARCHAR(MAX)       '$.extension',
         [deviceName.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [deviceName.name]              NVARCHAR(100)       '$.name',
+        [deviceName.name]              NVARCHAR(500)       '$.name',
         [deviceName.type]              NVARCHAR(64)        '$.type'
     ) j
 

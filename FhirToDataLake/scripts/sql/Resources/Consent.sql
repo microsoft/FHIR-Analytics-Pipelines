@@ -76,11 +76,7 @@ CREATE EXTERNAL TABLE [fhir].[Consent] (
     [source.attachment.hash] NVARCHAR(MAX),
     [source.attachment.title] NVARCHAR(4000),
     [source.attachment.creation] VARCHAR(64),
-<<<<<<< HEAD
     [source.reference.id] NVARCHAR(100),
-=======
-    [source.reference.id] NVARCHAR(4000),
->>>>>>> origin/main
     [source.reference.extension] NVARCHAR(MAX),
     [source.reference.reference] NVARCHAR(4000),
     [source.reference.type] VARCHAR(256),
@@ -146,11 +142,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

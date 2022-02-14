@@ -30,11 +30,7 @@ CREATE EXTERNAL TABLE [fhir].[SpecimenDefinition] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
-=======
-    [identifier.assigner.id] NVARCHAR(4000),
->>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
@@ -170,7 +166,7 @@ FROM openrowset (
         [typeTested.container.capacity] NVARCHAR(MAX)       '$.container.capacity',
         [typeTested.container.minimumVolumeQuantity] NVARCHAR(MAX)       '$.container.minimumVolumeQuantity',
         [typeTested.container.additive] NVARCHAR(MAX)       '$.container.additive',
-        [typeTested.container.preparation] NVARCHAR(500)       '$.container.preparation',
+        [typeTested.container.preparation] NVARCHAR(4000)      '$.container.preparation',
         [typeTested.container.minimumVolume.quantity] NVARCHAR(MAX)       '$.container.minimumVolume.quantity',
         [typeTested.container.minimumVolume.string] NVARCHAR(4000)      '$.container.minimumVolume.string',
         [typeTested.requirement]       NVARCHAR(500)       '$.requirement',

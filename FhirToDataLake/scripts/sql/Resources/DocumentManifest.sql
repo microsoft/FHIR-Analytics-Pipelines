@@ -30,11 +30,7 @@ CREATE EXTERNAL TABLE [fhir].[DocumentManifest] (
     [masterIdentifier.period.extension] NVARCHAR(MAX),
     [masterIdentifier.period.start] VARCHAR(64),
     [masterIdentifier.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [masterIdentifier.assigner.id] NVARCHAR(100),
-=======
-    [masterIdentifier.assigner.id] NVARCHAR(4000),
->>>>>>> origin/main
     [masterIdentifier.assigner.extension] NVARCHAR(MAX),
     [masterIdentifier.assigner.reference] NVARCHAR(4000),
     [masterIdentifier.assigner.type] VARCHAR(256),
@@ -119,11 +115,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

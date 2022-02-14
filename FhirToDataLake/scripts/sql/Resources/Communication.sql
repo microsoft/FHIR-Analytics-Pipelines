@@ -135,11 +135,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -567,11 +563,7 @@ FROM openrowset (
         [payload.content.attachment.hash] NVARCHAR(MAX)       '$.content.attachment.hash',
         [payload.content.attachment.title] NVARCHAR(4000)      '$.content.attachment.title',
         [payload.content.attachment.creation] VARCHAR(64)         '$.content.attachment.creation',
-<<<<<<< HEAD
         [payload.content.reference.id] NVARCHAR(100)       '$.content.reference.id',
-=======
-        [payload.content.reference.id] NVARCHAR(4000)      '$.content.reference.id',
->>>>>>> origin/main
         [payload.content.reference.extension] NVARCHAR(MAX)       '$.content.reference.extension',
         [payload.content.reference.reference] NVARCHAR(4000)      '$.content.reference.reference',
         [payload.content.reference.type] VARCHAR(256)        '$.content.reference.type',

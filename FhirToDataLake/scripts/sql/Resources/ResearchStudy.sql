@@ -43,11 +43,7 @@ CREATE EXTERNAL TABLE [fhir].[ResearchStudy] (
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
-<<<<<<< HEAD
     [sponsor.id] NVARCHAR(100),
-=======
-    [sponsor.id] NVARCHAR(4000),
->>>>>>> origin/main
     [sponsor.extension] NVARCHAR(MAX),
     [sponsor.reference] NVARCHAR(4000),
     [sponsor.type] VARCHAR(256),
@@ -134,11 +130,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -328,7 +320,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[contact.JSON]) with (
         [contact.id]                   NVARCHAR(100)       '$.id',
         [contact.extension]            NVARCHAR(MAX)       '$.extension',
-        [contact.name]                 NVARCHAR(100)       '$.name',
+        [contact.name]                 NVARCHAR(500)       '$.name',
         [contact.telecom]              NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -587,7 +579,7 @@ FROM openrowset (
         [arm.id]                       NVARCHAR(100)       '$.id',
         [arm.extension]                NVARCHAR(MAX)       '$.extension',
         [arm.modifierExtension]        NVARCHAR(MAX)       '$.modifierExtension',
-        [arm.name]                     NVARCHAR(100)       '$.name',
+        [arm.name]                     NVARCHAR(500)       '$.name',
         [arm.type.id]                  NVARCHAR(100)       '$.type.id',
         [arm.type.extension]           NVARCHAR(MAX)       '$.type.extension',
         [arm.type.coding]              NVARCHAR(MAX)       '$.type.coding',
@@ -621,7 +613,7 @@ FROM openrowset (
         [objective.id]                 NVARCHAR(100)       '$.id',
         [objective.extension]          NVARCHAR(MAX)       '$.extension',
         [objective.modifierExtension]  NVARCHAR(MAX)       '$.modifierExtension',
-        [objective.name]               NVARCHAR(100)       '$.name',
+        [objective.name]               NVARCHAR(500)       '$.name',
         [objective.type.id]            NVARCHAR(100)       '$.type.id',
         [objective.type.extension]     NVARCHAR(MAX)       '$.type.extension',
         [objective.type.coding]        NVARCHAR(MAX)       '$.type.coding',

@@ -132,11 +132,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -219,7 +215,7 @@ FROM openrowset (
         [class.type.coding]            NVARCHAR(MAX)       '$.type.coding',
         [class.type.text]              NVARCHAR(4000)      '$.type.text',
         [class.value]                  NVARCHAR(4000)      '$.value',
-        [class.name]                   NVARCHAR(100)       '$.name'
+        [class.name]                   NVARCHAR(500)       '$.name'
     ) j
 
 GO

@@ -85,15 +85,9 @@ CREATE EXTERNAL TABLE [fhir].[Immunization] (
     [manufacturer.identifier.period] NVARCHAR(MAX),
     [manufacturer.identifier.assigner] NVARCHAR(MAX),
     [manufacturer.display] NVARCHAR(4000),
-<<<<<<< HEAD
     [lotNumber] NVARCHAR(100),
-    [expirationDate] VARCHAR(32),
-    [site.id] NVARCHAR(100),
-=======
-    [lotNumber] NVARCHAR(4000),
     [expirationDate] VARCHAR(64),
-    [site.id] NVARCHAR(4000),
->>>>>>> origin/main
+    [site.id] NVARCHAR(100),
     [site.extension] NVARCHAR(MAX),
     [site.coding] VARCHAR(MAX),
     [site.text] NVARCHAR(4000),
@@ -177,11 +171,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -450,11 +440,7 @@ FROM openrowset (
         [reaction.extension]           NVARCHAR(MAX)       '$.extension',
         [reaction.modifierExtension]   NVARCHAR(MAX)       '$.modifierExtension',
         [reaction.date]                VARCHAR(64)         '$.date',
-<<<<<<< HEAD
         [reaction.detail.id]           NVARCHAR(100)       '$.detail.id',
-=======
-        [reaction.detail.id]           NVARCHAR(4000)      '$.detail.id',
->>>>>>> origin/main
         [reaction.detail.extension]    NVARCHAR(MAX)       '$.detail.extension',
         [reaction.detail.reference]    NVARCHAR(4000)      '$.detail.reference',
         [reaction.detail.type]         VARCHAR(256)        '$.detail.type',

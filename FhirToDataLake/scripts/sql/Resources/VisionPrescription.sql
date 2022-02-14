@@ -18,15 +18,9 @@ CREATE EXTERNAL TABLE [fhir].[VisionPrescription] (
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
     [identifier] VARCHAR(MAX),
-<<<<<<< HEAD
     [status] NVARCHAR(100),
     [created] VARCHAR(64),
     [patient.id] NVARCHAR(100),
-=======
-    [status] NVARCHAR(4000),
-    [created] VARCHAR(64),
-    [patient.id] NVARCHAR(4000),
->>>>>>> origin/main
     [patient.extension] NVARCHAR(MAX),
     [patient.reference] NVARCHAR(4000),
     [patient.type] VARCHAR(256),
@@ -53,11 +47,7 @@ CREATE EXTERNAL TABLE [fhir].[VisionPrescription] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [dateWritten] VARCHAR(64),
-<<<<<<< HEAD
     [prescriber.id] NVARCHAR(100),
-=======
-    [prescriber.id] NVARCHAR(4000),
->>>>>>> origin/main
     [prescriber.extension] NVARCHAR(MAX),
     [prescriber.reference] NVARCHAR(4000),
     [prescriber.type] VARCHAR(256),
@@ -124,11 +114,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -201,6 +187,6 @@ FROM openrowset (
         [lensSpecification.duration.system] VARCHAR(256)        '$.duration.system',
         [lensSpecification.duration.code] NVARCHAR(4000)      '$.duration.code',
         [lensSpecification.color]      NVARCHAR(100)       '$.color',
-        [lensSpecification.brand]      NVARCHAR(100)       '$.brand',
+        [lensSpecification.brand]      NVARCHAR(500)       '$.brand',
         [lensSpecification.note]       NVARCHAR(MAX)       '$.note' AS JSON
     ) j

@@ -273,11 +273,7 @@ FROM openrowset (
         [signature.extension]          NVARCHAR(MAX)       '$.extension',
         [signature.type]               NVARCHAR(MAX)       '$.type' AS JSON,
         [signature.when]               VARCHAR(64)         '$.when',
-<<<<<<< HEAD
         [signature.who.id]             NVARCHAR(100)       '$.who.id',
-=======
-        [signature.who.id]             NVARCHAR(4000)      '$.who.id',
->>>>>>> origin/main
         [signature.who.extension]      NVARCHAR(MAX)       '$.who.extension',
         [signature.who.reference]      NVARCHAR(4000)      '$.who.reference',
         [signature.who.type]           VARCHAR(256)        '$.who.type',

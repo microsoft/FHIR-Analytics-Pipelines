@@ -176,7 +176,7 @@ FROM openrowset (
         [agent.who.identifier]         NVARCHAR(MAX)       '$.who.identifier',
         [agent.who.display]            NVARCHAR(4000)      '$.who.display',
         [agent.altId]                  NVARCHAR(100)       '$.altId',
-        [agent.name]                   NVARCHAR(100)       '$.name',
+        [agent.name]                   NVARCHAR(500)       '$.name',
         [agent.requestor]              bit                 '$.requestor',
         [agent.location.id]            NVARCHAR(100)       '$.location.id',
         [agent.location.extension]     NVARCHAR(MAX)       '$.location.extension',
@@ -195,7 +195,7 @@ FROM openrowset (
         [agent.network.id]             NVARCHAR(100)       '$.network.id',
         [agent.network.extension]      NVARCHAR(MAX)       '$.network.extension',
         [agent.network.modifierExtension] NVARCHAR(MAX)       '$.network.modifierExtension',
-        [agent.network.address]        NVARCHAR(500)       '$.network.address',
+        [agent.network.address]        NVARCHAR(4000)      '$.network.address',
         [agent.network.type]           NVARCHAR(64)        '$.network.type',
         [agent.purposeOfUse]           NVARCHAR(MAX)       '$.purposeOfUse' AS JSON
     ) j
@@ -281,7 +281,7 @@ FROM openrowset (
         [entity.lifecycle.display]     NVARCHAR(4000)      '$.lifecycle.display',
         [entity.lifecycle.userSelected] bit                 '$.lifecycle.userSelected',
         [entity.securityLabel]         NVARCHAR(MAX)       '$.securityLabel' AS JSON,
-        [entity.name]                  NVARCHAR(100)       '$.name',
+        [entity.name]                  NVARCHAR(500)       '$.name',
         [entity.description]           NVARCHAR(4000)      '$.description',
         [entity.query]                 NVARCHAR(MAX)       '$.query',
         [entity.detail]                NVARCHAR(MAX)       '$.detail' AS JSON

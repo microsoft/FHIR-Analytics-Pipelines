@@ -35,11 +35,7 @@ CREATE EXTERNAL TABLE [fhir].[ServiceRequest] (
     [requisition.period.extension] NVARCHAR(MAX),
     [requisition.period.start] VARCHAR(64),
     [requisition.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [requisition.assigner.id] NVARCHAR(100),
-=======
-    [requisition.assigner.id] NVARCHAR(4000),
->>>>>>> origin/main
     [requisition.assigner.extension] NVARCHAR(MAX),
     [requisition.assigner.reference] NVARCHAR(4000),
     [requisition.assigner.type] VARCHAR(256),
@@ -82,11 +78,7 @@ CREATE EXTERNAL TABLE [fhir].[ServiceRequest] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [authoredOn] VARCHAR(64),
-<<<<<<< HEAD
     [requester.id] NVARCHAR(100),
-=======
-    [requester.id] NVARCHAR(4000),
->>>>>>> origin/main
     [requester.extension] NVARCHAR(MAX),
     [requester.reference] NVARCHAR(4000),
     [requester.type] VARCHAR(256),
@@ -155,19 +147,11 @@ CREATE EXTERNAL TABLE [fhir].[ServiceRequest] (
     [quantity.range.high.system] VARCHAR(256),
     [quantity.range.high.code] NVARCHAR(4000),
     [occurrence.dateTime] VARCHAR(64),
-<<<<<<< HEAD
     [occurrence.period.id] NVARCHAR(100),
     [occurrence.period.extension] NVARCHAR(MAX),
     [occurrence.period.start] VARCHAR(64),
     [occurrence.period.end] VARCHAR(64),
     [occurrence.timing.id] NVARCHAR(100),
-=======
-    [occurrence.period.id] NVARCHAR(4000),
-    [occurrence.period.extension] NVARCHAR(MAX),
-    [occurrence.period.start] VARCHAR(64),
-    [occurrence.period.end] VARCHAR(64),
-    [occurrence.timing.id] NVARCHAR(4000),
->>>>>>> origin/main
     [occurrence.timing.extension] NVARCHAR(MAX),
     [occurrence.timing.modifierExtension] NVARCHAR(MAX),
     [occurrence.timing.event] VARCHAR(MAX),
@@ -253,11 +237,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

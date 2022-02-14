@@ -19,16 +19,12 @@ CREATE EXTERNAL TABLE [fhir].[SearchParameter] (
     [modifierExtension] NVARCHAR(MAX),
     [url] VARCHAR(256),
     [version] NVARCHAR(100),
-    [name] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [derivedFrom] VARCHAR(256),
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
-<<<<<<< HEAD
-    [publisher] NVARCHAR(100),
-=======
-    [publisher] NVARCHAR(4000),
->>>>>>> origin/main
+    [publisher] NVARCHAR(500),
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -37,7 +33,7 @@ CREATE EXTERNAL TABLE [fhir].[SearchParameter] (
     [code] NVARCHAR(4000),
     [base] VARCHAR(MAX),
     [type] NVARCHAR(64),
-    [expression] NVARCHAR(500),
+    [expression] NVARCHAR(4000),
     [xpath] NVARCHAR(4000),
     [xpathUsage] NVARCHAR(64),
     [target] VARCHAR(MAX),
@@ -74,7 +70,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[contact.JSON]) with (
         [contact.id]                   NVARCHAR(100)       '$.id',
         [contact.extension]            NVARCHAR(MAX)       '$.extension',
-        [contact.name]                 NVARCHAR(100)       '$.name',
+        [contact.name]                 NVARCHAR(500)       '$.name',
         [contact.telecom]              NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -299,5 +295,5 @@ FROM openrowset (
         [component.extension]          NVARCHAR(MAX)       '$.extension',
         [component.modifierExtension]  NVARCHAR(MAX)       '$.modifierExtension',
         [component.definition]         VARCHAR(256)        '$.definition',
-        [component.expression]         NVARCHAR(500)       '$.expression'
+        [component.expression]         NVARCHAR(4000)      '$.expression'
     ) j

@@ -30,11 +30,7 @@ CREATE EXTERNAL TABLE [fhir].[DocumentReference] (
     [masterIdentifier.period.extension] NVARCHAR(MAX),
     [masterIdentifier.period.start] VARCHAR(64),
     [masterIdentifier.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [masterIdentifier.assigner.id] NVARCHAR(100),
-=======
-    [masterIdentifier.assigner.id] NVARCHAR(4000),
->>>>>>> origin/main
     [masterIdentifier.assigner.extension] NVARCHAR(MAX),
     [masterIdentifier.assigner.reference] NVARCHAR(4000),
     [masterIdentifier.assigner.type] VARCHAR(256),
@@ -102,11 +98,7 @@ CREATE EXTERNAL TABLE [fhir].[DocumentReference] (
     [context.period.extension] NVARCHAR(MAX),
     [context.period.start] VARCHAR(64),
     [context.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [context.facilityType.id] NVARCHAR(100),
-=======
-    [context.facilityType.id] NVARCHAR(4000),
->>>>>>> origin/main
     [context.facilityType.extension] NVARCHAR(MAX),
     [context.facilityType.coding] NVARCHAR(MAX),
     [context.facilityType.text] NVARCHAR(4000),
@@ -174,11 +166,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -364,11 +352,7 @@ FROM openrowset (
         [content.attachment.hash]      NVARCHAR(MAX)       '$.attachment.hash',
         [content.attachment.title]     NVARCHAR(4000)      '$.attachment.title',
         [content.attachment.creation]  VARCHAR(64)         '$.attachment.creation',
-<<<<<<< HEAD
         [content.format.id]            NVARCHAR(100)       '$.format.id',
-=======
-        [content.format.id]            NVARCHAR(4000)      '$.format.id',
->>>>>>> origin/main
         [content.format.extension]     NVARCHAR(MAX)       '$.format.extension',
         [content.format.system]        VARCHAR(256)        '$.format.system',
         [content.format.version]       NVARCHAR(100)       '$.format.version',

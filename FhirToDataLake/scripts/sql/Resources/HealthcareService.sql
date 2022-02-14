@@ -36,7 +36,7 @@ CREATE EXTERNAL TABLE [fhir].[HealthcareService] (
     [type] VARCHAR(MAX),
     [specialty] VARCHAR(MAX),
     [location] VARCHAR(MAX),
-    [name] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [comment] NVARCHAR(4000),
     [extraDetails] NVARCHAR(MAX),
     [photo.id] NVARCHAR(100),
@@ -115,11 +115,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

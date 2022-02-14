@@ -35,11 +35,7 @@ CREATE EXTERNAL TABLE [fhir].[RequestGroup] (
     [groupIdentifier.period.extension] NVARCHAR(MAX),
     [groupIdentifier.period.start] VARCHAR(64),
     [groupIdentifier.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [groupIdentifier.assigner.id] NVARCHAR(100),
-=======
-    [groupIdentifier.assigner.id] NVARCHAR(4000),
->>>>>>> origin/main
     [groupIdentifier.assigner.extension] NVARCHAR(MAX),
     [groupIdentifier.assigner.reference] NVARCHAR(4000),
     [groupIdentifier.assigner.type] VARCHAR(256),
@@ -79,11 +75,7 @@ CREATE EXTERNAL TABLE [fhir].[RequestGroup] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [authoredOn] VARCHAR(64),
-<<<<<<< HEAD
     [author.id] NVARCHAR(100),
-=======
-    [author.id] NVARCHAR(4000),
->>>>>>> origin/main
     [author.extension] NVARCHAR(MAX),
     [author.reference] NVARCHAR(4000),
     [author.type] VARCHAR(256),
@@ -153,11 +145,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -472,7 +460,7 @@ FROM openrowset (
         [action.id]                    NVARCHAR(100)       '$.id',
         [action.extension]             NVARCHAR(MAX)       '$.extension',
         [action.modifierExtension]     NVARCHAR(MAX)       '$.modifierExtension',
-        [action.prefix]                NVARCHAR(100)       '$.prefix',
+        [action.prefix]                NVARCHAR(500)       '$.prefix',
         [action.title]                 NVARCHAR(4000)      '$.title',
         [action.description]           NVARCHAR(4000)      '$.description',
         [action.textEquivalent]        NVARCHAR(4000)      '$.textEquivalent',
@@ -499,11 +487,7 @@ FROM openrowset (
         [action.resource.display]      NVARCHAR(4000)      '$.resource.display',
         [action.action]                NVARCHAR(MAX)       '$.action' AS JSON,
         [action.timing.dateTime]       VARCHAR(64)         '$.timing.dateTime',
-<<<<<<< HEAD
         [action.timing.age.id]         NVARCHAR(100)       '$.timing.age.id',
-=======
-        [action.timing.age.id]         NVARCHAR(4000)      '$.timing.age.id',
->>>>>>> origin/main
         [action.timing.age.extension]  NVARCHAR(MAX)       '$.timing.age.extension',
         [action.timing.age.value]      float               '$.timing.age.value',
         [action.timing.age.comparator] NVARCHAR(64)        '$.timing.age.comparator',
@@ -514,11 +498,7 @@ FROM openrowset (
         [action.timing.period.extension] NVARCHAR(MAX)       '$.timing.period.extension',
         [action.timing.period.start]   VARCHAR(64)         '$.timing.period.start',
         [action.timing.period.end]     VARCHAR(64)         '$.timing.period.end',
-<<<<<<< HEAD
         [action.timing.duration.id]    NVARCHAR(100)       '$.timing.duration.id',
-=======
-        [action.timing.duration.id]    NVARCHAR(4000)      '$.timing.duration.id',
->>>>>>> origin/main
         [action.timing.duration.extension] NVARCHAR(MAX)       '$.timing.duration.extension',
         [action.timing.duration.value] float               '$.timing.duration.value',
         [action.timing.duration.comparator] NVARCHAR(64)        '$.timing.duration.comparator',

@@ -60,11 +60,7 @@ CREATE EXTERNAL TABLE [fhir].[AllergyIntolerance] (
     [encounter.identifier.assigner] NVARCHAR(MAX),
     [encounter.display] NVARCHAR(4000),
     [recordedDate] VARCHAR(64),
-<<<<<<< HEAD
     [recorder.id] NVARCHAR(100),
-=======
-    [recorder.id] NVARCHAR(4000),
->>>>>>> origin/main
     [recorder.extension] NVARCHAR(MAX),
     [recorder.reference] NVARCHAR(4000),
     [recorder.type] VARCHAR(256),
@@ -94,11 +90,7 @@ CREATE EXTERNAL TABLE [fhir].[AllergyIntolerance] (
     [note] VARCHAR(MAX),
     [reaction] VARCHAR(MAX),
     [onset.dateTime] VARCHAR(64),
-<<<<<<< HEAD
     [onset.age.id] NVARCHAR(100),
-=======
-    [onset.age.id] NVARCHAR(4000),
->>>>>>> origin/main
     [onset.age.extension] NVARCHAR(MAX),
     [onset.age.value] float,
     [onset.age.comparator] NVARCHAR(64),
@@ -109,11 +101,7 @@ CREATE EXTERNAL TABLE [fhir].[AllergyIntolerance] (
     [onset.period.extension] NVARCHAR(MAX),
     [onset.period.start] VARCHAR(64),
     [onset.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [onset.range.id] NVARCHAR(100),
-=======
-    [onset.range.id] NVARCHAR(4000),
->>>>>>> origin/main
     [onset.range.extension] NVARCHAR(MAX),
     [onset.range.low.id] NVARCHAR(100),
     [onset.range.low.extension] NVARCHAR(MAX),
@@ -183,11 +171,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

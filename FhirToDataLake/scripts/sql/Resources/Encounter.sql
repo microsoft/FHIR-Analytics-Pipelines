@@ -58,11 +58,7 @@ CREATE EXTERNAL TABLE [fhir].[Encounter] (
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
-<<<<<<< HEAD
     [length.id] NVARCHAR(100),
-=======
-    [length.id] NVARCHAR(4000),
->>>>>>> origin/main
     [length.extension] NVARCHAR(MAX),
     [length.value] float,
     [length.comparator] NVARCHAR(64),
@@ -191,11 +187,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -429,11 +421,7 @@ FROM openrowset (
         [participant.period.extension] NVARCHAR(MAX)       '$.period.extension',
         [participant.period.start]     VARCHAR(64)         '$.period.start',
         [participant.period.end]       VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [participant.individual.id]    NVARCHAR(100)       '$.individual.id',
-=======
-        [participant.individual.id]    NVARCHAR(4000)      '$.individual.id',
->>>>>>> origin/main
         [participant.individual.extension] NVARCHAR(MAX)       '$.individual.extension',
         [participant.individual.reference] NVARCHAR(4000)      '$.individual.reference',
         [participant.individual.type]  VARCHAR(256)        '$.individual.type',

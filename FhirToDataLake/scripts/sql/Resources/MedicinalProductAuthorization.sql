@@ -39,29 +39,17 @@ CREATE EXTERNAL TABLE [fhir].[MedicinalProductAuthorization] (
     [status.text] NVARCHAR(4000),
     [statusDate] VARCHAR(64),
     [restoreDate] VARCHAR(64),
-<<<<<<< HEAD
     [validityPeriod.id] NVARCHAR(100),
     [validityPeriod.extension] NVARCHAR(MAX),
     [validityPeriod.start] VARCHAR(64),
     [validityPeriod.end] VARCHAR(64),
     [dataExclusivityPeriod.id] NVARCHAR(100),
-=======
-    [validityPeriod.id] NVARCHAR(4000),
-    [validityPeriod.extension] NVARCHAR(MAX),
-    [validityPeriod.start] VARCHAR(64),
-    [validityPeriod.end] VARCHAR(64),
-    [dataExclusivityPeriod.id] NVARCHAR(4000),
->>>>>>> origin/main
     [dataExclusivityPeriod.extension] NVARCHAR(MAX),
     [dataExclusivityPeriod.start] VARCHAR(64),
     [dataExclusivityPeriod.end] VARCHAR(64),
     [dateOfFirstAuthorization] VARCHAR(64),
     [internationalBirthDate] VARCHAR(64),
-<<<<<<< HEAD
     [legalBasis.id] NVARCHAR(100),
-=======
-    [legalBasis.id] NVARCHAR(4000),
->>>>>>> origin/main
     [legalBasis.extension] NVARCHAR(MAX),
     [legalBasis.coding] VARCHAR(MAX),
     [legalBasis.text] NVARCHAR(4000),
@@ -166,11 +154,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

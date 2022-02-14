@@ -60,11 +60,7 @@ CREATE EXTERNAL TABLE [fhir].[Medication] (
     [batch.id] NVARCHAR(100),
     [batch.extension] NVARCHAR(MAX),
     [batch.modifierExtension] NVARCHAR(MAX),
-<<<<<<< HEAD
     [batch.lotNumber] NVARCHAR(100),
-=======
-    [batch.lotNumber] NVARCHAR(4000),
->>>>>>> origin/main
     [batch.expirationDate] VARCHAR(64),
 ) WITH (
     LOCATION='/Medication/**',
@@ -119,11 +115,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

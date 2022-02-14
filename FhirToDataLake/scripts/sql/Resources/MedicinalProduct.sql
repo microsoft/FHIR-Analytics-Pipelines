@@ -111,11 +111,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -506,7 +502,7 @@ FROM openrowset (
         [name.id]                      NVARCHAR(100)       '$.id',
         [name.extension]               NVARCHAR(MAX)       '$.extension',
         [name.modifierExtension]       NVARCHAR(MAX)       '$.modifierExtension',
-        [name.productName]             NVARCHAR(100)       '$.productName',
+        [name.productName]             NVARCHAR(500)       '$.productName',
         [name.namePart]                NVARCHAR(MAX)       '$.namePart' AS JSON,
         [name.countryLanguage]         NVARCHAR(MAX)       '$.countryLanguage' AS JSON
     ) j
@@ -558,11 +554,7 @@ FROM openrowset (
         [crossReference.period.extension] NVARCHAR(MAX)       '$.period.extension',
         [crossReference.period.start]  VARCHAR(64)         '$.period.start',
         [crossReference.period.end]    VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [crossReference.assigner.id]   NVARCHAR(100)       '$.assigner.id',
-=======
-        [crossReference.assigner.id]   NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [crossReference.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [crossReference.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [crossReference.assigner.type] VARCHAR(256)        '$.assigner.type',
@@ -628,11 +620,7 @@ FROM openrowset (
         [manufacturingBusinessOperation.authorisationReferenceNumber.period] NVARCHAR(MAX)       '$.authorisationReferenceNumber.period',
         [manufacturingBusinessOperation.authorisationReferenceNumber.assigner] NVARCHAR(MAX)       '$.authorisationReferenceNumber.assigner',
         [manufacturingBusinessOperation.effectiveDate] VARCHAR(64)         '$.effectiveDate',
-<<<<<<< HEAD
         [manufacturingBusinessOperation.confidentialityIndicator.id] NVARCHAR(100)       '$.confidentialityIndicator.id',
-=======
-        [manufacturingBusinessOperation.confidentialityIndicator.id] NVARCHAR(4000)      '$.confidentialityIndicator.id',
->>>>>>> origin/main
         [manufacturingBusinessOperation.confidentialityIndicator.extension] NVARCHAR(MAX)       '$.confidentialityIndicator.extension',
         [manufacturingBusinessOperation.confidentialityIndicator.coding] NVARCHAR(MAX)       '$.confidentialityIndicator.coding',
         [manufacturingBusinessOperation.confidentialityIndicator.text] NVARCHAR(4000)      '$.confidentialityIndicator.text',
@@ -708,11 +696,7 @@ FROM openrowset (
         [specialDesignation.status.coding] NVARCHAR(MAX)       '$.status.coding',
         [specialDesignation.status.text] NVARCHAR(4000)      '$.status.text',
         [specialDesignation.date]      VARCHAR(64)         '$.date',
-<<<<<<< HEAD
         [specialDesignation.species.id] NVARCHAR(100)       '$.species.id',
-=======
-        [specialDesignation.species.id] NVARCHAR(4000)      '$.species.id',
->>>>>>> origin/main
         [specialDesignation.species.extension] NVARCHAR(MAX)       '$.species.extension',
         [specialDesignation.species.coding] NVARCHAR(MAX)       '$.species.coding',
         [specialDesignation.species.text] NVARCHAR(4000)      '$.species.text',

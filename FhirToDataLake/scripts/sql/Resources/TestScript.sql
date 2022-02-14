@@ -31,27 +31,19 @@ CREATE EXTERNAL TABLE [fhir].[TestScript] (
     [identifier.period.extension] NVARCHAR(MAX),
     [identifier.period.start] VARCHAR(64),
     [identifier.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [identifier.assigner.id] NVARCHAR(100),
-=======
-    [identifier.assigner.id] NVARCHAR(4000),
->>>>>>> origin/main
     [identifier.assigner.extension] NVARCHAR(MAX),
     [identifier.assigner.reference] NVARCHAR(4000),
     [identifier.assigner.type] VARCHAR(256),
     [identifier.assigner.identifier] NVARCHAR(MAX),
     [identifier.assigner.display] NVARCHAR(4000),
     [version] NVARCHAR(100),
-    [name] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [title] NVARCHAR(4000),
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
-<<<<<<< HEAD
-    [publisher] NVARCHAR(100),
-=======
-    [publisher] NVARCHAR(4000),
->>>>>>> origin/main
+    [publisher] NVARCHAR(500),
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -104,7 +96,7 @@ FROM openrowset (
     CROSS APPLY openjson (rowset.[contact.JSON]) with (
         [contact.id]                   NVARCHAR(100)       '$.id',
         [contact.extension]            NVARCHAR(MAX)       '$.extension',
-        [contact.name]                 NVARCHAR(100)       '$.name',
+        [contact.name]                 NVARCHAR(500)       '$.name',
         [contact.telecom]              NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -399,12 +391,12 @@ FROM openrowset (
         [variable.id]                  NVARCHAR(100)       '$.id',
         [variable.extension]           NVARCHAR(MAX)       '$.extension',
         [variable.modifierExtension]   NVARCHAR(MAX)       '$.modifierExtension',
-        [variable.name]                NVARCHAR(100)       '$.name',
+        [variable.name]                NVARCHAR(500)       '$.name',
         [variable.defaultValue]        NVARCHAR(4000)      '$.defaultValue',
         [variable.description]         NVARCHAR(4000)      '$.description',
-        [variable.expression]          NVARCHAR(500)       '$.expression',
+        [variable.expression]          NVARCHAR(4000)      '$.expression',
         [variable.headerField]         NVARCHAR(4000)      '$.headerField',
-        [variable.hint]                NVARCHAR(500)       '$.hint',
+        [variable.hint]                NVARCHAR(4000)      '$.hint',
         [variable.path]                NVARCHAR(4000)      '$.path',
         [variable.sourceId]            VARCHAR(64)         '$.sourceId'
     ) j
@@ -433,7 +425,7 @@ FROM openrowset (
         [test.id]                      NVARCHAR(100)       '$.id',
         [test.extension]               NVARCHAR(MAX)       '$.extension',
         [test.modifierExtension]       NVARCHAR(MAX)       '$.modifierExtension',
-        [test.name]                    NVARCHAR(100)       '$.name',
+        [test.name]                    NVARCHAR(500)       '$.name',
         [test.description]             NVARCHAR(4000)      '$.description',
         [test.action]                  NVARCHAR(MAX)       '$.action' AS JSON
     ) j

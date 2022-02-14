@@ -56,11 +56,7 @@ CREATE EXTERNAL TABLE [fhir].[DetectedIssue] (
     [reference] VARCHAR(256),
     [mitigation] VARCHAR(MAX),
     [identified.dateTime] VARCHAR(64),
-<<<<<<< HEAD
     [identified.period.id] NVARCHAR(100),
-=======
-    [identified.period.id] NVARCHAR(4000),
->>>>>>> origin/main
     [identified.period.extension] NVARCHAR(MAX),
     [identified.period.start] VARCHAR(64),
     [identified.period.end] VARCHAR(64),
@@ -117,11 +113,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -236,11 +228,7 @@ FROM openrowset (
         [mitigation.action.coding]     NVARCHAR(MAX)       '$.action.coding',
         [mitigation.action.text]       NVARCHAR(4000)      '$.action.text',
         [mitigation.date]              VARCHAR(64)         '$.date',
-<<<<<<< HEAD
         [mitigation.author.id]         NVARCHAR(100)       '$.author.id',
-=======
-        [mitigation.author.id]         NVARCHAR(4000)      '$.author.id',
->>>>>>> origin/main
         [mitigation.author.extension]  NVARCHAR(MAX)       '$.author.extension',
         [mitigation.author.reference]  NVARCHAR(4000)      '$.author.reference',
         [mitigation.author.type]       VARCHAR(256)        '$.author.type',

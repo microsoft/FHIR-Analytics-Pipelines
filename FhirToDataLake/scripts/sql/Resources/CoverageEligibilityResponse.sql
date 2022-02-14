@@ -34,11 +34,7 @@ CREATE EXTERNAL TABLE [fhir].[CoverageEligibilityResponse] (
     [patient.identifier.assigner] NVARCHAR(MAX),
     [patient.display] NVARCHAR(4000),
     [created] VARCHAR(64),
-<<<<<<< HEAD
     [requestor.id] NVARCHAR(100),
-=======
-    [requestor.id] NVARCHAR(4000),
->>>>>>> origin/main
     [requestor.extension] NVARCHAR(MAX),
     [requestor.reference] NVARCHAR(4000),
     [requestor.type] VARCHAR(256),
@@ -86,13 +82,8 @@ CREATE EXTERNAL TABLE [fhir].[CoverageEligibilityResponse] (
     [form.coding] VARCHAR(MAX),
     [form.text] NVARCHAR(4000),
     [error] VARCHAR(MAX),
-<<<<<<< HEAD
-    [serviced.date] VARCHAR(32),
-    [serviced.period.id] NVARCHAR(100),
-=======
     [serviced.date] VARCHAR(64),
-    [serviced.period.id] NVARCHAR(4000),
->>>>>>> origin/main
+    [serviced.period.id] NVARCHAR(100),
     [serviced.period.extension] NVARCHAR(MAX),
     [serviced.period.start] VARCHAR(64),
     [serviced.period.end] VARCHAR(64),
@@ -149,11 +140,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

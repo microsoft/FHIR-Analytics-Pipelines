@@ -46,11 +46,7 @@ CREATE EXTERNAL TABLE [fhir].[Goal] (
     [subject.identifier.assigner] NVARCHAR(MAX),
     [subject.display] NVARCHAR(4000),
     [target] VARCHAR(MAX),
-<<<<<<< HEAD
-    [statusDate] VARCHAR(32),
-=======
     [statusDate] VARCHAR(64),
->>>>>>> origin/main
     [statusReason] NVARCHAR(4000),
     [expressedBy.id] NVARCHAR(100),
     [expressedBy.extension] NVARCHAR(MAX),
@@ -69,13 +65,8 @@ CREATE EXTERNAL TABLE [fhir].[Goal] (
     [note] VARCHAR(MAX),
     [outcomeCode] VARCHAR(MAX),
     [outcomeReference] VARCHAR(MAX),
-<<<<<<< HEAD
-    [start.date] VARCHAR(32),
-    [start.codeableConcept.id] NVARCHAR(100),
-=======
     [start.date] VARCHAR(64),
-    [start.codeableConcept.id] NVARCHAR(4000),
->>>>>>> origin/main
+    [start.codeableConcept.id] NVARCHAR(100),
     [start.codeableConcept.extension] NVARCHAR(MAX),
     [start.codeableConcept.coding] VARCHAR(MAX),
     [start.codeableConcept.text] NVARCHAR(4000),
@@ -132,11 +123,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -250,13 +237,8 @@ FROM openrowset (
         [target.detail.ratio.extension] NVARCHAR(MAX)       '$.detail.ratio.extension',
         [target.detail.ratio.numerator] NVARCHAR(MAX)       '$.detail.ratio.numerator',
         [target.detail.ratio.denominator] NVARCHAR(MAX)       '$.detail.ratio.denominator',
-<<<<<<< HEAD
-        [target.due.date]              VARCHAR(32)         '$.due.date',
-        [target.due.duration.id]       NVARCHAR(100)       '$.due.duration.id',
-=======
         [target.due.date]              VARCHAR(64)         '$.due.date',
-        [target.due.duration.id]       NVARCHAR(4000)      '$.due.duration.id',
->>>>>>> origin/main
+        [target.due.duration.id]       NVARCHAR(100)       '$.due.duration.id',
         [target.due.duration.extension] NVARCHAR(MAX)       '$.due.duration.extension',
         [target.due.duration.value]    float               '$.due.duration.value',
         [target.due.duration.comparator] NVARCHAR(64)        '$.due.duration.comparator',

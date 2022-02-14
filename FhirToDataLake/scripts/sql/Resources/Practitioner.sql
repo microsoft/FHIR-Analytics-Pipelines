@@ -23,11 +23,7 @@ CREATE EXTERNAL TABLE [fhir].[Practitioner] (
     [telecom] VARCHAR(MAX),
     [address] VARCHAR(MAX),
     [gender] NVARCHAR(64),
-<<<<<<< HEAD
-    [birthDate] VARCHAR(32),
-=======
     [birthDate] VARCHAR(64),
->>>>>>> origin/main
     [photo] VARCHAR(MAX),
     [qualification] VARCHAR(MAX),
     [communication] VARCHAR(MAX),
@@ -84,11 +80,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -127,7 +119,7 @@ FROM openrowset (
         [name.extension]               NVARCHAR(MAX)       '$.extension',
         [name.use]                     NVARCHAR(64)        '$.use',
         [name.text]                    NVARCHAR(4000)      '$.text',
-        [name.family]                  NVARCHAR(100)       '$.family',
+        [name.family]                  NVARCHAR(500)       '$.family',
         [name.given]                   NVARCHAR(MAX)       '$.given' AS JSON,
         [name.prefix]                  NVARCHAR(MAX)       '$.prefix' AS JSON,
         [name.suffix]                  NVARCHAR(MAX)       '$.suffix' AS JSON,
@@ -210,11 +202,11 @@ FROM openrowset (
         [address.type]                 NVARCHAR(64)        '$.type',
         [address.text]                 NVARCHAR(4000)      '$.text',
         [address.line]                 NVARCHAR(MAX)       '$.line' AS JSON,
-        [address.city]                 NVARCHAR(100)       '$.city',
-        [address.district]             NVARCHAR(100)       '$.district',
-        [address.state]                NVARCHAR(100)       '$.state',
+        [address.city]                 NVARCHAR(500)       '$.city',
+        [address.district]             NVARCHAR(500)       '$.district',
+        [address.state]                NVARCHAR(500)       '$.state',
         [address.postalCode]           NVARCHAR(100)       '$.postalCode',
-        [address.country]              NVARCHAR(100)       '$.country',
+        [address.country]              NVARCHAR(500)       '$.country',
         [address.period.id]            NVARCHAR(100)       '$.period.id',
         [address.period.extension]     NVARCHAR(MAX)       '$.period.extension',
         [address.period.start]         VARCHAR(64)         '$.period.start',
@@ -303,11 +295,7 @@ FROM openrowset (
         [qualification.period.extension] NVARCHAR(MAX)       '$.period.extension',
         [qualification.period.start]   VARCHAR(64)         '$.period.start',
         [qualification.period.end]     VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [qualification.issuer.id]      NVARCHAR(100)       '$.issuer.id',
-=======
-        [qualification.issuer.id]      NVARCHAR(4000)      '$.issuer.id',
->>>>>>> origin/main
         [qualification.issuer.extension] NVARCHAR(MAX)       '$.issuer.extension',
         [qualification.issuer.reference] NVARCHAR(4000)      '$.issuer.reference',
         [qualification.issuer.type]    VARCHAR(256)        '$.issuer.type',

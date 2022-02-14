@@ -20,17 +20,13 @@ CREATE EXTERNAL TABLE [fhir].[InsurancePlan] (
     [identifier] VARCHAR(MAX),
     [status] NVARCHAR(64),
     [type] VARCHAR(MAX),
-    [name] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [alias] VARCHAR(MAX),
     [period.id] NVARCHAR(100),
     [period.extension] NVARCHAR(MAX),
     [period.start] VARCHAR(64),
     [period.end] VARCHAR(64),
-<<<<<<< HEAD
     [ownedBy.id] NVARCHAR(100),
-=======
-    [ownedBy.id] NVARCHAR(4000),
->>>>>>> origin/main
     [ownedBy.extension] NVARCHAR(MAX),
     [ownedBy.reference] NVARCHAR(4000),
     [ownedBy.type] VARCHAR(256),
@@ -115,11 +111,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -269,7 +261,7 @@ FROM openrowset (
         [contact.name.extension]       NVARCHAR(MAX)       '$.name.extension',
         [contact.name.use]             NVARCHAR(64)        '$.name.use',
         [contact.name.text]            NVARCHAR(4000)      '$.name.text',
-        [contact.name.family]          NVARCHAR(100)       '$.name.family',
+        [contact.name.family]          NVARCHAR(500)       '$.name.family',
         [contact.name.given]           NVARCHAR(MAX)       '$.name.given',
         [contact.name.prefix]          NVARCHAR(MAX)       '$.name.prefix',
         [contact.name.suffix]          NVARCHAR(MAX)       '$.name.suffix',
@@ -281,11 +273,11 @@ FROM openrowset (
         [contact.address.type]         NVARCHAR(64)        '$.address.type',
         [contact.address.text]         NVARCHAR(4000)      '$.address.text',
         [contact.address.line]         NVARCHAR(MAX)       '$.address.line',
-        [contact.address.city]         NVARCHAR(100)       '$.address.city',
-        [contact.address.district]     NVARCHAR(100)       '$.address.district',
-        [contact.address.state]        NVARCHAR(100)       '$.address.state',
+        [contact.address.city]         NVARCHAR(500)       '$.address.city',
+        [contact.address.district]     NVARCHAR(500)       '$.address.district',
+        [contact.address.state]        NVARCHAR(500)       '$.address.state',
         [contact.address.postalCode]   NVARCHAR(100)       '$.address.postalCode',
-        [contact.address.country]      NVARCHAR(100)       '$.address.country',
+        [contact.address.country]      NVARCHAR(500)       '$.address.country',
         [contact.address.period]       NVARCHAR(MAX)       '$.address.period'
     ) j
 

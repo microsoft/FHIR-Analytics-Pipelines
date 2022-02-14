@@ -23,15 +23,9 @@ CREATE EXTERNAL TABLE [fhir].[VerificationResult] (
     [need.extension] NVARCHAR(MAX),
     [need.coding] VARCHAR(MAX),
     [need.text] NVARCHAR(4000),
-<<<<<<< HEAD
     [status] NVARCHAR(100),
     [statusDate] VARCHAR(64),
     [validationType.id] NVARCHAR(100),
-=======
-    [status] NVARCHAR(4000),
-    [statusDate] VARCHAR(64),
-    [validationType.id] NVARCHAR(4000),
->>>>>>> origin/main
     [validationType.extension] NVARCHAR(MAX),
     [validationType.coding] VARCHAR(MAX),
     [validationType.text] NVARCHAR(4000),
@@ -65,13 +59,8 @@ CREATE EXTERNAL TABLE [fhir].[VerificationResult] (
     [frequency.code.coding] NVARCHAR(MAX),
     [frequency.code.text] NVARCHAR(4000),
     [lastPerformed] VARCHAR(64),
-<<<<<<< HEAD
-    [nextScheduled] VARCHAR(32),
-    [failureAction.id] NVARCHAR(100),
-=======
     [nextScheduled] VARCHAR(64),
-    [failureAction.id] NVARCHAR(4000),
->>>>>>> origin/main
+    [failureAction.id] NVARCHAR(100),
     [failureAction.extension] NVARCHAR(MAX),
     [failureAction.coding] VARCHAR(MAX),
     [failureAction.text] NVARCHAR(4000),
@@ -95,11 +84,7 @@ CREATE EXTERNAL TABLE [fhir].[VerificationResult] (
     [attestation.communicationMethod.extension] NVARCHAR(MAX),
     [attestation.communicationMethod.coding] NVARCHAR(MAX),
     [attestation.communicationMethod.text] NVARCHAR(4000),
-<<<<<<< HEAD
-    [attestation.date] VARCHAR(32),
-=======
     [attestation.date] VARCHAR(64),
->>>>>>> origin/main
     [attestation.sourceIdentityCertificate] NVARCHAR(4000),
     [attestation.proxyIdentityCertificate] NVARCHAR(4000),
     [attestation.proxySignature.id] NVARCHAR(100),
@@ -266,11 +251,7 @@ FROM openrowset (
         [primarySource.validationStatus.coding] NVARCHAR(MAX)       '$.validationStatus.coding',
         [primarySource.validationStatus.text] NVARCHAR(4000)      '$.validationStatus.text',
         [primarySource.validationDate] VARCHAR(64)         '$.validationDate',
-<<<<<<< HEAD
         [primarySource.canPushUpdates.id] NVARCHAR(100)       '$.canPushUpdates.id',
-=======
-        [primarySource.canPushUpdates.id] NVARCHAR(4000)      '$.canPushUpdates.id',
->>>>>>> origin/main
         [primarySource.canPushUpdates.extension] NVARCHAR(MAX)       '$.canPushUpdates.extension',
         [primarySource.canPushUpdates.coding] NVARCHAR(MAX)       '$.canPushUpdates.coding',
         [primarySource.canPushUpdates.text] NVARCHAR(4000)      '$.canPushUpdates.text',

@@ -91,11 +91,7 @@ FROM openrowset (
         [subunit.sequenceAttachment.hash] NVARCHAR(MAX)       '$.sequenceAttachment.hash',
         [subunit.sequenceAttachment.title] NVARCHAR(4000)      '$.sequenceAttachment.title',
         [subunit.sequenceAttachment.creation] VARCHAR(64)         '$.sequenceAttachment.creation',
-<<<<<<< HEAD
         [subunit.fivePrime.id]         NVARCHAR(100)       '$.fivePrime.id',
-=======
-        [subunit.fivePrime.id]         NVARCHAR(4000)      '$.fivePrime.id',
->>>>>>> origin/main
         [subunit.fivePrime.extension]  NVARCHAR(MAX)       '$.fivePrime.extension',
         [subunit.fivePrime.coding]     NVARCHAR(MAX)       '$.fivePrime.coding',
         [subunit.fivePrime.text]       NVARCHAR(4000)      '$.fivePrime.text',

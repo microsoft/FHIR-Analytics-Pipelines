@@ -26,7 +26,7 @@ CREATE EXTERNAL TABLE [fhir].[Location] (
     [operationalStatus.code] NVARCHAR(4000),
     [operationalStatus.display] NVARCHAR(4000),
     [operationalStatus.userSelected] bit,
-    [name] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [alias] VARCHAR(MAX),
     [description] NVARCHAR(4000),
     [mode] NVARCHAR(64),
@@ -38,20 +38,16 @@ CREATE EXTERNAL TABLE [fhir].[Location] (
     [address.type] NVARCHAR(64),
     [address.text] NVARCHAR(4000),
     [address.line] VARCHAR(MAX),
-    [address.city] NVARCHAR(100),
-    [address.district] NVARCHAR(100),
-    [address.state] NVARCHAR(100),
+    [address.city] NVARCHAR(500),
+    [address.district] NVARCHAR(500),
+    [address.state] NVARCHAR(500),
     [address.postalCode] NVARCHAR(100),
-    [address.country] NVARCHAR(100),
+    [address.country] NVARCHAR(500),
     [address.period.id] NVARCHAR(100),
     [address.period.extension] NVARCHAR(MAX),
     [address.period.start] VARCHAR(64),
     [address.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [physicalType.id] NVARCHAR(100),
-=======
-    [physicalType.id] NVARCHAR(4000),
->>>>>>> origin/main
     [physicalType.extension] NVARCHAR(MAX),
     [physicalType.coding] VARCHAR(MAX),
     [physicalType.text] NVARCHAR(4000),
@@ -143,11 +139,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',

@@ -31,11 +31,7 @@ CREATE EXTERNAL TABLE [fhir].[Specimen] (
     [accessionIdentifier.period.extension] NVARCHAR(MAX),
     [accessionIdentifier.period.start] VARCHAR(64),
     [accessionIdentifier.period.end] VARCHAR(64),
-<<<<<<< HEAD
     [accessionIdentifier.assigner.id] NVARCHAR(100),
-=======
-    [accessionIdentifier.assigner.id] NVARCHAR(4000),
->>>>>>> origin/main
     [accessionIdentifier.assigner.extension] NVARCHAR(MAX),
     [accessionIdentifier.assigner.reference] NVARCHAR(4000),
     [accessionIdentifier.assigner.type] VARCHAR(256),
@@ -94,19 +90,11 @@ CREATE EXTERNAL TABLE [fhir].[Specimen] (
     [collection.bodySite.coding] NVARCHAR(MAX),
     [collection.bodySite.text] NVARCHAR(4000),
     [collection.collected.dateTime] VARCHAR(64),
-<<<<<<< HEAD
     [collection.collected.period.id] NVARCHAR(100),
     [collection.collected.period.extension] NVARCHAR(MAX),
     [collection.collected.period.start] VARCHAR(64),
     [collection.collected.period.end] VARCHAR(64),
     [collection.fastingStatus.codeableConcept.id] NVARCHAR(100),
-=======
-    [collection.collected.period.id] NVARCHAR(4000),
-    [collection.collected.period.extension] NVARCHAR(MAX),
-    [collection.collected.period.start] VARCHAR(64),
-    [collection.collected.period.end] VARCHAR(64),
-    [collection.fastingStatus.codeableConcept.id] NVARCHAR(4000),
->>>>>>> origin/main
     [collection.fastingStatus.codeableConcept.extension] NVARCHAR(MAX),
     [collection.fastingStatus.codeableConcept.coding] NVARCHAR(MAX),
     [collection.fastingStatus.codeableConcept.text] NVARCHAR(4000),
@@ -174,11 +162,7 @@ FROM openrowset (
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
         [identifier.period.start]      VARCHAR(64)         '$.period.start',
         [identifier.period.end]        VARCHAR(64)         '$.period.end',
-<<<<<<< HEAD
         [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
-=======
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
->>>>>>> origin/main
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -311,11 +295,7 @@ FROM openrowset (
         [processing.procedure.text]    NVARCHAR(4000)      '$.procedure.text',
         [processing.additive]          NVARCHAR(MAX)       '$.additive' AS JSON,
         [processing.time.dateTime]     VARCHAR(64)         '$.time.dateTime',
-<<<<<<< HEAD
         [processing.time.period.id]    NVARCHAR(100)       '$.time.period.id',
-=======
-        [processing.time.period.id]    NVARCHAR(4000)      '$.time.period.id',
->>>>>>> origin/main
         [processing.time.period.extension] NVARCHAR(MAX)       '$.time.period.extension',
         [processing.time.period.start] VARCHAR(64)         '$.time.period.start',
         [processing.time.period.end]   VARCHAR(64)         '$.time.period.end'
