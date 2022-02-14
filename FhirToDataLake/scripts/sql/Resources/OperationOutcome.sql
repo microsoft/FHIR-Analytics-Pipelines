@@ -1,7 +1,7 @@
 CREATE EXTERNAL TABLE [fhir].[OperationOutcome] (
     [resourceType] NVARCHAR(4000),
     [id] VARCHAR(64),
-    [meta.id] NVARCHAR(4000),
+    [meta.id] NVARCHAR(100),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
     [meta.lastUpdated] VARCHAR(64),
@@ -10,8 +10,8 @@ CREATE EXTERNAL TABLE [fhir].[OperationOutcome] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(4000),
-    [text.id] NVARCHAR(4000),
+    [language] NVARCHAR(100),
+    [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
     [text.div] NVARCHAR(MAX),
@@ -51,12 +51,12 @@ FROM openrowset (
        [issue.JSON]  VARCHAR(MAX) '$.issue'
     ) AS rowset
     CROSS APPLY openjson (rowset.[issue.JSON]) with (
-        [issue.id]                     NVARCHAR(4000)      '$.id',
+        [issue.id]                     NVARCHAR(100)       '$.id',
         [issue.extension]              NVARCHAR(MAX)       '$.extension',
         [issue.modifierExtension]      NVARCHAR(MAX)       '$.modifierExtension',
         [issue.severity]               NVARCHAR(64)        '$.severity',
         [issue.code]                   NVARCHAR(64)        '$.code',
-        [issue.details.id]             NVARCHAR(4000)      '$.details.id',
+        [issue.details.id]             NVARCHAR(100)       '$.details.id',
         [issue.details.extension]      NVARCHAR(MAX)       '$.details.extension',
         [issue.details.coding]         NVARCHAR(MAX)       '$.details.coding',
         [issue.details.text]           NVARCHAR(4000)      '$.details.text',

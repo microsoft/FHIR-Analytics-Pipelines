@@ -1,7 +1,7 @@
 CREATE EXTERNAL TABLE [fhir].[Provenance] (
     [resourceType] NVARCHAR(4000),
     [id] VARCHAR(64),
-    [meta.id] NVARCHAR(4000),
+    [meta.id] NVARCHAR(100),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
     [meta.lastUpdated] VARCHAR(64),
@@ -10,8 +10,8 @@ CREATE EXTERNAL TABLE [fhir].[Provenance] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(4000),
-    [text.id] NVARCHAR(4000),
+    [language] NVARCHAR(100),
+    [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
     [text.div] NVARCHAR(MAX),
@@ -20,11 +20,11 @@ CREATE EXTERNAL TABLE [fhir].[Provenance] (
     [target] VARCHAR(MAX),
     [recorded] VARCHAR(64),
     [policy] VARCHAR(MAX),
-    [location.id] NVARCHAR(4000),
+    [location.id] NVARCHAR(100),
     [location.extension] NVARCHAR(MAX),
     [location.reference] NVARCHAR(4000),
     [location.type] VARCHAR(256),
-    [location.identifier.id] NVARCHAR(4000),
+    [location.identifier.id] NVARCHAR(100),
     [location.identifier.extension] NVARCHAR(MAX),
     [location.identifier.use] NVARCHAR(64),
     [location.identifier.type] NVARCHAR(MAX),
@@ -34,14 +34,14 @@ CREATE EXTERNAL TABLE [fhir].[Provenance] (
     [location.identifier.assigner] NVARCHAR(MAX),
     [location.display] NVARCHAR(4000),
     [reason] VARCHAR(MAX),
-    [activity.id] NVARCHAR(4000),
+    [activity.id] NVARCHAR(100),
     [activity.extension] NVARCHAR(MAX),
     [activity.coding] VARCHAR(MAX),
     [activity.text] NVARCHAR(4000),
     [agent] VARCHAR(MAX),
     [entity] VARCHAR(MAX),
     [signature] VARCHAR(MAX),
-    [occurred.period.id] NVARCHAR(4000),
+    [occurred.period.id] NVARCHAR(100),
     [occurred.period.extension] NVARCHAR(MAX),
     [occurred.period.start] VARCHAR(64),
     [occurred.period.end] VARCHAR(64),
@@ -80,11 +80,11 @@ FROM openrowset (
        [target.JSON]  VARCHAR(MAX) '$.target'
     ) AS rowset
     CROSS APPLY openjson (rowset.[target.JSON]) with (
-        [target.id]                    NVARCHAR(4000)      '$.id',
+        [target.id]                    NVARCHAR(100)       '$.id',
         [target.extension]             NVARCHAR(MAX)       '$.extension',
         [target.reference]             NVARCHAR(4000)      '$.reference',
         [target.type]                  VARCHAR(256)        '$.type',
-        [target.identifier.id]         NVARCHAR(4000)      '$.identifier.id',
+        [target.identifier.id]         NVARCHAR(100)       '$.identifier.id',
         [target.identifier.extension]  NVARCHAR(MAX)       '$.identifier.extension',
         [target.identifier.use]        NVARCHAR(64)        '$.identifier.use',
         [target.identifier.type]       NVARCHAR(MAX)       '$.identifier.type',
@@ -133,7 +133,7 @@ FROM openrowset (
        [reason.JSON]  VARCHAR(MAX) '$.reason'
     ) AS rowset
     CROSS APPLY openjson (rowset.[reason.JSON]) with (
-        [reason.id]                    NVARCHAR(4000)      '$.id',
+        [reason.id]                    NVARCHAR(100)       '$.id',
         [reason.extension]             NVARCHAR(MAX)       '$.extension',
         [reason.coding]                NVARCHAR(MAX)       '$.coding' AS JSON,
         [reason.text]                  NVARCHAR(4000)      '$.text'
@@ -174,21 +174,21 @@ FROM openrowset (
        [agent.JSON]  VARCHAR(MAX) '$.agent'
     ) AS rowset
     CROSS APPLY openjson (rowset.[agent.JSON]) with (
-        [agent.id]                     NVARCHAR(4000)      '$.id',
+        [agent.id]                     NVARCHAR(100)       '$.id',
         [agent.extension]              NVARCHAR(MAX)       '$.extension',
         [agent.modifierExtension]      NVARCHAR(MAX)       '$.modifierExtension',
-        [agent.type.id]                NVARCHAR(4000)      '$.type.id',
+        [agent.type.id]                NVARCHAR(100)       '$.type.id',
         [agent.type.extension]         NVARCHAR(MAX)       '$.type.extension',
         [agent.type.coding]            NVARCHAR(MAX)       '$.type.coding',
         [agent.type.text]              NVARCHAR(4000)      '$.type.text',
         [agent.role]                   NVARCHAR(MAX)       '$.role' AS JSON,
-        [agent.who.id]                 NVARCHAR(4000)      '$.who.id',
+        [agent.who.id]                 NVARCHAR(100)       '$.who.id',
         [agent.who.extension]          NVARCHAR(MAX)       '$.who.extension',
         [agent.who.reference]          NVARCHAR(4000)      '$.who.reference',
         [agent.who.type]               VARCHAR(256)        '$.who.type',
         [agent.who.identifier]         NVARCHAR(MAX)       '$.who.identifier',
         [agent.who.display]            NVARCHAR(4000)      '$.who.display',
-        [agent.onBehalfOf.id]          NVARCHAR(4000)      '$.onBehalfOf.id',
+        [agent.onBehalfOf.id]          NVARCHAR(100)       '$.onBehalfOf.id',
         [agent.onBehalfOf.extension]   NVARCHAR(MAX)       '$.onBehalfOf.extension',
         [agent.onBehalfOf.reference]   NVARCHAR(4000)      '$.onBehalfOf.reference',
         [agent.onBehalfOf.type]        VARCHAR(256)        '$.onBehalfOf.type',
@@ -222,11 +222,11 @@ FROM openrowset (
        [entity.JSON]  VARCHAR(MAX) '$.entity'
     ) AS rowset
     CROSS APPLY openjson (rowset.[entity.JSON]) with (
-        [entity.id]                    NVARCHAR(4000)      '$.id',
+        [entity.id]                    NVARCHAR(100)       '$.id',
         [entity.extension]             NVARCHAR(MAX)       '$.extension',
         [entity.modifierExtension]     NVARCHAR(MAX)       '$.modifierExtension',
         [entity.role]                  NVARCHAR(64)        '$.role',
-        [entity.what.id]               NVARCHAR(4000)      '$.what.id',
+        [entity.what.id]               NVARCHAR(100)       '$.what.id',
         [entity.what.extension]        NVARCHAR(MAX)       '$.what.extension',
         [entity.what.reference]        NVARCHAR(4000)      '$.what.reference',
         [entity.what.type]             VARCHAR(256)        '$.what.type',
@@ -269,23 +269,23 @@ FROM openrowset (
        [signature.JSON]  VARCHAR(MAX) '$.signature'
     ) AS rowset
     CROSS APPLY openjson (rowset.[signature.JSON]) with (
-        [signature.id]                 NVARCHAR(4000)      '$.id',
+        [signature.id]                 NVARCHAR(100)       '$.id',
         [signature.extension]          NVARCHAR(MAX)       '$.extension',
         [signature.type]               NVARCHAR(MAX)       '$.type' AS JSON,
         [signature.when]               VARCHAR(64)         '$.when',
-        [signature.who.id]             NVARCHAR(4000)      '$.who.id',
+        [signature.who.id]             NVARCHAR(100)       '$.who.id',
         [signature.who.extension]      NVARCHAR(MAX)       '$.who.extension',
         [signature.who.reference]      NVARCHAR(4000)      '$.who.reference',
         [signature.who.type]           VARCHAR(256)        '$.who.type',
         [signature.who.identifier]     NVARCHAR(MAX)       '$.who.identifier',
         [signature.who.display]        NVARCHAR(4000)      '$.who.display',
-        [signature.onBehalfOf.id]      NVARCHAR(4000)      '$.onBehalfOf.id',
+        [signature.onBehalfOf.id]      NVARCHAR(100)       '$.onBehalfOf.id',
         [signature.onBehalfOf.extension] NVARCHAR(MAX)       '$.onBehalfOf.extension',
         [signature.onBehalfOf.reference] NVARCHAR(4000)      '$.onBehalfOf.reference',
         [signature.onBehalfOf.type]    VARCHAR(256)        '$.onBehalfOf.type',
         [signature.onBehalfOf.identifier] NVARCHAR(MAX)       '$.onBehalfOf.identifier',
         [signature.onBehalfOf.display] NVARCHAR(4000)      '$.onBehalfOf.display',
-        [signature.targetFormat]       NVARCHAR(4000)      '$.targetFormat',
-        [signature.sigFormat]          NVARCHAR(4000)      '$.sigFormat',
+        [signature.targetFormat]       NVARCHAR(100)       '$.targetFormat',
+        [signature.sigFormat]          NVARCHAR(100)       '$.sigFormat',
         [signature.data]               NVARCHAR(MAX)       '$.data'
     ) j

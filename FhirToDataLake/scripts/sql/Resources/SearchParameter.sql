@@ -1,7 +1,7 @@
 CREATE EXTERNAL TABLE [fhir].[SearchParameter] (
     [resourceType] NVARCHAR(4000),
     [id] VARCHAR(64),
-    [meta.id] NVARCHAR(4000),
+    [meta.id] NVARCHAR(100),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
     [meta.lastUpdated] VARCHAR(64),
@@ -10,21 +10,21 @@ CREATE EXTERNAL TABLE [fhir].[SearchParameter] (
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(4000),
-    [text.id] NVARCHAR(4000),
+    [language] NVARCHAR(100),
+    [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
     [text.div] NVARCHAR(MAX),
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
     [url] VARCHAR(256),
-    [version] NVARCHAR(4000),
-    [name] NVARCHAR(4000),
+    [version] NVARCHAR(100),
+    [name] NVARCHAR(500),
     [derivedFrom] VARCHAR(256),
     [status] NVARCHAR(64),
     [experimental] bit,
     [date] VARCHAR(64),
-    [publisher] NVARCHAR(4000),
+    [publisher] NVARCHAR(500),
     [contact] VARCHAR(MAX),
     [description] NVARCHAR(MAX),
     [useContext] VARCHAR(MAX),
@@ -68,9 +68,9 @@ FROM openrowset (
        [contact.JSON]  VARCHAR(MAX) '$.contact'
     ) AS rowset
     CROSS APPLY openjson (rowset.[contact.JSON]) with (
-        [contact.id]                   NVARCHAR(4000)      '$.id',
+        [contact.id]                   NVARCHAR(100)       '$.id',
         [contact.extension]            NVARCHAR(MAX)       '$.extension',
-        [contact.name]                 NVARCHAR(4000)      '$.name',
+        [contact.name]                 NVARCHAR(500)       '$.name',
         [contact.telecom]              NVARCHAR(MAX)       '$.telecom' AS JSON
     ) j
 
@@ -119,31 +119,31 @@ FROM openrowset (
        [useContext.JSON]  VARCHAR(MAX) '$.useContext'
     ) AS rowset
     CROSS APPLY openjson (rowset.[useContext.JSON]) with (
-        [useContext.id]                NVARCHAR(4000)      '$.id',
+        [useContext.id]                NVARCHAR(100)       '$.id',
         [useContext.extension]         NVARCHAR(MAX)       '$.extension',
-        [useContext.code.id]           NVARCHAR(4000)      '$.code.id',
+        [useContext.code.id]           NVARCHAR(100)       '$.code.id',
         [useContext.code.extension]    NVARCHAR(MAX)       '$.code.extension',
         [useContext.code.system]       VARCHAR(256)        '$.code.system',
-        [useContext.code.version]      NVARCHAR(4000)      '$.code.version',
+        [useContext.code.version]      NVARCHAR(100)       '$.code.version',
         [useContext.code.code]         NVARCHAR(4000)      '$.code.code',
         [useContext.code.display]      NVARCHAR(4000)      '$.code.display',
         [useContext.code.userSelected] bit                 '$.code.userSelected',
-        [useContext.value.codeableConcept.id] NVARCHAR(4000)      '$.value.codeableConcept.id',
+        [useContext.value.codeableConcept.id] NVARCHAR(100)       '$.value.codeableConcept.id',
         [useContext.value.codeableConcept.extension] NVARCHAR(MAX)       '$.value.codeableConcept.extension',
         [useContext.value.codeableConcept.coding] NVARCHAR(MAX)       '$.value.codeableConcept.coding',
         [useContext.value.codeableConcept.text] NVARCHAR(4000)      '$.value.codeableConcept.text',
-        [useContext.value.quantity.id] NVARCHAR(4000)      '$.value.quantity.id',
+        [useContext.value.quantity.id] NVARCHAR(100)       '$.value.quantity.id',
         [useContext.value.quantity.extension] NVARCHAR(MAX)       '$.value.quantity.extension',
         [useContext.value.quantity.value] float               '$.value.quantity.value',
         [useContext.value.quantity.comparator] NVARCHAR(64)        '$.value.quantity.comparator',
-        [useContext.value.quantity.unit] NVARCHAR(4000)      '$.value.quantity.unit',
+        [useContext.value.quantity.unit] NVARCHAR(100)       '$.value.quantity.unit',
         [useContext.value.quantity.system] VARCHAR(256)        '$.value.quantity.system',
         [useContext.value.quantity.code] NVARCHAR(4000)      '$.value.quantity.code',
-        [useContext.value.range.id]    NVARCHAR(4000)      '$.value.range.id',
+        [useContext.value.range.id]    NVARCHAR(100)       '$.value.range.id',
         [useContext.value.range.extension] NVARCHAR(MAX)       '$.value.range.extension',
         [useContext.value.range.low]   NVARCHAR(MAX)       '$.value.range.low',
         [useContext.value.range.high]  NVARCHAR(MAX)       '$.value.range.high',
-        [useContext.value.reference.id] NVARCHAR(4000)      '$.value.reference.id',
+        [useContext.value.reference.id] NVARCHAR(100)       '$.value.reference.id',
         [useContext.value.reference.extension] NVARCHAR(MAX)       '$.value.reference.extension',
         [useContext.value.reference.reference] NVARCHAR(4000)      '$.value.reference.reference',
         [useContext.value.reference.type] VARCHAR(256)        '$.value.reference.type',
@@ -170,7 +170,7 @@ FROM openrowset (
        [jurisdiction.JSON]  VARCHAR(MAX) '$.jurisdiction'
     ) AS rowset
     CROSS APPLY openjson (rowset.[jurisdiction.JSON]) with (
-        [jurisdiction.id]              NVARCHAR(4000)      '$.id',
+        [jurisdiction.id]              NVARCHAR(100)       '$.id',
         [jurisdiction.extension]       NVARCHAR(MAX)       '$.extension',
         [jurisdiction.coding]          NVARCHAR(MAX)       '$.coding' AS JSON,
         [jurisdiction.text]            NVARCHAR(4000)      '$.text'
@@ -291,7 +291,7 @@ FROM openrowset (
        [component.JSON]  VARCHAR(MAX) '$.component'
     ) AS rowset
     CROSS APPLY openjson (rowset.[component.JSON]) with (
-        [component.id]                 NVARCHAR(4000)      '$.id',
+        [component.id]                 NVARCHAR(100)       '$.id',
         [component.extension]          NVARCHAR(MAX)       '$.extension',
         [component.modifierExtension]  NVARCHAR(MAX)       '$.modifierExtension',
         [component.definition]         VARCHAR(256)        '$.definition',
