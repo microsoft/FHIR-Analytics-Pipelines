@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -81,9 +82,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             foreach (var activeJob in activeJobs)
             {
                 // Complete job if it's already succeeded.
-                if (activeJob?.Status == JobStatus.Succeeded)
+                if (activeJob?.Status == JobStatus.Succeeded
+                    || activeJob?.Status == JobStatus.Failed)
                 {
-                    _logger.LogWarning("Job '{id}' has already succeeded.", activeJob.Id);
+                    _logger.LogWarning("Job '{id}' has already finished.", activeJob.Id);
                     await CompleteJobAsyncInternal(activeJob, false, cancellationToken);
                 }
                 else
@@ -197,10 +199,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async Task CompleteJobAsyncInternal(Job job, bool releaseLock, CancellationToken cancellationToken)
         {
-            if (job.Status != JobStatus.Succeeded)
+            if (job.Status != JobStatus.Succeeded &&
+                job.Status != JobStatus.Failed)
             {
                 // Should not happen.
-                _logger.LogWarning("Job has not succeeded yet.");
+                _logger.LogWarning("Job has not finished yet.");
                 throw new ArgumentException("Input job to complete is not in succeeded state.");
             }
 
@@ -224,6 +227,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     };
                 }
 
+                // Remove the job information that have been resumed and executed.
+                // If the current job fails, save it to unfinishedJob list.
+                var unfinishedJobs = schedulerSetting.UnfinishedJobs.ToList();
+                unfinishedJobs.RemoveAll(unfinished => unfinished.Id == job.ResumedJobId);
+
+                if (job.Status == JobStatus.Failed)
+                {
+                    unfinishedJobs.Add(job);
+                }
+
+                schedulerSetting.UnfinishedJobs = unfinishedJobs;
                 await SaveSchedulerMetadataAsync(schedulerSetting, cancellationToken);
 
                 // Add job to completed job list.

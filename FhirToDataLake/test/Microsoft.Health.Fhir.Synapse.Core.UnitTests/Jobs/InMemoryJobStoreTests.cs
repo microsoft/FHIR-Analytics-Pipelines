@@ -83,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
-        public async Task GivenAFailedJobInActiveFolder_WhenAcquireJob_TheJobShouldBeReturned()
+        public async Task GivenAFailedJobInActiveFolder_WhenAcquireJob_TheJobShouldBeComletedAndNoJobWillBeReturned()
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
@@ -98,10 +98,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var newjob = await jobStore.AcquireJobAsync();
 
-            // Assert new job is equal to the active job.
-            Assert.Equal(activeJob.Id, newjob.Id);
-            Assert.Equal(JobStatus.Failed, newjob.Status);
-            Assert.Equal(_testStartTime, newjob.DataPeriod.Start);
+            // Assert returned job is null.
+            Assert.Null(newjob);
+
+            // Assert the failed job has been completed.
+            var savedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.CompletedJobFolder}/{activeJob.Id}.json");
+            Assert.Equal(activeJob.Id, savedJob.Id);
+            Assert.Equal(JobStatus.Failed, savedJob.Status);
         }
 
         [Fact]

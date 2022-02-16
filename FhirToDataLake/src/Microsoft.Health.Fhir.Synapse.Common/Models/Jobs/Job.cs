@@ -138,5 +138,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// </summary>
         [JsonProperty("failedReason")]
         public string FailedReason { get; set; }
+
+        /// <summary>
+        /// Id of the resumed job.
+        /// </summary>
+        [JsonProperty("ResumedJobId")]
+        public string ResumedJobId { get; set; }
     }
 }

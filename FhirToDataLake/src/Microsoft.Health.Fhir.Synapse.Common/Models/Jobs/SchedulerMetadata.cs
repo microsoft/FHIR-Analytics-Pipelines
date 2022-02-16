@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
@@ -20,5 +22,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// </summary>
         [JsonProperty("lastScheduledTimestamp")]
         public DateTimeOffset? LastScheduledTimestamp { get; set; }
+
+        /// <summary>
+        /// Scheduled jobs that have been stopped due to errors.
+        /// New triggers will resume the execution.
+        /// </summary>
+        [JsonProperty("unfinishedJobs")]
+        public IEnumerable<Job> UnfinishedJobs { get; set; } = new List<Job>();
     }
 }

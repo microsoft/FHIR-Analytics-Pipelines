@@ -48,7 +48,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         }
 
         /// <summary>
-        /// Resume an active job or trigger new job from job store
+        /// Resume an active job or trigger new job from job store.
         /// and execute the job.
         /// </summary>
         /// <param name="cancellationToken">cancellation token.</param>
@@ -61,12 +61,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 job = await CreateNewJobAsync(cancellationToken);
             }
-            else
-            {
-                // reset status for resumed jobs.
-                job.Status = JobStatus.Running;
-                job.FailedReason = null;
-            }
 
             try
             {
@@ -78,15 +72,33 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 job.Status = JobStatus.Failed;
                 job.FailedReason = exception.ToString();
-                await _jobStore.UpdateJobAsync(job, cancellationToken);
+                await _jobStore.CompleteJobAsync(job, cancellationToken);
                 _logger.LogError(exception, "Process job '{jobId}' failed.", job.Id);
-                throw;
             }
         }
 
         private async Task<Job> CreateNewJobAsync(CancellationToken cancellationToken = default)
         {
             var schedulerSetting = await _jobStore.GetSchedulerMetadataAsync(cancellationToken);
+
+            // If there are unfinishedJobs, continue the progress from a new job.
+            if (schedulerSetting?.UnfinishedJobs?.Any() == true)
+            {
+                var resumedJob = schedulerSetting.UnfinishedJobs.First();
+                return new Job(
+                    resumedJob.ContainerName,
+                    JobStatus.New,
+                    resumedJob.ResourceTypes,
+                    resumedJob.DataPeriod,
+                    DateTimeOffset.UtcNow,
+                    resumedJob.ResourceProgresses,
+                    null,
+                    null,
+                    null,
+                    null,
+                    resumedJob.CompletedResources);
+            }
+
             DateTimeOffset triggerStart = GetTriggerStartTime(schedulerSetting);
             if (triggerStart >= _jobConfiguration.EndTime)
             {
