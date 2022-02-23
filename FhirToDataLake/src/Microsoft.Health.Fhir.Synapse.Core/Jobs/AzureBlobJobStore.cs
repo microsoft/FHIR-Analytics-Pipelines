@@ -67,7 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _renewLockTimer.Elapsed += async (sender, e) => await RenewJobLockLeaseAsync();
         }
 
-        public async Task<Job> AcquireJobAsync(CancellationToken cancellationToken = default)
+        public async Task<Job> AcquireActiveJobAsync(CancellationToken cancellationToken = default)
         {
             var lockAcquired = await TryAcquireJobLockAsync(cancellationToken);
             if (!lockAcquired)

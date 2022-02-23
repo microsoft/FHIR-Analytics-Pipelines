@@ -19,7 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>An active job or null.</returns>
-        public Task<Job> AcquireJobAsync(CancellationToken cancellationToken = default);
+        public Task<Job> AcquireActiveJobAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Update a job in store.

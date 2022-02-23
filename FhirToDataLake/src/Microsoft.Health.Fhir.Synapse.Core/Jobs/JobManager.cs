@@ -56,7 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
             // Acquire an active job from the job store.
-            var job = await _jobStore.AcquireJobAsync(cancellationToken);
+            var job = await _jobStore.AcquireActiveJobAsync(cancellationToken);
             if (job == null)
             {
                 job = await CreateNewJobAsync(cancellationToken);
@@ -105,7 +105,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             DateTimeOffset triggerStart = GetTriggerStartTime(schedulerSetting);
             if (triggerStart >= _jobConfiguration.EndTime)
             {
-                _logger.LogInformation("Job has been scheduled to end.");
+                _logger.LogError("Job has been scheduled to end.");
                 throw new StartJobFailedException("Job has been scheduled to end.");
             }
 
@@ -114,7 +114,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (triggerStart >= triggerEnd)
             {
-                _logger.LogInformation("The start time '{triggerStart}' to trigger is in the future.", triggerStart);
+                _logger.LogError("The start time '{triggerStart}' to trigger is in the future.", triggerStart);
                 throw new StartJobFailedException($"The start time '{triggerStart}' to trigger is in the future.");
             }
 

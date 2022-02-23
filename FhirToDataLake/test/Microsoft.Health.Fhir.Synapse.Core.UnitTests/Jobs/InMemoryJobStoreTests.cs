@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             _ = await blobClient.AcquireLeaseAsync(AzureBlobJobConstants.JobLockFileName, null, TimeSpan.FromMinutes(1));
 
             var jobStore = CreateInMemoryJobStore(blobClient);
-            var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobStore.AcquireJobAsync());
+            var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobStore.AcquireActiveJobAsync());
             Assert.StartsWith("Another job is already started", exception.Message);
 
             jobStore.Dispose();
@@ -49,7 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
-            var job = await jobStore.AcquireJobAsync();
+            var job = await jobStore.AcquireActiveJobAsync();
 
             Assert.Null(job);
         }
@@ -68,7 +68,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 DateTimeOffset.Now.AddMinutes(-1));
             await blobClient.CreateJob(activeJob);
 
-            var newJob = await jobStore.AcquireJobAsync();
+            var newJob = await jobStore.AcquireActiveJobAsync();
 
             // Assert new job is null.
             Assert.Null(newJob);
@@ -97,7 +97,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 DateTimeOffset.Now.AddMinutes(-1));
             await blobClient.CreateJob(activeJob);
 
-            var newjob = await jobStore.AcquireJobAsync();
+            var newjob = await jobStore.AcquireActiveJobAsync();
 
             // Assert returned job is null.
             Assert.Null(newjob);

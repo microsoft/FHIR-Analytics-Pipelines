@@ -253,7 +253,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static IJobStore CreateBrokenJobStore()
         {
             var jobStore = Substitute.For<IJobStore>();
-            jobStore.AcquireJobAsync().Returns(Task.FromException<Job>(new Exception()));
+            jobStore.AcquireActiveJobAsync().Returns(Task.FromException<Job>(new Exception()));
             return jobStore;
         }
 
