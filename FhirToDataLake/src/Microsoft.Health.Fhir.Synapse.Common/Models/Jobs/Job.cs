@@ -22,7 +22,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             Dictionary<string, int> processedResourceCounts = null,
             Dictionary<string, int> skippedResourceCounts = null,
             Dictionary<string, int> partIds = null,
-            HashSet<string> completedResources = null)
+            HashSet<string> completedResources = null,
+            string resumedJobId = null)
         {
             Id = Guid.NewGuid().ToString("N");
             CreatedTime = DateTimeOffset.UtcNow;
@@ -37,6 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             SkippedResourceCounts = skippedResourceCounts ?? new Dictionary<string, int>();
             PartIds = partIds ?? new Dictionary<string, int>();
             CompletedResources = completedResources ?? new HashSet<string>();
+            ResumedJobId = resumedJobId;
 
             foreach (var resource in ResourceTypes)
             {

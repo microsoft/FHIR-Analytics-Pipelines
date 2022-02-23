@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -38,7 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var jobStore = CreateInMemoryJobStore(blobClient);
             var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobStore.AcquireJobAsync());
-            Assert.StartsWith("Start job conflicted. Will skip this trigger.", exception.Message);
+            Assert.StartsWith("Another job is already started", exception.Message);
 
             jobStore.Dispose();
         }
@@ -83,7 +84,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
-        public async Task GivenAFailedJobInActiveFolder_WhenAcquireJob_TheJobShouldBeComletedAndNoJobWillBeReturned()
+        public async Task GivenAFailedJobInActiveFolder_WhenAcquireJob_TheJobShouldBeCompletedAndNoJobWillBeReturned()
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
@@ -182,6 +183,40 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Null(await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json"));
             var completedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.CompletedJobFolder}/{activeJob.Id}.json");
             Assert.Equal(activeJob.Id, completedJob.Id);
+        }
+
+        [Fact]
+        public async Task GivenAFailedJob_WhenCompleteJob_CompletedJobShouldPresent()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+            var jobStore = CreateInMemoryJobStore(blobClient);
+            var activeJob = new Job(
+                TestContainerName,
+                JobStatus.Running,
+                _testResourceTypeFilters,
+                new DataPeriod(_testStartTime, _testEndTime),
+                DateTimeOffset.Now.AddMinutes(-1));
+            await blobClient.CreateJob(activeJob);
+
+            // job has been persisted to active folder.
+            var persistedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
+            Assert.NotNull(persistedJob);
+
+            activeJob.Status = JobStatus.Failed;
+            await jobStore.CompleteJobAsync(activeJob);
+
+            // job has been moved to completed folder.
+            Assert.Null(await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json"));
+            var completedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.CompletedJobFolder}/{activeJob.Id}.json");
+            Assert.Equal(activeJob.Id, completedJob.Id);
+
+            // job has been added to unfinishedJobs
+            var stream = await blobClient.GetBlobAsync($"{AzureBlobJobConstants.SchedulerMetadataFileName}");
+            using var streamReader = new StreamReader(stream);
+            var metadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader.ReadToEnd());
+            Assert.Equal(activeJob.Id, metadata.UnfinishedJobs.First().Id);
+            Assert.Equal(activeJob.DataPeriod.Start, metadata.UnfinishedJobs.First().DataPeriod.Start);
+            Assert.Equal(activeJob.DataPeriod.End, metadata.UnfinishedJobs.First().DataPeriod.End);
         }
 
         [Fact]

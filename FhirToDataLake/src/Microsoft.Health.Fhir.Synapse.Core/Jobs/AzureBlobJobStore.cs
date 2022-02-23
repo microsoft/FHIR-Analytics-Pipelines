@@ -72,7 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var lockAcquired = await TryAcquireJobLockAsync(cancellationToken);
             if (!lockAcquired)
             {
-                _logger.LogError("Start job conflicted. Failed to acquire job lock.");
+                _logger.LogError("Another job is already started. Please try later.");
                 throw new StartJobFailedException("Another job is already started. Please try later.");
             }
 
@@ -203,7 +203,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 job.Status != JobStatus.Failed)
             {
                 // Should not happen.
-                _logger.LogError("Job has not finished yet.");
+                _logger.LogError("Input job to complete is not in succeeded or failed state.");
                 throw new ArgumentException("Input job to complete is not in succeeded or failed state.");
             }
 

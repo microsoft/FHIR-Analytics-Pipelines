@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -128,6 +129,56 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Test end data period
             Assert.Equal(_testEndTime, job.DataPeriod.End);
+
+            jobManager.Dispose();
+        }
+
+        [Fact]
+        public async Task GivenNoActiveJobAndAJobUnfinished_WhenExecute_NewJobWillBeTriggered()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+            var jobConfig = new JobConfiguration()
+            {
+                ContainerName = TestContainerName,
+            };
+
+            var failedJob = new Job(
+                TestContainerName,
+                JobStatus.Failed,
+                _testResourceTypeFilters,
+                new DataPeriod(_testStartTime, _testEndTime),
+                DateTimeOffset.Now.AddMinutes(-1));
+
+            var metadata = new SchedulerMetadata();
+            metadata.UnfinishedJobs = new List<Job>()
+            {
+                failedJob,
+            };
+
+            await blobClient.CreateBlobAsync(
+                AzureBlobJobConstants.SchedulerMetadataFileName,
+                new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata))));
+            var jobStore = CreateInMemoryJobStore(blobClient, jobConfig);
+            var jobManager = CreateJobManager(jobStore, _testStartTime, _testEndTime, _testResourceTypeFilters);
+
+            Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
+
+            await jobManager.RunAsync();
+            Assert.NotEmpty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
+
+            var blobName = (await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder)).First();
+            var blob = await blobClient.GetBlobAsync(blobName);
+            using var streamReader = new StreamReader(blob);
+            var job = JsonConvert.DeserializeObject<Job>(streamReader.ReadToEnd());
+
+            Assert.Equal(JobStatus.Succeeded, job.Status);
+            Assert.Equal(failedJob.Id, job.ResumedJobId);
+            Assert.Equal(_testStartTime, job.DataPeriod.Start);
+            Assert.Equal(_testEndTime, job.DataPeriod.End);
+
+            using var streamReader2 = new StreamReader(await blobClient.GetBlobAsync($"{AzureBlobJobConstants.SchedulerMetadataFileName}"));
+            var newMetadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader2.ReadToEnd());
+            Assert.Empty(newMetadata.UnfinishedJobs);
 
             jobManager.Dispose();
         }

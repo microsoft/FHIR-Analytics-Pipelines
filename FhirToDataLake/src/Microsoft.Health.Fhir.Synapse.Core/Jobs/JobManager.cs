@@ -98,7 +98,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     null,
                     null,
                     null,
-                    resumedJob.CompletedResources);
+                    resumedJob.CompletedResources,
+                    resumedJob.Id);
             }
 
             DateTimeOffset triggerStart = GetTriggerStartTime(schedulerSetting);
