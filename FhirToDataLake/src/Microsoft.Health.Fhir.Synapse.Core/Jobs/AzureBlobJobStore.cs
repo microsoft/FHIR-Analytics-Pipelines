@@ -72,8 +72,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var lockAcquired = await TryAcquireJobLockAsync(cancellationToken);
             if (!lockAcquired)
             {
-                _logger.LogWarning("Start job conflicted. Failed to acquire job lock.");
-                throw new StartJobFailedException("Start job conflicted. Will skip this trigger.");
+                _logger.LogError("Start job conflicted. Failed to acquire job lock.");
+                throw new StartJobFailedException("Another job is already started. Please try later.");
             }
 
             var activeJobs = await GetActiveJobsAsync(cancellationToken);
@@ -81,9 +81,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             foreach (var activeJob in activeJobs)
             {
-                // Complete job if it's already succeeded.
-                if (activeJob?.Status == JobStatus.Succeeded
-                    || activeJob?.Status == JobStatus.Failed)
+                // Complete job if it's already succeeded or failed.
+                if (activeJob.Status == JobStatus.Succeeded
+                    || activeJob.Status == JobStatus.Failed)
                 {
                     _logger.LogWarning("Job '{id}' has already finished.", activeJob.Id);
                     await CompleteJobAsyncInternal(activeJob, false, cancellationToken);
@@ -203,8 +203,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 job.Status != JobStatus.Failed)
             {
                 // Should not happen.
-                _logger.LogWarning("Job has not finished yet.");
-                throw new ArgumentException("Input job to complete is not in succeeded state.");
+                _logger.LogError("Job has not finished yet.");
+                throw new ArgumentException("Input job to complete is not in succeeded or failed state.");
             }
 
             await CommitJobDataAsync(job, cancellationToken);

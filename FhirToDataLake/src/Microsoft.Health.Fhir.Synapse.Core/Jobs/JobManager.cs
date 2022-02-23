@@ -73,7 +73,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 job.Status = JobStatus.Failed;
                 job.FailedReason = exception.ToString();
                 await _jobStore.CompleteJobAsync(job, cancellationToken);
+
                 _logger.LogError(exception, "Process job '{jobId}' failed.", job.Id);
+                throw;
             }
         }
 
@@ -119,6 +121,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             if (resourceTypes == null || !resourceTypes.Any())
             {
                 resourceTypes = _fhirSpecificationProvider.GetAllResourceTypes();
+            }
+            else
+            {
+                resourceTypes = Enumerable.Repeat("Observation", 1);
             }
 
             var newJob = new Job(

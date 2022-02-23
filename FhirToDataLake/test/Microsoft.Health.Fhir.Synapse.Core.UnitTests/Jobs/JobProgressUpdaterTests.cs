@@ -119,7 +119,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 Options.Create(storeConfiguration),
                 new NullLogger<AzureBlobJobStore>());
 
-            return new JobProgressUpdater(jobStore, job);
+            return new JobProgressUpdater(jobStore, job, new NullLogger<JobProgressUpdater>());
         }
     }
 }

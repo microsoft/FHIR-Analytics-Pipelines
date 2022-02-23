@@ -55,7 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
             }
 
             return new JsonBatchData(
-                elementData.Select(element => element.ToJObject()));
+                elementData.Select(element => element.ToJObject()).ToList());
         }
     }
 }
