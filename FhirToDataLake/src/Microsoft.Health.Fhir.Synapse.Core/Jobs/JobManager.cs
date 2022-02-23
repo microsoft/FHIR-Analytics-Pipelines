@@ -122,10 +122,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 resourceTypes = _fhirSpecificationProvider.GetAllResourceTypes();
             }
-            else
-            {
-                resourceTypes = Enumerable.Repeat("Observation", 1);
-            }
 
             var newJob = new Job(
                 _jobConfiguration.ContainerName,
