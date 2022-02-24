@@ -18,7 +18,7 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
-    public class JobManager : IDisposable, IAsyncDisposable
+    public class JobManager : IDisposable
     {
         private readonly IJobStore _jobStore;
         private readonly JobExecutor _jobExecutor;
@@ -43,48 +43,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _jobExecutor = jobExecutor;
             _fhirSpecificationProvider = fhirSpecificationProvider;
             _jobConfiguration = jobConfiguration.Value;
+
             _logger = logger;
         }
 
         /// <summary>
-        /// Resume an active job or trigger new job from job store
+        /// Resume an active job or trigger new job from job store.
         /// and execute the job.
         /// </summary>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>Completed task.</returns>
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
-            // Acquire lock to ensure the job store is changed from only one client.
-            var lockResult = await _jobStore.AcquireJobLock(cancellationToken);
-            if (!lockResult)
+            // Acquire an active job from the job store.
+            var job = await _jobStore.AcquireActiveJobAsync(cancellationToken);
+            if (job == null)
             {
-                // Acquire lock failed.
-                _logger.LogWarning("Acquire job lock failed. Skipping this trigger.");
-                return;
-            }
-
-            Job job;
-            var activeJobs = await _jobStore.GetActiveJobsAsync(cancellationToken);
-            if (activeJobs.Any())
-            {
-                // Resume an active job.
-                job = activeJobs.First();
-
-                if (job.Status == JobStatus.Succeeded)
-                {
-                    _logger.LogWarning("Job '{id}' has already succeeded.", job.Id);
-                    await _jobStore.CompleteJobAsync(job, cancellationToken);
-                    return;
-                }
-
-                // Resume an inactive/failed job.
-                job.Status = JobStatus.Running;
-                job.FailedReason = null;
-            }
-            else
-            {
-                // No active job available, start new trigger.
-                job = await CreateNewJob(cancellationToken);
+                job = await CreateNewJobAsync(cancellationToken);
             }
 
             try
@@ -97,22 +72,40 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 job.Status = JobStatus.Failed;
                 job.FailedReason = exception.ToString();
-                await _jobStore.UpdateJobAsync(job, cancellationToken);
+                await _jobStore.CompleteJobAsync(job, cancellationToken);
+
                 _logger.LogError(exception, "Process job '{jobId}' failed.", job.Id);
                 throw;
             }
-
-            // release job lock.
-            await _jobStore.ReleaseJobLock(cancellationToken);
         }
 
-        private async Task<Job> CreateNewJob(CancellationToken cancellationToken = default)
+        private async Task<Job> CreateNewJobAsync(CancellationToken cancellationToken = default)
         {
-            var schedulerSetting = await _jobStore.GetSchedulerMetadata(cancellationToken);
+            var schedulerSetting = await _jobStore.GetSchedulerMetadataAsync(cancellationToken);
+
+            // If there are unfinishedJobs, continue the progress from a new job.
+            if (schedulerSetting?.UnfinishedJobs?.Any() == true)
+            {
+                var resumedJob = schedulerSetting.UnfinishedJobs.First();
+                return new Job(
+                    resumedJob.ContainerName,
+                    JobStatus.New,
+                    resumedJob.ResourceTypes,
+                    resumedJob.DataPeriod,
+                    DateTimeOffset.UtcNow,
+                    resumedJob.ResourceProgresses,
+                    null,
+                    null,
+                    null,
+                    null,
+                    resumedJob.CompletedResources,
+                    resumedJob.Id);
+            }
+
             DateTimeOffset triggerStart = GetTriggerStartTime(schedulerSetting);
             if (triggerStart >= _jobConfiguration.EndTime)
             {
-                _logger.LogInformation("Job has been scheduled to end.");
+                _logger.LogError("Job has been scheduled to end.");
                 throw new StartJobFailedException("Job has been scheduled to end.");
             }
 
@@ -121,7 +114,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (triggerStart >= triggerEnd)
             {
-                _logger.LogInformation("The start time '{triggerStart}' to trigger is in the future.", triggerStart);
+                _logger.LogError("The start time '{triggerStart}' to trigger is in the future.", triggerStart);
                 throw new StartJobFailedException($"The start time '{triggerStart}' to trigger is in the future.");
             }
 
@@ -168,20 +161,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await DisposeAsyncCore();
-
-            Dispose();
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual async ValueTask DisposeAsyncCore()
-        {
-            await _jobStore.ReleaseJobLock();
+            _jobStore.Dispose();
         }
     }
 }

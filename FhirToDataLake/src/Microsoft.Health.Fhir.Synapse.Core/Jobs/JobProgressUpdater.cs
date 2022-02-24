@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 
@@ -18,17 +19,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IJobStore _jobStore;
         private readonly Job _job;
         private readonly Channel<TaskContext> _progressChannel;
+        private readonly ILogger<JobProgressUpdater> _logger;
 
         // Time interval to sync job to store.
         private const int UploadDataIntervalInSeconds = 30;
 
-        public JobProgressUpdater(IJobStore jobStore, Job job)
+        public JobProgressUpdater(
+            IJobStore jobStore,
+            Job job,
+            ILogger<JobProgressUpdater> logger)
         {
             EnsureArg.IsNotNull(jobStore, nameof(jobStore));
             EnsureArg.IsNotNull(job, nameof(job));
+            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _jobStore = jobStore;
             _job = job;
+            _logger = logger;
             var channelOptions = new UnboundedChannelOptions
             {
                 SingleReader = true,
@@ -62,6 +69,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                         // Upload to job store.
                         await _jobStore.UpdateJobAsync(_job, cancellationToken);
+                        _logger.LogInformation("Update job {jobId} progress successfully.", _job.Id);
                     }
                 }
             }

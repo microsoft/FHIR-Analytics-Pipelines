@@ -40,10 +40,10 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
             _hostApplicationLifetime.StopApplication();
         }
 
-        public override async Task StopAsync(CancellationToken cancellationToken)
+        public override Task StopAsync(CancellationToken stoppingToken)
         {
-            await _jobManager.DisposeAsync();
-            Console.WriteLine("JobManager gracefully disposed.");
+            _jobManager.Dispose();
+            return Task.CompletedTask;
         }
     }
 }

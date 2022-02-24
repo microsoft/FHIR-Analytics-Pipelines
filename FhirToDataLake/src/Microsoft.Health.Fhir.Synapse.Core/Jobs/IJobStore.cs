@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
@@ -11,14 +11,15 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     // ToDo: refine logic to multiple jobs
-    public interface IJobStore
+    public interface IJobStore : IDisposable
     {
         /// <summary>
-        ///  List all active jobs from job store.
+        ///  Acquire an active job from job store.
+        ///  If no active job found, will return null.
         /// </summary>
         /// <param name="cancellationToken">cancellation token.</param>
-        /// <returns>job lists.</returns>
-        public Task<IEnumerable<Job>> GetActiveJobsAsync(CancellationToken cancellationToken = default);
+        /// <returns>An active job or null.</returns>
+        public Task<Job> AcquireActiveJobAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Update a job in store.
@@ -38,24 +39,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public Task CompleteJobAsync(Job job, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Acquire job lock in job store.
-        /// </summary>
-        /// <param name="cancellationToken">cancellation token.</param>
-        /// <returns>operation result.</returns>
-        public Task<bool> AcquireJobLock(CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Release job lock in job store.
-        /// </summary>
-        /// <param name="cancellationToken">cancellation token.</param>
-        /// <returns>operation result.</returns>
-        public Task<bool> ReleaseJobLock(CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// Get scheduler metadata from job store.
         /// </summary>
         /// <param name="cancellationToken">cancellation token.</param>
-        /// <returns>SchedulerSetting object, return null if not exists.</returns>
-        public Task<SchedulerMetadata> GetSchedulerMetadata(CancellationToken cancellationToken = default);
+        /// <returns>SchedulerMetadata object, return null if not exists.</returns>
+        public Task<SchedulerMetadata> GetSchedulerMetadataAsync(CancellationToken cancellationToken = default);
     }
 }

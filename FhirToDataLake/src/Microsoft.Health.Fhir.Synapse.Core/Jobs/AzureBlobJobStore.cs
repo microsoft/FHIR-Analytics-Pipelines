@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -66,69 +67,35 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _renewLockTimer.Elapsed += async (sender, e) => await RenewJobLockLeaseAsync();
         }
 
-        public async Task<bool> AcquireJobLock(CancellationToken cancellationToken = default)
+        public async Task<Job> AcquireActiveJobAsync(CancellationToken cancellationToken = default)
         {
-            var blobName = AzureBlobJobConstants.JobLockFileName;
-
-            bool lockExists = await _blobContainerClient.BlobExistsAsync(blobName, cancellationToken);
-            if (!lockExists)
+            var lockAcquired = await TryAcquireJobLockAsync(cancellationToken);
+            if (!lockAcquired)
             {
-                var stream = new MemoryStream();
-                await _blobContainerClient.CreateBlobAsync(blobName, stream, cancellationToken);
+                _logger.LogError("Another job is already started. Please try later.");
+                throw new StartJobFailedException("Another job is already started. Please try later.");
             }
 
-            _jobLockLease = await _blobContainerClient.AcquireLeaseAsync(
-                blobName,
-                _jobLockLease,
-                TimeSpan.FromSeconds(AzureBlobJobConstants.JobLeaseExpirationInSeconds),
-                cancellationToken);
+            var activeJobs = await GetActiveJobsAsync(cancellationToken);
+            Job job = null;
 
-            // Acquire lease failed, return false.
-            if (string.IsNullOrEmpty(_jobLockLease))
+            foreach (var activeJob in activeJobs)
             {
-                return false;
-            }
-
-            // Start renew timer.
-            _renewLockTimer.Start();
-            return true;
-        }
-
-        public async Task<bool> ReleaseJobLock(CancellationToken cancellationToken = default)
-        {
-            _renewLockTimer.Stop();
-
-            var blobName = AzureBlobJobConstants.JobLockFileName;
-
-            bool lockExists = await _blobContainerClient.BlobExistsAsync(blobName, cancellationToken);
-            if (!lockExists || string.IsNullOrEmpty(_jobLockLease))
-            {
-                return true;
-            }
-
-            var result = await _blobContainerClient.ReleaseLeaseAsync(blobName, _jobLockLease, cancellationToken);
-            if (result)
-            {
-                _jobLockLease = null;
-            }
-
-            return result;
-        }
-
-        public async Task<IEnumerable<Job>> GetActiveJobsAsync(CancellationToken cancellationToken = default)
-        {
-            var jobs = new List<Job>();
-            var jobBlobs = await _blobContainerClient.ListBlobsAsync(AzureBlobJobConstants.ActiveJobFolder, cancellationToken);
-            foreach (var blob in jobBlobs)
-            {
-                var job = await FromBlob<Job>(blob, cancellationToken);
-                if (job != null)
+                // Complete job if it's already succeeded or failed.
+                if (activeJob.Status == JobStatus.Succeeded
+                    || activeJob.Status == JobStatus.Failed)
                 {
-                    jobs.Add(job);
+                    _logger.LogWarning("Job '{id}' has already finished.", activeJob.Id);
+                    await CompleteJobAsyncInternal(activeJob, false, cancellationToken);
+                }
+                else
+                {
+                    job = activeJob;
+                    break;
                 }
             }
 
-            return jobs;
+            return job;
         }
 
         public async Task UpdateJobAsync(Job job, CancellationToken cancellationToken = default)
@@ -157,25 +124,97 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             EnsureArg.IsNotNull(job, nameof(job));
 
-            if (job.Status != JobStatus.Succeeded)
+            await CompleteJobAsyncInternal(job, true, cancellationToken);
+        }
+
+        public async Task<SchedulerMetadata> GetSchedulerMetadataAsync(CancellationToken cancellationToken = default)
+        {
+            return await FromBlobAsync<SchedulerMetadata>(AzureBlobJobConstants.SchedulerMetadataFileName, cancellationToken);
+        }
+
+        private async Task<bool> TryAcquireJobLockAsync(CancellationToken cancellationToken = default)
+        {
+            var blobName = AzureBlobJobConstants.JobLockFileName;
+
+            bool lockExists = await _blobContainerClient.BlobExistsAsync(blobName, cancellationToken);
+            if (!lockExists)
             {
-                // Should not happen.
-                _logger.LogWarning("Job has not succeeded yet.");
-                throw new ArgumentException("Input job to complete is not in succeeded state.");
+                var stream = new MemoryStream();
+                await _blobContainerClient.CreateBlobAsync(blobName, stream, cancellationToken);
             }
 
-            // Commit staged parquet data.
+            _jobLockLease = await _blobContainerClient.AcquireLeaseAsync(
+                blobName,
+                null,
+                TimeSpan.FromSeconds(AzureBlobJobConstants.JobLeaseExpirationInSeconds),
+                cancellationToken);
+
+            // Acquire lease failed, return false.
+            if (string.IsNullOrEmpty(_jobLockLease))
+            {
+                return false;
+            }
+
+            // Start renew timer.
+            _renewLockTimer.Start();
+            return true;
+        }
+
+        private async Task<bool> TryReleaseJobLockAsync(CancellationToken cancellationToken = default)
+        {
+            _renewLockTimer.Stop();
+
+            var blobName = AzureBlobJobConstants.JobLockFileName;
+
+            bool lockExists = await _blobContainerClient.BlobExistsAsync(blobName, cancellationToken);
+            if (!lockExists || string.IsNullOrEmpty(_jobLockLease))
+            {
+                return true;
+            }
+
+            var result = await _blobContainerClient.ReleaseLeaseAsync(blobName, _jobLockLease, cancellationToken);
+            if (result)
+            {
+                _jobLockLease = null;
+            }
+
+            return result;
+        }
+
+        private async Task<IEnumerable<Job>> GetActiveJobsAsync(CancellationToken cancellationToken = default)
+        {
+            var jobs = new List<Job>();
+            var jobBlobs = await _blobContainerClient.ListBlobsAsync(AzureBlobJobConstants.ActiveJobFolder, cancellationToken);
+            foreach (var blob in jobBlobs)
+            {
+                var job = await FromBlobAsync<Job>(blob, cancellationToken);
+                if (job != null)
+                {
+                    jobs.Add(job);
+                }
+            }
+
+            return jobs;
+        }
+
+        private async Task CompleteJobAsyncInternal(Job job, bool releaseLock, CancellationToken cancellationToken)
+        {
+            if (job.Status != JobStatus.Succeeded &&
+                job.Status != JobStatus.Failed)
+            {
+                // Should not happen.
+                _logger.LogError("Input job to complete is not in succeeded or failed state.");
+                throw new ArgumentException("Input job to complete is not in succeeded or failed state.");
+            }
+
             await CommitJobDataAsync(job, cancellationToken);
-
-            var completedBlobName = GetJobBlobName(job, AzureBlobJobConstants.CompletedJobFolder);
-
             job.LastHeartBeat = DateTimeOffset.UtcNow;
             job.CompletedTime = job.LastHeartBeat;
 
             try
             {
                 // Update scheduler setting
-                var schedulerSetting = await GetSchedulerMetadata(cancellationToken);
+                var schedulerSetting = await GetSchedulerMetadataAsync(cancellationToken);
                 if (schedulerSetting != null)
                 {
                     schedulerSetting.LastScheduledTimestamp = job.DataPeriod.End;
@@ -188,9 +227,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     };
                 }
 
-                await SaveSchedulerMetadata(schedulerSetting, cancellationToken);
+                // Remove the job information that have been resumed and executed.
+                // If the current job fails, save it to unfinishedJob list.
+                var unfinishedJobs = schedulerSetting.UnfinishedJobs.ToList();
+                unfinishedJobs.RemoveAll(unfinished => unfinished.Id == job.ResumedJobId);
+
+                if (job.Status == JobStatus.Failed)
+                {
+                    unfinishedJobs.Add(job);
+                }
+
+                schedulerSetting.UnfinishedJobs = unfinishedJobs;
+                await SaveSchedulerMetadataAsync(schedulerSetting, cancellationToken);
 
                 // Add job to completed job list.
+                var completedBlobName = GetJobBlobName(job, AzureBlobJobConstants.CompletedJobFolder);
                 await _blobContainerClient.UpdateBlobAsync(
                     completedBlobName,
                     job.ToStream(),
@@ -199,6 +250,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // Remove job from active job list.
                 await _blobContainerClient.DeleteBlobAsync(GetJobBlobName(job, AzureBlobJobConstants.ActiveJobFolder), cancellationToken);
 
+                if (releaseLock)
+                {
+                    await TryReleaseJobLockAsync(cancellationToken);
+                }
+
                 _logger.LogInformation("Complete job '{job.Id}' successfully.", job.Id);
             }
             catch (Exception ex)
@@ -206,11 +262,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogError(ex, "Failed to complete job '{job.Id}'", job.Id);
                 throw new CompleteJobFailedException($"Complete job '{job.Id}' failed.", ex);
             }
-        }
-
-        public async Task<SchedulerMetadata> GetSchedulerMetadata(CancellationToken cancellationToken = default)
-        {
-            return await FromBlob<SchedulerMetadata>(AzureBlobJobConstants.SchedulerMetadataFileName, cancellationToken);
         }
 
         /// <summary>
@@ -286,7 +337,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             await _blobContainerClient.DeleteDirectoryIfExistsAsync(stagingFolder, cancellationToken);
         }
 
-        private async Task SaveSchedulerMetadata(SchedulerMetadata setting, CancellationToken cancellationToken = default)
+        private async Task SaveSchedulerMetadataAsync(SchedulerMetadata setting, CancellationToken cancellationToken = default)
         {
             var content = JsonConvert.SerializeObject(setting);
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
@@ -294,11 +345,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 AzureBlobJobConstants.SchedulerMetadataFileName,
                 stream,
                 cancellationToken);
-        }
-
-        private static string GetJobBlobName(Job job, string prefix)
-        {
-            return $"{prefix}/{job.Id}.json";
         }
 
         private async Task RenewJobLockLeaseAsync(CancellationToken cancellationToken = default)
@@ -322,7 +368,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <param name="blobName">blob name.</param>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>result object.</returns>
-        private async Task<T> FromBlob<T>(string blobName, CancellationToken cancellationToken)
+        private async Task<T> FromBlobAsync<T>(string blobName, CancellationToken cancellationToken)
         {
             try
             {
@@ -346,6 +392,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogWarning(ex, "Parse blob file '{blob}' failed.", blobName);
                 throw new StartJobFailedException($"Parse blob file '{blobName}' failed.", ex);
             }
+        }
+
+        private static string GetJobBlobName(Job job, string prefix)
+        {
+            return $"{prefix}/{job.Id}.json";
+        }
+
+        public void Dispose()
+        {
+            TryReleaseJobLockAsync().GetAwaiter().GetResult();
         }
     }
 }
