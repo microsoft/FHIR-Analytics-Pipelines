@@ -1,17 +1,17 @@
 CREATE EXTERNAL TABLE [fhir].[DeviceDefinition] (
     [resourceType] NVARCHAR(4000),
     [id] VARCHAR(64),
-    [meta.id] NVARCHAR(4000),
+    [meta.id] NVARCHAR(100),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(4000),
-    [text.id] NVARCHAR(4000),
+    [language] NVARCHAR(100),
+    [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
     [text.div] NVARCHAR(MAX),
@@ -20,8 +20,8 @@ CREATE EXTERNAL TABLE [fhir].[DeviceDefinition] (
     [identifier] VARCHAR(MAX),
     [udiDeviceIdentifier] VARCHAR(MAX),
     [deviceName] VARCHAR(MAX),
-    [modelNumber] NVARCHAR(4000),
-    [type.id] NVARCHAR(4000),
+    [modelNumber] NVARCHAR(100),
+    [type.id] NVARCHAR(100),
     [type.extension] NVARCHAR(MAX),
     [type.coding] VARCHAR(MAX),
     [type.text] NVARCHAR(4000),
@@ -29,67 +29,67 @@ CREATE EXTERNAL TABLE [fhir].[DeviceDefinition] (
     [version] VARCHAR(MAX),
     [safety] VARCHAR(MAX),
     [shelfLifeStorage] VARCHAR(MAX),
-    [physicalCharacteristics.id] NVARCHAR(4000),
+    [physicalCharacteristics.id] NVARCHAR(100),
     [physicalCharacteristics.extension] NVARCHAR(MAX),
     [physicalCharacteristics.modifierExtension] NVARCHAR(MAX),
-    [physicalCharacteristics.height.id] NVARCHAR(4000),
+    [physicalCharacteristics.height.id] NVARCHAR(100),
     [physicalCharacteristics.height.extension] NVARCHAR(MAX),
     [physicalCharacteristics.height.value] float,
     [physicalCharacteristics.height.comparator] NVARCHAR(64),
-    [physicalCharacteristics.height.unit] NVARCHAR(4000),
+    [physicalCharacteristics.height.unit] NVARCHAR(100),
     [physicalCharacteristics.height.system] VARCHAR(256),
     [physicalCharacteristics.height.code] NVARCHAR(4000),
-    [physicalCharacteristics.width.id] NVARCHAR(4000),
+    [physicalCharacteristics.width.id] NVARCHAR(100),
     [physicalCharacteristics.width.extension] NVARCHAR(MAX),
     [physicalCharacteristics.width.value] float,
     [physicalCharacteristics.width.comparator] NVARCHAR(64),
-    [physicalCharacteristics.width.unit] NVARCHAR(4000),
+    [physicalCharacteristics.width.unit] NVARCHAR(100),
     [physicalCharacteristics.width.system] VARCHAR(256),
     [physicalCharacteristics.width.code] NVARCHAR(4000),
-    [physicalCharacteristics.depth.id] NVARCHAR(4000),
+    [physicalCharacteristics.depth.id] NVARCHAR(100),
     [physicalCharacteristics.depth.extension] NVARCHAR(MAX),
     [physicalCharacteristics.depth.value] float,
     [physicalCharacteristics.depth.comparator] NVARCHAR(64),
-    [physicalCharacteristics.depth.unit] NVARCHAR(4000),
+    [physicalCharacteristics.depth.unit] NVARCHAR(100),
     [physicalCharacteristics.depth.system] VARCHAR(256),
     [physicalCharacteristics.depth.code] NVARCHAR(4000),
-    [physicalCharacteristics.weight.id] NVARCHAR(4000),
+    [physicalCharacteristics.weight.id] NVARCHAR(100),
     [physicalCharacteristics.weight.extension] NVARCHAR(MAX),
     [physicalCharacteristics.weight.value] float,
     [physicalCharacteristics.weight.comparator] NVARCHAR(64),
-    [physicalCharacteristics.weight.unit] NVARCHAR(4000),
+    [physicalCharacteristics.weight.unit] NVARCHAR(100),
     [physicalCharacteristics.weight.system] VARCHAR(256),
     [physicalCharacteristics.weight.code] NVARCHAR(4000),
-    [physicalCharacteristics.nominalVolume.id] NVARCHAR(4000),
+    [physicalCharacteristics.nominalVolume.id] NVARCHAR(100),
     [physicalCharacteristics.nominalVolume.extension] NVARCHAR(MAX),
     [physicalCharacteristics.nominalVolume.value] float,
     [physicalCharacteristics.nominalVolume.comparator] NVARCHAR(64),
-    [physicalCharacteristics.nominalVolume.unit] NVARCHAR(4000),
+    [physicalCharacteristics.nominalVolume.unit] NVARCHAR(100),
     [physicalCharacteristics.nominalVolume.system] VARCHAR(256),
     [physicalCharacteristics.nominalVolume.code] NVARCHAR(4000),
-    [physicalCharacteristics.externalDiameter.id] NVARCHAR(4000),
+    [physicalCharacteristics.externalDiameter.id] NVARCHAR(100),
     [physicalCharacteristics.externalDiameter.extension] NVARCHAR(MAX),
     [physicalCharacteristics.externalDiameter.value] float,
     [physicalCharacteristics.externalDiameter.comparator] NVARCHAR(64),
-    [physicalCharacteristics.externalDiameter.unit] NVARCHAR(4000),
+    [physicalCharacteristics.externalDiameter.unit] NVARCHAR(100),
     [physicalCharacteristics.externalDiameter.system] VARCHAR(256),
     [physicalCharacteristics.externalDiameter.code] NVARCHAR(4000),
-    [physicalCharacteristics.shape] NVARCHAR(4000),
+    [physicalCharacteristics.shape] NVARCHAR(100),
     [physicalCharacteristics.color] VARCHAR(MAX),
     [physicalCharacteristics.imprint] VARCHAR(MAX),
     [physicalCharacteristics.image] VARCHAR(MAX),
-    [physicalCharacteristics.scoring.id] NVARCHAR(4000),
+    [physicalCharacteristics.scoring.id] NVARCHAR(100),
     [physicalCharacteristics.scoring.extension] NVARCHAR(MAX),
     [physicalCharacteristics.scoring.coding] NVARCHAR(MAX),
     [physicalCharacteristics.scoring.text] NVARCHAR(4000),
     [languageCode] VARCHAR(MAX),
     [capability] VARCHAR(MAX),
     [property] VARCHAR(MAX),
-    [owner.id] NVARCHAR(4000),
+    [owner.id] NVARCHAR(100),
     [owner.extension] NVARCHAR(MAX),
     [owner.reference] NVARCHAR(4000),
     [owner.type] VARCHAR(256),
-    [owner.identifier.id] NVARCHAR(4000),
+    [owner.identifier.id] NVARCHAR(100),
     [owner.identifier.extension] NVARCHAR(MAX),
     [owner.identifier.use] NVARCHAR(64),
     [owner.identifier.type] NVARCHAR(MAX),
@@ -102,18 +102,18 @@ CREATE EXTERNAL TABLE [fhir].[DeviceDefinition] (
     [url] VARCHAR(256),
     [onlineInformation] VARCHAR(256),
     [note] VARCHAR(MAX),
-    [quantity.id] NVARCHAR(4000),
+    [quantity.id] NVARCHAR(100),
     [quantity.extension] NVARCHAR(MAX),
     [quantity.value] float,
     [quantity.comparator] NVARCHAR(64),
-    [quantity.unit] NVARCHAR(4000),
+    [quantity.unit] NVARCHAR(100),
     [quantity.system] VARCHAR(256),
     [quantity.code] NVARCHAR(4000),
-    [parentDevice.id] NVARCHAR(4000),
+    [parentDevice.id] NVARCHAR(100),
     [parentDevice.extension] NVARCHAR(MAX),
     [parentDevice.reference] NVARCHAR(4000),
     [parentDevice.type] VARCHAR(256),
-    [parentDevice.identifier.id] NVARCHAR(4000),
+    [parentDevice.identifier.id] NVARCHAR(100),
     [parentDevice.identifier.extension] NVARCHAR(MAX),
     [parentDevice.identifier.use] NVARCHAR(64),
     [parentDevice.identifier.type] NVARCHAR(MAX),
@@ -124,11 +124,11 @@ CREATE EXTERNAL TABLE [fhir].[DeviceDefinition] (
     [parentDevice.display] NVARCHAR(4000),
     [material] VARCHAR(MAX),
     [manufacturer.string] NVARCHAR(4000),
-    [manufacturer.reference.id] NVARCHAR(4000),
+    [manufacturer.reference.id] NVARCHAR(100),
     [manufacturer.reference.extension] NVARCHAR(MAX),
     [manufacturer.reference.reference] NVARCHAR(4000),
     [manufacturer.reference.type] VARCHAR(256),
-    [manufacturer.reference.identifier.id] NVARCHAR(4000),
+    [manufacturer.reference.identifier.id] NVARCHAR(100),
     [manufacturer.reference.identifier.extension] NVARCHAR(MAX),
     [manufacturer.reference.identifier.use] NVARCHAR(64),
     [manufacturer.reference.identifier.type] NVARCHAR(MAX),
@@ -177,20 +177,20 @@ FROM openrowset (
        [identifier.JSON]  VARCHAR(MAX) '$.identifier'
     ) AS rowset
     CROSS APPLY openjson (rowset.[identifier.JSON]) with (
-        [identifier.id]                NVARCHAR(4000)      '$.id',
+        [identifier.id]                NVARCHAR(100)       '$.id',
         [identifier.extension]         NVARCHAR(MAX)       '$.extension',
         [identifier.use]               NVARCHAR(64)        '$.use',
-        [identifier.type.id]           NVARCHAR(4000)      '$.type.id',
+        [identifier.type.id]           NVARCHAR(100)       '$.type.id',
         [identifier.type.extension]    NVARCHAR(MAX)       '$.type.extension',
         [identifier.type.coding]       NVARCHAR(MAX)       '$.type.coding',
         [identifier.type.text]         NVARCHAR(4000)      '$.type.text',
         [identifier.system]            VARCHAR(256)        '$.system',
         [identifier.value]             NVARCHAR(4000)      '$.value',
-        [identifier.period.id]         NVARCHAR(4000)      '$.period.id',
+        [identifier.period.id]         NVARCHAR(100)       '$.period.id',
         [identifier.period.extension]  NVARCHAR(MAX)       '$.period.extension',
-        [identifier.period.start]      VARCHAR(30)         '$.period.start',
-        [identifier.period.end]        VARCHAR(30)         '$.period.end',
-        [identifier.assigner.id]       NVARCHAR(4000)      '$.assigner.id',
+        [identifier.period.start]      VARCHAR(64)         '$.period.start',
+        [identifier.period.end]        VARCHAR(64)         '$.period.end',
+        [identifier.assigner.id]       NVARCHAR(100)       '$.assigner.id',
         [identifier.assigner.extension] NVARCHAR(MAX)       '$.assigner.extension',
         [identifier.assigner.reference] NVARCHAR(4000)      '$.assigner.reference',
         [identifier.assigner.type]     VARCHAR(256)        '$.assigner.type',
@@ -219,10 +219,10 @@ FROM openrowset (
        [udiDeviceIdentifier.JSON]  VARCHAR(MAX) '$.udiDeviceIdentifier'
     ) AS rowset
     CROSS APPLY openjson (rowset.[udiDeviceIdentifier.JSON]) with (
-        [udiDeviceIdentifier.id]       NVARCHAR(4000)      '$.id',
+        [udiDeviceIdentifier.id]       NVARCHAR(100)       '$.id',
         [udiDeviceIdentifier.extension] NVARCHAR(MAX)       '$.extension',
         [udiDeviceIdentifier.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [udiDeviceIdentifier.deviceIdentifier] NVARCHAR(4000)      '$.deviceIdentifier',
+        [udiDeviceIdentifier.deviceIdentifier] NVARCHAR(500)       '$.deviceIdentifier',
         [udiDeviceIdentifier.issuer]   VARCHAR(256)        '$.issuer',
         [udiDeviceIdentifier.jurisdiction] VARCHAR(256)        '$.jurisdiction'
     ) j
@@ -247,10 +247,10 @@ FROM openrowset (
        [deviceName.JSON]  VARCHAR(MAX) '$.deviceName'
     ) AS rowset
     CROSS APPLY openjson (rowset.[deviceName.JSON]) with (
-        [deviceName.id]                NVARCHAR(4000)      '$.id',
+        [deviceName.id]                NVARCHAR(100)       '$.id',
         [deviceName.extension]         NVARCHAR(MAX)       '$.extension',
         [deviceName.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [deviceName.name]              NVARCHAR(4000)      '$.name',
+        [deviceName.name]              NVARCHAR(500)       '$.name',
         [deviceName.type]              NVARCHAR(64)        '$.type'
     ) j
 
@@ -274,11 +274,11 @@ FROM openrowset (
        [specialization.JSON]  VARCHAR(MAX) '$.specialization'
     ) AS rowset
     CROSS APPLY openjson (rowset.[specialization.JSON]) with (
-        [specialization.id]            NVARCHAR(4000)      '$.id',
+        [specialization.id]            NVARCHAR(100)       '$.id',
         [specialization.extension]     NVARCHAR(MAX)       '$.extension',
         [specialization.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [specialization.systemType]    NVARCHAR(4000)      '$.systemType',
-        [specialization.version]       NVARCHAR(4000)      '$.version'
+        [specialization.systemType]    NVARCHAR(100)       '$.systemType',
+        [specialization.version]       NVARCHAR(100)       '$.version'
     ) j
 
 GO
@@ -319,7 +319,7 @@ FROM openrowset (
        [safety.JSON]  VARCHAR(MAX) '$.safety'
     ) AS rowset
     CROSS APPLY openjson (rowset.[safety.JSON]) with (
-        [safety.id]                    NVARCHAR(4000)      '$.id',
+        [safety.id]                    NVARCHAR(100)       '$.id',
         [safety.extension]             NVARCHAR(MAX)       '$.extension',
         [safety.coding]                NVARCHAR(MAX)       '$.coding' AS JSON,
         [safety.text]                  NVARCHAR(4000)      '$.text'
@@ -363,10 +363,10 @@ FROM openrowset (
        [shelfLifeStorage.JSON]  VARCHAR(MAX) '$.shelfLifeStorage'
     ) AS rowset
     CROSS APPLY openjson (rowset.[shelfLifeStorage.JSON]) with (
-        [shelfLifeStorage.id]          NVARCHAR(4000)      '$.id',
+        [shelfLifeStorage.id]          NVARCHAR(100)       '$.id',
         [shelfLifeStorage.extension]   NVARCHAR(MAX)       '$.extension',
         [shelfLifeStorage.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [shelfLifeStorage.identifier.id] NVARCHAR(4000)      '$.identifier.id',
+        [shelfLifeStorage.identifier.id] NVARCHAR(100)       '$.identifier.id',
         [shelfLifeStorage.identifier.extension] NVARCHAR(MAX)       '$.identifier.extension',
         [shelfLifeStorage.identifier.use] NVARCHAR(64)        '$.identifier.use',
         [shelfLifeStorage.identifier.type] NVARCHAR(MAX)       '$.identifier.type',
@@ -374,15 +374,15 @@ FROM openrowset (
         [shelfLifeStorage.identifier.value] NVARCHAR(4000)      '$.identifier.value',
         [shelfLifeStorage.identifier.period] NVARCHAR(MAX)       '$.identifier.period',
         [shelfLifeStorage.identifier.assigner] NVARCHAR(MAX)       '$.identifier.assigner',
-        [shelfLifeStorage.type.id]     NVARCHAR(4000)      '$.type.id',
+        [shelfLifeStorage.type.id]     NVARCHAR(100)       '$.type.id',
         [shelfLifeStorage.type.extension] NVARCHAR(MAX)       '$.type.extension',
         [shelfLifeStorage.type.coding] NVARCHAR(MAX)       '$.type.coding',
         [shelfLifeStorage.type.text]   NVARCHAR(4000)      '$.type.text',
-        [shelfLifeStorage.period.id]   NVARCHAR(4000)      '$.period.id',
+        [shelfLifeStorage.period.id]   NVARCHAR(100)       '$.period.id',
         [shelfLifeStorage.period.extension] NVARCHAR(MAX)       '$.period.extension',
         [shelfLifeStorage.period.value] float               '$.period.value',
         [shelfLifeStorage.period.comparator] NVARCHAR(64)        '$.period.comparator',
-        [shelfLifeStorage.period.unit] NVARCHAR(4000)      '$.period.unit',
+        [shelfLifeStorage.period.unit] NVARCHAR(100)       '$.period.unit',
         [shelfLifeStorage.period.system] VARCHAR(256)        '$.period.system',
         [shelfLifeStorage.period.code] NVARCHAR(4000)      '$.period.code',
         [shelfLifeStorage.specialPrecautionsForStorage] NVARCHAR(MAX)       '$.specialPrecautionsForStorage' AS JSON
@@ -407,7 +407,7 @@ FROM openrowset (
        [languageCode.JSON]  VARCHAR(MAX) '$.languageCode'
     ) AS rowset
     CROSS APPLY openjson (rowset.[languageCode.JSON]) with (
-        [languageCode.id]              NVARCHAR(4000)      '$.id',
+        [languageCode.id]              NVARCHAR(100)       '$.id',
         [languageCode.extension]       NVARCHAR(MAX)       '$.extension',
         [languageCode.coding]          NVARCHAR(MAX)       '$.coding' AS JSON,
         [languageCode.text]            NVARCHAR(4000)      '$.text'
@@ -436,10 +436,10 @@ FROM openrowset (
        [capability.JSON]  VARCHAR(MAX) '$.capability'
     ) AS rowset
     CROSS APPLY openjson (rowset.[capability.JSON]) with (
-        [capability.id]                NVARCHAR(4000)      '$.id',
+        [capability.id]                NVARCHAR(100)       '$.id',
         [capability.extension]         NVARCHAR(MAX)       '$.extension',
         [capability.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [capability.type.id]           NVARCHAR(4000)      '$.type.id',
+        [capability.type.id]           NVARCHAR(100)       '$.type.id',
         [capability.type.extension]    NVARCHAR(MAX)       '$.type.extension',
         [capability.type.coding]       NVARCHAR(MAX)       '$.type.coding',
         [capability.type.text]         NVARCHAR(4000)      '$.type.text',
@@ -470,10 +470,10 @@ FROM openrowset (
        [property.JSON]  VARCHAR(MAX) '$.property'
     ) AS rowset
     CROSS APPLY openjson (rowset.[property.JSON]) with (
-        [property.id]                  NVARCHAR(4000)      '$.id',
+        [property.id]                  NVARCHAR(100)       '$.id',
         [property.extension]           NVARCHAR(MAX)       '$.extension',
         [property.modifierExtension]   NVARCHAR(MAX)       '$.modifierExtension',
-        [property.type.id]             NVARCHAR(4000)      '$.type.id',
+        [property.type.id]             NVARCHAR(100)       '$.type.id',
         [property.type.extension]      NVARCHAR(MAX)       '$.type.extension',
         [property.type.coding]         NVARCHAR(MAX)       '$.type.coding',
         [property.type.text]           NVARCHAR(4000)      '$.type.text',
@@ -506,16 +506,16 @@ FROM openrowset (
        [contact.JSON]  VARCHAR(MAX) '$.contact'
     ) AS rowset
     CROSS APPLY openjson (rowset.[contact.JSON]) with (
-        [contact.id]                   NVARCHAR(4000)      '$.id',
+        [contact.id]                   NVARCHAR(100)       '$.id',
         [contact.extension]            NVARCHAR(MAX)       '$.extension',
         [contact.system]               NVARCHAR(64)        '$.system',
         [contact.value]                NVARCHAR(4000)      '$.value',
         [contact.use]                  NVARCHAR(64)        '$.use',
         [contact.rank]                 bigint              '$.rank',
-        [contact.period.id]            NVARCHAR(4000)      '$.period.id',
+        [contact.period.id]            NVARCHAR(100)       '$.period.id',
         [contact.period.extension]     NVARCHAR(MAX)       '$.period.extension',
-        [contact.period.start]         VARCHAR(30)         '$.period.start',
-        [contact.period.end]           VARCHAR(30)         '$.period.end'
+        [contact.period.start]         VARCHAR(64)         '$.period.start',
+        [contact.period.end]           VARCHAR(64)         '$.period.end'
     ) j
 
 GO
@@ -544,11 +544,11 @@ FROM openrowset (
        [note.JSON]  VARCHAR(MAX) '$.note'
     ) AS rowset
     CROSS APPLY openjson (rowset.[note.JSON]) with (
-        [note.id]                      NVARCHAR(4000)      '$.id',
+        [note.id]                      NVARCHAR(100)       '$.id',
         [note.extension]               NVARCHAR(MAX)       '$.extension',
-        [note.time]                    VARCHAR(30)         '$.time',
+        [note.time]                    VARCHAR(64)         '$.time',
         [note.text]                    NVARCHAR(MAX)       '$.text',
-        [note.author.reference.id]     NVARCHAR(4000)      '$.author.reference.id',
+        [note.author.reference.id]     NVARCHAR(100)       '$.author.reference.id',
         [note.author.reference.extension] NVARCHAR(MAX)       '$.author.reference.extension',
         [note.author.reference.reference] NVARCHAR(4000)      '$.author.reference.reference',
         [note.author.reference.type]   VARCHAR(256)        '$.author.reference.type',
@@ -581,10 +581,10 @@ FROM openrowset (
        [material.JSON]  VARCHAR(MAX) '$.material'
     ) AS rowset
     CROSS APPLY openjson (rowset.[material.JSON]) with (
-        [material.id]                  NVARCHAR(4000)      '$.id',
+        [material.id]                  NVARCHAR(100)       '$.id',
         [material.extension]           NVARCHAR(MAX)       '$.extension',
         [material.modifierExtension]   NVARCHAR(MAX)       '$.modifierExtension',
-        [material.substance.id]        NVARCHAR(4000)      '$.substance.id',
+        [material.substance.id]        NVARCHAR(100)       '$.substance.id',
         [material.substance.extension] NVARCHAR(MAX)       '$.substance.extension',
         [material.substance.coding]    NVARCHAR(MAX)       '$.substance.coding',
         [material.substance.text]      NVARCHAR(4000)      '$.substance.text',

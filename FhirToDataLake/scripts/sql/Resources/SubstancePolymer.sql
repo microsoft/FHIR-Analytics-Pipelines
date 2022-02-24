@@ -1,27 +1,27 @@
 CREATE EXTERNAL TABLE [fhir].[SubstancePolymer] (
     [resourceType] NVARCHAR(4000),
     [id] VARCHAR(64),
-    [meta.id] NVARCHAR(4000),
+    [meta.id] NVARCHAR(100),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(4000),
-    [text.id] NVARCHAR(4000),
+    [language] NVARCHAR(100),
+    [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
     [text.div] NVARCHAR(MAX),
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
-    [class.id] NVARCHAR(4000),
+    [class.id] NVARCHAR(100),
     [class.extension] NVARCHAR(MAX),
     [class.coding] VARCHAR(MAX),
     [class.text] NVARCHAR(4000),
-    [geometry.id] NVARCHAR(4000),
+    [geometry.id] NVARCHAR(100),
     [geometry.extension] NVARCHAR(MAX),
     [geometry.coding] VARCHAR(MAX),
     [geometry.text] NVARCHAR(4000),
@@ -54,7 +54,7 @@ FROM openrowset (
        [copolymerConnectivity.JSON]  VARCHAR(MAX) '$.copolymerConnectivity'
     ) AS rowset
     CROSS APPLY openjson (rowset.[copolymerConnectivity.JSON]) with (
-        [copolymerConnectivity.id]     NVARCHAR(4000)      '$.id',
+        [copolymerConnectivity.id]     NVARCHAR(100)       '$.id',
         [copolymerConnectivity.extension] NVARCHAR(MAX)       '$.extension',
         [copolymerConnectivity.coding] NVARCHAR(MAX)       '$.coding' AS JSON,
         [copolymerConnectivity.text]   NVARCHAR(4000)      '$.text'
@@ -102,10 +102,10 @@ FROM openrowset (
        [monomerSet.JSON]  VARCHAR(MAX) '$.monomerSet'
     ) AS rowset
     CROSS APPLY openjson (rowset.[monomerSet.JSON]) with (
-        [monomerSet.id]                NVARCHAR(4000)      '$.id',
+        [monomerSet.id]                NVARCHAR(100)       '$.id',
         [monomerSet.extension]         NVARCHAR(MAX)       '$.extension',
         [monomerSet.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [monomerSet.ratioType.id]      NVARCHAR(4000)      '$.ratioType.id',
+        [monomerSet.ratioType.id]      NVARCHAR(100)       '$.ratioType.id',
         [monomerSet.ratioType.extension] NVARCHAR(MAX)       '$.ratioType.extension',
         [monomerSet.ratioType.coding]  NVARCHAR(MAX)       '$.ratioType.coding',
         [monomerSet.ratioType.text]    NVARCHAR(4000)      '$.ratioType.text',
@@ -137,12 +137,12 @@ FROM openrowset (
        [repeat.JSON]  VARCHAR(MAX) '$.repeat'
     ) AS rowset
     CROSS APPLY openjson (rowset.[repeat.JSON]) with (
-        [repeat.id]                    NVARCHAR(4000)      '$.id',
+        [repeat.id]                    NVARCHAR(100)       '$.id',
         [repeat.extension]             NVARCHAR(MAX)       '$.extension',
         [repeat.modifierExtension]     NVARCHAR(MAX)       '$.modifierExtension',
         [repeat.numberOfUnits]         bigint              '$.numberOfUnits',
-        [repeat.averageMolecularFormula] NVARCHAR(4000)      '$.averageMolecularFormula',
-        [repeat.repeatUnitAmountType.id] NVARCHAR(4000)      '$.repeatUnitAmountType.id',
+        [repeat.averageMolecularFormula] NVARCHAR(500)       '$.averageMolecularFormula',
+        [repeat.repeatUnitAmountType.id] NVARCHAR(100)       '$.repeatUnitAmountType.id',
         [repeat.repeatUnitAmountType.extension] NVARCHAR(MAX)       '$.repeatUnitAmountType.extension',
         [repeat.repeatUnitAmountType.coding] NVARCHAR(MAX)       '$.repeatUnitAmountType.coding',
         [repeat.repeatUnitAmountType.text] NVARCHAR(4000)      '$.repeatUnitAmountType.text',

@@ -1,32 +1,32 @@
 CREATE EXTERNAL TABLE [fhir].[MedicationKnowledge] (
     [resourceType] NVARCHAR(4000),
     [id] VARCHAR(64),
-    [meta.id] NVARCHAR(4000),
+    [meta.id] NVARCHAR(100),
     [meta.extension] NVARCHAR(MAX),
     [meta.versionId] VARCHAR(64),
-    [meta.lastUpdated] VARCHAR(30),
+    [meta.lastUpdated] VARCHAR(64),
     [meta.source] VARCHAR(256),
     [meta.profile] VARCHAR(MAX),
     [meta.security] VARCHAR(MAX),
     [meta.tag] VARCHAR(MAX),
     [implicitRules] VARCHAR(256),
-    [language] NVARCHAR(4000),
-    [text.id] NVARCHAR(4000),
+    [language] NVARCHAR(100),
+    [text.id] NVARCHAR(100),
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
     [text.div] NVARCHAR(MAX),
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
-    [code.id] NVARCHAR(4000),
+    [code.id] NVARCHAR(100),
     [code.extension] NVARCHAR(MAX),
     [code.coding] VARCHAR(MAX),
     [code.text] NVARCHAR(4000),
-    [status] NVARCHAR(4000),
-    [manufacturer.id] NVARCHAR(4000),
+    [status] NVARCHAR(100),
+    [manufacturer.id] NVARCHAR(100),
     [manufacturer.extension] NVARCHAR(MAX),
     [manufacturer.reference] NVARCHAR(4000),
     [manufacturer.type] VARCHAR(256),
-    [manufacturer.identifier.id] NVARCHAR(4000),
+    [manufacturer.identifier.id] NVARCHAR(100),
     [manufacturer.identifier.extension] NVARCHAR(MAX),
     [manufacturer.identifier.use] NVARCHAR(64),
     [manufacturer.identifier.type] NVARCHAR(MAX),
@@ -35,15 +35,15 @@ CREATE EXTERNAL TABLE [fhir].[MedicationKnowledge] (
     [manufacturer.identifier.period] NVARCHAR(MAX),
     [manufacturer.identifier.assigner] NVARCHAR(MAX),
     [manufacturer.display] NVARCHAR(4000),
-    [doseForm.id] NVARCHAR(4000),
+    [doseForm.id] NVARCHAR(100),
     [doseForm.extension] NVARCHAR(MAX),
     [doseForm.coding] VARCHAR(MAX),
     [doseForm.text] NVARCHAR(4000),
-    [amount.id] NVARCHAR(4000),
+    [amount.id] NVARCHAR(100),
     [amount.extension] NVARCHAR(MAX),
     [amount.value] float,
     [amount.comparator] NVARCHAR(64),
-    [amount.unit] NVARCHAR(4000),
+    [amount.unit] NVARCHAR(100),
     [amount.system] VARCHAR(256),
     [amount.code] NVARCHAR(4000),
     [synonym] VARCHAR(MAX),
@@ -58,18 +58,18 @@ CREATE EXTERNAL TABLE [fhir].[MedicationKnowledge] (
     [monitoringProgram] VARCHAR(MAX),
     [administrationGuidelines] VARCHAR(MAX),
     [medicineClassification] VARCHAR(MAX),
-    [packaging.id] NVARCHAR(4000),
+    [packaging.id] NVARCHAR(100),
     [packaging.extension] NVARCHAR(MAX),
     [packaging.modifierExtension] NVARCHAR(MAX),
-    [packaging.type.id] NVARCHAR(4000),
+    [packaging.type.id] NVARCHAR(100),
     [packaging.type.extension] NVARCHAR(MAX),
     [packaging.type.coding] NVARCHAR(MAX),
     [packaging.type.text] NVARCHAR(4000),
-    [packaging.quantity.id] NVARCHAR(4000),
+    [packaging.quantity.id] NVARCHAR(100),
     [packaging.quantity.extension] NVARCHAR(MAX),
     [packaging.quantity.value] float,
     [packaging.quantity.comparator] NVARCHAR(64),
-    [packaging.quantity.unit] NVARCHAR(4000),
+    [packaging.quantity.unit] NVARCHAR(100),
     [packaging.quantity.system] VARCHAR(256),
     [packaging.quantity.code] NVARCHAR(4000),
     [drugCharacteristic] VARCHAR(MAX),
@@ -124,10 +124,10 @@ FROM openrowset (
        [relatedMedicationKnowledge.JSON]  VARCHAR(MAX) '$.relatedMedicationKnowledge'
     ) AS rowset
     CROSS APPLY openjson (rowset.[relatedMedicationKnowledge.JSON]) with (
-        [relatedMedicationKnowledge.id] NVARCHAR(4000)      '$.id',
+        [relatedMedicationKnowledge.id] NVARCHAR(100)       '$.id',
         [relatedMedicationKnowledge.extension] NVARCHAR(MAX)       '$.extension',
         [relatedMedicationKnowledge.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [relatedMedicationKnowledge.type.id] NVARCHAR(4000)      '$.type.id',
+        [relatedMedicationKnowledge.type.id] NVARCHAR(100)       '$.type.id',
         [relatedMedicationKnowledge.type.extension] NVARCHAR(MAX)       '$.type.extension',
         [relatedMedicationKnowledge.type.coding] NVARCHAR(MAX)       '$.type.coding',
         [relatedMedicationKnowledge.type.text] NVARCHAR(4000)      '$.type.text',
@@ -162,11 +162,11 @@ FROM openrowset (
        [associatedMedication.JSON]  VARCHAR(MAX) '$.associatedMedication'
     ) AS rowset
     CROSS APPLY openjson (rowset.[associatedMedication.JSON]) with (
-        [associatedMedication.id]      NVARCHAR(4000)      '$.id',
+        [associatedMedication.id]      NVARCHAR(100)       '$.id',
         [associatedMedication.extension] NVARCHAR(MAX)       '$.extension',
         [associatedMedication.reference] NVARCHAR(4000)      '$.reference',
         [associatedMedication.type]    VARCHAR(256)        '$.type',
-        [associatedMedication.identifier.id] NVARCHAR(4000)      '$.identifier.id',
+        [associatedMedication.identifier.id] NVARCHAR(100)       '$.identifier.id',
         [associatedMedication.identifier.extension] NVARCHAR(MAX)       '$.identifier.extension',
         [associatedMedication.identifier.use] NVARCHAR(64)        '$.identifier.use',
         [associatedMedication.identifier.type] NVARCHAR(MAX)       '$.identifier.type',
@@ -196,7 +196,7 @@ FROM openrowset (
        [productType.JSON]  VARCHAR(MAX) '$.productType'
     ) AS rowset
     CROSS APPLY openjson (rowset.[productType.JSON]) with (
-        [productType.id]               NVARCHAR(4000)      '$.id',
+        [productType.id]               NVARCHAR(100)       '$.id',
         [productType.extension]        NVARCHAR(MAX)       '$.extension',
         [productType.coding]           NVARCHAR(MAX)       '$.coding' AS JSON,
         [productType.text]             NVARCHAR(4000)      '$.text'
@@ -230,14 +230,14 @@ FROM openrowset (
        [monograph.JSON]  VARCHAR(MAX) '$.monograph'
     ) AS rowset
     CROSS APPLY openjson (rowset.[monograph.JSON]) with (
-        [monograph.id]                 NVARCHAR(4000)      '$.id',
+        [monograph.id]                 NVARCHAR(100)       '$.id',
         [monograph.extension]          NVARCHAR(MAX)       '$.extension',
         [monograph.modifierExtension]  NVARCHAR(MAX)       '$.modifierExtension',
-        [monograph.type.id]            NVARCHAR(4000)      '$.type.id',
+        [monograph.type.id]            NVARCHAR(100)       '$.type.id',
         [monograph.type.extension]     NVARCHAR(MAX)       '$.type.extension',
         [monograph.type.coding]        NVARCHAR(MAX)       '$.type.coding',
         [monograph.type.text]          NVARCHAR(4000)      '$.type.text',
-        [monograph.source.id]          NVARCHAR(4000)      '$.source.id',
+        [monograph.source.id]          NVARCHAR(100)       '$.source.id',
         [monograph.source.extension]   NVARCHAR(MAX)       '$.source.extension',
         [monograph.source.reference]   NVARCHAR(4000)      '$.source.reference',
         [monograph.source.type]        VARCHAR(256)        '$.source.type',
@@ -278,19 +278,19 @@ FROM openrowset (
        [ingredient.JSON]  VARCHAR(MAX) '$.ingredient'
     ) AS rowset
     CROSS APPLY openjson (rowset.[ingredient.JSON]) with (
-        [ingredient.id]                NVARCHAR(4000)      '$.id',
+        [ingredient.id]                NVARCHAR(100)       '$.id',
         [ingredient.extension]         NVARCHAR(MAX)       '$.extension',
         [ingredient.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
         [ingredient.isActive]          bit                 '$.isActive',
-        [ingredient.strength.id]       NVARCHAR(4000)      '$.strength.id',
+        [ingredient.strength.id]       NVARCHAR(100)       '$.strength.id',
         [ingredient.strength.extension] NVARCHAR(MAX)       '$.strength.extension',
         [ingredient.strength.numerator] NVARCHAR(MAX)       '$.strength.numerator',
         [ingredient.strength.denominator] NVARCHAR(MAX)       '$.strength.denominator',
-        [ingredient.item.codeableConcept.id] NVARCHAR(4000)      '$.item.codeableConcept.id',
+        [ingredient.item.codeableConcept.id] NVARCHAR(100)       '$.item.codeableConcept.id',
         [ingredient.item.codeableConcept.extension] NVARCHAR(MAX)       '$.item.codeableConcept.extension',
         [ingredient.item.codeableConcept.coding] NVARCHAR(MAX)       '$.item.codeableConcept.coding',
         [ingredient.item.codeableConcept.text] NVARCHAR(4000)      '$.item.codeableConcept.text',
-        [ingredient.item.reference.id] NVARCHAR(4000)      '$.item.reference.id',
+        [ingredient.item.reference.id] NVARCHAR(100)       '$.item.reference.id',
         [ingredient.item.reference.extension] NVARCHAR(MAX)       '$.item.reference.extension',
         [ingredient.item.reference.reference] NVARCHAR(4000)      '$.item.reference.reference',
         [ingredient.item.reference.type] VARCHAR(256)        '$.item.reference.type',
@@ -317,7 +317,7 @@ FROM openrowset (
        [intendedRoute.JSON]  VARCHAR(MAX) '$.intendedRoute'
     ) AS rowset
     CROSS APPLY openjson (rowset.[intendedRoute.JSON]) with (
-        [intendedRoute.id]             NVARCHAR(4000)      '$.id',
+        [intendedRoute.id]             NVARCHAR(100)       '$.id',
         [intendedRoute.extension]      NVARCHAR(MAX)       '$.extension',
         [intendedRoute.coding]         NVARCHAR(MAX)       '$.coding' AS JSON,
         [intendedRoute.text]           NVARCHAR(4000)      '$.text'
@@ -350,18 +350,18 @@ FROM openrowset (
        [cost.JSON]  VARCHAR(MAX) '$.cost'
     ) AS rowset
     CROSS APPLY openjson (rowset.[cost.JSON]) with (
-        [cost.id]                      NVARCHAR(4000)      '$.id',
+        [cost.id]                      NVARCHAR(100)       '$.id',
         [cost.extension]               NVARCHAR(MAX)       '$.extension',
         [cost.modifierExtension]       NVARCHAR(MAX)       '$.modifierExtension',
-        [cost.type.id]                 NVARCHAR(4000)      '$.type.id',
+        [cost.type.id]                 NVARCHAR(100)       '$.type.id',
         [cost.type.extension]          NVARCHAR(MAX)       '$.type.extension',
         [cost.type.coding]             NVARCHAR(MAX)       '$.type.coding',
         [cost.type.text]               NVARCHAR(4000)      '$.type.text',
         [cost.source]                  NVARCHAR(4000)      '$.source',
-        [cost.cost.id]                 NVARCHAR(4000)      '$.cost.id',
+        [cost.cost.id]                 NVARCHAR(100)       '$.cost.id',
         [cost.cost.extension]          NVARCHAR(MAX)       '$.cost.extension',
         [cost.cost.value]              float               '$.cost.value',
-        [cost.cost.currency]           NVARCHAR(4000)      '$.cost.currency'
+        [cost.cost.currency]           NVARCHAR(100)       '$.cost.currency'
     ) j
 
 GO
@@ -387,14 +387,14 @@ FROM openrowset (
        [monitoringProgram.JSON]  VARCHAR(MAX) '$.monitoringProgram'
     ) AS rowset
     CROSS APPLY openjson (rowset.[monitoringProgram.JSON]) with (
-        [monitoringProgram.id]         NVARCHAR(4000)      '$.id',
+        [monitoringProgram.id]         NVARCHAR(100)       '$.id',
         [monitoringProgram.extension]  NVARCHAR(MAX)       '$.extension',
         [monitoringProgram.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [monitoringProgram.type.id]    NVARCHAR(4000)      '$.type.id',
+        [monitoringProgram.type.id]    NVARCHAR(100)       '$.type.id',
         [monitoringProgram.type.extension] NVARCHAR(MAX)       '$.type.extension',
         [monitoringProgram.type.coding] NVARCHAR(MAX)       '$.type.coding',
         [monitoringProgram.type.text]  NVARCHAR(4000)      '$.type.text',
-        [monitoringProgram.name]       NVARCHAR(4000)      '$.name'
+        [monitoringProgram.name]       NVARCHAR(500)       '$.name'
     ) j
 
 GO
@@ -427,16 +427,16 @@ FROM openrowset (
        [administrationGuidelines.JSON]  VARCHAR(MAX) '$.administrationGuidelines'
     ) AS rowset
     CROSS APPLY openjson (rowset.[administrationGuidelines.JSON]) with (
-        [administrationGuidelines.id]  NVARCHAR(4000)      '$.id',
+        [administrationGuidelines.id]  NVARCHAR(100)       '$.id',
         [administrationGuidelines.extension] NVARCHAR(MAX)       '$.extension',
         [administrationGuidelines.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
         [administrationGuidelines.dosage] NVARCHAR(MAX)       '$.dosage' AS JSON,
         [administrationGuidelines.patientCharacteristics] NVARCHAR(MAX)       '$.patientCharacteristics' AS JSON,
-        [administrationGuidelines.indication.codeableConcept.id] NVARCHAR(4000)      '$.indication.codeableConcept.id',
+        [administrationGuidelines.indication.codeableConcept.id] NVARCHAR(100)       '$.indication.codeableConcept.id',
         [administrationGuidelines.indication.codeableConcept.extension] NVARCHAR(MAX)       '$.indication.codeableConcept.extension',
         [administrationGuidelines.indication.codeableConcept.coding] NVARCHAR(MAX)       '$.indication.codeableConcept.coding',
         [administrationGuidelines.indication.codeableConcept.text] NVARCHAR(4000)      '$.indication.codeableConcept.text',
-        [administrationGuidelines.indication.reference.id] NVARCHAR(4000)      '$.indication.reference.id',
+        [administrationGuidelines.indication.reference.id] NVARCHAR(100)       '$.indication.reference.id',
         [administrationGuidelines.indication.reference.extension] NVARCHAR(MAX)       '$.indication.reference.extension',
         [administrationGuidelines.indication.reference.reference] NVARCHAR(4000)      '$.indication.reference.reference',
         [administrationGuidelines.indication.reference.type] VARCHAR(256)        '$.indication.reference.type',
@@ -467,10 +467,10 @@ FROM openrowset (
        [medicineClassification.JSON]  VARCHAR(MAX) '$.medicineClassification'
     ) AS rowset
     CROSS APPLY openjson (rowset.[medicineClassification.JSON]) with (
-        [medicineClassification.id]    NVARCHAR(4000)      '$.id',
+        [medicineClassification.id]    NVARCHAR(100)       '$.id',
         [medicineClassification.extension] NVARCHAR(MAX)       '$.extension',
         [medicineClassification.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [medicineClassification.type.id] NVARCHAR(4000)      '$.type.id',
+        [medicineClassification.type.id] NVARCHAR(100)       '$.type.id',
         [medicineClassification.type.extension] NVARCHAR(MAX)       '$.type.extension',
         [medicineClassification.type.coding] NVARCHAR(MAX)       '$.type.coding',
         [medicineClassification.type.text] NVARCHAR(4000)      '$.type.text',
@@ -519,30 +519,30 @@ FROM openrowset (
        [drugCharacteristic.JSON]  VARCHAR(MAX) '$.drugCharacteristic'
     ) AS rowset
     CROSS APPLY openjson (rowset.[drugCharacteristic.JSON]) with (
-        [drugCharacteristic.id]        NVARCHAR(4000)      '$.id',
+        [drugCharacteristic.id]        NVARCHAR(100)       '$.id',
         [drugCharacteristic.extension] NVARCHAR(MAX)       '$.extension',
         [drugCharacteristic.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [drugCharacteristic.type.id]   NVARCHAR(4000)      '$.type.id',
+        [drugCharacteristic.type.id]   NVARCHAR(100)       '$.type.id',
         [drugCharacteristic.type.extension] NVARCHAR(MAX)       '$.type.extension',
         [drugCharacteristic.type.coding] NVARCHAR(MAX)       '$.type.coding',
         [drugCharacteristic.type.text] NVARCHAR(4000)      '$.type.text',
-        [drugCharacteristic.valueQuantity.id] NVARCHAR(4000)      '$.valueQuantity.id',
+        [drugCharacteristic.valueQuantity.id] NVARCHAR(100)       '$.valueQuantity.id',
         [drugCharacteristic.valueQuantity.extension] NVARCHAR(MAX)       '$.valueQuantity.extension',
         [drugCharacteristic.valueQuantity.value] float               '$.valueQuantity.value',
         [drugCharacteristic.valueQuantity.comparator] NVARCHAR(64)        '$.valueQuantity.comparator',
-        [drugCharacteristic.valueQuantity.unit] NVARCHAR(4000)      '$.valueQuantity.unit',
+        [drugCharacteristic.valueQuantity.unit] NVARCHAR(100)       '$.valueQuantity.unit',
         [drugCharacteristic.valueQuantity.system] VARCHAR(256)        '$.valueQuantity.system',
         [drugCharacteristic.valueQuantity.code] NVARCHAR(4000)      '$.valueQuantity.code',
-        [drugCharacteristic.value.codeableConcept.id] NVARCHAR(4000)      '$.value.codeableConcept.id',
+        [drugCharacteristic.value.codeableConcept.id] NVARCHAR(100)       '$.value.codeableConcept.id',
         [drugCharacteristic.value.codeableConcept.extension] NVARCHAR(MAX)       '$.value.codeableConcept.extension',
         [drugCharacteristic.value.codeableConcept.coding] NVARCHAR(MAX)       '$.value.codeableConcept.coding',
         [drugCharacteristic.value.codeableConcept.text] NVARCHAR(4000)      '$.value.codeableConcept.text',
         [drugCharacteristic.value.string] NVARCHAR(4000)      '$.value.string',
-        [drugCharacteristic.value.quantity.id] NVARCHAR(4000)      '$.value.quantity.id',
+        [drugCharacteristic.value.quantity.id] NVARCHAR(100)       '$.value.quantity.id',
         [drugCharacteristic.value.quantity.extension] NVARCHAR(MAX)       '$.value.quantity.extension',
         [drugCharacteristic.value.quantity.value] float               '$.value.quantity.value',
         [drugCharacteristic.value.quantity.comparator] NVARCHAR(64)        '$.value.quantity.comparator',
-        [drugCharacteristic.value.quantity.unit] NVARCHAR(4000)      '$.value.quantity.unit',
+        [drugCharacteristic.value.quantity.unit] NVARCHAR(100)       '$.value.quantity.unit',
         [drugCharacteristic.value.quantity.system] VARCHAR(256)        '$.value.quantity.system',
         [drugCharacteristic.value.quantity.code] NVARCHAR(4000)      '$.value.quantity.code',
         [drugCharacteristic.value.base64Binary] NVARCHAR(MAX)       '$.value.base64Binary'
@@ -576,11 +576,11 @@ FROM openrowset (
        [contraindication.JSON]  VARCHAR(MAX) '$.contraindication'
     ) AS rowset
     CROSS APPLY openjson (rowset.[contraindication.JSON]) with (
-        [contraindication.id]          NVARCHAR(4000)      '$.id',
+        [contraindication.id]          NVARCHAR(100)       '$.id',
         [contraindication.extension]   NVARCHAR(MAX)       '$.extension',
         [contraindication.reference]   NVARCHAR(4000)      '$.reference',
         [contraindication.type]        VARCHAR(256)        '$.type',
-        [contraindication.identifier.id] NVARCHAR(4000)      '$.identifier.id',
+        [contraindication.identifier.id] NVARCHAR(100)       '$.identifier.id',
         [contraindication.identifier.extension] NVARCHAR(MAX)       '$.identifier.extension',
         [contraindication.identifier.use] NVARCHAR(64)        '$.identifier.use',
         [contraindication.identifier.type] NVARCHAR(MAX)       '$.identifier.type',
@@ -622,10 +622,10 @@ FROM openrowset (
        [regulatory.JSON]  VARCHAR(MAX) '$.regulatory'
     ) AS rowset
     CROSS APPLY openjson (rowset.[regulatory.JSON]) with (
-        [regulatory.id]                NVARCHAR(4000)      '$.id',
+        [regulatory.id]                NVARCHAR(100)       '$.id',
         [regulatory.extension]         NVARCHAR(MAX)       '$.extension',
         [regulatory.modifierExtension] NVARCHAR(MAX)       '$.modifierExtension',
-        [regulatory.regulatoryAuthority.id] NVARCHAR(4000)      '$.regulatoryAuthority.id',
+        [regulatory.regulatoryAuthority.id] NVARCHAR(100)       '$.regulatoryAuthority.id',
         [regulatory.regulatoryAuthority.extension] NVARCHAR(MAX)       '$.regulatoryAuthority.extension',
         [regulatory.regulatoryAuthority.reference] NVARCHAR(4000)      '$.regulatoryAuthority.reference',
         [regulatory.regulatoryAuthority.type] VARCHAR(256)        '$.regulatoryAuthority.type',
@@ -633,7 +633,7 @@ FROM openrowset (
         [regulatory.regulatoryAuthority.display] NVARCHAR(4000)      '$.regulatoryAuthority.display',
         [regulatory.substitution]      NVARCHAR(MAX)       '$.substitution' AS JSON,
         [regulatory.schedule]          NVARCHAR(MAX)       '$.schedule' AS JSON,
-        [regulatory.maxDispense.id]    NVARCHAR(4000)      '$.maxDispense.id',
+        [regulatory.maxDispense.id]    NVARCHAR(100)       '$.maxDispense.id',
         [regulatory.maxDispense.extension] NVARCHAR(MAX)       '$.maxDispense.extension',
         [regulatory.maxDispense.modifierExtension] NVARCHAR(MAX)       '$.maxDispense.modifierExtension',
         [regulatory.maxDispense.quantity] NVARCHAR(MAX)       '$.maxDispense.quantity',
@@ -667,16 +667,16 @@ FROM openrowset (
        [kinetics.JSON]  VARCHAR(MAX) '$.kinetics'
     ) AS rowset
     CROSS APPLY openjson (rowset.[kinetics.JSON]) with (
-        [kinetics.id]                  NVARCHAR(4000)      '$.id',
+        [kinetics.id]                  NVARCHAR(100)       '$.id',
         [kinetics.extension]           NVARCHAR(MAX)       '$.extension',
         [kinetics.modifierExtension]   NVARCHAR(MAX)       '$.modifierExtension',
         [kinetics.areaUnderCurve]      NVARCHAR(MAX)       '$.areaUnderCurve' AS JSON,
         [kinetics.lethalDose50]        NVARCHAR(MAX)       '$.lethalDose50' AS JSON,
-        [kinetics.halfLifePeriod.id]   NVARCHAR(4000)      '$.halfLifePeriod.id',
+        [kinetics.halfLifePeriod.id]   NVARCHAR(100)       '$.halfLifePeriod.id',
         [kinetics.halfLifePeriod.extension] NVARCHAR(MAX)       '$.halfLifePeriod.extension',
         [kinetics.halfLifePeriod.value] float               '$.halfLifePeriod.value',
         [kinetics.halfLifePeriod.comparator] NVARCHAR(64)        '$.halfLifePeriod.comparator',
-        [kinetics.halfLifePeriod.unit] NVARCHAR(4000)      '$.halfLifePeriod.unit',
+        [kinetics.halfLifePeriod.unit] NVARCHAR(100)       '$.halfLifePeriod.unit',
         [kinetics.halfLifePeriod.system] VARCHAR(256)        '$.halfLifePeriod.system',
         [kinetics.halfLifePeriod.code] NVARCHAR(4000)      '$.halfLifePeriod.code'
     ) j
