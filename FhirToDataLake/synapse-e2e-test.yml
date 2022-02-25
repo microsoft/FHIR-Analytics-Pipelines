@@ -31,7 +31,7 @@ steps:
       $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(storageName)).Value[0]
       $storageContext = New-AzStorageContext -StorageAccountName $(storageName) -StorageAccountKey $storageAccountKey
       $blobName = '$(appName)' + 'FunctionApp.zip'
-      Set-AzStorageBlobContent -Container $(packageContainer) -Context $storageContext -File $(Build.ArtifactStagingDirectory)/FhirToDataLakeBuild/Microsoft.Health.Fhir.Synapse.FunctionApp.zip -Blob $blobName
+      Set-AzStorageBlobContent -Container $(packageContainer) -Context $storageContext -File $(Build.ArtifactStagingDirectory)/FhirToDataLakeBuild/Microsoft.Health.Fhir.Synapse.FunctionApp.zip -Blob $blobName -Force
 
       # Get and set up SAS of Function.zip
       $packageUrl = New-AzStorageBlobSASToken -Context $storageContext -Container $(packageContainer) -Blob $blobName -Permission r -FullUri
