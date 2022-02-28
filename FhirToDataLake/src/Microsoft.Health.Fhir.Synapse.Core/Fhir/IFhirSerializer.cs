@@ -3,20 +3,15 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
+using Hl7.Fhir.ElementModel;
+using Hl7.Fhir.Serialization;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 {
-    public class FhirBundleParseException : Exception
+    public interface IFhirSerializer
     {
-        public FhirBundleParseException(string message)
-            : base(message)
-        {
-        }
+        public string Serialize(ITypedElement element, FhirJsonSerializationSettings settings = null);
 
-        public FhirBundleParseException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+        public ITypedElement DeserializeToElement(string resource, FhirJsonParsingSettings settings = null);
     }
 }

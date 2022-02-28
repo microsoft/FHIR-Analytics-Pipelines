@@ -15,7 +15,6 @@ using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
-using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 {
@@ -24,40 +23,29 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         private readonly IFhirApiDataSource _dataSource;
         private readonly HttpClient _httpClient;
         private readonly IAccessTokenProvider _accessTokenProvider;
-        private readonly IFhirSerializer _fhirSerializer;
         private readonly ILogger<FhirApiDataClient> _logger;
 
         public FhirApiDataClient(
             IFhirApiDataSource dataSource,
             HttpClient httpClient,
             IAccessTokenProvider accessTokenProvider,
-            IFhirSerializer fhirSerializer,
             ILogger<FhirApiDataClient> logger)
         {
             EnsureArg.IsNotNull(dataSource, nameof(dataSource));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
             EnsureArg.IsNotNull(accessTokenProvider, nameof(accessTokenProvider));
-            EnsureArg.IsNotNull(fhirSerializer, nameof(fhirSerializer));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _dataSource = dataSource;
             _httpClient = httpClient;
             _accessTokenProvider = accessTokenProvider;
-            _fhirSerializer = fhirSerializer;
             _logger = logger;
 
             // Timeout will be handled by Polly policy.
             _httpClient.Timeout = Timeout.InfiniteTimeSpan;
         }
 
-        public async Task<FhirElementBatchData> GetAsync(
-            FhirSearchParameters searchParameters,
-            CancellationToken cancellationToken = default)
-        {
-            return await SearchAsync(searchParameters, cancellationToken);
-        }
-
-        private async Task<FhirElementBatchData> SearchAsync(
+        public async Task<string> SearchAsync(
             FhirSearchParameters searchParameters,
             CancellationToken cancellationToken = default)
         {
@@ -68,7 +56,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
             var searchUri = CreateSearchUri(searchParameters);
             HttpResponseMessage response;
-            string bundleContent;
 
             try
             {
@@ -89,28 +76,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 response.EnsureSuccessStatusCode();
                 _logger.LogInformation("Successfully retrieved search result for url: '{url}'.", searchUri);
 
-                bundleContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                return await response.Content.ReadAsStringAsync(cancellationToken);
             }
             catch (Exception ex)
             {
                 _logger.LogError("Search FHIR server failed. Url: '{url}', Reason: '{reason}'", searchUri, ex);
                 throw new FhirSearchException(
                     string.Format(Resource.FhirSearchFailed, searchUri),
-                    ex);
-            }
-
-            try
-            {
-                var bundleElement = _fhirSerializer.DeserializeToElement(bundleContent);
-                return FhirBundleParser.ParseBatchData(bundleElement);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Parse response bundle failed. Reason: '{reason}'", ex.ToString());
-                throw new FhirBundleParseException(
-                    string.Format(
-                        Resource.FhirBundleParseFailed,
-                        ex),
                     ex);
             }
         }

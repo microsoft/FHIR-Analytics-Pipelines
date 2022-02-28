@@ -13,9 +13,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
-using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
@@ -28,7 +29,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         private const string SampleResourceType = "Patient";
         private const string SampleStartTime = "2021-08-01T12:00:00+08:00";
         private const string SampleEndTime = "2021-08-09T12:40:59+08:00";
-        private const string SampleContinuationToken = "Y29udGludWF0aW9udG9rZW4=";
 
         [Fact]
         public async Task GivenAValidTaskContext_WhenSearchFhirData_CorrectBatchDataShouldBeReturned()
@@ -37,17 +37,19 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 
             // First batch
             var searchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), null);
-            var batchData = await client.GetAsync(searchParameters);
+            var bundle1 = await client.SearchAsync(searchParameters);
 
-            Assert.Equal(2, batchData.Values.Count());
-            Assert.Equal(SampleContinuationToken, batchData.ContinuationToken);
+            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
+
+            // Get continuation token
+            JObject bundleJObject = JObject.Parse(bundle1);
+            var continuationToken = FhirBundleParser.ExtractContinuationToken(bundleJObject);
 
             // Second batch
-            var newSearchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), batchData.ContinuationToken);
-            var newBatchData = await client.GetAsync(newSearchParameters);
+            var newSearchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), continuationToken);
+            var bundle2 = await client.SearchAsync(newSearchParameters);
 
-            Assert.Single(newBatchData.Values);
-            Assert.Null(newBatchData.ContinuationToken);
+            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile2), bundle2);
         }
 
         [Fact]
@@ -58,7 +60,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var client = CreateDataClient(_mockProvider);
             var searchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse("2021-07-07T12:00:00+08:00"), DateTimeOffset.Parse(SampleEndTime), string.Empty);
 
-            var exception = await Assert.ThrowsAsync<FhirSearchException>(() => client.GetAsync(searchParameters));
+            var exception = await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchParameters));
             Assert.IsType<HttpRequestException>(exception.InnerException);
         }
 
@@ -68,18 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var client = CreateDataClient(_brokenProvider);
             var searchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), string.Empty);
 
-            await Assert.ThrowsAsync<FhirSearchException>(() => client.GetAsync(searchParameters));
-        }
-
-        [Theory]
-        [InlineData("invalidresponsetest")]
-        [InlineData("invalidbundletest")]
-        public async Task GivenAValidSearchInput_WhenSearchDataSource_AndGetInvalidResponse_ExceptionShouldBeThrown(string invalidCt)
-        {
-            var client = CreateDataClient(_mockProvider);
-            var searchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), invalidCt);
-
-            await Assert.ThrowsAsync<FhirBundleParseException>(() => client.GetAsync(searchParameters));
+            await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchParameters));
         }
 
         private FhirApiDataClient CreateDataClient(IAccessTokenProvider accessTokenProvider)
@@ -109,7 +100,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var httpClient = new HttpClient(new MockHttpMessageHandler(requestMap));
             ILogger<FhirApiDataClient> logger = new NullLogger<FhirApiDataClient>();
 
-            var dataClient = new FhirApiDataClient(dataSource, httpClient, accessTokenProvider, new FhirSerializer(fhirServerOption), logger);
+            var dataClient = new FhirApiDataClient(dataSource, httpClient, accessTokenProvider, logger);
             return dataClient;
         }
 
