@@ -30,9 +30,9 @@ steps:
     msbuildArguments: '-p:ApplicationVersion=$(version)'
 
 - script: |
-    "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" init /server "(localdb)\MsSqlLocalDb"
-    "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start
-  displayName: 'Start Azure Storage Emulator'
+    docker pull mcr.microsoft.com/azure-storage/azurite
+    docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 --name analytics-azurite-storage-emulator mcr.microsoft.com/azure-storage/azurite
+  displayName: Start Azurite Emulator
 
 - script: |
     docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
@@ -92,6 +92,13 @@ steps:
   inputs:
     command: stop
     container: mock-data-source
+
+- task: Docker@2
+  displayName: Stop Azurite Emulator
+  condition: succeededOrFailed()
+  inputs:
+    command: stop
+    container: analytics-azurite-storage-emulator
 
 # ref: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-function-app?view=azure-devops#error-publish-using-zip-deploy-option-is-not-supported-for-msbuild-package-type
 - task: MSBuild@1
