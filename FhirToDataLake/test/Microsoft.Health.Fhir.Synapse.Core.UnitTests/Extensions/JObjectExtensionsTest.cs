@@ -16,7 +16,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         private const string NoMetaSamplePatientFileName = "TestData/NoMetaPatientSample.json";
 
         [Fact]
-        public void GivenATypedElement_WhenGetLastUpdatedDay_CorrectResultShouldReturn()
+        public void GivenAJObject_WhenGetLastUpdatedDay_CorrectResultShouldReturn()
         {
             var testJObject = GetTestJObject(SamplePatientFileName);
 
@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         }
 
         [Fact]
-        public void GivenATypedElementWithoutLastUpdatedDay_WhenGetLastUpdatedDay_NullShouldReturn()
+        public void GivenAJObjectWithoutLastUpdatedDay_WhenGetLastUpdatedDay_NullShouldReturn()
         {
             var testJObject = GetTestJObject(NoMetaSamplePatientFileName);
 
