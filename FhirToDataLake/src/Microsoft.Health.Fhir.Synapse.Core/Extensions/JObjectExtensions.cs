@@ -4,14 +4,13 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
 {
     public static class JObjectExtensions
     {
-        private const string LastUpdatedPropertyName = "lastUpdated";
-
         /// <summary>
         /// Extract last update day information from search response bundle.
         /// </summary>
@@ -19,7 +18,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
         /// <returns>lastupdate timestamp of the bundle.</returns>
         public static DateTime? GetLastUpdatedDay(this JObject bundle)
         {
-            var result = (bundle.GetValue("meta") as JObject)?.Value<string>(LastUpdatedPropertyName);
+            var result = (bundle.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<string>(FhirBundleConstants.LastUpdatedKey);
             if (result == null)
             {
                 return null;

@@ -26,7 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         }
 
         [Fact]
-        public void GivenANullBundle_WhenParsingBundle_ExceptionShouldBeThrown()
+        public void GivenANullBundle_WhenParsingBundle_EmptyResultShouldBeReturned()
         {
             JObject bundle = null;
 

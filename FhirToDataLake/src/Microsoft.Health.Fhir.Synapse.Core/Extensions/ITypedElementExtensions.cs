@@ -9,13 +9,12 @@ using System.Linq;
 using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.Serialization;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
 {
     public static class ITypedElementExtensions
     {
-        private const string LastUpdatedPropertyName = "lastUpdated";
-
         /// <summary>
         /// Get property value from ITypedElement.
         /// </summary>
@@ -37,7 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
 
         public static DateTime? GetLastUpdatedDay(this ITypedElement element)
         {
-            var result = element?.Children("meta").FirstOrDefault()?.GetPropertyValue(LastUpdatedPropertyName);
+            var result = element?.Children(FhirBundleConstants.MetaKey).FirstOrDefault()?.GetPropertyValue(FhirBundleConstants.LastUpdatedKey);
             if (result == null)
             {
                 return null;
