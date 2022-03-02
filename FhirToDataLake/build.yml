@@ -30,8 +30,7 @@ steps:
     msbuildArguments: '-p:ApplicationVersion=$(version)'
 
 - script: |
-    docker pull mcr.microsoft.com/azure-storage/azurite
-    docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 --name analytics-azurite-storage-emulator mcr.microsoft.com/azure-storage/azurite
+    "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Extensions\Microsoft\Azure Storage Emulator\azurite.exe"
   displayName: Start Azurite Emulator
 
 - script: |
