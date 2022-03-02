@@ -20,7 +20,7 @@ variables:
 stages:
 - stage: Build
   pool:
-    vmImage: windows-latest
+    vmImage: windows-2019
   jobs:
   - job: BuildFhirToCdm
     steps:
