@@ -42,7 +42,7 @@ namespace Microsoft.Health.Fhir.Transformation.Core
                         return (valueObj: fhirElement?.Value?.ToString() ?? fhirElement?.ToJson() ?? string.Empty, type);
 
                     case FhirTypeNames.Boolean:
-                        return (valueObj: (bool?)(fhirElement?.Value), type);
+                        return (valueObj: TryParseFhirBooleanName(fhirElement), type);
 
                     case FhirTypeNames.Integer:
                     case FhirTypeNames.PositiveInt:
@@ -67,7 +67,7 @@ namespace Microsoft.Health.Fhir.Transformation.Core
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("Not support resource type: {0}. Exception Message: {1}", type, ex);
+                _logger.LogDebug("Not support resource type: {0}. Exception Message: {1}", type, ex);
             }
             return (valueObj: null, typeObj: type);
         }
@@ -85,7 +85,7 @@ namespace Microsoft.Health.Fhir.Transformation.Core
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("Error: Invalid resource value: {0}. Exception Message: {1}", dataValue, ex);
+                _logger.LogDebug("Error: Invalid resource value: {0}. Exception Message: {1}", dataValue, ex);
             }
 
             return null;
@@ -110,7 +110,25 @@ namespace Microsoft.Health.Fhir.Transformation.Core
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("Error: Invalid resource value: {0}. Exception Message: {1}", node.Value, ex);
+                _logger.LogDebug("Error: Invalid resource value: {0}. Exception Message: {1}", node.Value, ex);
+            }
+            return null;
+        }
+
+        private Object TryParseFhirBooleanName(ElementNode node)
+        {
+            try
+            {
+                string valueString = node?.Value?.ToString();
+                if (string.IsNullOrEmpty(valueString))
+                {
+                    return null;
+                }
+                return Boolean.Parse(valueString);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug("Error: Invalid resource value: {0}. Exception Message: {1}", node.Value, ex);
             }
             return null;
         }
@@ -154,7 +172,7 @@ namespace Microsoft.Health.Fhir.Transformation.Core
 
             catch (Exception ex)
             {
-                _logger.LogCritical("Error: Invalid resource value: {0}.  Exception Message: {1}", node.Value, ex);
+                _logger.LogDebug("Error: Invalid resource value: {0}.  Exception Message: {1}", node.Value, ex);
             }
             return null;
         }
@@ -168,7 +186,7 @@ namespace Microsoft.Health.Fhir.Transformation.Core
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("Error: Invalid resource value: {0}. Exception Message: {1}", node.Value, ex);
+                _logger.LogDebug("Error: Invalid resource value: {0}. Exception Message: {1}", node.Value, ex);
             }
             return null;
         }
