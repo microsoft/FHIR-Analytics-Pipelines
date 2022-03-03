@@ -30,7 +30,7 @@ steps:
     msbuildArguments: '-p:ApplicationVersion=$(version)'
 
 - script: |
-    "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Extensions\Microsoft\Azure Storage Emulator\azurite.exe"
+    start cmd.exe @cmd /k "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Extensions\Microsoft\Azure Storage Emulator\azurite.exe"
   displayName: Start Azurite Emulator
 
 - script: |
