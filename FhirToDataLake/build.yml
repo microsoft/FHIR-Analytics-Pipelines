@@ -29,8 +29,8 @@ steps:
     configuration: '$(buildConfiguration)'
     msbuildArguments: '-p:ApplicationVersion=$(version)'
 
-- script: |
-    start cmd.exe @cmd /k "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Extensions\Microsoft\Azure Storage Emulator\azurite.exe"
+- powershell: |
+    Start-Process -FilePath "$Env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Extensions\Microsoft\Azure Storage Emulator\azurite.exe"
   displayName: Start Azurite Emulator
 
 - script: |
