@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.IO;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -28,13 +29,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         }
 
         [Fact]
-        public void GivenAJObjectWithoutLastUpdatedDay_WhenGetLastUpdatedDay_NullShouldReturn()
+        public void GivenAJObjectWithoutLastUpdatedDay_WhenGetLastUpdatedDay_ExceptionShouldBeThrown()
         {
             var testJObject = GetTestJObject(NoMetaSamplePatientFileName);
 
-            var date = testJObject.GetLastUpdatedDay();
-
-            Assert.Null(date);
+            Assert.Throws<FhirDataParseExeption>(() => testJObject.GetLastUpdatedDay());
         }
 
         private JObject GetTestJObject(string fileName)

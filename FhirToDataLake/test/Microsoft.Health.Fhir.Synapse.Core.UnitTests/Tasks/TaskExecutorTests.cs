@@ -122,7 +122,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
         {
             var schemaConfigurationOption = Microsoft.Extensions.Options.Options.Create(new SchemaConfiguration()
             {
-                SchemaCollectionDirectory = @"D:\fhir\data\schemas",
+                SchemaCollectionDirectory = @"..\..\..\..\..\data\schemas",
             });
 
             var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
