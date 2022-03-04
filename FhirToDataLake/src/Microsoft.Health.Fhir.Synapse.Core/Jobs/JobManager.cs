@@ -64,6 +64,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             try
             {
+                job.Status = JobStatus.Running;
                 await _jobExecutor.ExecuteAsync(job, cancellationToken);
                 job.Status = JobStatus.Succeeded;
                 await _jobStore.CompleteJobAsync(job, cancellationToken);

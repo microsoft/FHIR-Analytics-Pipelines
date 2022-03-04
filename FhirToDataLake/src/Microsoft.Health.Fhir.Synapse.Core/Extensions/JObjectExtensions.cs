@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Newtonsoft.Json.Linq;
 
@@ -12,20 +13,27 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
     public static class JObjectExtensions
     {
         /// <summary>
-        /// Extract last update day information from search response bundle.
+        /// Extract last update day information from resource.
         /// </summary>
-        /// <param name="bundle">input bundle.</param>
+        /// <param name="resource">input resource.</param>
         /// <returns>lastupdate timestamp of the bundle.</returns>
-        public static DateTime? GetLastUpdatedDay(this JObject bundle)
+        public static DateTime? GetLastUpdatedDay(this JObject resource)
         {
-            var result = (bundle.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<string>(FhirBundleConstants.LastUpdatedKey);
+            var result = (resource.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<string>(FhirBundleConstants.LastUpdatedKey);
             if (result == null)
             {
-                return null;
+                throw new FhirDataParseExeption("Failed to find lastUpdated value in resource.");
             }
 
-            var lastUpdateDatetime = DateTimeOffset.Parse(result.ToString());
-            return new DateTime(lastUpdateDatetime.Year, lastUpdateDatetime.Month, lastUpdateDatetime.Day);
+            try
+            {
+                var lastUpdateDatetime = DateTimeOffset.Parse(result.ToString());
+                return new DateTime(lastUpdateDatetime.Year, lastUpdateDatetime.Month, lastUpdateDatetime.Day);
+            }
+            catch (Exception exception)
+            {
+                throw new FhirDataParseExeption("Failed to parse lastUpdated value from resource.", exception);
+            }
         }
     }
 }

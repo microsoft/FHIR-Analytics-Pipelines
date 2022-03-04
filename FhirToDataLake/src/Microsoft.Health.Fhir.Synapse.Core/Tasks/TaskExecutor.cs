@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
@@ -70,7 +70,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 var fhirBundleResult = await _dataClient.SearchAsync(searchParameters, cancellationToken);
 
                 // Parse bundle result.
-                JObject fhirBundleObject = JObject.Parse(fhirBundleResult);
+                JObject fhirBundleObject = null;
+                try
+                {
+                    fhirBundleObject = JObject.Parse(fhirBundleResult);
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError(exception, "Failed to parse fhir search result for resource '{0}'.", taskContext.ResourceType);
+                    throw new FhirDataParseExeption($"Failed to parse fhir search result for resource {taskContext.ResourceType}", exception);
+                }
+
                 var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject);
                 var continuationToken = FhirBundleParser.ExtractContinuationToken(fhirBundleObject);
 
