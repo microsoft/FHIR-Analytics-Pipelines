@@ -13,6 +13,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// How many resource types to proceed in parallel.
         /// </summary>
         [JsonProperty("maxConcurrencyCount")]
-        public int MaxConcurrencyCount { get; set; } = 30;
+        public int MaxConcurrencyCount { get; set; } = 10;
     }
 }

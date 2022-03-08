@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
-using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions

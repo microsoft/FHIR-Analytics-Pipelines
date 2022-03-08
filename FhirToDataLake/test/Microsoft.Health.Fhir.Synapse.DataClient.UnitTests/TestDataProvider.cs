@@ -8,7 +8,8 @@ using Hl7.Fhir.ElementModel;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
 {
@@ -30,6 +31,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
             var fhirSerializer = new FhirSerializer(Options.Create(fhirConfiguration));
 
             return fhirSerializer.DeserializeToElement(bundleContent);
+        }
+
+        public static JObject GetBundleJsonFromFile(string filePath)
+        {
+            var bundleContent = GetBundleFromFile(filePath);
+
+            return JObject.Parse(bundleContent);
         }
     }
 }

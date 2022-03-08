@@ -3,15 +3,14 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Hl7.Fhir.ElementModel;
-using Hl7.Fhir.Serialization;
+using System.Collections.Generic;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Fhir
+namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 {
-    public interface IFhirSerializer
+    public interface IFhirSpecificationProvider
     {
-        public string Serialize(ITypedElement element, FhirJsonSerializationSettings settings = null);
+        public IEnumerable<string> GetAllResourceTypes();
 
-        public ITypedElement DeserializeToElement(string resource, FhirJsonParsingSettings settings = null);
+        public bool IsValidFhirResourceType(string resourceType);
     }
 }

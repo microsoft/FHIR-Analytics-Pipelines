@@ -13,11 +13,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
 {
@@ -64,33 +67,50 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 }
 
                 var searchParameters = new FhirSearchParameters(taskContext.ResourceType, taskContext.StartTime, taskContext.EndTime, taskContext.ContinuationToken);
-                var fhirElementsData = await _dataClient.GetAsync(searchParameters, cancellationToken);
+                var fhirBundleResult = await _dataClient.SearchAsync(searchParameters, cancellationToken);
+
+                // Parse bundle result.
+                JObject fhirBundleObject = null;
+                try
+                {
+                    fhirBundleObject = JObject.Parse(fhirBundleResult);
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError(exception, "Failed to parse fhir search result for resource '{0}'.", taskContext.ResourceType);
+                    throw new FhirDataParseExeption($"Failed to parse fhir search result for resource {taskContext.ResourceType}", exception);
+                }
+
+                var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject);
+                var continuationToken = FhirBundleParser.ExtractContinuationToken(fhirBundleObject);
 
                 // Partition batch data with day
-                var partitionData = from data in fhirElementsData.Values
-                    group data by data.GetLastUpdatedDay()
-                    into newGroup
-                    orderby newGroup.Key
-                    select newGroup;
+                var partitionedDayGroups = from resource in fhirResources
+                    group resource by resource.GetLastUpdatedDay()
+                    into dayGroups
+                    orderby dayGroups.Key
+                    select dayGroups;
 
-                foreach (var data in partitionData)
+                foreach (var dayGroup in partitionedDayGroups)
                 {
+                    // Convert grouped data to parquet stream
                     var originalSkippedCount = taskContext.SkippedCount;
-                    var jObjectData = data.ToImmutableList().ToJsonBatchData();
-                    var parquetStream = await _parquetDataProcessor.ProcessAsync(jObjectData, taskContext, cancellationToken);
+                    var inputData = new JsonBatchData(dayGroup.ToImmutableList());
+                    var parquetStream = await _parquetDataProcessor.ProcessAsync(inputData, taskContext, cancellationToken);
                     var skippedCount = taskContext.SkippedCount - originalSkippedCount;
 
                     if (parquetStream?.Value?.Length > 0)
                     {
-                        var blobUrl = await _dataWriter.WriteAsync(parquetStream, taskContext, data.Key.Value, cancellationToken);
+                        // Upload to blob and log result
+                        var blobUrl = await _dataWriter.WriteAsync(parquetStream, taskContext, dayGroup.Key.Value, cancellationToken);
+                        taskContext.PartId += 1;
+
                         var batchResult = new BatchDataResult(
                             taskContext.ResourceType,
-                            fhirElementsData.ContinuationToken,
+                            continuationToken,
                             blobUrl,
-                            jObjectData.Values.Count(),
-                            jObjectData.Values.Count() - skippedCount);
-
-                        taskContext.PartId += 1;
+                            inputData.Values.Count(),
+                            inputData.Values.Count() - skippedCount);
                         _logger.LogInformation(
                             "{resourceCount} resources are searched in total. {processedCount} resources are processed. Detail: {detail}",
                             batchResult.ResourceCount,
@@ -107,8 +127,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 }
 
                 // Update context
-                taskContext.ContinuationToken = fhirElementsData.ContinuationToken;
-                taskContext.SearchCount += fhirElementsData.Values.Count();
+                taskContext.ContinuationToken = continuationToken;
+                taskContext.SearchCount += fhirResources.Count();
                 taskContext.ProcessedCount = taskContext.SearchCount - taskContext.SkippedCount;
                 taskContext.IsCompleted = string.IsNullOrEmpty(taskContext.ContinuationToken);
 

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Stu3FhirModelInfo = FhirStu3::Hl7.Fhir.Model.ModelInfo;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Fhir
+namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 {
     public class Stu3FhirSpecificationProvider : IFhirSpecificationProvider
     {

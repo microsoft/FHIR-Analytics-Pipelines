@@ -5,17 +5,17 @@
 
 using System;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
-    public class FhirBundleParseException : Exception
+    public class FhirDataParseExeption : Exception
     {
-        public FhirBundleParseException(string message)
+        public FhirDataParseExeption(string message)
             : base(message)
         {
         }
 
-        public FhirBundleParseException(string message, Exception innerException)
-            : base(message, innerException)
+        public FhirDataParseExeption(string message, Exception inner)
+            : base(message, inner)
         {
         }
     }

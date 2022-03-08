@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using R4FhirModelInfo = FhirR4::Hl7.Fhir.Model.ModelInfo;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Fhir
+namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 {
     public class R4FhirSpecificationProvider : IFhirSpecificationProvider
     {

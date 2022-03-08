@@ -15,7 +15,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using R4StructureDefinitionSummaryProvider = FhirR4::Hl7.Fhir.Specification.PocoStructureDefinitionSummaryProvider;
 using Stu3StructureDefinitionSummaryProvider = FhirStu3::Hl7.Fhir.Specification.PocoStructureDefinitionSummaryProvider;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Fhir
+namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 {
     public class FhirSerializer : IFhirSerializer
     {

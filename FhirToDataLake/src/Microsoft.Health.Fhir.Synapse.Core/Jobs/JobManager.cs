@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.DataClient.Fhir;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
@@ -64,6 +64,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             try
             {
+                job.Status = JobStatus.Running;
                 await _jobExecutor.ExecuteAsync(job, cancellationToken);
                 job.Status = JobStatus.Succeeded;
                 await _jobStore.CompleteJobAsync(job, cancellationToken);
