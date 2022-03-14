@@ -47,7 +47,7 @@ This solution enables you to query against the entire FHIR data with tools such 
     |---|---|
     | Resource Group | Name of the resource group where you want the pipeline related resources to be created. |
     | App Name  | A name for the Azure Function.  |
-    | Fhir server Url  | The URL of the FHIR server. |
+    | Fhir server Url  | The URL of the FHIR server. If the baseUri has relative parts (like http://www.example.org/r4), then the relative part must be terminated with a slash, (like http://www.example.org/r4/). |
     | Authentication  |  Whether to access the FHIR server with managed identity authentication. Set it to false if you are using an instance of the FHIR server for Azure with public access. |
     | Fhir version | Version of the FHIR server. Currently only R4 is supported. |
     | Data Start | Start time stamp of the data to be exported. |
