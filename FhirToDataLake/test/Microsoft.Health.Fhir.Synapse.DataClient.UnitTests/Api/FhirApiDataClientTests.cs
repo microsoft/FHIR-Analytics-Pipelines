@@ -30,10 +30,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         private const string SampleStartTime = "2021-08-01T12:00:00+08:00";
         private const string SampleEndTime = "2021-08-09T12:40:59+08:00";
 
-        [Fact]
-        public async Task GivenAValidTaskContext_WhenSearchFhirData_CorrectBatchDataShouldBeReturned()
+        [Theory]
+        [InlineData("https://example.com")]
+        [InlineData("https://example.com/")]
+        [InlineData("https://example.com/abc")]
+        [InlineData("https://example.com/abc/")]
+        [InlineData("https://example.com/a/b/c")]
+        [InlineData("https://example.com/a/b/c/")]
+        public async Task GivenAValidTaskContext_WhenSearchFhirData_CorrectBatchDataShouldBeReturned(string serverUrl)
         {
-            var client = CreateDataClient(_mockProvider);
+            var client = CreateDataClient(serverUrl, _mockProvider);
 
             // First batch
             var searchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), null);
@@ -57,7 +63,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         {
             // A different start time will result in an unknown url to mock http handler.
             // An HttpRequestException will throw during search.
-            var client = CreateDataClient(_mockProvider);
+            var client = CreateDataClient("https://example.com", _mockProvider);
             var searchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse("2021-07-07T12:00:00+08:00"), DateTimeOffset.Parse(SampleEndTime), string.Empty);
 
             var exception = await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchParameters));
@@ -67,32 +73,32 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [Fact]
         public async Task GivenAnInvalidTokenProvider_WhenSearchDataSourceFailed_ExceptionShouldBeThrown()
         {
-            var client = CreateDataClient(_brokenProvider);
+            var client = CreateDataClient("https://example.com", _brokenProvider);
             var searchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), string.Empty);
 
             await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchParameters));
         }
 
-        private FhirApiDataClient CreateDataClient(IAccessTokenProvider accessTokenProvider)
+        private FhirApiDataClient CreateDataClient(string fhirServerUrl, IAccessTokenProvider accessTokenProvider)
         {
             // Set up http client.
             var comparer = StringComparer.OrdinalIgnoreCase;
             var requestMap = new Dictionary<string, HttpResponseMessage>(comparer);
             requestMap.Add(
-                "https://example.com/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
-                "https://example.com/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated&ct=Y29udGludWF0aW9udG9rZW4%3d",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated&ct=Y29udGludWF0aW9udG9rZW4%3d",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile2)));
             requestMap.Add(
-                "https://example.com/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated&ct=invalidresponsetest",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated&ct=invalidresponsetest",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidResponseFile)));
             requestMap.Add(
-                "https://example.com/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated&ct=invalidbundletest",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated&ct=invalidbundletest",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidBundleFile)));
 
             var fhirServerConfig = new FhirServerConfiguration();
-            fhirServerConfig.ServerUrl = "https://example.com";
+            fhirServerConfig.ServerUrl = fhirServerUrl;
             fhirServerConfig.Authentication = AuthenticationType.ManagedIdentity;
             var fhirServerOption = Options.Create(fhirServerConfig);
             var dataSource = new FhirApiDataSource(fhirServerOption);

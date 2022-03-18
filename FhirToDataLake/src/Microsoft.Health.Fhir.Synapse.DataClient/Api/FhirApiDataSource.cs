@@ -16,6 +16,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         public FhirApiDataSource(IOptions<FhirServerConfiguration> config)
         {
             EnsureArg.IsNotNull(config, nameof(config));
+            EnsureArg.IsNotNullOrEmpty(config.Value.ServerUrl, nameof(config.Value.ServerUrl));
 
             FhirServerUrl = config.Value.ServerUrl;
             Authentication = config.Value.Authentication;
