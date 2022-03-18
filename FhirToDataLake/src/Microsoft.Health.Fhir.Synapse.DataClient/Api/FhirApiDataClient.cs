@@ -95,9 +95,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         /// <returns>Uri with search parameters.</returns>
         private Uri CreateSearchUri(FhirSearchParameters searchParameters)
         {
-            // If the baseUri has relative parts (like /api),
-            // then the relative part must be terminated with a slash, (like /api/),
-            // if the relative part of baseUri is to be preserved in the constructed Uri. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
+            // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
+            // Otherwise the relative part will be omitted when creating new search Uris. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
             var serverUrl = _dataSource.FhirServerUrl;
             if (!_dataSource.FhirServerUrl.EndsWith("/"))
             {
