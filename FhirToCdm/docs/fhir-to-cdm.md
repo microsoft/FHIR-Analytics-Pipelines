@@ -81,7 +81,7 @@ In the Access Control of the export storage grant _Storage Blob Data Contributor
 
 ### 3.4. Deploy egress pipeline
 
-Use the buttons below to deploy egress pipeline through the Azure Portal.
+Use the button below to deploy egress pipeline through the Azure Portal.
    
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2FFHIR-Analytics-Pipelines%2Fmain%2FFhirToCdm%2FTemplates%2FfhirServiceToCdm.json" target="_blank">
     <img src="https://aka.ms/deploytoazurebutton"/>
@@ -123,19 +123,19 @@ Go to the  _{pipelinename}-df_, and trigger the pipeline. One the pipeline execu
 In case the pipeline run is successful, but you do not see data in the CDM folder, go to the _adfjobs_ container within _{pipelinename}storage_ account, look for the latest run-folder, which has a GUID name, and see the _stderr.txt_ file for details.
 
 ## 4. FHIR to CDM local tool
-We provide a local tool to convert FHIR data to CDM, it also uses the content of Table configuration folder to generate CDM metadata, and then convert input FHIR ndjson data to CDM.
+We provide a local tool to convert FHIR data to CDM, it also uses the content in table configuration folder to generate CDM metadata, and then convert input FHIR ndjson data to CDM.
 
-You need to build the ```Microsoft.Health.Fhir.Transformation.Cdm.Tool``` project, then call the _Microsoft.Health.Fhir.Transformation.Cdm.Tool.exe_:
+You need to build the ```Microsoft.Health.Fhir.Transformation.Cdm.Tool``` project, then call the _Microsoft.Health.Fhir.Transformation.Cdm.Tool.exe_ like:
 
 ```./Microsoft.Health.Fhir.Transformation.Cdm.Tool.exe --config {Table config folder} --input {Input folder that contains FHIR ndjson data} --output {CDM output folder}```
 
 
 | Option | Optionality | Default | Description
 | ------- |----------- |----------- |----------- |
-| -config | Required | | Name of the configuration folder |
-| -input |  Required | | Name of the input folder contains FHIR ndjson data |
-| -output | Required | | Name of the CDM output folder |
-| -maxDepth | Optional | 3 | Max recursion depth to generate CDM |
+| --config | Required | | Name of the table configuration folder |
+| --input |  Required | | Name of the input folder contains FHIR ndjson data |
+| --output | Required | | Name of the CDM output folder |
+| --maxDepth | Optional | 3 | Max recursion depth to generate CDM |
 
 ## Next Steps
 Once you have the data in a CDM folder, it can be consumed by several Microsoft services such as Synapse Analytics, ADF, Azure Databricks, Azure Machine Learning, Azure SQL, and Power BI. See the [instructions](cdm-to-synapse.md) for moving the data from a CDM folder to Synapse analytics.
