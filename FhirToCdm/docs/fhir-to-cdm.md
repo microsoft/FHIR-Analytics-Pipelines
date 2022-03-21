@@ -62,7 +62,7 @@ Pipeline generator uses the content of Table configuration folder, and a few oth
 Use the following steps to create FHIR to CDM pipeline
 
 ### 3.1. Ensure that $export is enabled on Azure API for FHIR
-Follow [FHIR export configuration](https://docs.microsoft.com/en-us/azure/healthcare-apis/configure-export-data) document to enable $export on your FHIR server if needed.
+Follow [FHIR export configuration](https://docs.microsoft.com/en-us/azure/healthcare-apis/fhir/configure-export-data) document to enable $export on your FHIR server if needed.
 
 ### 3.2. Create an Azure AD application and service principal.
 The ADF pipeline uses an Azure batch service to do the transformation. We need to register an Azure AD application for the batch service. Follow the [documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) to create an AAD application and service principal.
@@ -80,7 +80,14 @@ Create a client secret by navigating to Azure Portal => Azure Active Directory =
 In the Access Control of the export storage grant _Storage Blob Data Contributor_ role to the Azure AD application created above. 
 
 ### 3.4. Deploy egress pipeline
-Download and save the [fhirServiceToCdm.json](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/Templates) deployment template. Use this template to do a [custom deployment](https://ms.portal.azure.com/#create/Microsoft.Template) on Azure.
+
+Use the button below to deploy egress pipeline through the Azure Portal.
+   
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2FFHIR-Analytics-Pipelines%2Fmain%2FFhirToCdm%2FTemplates%2FfhirServiceToCdm.json" target="_blank">
+    <img src="https://aka.ms/deploytoazurebutton"/>
+</a>
+
+Or you can download and save the [fhirServiceToCdm.json](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToCdm/Templates/fhirServiceToCdm.json) deployment template. Use this template to do a [custom deployment](https://ms.portal.azure.com/#create/Microsoft.Template) on Azure.
 
 ![Custom deployment](assets/custom-deployment.png)
 
@@ -99,9 +106,9 @@ Download and save the [fhirServiceToCdm.json](https://github.com/microsoft/FHIR-
 
 It will create the the following Azure resources:
 1. An ADF pipeline with the name _{pipelinename}-df_.
-1. A key vault with the name _{pipelinename}-kv_ to store the client secret.
-1. A batch account with the name _{pipelinename}batch_ to run the transformation.
-1. A storage account with the name _{pipelinename}storage_. This storage will be used for different purposes such as running the batch job and the destination storage for the CDM data. This is also where you will keep the table configuration.
+2. A key vault with the name _{pipelinename}-kv_ to store the client secret.
+3. A batch account with the name _{pipelinename}batch_ to run the transformation.
+4. A storage account with the name _{pipelinename}storage_. This storage will be used for different purposes such as running the batch job and the destination storage for the CDM data. This is also where you will keep the table configuration.
 
 ### 3.5. Grant access of the FHIR service to the Azure Data Factory
 In the access control of the FHIR service grant _FHIR data exporter_ & _FHIR data reader_ role to the data factory, _{pipelinename}-df_, created in the previous step. 
@@ -114,6 +121,21 @@ Go to the  _{pipelinename}-df_, and trigger the pipeline. One the pipeline execu
 
 ### Troubleshooting the pipeline
 In case the pipeline run is successful, but you do not see data in the CDM folder, go to the _adfjobs_ container within _{pipelinename}storage_ account, look for the latest run-folder, which has a GUID name, and see the _stderr.txt_ file for details.
+
+## 4. FHIR to CDM local tool
+We provide a local tool to convert FHIR data to CDM, it also uses the content in table configuration folder to generate CDM metadata, and then convert input FHIR ndjson data to CDM.
+
+You need to build the ```Microsoft.Health.Fhir.Transformation.Cdm.Tool``` project, then call the _Microsoft.Health.Fhir.Transformation.Cdm.Tool.exe_ like:
+
+```./Microsoft.Health.Fhir.Transformation.Cdm.Tool.exe --config {Table config folder} --input {Input folder that contains FHIR ndjson data} --output {CDM output folder}```
+
+
+| Option | Optionality | Default | Description
+| ------- |----------- |----------- |----------- |
+| --config | Required | | Name of the table configuration folder |
+| --input |  Required | | Name of the input folder contains FHIR ndjson data |
+| --output | Required | | Name of the CDM output folder |
+| --maxDepth | Optional | 3 | Max recursion depth to generate CDM |
 
 ## Next Steps
 Once you have the data in a CDM folder, it can be consumed by several Microsoft services such as Synapse Analytics, ADF, Azure Databricks, Azure Machine Learning, Azure SQL, and Power BI. See the [instructions](cdm-to-synapse.md) for moving the data from a CDM folder to Synapse analytics.
