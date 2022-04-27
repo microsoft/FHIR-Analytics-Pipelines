@@ -26,6 +26,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
             services.AddSingleton<ITaskExecutor, TaskExecutor>();
 
+            services.AddSingleton<TaskQueue, TaskQueue>();
+
             services.AddSingleton<IColumnDataProcessor, ParquetDataProcessor>();
 
             services.AddSingleton<IFhirSpecificationProvider, R4FhirSpecificationProvider>();

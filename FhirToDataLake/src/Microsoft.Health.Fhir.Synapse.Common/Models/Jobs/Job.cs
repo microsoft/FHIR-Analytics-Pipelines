@@ -80,6 +80,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         [JsonProperty("status")]
         public JobStatus Status { get; set; }
 
+        [JsonProperty("jobType")]
+        public JobType JobType { get; set; }
+
+        [JsonProperty("typeFilters")]
+        public IEnumerable<TypeFilter> TypeFilters { get; set; }
+
         /// <summary>
         /// All resource types to process.
         /// </summary>

@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
@@ -33,7 +34,20 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// Resource types to process.
         /// If no resources are present, we will process all resource types.
         /// </summary>
+        [Obsolete("We recommend to use similiar type filters defined in FHIR $export operation.")]
         [JsonProperty("resourceTypeFilters")]
         public IEnumerable<string> ResourceTypeFilters { get; set; }
+
+        [JsonProperty("jobType")]
+        public ExportedType JobType { get; set; }
+
+        /// <summary>
+        /// Selected resource types, delimited by comma.
+        /// </summary>
+        [JsonProperty("_type")]
+        public string SelectedTypes { get; set; }
+
+        [JsonProperty("_typeFilters")]
+        public string TypeFilters { get; set; }
     }
 }

@@ -20,5 +20,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
         public Task<string> SearchAsync(
             FhirSearchParameters searchParameters,
             CancellationToken cancellationToken = default);
+
+        public Task<string> SearchCompartmentAsync(
+            string PatientId,
+            FhirSearchParameters searchParameters,
+            CancellationToken cancellationToken = default);
     }
 }

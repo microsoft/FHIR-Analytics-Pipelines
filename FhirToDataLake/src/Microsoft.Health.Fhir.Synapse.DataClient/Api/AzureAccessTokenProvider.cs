@@ -42,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 throw;
             }
 
-            _logger.LogInformation("Get access token for resource '{0}' successfully.", resourceUrl);
+            _logger.LogInformation("Get access token for resource '{0}' successfully. {1}", resourceUrl, token);
             return token;
         }
     }

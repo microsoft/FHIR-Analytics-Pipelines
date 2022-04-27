@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Intrinsics.Arm;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -14,7 +16,11 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
+using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
@@ -23,12 +29,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly ITaskExecutor _taskExecutor;
         private readonly JobProgressUpdaterFactory _jobProgressUpdaterFactory;
         private readonly JobSchedulerConfiguration _schedulerConfiguration;
+        private readonly TaskQueue _taskQueue;
+        private readonly IFhirDataClient _dataClient;
         private readonly ILogger<JobExecutor> _logger;
 
         public JobExecutor(
             ITaskExecutor taskExecutor,
             JobProgressUpdaterFactory jobProgressUpdaterFactory,
+            IFhirDataClient dataClient,
             IOptions<JobSchedulerConfiguration> schedulerConfiguration,
+            TaskQueue taskQueue,
             ILogger<JobExecutor> logger)
         {
             EnsureArg.IsNotNull(taskExecutor, nameof(taskExecutor));
@@ -39,6 +49,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _taskExecutor = taskExecutor;
             _jobProgressUpdaterFactory = jobProgressUpdaterFactory;
             _schedulerConfiguration = schedulerConfiguration.Value;
+            _dataClient = dataClient;
+            _taskQueue = taskQueue;
             _logger = logger;
         }
 
@@ -48,37 +60,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             var jobProgressUpdater = _jobProgressUpdaterFactory.Create(job);
             var progressReportTask = Task.Run(() => jobProgressUpdater.Consume(cancellationToken), cancellationToken);
-
+            var produceTask = ProduceTasks(job);
             var tasks = new List<Task<TaskResult>>();
-            foreach (var resourceType in job.ResourceTypes)
+            var workerCount = 10;
+            for (int i = 0; i < workerCount; i += 1)
             {
-                if (tasks.Count >= _schedulerConfiguration.MaxConcurrencyCount)
-                {
-                    var finishedTask = await Task.WhenAny(tasks);
-                    if (finishedTask.IsFaulted)
-                    {
-                        _logger.LogError(finishedTask.Exception, "Process task failed.");
-                        throw new ExecuteTaskFailedException("Task execution failed", finishedTask.Exception);
-                    }
+                tasks.Add(Task.Run(async () => await _taskExecutor.ExecuteAsync(null, jobProgressUpdater, cancellationToken)));
 
-                    tasks.Remove(finishedTask);
-                }
-
-                var context = TaskContext.Create(resourceType, job);
-                if (context.IsCompleted)
-                {
-                    _logger.LogInformation("Skipping completed resource '{resourceType}'.", resourceType);
-                    continue;
-                }
-
-                tasks.Add(Task.Run(async () => await _taskExecutor.ExecuteAsync(context, jobProgressUpdater, cancellationToken)));
-
-                _logger.LogInformation("Start processing resource '{resourceType}'", resourceType);
+                _logger.LogInformation("Start processing worker '{0}'", i);
             }
 
             try
             {
+                await produceTask;
+                Console.WriteLine("All tasks has been produced");
                 var taskResults = await Task.WhenAll(tasks);
+                Console.WriteLine("Task execution has been produced");
             }
             catch (Exception ex)
             {
@@ -90,6 +87,46 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             await progressReportTask;
 
             _logger.LogInformation("Finish scheduling job '{jobId}'", job.Id);
+        }
+
+        private async Task ProduceTasks(Job job)
+        {
+            int taskIndex = 0;
+            string ct = null;
+            do
+            {
+                var searchParameters = new FhirSearchParameters("Patient", DateTimeOffset.MinValue, DateTimeOffset.MaxValue, ct);
+                var fhirBundleResult = await _dataClient.SearchAsync(searchParameters, default);
+
+                // Parse bundle result.
+                JObject fhirBundleObject = null;
+                try
+                {
+                    fhirBundleObject = JObject.Parse(fhirBundleResult);
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError(exception, "Failed to parse fhir search result for resource Patient.");
+                }
+
+                var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject);
+                var patientIds = fhirResources.Select(r => r["id"].ToString());
+                ct = FhirBundleParser.ExtractContinuationToken(fhirBundleObject);
+                for (int i = 0; i < patientIds.Count(); i += 20)
+                {
+                    var context = TaskContext.Create("Patient", job);
+                    context.PartId = taskIndex;
+                    context.PatientIds = patientIds.Skip(i).Take(20);
+                    taskIndex++;
+
+                    await _taskQueue.Enqueue(context);
+                    Console.WriteLine($"{DateTime.Now} Enqueued {context.PatientIds.Count()}");
+                }
+
+            }
+            while (ct != null);
+
+            _taskQueue.Complete();
         }
     }
 }

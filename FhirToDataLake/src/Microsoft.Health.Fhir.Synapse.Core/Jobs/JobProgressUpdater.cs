@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly IJobStore _jobStore;
         private readonly Job _job;
-        private readonly Channel<TaskContext> _progressChannel;
+        private readonly Channel<Tuple<string, int>> _progressChannel;
         private readonly ILogger<JobProgressUpdater> _logger;
 
         // Time interval to sync job to store.
@@ -41,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 SingleReader = true,
                 SingleWriter = false,
             };
-            _progressChannel = Channel.CreateUnbounded<TaskContext>(channelOptions);
+            _progressChannel = Channel.CreateUnbounded<Tuple<string, int>>(channelOptions);
         }
 
         public async Task Consume(CancellationToken cancellationToken = default)
@@ -51,17 +52,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var channelReader = _progressChannel.Reader;
             while (await channelReader.WaitToReadAsync(cancellationToken))
             {
-                if (channelReader.TryRead(out TaskContext context))
+                if (channelReader.TryRead(out Tuple<string, int> result))
                 {
-                    _job.ResourceProgresses[context.ResourceType] = context.ContinuationToken;
-                    _job.TotalResourceCounts[context.ResourceType] = context.SearchCount;
-                    _job.ProcessedResourceCounts[context.ResourceType] = context.ProcessedCount;
-                    _job.SkippedResourceCounts[context.ResourceType] = context.SkippedCount;
-                    _job.PartIds[context.ResourceType] = context.PartId;
-                    if (context.IsCompleted)
-                    {
-                        _job.CompletedResources.Add(context.ResourceType);
-                    }
+                    _job.TotalResourceCounts[result.Item1] += result.Item2;
+                    _logger.LogWarning($"{DateTime.Now} Progress report: {result.Item1} processed {_job.TotalResourceCounts[result.Item1]}");
+
+                    var sum = _job.TotalResourceCounts.Values.Sum();
+                    _logger.LogWarning($"{DateTime.Now} Progress summary: {sum} resource processed");
+
+                    // await _jobStore.UpdateJobAsync(_job, cancellationToken);
 
                     if (uploadTime.AddSeconds(UploadDataIntervalInSeconds) < DateTimeOffset.UtcNow)
                     {
@@ -69,7 +68,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                         // Upload to job store.
                         await _jobStore.UpdateJobAsync(_job, cancellationToken);
-                        _logger.LogInformation("Update job {jobId} progress successfully.", _job.Id);
+                        // _logger.LogInformation("Update job {jobId} progress successfully.", _job.Id);
                     }
                 }
             }
@@ -77,10 +76,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             await _jobStore.UpdateJobAsync(_job, cancellationToken);
         }
 
-        public async Task Produce(TaskContext context, CancellationToken cancellationToken = default)
+        public async Task Produce(Tuple<string, int> value, CancellationToken cancellationToken = default)
         {
             var channelWriter = _progressChannel.Writer;
-            await channelWriter.WriteAsync(context, cancellationToken);
+            await channelWriter.WriteAsync(value, cancellationToken);
         }
 
         public void Complete()

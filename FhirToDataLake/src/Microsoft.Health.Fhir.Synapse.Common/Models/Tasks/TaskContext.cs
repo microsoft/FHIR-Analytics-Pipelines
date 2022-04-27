@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
@@ -92,6 +94,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// Has completed all resources.
         /// </summary>
         public bool IsCompleted { get; set; }
+
+        public IEnumerable<string> PatientIds { get; set; }
 
         public static TaskContext Create(
             string resourceType,

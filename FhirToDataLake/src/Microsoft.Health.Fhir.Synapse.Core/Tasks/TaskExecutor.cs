@@ -4,11 +4,14 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
@@ -31,6 +34,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly ILogger<TaskExecutor> _logger;
 
+        private TaskQueue _taskQueue;
+
         private const int ReportProgressBatchCount = 10;
 
         // TODO: Refine TaskExecutor here, current TaskExecutor is more like a manager class.
@@ -38,6 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             IFhirDataClient dataClient,
             IFhirDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
+            TaskQueue taskQueue,
             ILogger<TaskExecutor> logger)
         {
             EnsureArg.IsNotNull(dataClient, nameof(dataClient));
@@ -48,7 +54,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             _dataClient = dataClient;
             _dataWriter = dataWriter;
             _parquetDataProcessor = parquetDataProcessor;
+            _taskQueue = taskQueue;
             _logger = logger;
+
         }
 
         // To do:
@@ -58,92 +66,156 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             JobProgressUpdater progressUpdater,
             CancellationToken cancellationToken = default)
         {
-            int pageCount = 0;
-            while (!taskContext.IsCompleted)
+            Dictionary<string, List<JObject>> _groupedData = new Dictionary<string, List<JObject>>();
+            Dictionary<string, int> _dataIndexMap = new Dictionary<string, int>();
+            TaskContext originContext = null;
+            while (true)
             {
-                if (cancellationToken.IsCancellationRequested)
+                taskContext = await _taskQueue.Dequeue();
+
+                if (taskContext == null)
                 {
-                    throw new OperationCanceledException();
+                    Console.WriteLine($"No task polled. ");
+                    break;
                 }
 
-                var searchParameters = new FhirSearchParameters(taskContext.ResourceType, taskContext.StartTime, taskContext.EndTime, taskContext.ContinuationToken);
-                var fhirBundleResult = await _dataClient.SearchAsync(searchParameters, cancellationToken);
+                originContext = taskContext;
 
-                // Parse bundle result.
-                JObject fhirBundleObject = null;
-                try
+                _logger.LogInformation($"{DateTime.Now} Task {taskContext.PartId} get partients {taskContext.PatientIds.Count()}");
+
+                taskContext.ContinuationToken = null;
+                foreach (var pid in taskContext.PatientIds)
                 {
-                    fhirBundleObject = JObject.Parse(fhirBundleResult);
-                }
-                catch (Exception exception)
-                {
-                    _logger.LogError(exception, "Failed to parse fhir search result for resource '{0}'.", taskContext.ResourceType);
-                    throw new FhirDataParseExeption($"Failed to parse fhir search result for resource {taskContext.ResourceType}", exception);
-                }
-
-                var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject);
-                var continuationToken = FhirBundleParser.ExtractContinuationToken(fhirBundleObject);
-
-                // Partition batch data with day
-                var partitionedDayGroups = from resource in fhirResources
-                    group resource by resource.GetLastUpdatedDay()
-                    into dayGroups
-                    orderby dayGroups.Key
-                    select dayGroups;
-
-                foreach (var dayGroup in partitionedDayGroups)
-                {
-                    // Convert grouped data to parquet stream
-                    var originalSkippedCount = taskContext.SkippedCount;
-                    var inputData = new JsonBatchData(dayGroup.ToImmutableList());
-                    var parquetStream = await _parquetDataProcessor.ProcessAsync(inputData, taskContext, cancellationToken);
-                    var skippedCount = taskContext.SkippedCount - originalSkippedCount;
-
-                    if (parquetStream?.Value?.Length > 0)
+                    do
                     {
-                        // Upload to blob and log result
-                        var blobUrl = await _dataWriter.WriteAsync(parquetStream, taskContext, dayGroup.Key.Value, cancellationToken);
-                        taskContext.PartId += 1;
+                        var stopWatch = Stopwatch.StartNew();
+                        var searchParameters = new FhirSearchParameters(taskContext.ResourceType, taskContext.StartTime, taskContext.EndTime, taskContext.ContinuationToken);
+                        var fhirBundleResult = await _dataClient.SearchCompartmentAsync(pid, searchParameters, cancellationToken);
+                        _logger.LogInformation($"Search takes {stopWatch.Elapsed.TotalSeconds}.");
+                        stopWatch.Restart();
 
-                        var batchResult = new BatchDataResult(
-                            taskContext.ResourceType,
-                            continuationToken,
-                            blobUrl,
-                            inputData.Values.Count(),
-                            inputData.Values.Count() - skippedCount);
-                        _logger.LogInformation(
-                            "{resourceCount} resources are searched in total. {processedCount} resources are processed. Detail: {detail}",
-                            batchResult.ResourceCount,
-                            batchResult.ProcessedCount,
-                            batchResult.ToString());
+                        // Parse bundle result.
+                        JObject fhirBundleObject = null;
+                        try
+                        {
+                            fhirBundleObject = JObject.Parse(fhirBundleResult);
+                        }
+                        catch (Exception exception)
+                        {
+                            _logger.LogError(exception, "Failed to parse fhir search result for resource '{0}'.", taskContext.ResourceType);
+                            throw new FhirDataParseExeption($"Failed to parse fhir search result for resource {taskContext.ResourceType}", exception);
+                        }
+
+                        var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject);
+                        taskContext.ContinuationToken = FhirBundleParser.ExtractContinuationToken(fhirBundleObject);
+
+                        _logger.LogInformation($"Parsing json takes {stopWatch.Elapsed.TotalSeconds}.");
+
+                        await ProcessResourcesInBundle(fhirResources, taskContext, progressUpdater, _groupedData, _dataIndexMap, cancellationToken);
                     }
-                    else
-                    {
-                        _logger.LogWarning(
-                            "No resource of type {resourceType} is processed. {skippedCount} resources are skipped.",
-                            taskContext.ResourceType,
-                            taskContext.SkippedCount);
-                    }
+                    while (taskContext.ContinuationToken != null);
                 }
 
-                // Update context
-                taskContext.ContinuationToken = continuationToken;
-                taskContext.SearchCount += fhirResources.Count();
-                taskContext.ProcessedCount = taskContext.SearchCount - taskContext.SkippedCount;
-                taskContext.IsCompleted = string.IsNullOrEmpty(taskContext.ContinuationToken);
+                _logger.LogInformation($"{DateTime.Now} Task {taskContext.PartId} completed partients {taskContext.PatientIds.Count()}");
+            }
 
-                pageCount++;
-                if (pageCount % ReportProgressBatchCount == 0 || taskContext.IsCompleted)
+            if (originContext != null)
+            {
+                foreach (var resourceType in _groupedData.Keys)
                 {
-                    await progressUpdater.Produce(taskContext, cancellationToken);
+                    if (_groupedData[resourceType].Count() > 0)
+                    {
+                        await progressUpdater.Produce(new Tuple<string, int>(resourceType, _groupedData[resourceType].Count()));
+                        await ProcessBatchResources(_groupedData[resourceType], resourceType, originContext, _dataIndexMap, cancellationToken);
+                    }
                 }
             }
 
             _logger.LogInformation(
-                "Finished processing resource '{resourceType}'.",
-                taskContext.ResourceType);
+                "Worker finished processing.");
 
-            return TaskResult.CreateFromTaskContext(taskContext);
+            return taskContext != null ? TaskResult.CreateFromTaskContext(taskContext) : null;
+        }
+
+        private async Task ProcessResourcesInBundle(
+            IEnumerable<JObject> resources,
+            TaskContext taskContext,
+            JobProgressUpdater progressUpdater,
+            Dictionary<string, List<JObject>> _groupedData,
+            Dictionary<string, int> _dataIndexMap,
+            CancellationToken cancellationToken = default)
+        {
+            foreach (var resource in resources)
+            {
+                var resourceType = resource["resourceType"].ToString();
+                if (!_groupedData.ContainsKey(resourceType))
+                {
+                    _groupedData[resourceType] = new List<JObject>();
+                }
+
+                if (_groupedData[resourceType].Count() > 4000)
+                {
+                    var stopWatch = Stopwatch.StartNew();
+
+                    await ProcessBatchResources(_groupedData[resourceType], resourceType, taskContext, _dataIndexMap, cancellationToken);
+                    _logger.LogInformation($"Process {resourceType} {_groupedData[resourceType].Count()} takes {stopWatch.Elapsed.TotalSeconds}.");
+
+                    await progressUpdater.Produce(new Tuple<string, int>(resourceType, _groupedData[resourceType].Count()));
+                    _groupedData[resourceType] = new List<JObject>();
+                }
+
+                if (string.Equals(resourceType, "Patient") && resource.ContainsKey("managingOrganization"))
+                {
+                    resource["managingOrganization"] = (resource["managingOrganization"] as JArray).First() as JObject;
+                }
+
+                _groupedData[resourceType].Add(resource);
+            }
+        }
+
+        private async Task ProcessBatchResources(
+            List<JObject> fhirResources,
+            string resourceType,
+            TaskContext taskContext,
+            Dictionary<string, int> _dataIndexMap,
+            CancellationToken cancellationToken = default)
+
+        {
+            // Partition batch data with day
+            var partitionedDayGroups = from resource in fhirResources
+                                       group resource by resource.GetLastUpdatedDay()
+                                       into dayGroups
+                                       orderby dayGroups.Key
+                                       select dayGroups;
+
+            foreach (var dayGroup in partitionedDayGroups)
+            {
+                // Convert grouped data to parquet stream
+                var originalSkippedCount = taskContext.SkippedCount;
+                var inputData = new JsonBatchData(dayGroup.ToImmutableList());
+                var parquetStream = await _parquetDataProcessor.ProcessAsync(inputData, taskContext, cancellationToken);
+
+                if (parquetStream?.Value?.Length > 0)
+                {
+                    if (!_dataIndexMap.ContainsKey(resourceType))
+                    {
+                        _dataIndexMap[resourceType] = 0;
+                    }
+
+                    _dataIndexMap[resourceType] += 1;
+
+                    // Upload to blob and log result
+                    var blobUrl = await _dataWriter.WriteAsync(parquetStream, $"{taskContext.JobId}_{taskContext.PartId}", resourceType, _dataIndexMap[resourceType], dayGroup.Key.Value, cancellationToken);
+                    Console.WriteLine($"Uploaded to {blobUrl}");
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "No resource of type {resourceType} is processed. {skippedCount} resources are skipped.",
+                        taskContext.ResourceType,
+                        taskContext.SkippedCount);
+                }
+            }
         }
     }
 }

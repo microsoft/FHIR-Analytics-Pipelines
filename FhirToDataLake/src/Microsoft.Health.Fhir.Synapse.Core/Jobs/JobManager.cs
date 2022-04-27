@@ -55,6 +55,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>Completed task.</returns>
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
+            _logger.LogDebug("Job has started.");
+
             // Acquire an active job from the job store.
             var job = await _jobStore.AcquireActiveJobAsync(cancellationToken);
             if (job == null)

@@ -18,5 +18,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter
             TaskContext context,
             DateTime dateTime,
             CancellationToken cancellationToken = default);
+
+        public Task<string> WriteAsync(
+            StreamBatchData data,
+            string jobId,
+            string resourceType,
+            int partId,
+            DateTime dateTime,
+            CancellationToken cancellationToken = default);
+
     }
 }
