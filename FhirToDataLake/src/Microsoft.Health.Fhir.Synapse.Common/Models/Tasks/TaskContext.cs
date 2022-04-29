@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
@@ -15,18 +16,20 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             string id,
             string jobId,
             string resourceType,
+            List<string> schemaTypes,
             DateTimeOffset startTime,
             DateTimeOffset endTime,
             string continuationToken,
+            Dictionary<string, int> processedCount,
+            Dictionary<string, int> skippedCount,
+            Dictionary<string, int> partId,
             int searchCount = 0,
-            int processedCount = 0,
-            int skippedCount = 0,
-            int partId = 0,
             bool isCompleted = false)
         {
             Id = id;
             JobId = jobId;
             ResourceType = resourceType;
+            SchemaTypes = schemaTypes;
             StartTime = startTime;
             EndTime = endTime;
             ContinuationToken = continuationToken;
@@ -53,6 +56,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public string ResourceType { get; set; }
 
         /// <summary>
+        /// Resource type for task.
+        /// </summary>
+        public List<string> SchemaTypes { get; set; }
+
+        /// <summary>
         /// Start time for task.
         /// </summary>
         public DateTimeOffset StartTime { get; set; }
@@ -66,7 +74,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// Part id for task output files.
         /// The format is '{Resource}_{JobId}_{PartId}.parquet', e.g. Patient_1ab3edcefsi789ed_0001.parquet.
         /// </summary>
-        public int PartId { get; set; }
+        public Dictionary<string, int> PartId { get; set; }
 
         /// <summary>
         /// Task progress.
@@ -81,12 +89,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// <summary>
         /// Skipped count.
         /// </summary>
-        public int SkippedCount { get; set; }
+        public Dictionary<string, int> SkippedCount { get; set; }
 
         /// <summary>
         /// Processed count.
         /// </summary>
-        public int ProcessedCount { get; set; }
+        public Dictionary<string, int> ProcessedCount { get; set; }
 
         /// <summary>
         /// Has completed all resources.
@@ -99,17 +107,29 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         {
             var isCompleted = job.CompletedResources.Contains(resourceType);
 
+            var resourceProcessedCounts = new Dictionary<string, int>();
+            var resourceSkippedCounts = new Dictionary<string, int>();
+            var resourcePartIds = new Dictionary<string, int>();
+
+            foreach (var schemaType in job.SchemaTypesMap[resourceType])
+            {
+                resourceProcessedCounts.Add(schemaType, job.ProcessedResourceCounts[schemaType]);
+                resourceSkippedCounts.Add(schemaType, job.SkippedResourceCounts[schemaType]);
+                resourcePartIds.Add(schemaType, job.PartIds[schemaType]);
+            }
+
             return new TaskContext(
                 Guid.NewGuid().ToString("N"),
                 job.Id,
                 resourceType,
+                job.SchemaTypesMap[resourceType],
                 job.DataPeriod.Start,
                 job.DataPeriod.End,
                 job.ResourceProgresses[resourceType],
+                resourceProcessedCounts,
+                resourceSkippedCounts,
+                resourcePartIds,
                 job.TotalResourceCounts[resourceType],
-                job.ProcessedResourceCounts[resourceType],
-                job.SkippedResourceCounts[resourceType],
-                job.PartIds[resourceType],
                 isCompleted);
         }
     }

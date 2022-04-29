@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
         /// <returns>DataItem with Stream value. Null stream value will be return if there is no valid processed result.</returns>
         public Task<StreamBatchData> ProcessAsync(
             JsonBatchData inputData,
-            TaskContext context,
+            ProcessParameters processParameters,
             CancellationToken cancellationToken = default);
     }
 }

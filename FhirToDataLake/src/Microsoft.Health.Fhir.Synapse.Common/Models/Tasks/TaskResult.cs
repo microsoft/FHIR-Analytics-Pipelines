@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
 {
@@ -12,10 +13,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public TaskResult(
             string resourceType,
             string continuationToken,
-            int partId,
+            Dictionary<string, int> partId,
             int searchCount,
-            int skippedCount,
-            int processedCount,
+            Dictionary<string, int> skippedCount,
+            Dictionary<string, int> processedCount,
             string result)
         {
             ResourceType = resourceType;
@@ -41,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// Part id for task output files.
         /// The format is '{Resource}_{JobId}_{PartId}.parquet', e.g. Patient_1ab3edcefsi789ed_0001.parquet.
         /// </summary>
-        public int PartId { get; set; }
+        public Dictionary<string, int> PartId { get; set; }
 
         /// <summary>
         /// Search count.
@@ -51,12 +52,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// <summary>
         /// Skipped count.
         /// </summary>
-        public int SkippedCount { get; set; }
+        public Dictionary<string, int> SkippedCount { get; set; }
 
         /// <summary>
         /// Processed count.
         /// </summary>
-        public int ProcessedCount { get; set; }
+        public Dictionary<string, int> ProcessedCount { get; set; }
 
         /// <summary>
         /// Text result message.
