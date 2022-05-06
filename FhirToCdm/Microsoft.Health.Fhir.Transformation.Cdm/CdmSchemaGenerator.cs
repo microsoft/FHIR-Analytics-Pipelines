@@ -62,14 +62,15 @@ namespace Microsoft.Health.Fhir.Transformation.Cdm
             {
                 var localEDef = eDef;
                 var entDef = await cdmCorpus.FetchObjectAsync<CdmEntityDefinition>(localEDef.EntityPath, manifestResolved);
-                var part = cdmCorpus.MakeObject<CdmDataPartitionDefinition>(CdmObjectType.DataPartitionDef, $"{entDef.EntityName}-data-description");
-                var partitionPatterns = cdmCorpus.MakeObject<CdmDataPartitionPatternDefinition>(CdmObjectType.DataPartitionPatternDef, $"{entDef.EntityName}-data-patdescription");
+                
+                var partitionPatterns = cdmCorpus.MakeObject<CdmDataPartitionPatternDefinition>(CdmObjectType.DataPartitionPatternDef, $"{entDef.EntityName}-data-partpattern");
                 partitionPatterns.RegularExpression = ".+\\.csv$";
                 partitionPatterns.RootLocation = $"/data/{entDef.EntityName}/";
-                localEDef.DataPartitionPatterns.Add(partitionPatterns);
                 var csvTrait = partitionPatterns.ExhibitsTraits.Add("is.partition.format.CSV", false);
                 csvTrait.Arguments.Add("columnHeaders", "true");
                 csvTrait.Arguments.Add("delimiter", ",");
+
+                localEDef.DataPartitionPatterns.Add(partitionPatterns);
             }
         }
 
