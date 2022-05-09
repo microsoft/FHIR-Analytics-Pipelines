@@ -52,6 +52,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
                 // Schema list for "Patient" resource is ["Patient"]
                 // Schema list for "Observation" resource is ["Observation"]
                 _ = SchemaTypesMap.TryAdd(resource, new List<string>() { resource });
+
+                // After supporting customized schema, the schema type map will be set below when customized schema is enable
+                // _ = SchemaTypesMap.TryAdd(resource, new List<string>() { resource, $"{resource}_customized"});
             }
 
             foreach (var resource in ResourceTypes)

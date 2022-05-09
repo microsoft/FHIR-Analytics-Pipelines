@@ -110,7 +110,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             if (schema == null)
             {
                 _logger.LogError($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
-                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for resource type '{processParameters.SchemaType}'.");
+                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
             }
 
             var processedJsonData = inputData.Values

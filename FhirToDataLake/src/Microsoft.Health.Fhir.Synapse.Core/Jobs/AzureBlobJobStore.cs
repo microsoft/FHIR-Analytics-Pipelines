@@ -43,11 +43,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         // Staged data folder path: "staging/{jobid}/{resourceType}/{year}/{month}/{day}"
         // Committed data file path: "result/{resourceType}/{year}/{month}/{day}/{jobid}"
-        private readonly Regex _stagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/(?<partition>[A-Za-z]+/\d{4}/\d{2}/\d{2})$");
+        private readonly Regex _stagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/(?<partition>[A-Za-z_]+/\d{4}/\d{2}/\d{2})$");
 
         // Staged data file path: "staging/{jobid}/{resourceType}/{year}/{month}/{day}/{resourceType}_{jobId}_{partId}.parquet"
         // Committed data file path: "result/{resourceType}/{year}/{month}/{day}/{jobid}/{resourceType}_{jobId}_{partId}.parquet"
-        private readonly Regex _stagingDataBlobRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/[A-Za-z]+/\d{4}/\d{2}/\d{2}/(?<resource>[A-Za-z]+)_[a-z0-9]{32}_(?<partId>\d+).parquet$");
+        private readonly Regex _stagingDataBlobRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/[A-Za-z_]+/\d{4}/\d{2}/\d{2}/(?<resource>[A-Za-z_]+)_[a-z0-9]{32}_(?<partId>\d+).parquet$");
 
         public AzureBlobJobStore(
             IAzureBlobContainerClientFactory blobContainerFactory,
