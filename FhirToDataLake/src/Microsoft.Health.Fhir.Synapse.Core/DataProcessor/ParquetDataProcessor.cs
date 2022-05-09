@@ -114,10 +114,28 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             }
 
             var processedJsonData = inputData.Values
-                .Select(json => ProcessStructObject(json, schema))
-                .Where(processedResult => processedResult != null);
+                .Select(json => 
+                {
+                    var result = ProcessStructObject(json, schema);
+                    var quwan = "quwan";
+                    return result;
+                });
 
             return new JsonBatchData(processedJsonData);
+
+            /*
+            var results = new List<JObject>();
+            foreach (var json in inputData.Values)
+            {
+                var result = ProcessStructObject(json, schema);
+                if (result != null)
+                {
+                    results.Add(result);
+                }
+            }
+
+            return new JsonBatchData(results);
+            */
         }
 
         private JObject ProcessStructObject(JToken structItem, FhirParquetSchemaNode schemaNode)

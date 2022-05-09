@@ -63,7 +63,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
             var jsonBatchData = new JsonBatchData(_testPatients);
 
-            var resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, TestUtils.GetTestTaskContext("Patient"));
+            var resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("Patient"));
 
             var resultStream = new MemoryStream();
             resultBatchData.Value.CopyTo(resultStream);
@@ -84,7 +84,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
             var jsonBatchData = new JsonBatchData(largeTestData);
 
-            var resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, TestUtils.GetTestTaskContext("Patient"));
+            var resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("Patient"));
 
             var resultStream = new MemoryStream();
             resultBatchData.Value.CopyTo(resultStream);
@@ -104,7 +104,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
             var jsonBatchData = new JsonBatchData(largePatientSingleSet);
 
-            var resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, TestUtils.GetTestTaskContext("Patient"));
+            var resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("Patient"));
 
             var resultStream = new MemoryStream();
             resultBatchData.Value.CopyTo(resultStream);
@@ -135,7 +135,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
             var jsonBatchData = new JsonBatchData(testData);
 
-            var resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, TestUtils.GetTestTaskContext("Patient"));
+            var resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("Patient"));
 
             var resultStream = new MemoryStream();
             resultBatchData.Value.CopyTo(resultStream);
@@ -159,7 +159,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var testData = new List<JObject>(_testPatients);
             var jsonBatchData = new JsonBatchData(testData);
 
-            StreamBatchData result = await parquetDataProcessor.ProcessAsync(jsonBatchData, TestUtils.GetTestTaskContext("Patient"));
+            StreamBatchData result = await parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("Patient"));
             Assert.Null(result);
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var jsonBatchData = new JsonBatchData(_testPatients);
 
             await Assert.ThrowsAsync<ParquetDataProcessorException>(
-                () => parquetDataProcessor.ProcessAsync(jsonBatchData, TestUtils.GetTestTaskContext("InvalidResourceType")));
+                () => parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("InvalidSchemaType")));
         }
 
         [Fact]
@@ -187,7 +187,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
             var invalidJsonBatchData = new JsonBatchData(new List<JObject> { invalidTestData, invalidTestData });
 
-            await Assert.ThrowsAsync<ParquetDataProcessorException>(() => parquetDataProcessor.ProcessAsync(invalidJsonBatchData, TestUtils.GetTestTaskContext("Patient")));
+            await Assert.ThrowsAsync<ParquetDataProcessorException>(() => parquetDataProcessor.ProcessAsync(invalidJsonBatchData, new ProcessParameters("Patient")));
         }
 
         [Fact]
@@ -197,7 +197,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
             var result = parquetDataProcessor.Preprocess(
                 CreateTestJsonBatchData(_testPatient),
-                TestUtils.GetTestTaskContext("Patient"));
+                new ProcessParameters("Patient"));
 
             var expectedResult = TestUtils.LoadNdjsonData(Path.Combine(_expectTestDataFolder, "Expected_Processed_Patient.ndjson"));
 
@@ -234,7 +234,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
             var result = parquetDataProcessor.Preprocess(
                 CreateTestJsonBatchData(rawStructFormatData),
-                TestUtils.GetTestTaskContext("Patient"));
+                new ProcessParameters("Patient"));
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedStructFormatResult));
         }
 
@@ -285,7 +285,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
             var result = parquetDataProcessor.Preprocess(
                 CreateTestJsonBatchData(rawArrayFormatData),
-                TestUtils.GetTestTaskContext("Patient"));
+                new ProcessParameters("Patient"));
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedArrayFormatResult));
         }
 
@@ -348,7 +348,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
             var result = parquetDataProcessor.Preprocess(
                 CreateTestJsonBatchData(rawDeepFieldsData),
-                TestUtils.GetTestTaskContext("Patient"));
+                new ProcessParameters("Patient"));
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedJsonStringFieldsResult));
         }
 
@@ -411,7 +411,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
             var result = parquetDataProcessor.Preprocess(
                 CreateTestJsonBatchData(rawDeepFieldsData),
-                TestUtils.GetTestTaskContext("Patient"));
+                new ProcessParameters("Patient"));
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedJsonStringFieldsResult));
         }
 
@@ -432,7 +432,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
             var result = parquetDataProcessor.Preprocess(
                 CreateTestJsonBatchData(rawPrimitiveChoiceTypeData),
-                TestUtils.GetTestTaskContext("Observation"));
+                new ProcessParameters("Observation"));
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedPrimitiveChoiceTypeResult));
         }
 
@@ -453,7 +453,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
             var result = parquetDataProcessor.Preprocess(
                 CreateTestJsonBatchData(rawStructChoiceTypeData),
-                TestUtils.GetTestTaskContext("Observation"));
+                new ProcessParameters("Observation"));
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedStructChoiceTypeResult));
         }
 
@@ -465,7 +465,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             Assert.Throws<ParquetDataProcessorException>(
                 () => parquetDataProcessor.Preprocess(
                     CreateTestJsonBatchData(_testPatient),
-                    TestUtils.GetTestTaskContext("UnsupportedResouceType")));
+                    new ProcessParameters("UnsupportedResouceType")));
         }
 
         [Fact]
@@ -480,12 +480,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             Assert.Throws<ParquetDataProcessorException>(
                 () => parquetDataProcessor.Preprocess(
                     CreateTestJsonBatchData(invalidFieldData),
-                    TestUtils.GetTestTaskContext("Patient")));
+                    new ProcessParameters("Patient")));
 
             Assert.Throws<ParquetDataProcessorException>(
                 () => parquetDataProcessor.Preprocess(
                     CreateTestJsonBatchData(null),
-                    TestUtils.GetTestTaskContext("Patient")));
+                    new ProcessParameters("Patient")));
         }
 
         private static JsonBatchData CreateTestJsonBatchData(JObject testJObjectData)

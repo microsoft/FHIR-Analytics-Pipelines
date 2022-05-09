@@ -57,9 +57,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
             // verify task result;
             Assert.Null(taskResult.ContinuationToken);
-            Assert.Equal(2, taskResult.PartId);
+            Assert.Equal(2, taskResult.PartId["Patient"]);
             Assert.Equal(3, taskResult.SearchCount);
-            Assert.Equal(0, taskResult.SkippedCount);
+            Assert.Equal(0, taskResult.SkippedCount["Patient"]);
 
             jobUpdater.Complete();
             await jobUpdater.Consume();

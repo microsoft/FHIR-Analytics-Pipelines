@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -39,7 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             stream.Position = 0;
 
             var dataWriter = GetLocalDataWriter();
-            var streamData = new StreamBatchData(stream);
+            var streamData = new StreamBatchData(stream, 1, TestResourceType);
             var context = GetTaskContext();
             await dataWriter.WriteAsync(streamData, context, _testDate);
 
@@ -56,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         public async Task GivenAnInvalidInputStreamData_WhenWritingToBlob_ExceptionShouldBeThrown()
         {
             var dataWriter = GetLocalDataWriter();
-            var streamData = new StreamBatchData(null);
+            var streamData = new StreamBatchData(null, 0, TestResourceType);
             var context = GetTaskContext();
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => dataWriter.WriteAsync(streamData, context, _testDate));
@@ -74,12 +75,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
                 string.Empty,
                 "mockjob",
                 TestResourceType,
+                new List<string>() { TestResourceType },
                 DateTimeOffset.MinValue,
                 DateTimeOffset.MaxValue,
                 null,
-                0,
-                0,
-                0,
+                new Dictionary<string, int>() { { TestResourceType, 0 } },
+                new Dictionary<string, int>() { { TestResourceType, 0 } },
+                new Dictionary<string, int>() { { TestResourceType, 0 } },
                 0);
         }
 

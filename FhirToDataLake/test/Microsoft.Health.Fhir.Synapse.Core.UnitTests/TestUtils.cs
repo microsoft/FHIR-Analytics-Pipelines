@@ -34,12 +34,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
                 null,
                 null,
                 resourceType,
+                new List<string>() { resourceType },
                 new DateTimeOffset(DateTime.MinValue, TimeSpan.Zero),
                 new DateTimeOffset(DateTime.MinValue, TimeSpan.Zero),
                 null,
-                0,
-                0,
-                0);
+                new Dictionary<string, int>() { { resourceType, 0 } },
+                new Dictionary<string, int>() { { resourceType, 0 } },
+                new Dictionary<string, int>() { { resourceType, 0 } });
         }
     }
 }

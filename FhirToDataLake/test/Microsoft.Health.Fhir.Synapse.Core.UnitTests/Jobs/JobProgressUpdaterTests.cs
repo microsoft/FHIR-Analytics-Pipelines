@@ -69,13 +69,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 "test",
                 activeJob.Id,
                 "Patient",
+                new List<string>() { "Patient" },
                 activeJob.DataPeriod.Start,
                 activeJob.DataPeriod.End,
                 "exampleContinuationToken",
-                10,
-                10,
-                0,
-                1);
+                new Dictionary<string, int>() { { "Patient", 10 } },
+                new Dictionary<string, int>() { { "Patient", 0 } },
+                new Dictionary<string, int>() { { "Patient", 1 } },
+                10);
 
             var containerClient = new InMemoryBlobContainerClient();
             var jobProgressUpdater = GetInMemoryJobProgressUpdater(activeJob, containerClient);

@@ -274,7 +274,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private static TaskResult CreateTestTaskResult()
         {
-            return new TaskResult("Patient", null, 0, 100, 0, 100, string.Empty);
+            return new TaskResult(
+                "Patient",
+                null,
+                new Dictionary<string, int>() { { "Patient", 0 } },
+                100,
+                new Dictionary<string, int>() { { "Patient", 0 } },
+                new Dictionary<string, int>() { { "Patient", 100 } },
+                string.Empty);
         }
 
         private JobManager CreateJobManager(

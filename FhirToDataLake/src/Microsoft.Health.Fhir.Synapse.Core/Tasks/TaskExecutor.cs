@@ -126,11 +126,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
         {
             foreach (var schemaType in taskContext.SchemaTypes)
             {
-                var processParameters = new ProcessParameters()
-                {
-                    ResourceType = taskContext.ResourceType,
-                    SchemaType = schemaType,
-                };
+                var processParameters = new ProcessParameters(schemaType);
 
                 var parquetStream = await _parquetDataProcessor.ProcessAsync(inputData, processParameters, cancellationToken);
                 var skippedCount = inputData.Values.Count() - parquetStream.Count;
