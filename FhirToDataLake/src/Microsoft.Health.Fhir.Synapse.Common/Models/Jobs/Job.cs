@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
@@ -33,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             ResourceTypes = resourceTypes ?? new List<string>();
             DataPeriod = dataPeriod;
             LastHeartBeat = lastHeartBeat;
-            SchemaTypesMap = schemaTypesMap ?? new Dictionary<string, List<string>>();
+            SchemaTypeMap = schemaTypesMap ?? new Dictionary<string, List<string>>();
             ResourceProgresses = resourceProgresses ?? new Dictionary<string, string>();
             TotalResourceCounts = totalResourceCounts ?? new Dictionary<string, int>();
             ProcessedResourceCounts = processedResourceCounts ?? new Dictionary<string, int>();
@@ -51,16 +52,25 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
                 // E.g:
                 // Schema list for "Patient" resource is ["Patient"]
                 // Schema list for "Observation" resource is ["Observation"]
-                _ = SchemaTypesMap.TryAdd(resource, new List<string>() { resource });
+                _ = SchemaTypeMap.TryAdd(resource, new List<string>() { resource });
 
                 // After supporting customized schema, the schema type map will be set below when customized schema is enable
                 // _ = SchemaTypesMap.TryAdd(resource, new List<string>() { resource, $"{resource}_customized"});
             }
 
+            var schemaTypeSet = new HashSet<string>();
+
             foreach (var resource in ResourceTypes)
             {
-                foreach (var schemaType in SchemaTypesMap[resource])
+                foreach (var schemaType in SchemaTypeMap[resource])
                 {
+                    // Throw exception when finding duplicate schema types
+                    if (schemaTypeSet.Contains(schemaType))
+                    {
+                        throw new ConfigurationErrorException($"Find invalid duplicate schema type '{schemaType}'.");
+                    }
+
+                    schemaTypeSet.Add(schemaType);
                     _ = ProcessedResourceCounts.TryAdd(schemaType, 0);
                     _ = SkippedResourceCounts.TryAdd(schemaType, 0);
                     _ = PartIds.TryAdd(schemaType, 0);
@@ -108,7 +118,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// Schema types for each resource type.
         /// </summary>
         [JsonProperty("schemaTypesMap")]
-        public Dictionary<string, List<string>> SchemaTypesMap { get; set; }
+        public Dictionary<string, List<string>> SchemaTypeMap { get; set; }
 
         /// <summary>
         /// Will process all data with timestamp greater than or equal to DataPeriod.Start and less than DataPeriod.End.
@@ -136,13 +146,13 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public Dictionary<string, int> TotalResourceCounts { get; }
 
         /// <summary>
-        /// Processed resource count for each resource type.
+        /// Processed resource count for each schema type.
         /// </summary>
         [JsonProperty("processedResourceCounts")]
         public Dictionary<string, int> ProcessedResourceCounts { get; }
 
         /// <summary>
-        /// Skipped resource count for each resource type.
+        /// Skipped resource count for each schema type.
         /// </summary>
         [JsonProperty("skippedResourceCounts")]
         public Dictionary<string, int> SkippedResourceCounts { get; }
@@ -154,7 +164,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public HashSet<string> CompletedResources { get; }
 
         /// <summary>
-        /// Part id for each resource type.
+        /// Part id for each schema type.
         /// </summary>
         [JsonProperty("partIds")]
         public Dictionary<string, int> PartIds { get; }

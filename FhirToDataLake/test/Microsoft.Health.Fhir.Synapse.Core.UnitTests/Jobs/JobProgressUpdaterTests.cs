@@ -64,18 +64,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 JobStatus.Running,
                 new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                DateTimeOffset.Now.AddMinutes(-11));
+                DateTimeOffset.Now.AddMinutes(-11),
+                new Dictionary<string, List<string>>() { { "Patient", new List<string>() { "Patient", "Patient_customized" } } });
+
             var context = new TaskContext(
                 "test",
                 activeJob.Id,
                 "Patient",
-                new List<string>() { "Patient" },
+                new List<string>() { "Patient", "Patient_customized" },
                 activeJob.DataPeriod.Start,
                 activeJob.DataPeriod.End,
                 "exampleContinuationToken",
-                new Dictionary<string, int>() { { "Patient", 10 } },
-                new Dictionary<string, int>() { { "Patient", 0 } },
-                new Dictionary<string, int>() { { "Patient", 1 } },
+                new Dictionary<string, int>() { { "Patient", 10 }, { "Patient_customized", 10 } },
+                new Dictionary<string, int>() { { "Patient", 0 }, { "Patient_customized", 0 } },
+                new Dictionary<string, int>() { { "Patient", 1 }, { "Patient_customized", 1 } },
                 10);
 
             var containerClient = new InMemoryBlobContainerClient();
@@ -89,6 +91,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(10, activeJob.TotalResourceCounts["Patient"]);
             Assert.Equal(10, activeJob.ProcessedResourceCounts["Patient"]);
             Assert.Equal(0, activeJob.SkippedResourceCounts["Patient"]);
+            Assert.Equal(10, activeJob.ProcessedResourceCounts["Patient_customized"]);
+            Assert.Equal(0, activeJob.SkippedResourceCounts["Patient_customized"]);
 
             var persistedJob = await containerClient.GetValue<Job>($"jobs/activeJobs/{activeJob.Id}.json");
             Assert.Equal("exampleContinuationToken", persistedJob.ResourceProgresses["Patient"]);

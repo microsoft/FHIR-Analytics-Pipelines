@@ -56,7 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public string ResourceType { get; set; }
 
         /// <summary>
-        /// Resource type for task.
+        /// Schema types for task.
         /// </summary>
         public List<string> SchemaTypes { get; set; }
 
@@ -71,8 +71,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public DateTimeOffset EndTime { get; set; }
 
         /// <summary>
-        /// Part id for task output files.
-        /// The format is '{Resource}_{JobId}_{PartId}.parquet', e.g. Patient_1ab3edcefsi789ed_0001.parquet.
+        /// Part id for for each schema type, the value will be appended to output files.
+        /// The format is '{SchemaType}_{JobId}_{PartId}.parquet', e.g. Patient_1ab3edcefsi789ed_0001.parquet.
         /// </summary>
         public Dictionary<string, int> PartId { get; set; }
 
@@ -87,12 +87,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public int SearchCount { get; set; }
 
         /// <summary>
-        /// Skipped count.
+        /// Skipped count for each schema type.
         /// </summary>
         public Dictionary<string, int> SkippedCount { get; set; }
 
         /// <summary>
-        /// Processed count.
+        /// Processed count for each schema type.
         /// </summary>
         public Dictionary<string, int> ProcessedCount { get; set; }
 
@@ -111,7 +111,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             var resourceSkippedCounts = new Dictionary<string, int>();
             var resourcePartIds = new Dictionary<string, int>();
 
-            foreach (var schemaType in job.SchemaTypesMap[resourceType])
+            foreach (var schemaType in job.SchemaTypeMap[resourceType])
             {
                 resourceProcessedCounts.Add(schemaType, job.ProcessedResourceCounts[schemaType]);
                 resourceSkippedCounts.Add(schemaType, job.SkippedResourceCounts[schemaType]);
@@ -122,7 +122,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
                 Guid.NewGuid().ToString("N"),
                 job.Id,
                 resourceType,
-                job.SchemaTypesMap[resourceType],
+                job.SchemaTypeMap[resourceType],
                 job.DataPeriod.Start,
                 job.DataPeriod.End,
                 job.ResourceProgresses[resourceType],

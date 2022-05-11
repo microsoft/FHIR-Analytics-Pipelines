@@ -49,7 +49,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
                 JobStatus.Running,
                 new List<string> { "Patient" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                DateTimeOffset.Now.AddMinutes(-11));
+                DateTimeOffset.Now.AddMinutes(-11),
+                new Dictionary<string, List<string>>() { { "Patient", new List<string>() { "Patient", "Patient_customized" } } });
+
             var taskContext = TaskContext.Create("Patient", activeJob);
 
             var jobUpdater = GetJobUpdater(activeJob);
@@ -57,9 +59,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
             // verify task result;
             Assert.Null(taskResult.ContinuationToken);
-            Assert.Equal(2, taskResult.PartId["Patient"]);
             Assert.Equal(3, taskResult.SearchCount);
+            Assert.Equal(2, taskResult.PartId["Patient"]);
             Assert.Equal(0, taskResult.SkippedCount["Patient"]);
+            Assert.Equal(2, taskResult.PartId["Patient_customized"]);
+            Assert.Equal(0, taskResult.SkippedCount["Patient_customized"]);
 
             jobUpdater.Complete();
             await jobUpdater.Consume();
@@ -67,7 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             // verify blob data;
             var blobClient = new BlobContainerClient(TestBlobEndpoint, containerName);
             var blobPages = blobClient.GetBlobs(prefix: "staging").AsPages();
-            Assert.Equal(2, blobPages.First().Values.Count());
+            Assert.Equal(4, blobPages.First().Values.Count());
 
             // verify job data
             var jobBlob = blobClient.GetBlobClient($"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
@@ -81,6 +85,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             Assert.Contains("Patient", job.CompletedResources);
             Assert.Equal(2, job.PartIds["Patient"]);
             Assert.Equal(3, job.ProcessedResourceCounts["Patient"]);
+            Assert.Equal(2, job.PartIds["Patient_customized"]);
+            Assert.Equal(3, job.ProcessedResourceCounts["Patient_customized"]);
             Assert.Null(job.ResourceProgresses["Patient"]);
 
             blobClient.DeleteIfExists();
@@ -120,13 +126,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private static ParquetDataProcessor GetParquetDataProcessor()
         {
-            var schemaConfigurationOption = Microsoft.Extensions.Options.Options.Create(new SchemaConfiguration()
+            var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
             {
-                SchemaCollectionDirectory = @"..\..\..\..\..\data\schemas",
+                SchemaCollectionDirectory = TestUtils.TestSchemaDirectoryPath,
             });
 
             var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
-            var arrowConfigurationOptions = Microsoft.Extensions.Options.Options.Create(new ArrowConfiguration());
+            var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             return new ParquetDataProcessor(
             fhirSchemaManager,
@@ -146,9 +152,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
                 ContainerName = containerName,
             };
 
-            var dataSink = new AzureBlobDataSink(
-                Microsoft.Extensions.Options.Options.Create(storageConfig),
-                Microsoft.Extensions.Options.Options.Create(jobConfig));
+            var dataSink = new AzureBlobDataSink(Options.Create(storageConfig), Options.Create(jobConfig));
             return new AzureBlobDataWriter(containerFactory, dataSink, new NullLogger<AzureBlobDataWriter>());
         }
 

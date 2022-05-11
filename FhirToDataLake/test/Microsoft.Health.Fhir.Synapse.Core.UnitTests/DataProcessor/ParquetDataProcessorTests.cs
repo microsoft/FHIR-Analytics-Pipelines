@@ -36,7 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         {
             var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
             {
-                SchemaCollectionDirectory = TestUtils.SchemaDirectoryPath,
+                SchemaCollectionDirectory = TestUtils.DefaultSchemaDirectoryPath,
             });
 
             _fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
@@ -164,7 +164,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         }
 
         [Fact]
-        public static async Task GivenInvalidResourceType_WhenProcess_ExceptionShouldBeThrown()
+        public static async Task GivenInvalidSchemaType_WhenProcess_ExceptionShouldBeThrown()
         {
             var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
 
@@ -458,14 +458,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         }
 
         [Fact]
-        public static void GivenUnsupportedResourceType_WhenPreprocess_ExceptionShouldBeReturned()
+        public static void GivenInvalidSchemaType_WhenPreprocess_ExceptionShouldBeReturned()
         {
             var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
 
             Assert.Throws<ParquetDataProcessorException>(
                 () => parquetDataProcessor.Preprocess(
                     CreateTestJsonBatchData(_testPatient),
-                    new ProcessParameters("UnsupportedResouceType")));
+                    new ProcessParameters("UnsupportedSchemaType")));
         }
 
         [Fact]

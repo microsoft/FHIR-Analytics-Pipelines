@@ -14,7 +14,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 {
     public static class TestUtils
     {
-        public const string SchemaDirectoryPath = "../../../../../data/schemas";
+        public const string DefaultSchemaDirectoryPath = "../../../../../data/schemas";
+        public const string TestSchemaDirectoryPath = "./TestData/schemas";
 
         public static IEnumerable<JObject> LoadNdjsonData(string filePath)
         {
@@ -26,21 +27,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             {
                 yield return JsonConvert.DeserializeObject<JObject>(line, serializerSettings);
             }
-        }
-
-        public static TaskContext GetTestTaskContext(string resourceType)
-        {
-            return new TaskContext(
-                null,
-                null,
-                resourceType,
-                new List<string>() { resourceType },
-                new DateTimeOffset(DateTime.MinValue, TimeSpan.Zero),
-                new DateTimeOffset(DateTime.MinValue, TimeSpan.Zero),
-                null,
-                new Dictionary<string, int>() { { resourceType, 0 } },
-                new Dictionary<string, int>() { { resourceType, 0 } },
-                new Dictionary<string, int>() { { resourceType, 0 } });
         }
     }
 }

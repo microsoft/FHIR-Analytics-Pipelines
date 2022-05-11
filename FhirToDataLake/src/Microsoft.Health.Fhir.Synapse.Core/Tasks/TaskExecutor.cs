@@ -117,7 +117,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             return TaskResult.CreateFromTaskContext(taskContext);
         }
 
-        public async Task ExecuteInternalAsync(
+        private async Task ExecuteInternalAsync(
             JsonBatchData inputData,
             TaskContext taskContext,
             DateTime dateTime,
