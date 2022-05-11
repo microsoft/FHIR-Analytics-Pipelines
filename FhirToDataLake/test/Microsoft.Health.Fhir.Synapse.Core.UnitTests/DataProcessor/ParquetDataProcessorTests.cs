@@ -480,12 +480,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             Assert.Throws<ParquetDataProcessorException>(
                 () => parquetDataProcessor.Preprocess(
                     CreateTestJsonBatchData(invalidFieldData),
-                    new ProcessParameters("Patient")));
+                    new ProcessParameters("Patient")).Values.Count());
 
             Assert.Throws<ParquetDataProcessorException>(
                 () => parquetDataProcessor.Preprocess(
                     CreateTestJsonBatchData(null),
-                    new ProcessParameters("Patient")));
+                    new ProcessParameters("Patient")).Values.Count());
         }
 
         private static JsonBatchData CreateTestJsonBatchData(JObject testJObjectData)

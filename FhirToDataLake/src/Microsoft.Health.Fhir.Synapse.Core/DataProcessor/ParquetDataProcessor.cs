@@ -115,8 +115,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
 
             var processedJsonData = inputData.Values
                 .Select(json => ProcessStructObject(json, schema))
-                .Where(processedResult => processedResult != null)
-                .ToList();
+                .Where(processedResult => processedResult != null);
 
             return new JsonBatchData(processedJsonData);
         }
