@@ -86,10 +86,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
 
                 // Partition batch data with day
                 var partitionedDayGroups = from resource in fhirResources
-                                           group resource by resource.GetLastUpdatedDay()
-                                           into dayGroups
-                                           orderby dayGroups.Key
-                                           select dayGroups;
+                    group resource by resource.GetLastUpdatedDay()
+                    into dayGroups
+                    orderby dayGroups.Key
+                    select dayGroups;
 
                 foreach (var dayGroup in partitionedDayGroups)
                 {
