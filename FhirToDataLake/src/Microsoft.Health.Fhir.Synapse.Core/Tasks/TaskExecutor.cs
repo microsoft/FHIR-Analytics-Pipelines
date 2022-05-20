@@ -139,6 +139,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
 
                     var batchResult = new BatchDataResult(
                         taskContext.ResourceType,
+                        schemaType,
                         continuationToken,
                         blobUrl,
                         inputData.Values.Count(),
@@ -152,7 +153,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 else
                 {
                     _logger.LogWarning(
-                        "No resource of type {resourceType} is processed. {skippedCount} resources are skipped.",
+                        "No resource of schema type {schemaType} from {resourceType} is processed. {skippedCount} resources are skipped.",
+                        schemaType,
                         taskContext.ResourceType,
                         taskContext.SkippedCount);
                 }

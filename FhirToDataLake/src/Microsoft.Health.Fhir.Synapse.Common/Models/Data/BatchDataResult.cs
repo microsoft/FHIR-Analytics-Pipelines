@@ -11,12 +11,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Data
     {
         public BatchDataResult(
             string resourceType,
+            string schemaType,
             string continuationToken,
             string blobUrl,
             int resourceCount,
             int processedCount)
         {
             ResourceType = resourceType;
+            SchemaType = schemaType;
             ContinuationToken = continuationToken;
             BlobUrl = blobUrl;
             ResourceCount = resourceCount;
@@ -34,9 +36,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Data
         public int ProcessedCount { get; }
 
         /// <summary>
-        /// Resource type for this batch.
+        /// Source resource type for this batch.
         /// </summary>
         public string ResourceType { get; }
+
+        /// <summary>
+        /// Target schema type for this batch.
+        /// </summary>
+        public string SchemaType { get; }
 
         /// <summary>
         /// ContinuationToken for this batch.
