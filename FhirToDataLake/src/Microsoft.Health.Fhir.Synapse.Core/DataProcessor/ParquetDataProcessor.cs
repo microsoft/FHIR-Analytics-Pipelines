@@ -58,59 +58,70 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             _logger.LogInformation($"ParquetDataProcessor initialized successfully with ArrowConfiguration: {JsonConvert.SerializeObject(arrowConfiguration.Value)}.");
         }
 
-        public Task<StreamBatchData> ProcessAsync(
+        public Task<List<StreamBatchData>> ProcessAsync(
             JsonBatchData inputData,
-            ProcessParameters processParameters,
+            TaskContext context,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            // Preprocess data
-            JsonBatchData preprocessedData = Preprocess(inputData, processParameters, cancellationToken);
-
-            // Get FHIR schema for the input data.
-            var schema = _fhirSchemaManager.GetSchema(processParameters.SchemaType);
-
-            if (schema == null)
+            var schemaTypes = _fhirSchemaManager.GetSchemaTypes(context.ResourceType);
+            if (schemaTypes.Count == 0)
             {
-                _logger.LogError($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
-                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
+                _logger.LogError($"The FHIR schema types could not be found for resource type '{context.ResourceType}'.");
+                throw new ParquetDataProcessorException($"The FHIR schema types could not be found for resource type '{context.ResourceType}'.");
             }
 
-            var inputStream = ConvertJsonDataToStream(processParameters.SchemaType, preprocessedData.Values);
-            if (inputStream == null)
+            var batchDataResults = new List<StreamBatchData>();
+            foreach (var schemaType in schemaTypes)
             {
-                // Return null if no data has been converted.
-                return Task.FromResult<StreamBatchData>(null);
+                // Preprocess data
+                JsonBatchData preprocessedData = Preprocess(inputData, schemaType, cancellationToken);
+
+                // Get FHIR schema for the input data.
+                var schema = _fhirSchemaManager.GetSchema(schemaType);
+
+                if (schema == null)
+                {
+                    _logger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
+                    throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{schemaType}'.");
+                }
+
+                var inputStream = ConvertJsonDataToStream(schemaType, preprocessedData.Values);
+                if (inputStream == null)
+                {
+                    continue;
+                }
+
+                // Convert JSON data to parquet stream.
+                try
+                {
+                    var resultStream = _parquetConverterWrapper.ConvertToParquetStream(schemaType, inputStream);
+                    batchDataResults.Add(new StreamBatchData(resultStream, preprocessedData.Values.Count(), schemaType));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Exception happened when converting input data to parquet for \"{schemaType}\".");
+                    throw new ParquetDataProcessorException($"Exception happened when converting input data to parquet for \"{schemaType}\".", ex);
+                }
             }
 
-            // Convert JSON data to parquet stream.
-            try
-            {
-                var resultStream = _parquetConverterWrapper.ConvertToParquetStream(processParameters.SchemaType, inputStream);
-                return Task.FromResult(new StreamBatchData(resultStream, preprocessedData.Values.Count(), processParameters.SchemaType));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".");
-                throw new ParquetDataProcessorException($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".", ex);
-            }
+            return Task.FromResult(batchDataResults);
         }
 
         public JsonBatchData Preprocess(
             JsonBatchData inputData,
-            ProcessParameters processParameters,
+            string schemaType,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             // Get FHIR schema for the input data.
-            var schema = _fhirSchemaManager.GetSchema(processParameters.SchemaType);
+            var schema = _fhirSchemaManager.GetSchema(schemaType);
 
             if (schema == null)
             {
-                _logger.LogError($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
-                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
+                _logger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
+                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{schemaType}'.");
             }
 
             var processedJsonData = inputData.Values

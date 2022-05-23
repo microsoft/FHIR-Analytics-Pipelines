@@ -124,22 +124,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             string continuationToken,
             CancellationToken cancellationToken = default)
         {
-            foreach (var schemaType in taskContext.SchemaTypes)
+            var parquetStreamResults = await _parquetDataProcessor.ProcessAsync(inputData, taskContext, cancellationToken);
+
+            foreach (var parquetStream in parquetStreamResults)
             {
-                var processParameters = new ProcessParameters(schemaType);
+                taskContext.PartId.TryGetValue(parquetStream.SchemaType, out int schemaPartId);
+                taskContext.SkippedCount.TryGetValue(parquetStream.SchemaType, out int schemaSkippedCount);
+                taskContext.ProcessedCount.TryGetValue(parquetStream.SchemaType, out int schemaProcessedCount);
 
-                var parquetStream = await _parquetDataProcessor.ProcessAsync(inputData, processParameters, cancellationToken);
                 var skippedCount = inputData.Values.Count() - parquetStream.Count;
-
                 if (parquetStream?.Value?.Length > 0)
                 {
                     // Upload to blob and log result
-                    var blobUrl = await _dataWriter.WriteAsync(parquetStream, taskContext, dateTime, cancellationToken);
-                    taskContext.PartId[schemaType] += 1;
+                    var blobUrl = await _dataWriter.WriteAsync(parquetStream, taskContext.JobId, schemaPartId, dateTime, cancellationToken);
+                    taskContext.PartId[parquetStream.SchemaType] = schemaPartId + 1;
 
                     var batchResult = new BatchDataResult(
                         taskContext.ResourceType,
-                        schemaType,
+                        parquetStream.SchemaType,
                         continuationToken,
                         blobUrl,
                         inputData.Values.Count(),
@@ -154,13 +156,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 {
                     _logger.LogWarning(
                         "No resource of schema type {schemaType} from {resourceType} is processed. {skippedCount} resources are skipped.",
-                        schemaType,
+                        parquetStream.SchemaType,
                         taskContext.ResourceType,
                         taskContext.SkippedCount);
                 }
 
-                taskContext.SkippedCount[schemaType] += skippedCount;
-                taskContext.ProcessedCount[schemaType] += parquetStream.Count;
+                taskContext.SkippedCount[parquetStream.SchemaType] = schemaSkippedCount + skippedCount;
+                taskContext.ProcessedCount[parquetStream.SchemaType] = schemaProcessedCount + parquetStream.Count;
+                taskContext.SchemaTypes.Add(parquetStream.SchemaType);
             }
         }
     }

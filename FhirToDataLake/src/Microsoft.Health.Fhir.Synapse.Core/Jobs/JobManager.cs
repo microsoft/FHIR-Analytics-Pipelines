@@ -94,7 +94,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     resumedJob.ResourceTypes,
                     resumedJob.DataPeriod,
                     DateTimeOffset.UtcNow,
-                    null,
                     resumedJob.ResourceProgresses,
                     null,
                     null,

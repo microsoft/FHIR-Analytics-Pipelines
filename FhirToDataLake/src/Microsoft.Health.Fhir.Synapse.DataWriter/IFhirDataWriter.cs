@@ -7,7 +7,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter
 {
@@ -15,7 +14,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter
     {
         public Task<string> WriteAsync(
             StreamBatchData data,
-            TaskContext context,
+            string jobId,
+            int partId,
             DateTime dateTime,
             CancellationToken cancellationToken = default);
     }

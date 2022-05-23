@@ -17,6 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 {
     public class FhirParquetSchemaManager : IFhirSchemaManager<FhirParquetSchemaNode>
     {
+        private readonly Dictionary<string, List<string>> _schemaTypesMap;
         private readonly Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
         private readonly ILogger<FhirParquetSchemaManager> _logger;
 
@@ -28,17 +29,41 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 
             _resourceSchemaNodesMap = LoadSchemas(schemaConfiguration.Value.SchemaCollectionDirectory);
             _logger.LogInformation($"Initialize FHIR schemas completed, {_resourceSchemaNodesMap.Count} resource schemas been loaded.");
+
+            _schemaTypesMap = new Dictionary<string, List<string>>();
+            // Temporarily set schema type list only contains single value for each resource type
+            // E.g:
+            // Schema list for "Patient" resource is ["Patient"]
+            // Schema list for "Observation" resource is ["Observation"]
+            foreach (var resourceType in _resourceSchemaNodesMap.Keys)
+            {
+                _schemaTypesMap.Add(resourceType, new List<string>() { resourceType });
+            }
+
+            // After supporting customized schema, the schema type map will be set below when customized schema is enable
+            // _ = SchemaTypesMap.TryAdd(resource, new List<string>() { resource, $"{resource}_customized"});
         }
 
-        public FhirParquetSchemaNode GetSchema(string resourceType)
+        public List<string> GetSchemaTypes(string resourceType)
         {
-            if (!_resourceSchemaNodesMap.ContainsKey(resourceType))
+            if (!_schemaTypesMap.ContainsKey(resourceType))
             {
-                _logger.LogError($"Schema for resource type {resourceType} is not supported.");
+                _logger.LogError($"Schema types for {resourceType} is empty.");
+                return new List<string>();
+            }
+
+            return _schemaTypesMap[resourceType];
+        }
+
+        public FhirParquetSchemaNode GetSchema(string schemaType)
+        {
+            if (!_resourceSchemaNodesMap.ContainsKey(schemaType))
+            {
+                _logger.LogError($"Schema for schema type {schemaType} is not supported.");
                 return null;
             }
 
-            return _resourceSchemaNodesMap[resourceType];
+            return _resourceSchemaNodesMap[schemaType];
         }
 
         public Dictionary<string, FhirParquetSchemaNode> GetAllSchemas()

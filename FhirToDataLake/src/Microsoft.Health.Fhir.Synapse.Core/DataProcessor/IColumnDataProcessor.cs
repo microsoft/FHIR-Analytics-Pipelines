@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
@@ -18,10 +19,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
         /// <param name="inputData">The input JSON data.</param>
         /// <param name="context">Task context.</param>
         /// <param name="cancellationToken">CancellationToken in this operation.</param>
-        /// <returns>DataItem with Stream value. Null stream value will be return if there is no valid processed result.</returns>
-        public Task<StreamBatchData> ProcessAsync(
+        /// <returns>DataItems with Stream value. Null stream value will be return if there is no valid processed result.</returns>
+        public Task<List<StreamBatchData>> ProcessAsync(
             JsonBatchData inputData,
-            ProcessParameters processParameters,
+            TaskContext context,
             CancellationToken cancellationToken = default);
     }
 }

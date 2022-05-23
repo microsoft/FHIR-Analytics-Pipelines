@@ -53,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 if (channelReader.TryRead(out TaskContext context))
                 {
-                    foreach (var schemaType in _job.SchemaTypeMap[context.ResourceType])
+                    foreach (var schemaType in context.SchemaTypes)
                     {
                         _job.ProcessedResourceCounts[schemaType] = context.ProcessedCount[schemaType];
                         _job.SkippedResourceCounts[schemaType] = context.SkippedCount[schemaType];

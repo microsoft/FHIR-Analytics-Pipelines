@@ -42,8 +42,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 Assert.Null(activeJob.ResourceProgresses[resource]);
                 Assert.Equal(0, activeJob.TotalResourceCounts[resource]);
-                Assert.Equal(0, activeJob.ProcessedResourceCounts[resource]);
-                Assert.Equal(0, activeJob.SkippedResourceCounts[resource]);
+                Assert.Empty(activeJob.ProcessedResourceCounts);
+                Assert.Empty(activeJob.SkippedResourceCounts);
             }
 
             var persistedJob = await containerClient.GetValue<Job>($"jobs/activeJobs/{activeJob.Id}.json");
@@ -51,8 +51,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 Assert.Null(persistedJob.ResourceProgresses[resource]);
                 Assert.Equal(0, persistedJob.TotalResourceCounts[resource]);
-                Assert.Equal(0, persistedJob.ProcessedResourceCounts[resource]);
-                Assert.Equal(0, persistedJob.SkippedResourceCounts[resource]);
+                Assert.Empty(persistedJob.ProcessedResourceCounts);
+                Assert.Empty(persistedJob.SkippedResourceCounts);
             }
         }
 
@@ -64,8 +64,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 JobStatus.Running,
                 new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                DateTimeOffset.Now.AddMinutes(-11),
-                new Dictionary<string, List<string>>() { { "Patient", new List<string>() { "Patient", "Patient_customized" } } });
+                DateTimeOffset.Now.AddMinutes(-11));
 
             var context = new TaskContext(
                 "test",

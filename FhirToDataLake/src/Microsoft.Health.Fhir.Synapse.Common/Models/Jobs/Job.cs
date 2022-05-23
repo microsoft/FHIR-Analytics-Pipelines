@@ -18,7 +18,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             IEnumerable<string> resourceTypes,
             DataPeriod dataPeriod,
             DateTimeOffset lastHeartBeat,
-            Dictionary<string, List<string>> schemaTypesMap = null,
             Dictionary<string, string> resourceProgresses = null,
             Dictionary<string, int> totalResourceCounts = null,
             Dictionary<string, int> processedResourceCounts = null,
@@ -34,7 +33,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             ResourceTypes = resourceTypes ?? new List<string>();
             DataPeriod = dataPeriod;
             LastHeartBeat = lastHeartBeat;
-            SchemaTypeMap = schemaTypesMap ?? new Dictionary<string, List<string>>();
             ResourceProgresses = resourceProgresses ?? new Dictionary<string, string>();
             TotalResourceCounts = totalResourceCounts ?? new Dictionary<string, int>();
             ProcessedResourceCounts = processedResourceCounts ?? new Dictionary<string, int>();
@@ -47,34 +45,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             {
                 _ = ResourceProgresses.TryAdd(resource, null);
                 _ = TotalResourceCounts.TryAdd(resource, 0);
-
-                // Temporarily set schema type list only contains single value for each resource type
-                // E.g:
-                // Schema list for "Patient" resource is ["Patient"]
-                // Schema list for "Observation" resource is ["Observation"]
-                _ = SchemaTypeMap.TryAdd(resource, new List<string>() { resource });
-
-                // After supporting customized schema, the schema type map will be set below when customized schema is enable
-                // _ = SchemaTypesMap.TryAdd(resource, new List<string>() { resource, $"{resource}_customized"});
-            }
-
-            var schemaTypeSet = new HashSet<string>();
-
-            foreach (var resource in ResourceTypes)
-            {
-                foreach (var schemaType in SchemaTypeMap[resource])
-                {
-                    // Throw exception when finding duplicate schema types
-                    if (schemaTypeSet.Contains(schemaType))
-                    {
-                        throw new ConfigurationErrorException($"Find invalid duplicate schema type '{schemaType}'.");
-                    }
-
-                    schemaTypeSet.Add(schemaType);
-                    _ = ProcessedResourceCounts.TryAdd(schemaType, 0);
-                    _ = SkippedResourceCounts.TryAdd(schemaType, 0);
-                    _ = PartIds.TryAdd(schemaType, 0);
-                }
             }
         }
 
@@ -113,12 +83,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// </summary>
         [JsonProperty("resourceTypes")]
         public IEnumerable<string> ResourceTypes { get; set; }
-
-        /// <summary>
-        /// Schema types for each resource type.
-        /// </summary>
-        [JsonProperty("schemaTypesMap")]
-        public Dictionary<string, List<string>> SchemaTypeMap { get; set; }
 
         /// <summary>
         /// Will process all data with timestamp greater than or equal to DataPeriod.Start and less than DataPeriod.End.

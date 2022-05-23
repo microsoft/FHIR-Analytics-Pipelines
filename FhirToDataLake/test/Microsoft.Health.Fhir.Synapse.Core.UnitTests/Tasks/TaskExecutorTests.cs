@@ -49,8 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
                 JobStatus.Running,
                 new List<string> { "Patient" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                DateTimeOffset.Now.AddMinutes(-11),
-                new Dictionary<string, List<string>>() { { "Patient", new List<string>() { "Patient", "Patient_customized" } } });
+                DateTimeOffset.Now.AddMinutes(-11));
 
             var taskContext = TaskContext.Create("Patient", activeJob);
 
@@ -62,8 +61,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             Assert.Equal(3, taskResult.SearchCount);
             Assert.Equal(2, taskResult.PartId["Patient"]);
             Assert.Equal(0, taskResult.SkippedCount["Patient"]);
-            Assert.Equal(2, taskResult.PartId["Patient_customized"]);
-            Assert.Equal(0, taskResult.SkippedCount["Patient_customized"]);
 
             jobUpdater.Complete();
             await jobUpdater.Consume();
@@ -71,7 +68,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             // verify blob data;
             var blobClient = new BlobContainerClient(TestBlobEndpoint, containerName);
             var blobPages = blobClient.GetBlobs(prefix: "staging").AsPages();
-            Assert.Equal(4, blobPages.First().Values.Count());
+            Assert.Equal(2, blobPages.First().Values.Count());
 
             // verify job data
             var jobBlob = blobClient.GetBlobClient($"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
@@ -85,8 +82,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             Assert.Contains("Patient", job.CompletedResources);
             Assert.Equal(2, job.PartIds["Patient"]);
             Assert.Equal(3, job.ProcessedResourceCounts["Patient"]);
-            Assert.Equal(2, job.PartIds["Patient_customized"]);
-            Assert.Equal(3, job.ProcessedResourceCounts["Patient_customized"]);
             Assert.Null(job.ResourceProgresses["Patient"]);
 
             blobClient.DeleteIfExists();

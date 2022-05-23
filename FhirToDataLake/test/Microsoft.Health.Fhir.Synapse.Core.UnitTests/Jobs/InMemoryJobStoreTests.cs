@@ -123,7 +123,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await blobClient.CreateJob(activeJob);
 
             activeJob.ResourceProgresses["Patient"] = "test1234";
-            activeJob.SchemaTypeMap["Patient"] = new List<string>() { "Patient", "Patient_customized" };
             activeJob.PartIds["Patient"] = 2;
             activeJob.PartIds["Patient_customized"] = 2;
             activeJob.ProcessedResourceCounts["Patient"] = 100;

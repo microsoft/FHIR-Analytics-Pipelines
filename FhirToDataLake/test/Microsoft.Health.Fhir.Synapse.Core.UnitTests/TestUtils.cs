@@ -28,5 +28,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
                 yield return JsonConvert.DeserializeObject<JObject>(line, serializerSettings);
             }
         }
+
+        public static TaskContext GetTestTaskContext(string resourceType)
+        {
+            return new TaskContext(
+                null,
+                null,
+                resourceType,
+                new List<string>() { resourceType },
+                new DateTimeOffset(DateTime.MinValue, TimeSpan.Zero),
+                new DateTimeOffset(DateTime.MinValue, TimeSpan.Zero),
+                null,
+                new Dictionary<string, int>() { { resourceType, 0 } },
+                new Dictionary<string, int>() { { resourceType, 0 } },
+                new Dictionary<string, int>() { { resourceType, 0 } });
+        }
     }
 }

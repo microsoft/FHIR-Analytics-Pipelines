@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
@@ -35,16 +34,17 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         public async Task<string> WriteAsync(
             StreamBatchData data,
-            TaskContext context,
+            string jobId,
+            int partId,
             DateTime dateTime,
             CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(data, nameof(data));
-            EnsureArg.IsNotNull(context, nameof(context));
+            EnsureArg.IsNotNull(jobId, nameof(jobId));
 
             var schemaType = data.SchemaType;
 
-            var blobName = GetDataFileName(dateTime, schemaType, context.JobId, context.PartId[schemaType]);
+            var blobName = GetDataFileName(dateTime, schemaType, jobId, partId);
             var blobUrl = await _containerClient.UpdateBlobAsync(blobName, data.Value, cancellationToken);
 
             _logger.LogInformation($"Write stream batch data to {blobUrl} successfully.");
