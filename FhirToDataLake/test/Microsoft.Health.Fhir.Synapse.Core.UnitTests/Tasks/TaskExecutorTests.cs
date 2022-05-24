@@ -51,7 +51,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.Now.AddMinutes(-11));
 
-            var taskContext = TaskContext.Create("Patient", activeJob);
+            var taskContext = TaskContext.Create("Patient", new List<string>() { "Patient" }, activeJob);
 
             var jobUpdater = GetJobUpdater(activeJob);
             var taskResult = await taskExecutor.ExecuteAsync(taskContext, jobUpdater);
@@ -103,7 +103,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
                 new List<string> { "Patient" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.Now.AddMinutes(-11));
-            var taskContext = TaskContext.Create("Patient", activeJob);
+            var taskContext = TaskContext.Create("Patient", new List<string>() { "Patient" }, activeJob);
 
             var jobUpdater = GetJobUpdater(activeJob);
             await Assert.ThrowsAsync<FhirDataParseExeption>(() => taskExecutor.ExecuteAsync(taskContext, jobUpdater));

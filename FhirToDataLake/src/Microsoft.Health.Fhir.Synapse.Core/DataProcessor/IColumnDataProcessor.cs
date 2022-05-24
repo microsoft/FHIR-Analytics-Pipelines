@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
 {
@@ -17,12 +16,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
         /// Process Json input data into stream output data.
         /// </summary>
         /// <param name="inputData">The input JSON data.</param>
-        /// <param name="context">Task context.</param>
+        /// <param name="processParameters">Process parameters.</param>
         /// <param name="cancellationToken">CancellationToken in this operation.</param>
-        /// <returns>DataItems with Stream value. Null stream value will be return if there is no valid processed result.</returns>
-        public Task<List<StreamBatchData>> ProcessAsync(
+        /// <returns>DataItem with Stream value. Null stream value will be return if there is no valid processed result.</returns>
+        public Task<StreamBatchData> ProcessAsync(
             JsonBatchData inputData,
-            TaskContext context,
+            ProcessParameters processParameters,
             CancellationToken cancellationToken = default);
     }
 }

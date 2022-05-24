@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Parquet.CLR;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
@@ -58,54 +57,48 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             _logger.LogInformation($"ParquetDataProcessor initialized successfully with ArrowConfiguration: {JsonConvert.SerializeObject(arrowConfiguration.Value)}.");
         }
 
-        public Task<List<StreamBatchData>> ProcessAsync(
+        public Task<StreamBatchData> ProcessAsync(
             JsonBatchData inputData,
-            TaskContext context,
+            ProcessParameters processParameters,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var schemaTypes = _fhirSchemaManager.GetSchemaTypes(context.ResourceType);
-            if (schemaTypes.Count == 0)
-            {
-                _logger.LogError($"The FHIR schema types could not be found for resource type '{context.ResourceType}'.");
-                throw new ParquetDataProcessorException($"The FHIR schema types could not be found for resource type '{context.ResourceType}'.");
-            }
 
-            var batchDataResults = new List<StreamBatchData>();
-            foreach (var schemaType in schemaTypes)
-            {
                 // Preprocess data
-                JsonBatchData preprocessedData = Preprocess(inputData, schemaType, cancellationToken);
+            JsonBatchData preprocessedData = Preprocess(inputData, processParameters.SchemaType, cancellationToken);
 
-                // Get FHIR schema for the input data.
-                var schema = _fhirSchemaManager.GetSchema(schemaType);
+            // Get FHIR schema for the input data.
+            var schema = _fhirSchemaManager.GetSchema(processParameters.SchemaType);
 
-                if (schema == null)
-                {
-                    _logger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
-                    throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{schemaType}'.");
-                }
-
-                var inputStream = ConvertJsonDataToStream(schemaType, preprocessedData.Values);
-                if (inputStream == null)
-                {
-                    continue;
-                }
-
-                // Convert JSON data to parquet stream.
-                try
-                {
-                    var resultStream = _parquetConverterWrapper.ConvertToParquetStream(schemaType, inputStream);
-                    batchDataResults.Add(new StreamBatchData(resultStream, preprocessedData.Values.Count(), schemaType));
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Exception happened when converting input data to parquet for \"{schemaType}\".");
-                    throw new ParquetDataProcessorException($"Exception happened when converting input data to parquet for \"{schemaType}\".", ex);
-                }
+            if (schema == null)
+            {
+                _logger.LogError($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
+                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
             }
 
-            return Task.FromResult(batchDataResults);
+            var inputStream = ConvertJsonDataToStream(processParameters.SchemaType, preprocessedData.Values);
+            if (inputStream == null)
+            {
+                // Return null if no data has been converted.
+                return Task.FromResult<StreamBatchData>(null);
+            }
+
+            // Convert JSON data to parquet stream.
+            try
+            {
+                var resultStream = _parquetConverterWrapper.ConvertToParquetStream(processParameters.SchemaType, inputStream);
+                return Task.FromResult(
+                    new StreamBatchData(
+                        resultStream,
+                        preprocessedData.Values.Count(),
+                        processParameters.SchemaType)
+                    );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".");
+                throw new ParquetDataProcessorException($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".", ex);
+            }
         }
 
         public JsonBatchData Preprocess(

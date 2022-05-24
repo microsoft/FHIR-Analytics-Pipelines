@@ -103,14 +103,21 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
 
         public static TaskContext Create(
             string resourceType,
+            List<string> schemaTypes,
             Job job)
         {
             var isCompleted = job.CompletedResources.Contains(resourceType);
 
-            var schemaTypes = new List<string>();
             var resourceProcessedCounts = new Dictionary<string, int>();
             var resourceSkippedCounts = new Dictionary<string, int>();
             var resourcePartIds = new Dictionary<string, int>();
+
+            foreach (var schemaType in schemaTypes)
+            {
+                resourceProcessedCounts.Add(schemaType, job.ProcessedResourceCounts.GetValueOrDefault(schemaType));
+                resourceSkippedCounts.Add(schemaType, job.SkippedResourceCounts.GetValueOrDefault(schemaType));
+                resourcePartIds.Add(schemaType, job.PartIds.GetValueOrDefault(schemaType));
+            }
 
             return new TaskContext(
                 Guid.NewGuid().ToString("N"),
