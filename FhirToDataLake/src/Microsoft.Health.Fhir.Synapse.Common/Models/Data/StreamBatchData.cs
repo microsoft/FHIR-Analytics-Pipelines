@@ -12,16 +12,16 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Data
     /// </summary>
     public class StreamBatchData
     {
-        public StreamBatchData(Stream value, int count, string schemaType)
+        public StreamBatchData(Stream value, int batchSize, string schemaType)
         {
             Value = value;
-            Count = count;
+            BatchSize = batchSize;
             SchemaType = schemaType;
         }
 
         public Stream Value { get; set; }
 
-        public int Count { get; set; }
+        public int BatchSize { get; set; }
 
         public string SchemaType { get; set; }
     }

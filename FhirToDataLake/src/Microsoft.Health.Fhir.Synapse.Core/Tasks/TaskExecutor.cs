@@ -129,7 +129,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 var processParameters = new ProcessParameters(schemaType);
 
                 var parquetStream = await _parquetDataProcessor.ProcessAsync(inputData, processParameters, cancellationToken);
-                var skippedCount = inputData.Values.Count() - parquetStream.Count;
+                var skippedCount = inputData.Values.Count() - parquetStream.BatchSize;
 
                 if (parquetStream?.Value?.Length > 0)
                 {
@@ -160,7 +160,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 }
 
                 taskContext.SkippedCount[parquetStream.SchemaType] += skippedCount;
-                taskContext.ProcessedCount[parquetStream.SchemaType] += parquetStream.Count;
+                taskContext.ProcessedCount[parquetStream.SchemaType] += parquetStream.BatchSize;
             }
         }
     }
