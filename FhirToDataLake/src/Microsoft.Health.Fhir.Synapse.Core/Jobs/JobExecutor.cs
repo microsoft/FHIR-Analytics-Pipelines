@@ -15,18 +15,22 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class JobExecutor
     {
         private readonly ITaskExecutor _taskExecutor;
+        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly JobProgressUpdaterFactory _jobProgressUpdaterFactory;
         private readonly JobSchedulerConfiguration _schedulerConfiguration;
         private readonly ILogger<JobExecutor> _logger;
 
         public JobExecutor(
             ITaskExecutor taskExecutor,
+            IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             JobProgressUpdaterFactory jobProgressUpdaterFactory,
             IOptions<JobSchedulerConfiguration> schedulerConfiguration,
             ILogger<JobExecutor> logger)
@@ -39,6 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _taskExecutor = taskExecutor;
             _jobProgressUpdaterFactory = jobProgressUpdaterFactory;
             _schedulerConfiguration = schedulerConfiguration.Value;
+            _fhirSchemaManager = fhirSchemaManager;
             _logger = logger;
         }
 
@@ -64,7 +69,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     tasks.Remove(finishedTask);
                 }
 
-                var context = TaskContext.Create(resourceType, job);
+                var context = TaskContext.Create(
+                    resourceType,
+                    _fhirSchemaManager.GetSchemaTypes(resourceType),
+                    job);
                 if (context.IsCompleted)
                 {
                     _logger.LogInformation("Skipping completed resource '{resourceType}'.", resourceType);

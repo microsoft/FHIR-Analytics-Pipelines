@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
@@ -15,18 +16,20 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             string id,
             string jobId,
             string resourceType,
+            List<string> schemaTypes,
             DateTimeOffset startTime,
             DateTimeOffset endTime,
             string continuationToken,
+            Dictionary<string, int> processedCount,
+            Dictionary<string, int> skippedCount,
+            Dictionary<string, int> partId,
             int searchCount = 0,
-            int processedCount = 0,
-            int skippedCount = 0,
-            int partId = 0,
             bool isCompleted = false)
         {
             Id = id;
             JobId = jobId;
             ResourceType = resourceType;
+            SchemaTypes = schemaTypes;
             StartTime = startTime;
             EndTime = endTime;
             ContinuationToken = continuationToken;
@@ -53,6 +56,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public string ResourceType { get; set; }
 
         /// <summary>
+        /// Schema types for task.
+        /// </summary>
+        public List<string> SchemaTypes { get; set; }
+
+        /// <summary>
         /// Start time for task.
         /// </summary>
         public DateTimeOffset StartTime { get; set; }
@@ -63,10 +71,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public DateTimeOffset EndTime { get; set; }
 
         /// <summary>
-        /// Part id for task output files.
-        /// The format is '{Resource}_{JobId}_{PartId}.parquet', e.g. Patient_1ab3edcefsi789ed_0001.parquet.
+        /// Part id for for each schema type, the value will be appended to output files.
+        /// The format is '{SchemaType}_{JobId}_{PartId}.parquet', e.g. Patient_1ab3edcefsi789ed_0001.parquet.
         /// </summary>
-        public int PartId { get; set; }
+        public Dictionary<string, int> PartId { get; set; }
 
         /// <summary>
         /// Task progress.
@@ -79,14 +87,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public int SearchCount { get; set; }
 
         /// <summary>
-        /// Skipped count.
+        /// Skipped count for each schema type.
         /// </summary>
-        public int SkippedCount { get; set; }
+        public Dictionary<string, int> SkippedCount { get; set; }
 
         /// <summary>
-        /// Processed count.
+        /// Processed count for each schema type.
         /// </summary>
-        public int ProcessedCount { get; set; }
+        public Dictionary<string, int> ProcessedCount { get; set; }
 
         /// <summary>
         /// Has completed all resources.
@@ -95,21 +103,34 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
 
         public static TaskContext Create(
             string resourceType,
+            List<string> schemaTypes,
             Job job)
         {
             var isCompleted = job.CompletedResources.Contains(resourceType);
+
+            var resourceProcessedCounts = new Dictionary<string, int>();
+            var resourceSkippedCounts = new Dictionary<string, int>();
+            var resourcePartIds = new Dictionary<string, int>();
+
+            foreach (var schemaType in schemaTypes)
+            {
+                resourceProcessedCounts.Add(schemaType, job.ProcessedResourceCounts.GetValueOrDefault(schemaType));
+                resourceSkippedCounts.Add(schemaType, job.SkippedResourceCounts.GetValueOrDefault(schemaType));
+                resourcePartIds.Add(schemaType, job.PartIds.GetValueOrDefault(schemaType));
+            }
 
             return new TaskContext(
                 Guid.NewGuid().ToString("N"),
                 job.Id,
                 resourceType,
+                schemaTypes,
                 job.DataPeriod.Start,
                 job.DataPeriod.End,
                 job.ResourceProgresses[resourceType],
+                resourceProcessedCounts,
+                resourceSkippedCounts,
+                resourcePartIds,
                 job.TotalResourceCounts[resourceType],
-                job.ProcessedResourceCounts[resourceType],
-                job.SkippedResourceCounts[resourceType],
-                job.PartIds[resourceType],
                 isCompleted);
         }
     }

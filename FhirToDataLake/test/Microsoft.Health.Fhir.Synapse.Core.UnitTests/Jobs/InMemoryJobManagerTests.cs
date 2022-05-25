@@ -20,6 +20,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
@@ -33,6 +34,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static readonly DateTimeOffset _testStartTime = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.FromHours(0));
         private static readonly DateTimeOffset _testEndTime = new DateTimeOffset(2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0));
         private static readonly List<string> _testResourceTypeFilters = new List<string> { "Patient", "Observation" };
+
+        private static readonly FhirParquetSchemaManager _fhirSchemaManager;
+
+        static InMemoryJobManagerTests()
+        {
+            var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
+            {
+                SchemaCollectionDirectory = TestUtils.DefaultSchemaDirectoryPath,
+            });
+
+            _fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
+        }
 
         [Fact]
         public async Task GivenABrokenJobStore_WhenExecute_ExceptionShouldBeThrown()
@@ -274,7 +287,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private static TaskResult CreateTestTaskResult()
         {
-            return new TaskResult("Patient", null, 0, 100, 0, 100, string.Empty);
+            return new TaskResult(
+                "Patient",
+                null,
+                new Dictionary<string, int>() { { "Patient", 0 } },
+                100,
+                new Dictionary<string, int>() { { "Patient", 0 } },
+                new Dictionary<string, int>() { { "Patient", 100 } },
+                string.Empty);
         }
 
         private JobManager CreateJobManager(
@@ -298,7 +318,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var taskExecutor = Substitute.For<ITaskExecutor>();
             taskExecutor.ExecuteAsync(Arg.Any<TaskContext>(), Arg.Any<JobProgressUpdater>(), Arg.Any<CancellationToken>()).Returns(CreateTestTaskResult());
-            var jobExecutor = new JobExecutor(taskExecutor, new JobProgressUpdaterFactory(jobStore, new NullLoggerFactory()), Options.Create(schedulerConfig), new NullLogger<JobExecutor>());
+            var jobExecutor = new JobExecutor(taskExecutor, _fhirSchemaManager, new JobProgressUpdaterFactory(jobStore, new NullLoggerFactory()), Options.Create(schedulerConfig), new NullLogger<JobExecutor>());
 
             return new JobManager(
                 jobStore,

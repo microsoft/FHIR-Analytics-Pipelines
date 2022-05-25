@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Parquet.CLR;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
@@ -60,24 +59,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
 
         public Task<StreamBatchData> ProcessAsync(
             JsonBatchData inputData,
-            TaskContext context,
+            ProcessParameters processParameters,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Preprocess data
-            JsonBatchData preprocessedData = Preprocess(inputData, context, cancellationToken);
+                // Preprocess data
+            JsonBatchData preprocessedData = Preprocess(inputData, processParameters.SchemaType, cancellationToken);
 
             // Get FHIR schema for the input data.
-            var schema = _fhirSchemaManager.GetSchema(context.ResourceType);
+            var schema = _fhirSchemaManager.GetSchema(processParameters.SchemaType);
 
             if (schema == null)
             {
-                _logger.LogError($"The FHIR schema node could not be found for resource type '{context.ResourceType}'.");
-                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for resource type '{context.ResourceType}'.");
+                _logger.LogError($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
+                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
             }
 
-            var inputStream = ConvertJsonDataToStream(context.ResourceType, preprocessedData.Values);
+            var inputStream = ConvertJsonDataToStream(processParameters.SchemaType, preprocessedData.Values);
             if (inputStream == null)
             {
                 // Return null if no data has been converted.
@@ -87,37 +86,40 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             // Convert JSON data to parquet stream.
             try
             {
-                var resultStream = _parquetConverterWrapper.ConvertToParquetStream(context.ResourceType, inputStream);
-                return Task.FromResult(new StreamBatchData(resultStream));
+                var resultStream = _parquetConverterWrapper.ConvertToParquetStream(processParameters.SchemaType, inputStream);
+                return Task.FromResult(
+                    new StreamBatchData(
+                        resultStream,
+                        preprocessedData.Values.Count(),
+                        processParameters.SchemaType)
+                    );
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Exception happened when converting input data to parquet for \"{context.ResourceType}\".");
-                throw new ParquetDataProcessorException($"Exception happened when converting input data to parquet for \"{context.ResourceType}\".", ex);
+                _logger.LogError($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".");
+                throw new ParquetDataProcessorException($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".", ex);
             }
         }
 
         public JsonBatchData Preprocess(
             JsonBatchData inputData,
-            TaskContext context,
+            string schemaType,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             // Get FHIR schema for the input data.
-            var schema = _fhirSchemaManager.GetSchema(context.ResourceType);
+            var schema = _fhirSchemaManager.GetSchema(schemaType);
 
             if (schema == null)
             {
-                _logger.LogError($"The FHIR schema node could not be found for resource type '{context.ResourceType}'.");
-                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for resource type '{context.ResourceType}'.");
+                _logger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
+                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{schemaType}'.");
             }
 
             var processedJsonData = inputData.Values
                 .Select(json => ProcessStructObject(json, schema))
                 .Where(processedResult => processedResult != null);
-
-            context.SkippedCount += inputData.Values.Count() - processedJsonData.Count();
 
             return new JsonBatchData(processedJsonData);
         }
@@ -237,24 +239,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             return choiceRootObject;
         }
 
-        private MemoryStream ConvertJsonDataToStream(string resourceType, IEnumerable<JObject> inputData)
+        private MemoryStream ConvertJsonDataToStream(string schemaType, IEnumerable<JObject> inputData)
         {
             var content = string.Join(
                 Environment.NewLine,
                 inputData.Select(jsonObject => jsonObject.ToString(Formatting.None))
-                         .Where(result => CheckBlockSize(resourceType, result)));
+                         .Where(result => CheckBlockSize(schemaType, result)));
 
             // If no content been fetched, E.g. input data is empty or all FHIR data are larger than block size, will return null.
             return string.IsNullOrEmpty(content) ? null : new MemoryStream(Encoding.UTF8.GetBytes(content));
         }
 
-        private bool CheckBlockSize(string resourceType, string data)
+        private bool CheckBlockSize(string schemaType, string data)
         {
             // If length of actual data is larger than BlockSize in configuration, log a warning and ignore that data, return an empty JSON string.
             // TODO: Confirm the BlockSize handle logic in arrow.lib.
             if (data.Length > _arrowConfiguration.ReadOptions.BlockSize)
             {
-                _logger.LogWarning($"Single data length of {resourceType} is larger than BlockSize {_arrowConfiguration.ReadOptions.BlockSize}, will be ignored when converting to parquet.");
+                _logger.LogWarning($"Single data length of {schemaType} is larger than BlockSize {_arrowConfiguration.ReadOptions.BlockSize}, will be ignored when converting to parquet.");
                 return false;
             }
 
@@ -262,7 +264,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             // Temporarily use 1/3 as the a threshold to give the warning message.
             if (data.Length * 3 > _arrowConfiguration.ReadOptions.BlockSize)
             {
-                _logger.LogWarning($"Single data length of {resourceType} is closing to BlockSize {_arrowConfiguration.ReadOptions.BlockSize}.");
+                _logger.LogWarning($"Single data length of {schemaType} is closing to BlockSize {_arrowConfiguration.ReadOptions.BlockSize}.");
             }
 
             return true;

@@ -29,24 +29,24 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [InlineData("Encounter", 31)]
         [InlineData("Claim", 35)]
         [Theory]
-        public static void GivenAResourceType_WhenGetSchema_CorrectResultShouldBeReturned(string resourceType, int propertyCount)
+        public static void GivenASchemaType_WhenGetSchema_CorrectResultShouldBeReturned(string schemaType, int propertyCount)
         {
             var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
-            var result = schemaManager.GetSchema(resourceType);
+            var result = schemaManager.GetSchema(schemaType);
 
-            Assert.Equal(resourceType, result.Name);
+            Assert.Equal(schemaType, result.Name);
             Assert.False(result.IsLeaf);
             Assert.Equal(propertyCount, result.SubNodes.Count);
         }
 
         [Fact]
-        public static void GivenInvalidResourceType_WhenGetSchema_NullShouldBeReturned()
+        public static void GivenInvalidSchemaType_WhenGetSchema_NullShouldBeReturned()
         {
             var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
 
-            var resourceType = "InvalidResource";
+            var schemaType = "InvalidSchemaType";
 
-            var result = schemaManager.GetSchema(resourceType);
+            var result = schemaManager.GetSchema(schemaType);
             Assert.Null(result);
         }
 
@@ -57,6 +57,31 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
 
             var schemas = schemaManager.GetAllSchemas();
             Assert.Equal(145, schemas.Count);
+        }
+
+        [InlineData("Patient")]
+        [InlineData("Observation")]
+        [InlineData("Encounter")]
+        [InlineData("Claim")]
+        [Theory]
+        public static void GivenAResourceType_WhenGetSchemaTypes_CorrectResultShouldBeReturned(string resourceType)
+        {
+            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
+
+            var schemaTypes = schemaManager.GetSchemaTypes(resourceType);
+            Assert.Single(schemaTypes);
+            Assert.Equal(resourceType, schemaTypes[0]);
+        }
+
+        [Fact]
+        public static void GivenInvalidResourceType_WhenGetSchemaTypes_EmptyResultShouldBeReturned()
+        {
+            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
+
+            var resourceType = "InvalidResourceType";
+
+            var schemaTypes = schemaManager.GetSchemaTypes(resourceType);
+            Assert.Empty(schemaTypes);
         }
 
         [InlineData("")]

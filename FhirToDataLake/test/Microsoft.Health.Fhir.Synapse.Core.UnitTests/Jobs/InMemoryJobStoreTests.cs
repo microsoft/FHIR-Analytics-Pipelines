@@ -124,8 +124,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             activeJob.ResourceProgresses["Patient"] = "test1234";
             activeJob.PartIds["Patient"] = 2;
+            activeJob.PartIds["Patient_customized"] = 2;
             activeJob.ProcessedResourceCounts["Patient"] = 100;
+            activeJob.ProcessedResourceCounts["Patient_customized"] = 95;
             activeJob.SkippedResourceCounts["Patient"] = 0;
+            activeJob.SkippedResourceCounts["Patient_customized"] = 5;
 
             await jobStore.UpdateJobAsync(activeJob);
 
@@ -136,8 +139,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(JobStatus.Running, updatedJob.Status);
             Assert.Equal("test1234", activeJob.ResourceProgresses["Patient"]);
             Assert.Equal(2, activeJob.PartIds["Patient"]);
+            Assert.Equal(2, activeJob.PartIds["Patient_customized"]);
             Assert.Equal(100, activeJob.ProcessedResourceCounts["Patient"]);
+            Assert.Equal(95, activeJob.ProcessedResourceCounts["Patient_customized"]);
             Assert.Equal(0, activeJob.SkippedResourceCounts["Patient"]);
+            Assert.Equal(5, activeJob.SkippedResourceCounts["Patient_customized"]);
 
             jobStore.Dispose();
         }
@@ -236,16 +242,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var stageBlobList = new List<string>
             {
                 $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/01/Patient_{activeJob.Id}_00000.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/01/Patient_customized_{activeJob.Id}_00000.parquet",
                 $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/02/Patient_{activeJob.Id}_00001.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/02/Patient_customized_{activeJob.Id}_00001.parquet",
                 $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/03/Patient_{activeJob.Id}_00002.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/03/Patient_customized_{activeJob.Id}_00002.parquet",
                 $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/04/Patient_{activeJob.Id}_00003.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/04/Patient_customized_{activeJob.Id}_00003.parquet",
             };
             var resultBlobList = new List<string>
             {
                 $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/01/{activeJob.Id}/Patient_{activeJob.Id}_00000.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/01/{activeJob.Id}/Patient_customized_{activeJob.Id}_00000.parquet",
                 $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/02/{activeJob.Id}/Patient_{activeJob.Id}_00001.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/02/{activeJob.Id}/Patient_customized_{activeJob.Id}_00001.parquet",
                 $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/03/{activeJob.Id}/Patient_{activeJob.Id}_00002.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/03/{activeJob.Id}/Patient_customized_{activeJob.Id}_00002.parquet",
                 $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/04/{activeJob.Id}/Patient_{activeJob.Id}_00003.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/04/{activeJob.Id}/Patient_customized_{activeJob.Id}_00003.parquet",
             };
 
             foreach (var blobName in stageBlobList)
@@ -254,6 +268,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
 
             activeJob.PartIds["Patient"] = 4;
+            activeJob.PartIds["Patient_customized"] = 4;
             await jobStore.CompleteJobAsync(activeJob);
 
             // Make sure data has been moved to result folder.

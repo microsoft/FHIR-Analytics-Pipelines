@@ -41,13 +41,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         // Concurrency to control how many folders are processed concurrently.
         private const int StageFolderConcurrency = 20;
 
-        // Staged data folder path: "staging/{jobid}/{resourceType}/{year}/{month}/{day}"
-        // Committed data file path: "result/{resourceType}/{year}/{month}/{day}/{jobid}"
-        private readonly Regex _stagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/(?<partition>[A-Za-z]+/\d{4}/\d{2}/\d{2})$");
+        // Staged data folder path: "staging/{jobid}/{schemaType}/{year}/{month}/{day}"
+        // Committed data file path: "result/{schemaType}/{year}/{month}/{day}/{jobid}"
+        private readonly Regex _stagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/(?<partition>[A-Za-z_]+/\d{4}/\d{2}/\d{2})$");
 
-        // Staged data file path: "staging/{jobid}/{resourceType}/{year}/{month}/{day}/{resourceType}_{jobId}_{partId}.parquet"
-        // Committed data file path: "result/{resourceType}/{year}/{month}/{day}/{jobid}/{resourceType}_{jobId}_{partId}.parquet"
-        private readonly Regex _stagingDataBlobRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/[A-Za-z]+/\d{4}/\d{2}/\d{2}/(?<resource>[A-Za-z]+)_[a-z0-9]{32}_(?<partId>\d+).parquet$");
+        // Staged data file path: "staging/{jobid}/{schemaType}/{year}/{month}/{day}/{schemaType}_{jobId}_{partId}.parquet"
+        // Committed data file path: "result/{schemaType}/{year}/{month}/{day}/{jobid}/{schemaType}_{jobId}_{partId}.parquet"
+        private readonly Regex _stagingDataBlobRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/[A-Za-z_]+/\d{4}/\d{2}/\d{2}/(?<schema>[A-Za-z_]+)_[a-z0-9]{32}_(?<partId>\d+).parquet$");
 
         public AzureBlobJobStore(
             IAzureBlobContainerClientFactory blobContainerFactory,
@@ -268,15 +268,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// We first get all pathItems from staging folder.
         /// The result contains all subfolders and blobs like
         ///   "staging/jobid" directory
-        ///   "staging/jobid/resourceType" directory
-        ///   "staging/jobid/resourceType/year" directory
-        ///   "staging/jobid/resourceType/year/month" directory
-        ///   "staging/jobid/resourceType/year/month/day1" directory
-        ///   "staging/jobid/resourceType/year/month/day1/resourceType_jobid_00001.parquet" blob
-        ///   "staging/jobid/resourceType/year/month/day1/resourceType_jobid_00002.parquet" blob
-        ///   "staging/jobid/resourceType/year/month/day2" directory
-        ///   "staging/jobid/resourceType/year/month/day2/resourceType_jobid_00001.parquet" blob
-        ///   "staging/jobid/resourceType/year/month/day2/resourceType_jobid_00002.parquet" blob
+        ///   "staging/jobid/schemaType" directory
+        ///   "staging/jobid/schemaType/year" directory
+        ///   "staging/jobid/schemaType/year/month" directory
+        ///   "staging/jobid/schemaType/year/month/day1" directory
+        ///   "staging/jobid/schemaType/year/month/day1/schemaType_jobid_00001.parquet" blob
+        ///   "staging/jobid/schemaType/year/month/day1/schemaType_jobid_00002.parquet" blob
+        ///   "staging/jobid/schemaType/year/month/day2" directory
+        ///   "staging/jobid/schemaType/year/month/day2/schemaType_jobid_00001.parquet" blob
+        ///   "staging/jobid/schemaType/year/month/day2/schemaType_jobid_00002.parquet" blob
         /// For blobs, we need to check the partId to ensure only partIds recorded in the job status are committed in case there are some dangling files.
         /// For directories, we need to find all leaf directory and map to the target directory in result folder.
         /// Then rename the source directory to target directory.
@@ -307,9 +307,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     var match = _stagingDataBlobRegex.Match(path.Name);
                     if (match.Success)
                     {
-                        var resource = match.Groups["resource"].Value;
+                        var schemaType = match.Groups["schema"].Value;
                         var partId = int.Parse(match.Groups["partId"].Value);
-                        if (partId >= job.PartIds[resource])
+                        if (partId >= job.PartIds[schemaType])
                         {
                             await _blobContainerClient.DeleteBlobAsync(path.Name, cancellationToken);
                         }

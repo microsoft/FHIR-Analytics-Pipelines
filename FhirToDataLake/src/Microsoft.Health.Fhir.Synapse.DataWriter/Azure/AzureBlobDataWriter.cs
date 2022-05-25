@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
@@ -35,14 +34,17 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         public async Task<string> WriteAsync(
             StreamBatchData data,
-            TaskContext context,
+            string jobId,
+            int partId,
             DateTime dateTime,
             CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(data, nameof(data));
-            EnsureArg.IsNotNull(context, nameof(context));
+            EnsureArg.IsNotNull(jobId, nameof(jobId));
 
-            var blobName = GetDataFileName(dateTime, context.ResourceType, context.JobId, context.PartId);
+            var schemaType = data.SchemaType;
+
+            var blobName = GetDataFileName(dateTime, schemaType, jobId, partId);
             var blobUrl = await _containerClient.UpdateBlobAsync(blobName, data.Value, cancellationToken);
 
             _logger.LogInformation($"Write stream batch data to {blobUrl} successfully.");
@@ -52,13 +54,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         private static string GetDataFileName(
             DateTime dateTime,
-            string resourceType,
+            string schemaType,
             string jobId,
             int partId)
         {
             var dateTimeKey = dateTime.ToString(DateKeyFormat);
 
-            return $"{AzureStorageConstants.StagingFolderName}/{jobId}/{resourceType}/{dateTimeKey}/{resourceType}_{jobId}_{partId:d5}.parquet";
+            return $"{AzureStorageConstants.StagingFolderName}/{jobId}/{schemaType}/{dateTimeKey}/{schemaType}_{jobId}_{partId:d5}.parquet";
         }
     }
 }

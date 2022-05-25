@@ -94,42 +94,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 foreach (var dayGroup in partitionedDayGroups)
                 {
                     // Convert grouped data to parquet stream
-                    var originalSkippedCount = taskContext.SkippedCount;
                     var inputData = new JsonBatchData(dayGroup.ToImmutableList());
-                    var parquetStream = await _parquetDataProcessor.ProcessAsync(inputData, taskContext, cancellationToken);
-                    var skippedCount = taskContext.SkippedCount - originalSkippedCount;
-
-                    if (parquetStream?.Value?.Length > 0)
-                    {
-                        // Upload to blob and log result
-                        var blobUrl = await _dataWriter.WriteAsync(parquetStream, taskContext, dayGroup.Key.Value, cancellationToken);
-                        taskContext.PartId += 1;
-
-                        var batchResult = new BatchDataResult(
-                            taskContext.ResourceType,
-                            continuationToken,
-                            blobUrl,
-                            inputData.Values.Count(),
-                            inputData.Values.Count() - skippedCount);
-                        _logger.LogInformation(
-                            "{resourceCount} resources are searched in total. {processedCount} resources are processed. Detail: {detail}",
-                            batchResult.ResourceCount,
-                            batchResult.ProcessedCount,
-                            batchResult.ToString());
-                    }
-                    else
-                    {
-                        _logger.LogWarning(
-                            "No resource of type {resourceType} is processed. {skippedCount} resources are skipped.",
-                            taskContext.ResourceType,
-                            taskContext.SkippedCount);
-                    }
+                    await ExecuteInternalAsync(inputData, taskContext, dayGroup.Key.Value, continuationToken, cancellationToken);
                 }
 
                 // Update context
                 taskContext.ContinuationToken = continuationToken;
                 taskContext.SearchCount += fhirResources.Count();
-                taskContext.ProcessedCount = taskContext.SearchCount - taskContext.SkippedCount;
                 taskContext.IsCompleted = string.IsNullOrEmpty(taskContext.ContinuationToken);
 
                 pageCount++;
@@ -144,6 +115,53 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 taskContext.ResourceType);
 
             return TaskResult.CreateFromTaskContext(taskContext);
+        }
+
+        private async Task ExecuteInternalAsync(
+            JsonBatchData inputData,
+            TaskContext taskContext,
+            DateTime dateTime,
+            string continuationToken,
+            CancellationToken cancellationToken = default)
+        {
+            foreach (var schemaType in taskContext.SchemaTypes)
+            {
+                var processParameters = new ProcessParameters(schemaType);
+
+                var parquetStream = await _parquetDataProcessor.ProcessAsync(inputData, processParameters, cancellationToken);
+                var skippedCount = inputData.Values.Count() - parquetStream.BatchSize;
+
+                if (parquetStream?.Value?.Length > 0)
+                {
+                    // Upload to blob and log result
+                    var blobUrl = await _dataWriter.WriteAsync(parquetStream, taskContext.JobId, taskContext.PartId[schemaType], dateTime, cancellationToken);
+                    taskContext.PartId[parquetStream.SchemaType] += 1;
+
+                    var batchResult = new BatchDataResult(
+                        taskContext.ResourceType,
+                        parquetStream.SchemaType,
+                        continuationToken,
+                        blobUrl,
+                        inputData.Values.Count(),
+                        inputData.Values.Count() - skippedCount);
+                    _logger.LogInformation(
+                        "{resourceCount} resources are searched in total. {processedCount} resources are processed. Detail: {detail}",
+                        batchResult.ResourceCount,
+                        batchResult.ProcessedCount,
+                        batchResult.ToString());
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "No resource of schema type {schemaType} from {resourceType} is processed. {skippedCount} resources are skipped.",
+                        parquetStream.SchemaType,
+                        taskContext.ResourceType,
+                        taskContext.SkippedCount);
+                }
+
+                taskContext.SkippedCount[parquetStream.SchemaType] += skippedCount;
+                taskContext.ProcessedCount[parquetStream.SchemaType] += parquetStream.BatchSize;
+            }
         }
     }
 }

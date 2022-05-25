@@ -50,16 +50,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
                 new List<string> { "Patient" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.Now.AddMinutes(-11));
-            var taskContext = TaskContext.Create("Patient", activeJob);
+
+            var taskContext = TaskContext.Create("Patient", new List<string>() { "Patient" }, activeJob);
 
             var jobUpdater = GetJobUpdater(activeJob);
             var taskResult = await taskExecutor.ExecuteAsync(taskContext, jobUpdater);
 
             // verify task result;
             Assert.Null(taskResult.ContinuationToken);
-            Assert.Equal(2, taskResult.PartId);
             Assert.Equal(3, taskResult.SearchCount);
-            Assert.Equal(0, taskResult.SkippedCount);
+            Assert.Equal(2, taskResult.PartId["Patient"]);
+            Assert.Equal(0, taskResult.SkippedCount["Patient"]);
 
             jobUpdater.Complete();
             await jobUpdater.Consume();
@@ -102,7 +103,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
                 new List<string> { "Patient" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.Now.AddMinutes(-11));
-            var taskContext = TaskContext.Create("Patient", activeJob);
+            var taskContext = TaskContext.Create("Patient", new List<string>() { "Patient" }, activeJob);
 
             var jobUpdater = GetJobUpdater(activeJob);
             await Assert.ThrowsAsync<FhirDataParseExeption>(() => taskExecutor.ExecuteAsync(taskContext, jobUpdater));
@@ -120,13 +121,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private static ParquetDataProcessor GetParquetDataProcessor()
         {
-            var schemaConfigurationOption = Microsoft.Extensions.Options.Options.Create(new SchemaConfiguration()
+            var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
             {
-                SchemaCollectionDirectory = @"..\..\..\..\..\data\schemas",
+                SchemaCollectionDirectory = TestUtils.TestSchemaDirectoryPath,
             });
 
             var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
-            var arrowConfigurationOptions = Microsoft.Extensions.Options.Options.Create(new ArrowConfiguration());
+            var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             return new ParquetDataProcessor(
             fhirSchemaManager,
@@ -146,9 +147,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
                 ContainerName = containerName,
             };
 
-            var dataSink = new AzureBlobDataSink(
-                Microsoft.Extensions.Options.Options.Create(storageConfig),
-                Microsoft.Extensions.Options.Options.Create(jobConfig));
+            var dataSink = new AzureBlobDataSink(Options.Create(storageConfig), Options.Create(jobConfig));
             return new AzureBlobDataWriter(containerFactory, dataSink, new NullLogger<AzureBlobDataWriter>());
         }
 

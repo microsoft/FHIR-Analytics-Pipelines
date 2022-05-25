@@ -44,9 +44,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             {
                 _ = ResourceProgresses.TryAdd(resource, null);
                 _ = TotalResourceCounts.TryAdd(resource, 0);
-                _ = ProcessedResourceCounts.TryAdd(resource, 0);
-                _ = SkippedResourceCounts.TryAdd(resource, 0);
-                _ = PartIds.TryAdd(resource, 0);
             }
         }
 
@@ -112,13 +109,13 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public Dictionary<string, int> TotalResourceCounts { get; }
 
         /// <summary>
-        /// Processed resource count for each resource type.
+        /// Processed resource count for each schema type.
         /// </summary>
         [JsonProperty("processedResourceCounts")]
         public Dictionary<string, int> ProcessedResourceCounts { get; }
 
         /// <summary>
-        /// Skipped resource count for each resource type.
+        /// Skipped resource count for each schema type.
         /// </summary>
         [JsonProperty("skippedResourceCounts")]
         public Dictionary<string, int> SkippedResourceCounts { get; }
@@ -130,7 +127,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public HashSet<string> CompletedResources { get; }
 
         /// <summary>
-        /// Part id for each resource type.
+        /// Part id for each schema type.
         /// </summary>
         [JsonProperty("partIds")]
         public Dictionary<string, int> PartIds { get; }

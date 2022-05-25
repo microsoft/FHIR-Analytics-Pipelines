@@ -3,10 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -14,7 +12,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 {
     public static class TestUtils
     {
-        public const string SchemaDirectoryPath = "../../../../../data/schemas";
+        public const string DefaultSchemaDirectoryPath = "../../../../../data/schemas";
+        public const string TestSchemaDirectoryPath = "./TestData/schemas";
 
         public static IEnumerable<JObject> LoadNdjsonData(string filePath)
         {
@@ -26,20 +25,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             {
                 yield return JsonConvert.DeserializeObject<JObject>(line, serializerSettings);
             }
-        }
-
-        public static TaskContext GetTestTaskContext(string resourceType)
-        {
-            return new TaskContext(
-                null,
-                null,
-                resourceType,
-                new DateTimeOffset(DateTime.MinValue, TimeSpan.Zero),
-                new DateTimeOffset(DateTime.MinValue, TimeSpan.Zero),
-                null,
-                0,
-                0,
-                0);
         }
     }
 }

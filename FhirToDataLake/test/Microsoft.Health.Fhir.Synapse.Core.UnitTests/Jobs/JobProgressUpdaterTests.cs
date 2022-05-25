@@ -42,8 +42,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 Assert.Null(activeJob.ResourceProgresses[resource]);
                 Assert.Equal(0, activeJob.TotalResourceCounts[resource]);
-                Assert.Equal(0, activeJob.ProcessedResourceCounts[resource]);
-                Assert.Equal(0, activeJob.SkippedResourceCounts[resource]);
+                Assert.Empty(activeJob.ProcessedResourceCounts);
+                Assert.Empty(activeJob.SkippedResourceCounts);
             }
 
             var persistedJob = await containerClient.GetValue<Job>($"jobs/activeJobs/{activeJob.Id}.json");
@@ -51,8 +51,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 Assert.Null(persistedJob.ResourceProgresses[resource]);
                 Assert.Equal(0, persistedJob.TotalResourceCounts[resource]);
-                Assert.Equal(0, persistedJob.ProcessedResourceCounts[resource]);
-                Assert.Equal(0, persistedJob.SkippedResourceCounts[resource]);
+                Assert.Empty(persistedJob.ProcessedResourceCounts);
+                Assert.Empty(persistedJob.SkippedResourceCounts);
             }
         }
 
@@ -65,17 +65,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.Now.AddMinutes(-11));
+
             var context = new TaskContext(
                 "test",
                 activeJob.Id,
                 "Patient",
+                new List<string>() { "Patient", "Patient_customized" },
                 activeJob.DataPeriod.Start,
                 activeJob.DataPeriod.End,
                 "exampleContinuationToken",
-                10,
-                10,
-                0,
-                1);
+                new Dictionary<string, int>() { { "Patient", 10 }, { "Patient_customized", 10 } },
+                new Dictionary<string, int>() { { "Patient", 0 }, { "Patient_customized", 0 } },
+                new Dictionary<string, int>() { { "Patient", 1 }, { "Patient_customized", 1 } },
+                10);
 
             var containerClient = new InMemoryBlobContainerClient();
             var jobProgressUpdater = GetInMemoryJobProgressUpdater(activeJob, containerClient);
@@ -88,6 +90,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(10, activeJob.TotalResourceCounts["Patient"]);
             Assert.Equal(10, activeJob.ProcessedResourceCounts["Patient"]);
             Assert.Equal(0, activeJob.SkippedResourceCounts["Patient"]);
+            Assert.Equal(10, activeJob.ProcessedResourceCounts["Patient_customized"]);
+            Assert.Equal(0, activeJob.SkippedResourceCounts["Patient_customized"]);
 
             var persistedJob = await containerClient.GetValue<Job>($"jobs/activeJobs/{activeJob.Id}.json");
             Assert.Equal("exampleContinuationToken", persistedJob.ResourceProgresses["Patient"]);
