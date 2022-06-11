@@ -7,10 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
-using EnsureThat.Enforcers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -114,7 +112,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
             // Get bundle from next link
             string nextBundle = TestDataProvider.GetBundleFromFile("TestData/bundle2.json");
-            dataClient.SearchAsync(default, default).ReturnsForAnyArgs(firstBundle, nextBundle);
+            dataClient.SearchAsync(new FhirSearchParameters("Patient", DateTimeOffset.MinValue, DateTimeOffset.MaxValue, null), default).ReturnsForAnyArgs(firstBundle, nextBundle);
             return dataClient;
         }
 
@@ -154,7 +152,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private ITaskExecutor GetTaskExecutor(string bundleResult, string containerName)
         {
-            return new TaskExecutor(GetMockFhirDataClient(bundleResult), GetDataWriter(containerName), GetParquetDataProcessor(), new NullLogger<TaskExecutor>());
+            return new TaskExecutor(GetMockFhirDataClient(bundleResult), GetDataWriter(containerName), GetParquetDataProcessor(), new TaskQueue(), new NullLogger<TaskExecutor>());
         }
 
         private JobProgressUpdater GetJobUpdater(Job job)

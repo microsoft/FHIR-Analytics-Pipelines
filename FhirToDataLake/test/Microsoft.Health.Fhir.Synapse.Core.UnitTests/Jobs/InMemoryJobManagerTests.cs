@@ -19,6 +19,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Newtonsoft.Json;
 using NSubstitute;
@@ -298,7 +299,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var taskExecutor = Substitute.For<ITaskExecutor>();
             taskExecutor.ExecuteAsync(Arg.Any<TaskContext>(), Arg.Any<JobProgressUpdater>(), Arg.Any<CancellationToken>()).Returns(CreateTestTaskResult());
-            var jobExecutor = new JobExecutor(taskExecutor, new JobProgressUpdaterFactory(jobStore, new NullLoggerFactory()), Options.Create(schedulerConfig), new NullLogger<JobExecutor>());
+            var jobExecutor = new JobExecutor(taskExecutor, new JobProgressUpdaterFactory(jobStore, new NullLoggerFactory()), new FhirApiDataClient(null, null, null, null), Options.Create(schedulerConfig), new TaskQueue(), new NullLogger<JobExecutor>());
 
             return new JobManager(
                 jobStore,

@@ -5,12 +5,18 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
+namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
 {
-    public class TypeFilter
+    public class DataFilter
     {
-        public string ResourceType { get; set; }
+        public DataFilter(IList<string> resourceTypes, IList<TypeFilter> typeFilters)
+        {
+            ResourceTypes = resourceTypes;
+            TypeFilters = typeFilters;
+        }
 
-        public Dictionary<string, string> Parameters { get; set; }
+        public IList<string> ResourceTypes { get; set; }
+
+        public IList<TypeFilter> TypeFilters { get; set; }
     }
 }

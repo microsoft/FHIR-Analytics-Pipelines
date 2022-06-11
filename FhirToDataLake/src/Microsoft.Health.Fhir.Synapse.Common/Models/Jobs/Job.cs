@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
@@ -23,7 +24,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             Dictionary<string, int> skippedResourceCounts = null,
             Dictionary<string, int> partIds = null,
             HashSet<string> completedResources = null,
-            string resumedJobId = null)
+            string resumedJobId = null,
+            JobType jobType = JobType.System,
+            string groupId = "",
+            IEnumerable<TypeFilter> typeFilters = null)
         {
             Id = Guid.NewGuid().ToString("N");
             CreatedTime = DateTimeOffset.UtcNow;
@@ -39,6 +43,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             PartIds = partIds ?? new Dictionary<string, int>();
             CompletedResources = completedResources ?? new HashSet<string>();
             ResumedJobId = resumedJobId;
+            TypeFilters = typeFilters ?? new List<TypeFilter>();
+            GroupId = groupId;
+            JobType = jobType;
 
             foreach (var resource in ResourceTypes)
             {
@@ -81,10 +88,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public JobStatus Status { get; set; }
 
         [JsonProperty("jobType")]
-        public JobType JobType { get; set; }
+        public JobType JobType { get; }
 
         [JsonProperty("typeFilters")]
-        public IEnumerable<TypeFilter> TypeFilters { get; set; }
+        public IEnumerable<TypeFilter> TypeFilters { get; }
+
+
+        [JsonProperty("groupId")]
+        public string GroupId { get; }
 
         /// <summary>
         /// All resource types to process.
@@ -104,6 +115,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// </summary>
         [JsonProperty("lastHeartBeat")]
         public DateTimeOffset LastHeartBeat { get; set; }
+
+        /// <summary>
+        /// Gets or sets patient id list of job.
+        /// </summary>
+        [JsonProperty("PatientIds")]
+        public IEnumerable<string> PatientIds { get; set; }
 
         /// <summary>
         /// Gets or sets resource progresses (continuation tokens for search) of job.

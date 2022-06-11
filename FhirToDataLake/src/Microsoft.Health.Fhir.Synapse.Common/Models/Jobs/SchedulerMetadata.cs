@@ -23,6 +23,13 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public DateTimeOffset? LastScheduledTimestamp { get; set; }
 
         /// <summary>
+        /// The patient id list of the newest completed job.
+        /// It is used to distinguish old and newly patients.
+        /// </summary>
+        [JsonProperty("LastScheduledPatientIds")]
+        public IEnumerable<string> LastScheduledPatientIds { get; set; }
+
+        /// <summary>
         /// Scheduled jobs that have been stopped due to errors.
         /// New triggers will resume the execution.
         /// </summary>

@@ -19,6 +19,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         [JsonProperty("job")]
         public JobConfiguration Job { get; set; } = new JobConfiguration();
 
+        [JsonProperty("filter")]
+        public FilterConfiguration Filter { get; set; } = new FilterConfiguration();
+
         [JsonProperty("scheduler")]
         public JobSchedulerConfiguration Scheduler { get; set; } = new JobSchedulerConfiguration();
 

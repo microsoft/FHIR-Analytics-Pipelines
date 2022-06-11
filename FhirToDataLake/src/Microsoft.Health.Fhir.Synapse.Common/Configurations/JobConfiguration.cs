@@ -5,7 +5,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
@@ -30,6 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         [JsonProperty("endTime")]
         public DateTimeOffset? EndTime { get; set; }
 
+        // TODO: will be removed later, these configurations are move to filterConfiguration
         /// <summary>
         /// Resource types to process.
         /// If no resources are present, we will process all resource types.
@@ -39,7 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public IEnumerable<string> ResourceTypeFilters { get; set; }
 
         [JsonProperty("jobType")]
-        public ExportedType JobType { get; set; }
+        public JobType JobType { get; set; }
 
         /// <summary>
         /// Selected resource types, delimited by comma.
@@ -48,6 +49,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public string SelectedTypes { get; set; }
 
         [JsonProperty("_typeFilters")]
-        public string TypeFilters { get; set; }
+        public IEnumerable<string> TypeFilters { get; set; }
+
+        [JsonProperty("requiredTypes")]
+        public IEnumerable<string> RequiredTypes { get; set; }
+
+        [JsonProperty("groupId")]
+        public string GroupId { get; set; }
     }
 }

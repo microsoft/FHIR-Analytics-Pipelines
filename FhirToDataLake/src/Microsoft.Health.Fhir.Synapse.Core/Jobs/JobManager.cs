@@ -12,6 +12,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
@@ -102,7 +103,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     null,
                     null,
                     resumedJob.CompletedResources,
-                    resumedJob.Id);
+                    resumedJob.Id,
+                    resumedJob.JobType,
+                    resumedJob.GroupId,
+                    resumedJob.TypeFilters);
             }
 
             DateTimeOffset triggerStart = GetTriggerStartTime(schedulerSetting);
@@ -121,20 +125,67 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 throw new StartJobFailedException($"The start time '{triggerStart}' to trigger is in the future.");
             }
 
-            IEnumerable<string> resourceTypes = _jobConfiguration.ResourceTypeFilters;
+            IEnumerable<string> resourceTypes = _jobConfiguration.RequiredTypes;
             if (resourceTypes == null || !resourceTypes.Any())
             {
                 resourceTypes = _fhirSpecificationProvider.GetAllResourceTypes();
             }
+
+            IEnumerable<TypeFilter> typeFilters = ParseTypeFilter(_jobConfiguration.TypeFilters);
 
             var newJob = new Job(
                 _jobConfiguration.ContainerName,
                 JobStatus.New,
                 resourceTypes,
                 new DataPeriod(triggerStart, triggerEnd),
-                DateTimeOffset.UtcNow);
+                DateTimeOffset.UtcNow,
+                jobType: _jobConfiguration.JobType,
+                groupId: _jobConfiguration.GroupId,
+                typeFilters: typeFilters
+                );
             await _jobStore.UpdateJobAsync(newJob, cancellationToken);
             return newJob;
+        }
+
+
+        private IEnumerable<TypeFilter> ParseTypeFilter(IEnumerable<string> typeFilterStrings)
+        {
+            var typeFilters = new List<TypeFilter>();
+
+            foreach (var typeFilterString in typeFilterStrings)
+            {
+                var parameterIndex = typeFilterString.IndexOf("?", StringComparison.Ordinal);
+
+                if (parameterIndex < 0 || parameterIndex == typeFilterString.Length - 1)
+                {
+                    _logger.LogError("The typeFilter segment '{typeFilterString}' could not be parsed.", typeFilterString);
+                    throw new StartJobFailedException($"The typeFilter segment '{typeFilterString}' could not be parsed.");
+                }
+
+                var filterType = typeFilterString.Substring(0, parameterIndex);
+
+                var filterParameters = typeFilterString.Substring(parameterIndex + 1).Split("&");
+                var parameterTupleList = new List<Tuple<string, string>>();
+
+                foreach (string parameter in filterParameters)
+                {
+                    var keyValue = parameter.Split("=");
+
+                    if (keyValue.Length != 2)
+                    {
+                        _logger.LogError("The typeFilter segment '{typeFilterString}' could not be parsed.", typeFilterString);
+                        throw new StartJobFailedException($"The typeFilter segment '{typeFilterString}' could not be parsed.");
+
+                    }
+
+                    parameterTupleList.Add(new Tuple<string, string>(keyValue[0], keyValue[1]));
+                }
+
+                typeFilters.Add(new TypeFilter(filterType, parameterTupleList));
+
+            }
+
+            return typeFilters;
         }
 
         private DateTimeOffset GetTriggerStartTime(SchedulerMetadata schedulerSetting)

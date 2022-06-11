@@ -11,7 +11,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
@@ -123,9 +122,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             {
                 foreach (var resourceType in _groupedData.Keys)
                 {
-                    if (_groupedData[resourceType].Count() > 0)
+                    if (_groupedData[resourceType].Count > 0)
                     {
-                        await progressUpdater.Produce(new Tuple<string, int>(resourceType, _groupedData[resourceType].Count()));
+                        await progressUpdater.Produce(new Tuple<string, int>(resourceType, _groupedData[resourceType].Count));
                         await ProcessBatchResources(_groupedData[resourceType], resourceType, originContext, _dataIndexMap, cancellationToken);
                     }
                 }
@@ -153,14 +152,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                     _groupedData[resourceType] = new List<JObject>();
                 }
 
-                if (_groupedData[resourceType].Count() > 4000)
+                if (_groupedData[resourceType].Count > 4000)
                 {
                     var stopWatch = Stopwatch.StartNew();
 
                     await ProcessBatchResources(_groupedData[resourceType], resourceType, taskContext, _dataIndexMap, cancellationToken);
-                    _logger.LogInformation($"Process {resourceType} {_groupedData[resourceType].Count()} takes {stopWatch.Elapsed.TotalSeconds}.");
+                    _logger.LogInformation($"Process {resourceType} {_groupedData[resourceType].Count} takes {stopWatch.Elapsed.TotalSeconds}.");
 
-                    await progressUpdater.Produce(new Tuple<string, int>(resourceType, _groupedData[resourceType].Count()));
+                    await progressUpdater.Produce(new Tuple<string, int>(resourceType, _groupedData[resourceType].Count));
                     _groupedData[resourceType] = new List<JObject>();
                 }
 

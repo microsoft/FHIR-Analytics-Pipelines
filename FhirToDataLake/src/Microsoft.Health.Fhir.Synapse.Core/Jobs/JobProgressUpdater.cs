@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
