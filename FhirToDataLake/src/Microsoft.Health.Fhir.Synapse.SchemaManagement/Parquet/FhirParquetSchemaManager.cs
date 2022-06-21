@@ -27,7 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         {
             _logger = logger;
 
-            _resourceSchemaNodesMap = LoadSchemas(schemaConfiguration.Value.SchemaCollectionDirectory);
+            _resourceSchemaNodesMap = LoadDefaultSchemas(schemaConfiguration.Value.SchemaCollectionDirectory);
             _logger.LogInformation($"Initialize FHIR schemas completed, {_resourceSchemaNodesMap.Count} resource schemas been loaded.");
 
             _schemaTypesMap = new Dictionary<string, List<string>>();
@@ -72,7 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             return new Dictionary<string, FhirParquetSchemaNode>(_resourceSchemaNodesMap);
         }
 
-        private Dictionary<string, FhirParquetSchemaNode> LoadSchemas(string schemaDirectoryPath)
+        private Dictionary<string, FhirParquetSchemaNode> LoadDefaultSchemas(string schemaDirectoryPath)
         {
             if (!Directory.Exists(schemaDirectoryPath))
             {

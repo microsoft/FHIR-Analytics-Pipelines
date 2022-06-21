@@ -3,13 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
@@ -17,13 +12,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
     public class FhirParquetSchemaParser
     {
         // Basic types refer to Json schema document https://cswr.github.io/JsonSchema/spec/basic_types/
-        private static readonly HashSet<JSchemaType> BasicTypes = new HashSet<JSchemaType>()
+        private static readonly Dictionary<JSchemaType, string> BasicTypeMap = new Dictionary<JSchemaType, string>()
         {
-            JSchemaType.String,
-            JSchemaType.Number,
-            JSchemaType.Integer,
-            JSchemaType.Boolean,
-            JSchemaType.Null,
+            { JSchemaType.String, "string" },
+            { JSchemaType.Number, "number" },
+            { JSchemaType.Integer, "integer" },
+            { JSchemaType.Boolean, "boolean" },
         };
 
         public FhirParquetSchemaNode ParseJSchema(string resourceType, JSchema jSchema)
@@ -44,39 +38,19 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             {
                 fhirPath.Add(property.Key);
 
-                if (property.Value.Type == null)
+                if (property.Value.Type == null || property.Value.Type == JSchemaType.Null)
                 {
-                    throw new ParseJsonSchemaException(string.Format("Property \"{0}\" for \"{1}\" customized schema have no \"type\" keyword.", property.Key, resourceType));
+                    throw new ParseJsonSchemaException(string.Format("Property \"{0}\" for \"{1}\" customized schema have no \"type\" keyword or \"type\" is null.", property.Key, resourceType));
                 }
-            }
-        }
 
-        public FhirParquetSchemaNode Build(CustomizedSchemaContent schemaContent)
-        {
-            string schemaType = $@"{schemaContent.resourceType}_Customized";
-            var fhirPath = new List<string>() { schemaType };
-
-            var customizedSchemaNode = new FhirParquetSchemaNode()
-            {
-                Name = schemaType,
-                Type = schemaType,
-                Depth = 0,
-                NodePaths = new List<string>(fhirPath),
-                SubNodes = new Dictionary<string, FhirParquetSchemaNode>(),
-            };
-
-            foreach (var column in schemaContent.columns)
-            {
-                fhirPath.Add(column.columnName);
-
-                if (customizedSchemaNode.SubNodes.ContainsKey(column.columnName))
+                if (!BasicTypeMap.ContainsKey(property.Value.Type.Value))
                 {
-                    throw new ParseJsonSchemaException($"Found two {column.columnName} for customized schema {schemaType}");
+                    throw new ParseJsonSchemaException(string.Format("Property \"{0}\" type \"{1}\" for \"{2}\" customized schema is not basic type.", property.Key, property.Value.Type.Value, resourceType));
                 }
 
                 customizedSchemaNode.SubNodes.Add(
-                    column.columnName,
-                    BuildLeafNode(column.columnName, column.dataType, 1, fhirPath));
+                    property.Key,
+                    BuildLeafNode(property.Key, BasicTypeMap[property.Value.Type.Value], 1, fhirPath));
 
                 fhirPath.RemoveAt(fhirPath.Count - 1);
             }
