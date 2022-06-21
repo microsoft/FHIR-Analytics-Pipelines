@@ -31,6 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             _logger.LogInformation($"Initialize FHIR schemas completed, {_resourceSchemaNodesMap.Count} resource schemas been loaded.");
 
             _schemaTypesMap = new Dictionary<string, List<string>>();
+
             // Temporarily set schema type list only contains single value for each resource type
             // E.g:
             // Schema list for "Patient" resource is ["Patient"]
