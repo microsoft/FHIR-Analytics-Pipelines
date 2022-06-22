@@ -3,13 +3,15 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
+using Microsoft.Health.Fhir.Liquid.Converter;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Newtonsoft.Json.Schema;
 
-namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
+namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.CustomizedSchema
 {
-    public class FhirParquetSchemaParser
+    public class JsonSchemaParser
     {
         // Basic types refer to Json schema document https://cswr.github.io/JsonSchema/spec/basic_types/
         private static readonly Dictionary<JSchemaType, string> BasicTypeMap = new Dictionary<JSchemaType, string>()
@@ -20,15 +22,32 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             { JSchemaType.Boolean, "boolean" },
         };
 
+        // Get Json schema from liquid template by converting an empty Json string
+        public JSchema ParseTemplate(string templateName, ITemplateProvider templateProvider)
+        {
+            // Will implement when integrating FHIR-Convertr into Synapse Sync agent
+            throw new NotImplementedException();
+        }
+
         public FhirParquetSchemaNode ParseJSchema(string resourceType, JSchema jSchema)
         {
+            if (jSchema.Type == null || jSchema.Type == JSchemaType.Null)
+            {
+                throw new ParseJsonSchemaException(string.Format("The \"{0}\" customized schema have no \"type\" keyword or \"type\" is null.", resourceType));
+            }
+
+            if (jSchema.Type != JSchemaType.Object)
+            {
+                throw new ParseJsonSchemaException(string.Format("The \"{0}\" customized schema type \"{1}\" should be \"object\".", resourceType, jSchema.Type));
+            }
+
             string schemaType = $@"{resourceType}_Customized";
             var fhirPath = new List<string>() { schemaType };
 
             var customizedSchemaNode = new FhirParquetSchemaNode()
             {
                 Name = schemaType,
-                Type = schemaType,
+                Type = resourceType,
                 Depth = 0,
                 NodePaths = new List<string>(fhirPath),
                 SubNodes = new Dictionary<string, FhirParquetSchemaNode>(),

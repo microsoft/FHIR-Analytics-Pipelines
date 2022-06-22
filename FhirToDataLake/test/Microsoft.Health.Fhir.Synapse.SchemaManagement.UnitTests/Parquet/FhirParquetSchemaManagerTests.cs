@@ -86,9 +86,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
 
         [InlineData("")]
         [InlineData(null)]
-        [InlineData("../../../InvalidSchemas/NoSchemaDirectory")]
-        [InlineData("../../../InvalidSchemas/NoSchemaType")]
-        [InlineData("../../../InvalidSchemas/InvalidSchemaFile")]
+        [InlineData("../../../TestData/InvalidSchemas/NoSchemaDirectory")]
+        [InlineData("../../../TestData/InvalidSchemas/NoSchemaType")]
+        [InlineData("../../../TestData/InvalidSchemas/InvalidSchemaFile")]
         [Theory]
         public static void GivenInvalidSchema_WhenInitialize_ExceptionShouldBeThrown(string schemaDirectoryPath)
         {
