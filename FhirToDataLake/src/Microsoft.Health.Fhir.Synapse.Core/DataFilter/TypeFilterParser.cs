@@ -66,7 +66,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                         break;
                     default:
                         // this case should not happen
-                        throw new ArgumentOutOfRangeException($"The jobScope {jobScope} isn't supported now"));
+                        throw new ArgumentOutOfRangeException($"The jobScope {jobScope} isn't supported now");
                 }
             }
 

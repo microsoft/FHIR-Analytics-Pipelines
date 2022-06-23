@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -19,6 +20,8 @@ using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Newtonsoft.Json.Linq;
 
@@ -66,8 +69,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                     throw new OperationCanceledException();
                 }
 
-                var searchParameters = new FhirSearchParameters(taskContext.ResourceType, taskContext.StartTime, taskContext.EndTime, taskContext.ContinuationToken);
-                var fhirBundleResult = await _dataClient.SearchAsync(searchParameters, cancellationToken);
+                var queryParameters = new List<KeyValuePair<string, string>>
+                {
+                    new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.StartTime.ToInstantString()}"),
+                    new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.EndTime.ToInstantString()}"),
+                    new (FhirApiConstants.ContinuationKey, taskContext.ContinuationToken),
+                };
+                var searchOption = new BaseSearchOptions(taskContext.ResourceType, queryParameters);
+                var fhirBundleResult = await _dataClient.SearchAsync(searchOption, cancellationToken);
 
                 // Parse bundle result.
                 JObject fhirBundleObject = null;

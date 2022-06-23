@@ -34,6 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             ILogger<FhirApiDataClient> logger)
         {
             EnsureArg.IsNotNull(dataSource, nameof(dataSource));
+            EnsureArg.IsNotNullOrEmpty(dataSource.FhirServerUrl, nameof(dataSource.FhirServerUrl));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
             EnsureArg.IsNotNull(accessTokenProvider, nameof(accessTokenProvider));
             EnsureArg.IsNotNull(logger, nameof(logger));
@@ -97,7 +98,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
         private Uri CreateSearchUri(BaseSearchOptions fhirSearchOptions)
         {
-            var baseUri = new Uri(_dataSource.FhirServerUrl);
+            // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
+            // Otherwise the relative part will be omitted when creating new search Uris. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
+            var serverUrl = _dataSource.FhirServerUrl;
+            if (!_dataSource.FhirServerUrl.EndsWith("/"))
+            {
+                serverUrl = $"{_dataSource.FhirServerUrl}/";
+            }
+
+            var baseUri = new Uri(serverUrl);
 
             var uri = new Uri(baseUri, fhirSearchOptions.RelativeUri());
 

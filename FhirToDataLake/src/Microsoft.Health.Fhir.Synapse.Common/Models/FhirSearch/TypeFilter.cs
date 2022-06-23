@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using EnsureThat;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
 {
@@ -13,9 +12,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
     {
         public TypeFilter(string resourceType, IList<Tuple<string, string>> parameters)
         {
-            EnsureArg.IsNotNullOrWhiteSpace(resourceType, nameof(resourceType));
-            EnsureArg.IsNotNull(parameters, nameof(parameters));
-
             ResourceType = resourceType;
             Parameters = parameters;
         }
