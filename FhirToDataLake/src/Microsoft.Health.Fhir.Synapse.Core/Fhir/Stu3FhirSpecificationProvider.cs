@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 extern alias FhirStu3;
-
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Stu3FhirModelInfo = FhirStu3::Hl7.Fhir.Model.ModelInfo;
@@ -22,6 +22,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         public bool IsValidFhirResourceType(string resourceType)
         {
             return Stu3FhirModelInfo.IsKnownResource(resourceType);
+        }
+
+        public IEnumerable<string> GetCompartmentResourceTypes(string compartmentType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<string> GetSearchParametersByResourceType(string resourceType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsValidSearchModifier(string modifier)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -18,5 +18,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
         public const string BundleFile1 = "./TestData/Bundle1.json";
 
         public const string BundleFile2 = "./TestData/Bundle2.json";
+
+        public const string MetadataFile = "./TestData/metadata.json";
+
     }
 }

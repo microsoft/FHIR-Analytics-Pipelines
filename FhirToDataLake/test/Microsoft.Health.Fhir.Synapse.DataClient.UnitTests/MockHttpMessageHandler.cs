@@ -23,10 +23,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var accessToken = request.Headers.Authorization.Parameter;
-            if (!string.Equals(accessToken, TestDataConstants.TestAccessToken))
+            if (request.RequestUri is not null && request.RequestUri.AbsolutePath != "/metadata")
             {
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized));
+                var accessToken = request.Headers.Authorization.Parameter;
+                if (!string.Equals(accessToken, TestDataConstants.TestAccessToken))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized));
+                }
             }
 
             var urlKey = request.RequestUri.ToString();

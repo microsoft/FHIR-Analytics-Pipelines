@@ -15,6 +15,8 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
+using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -30,13 +32,36 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         private const string SampleEndTime = "2021-08-09T12:40:59+08:00";
 
         [Fact]
-        public async Task GivenAValidTaskContext_WhenSearchFhirData_CorrectBatchDataShouldBeReturned()
+        public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new FhirApiDataClient(null, null, null, null));
+        }
+
+        [Fact]
+        public async Task GivenAValidDataClient_WhenGetMetadata_MetadataBundleShouldBeReturned()
+        {
+            var client = CreateDataClient(_mockProvider);
+
+            var metaData = await client.GetMetaDataAsync();
+
+            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile), metaData);
+        }
+
+        [Fact]
+        public async Task GivenAValidSearchOption_WhenSearchFhirData_CorrectBatchDataShouldBeReturned()
         {
             var client = CreateDataClient(_mockProvider);
 
             // First batch
-            var searchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), null);
-            var bundle1 = await client.SearchAsync(searchParameters);
+            var queryParameters = new List<KeyValuePair<string, string>>
+            {
+                new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
+                new (FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+            };
+
+            var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
+            var bundle1 = await client.SearchAsync(searchOptions);
 
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
 
@@ -44,32 +69,70 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             JObject bundleJObject = JObject.Parse(bundle1);
             var continuationToken = FhirBundleParser.ExtractContinuationToken(bundleJObject);
 
-            // Second batch
-            var newSearchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), continuationToken);
-            var bundle2 = await client.SearchAsync(newSearchParameters);
+            searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, continuationToken));
+
+            var bundle2 = await client.SearchAsync(searchOptions);
 
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile2), bundle2);
         }
 
         [Fact]
-        public async Task GivenAValidTaskContext_WhenSearchDataSourceFailed_ExceptionShouldBeThrown()
+        public async Task GivenAInvalidUrl_WhenSearchFhirData_ExceptionShouldBeThrown()
         {
             // A different start time will result in an unknown url to mock http handler.
             // An HttpRequestException will throw during search.
             var client = CreateDataClient(_mockProvider);
-            var searchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse("2021-07-07T12:00:00+08:00"), DateTimeOffset.Parse(SampleEndTime), string.Empty);
+            var queryParameters = new List<KeyValuePair<string, string>>
+            {
+                new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse("2021-07-07T12:00:00+08:00").ToInstantString()}"),
+                new (FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+                new (FhirApiConstants.ContinuationKey, string.Empty),
+            };
+            var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
 
-            var exception = await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchParameters));
+            var exception = await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchOptions));
             Assert.IsType<HttpRequestException>(exception.InnerException);
         }
 
         [Fact]
-        public async Task GivenAnInvalidTokenProvider_WhenSearchDataSourceFailed_ExceptionShouldBeThrown()
+        public async Task GivenAnInvalidTokenProvider_WhenSearchFhirData_ExceptionShouldBeThrown()
         {
             var client = CreateDataClient(_brokenProvider);
-            var searchParameters = new FhirSearchParameters(SampleResourceType, DateTimeOffset.Parse(SampleStartTime), DateTimeOffset.Parse(SampleEndTime), string.Empty);
+            var queryParameters = new List<KeyValuePair<string, string>>
+            {
+                new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
+                new (FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+                new (FhirApiConstants.ContinuationKey, string.Empty),
+            };
+            var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
 
-            await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchParameters));
+            await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchOptions));
+        }
+
+        [Fact]
+        public async Task GivenAValidResourceIdSearchOption_WhenSearchFhirData_CorrectBatchDataShouldBeReturned()
+        {
+            var client = CreateDataClient(_mockProvider);
+
+            var searchOptions = new ResourceIdSearchOptions("MedicationRequest","3123", null);
+            var bundle1 = await client.SearchAsync(searchOptions);
+
+            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
+        }
+
+        [Fact]
+        public async Task GivenAValidCompartmentSearchOption_WhenSearchFhirData_CorrectBatchDataShouldBeReturned()
+        {
+            var client = CreateDataClient(_mockProvider);
+            var queryParameters = new List<KeyValuePair<string, string>>
+            {
+                new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
+                new (FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+            };
+            var searchOptions = new CompartmentSearchOptions("Patient", "347", "*", queryParameters);
+            var bundle1 = await client.SearchAsync(searchOptions);
+
+            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
         }
 
         private FhirApiDataClient CreateDataClient(IAccessTokenProvider accessTokenProvider)
@@ -81,15 +144,23 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
                 "https://example.com/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
-                "https://example.com/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated&ct=Y29udGludWF0aW9udG9rZW4%3d",
+                "https://example.com/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&ct=Y29udGludWF0aW9udG9rZW4%3d&_count=1000&_sort=_lastUpdated",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile2)));
             requestMap.Add(
-                "https://example.com/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated&ct=invalidresponsetest",
+                "https://example.com/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&ct=invalidresponsetest&_count=1000&_sort=_lastUpdated",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidResponseFile)));
             requestMap.Add(
-                "https://example.com/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated&ct=invalidbundletest",
+                "https://example.com/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&ct=invalidbundletest&_count=1000&_sort=_lastUpdated",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidBundleFile)));
-
+            requestMap.Add(
+                "https://example.com/MedicationRequest?_id=3123&_count=1000&_sort=_lastUpdated",
+                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
+            requestMap.Add(
+                "https://example.com/*?_lastUpdated=ge2021-08-01T12%3a00%3a00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3a40%3a59%2b08%3a00&_count=1000&_sort=_lastUpdated",
+                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
+            requestMap.Add(
+                "https://example.com/metadata",
+                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile)));
             var fhirServerConfig = new FhirServerConfiguration();
             fhirServerConfig.ServerUrl = "https://example.com";
             fhirServerConfig.Authentication = AuthenticationType.ManagedIdentity;

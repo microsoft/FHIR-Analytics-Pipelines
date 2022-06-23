@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 {
     public class GroupMemberExtractorTests
     {
-        private GroupMemberExtractor _groupMemberExtractor;
+        private readonly GroupMemberExtractor _groupMemberExtractor;
 
         private readonly NullLogger<GroupMemberExtractor> _nullGroupMemberExtractorLogger =
             NullLogger<GroupMemberExtractor>.Instance;
@@ -36,8 +36,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         private const string _nestedGroupId = "nestedGroup";
         private const string _invalidMembersGroupId = "invalidGroupMember";
 
-        private const string _emptyBundleTestFile = "emptyBundle.json";
-
         private static readonly Dictionary<string, string> _groupIdToTestDataFile = new Dictionary<string, string>
         {
             {_sampleGroupId, "sampleGroupBundle.json"},
@@ -49,18 +47,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         {
             var dataClient = Substitute.For<IFhirDataClient>();
 
-            dataClient.SearchAsync(new ResourceIdSearchOptions("Group", _sampleGroupId, null), default)
+            dataClient.SearchAsync(new ResourceIdSearchOptions("Group", _sampleGroupId, null), _noneCancellationToken)
                 .ReturnsForAnyArgs(x =>
                 {
                     var resourceId = ((ResourceIdSearchOptions) x[0]).ResourceId;
                     var testDataFile = _groupIdToTestDataFile.ContainsKey(resourceId)
-                        ? _groupIdToTestDataFile[resourceId]
-                        : _emptyBundleTestFile;
-
+                        ? Path.Combine(_testDataFolder, _groupIdToTestDataFile[resourceId])
+                        : TestDataConstants.EmptyBundleFile;
                     string bundle =
-                        TestDataProvider.GetBundleFromFile(Path.Combine(
-                            _testDataFolder,
-                            testDataFile));
+                        TestDataProvider.GetBundleFromFile(testDataFile);
                     return bundle;
                 });
 
@@ -101,86 +96,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             pat8: invalid, triggered time later than period start while inactive is true
             pat3: valid, duplicated patient
             pat4: invalid, duplicated patient while inactive
-
-            "member": [
-              {
-                "entity": {
-                  "reference": "Patient/pat1"
-                }
-              },
-              {
-                "entity": {
-                  "reference": "Patient/pat2"
-                },
-                "inactive": true
-              },
-              {
-                "entity": {
-                  "reference": "Patient/pat3"
-                },
-                "inactive": false
-              },
-              {
-                "entity": {
-                  "reference": "Patient/pat4"
-                },
-                "period": {
-                  "start": "2014-01-01"
-                }
-              },
-              {
-                "entity": {
-                  "reference": "Patient/pat5"
-                },
-                "period": {
-                  "start": "2022-01-01"
-                }
-              },
-              {
-                "entity": {
-                  "reference": "Patient/pat6"
-                },
-                "period": {
-                  "start": "2014-01-01",
-                  "end": "2030-01-01"
-                }
-              },
-              {
-                "entity": {
-                  "reference": "Patient/pat7"
-                },
-                "period": {
-                  "start": "2014-01-01",
-                  "end": "2015-01-01"
-                }
-              },
-              {
-                "entity": {
-                  "reference": "Patient/pat8"
-                },
-                "period": {
-                  "start": "2014-01-01"
-                },
-                "inactive": true
-              },
-              {
-                "entity": {
-                  "reference": "Patient/pat3"
-                },
-                "period": {
-                  "start": "2015-01-01"
-                }
-              },
-              {
-                "entity": {
-                  "reference": "Patient/pat4"
-                },
-                "period": {
-                  "start": "2023-01-01"
-                }
-              }
-            ]
-             */
+            */
             var expectedPatientIds = new List<string> {"pat1", "pat3", "pat4", "pat6"};
             var unExpectedPatientIds = new List<string> {"pat2", "pat5", "pat7", "pat8"};
             foreach (var expectedPatientId in expectedPatientIds)

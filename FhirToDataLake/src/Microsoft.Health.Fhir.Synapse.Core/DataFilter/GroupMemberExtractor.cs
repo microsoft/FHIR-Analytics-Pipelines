@@ -5,11 +5,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using Hl7.Fhir.Model;
 using FhirR4::Hl7.Fhir.Serialization; 
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
-using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption;
 using Bundle = FhirR4::Hl7.Fhir.Model.Bundle;
@@ -29,7 +27,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             ILogger<GroupMemberExtractor> logger)
         {
             EnsureArg.IsNotNull(dataClient, nameof(dataClient));
-
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _dataClient = dataClient;
@@ -52,7 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         /// </summary>
         /// <param name="groupId">The id of the Group.</param>
         /// <param name="queryParameters">parameters to filter groups.</param>
-        /// <param name="groupMembershipTime">Only returns Patients that were in the Group at this time./param>
+        /// <param name="groupMembershipTime">Only returns Patients that were in the Group at this time.</param>
         /// <param name="groupsAlreadyChecked">The already checked groups</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>A set of Patient ids</returns>
@@ -63,7 +60,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             HashSet<string> groupsAlreadyChecked,
             CancellationToken cancellationToken)
         {
-
             groupsAlreadyChecked ??= new HashSet<string>();
 
             groupsAlreadyChecked.Add(groupId);
@@ -93,7 +89,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
 
             return patientIds;
-
         }
 
         private async Task<List<Tuple<string, string>>> GetGroupMembers (
