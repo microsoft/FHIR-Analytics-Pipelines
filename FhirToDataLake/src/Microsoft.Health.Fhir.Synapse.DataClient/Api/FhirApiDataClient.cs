@@ -15,11 +15,13 @@ using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 {
     public sealed class FhirApiDataClient : IFhirDataClient
     {
+        private const string MetadataKey = "metadata";
         private readonly IFhirApiDataSource _dataSource;
         private readonly HttpClient _httpClient;
         private readonly IAccessTokenProvider _accessTokenProvider;
@@ -32,7 +34,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             ILogger<FhirApiDataClient> logger)
         {
             EnsureArg.IsNotNull(dataSource, nameof(dataSource));
-            EnsureArg.IsNotNullOrEmpty(dataSource.FhirServerUrl, nameof(dataSource.FhirServerUrl));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
             EnsureArg.IsNotNull(accessTokenProvider, nameof(accessTokenProvider));
             EnsureArg.IsNotNull(logger, nameof(logger));
@@ -46,8 +47,22 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             _httpClient.Timeout = Timeout.InfiniteTimeSpan;
         }
 
+        public async Task<string> GetMetaDataAsync(CancellationToken cancellationToken = default)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new OperationCanceledException();
+            }
+
+            var baseUri = new Uri(_dataSource.FhirServerUrl);
+
+            var uri = new Uri(baseUri, MetadataKey);
+
+            return await GetResponseFromHttpRequestAsync(uri, null, cancellationToken);
+        }
+
         public async Task<string> SearchAsync(
-            FhirSearchParameters searchParameters,
+            BaseSearchOptions fhirSearchOptions,
             CancellationToken cancellationToken = default)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -55,12 +70,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 throw new OperationCanceledException();
             }
 
-            var searchUri = CreateSearchUri(searchParameters);
-            HttpResponseMessage response;
+            var searchUri = CreateSearchUri(fhirSearchOptions);
 
+            string accessToken = null;
             try
             {
-                var searchRequest = new HttpRequestMessage(HttpMethod.Get, searchUri);
                 if (_dataSource.Authentication == AuthenticationType.ManagedIdentity)
                 {
                     // Currently we support accessing FHIR server endpoints with Managed Identity.
@@ -69,57 +83,65 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
                     // The thread-safe AzureServiceTokenProvider class caches the token in memory and retrieves it from Azure AD just before expiration.
                     // https://docs.microsoft.com/en-us/dotnet/api/overview/azure/service-to-service-authentication#using-the-library
-                    var accessToken = await _accessTokenProvider.GetAccessTokenAsync(_dataSource.FhirServerUrl, cancellationToken);
+                    accessToken = await _accessTokenProvider.GetAccessTokenAsync(_dataSource.FhirServerUrl, cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Get fhir server access token failed, Reason: '{reason}'", ex);
+                throw new FhirSearchException("Get fhir server access token failed", ex);
+            }
+
+            return await GetResponseFromHttpRequestAsync(searchUri, accessToken, cancellationToken);
+        }
+
+        private Uri CreateSearchUri(BaseSearchOptions fhirSearchOptions)
+        {
+            var baseUri = new Uri(_dataSource.FhirServerUrl);
+
+            var uri = new Uri(baseUri, fhirSearchOptions.RelativeUri());
+
+            uri = uri.AddQueryString(fhirSearchOptions.QueryParameters);
+
+            // add shared parameters _count & sort
+            var queryParameters = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
+                new KeyValuePair<string, string>(FhirApiConstants.SortKey, FhirApiConstants.LastUpdatedKey),
+            };
+
+            return uri.AddQueryString(queryParameters);
+        }
+
+        private async Task<string> GetResponseFromHttpRequestAsync(Uri uri, string accessToken = null, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var searchRequest = new HttpRequestMessage(HttpMethod.Get, uri);
+                if (accessToken != null)
+                {
+                    // Currently we support accessing FHIR server endpoints with Managed Identity.
+                    // Obtaining access token against a resource uri only works with Azure API for FHIR now.
+                    // To do: add configuration for OSS FHIR server endpoints.
+
+                    // The thread-safe AzureServiceTokenProvider class caches the token in memory and retrieves it from Azure AD just before expiration.
+                    // https://docs.microsoft.com/en-us/dotnet/api/overview/azure/service-to-service-authentication#using-the-library
                     searchRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
                 }
 
-                response = await _httpClient.SendAsync(searchRequest, cancellationToken);
+                HttpResponseMessage response = await _httpClient.SendAsync(searchRequest, cancellationToken);
                 response.EnsureSuccessStatusCode();
-                _logger.LogInformation("Successfully retrieved search result for url: '{url}'.", searchUri);
+                _logger.LogInformation("Successfully retrieved result for url: '{url}'.", uri);
 
                 return await response.Content.ReadAsStringAsync(cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError("Search FHIR server failed. Url: '{url}', Reason: '{reason}'", searchUri, ex);
+                _logger.LogError("Get response from http request failed. Url: '{url}', Reason: '{reason}'", uri, ex);
                 throw new FhirSearchException(
-                    string.Format(Resource.FhirSearchFailed, searchUri),
+                    string.Format(Resource.FhirSearchFailed, uri),
                     ex);
             }
-        }
-
-        /// <summary>
-        /// Sample uri: http://{FhirServerUrl}/{ResourceType}?_lastUpdated=ge{StartTimestamp}&_lastUpdated=lt{EndTimestamp}&_count={PageCount}&_sort=_lastUpdated&ct={ContinuationToken}.
-        /// </summary>
-        /// <param name="searchParameters">The FHIR search parameters.</param>
-        /// <returns>Uri with search parameters.</returns>
-        private Uri CreateSearchUri(FhirSearchParameters searchParameters)
-        {
-            // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
-            // Otherwise the relative part will be omitted when creating new search Uris. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
-            var serverUrl = _dataSource.FhirServerUrl;
-            if (!_dataSource.FhirServerUrl.EndsWith("/"))
-            {
-                serverUrl = $"{_dataSource.FhirServerUrl}/";
-            }
-
-            var baseUri = new Uri(serverUrl);
-            var uri = new Uri(baseUri, searchParameters.ResourceType);
-
-            var queryParameters = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{searchParameters.StartTime.ToInstantString()}"),
-                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{searchParameters.EndTime.ToInstantString()}"),
-                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
-                new KeyValuePair<string, string>(FhirApiConstants.SortKey, FhirApiConstants.LastUpdatedKey),
-            };
-
-            if (!string.IsNullOrEmpty(searchParameters.ContinuationToken))
-            {
-                queryParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, searchParameters.ContinuationToken));
-            }
-
-            return uri.AddQueryString(queryParameters);
         }
     }
 }

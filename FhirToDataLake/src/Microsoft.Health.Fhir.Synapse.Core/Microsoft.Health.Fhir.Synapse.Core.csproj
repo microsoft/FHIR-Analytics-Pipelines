@@ -24,4 +24,13 @@
     <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.SchemaManagement\Microsoft.Health.Fhir.Synapse.SchemaManagement.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Fhir\Data\R4\compartmentdefinition-patient.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Fhir\Data\R4\search-parameters.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
