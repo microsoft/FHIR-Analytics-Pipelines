@@ -24,14 +24,14 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         private readonly Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
         private readonly ILogger<FhirParquetSchemaManager> _logger;
         private readonly JsonSchemaParser _jsonSchemaParser;
-        private readonly JsonSchemaCollectionsProvider _jsonSchemaCollectionsProvider;
+        private readonly JsonSchemaCollectionProvider _jsonSchemaCollectionsProvider;
 
         // Will be moved to schema configurations
-        private readonly bool _customizedSchema = true;
+        private readonly bool _customizedSchema = false;
 
         public FhirParquetSchemaManager(
             IOptions<SchemaConfiguration> schemaConfiguration,
-            JsonSchemaCollectionsProvider jSchemaCollectionsProvider,
+            JsonSchemaCollectionProvider jSchemaCollectionsProvider,
             ILogger<FhirParquetSchemaManager> logger)
         {
             _logger = logger;

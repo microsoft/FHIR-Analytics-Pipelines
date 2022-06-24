@@ -15,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
         {
             services.AddSingleton<IContainerRegistryTokenProvider, AzureContainerRegistryAccessTokenProvider>();
 
-            services.AddSingleton<JsonSchemaCollectionsProvider, JsonSchemaCollectionsProvider>();
+            services.AddSingleton<JsonSchemaCollectionProvider, JsonSchemaCollectionProvider>();
 
             services.AddSingleton<IFhirSchemaManager<FhirParquetSchemaNode>, FhirParquetSchemaManager>();
 

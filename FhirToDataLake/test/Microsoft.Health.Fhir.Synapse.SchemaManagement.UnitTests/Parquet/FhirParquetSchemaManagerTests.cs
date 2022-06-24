@@ -16,7 +16,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
     public class FhirParquetSchemaManagerTests
     {
         private static readonly IOptions<SchemaConfiguration> _schemaConfigurationOption;
-        private static readonly JsonSchemaCollectionsProvider _jsonSchemaCollectionsProvider;
+        private static readonly JsonSchemaCollectionProvider _jsonSchemaCollectionsProvider;
 
         static FhirParquetSchemaManagerTests()
         {
