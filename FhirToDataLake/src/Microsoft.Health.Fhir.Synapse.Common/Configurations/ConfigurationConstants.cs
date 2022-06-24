@@ -9,6 +9,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
     {
         public const string JobConfigurationKey = "job";
 
+        public const string FilterConfigurationKey = "filter";
+
         public const string FhirServerConfigurationKey = "fhirServer";
 
         public const string DataLakeStoreConfigurationKey = "dataLakeStore";
