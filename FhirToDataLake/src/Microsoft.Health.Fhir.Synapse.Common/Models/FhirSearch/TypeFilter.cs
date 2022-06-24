@@ -13,7 +13,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
         public TypeFilter(string resourceType, IList<Tuple<string, string>> parameters)
         {
             ResourceType = resourceType;
-            Parameters = parameters;
+            Parameters = parameters ?? new List<Tuple<string, string>>();
         }
 
         public string ResourceType { get; set; }

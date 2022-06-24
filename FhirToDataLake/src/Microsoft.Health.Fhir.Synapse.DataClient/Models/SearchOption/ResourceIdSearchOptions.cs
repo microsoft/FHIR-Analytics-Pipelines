@@ -18,8 +18,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption
         {
             ResourceId = resourceId;
 
-            QueryParameters ??= new List<KeyValuePair<string, string>>();
-
             QueryParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.IdKey, ResourceId));
         }
 

@@ -15,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption
             List<KeyValuePair<string, string>> queryParameters)
         {
             ResourceType = resourceType;
-            QueryParameters = queryParameters;
+            QueryParameters = queryParameters ?? new List<KeyValuePair<string, string>>();
         }
 
         public string ResourceType { get; set; }
