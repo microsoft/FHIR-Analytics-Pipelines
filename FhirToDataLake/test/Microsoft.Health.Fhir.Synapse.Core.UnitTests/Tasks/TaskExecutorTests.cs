@@ -26,6 +26,7 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json;
 using NSubstitute;
@@ -126,7 +127,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
                 SchemaCollectionDirectory = TestUtils.TestSchemaDirectoryPath,
             });
 
-            var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
+            var jsonSchemaCollectionsProvider = new JsonSchemaCollectionProvider(Substitute.For<IContainerRegistryTokenProvider>(), NullLogger<JsonSchemaCollectionProvider>.Instance);
+
+            var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance);
             var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             return new ParquetDataProcessor(

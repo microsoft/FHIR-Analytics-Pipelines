@@ -20,6 +20,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json;
 using NSubstitute;
@@ -44,7 +45,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 SchemaCollectionDirectory = TestUtils.DefaultSchemaDirectoryPath,
             });
 
-            _fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
+            var jsonSchemaCollectionsProvider = new JsonSchemaCollectionProvider(Substitute.For<IContainerRegistryTokenProvider>(), NullLogger<JsonSchemaCollectionProvider>.Instance);
+
+            _fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance);
         }
 
         [Fact]
