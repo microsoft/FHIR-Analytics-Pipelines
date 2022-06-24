@@ -7,14 +7,14 @@ using System;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions
 {
-    public class AzureContainerRegistryTokenException : Exception
+    public class ContainerRegistrySchemaException : Exception
     {
-        public AzureContainerRegistryTokenException(string message)
+        public ContainerRegistrySchemaException(string message)
             : base(message)
         {
         }
 
-        public AzureContainerRegistryTokenException(string message, Exception innerException)
+        public ContainerRegistrySchemaException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

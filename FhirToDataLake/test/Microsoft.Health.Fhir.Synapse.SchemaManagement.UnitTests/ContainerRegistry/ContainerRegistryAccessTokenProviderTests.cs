@@ -16,11 +16,11 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegistry
 {
-    public class AzureContainerRegistryAccessTokenProviderTests
+    public class ContainerRegistryAccessTokenProviderTests
     {
         private const string RegistryServer = "test.azurecr.io";
 
-        public AzureContainerRegistryAccessTokenProviderTests()
+        public ContainerRegistryAccessTokenProviderTests()
         {
         }
 
@@ -29,14 +29,14 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         {
             var acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.Unauthorized);
 
-            await Assert.ThrowsAsync<AzureContainerRegistryTokenException>(() => acrTokenProvider.GetTokenAsync(RegistryServer, default));
+            await Assert.ThrowsAsync<ContainerRegistryTokenException>(() => acrTokenProvider.GetTokenAsync(RegistryServer, default));
         }
 
         [Fact]
         public async Task GivenANotFoundRegistry_WhenGetToken_ExceptionShouldBeThrown()
         {
             var acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.NotFound);
-            await Assert.ThrowsAsync<AzureContainerRegistryTokenException>(() => acrTokenProvider.GetTokenAsync(RegistryServer, default));
+            await Assert.ThrowsAsync<ContainerRegistryTokenException>(() => acrTokenProvider.GetTokenAsync(RegistryServer, default));
         }
 
         [Theory]
@@ -47,7 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         public async Task GivenAValidRegistry_WhenRefreshTokenIsEmpty_ExceptionShouldBeThrown(string content)
         {
             var acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.OK, content);
-            await Assert.ThrowsAsync<AzureContainerRegistryTokenException>(() => acrTokenProvider.GetTokenAsync(RegistryServer, default));
+            await Assert.ThrowsAsync<ContainerRegistryTokenException>(() => acrTokenProvider.GetTokenAsync(RegistryServer, default));
         }
 
         [Fact]
@@ -58,12 +58,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
             Assert.Equal("Bearer access_token_test", accessToken);
         }
 
-        private AzureContainerRegistryAccessTokenProvider GetMockAcrTokenProvider(HttpStatusCode statusCode, string content = "")
+        private ContainerRegistryAccessTokenProvider GetMockAcrTokenProvider(HttpStatusCode statusCode, string content = "")
         {
             IAccessTokenProvider tokenProvider = Substitute.For<IAccessTokenProvider>();
             tokenProvider.GetAccessTokenAsync(default, default).ReturnsForAnyArgs("Bearer test");
             var httpClient = new HttpClient(new MockHttpMessageHandler(content, statusCode));
-            return new AzureContainerRegistryAccessTokenProvider(tokenProvider, httpClient, new NullLogger<AzureContainerRegistryAccessTokenProvider>());
+            return new ContainerRegistryAccessTokenProvider(tokenProvider, httpClient, new NullLogger<ContainerRegistryAccessTokenProvider>());
         }
 
         internal class MockHttpMessageHandler : HttpMessageHandler

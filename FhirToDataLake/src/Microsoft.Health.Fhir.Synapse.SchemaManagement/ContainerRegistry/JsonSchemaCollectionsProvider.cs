@@ -72,22 +72,22 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             catch (ContainerRegistryAuthenticationException authEx)
             {
                 _logger.LogWarning(authEx, "Failed to access container registry.");
-                throw new AzureContainerRegistrySchemaException("Failed to access container registry.", authEx);
+                throw new ContainerRegistrySchemaException("Failed to access container registry.", authEx);
             }
             catch (ImageFetchException fetchEx)
             {
                 _logger.LogWarning(fetchEx, "Failed to fetch template image.");
-                throw new AzureContainerRegistrySchemaException("Failed to fetch template image.", fetchEx);
+                throw new ContainerRegistrySchemaException("Failed to fetch template image.", fetchEx);
             }
             catch (TemplateManagementException templateEx)
             {
                 _logger.LogWarning(templateEx, "Template collection is invalid.");
-                throw new AzureContainerRegistrySchemaException("Template collection is invalid.", templateEx);
+                throw new ContainerRegistrySchemaException("Template collection is invalid.", templateEx);
             }
             catch (Exception unhandledEx)
             {
                 _logger.LogError(unhandledEx, "Unhandled exception: failed to get template collection.");
-                throw new AzureContainerRegistrySchemaException("Unhandled exception: failed to get template collection.", unhandledEx);
+                throw new ContainerRegistrySchemaException("Unhandled exception: failed to get template collection.", unhandledEx);
             }
         }
     }

@@ -13,7 +13,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
     {
         public static IServiceCollection AddSchema(this IServiceCollection services)
         {
-            services.AddSingleton<IContainerRegistryTokenProvider, AzureContainerRegistryAccessTokenProvider>();
+            services.AddSingleton<IContainerRegistryTokenProvider, ContainerRegistryAccessTokenProvider>();
 
             services.AddSingleton<JsonSchemaCollectionProvider, JsonSchemaCollectionProvider>();
 
