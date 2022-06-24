@@ -19,6 +19,7 @@ steps:
   inputs:
     command: restore
     projects: FhirToDataLake/*.sln
+    includeNuGetOrg: true
 
 - task: MSBuild@1
   displayName: 'Build solution'
