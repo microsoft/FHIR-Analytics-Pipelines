@@ -3,9 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using Microsoft.Health.Fhir.Liquid.Converter;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Newtonsoft.Json.Schema;
 
@@ -13,22 +11,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.CustomizedSchem
 {
     public class JsonSchemaParser
     {
-        // Basic types refer to Json schema document https://cswr.github.io/JsonSchema/spec/basic_types/
-        private static readonly Dictionary<JSchemaType, string> BasicTypeMap = new Dictionary<JSchemaType, string>()
-        {
-            { JSchemaType.String, "string" },
-            { JSchemaType.Number, "number" },
-            { JSchemaType.Integer, "integer" },
-            { JSchemaType.Boolean, "boolean" },
-        };
-
-        // Get Json schema from liquid template by converting an empty Json string
-        public JSchema ParseTemplate(string templateName, ITemplateProvider templateProvider)
-        {
-            // Will implement when integrating FHIR-Convertr into Synapse Sync agent
-            throw new NotImplementedException();
-        }
-
         public FhirParquetSchemaNode ParseJSchema(string resourceType, JSchema jSchema)
         {
             if (jSchema.Type == null || jSchema.Type == JSchemaType.Null)
@@ -62,14 +44,14 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.CustomizedSchem
                     throw new ParseJsonSchemaException(string.Format("Property \"{0}\" for \"{1}\" customized schema have no \"type\" keyword or \"type\" is null.", property.Key, resourceType));
                 }
 
-                if (!BasicTypeMap.ContainsKey(property.Value.Type.Value))
+                if (!FhirParquetSchemaNodeConstants.BasicJSchemaTypeMap.ContainsKey(property.Value.Type.Value))
                 {
                     throw new ParseJsonSchemaException(string.Format("Property \"{0}\" type \"{1}\" for \"{2}\" customized schema is not basic type.", property.Key, property.Value.Type.Value, resourceType));
                 }
 
                 customizedSchemaNode.SubNodes.Add(
                     property.Key,
-                    BuildLeafNode(property.Key, BasicTypeMap[property.Value.Type.Value], 1, fhirPath));
+                    BuildLeafNode(property.Key, FhirParquetSchemaNodeConstants.BasicJSchemaTypeMap[property.Value.Type.Value], 1, fhirPath));
 
                 fhirPath.RemoveAt(fhirPath.Count - 1);
             }

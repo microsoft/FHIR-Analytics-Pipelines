@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using Newtonsoft.Json.Schema;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 {
@@ -20,5 +21,14 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         public static readonly HashSet<string> IntTypes = new HashSet<string> { "positiveInt", "integer", "unsignedInt" };
         public static readonly HashSet<string> DecimalTypes = new HashSet<string> { "decimal", "number" };
         public static readonly HashSet<string> BooleanTypes = new HashSet<string> { "boolean" };
+
+        // Basic types refer to Json schema document https://cswr.github.io/JsonSchema/spec/basic_types/
+        public static readonly Dictionary<JSchemaType, string> BasicJSchemaTypeMap = new Dictionary<JSchemaType, string>()
+        {
+            { JSchemaType.String, "string" },
+            { JSchemaType.Number, "number" },
+            { JSchemaType.Integer, "integer" },
+            { JSchemaType.Boolean, "boolean" },
+        };
     }
 }

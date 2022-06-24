@@ -8,13 +8,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Liquid.Converter;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.CustomizedSchema;
-using Newtonsoft.Json.Schema;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 {
@@ -24,26 +24,26 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         private readonly Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
         private readonly ILogger<FhirParquetSchemaManager> _logger;
         private readonly JsonSchemaParser _jsonSchemaParser;
+        private readonly JsonSchemaCollectionsProvider _jsonSchemaCollectionsProvider;
 
-        // Will add a dependency injection for templateProvider later
-        private readonly ITemplateProvider _templateProvider;
-
-        // Will be moved to schema configuration
-        private readonly bool _customizedSchema = false;
+        // Will be moved to schema configurations
+        private readonly bool _customizedSchema = true;
 
         public FhirParquetSchemaManager(
             IOptions<SchemaConfiguration> schemaConfiguration,
+            JsonSchemaCollectionsProvider jSchemaCollectionsProvider,
             ILogger<FhirParquetSchemaManager> logger)
         {
             _logger = logger;
             _jsonSchemaParser = new JsonSchemaParser();
+            _jsonSchemaCollectionsProvider = jSchemaCollectionsProvider;
 
             _resourceSchemaNodesMap = LoadDefaultSchemas(schemaConfiguration.Value.SchemaCollectionDirectory);
             _logger.LogInformation($"{_resourceSchemaNodesMap.Count} resource default schemas been loaded.");
 
             if (_customizedSchema)
             {
-                var resourceCustomizedSchemaNodesMap = LoadCustomizedSchemas();
+                var resourceCustomizedSchemaNodesMap = LoadCustomizedSchemas(schemaConfiguration.Value.CustomizedSchemaImageReference);
                 _logger.LogInformation($"{resourceCustomizedSchemaNodesMap.Count} resource customized schemas been loaded.");
                 _resourceSchemaNodesMap.Concat(resourceCustomizedSchemaNodesMap).ToDictionary(x => x.Key, x => x.Value);
             }
@@ -158,19 +158,17 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             return defaultSchemaNodesMap;
         }
 
-        private Dictionary<string, FhirParquetSchemaNode> LoadCustomizedSchemas()
+        private Dictionary<string, FhirParquetSchemaNode> LoadCustomizedSchemas(string schemaImageReference)
         {
-            // Try run the FHIR-Converter among all the templates with empty Json data to load all customized schemas
+            var jSchemaCollections = _jsonSchemaCollectionsProvider.GetJsonSchemaCollectionAsync(schemaImageReference, CancellationToken.None).Result;
+            _logger.LogInformation($"{jSchemaCollections.Count} resource customized schemas been fetched from {schemaImageReference}.");
+
             var customizedSchemaNodesMap = new Dictionary<string, FhirParquetSchemaNode>();
 
-            foreach (var resourceType in _resourceSchemaNodesMap.Keys)
+            foreach (var jSchemaItem in jSchemaCollections)
             {
-                JSchema schema = _jsonSchemaParser.ParseTemplate(resourceType, _templateProvider);
-                if (schema != null)
-                {
-                    var parquetSchemaNode = _jsonSchemaParser.ParseJSchema(resourceType, schema);
-                    customizedSchemaNodesMap.Add(parquetSchemaNode.Name, parquetSchemaNode);
-                }
+                var parquetSchemaNode = _jsonSchemaParser.ParseJSchema(jSchemaItem.Key, jSchemaItem.Value);
+                customizedSchemaNodesMap.Add(parquetSchemaNode.Name, parquetSchemaNode);
             }
 
             return customizedSchemaNodesMap;

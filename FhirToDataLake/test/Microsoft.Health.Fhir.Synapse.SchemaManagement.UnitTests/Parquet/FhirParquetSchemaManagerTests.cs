@@ -6,6 +6,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Xunit;
@@ -15,6 +16,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
     public class FhirParquetSchemaManagerTests
     {
         private static readonly IOptions<SchemaConfiguration> _schemaConfigurationOption;
+        private static readonly JsonSchemaCollectionsProvider _jsonSchemaCollectionsProvider;
 
         static FhirParquetSchemaManagerTests()
         {
@@ -31,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Theory]
         public static void GivenASchemaType_WhenGetSchema_CorrectResultShouldBeReturned(string schemaType, int propertyCount)
         {
-            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
+            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, _jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance);
             var result = schemaManager.GetSchema(schemaType);
 
             Assert.Equal(schemaType, result.Name);
@@ -42,7 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Fact]
         public static void GivenInvalidSchemaType_WhenGetSchema_NullShouldBeReturned()
         {
-            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
+            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, _jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance);
 
             var schemaType = "InvalidSchemaType";
 
@@ -53,7 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Fact]
         public static void WhenGetAllSchemas_CorrectResultShouldBeReturned()
         {
-            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
+            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, _jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance);
 
             var schemas = schemaManager.GetAllSchemas();
             Assert.Equal(145, schemas.Count);
@@ -66,7 +68,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Theory]
         public static void GivenAResourceType_WhenGetSchemaTypes_CorrectResultShouldBeReturned(string resourceType)
         {
-            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
+            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, _jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance);
 
             var schemaTypes = schemaManager.GetSchemaTypes(resourceType);
             Assert.Single(schemaTypes);
@@ -76,7 +78,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Fact]
         public static void GivenInvalidResourceType_WhenGetSchemaTypes_EmptyResultShouldBeReturned()
         {
-            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
+            var schemaManager = new FhirParquetSchemaManager(_schemaConfigurationOption, _jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance);
 
             var resourceType = "InvalidResourceType";
 
@@ -97,7 +99,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
                 SchemaCollectionDirectory = schemaDirectoryPath,
             });
 
-            Assert.Throws<FhirSchemaException>(() => new FhirParquetSchemaManager(invalidSchemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance));
+            Assert.Throws<FhirSchemaException>(
+                () => new FhirParquetSchemaManager(invalidSchemaConfigurationOption, _jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance));
         }
     }
 }
