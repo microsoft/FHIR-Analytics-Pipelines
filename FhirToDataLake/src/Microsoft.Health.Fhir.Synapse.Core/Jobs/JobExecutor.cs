@@ -5,14 +5,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
+using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
@@ -23,27 +26,31 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class JobExecutor
     {
         private readonly ITaskExecutor _taskExecutor;
-        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly JobProgressUpdaterFactory _jobProgressUpdaterFactory;
         private readonly JobSchedulerConfiguration _schedulerConfiguration;
+        private readonly IGroupMemberExtractor _groupMemberExtractor;
+
         private readonly ILogger<JobExecutor> _logger;
+
+        private const int NumberOfPatientsPerTask = 100;
 
         public JobExecutor(
             ITaskExecutor taskExecutor,
-            IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             JobProgressUpdaterFactory jobProgressUpdaterFactory,
+            IGroupMemberExtractor groupMemberExtractor,
             IOptions<JobSchedulerConfiguration> schedulerConfiguration,
             ILogger<JobExecutor> logger)
         {
             EnsureArg.IsNotNull(taskExecutor, nameof(taskExecutor));
             EnsureArg.IsNotNull(jobProgressUpdaterFactory, nameof(jobProgressUpdaterFactory));
+            EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _taskExecutor = taskExecutor;
             _jobProgressUpdaterFactory = jobProgressUpdaterFactory;
+            _groupMemberExtractor = groupMemberExtractor;
             _schedulerConfiguration = schedulerConfiguration.Value;
-            _fhirSchemaManager = fhirSchemaManager;
             _logger = logger;
         }
 
@@ -51,11 +58,41 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             _logger.LogInformation("Start executing job '{jobId}'.", job.Id);
 
+            // extract patient ids from group if they aren't extracted before for group
+            if (job.FilterContext.JobScope == JobScope.Group && !job.Patients.Any())
+            {
+                _logger.LogInformation("Start extracting patients from group '{groupId}'.", job.FilterContext.GroupId);
+
+                job.Patients = await _groupMemberExtractor.GetGroupPatients(
+                    job.FilterContext.GroupId,
+                    null,
+                    job.DataPeriod.End,
+                    cancellationToken);
+
+                // for processed patient id, set IsNewPatient to false
+                // the processed patient ids may be a empty hashset at the beginning, and will be updated when complete succeed job.
+                foreach (var patient in job.Patients.Where(patient => job.FilterContext.ProcessedPatientIds.ToHashSet().Contains(patient.PatientId)))
+                {
+                    patient.IsNewPatient = false;
+                }
+
+                _logger.LogInformation(
+                    "Extract {patientCount} patients from group '{groupId}', including {newPatientCount} new patients.",
+                    job.Patients.ToHashSet().Count,
+                    job.FilterContext.GroupId,
+                    job.Patients.Where(p => p.IsNewPatient).ToHashSet().Count);
+            }
+
             var jobProgressUpdater = _jobProgressUpdaterFactory.Create(job);
             var progressReportTask = Task.Run(() => jobProgressUpdater.Consume(cancellationToken), cancellationToken);
 
             var tasks = new List<Task<TaskResult>>();
-            foreach (var resourceType in job.ResourceTypes)
+
+            // and running task to task list for resume job
+            tasks.AddRange(job.RunningTasks.Values.Select(taskContext => Task.Run(async () =>
+                await _taskExecutor.ExecuteAsync(taskContext, jobProgressUpdater, cancellationToken))).ToList());
+
+            while (true)
             {
                 if (tasks.Count >= _schedulerConfiguration.MaxConcurrencyCount)
                 {
@@ -69,19 +106,56 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     tasks.Remove(finishedTask);
                 }
 
-                var context = TaskContext.Create(
-                    resourceType,
-                    _fhirSchemaManager.GetSchemaTypes(resourceType),
-                    job);
-                if (context.IsCompleted)
+                TaskContext taskContext = null;
+
+                switch (job.FilterContext.JobScope)
                 {
-                    _logger.LogInformation("Skipping completed resource '{resourceType}'.", resourceType);
-                    continue;
+                    case JobScope.System:
+                        if (job.NextTaskIndex < job.FilterContext.TypeFilters.Count())
+                        {
+                            var typeFilters = new List<TypeFilter>
+                                { job.FilterContext.TypeFilters.ToList()[job.NextTaskIndex] };
+                            taskContext = new TaskContext(
+                                job.NextTaskIndex,
+                                job.Id,
+                                job.FilterContext.JobScope,
+                                job.DataPeriod,
+                                job.Since,
+                                typeFilters);
+                        }
+
+                        break;
+                    case JobScope.Group:
+                        if (job.NextTaskIndex * NumberOfPatientsPerTask < job.Patients.ToList().Count)
+                        {
+                            var selectedPatients = job.Patients.Skip(job.NextTaskIndex * NumberOfPatientsPerTask)
+                                .Take(NumberOfPatientsPerTask);
+                            taskContext = new TaskContext(
+                                job.NextTaskIndex,
+                                job.Id,
+                                job.FilterContext.JobScope,
+                                job.DataPeriod,
+                                job.Since,
+                                job.FilterContext.TypeFilters.ToList(),
+                                selectedPatients);
+                        }
+
+                        break;
+                    default:
+                        // this case should not happen
+                        throw new ArgumentOutOfRangeException($"The jobScope {job.FilterContext.JobScope} isn't supported now.");
                 }
 
-                tasks.Add(Task.Run(async () => await _taskExecutor.ExecuteAsync(context, jobProgressUpdater, cancellationToken)));
+                // if there is no new task context created, then all the tasks are generated, break the while loop;
+                if (taskContext == null)
+                {
+                    break;
+                }
 
-                _logger.LogInformation("Start processing resource '{resourceType}'", resourceType);
+                job.RunningTasks[taskContext.Id] = taskContext;
+                tasks.Add(Task.Run(async () => await _taskExecutor.ExecuteAsync(taskContext, jobProgressUpdater, cancellationToken)));
+                _logger.LogInformation("Start processing task '{taskIndex}'", job.NextTaskIndex);
+                job.NextTaskIndex++;
             }
 
             try

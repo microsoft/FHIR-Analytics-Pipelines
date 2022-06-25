@@ -82,8 +82,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             foreach (var activeJob in activeJobs)
             {
                 // Complete job if it's already succeeded or failed.
-                if (activeJob.Status == JobStatus.Succeeded
-                    || activeJob.Status == JobStatus.Failed)
+                if (activeJob.Status is JobStatus.Succeeded or JobStatus.Failed)
                 {
                     _logger.LogWarning("Job '{id}' has already finished.", activeJob.Id);
                     await CompleteJobAsyncInternal(activeJob, false, cancellationToken);
@@ -238,6 +237,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
 
                 schedulerSetting.UnfinishedJobs = unfinishedJobs;
+
+                // update processed patient list
+                if (job.Status == JobStatus.Succeeded)
+                {
+                    schedulerSetting.ProcessedPatientIds.ToHashSet().UnionWith(job.Patients.Select(x => x.PatientId));
+                }
+
                 await SaveSchedulerMetadataAsync(schedulerSetting, cancellationToken);
 
                 // Add job to completed job list.
@@ -272,11 +278,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         ///   "staging/jobid/schemaType/year" directory
         ///   "staging/jobid/schemaType/year/month" directory
         ///   "staging/jobid/schemaType/year/month/day1" directory
-        ///   "staging/jobid/schemaType/year/month/day1/schemaType_jobid_00001.parquet" blob
-        ///   "staging/jobid/schemaType/year/month/day1/schemaType_jobid_00002.parquet" blob
+        ///   "staging/jobid/schemaType/year/month/day1/schemaType_000001_00001.parquet" blob
+        ///   "staging/jobid/schemaType/year/month/day1/schemaType_000001_00002.parquet" blob
         ///   "staging/jobid/schemaType/year/month/day2" directory
-        ///   "staging/jobid/schemaType/year/month/day2/schemaType_jobid_00001.parquet" blob
-        ///   "staging/jobid/schemaType/year/month/day2/schemaType_jobid_00002.parquet" blob
+        ///   "staging/jobid/schemaType/year/month/day2/schemaType_000001_00001.parquet" blob
+        ///   "staging/jobid/schemaType/year/month/day2/schemaType_000001_00002.parquet" blob
         /// For blobs, we need to check the partId to ensure only partIds recorded in the job status are committed in case there are some dangling files.
         /// For directories, we need to find all leaf directory and map to the target directory in result folder.
         /// Then rename the source directory to target directory.
@@ -299,20 +305,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     {
                         var destination = $"{AzureStorageConstants.ResultFolderName}/{match.Groups["partition"].Value}/{job.Id}";
                         directoryPairs.Add(new Tuple<string, string>(path.Name, destination));
-                    }
-                }
-                else
-                {
-                    // remove parquet files not saved in this job.
-                    var match = _stagingDataBlobRegex.Match(path.Name);
-                    if (match.Success)
-                    {
-                        var schemaType = match.Groups["schema"].Value;
-                        var partId = int.Parse(match.Groups["partId"].Value);
-                        if (partId >= job.PartIds[schemaType])
-                        {
-                            await _blobContainerClient.DeleteBlobAsync(path.Name, cancellationToken);
-                        }
                     }
                 }
             }

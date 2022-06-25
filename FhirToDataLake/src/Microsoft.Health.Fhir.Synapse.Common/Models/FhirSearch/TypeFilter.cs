@@ -10,6 +10,13 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
 {
     public class TypeFilter
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeFilter"/> class.
+        /// We will trigger a http request for each typeFilter,
+        /// if the resourceType is "*" means want to get all the compartment resources.
+        /// </summary>
+        /// <param name="resourceType">resource type</param>
+        /// <param name="parameters">query parameters</param>
         public TypeFilter(string resourceType, IList<Tuple<string, string>> parameters)
         {
             ResourceType = resourceType;

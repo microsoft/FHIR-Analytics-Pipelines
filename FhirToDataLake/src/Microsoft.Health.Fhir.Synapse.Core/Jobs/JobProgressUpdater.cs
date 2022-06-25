@@ -11,6 +11,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
+using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
@@ -53,18 +54,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 if (channelReader.TryRead(out TaskContext context))
                 {
-                    foreach (var schemaType in context.SchemaTypes)
-                    {
-                        _job.ProcessedResourceCounts[schemaType] = context.ProcessedCount[schemaType];
-                        _job.SkippedResourceCounts[schemaType] = context.SkippedCount[schemaType];
-                        _job.PartIds[schemaType] = context.PartId[schemaType];
-                    }
+                    _job.RunningTasks[context.Id] = context;
 
-                    _job.ResourceProgresses[context.ResourceType] = context.ContinuationToken;
-                    _job.TotalResourceCounts[context.ResourceType] = context.SearchCount;
                     if (context.IsCompleted)
                     {
-                        _job.CompletedResources.Add(context.ResourceType);
+                        _job.TotalResourceCounts = DictionaryExtensions.ConcatDictionaryCount(_job.TotalResourceCounts, context.SearchCount);
+                        _job.SkippedResourceCounts = DictionaryExtensions.ConcatDictionaryCount(_job.SkippedResourceCounts, context.SkippedCount);
+                        _job.ProcessedResourceCounts = DictionaryExtensions.ConcatDictionaryCount(_job.ProcessedResourceCounts, context.ProcessedCount);
+
+                        _job.RunningTasks.Remove(context.Id);
                     }
 
                     if (uploadTime.AddSeconds(UploadDataIntervalInSeconds) < DateTimeOffset.UtcNow)

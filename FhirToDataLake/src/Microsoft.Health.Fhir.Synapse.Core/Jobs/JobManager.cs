@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,8 +12,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
+using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
@@ -22,27 +21,31 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly IJobStore _jobStore;
         private readonly JobExecutor _jobExecutor;
-        private readonly IFhirSpecificationProvider _fhirSpecificationProvider;
+        private readonly ITypeFilterParser _typeFilterParser;
         private readonly JobConfiguration _jobConfiguration;
+        private readonly FilterConfiguration _filterConfiguration;
         private readonly ILogger<JobManager> _logger;
 
         public JobManager(
             IJobStore jobStore,
             JobExecutor jobExecutor,
-            IFhirSpecificationProvider fhirSpecificationProvider,
+            ITypeFilterParser typeFilterParser,
             IOptions<JobConfiguration> jobConfiguration,
+            IOptions<FilterConfiguration> filterConfiguration,
             ILogger<JobManager> logger)
         {
             EnsureArg.IsNotNull(jobStore, nameof(jobStore));
             EnsureArg.IsNotNull(jobExecutor, nameof(jobExecutor));
-            EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
+            EnsureArg.IsNotNull(typeFilterParser, nameof(typeFilterParser));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
+            EnsureArg.IsNotNull(filterConfiguration, nameof(filterConfiguration));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _jobStore = jobStore;
             _jobExecutor = jobExecutor;
-            _fhirSpecificationProvider = fhirSpecificationProvider;
+            _typeFilterParser = typeFilterParser;
             _jobConfiguration = jobConfiguration.Value;
+            _filterConfiguration = filterConfiguration.Value;
 
             _logger = logger;
         }
@@ -55,12 +58,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>Completed task.</returns>
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
+            _logger.LogInformation("Job starts running.");
+
             // Acquire an active job from the job store.
-            var job = await _jobStore.AcquireActiveJobAsync(cancellationToken);
-            if (job == null)
-            {
-                job = await CreateNewJobAsync(cancellationToken);
-            }
+            var job = await _jobStore.AcquireActiveJobAsync(cancellationToken) ?? await CreateNewJobAsync(cancellationToken);
+
+            // Update the running job to job store.
+            // For new/resume job, add the created job to job store; For active job, update the last hart beat.
+            await _jobStore.UpdateJobAsync(job, cancellationToken);
 
             try
             {
@@ -91,15 +96,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 return new Job(
                     resumedJob.ContainerName,
                     JobStatus.New,
-                    resumedJob.ResourceTypes,
                     resumedJob.DataPeriod,
+                    resumedJob.Since,
+                    resumedJob.FilterContext,
                     DateTimeOffset.UtcNow,
-                    resumedJob.ResourceProgresses,
-                    null,
-                    null,
-                    null,
-                    null,
-                    resumedJob.CompletedResources,
+                    resumedJob.Patients,
+                    resumedJob.NextTaskIndex,
+                    resumedJob.RunningTasks,
+                    resumedJob.TotalResourceCounts,
+                    resumedJob.ProcessedResourceCounts,
+                    resumedJob.SkippedResourceCounts,
                     resumedJob.Id);
             }
 
@@ -119,19 +125,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 throw new StartJobFailedException($"The start time '{triggerStart}' to trigger is in the future.");
             }
 
-            IEnumerable<string> resourceTypes = _jobConfiguration.ResourceTypeFilters;
-            if (resourceTypes == null || !resourceTypes.Any())
-            {
-                resourceTypes = _fhirSpecificationProvider.GetAllResourceTypes();
-            }
+            var typeFilters = _typeFilterParser.CreateTypeFilters(
+                _filterConfiguration.JobScope,
+                _filterConfiguration.RequiredTypes,
+                _filterConfiguration.TypeFilters);
+
+            var processedPatients = schedulerSetting?.ProcessedPatientIds;
+
+            var filterContext =
+                new FilterContext(_filterConfiguration.JobScope, _filterConfiguration.GroupId, typeFilters, processedPatients);
 
             var newJob = new Job(
                 _jobConfiguration.ContainerName,
                 JobStatus.New,
-                resourceTypes,
                 new DataPeriod(triggerStart, triggerEnd),
+                _jobConfiguration.StartTime,
+                filterContext,
                 DateTimeOffset.UtcNow);
-            await _jobStore.UpdateJobAsync(newJob, cancellationToken);
             return newJob;
         }
 

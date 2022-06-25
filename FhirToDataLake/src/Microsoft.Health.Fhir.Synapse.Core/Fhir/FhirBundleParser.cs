@@ -23,6 +23,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
             return resources ?? new List<JObject>();
         }
 
+        public static IEnumerable<JObject> GetOperationOutcomes(IEnumerable<JObject> resources)
+        {
+            var operationOutcomes = resources.Where(x =>
+                x?.GetValue(FhirBundleConstants.ResourceTypeKey)?.ToString() ==
+                FhirBundleConstants.OperationOutcomeKey).Select(x => x.GetValue(FhirBundleConstants.IssueKey) as JObject).ToList();
+            return operationOutcomes ?? new List<JObject>();
+        }
+
         public static string ExtractContinuationToken(JObject bundle)
         {
             var links = bundle?.GetValue(FhirBundleConstants.LinkKey) as JArray;

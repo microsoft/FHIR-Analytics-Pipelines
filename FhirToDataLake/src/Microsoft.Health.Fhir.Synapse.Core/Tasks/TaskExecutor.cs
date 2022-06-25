@@ -9,9 +9,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
@@ -20,9 +22,12 @@ using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
@@ -32,8 +37,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
         private readonly IFhirDataClient _dataClient;
         private readonly IFhirDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
+        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly ILogger<TaskExecutor> _logger;
 
+        private const int NumberOfResourcesPeCommit = 10000;
         private const int ReportProgressBatchCount = 10;
 
         // TODO: Refine TaskExecutor here, current TaskExecutor is more like a manager class.
@@ -41,16 +48,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             IFhirDataClient dataClient,
             IFhirDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
+            IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             ILogger<TaskExecutor> logger)
         {
             EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
+            EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _dataClient = dataClient;
             _dataWriter = dataWriter;
             _parquetDataProcessor = parquetDataProcessor;
+            _fhirSchemaManager = fhirSchemaManager;
             _logger = logger;
         }
 
@@ -61,22 +72,239 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             JobProgressUpdater progressUpdater,
             CancellationToken cancellationToken = default)
         {
-            int pageCount = 0;
-            while (!taskContext.IsCompleted)
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new OperationCanceledException();
+            }
+
+            // Initialize cache result from the search progress of task context
+            var cacheResult = new CacheResult(taskContext.SearchProgress);
+
+            switch (taskContext.JobScope)
+            {
+                case JobScope.Group:
+                    {
+                        await GetPatientResourcesAsync(taskContext, cacheResult, progressUpdater, cancellationToken);
+
+                        for (var p = cacheResult.SearchProgress.CurrentIndex; p < taskContext.PatientIds.Count(); p++)
+                        {
+                            var startDateTime = taskContext.PatientIds.ToList()[p].IsNewPatient
+                                ? taskContext.Since
+                                : taskContext.DataPeriod.Start;
+                            var parameters = new List<KeyValuePair<string, string>>
+                        {
+                            new (FhirApiConstants.LastUpdatedKey, $"ge{startDateTime.ToInstantString()}"),
+                            new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
+                        };
+
+                            var searchOption = new CompartmentSearchOptions(
+                                FhirConstants.PatientResource,
+                                taskContext.PatientIds.ToList()[p].PatientId,
+                                null,
+                                parameters);
+
+                            if (cacheResult.SearchProgress.CurrentIndex != p)
+                            {
+                                cacheResult.SearchProgress.UpdateCurrentIndex(p);
+                            }
+
+                            await SearchFiltersAsync(taskContext, searchOption, cacheResult, progressUpdater, cancellationToken);
+                        }
+
+                        break;
+                    }
+                case JobScope.System:
+                    {
+                        var parameters = new List<KeyValuePair<string, string>>
+                    {
+                        new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.DataPeriod.Start.ToInstantString()}"),
+                        new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
+                    };
+                        var searchOption = new BaseSearchOptions(null, parameters);
+
+                        if (cacheResult.SearchProgress.Stage != TaskStage.GetResources)
+                        {
+                            cacheResult.SearchProgress.UpdateStage(TaskStage.GetResources);
+                        }
+
+                        await SearchFiltersAsync(taskContext, searchOption, cacheResult, progressUpdater, cancellationToken);
+                        break;
+                    }
+                default:
+                    throw new ArgumentOutOfRangeException($"The JobScope {taskContext.JobScope} isn't supported now.");
+            }
+
+            await TryCommitResultAsync(taskContext, true, cacheResult, progressUpdater, cancellationToken);
+            taskContext.IsCompleted = true;
+
+            _logger.LogInformation(
+                "Finished processing task '{taskHash}'.",
+                taskContext.TaskHash);
+
+            return TaskResult.CreateFromTaskContext(taskContext);
+        }
+
+        /// <summary>
+        /// Get patient resources of this tasks. The resources are stored in cacheResult.
+        /// </summary>
+        /// <param name="taskContext">task context.</param>
+        /// <param name="cacheResult">cache result.</param>
+        /// <param name="progressUpdater">progress updater.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>task.</returns>
+        private async Task GetPatientResourcesAsync(
+            TaskContext taskContext,
+            CacheResult cacheResult,
+            JobProgressUpdater progressUpdater,
+            CancellationToken cancellationToken)
+        {
+            // TODO: what if the request url too long?
+            // move task stage to get new compartment stage
+            if (cacheResult.SearchProgress.Stage == TaskStage.New)
+            {
+                cacheResult.SearchProgress.UpdateStage(TaskStage.GetNewPatient);
+            }
+
+            // get patient resources for newly patients
+            if (cacheResult.SearchProgress.Stage == TaskStage.GetNewPatient &&
+                cacheResult.SearchProgress.IsCurrentSearchCompleted == false)
+            {
+                var newPatientIds = taskContext.PatientIds.Where(x => x.IsNewPatient == true).Select(x => x.PatientId);
+                var patientParameters = new List<KeyValuePair<string, string>>
+                {
+                    new (FhirApiConstants.IdKey, string.Join(',', newPatientIds)),
+                    new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
+                };
+
+                if (cacheResult.SearchProgress.ContinuationToken != null)
+                {
+                    patientParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, cacheResult.SearchProgress.ContinuationToken));
+                }
+
+                var searchOption = new BaseSearchOptions(FhirConstants.PatientResource, patientParameters);
+                await ExecuteSearchAsync(searchOption, taskContext, cacheResult, progressUpdater, cancellationToken);
+            }
+
+            // move task stage to get updated compartment stage
+            if (cacheResult.SearchProgress.Stage == TaskStage.GetNewPatient &&
+                cacheResult.SearchProgress.IsCurrentSearchCompleted)
+            {
+                cacheResult.SearchProgress.UpdateStage(TaskStage.GetUpdatedPatient);
+            }
+
+            // get updated patients
+            if (cacheResult.SearchProgress.Stage == TaskStage.GetUpdatedPatient && cacheResult.SearchProgress.IsCurrentSearchCompleted == false)
+            {
+                // get updated patient resources
+                var oldPatientIds = taskContext.PatientIds.Where(x => x.IsNewPatient == false).Select(x => x.PatientId);
+                var patientParameters = new List<KeyValuePair<string, string>>
+                {
+                    new (FhirApiConstants.IdKey, string.Join(',', oldPatientIds)),
+                    new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.DataPeriod.Start.ToInstantString()}"),
+                    new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
+                };
+
+                if (cacheResult.SearchProgress.ContinuationToken != null)
+                {
+                    patientParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, cacheResult.SearchProgress.ContinuationToken));
+                }
+
+                var searchOption = new BaseSearchOptions(FhirConstants.PatientResource, patientParameters);
+
+                await ExecuteSearchAsync(searchOption, taskContext, cacheResult, progressUpdater, cancellationToken);
+            }
+
+            if (cacheResult.SearchProgress.Stage == TaskStage.GetUpdatedPatient && cacheResult.SearchProgress.IsCurrentSearchCompleted)
+            {
+                cacheResult.SearchProgress.UpdateStage(TaskStage.GetResources);
+            }
+        }
+
+        /// <summary>
+        /// Get resources for all the type filters. The resources are stored in cache result.
+        /// </summary>
+        /// <param name="taskContext">task context.</param>
+        /// <param name="searchOptions">search options.</param>
+        /// <param name="cacheResult">cache result.</param>
+        /// <param name="progressUpdater">progress updater.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>task.</returns>
+        private async Task SearchFiltersAsync(
+            TaskContext taskContext,
+            BaseSearchOptions searchOptions,
+            CacheResult cacheResult,
+            JobProgressUpdater progressUpdater,
+            CancellationToken cancellationToken)
+        {
+            IEnumerable<JObject> resources = new List<JObject>();
+
+            List<KeyValuePair<string, string>> sharedQueryParameters =
+                new List<KeyValuePair<string, string>>(searchOptions.QueryParameters);
+
+            for (int i = cacheResult.SearchProgress.CurrentFilter; i < taskContext.TypeFilters.Count; i++)
+            {
+                searchOptions.ResourceType = taskContext.TypeFilters[i].ResourceType;
+                searchOptions.QueryParameters = sharedQueryParameters;
+                foreach (var parameter in taskContext.TypeFilters[i].Parameters)
+                {
+                    searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(parameter.Item1, parameter.Item2));
+                }
+
+                if (cacheResult.SearchProgress.CurrentFilter != i)
+                {
+                    cacheResult.SearchProgress.UpdateCurrentFilter(i);
+                }
+
+                await ExecuteSearchAsync(searchOptions, taskContext, cacheResult, progressUpdater, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Get fhir resources with the searchOption specified.
+        /// the continuation token is updated for taskContext after each request, marked as IsCompleted if there is no continuation token anymore.
+        /// If there is any operationOutcomes, will throw an exception
+        /// </summary>
+        /// <param name="searchOptions">search options.</param>
+        /// <param name="taskContext">task context.</param>
+        /// <param name="cacheResult">cache result.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>task.</returns>
+        private async Task ExecuteSearchAsync(
+            BaseSearchOptions searchOptions,
+            TaskContext taskContext,
+            CacheResult cacheResult,
+            JobProgressUpdater progressUpdater,
+            CancellationToken cancellationToken)
+        {
+            while (!cacheResult.SearchProgress.IsCurrentSearchCompleted)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
                     throw new OperationCanceledException();
                 }
 
-                var queryParameters = new List<KeyValuePair<string, string>>
+                if (cacheResult.SearchProgress.ContinuationToken != null)
                 {
-                    new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.StartTime.ToInstantString()}"),
-                    new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.EndTime.ToInstantString()}"),
-                    new (FhirApiConstants.ContinuationKey, taskContext.ContinuationToken),
-                };
-                var searchOption = new BaseSearchOptions(taskContext.ResourceType, queryParameters);
-                var fhirBundleResult = await _dataClient.SearchAsync(searchOption, cancellationToken);
+                    bool replacedContinuationToken = false;
+
+                    for (int index = 0; index < searchOptions.QueryParameters.Count; index++)
+                    {
+                        if (searchOptions.QueryParameters[index].Key == FhirApiConstants.ContinuationKey)
+                        {
+                            searchOptions.QueryParameters[index] = new KeyValuePair<string, string>(
+                                FhirApiConstants.ContinuationKey, cacheResult.SearchProgress.ContinuationToken);
+                            replacedContinuationToken = true;
+                            break;
+                        }
+                    }
+
+                    if (!replacedContinuationToken)
+                    {
+                        searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, cacheResult.SearchProgress.ContinuationToken));
+                    }
+                }
+
+                var fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
 
                 // Parse bundle result.
                 JObject fhirBundleObject = null;
@@ -86,91 +314,122 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError(exception, "Failed to parse fhir search result for resource '{0}'.", taskContext.ResourceType);
-                    throw new FhirDataParseExeption($"Failed to parse fhir search result for resource {taskContext.ResourceType}", exception);
+                    _logger.LogError(exception, "Failed to parse fhir search result for resource 'patient'.");
+                    throw new FhirDataParseExeption($"Failed to parse fhir search result for resource patient", exception);
                 }
 
-                var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject);
-                var continuationToken = FhirBundleParser.ExtractContinuationToken(fhirBundleObject);
+                var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject).ToList();
 
-                // Partition batch data with day
-                var partitionedDayGroups = from resource in fhirResources
-                    group resource by resource.GetLastUpdatedDay()
-                    into dayGroups
-                    orderby dayGroups.Key
-                    select dayGroups;
-
-                foreach (var dayGroup in partitionedDayGroups)
+                var operationOutcomes = FhirBundleParser.GetOperationOutcomes(fhirResources).ToList();
+                if (operationOutcomes.Any())
                 {
-                    // Convert grouped data to parquet stream
-                    var inputData = new JsonBatchData(dayGroup.ToImmutableList());
-                    await ExecuteInternalAsync(inputData, taskContext, dayGroup.Key.Value, continuationToken, cancellationToken);
+                    _logger.LogError($"There is operationOutcome returned from FHIR server. {operationOutcomes}");
+                    throw new FhirSearchException($"There is operationOutcome returned from FHIR server. {operationOutcomes}");
                 }
 
-                // Update context
-                taskContext.ContinuationToken = continuationToken;
-                taskContext.SearchCount += fhirResources.Count();
-                taskContext.IsCompleted = string.IsNullOrEmpty(taskContext.ContinuationToken);
+                AddSearchResultToCache(fhirResources, cacheResult);
 
-                pageCount++;
-                if (pageCount % ReportProgressBatchCount == 0 || taskContext.IsCompleted)
+                cacheResult.SearchProgress.ContinuationToken = FhirBundleParser.ExtractContinuationToken(fhirBundleObject);
+
+                if (string.IsNullOrEmpty(cacheResult.SearchProgress.ContinuationToken))
                 {
-                    await progressUpdater.Produce(taskContext, cancellationToken);
+                    cacheResult.SearchProgress.IsCurrentSearchCompleted = true;
                 }
+
+                await TryCommitResultAsync(taskContext, false, cacheResult, progressUpdater, cancellationToken);
             }
-
-            _logger.LogInformation(
-                "Finished processing resource '{resourceType}'.",
-                taskContext.ResourceType);
-
-            return TaskResult.CreateFromTaskContext(taskContext);
         }
 
-        private async Task ExecuteInternalAsync(
-            JsonBatchData inputData,
-            TaskContext taskContext,
-            DateTime dateTime,
-            string continuationToken,
-            CancellationToken cancellationToken = default)
+        private void AddSearchResultToCache(List<JObject> fhirResources, CacheResult cacheResult)
         {
-            foreach (var schemaType in taskContext.SchemaTypes)
+            foreach (var resource in fhirResources)
             {
-                var processParameters = new ProcessParameters(schemaType);
-
-                var parquetStream = await _parquetDataProcessor.ProcessAsync(inputData, processParameters, cancellationToken);
-                var skippedCount = inputData.Values.Count() - parquetStream.BatchSize;
-
-                if (parquetStream?.Value?.Length > 0)
+                var resourceType = resource["resourceType"]?.ToString();
+                if (!cacheResult.Resources.ContainsKey(resourceType))
                 {
-                    // Upload to blob and log result
-                    var blobUrl = await _dataWriter.WriteAsync(parquetStream, taskContext.JobId, taskContext.PartId[schemaType], dateTime, cancellationToken);
-                    taskContext.PartId[parquetStream.SchemaType] += 1;
-
-                    var batchResult = new BatchDataResult(
-                        taskContext.ResourceType,
-                        parquetStream.SchemaType,
-                        continuationToken,
-                        blobUrl,
-                        inputData.Values.Count(),
-                        inputData.Values.Count() - skippedCount);
-                    _logger.LogInformation(
-                        "{resourceCount} resources are searched in total. {processedCount} resources are processed. Detail: {detail}",
-                        batchResult.ResourceCount,
-                        batchResult.ProcessedCount,
-                        batchResult.ToString());
-                }
-                else
-                {
-                    _logger.LogWarning(
-                        "No resource of schema type {schemaType} from {resourceType} is processed. {skippedCount} resources are skipped.",
-                        parquetStream.SchemaType,
-                        taskContext.ResourceType,
-                        taskContext.SkippedCount);
+                    cacheResult.Resources[resourceType] = new List<JObject>();
                 }
 
-                taskContext.SkippedCount[parquetStream.SchemaType] += skippedCount;
-                taskContext.ProcessedCount[parquetStream.SchemaType] += parquetStream.BatchSize;
+                cacheResult.Resources[resourceType].Add(resource);
             }
         }
+
+        private async Task TryCommitResultAsync(
+            TaskContext taskContext,
+            bool forceCommit,
+            CacheResult cacheResult,
+            JobProgressUpdater progressUpdater,
+            CancellationToken cancellationToken)
+        {
+            if (cacheResult.GetResourceCount() % NumberOfResourcesPeCommit == 0 || forceCommit)
+            {
+                foreach (var (resourceType, resources) in cacheResult.Resources)
+                {
+                    var originalSkippedCount = taskContext.SkippedCount;
+
+                    var inputData = new JsonBatchData(resources);
+
+                    var schemaTypes = _fhirSchemaManager.GetSchemaTypes(resourceType);
+                    foreach (var schemaType in schemaTypes)
+                    {
+                        // Convert grouped data to parquet stream
+                        var processParameters = new ProcessParameters(schemaType);
+                        var parquetStream = await _parquetDataProcessor.ProcessAsync(inputData, processParameters, cancellationToken);
+                        var skippedCount = inputData.Values.Count() - parquetStream.BatchSize;
+
+                        if (parquetStream?.Value?.Length > 0)
+                        {
+                            if (!taskContext.OutputFileIndexMap.ContainsKey(schemaType))
+                            {
+                                taskContext.OutputFileIndexMap[schemaType] = 0;
+                            }
+
+                            // Upload to blob and log result
+                            var blobUrl = await _dataWriter.WriteAsync(parquetStream, taskContext.JobId, taskContext.TaskHash, taskContext.OutputFileIndexMap[schemaType], taskContext.DataPeriod.End, cancellationToken);
+                            taskContext.OutputFileIndexMap[schemaType] += 1;
+
+                            var batchResult = new BatchDataResult(
+                                resourceType,
+                                schemaType,
+                                blobUrl,
+                                inputData.Values.Count(),
+                                inputData.Values.Count() - skippedCount);
+                            _logger.LogInformation(
+                                "{resourceCount} resources are searched in total. {processedCount} resources are processed. Detail: {detail}",
+                                batchResult.ResourceCount,
+                                batchResult.ProcessedCount,
+                                batchResult.ToString());
+
+                        }
+                        else
+                        {
+                            _logger.LogWarning(
+                                "No resource of schema type {schemaType} from {resourceType} is processed. {skippedCount} resources are skipped.",
+                                schemaType,
+                                resourceType,
+                                skippedCount);
+                        }
+
+                        taskContext.SkippedCount =
+                            DictionaryExtensions.AddToDictionary(taskContext.SkippedCount, schemaType, skippedCount);
+                        taskContext.ProcessedCount =
+                            DictionaryExtensions.AddToDictionary(taskContext.ProcessedCount, schemaType, parquetStream.BatchSize);
+                    }
+
+                    taskContext.SearchCount =
+                        DictionaryExtensions.AddToDictionary(taskContext.SearchCount, resourceType, resources.Count);
+                }
+
+                // update task context based on cache
+                taskContext.SearchProgress = cacheResult.SearchProgress;
+
+                // update task context to job
+                await progressUpdater.Produce(taskContext, cancellationToken);
+
+                // clear cache
+                cacheResult.Resources.Clear();
+            }
+        }
+
     }
 }

@@ -5,7 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
+using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
 {
@@ -13,78 +15,100 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
     {
         // TODO: Refine this together with TaskExecutor class. Maybe this is more like a task class.
         public TaskContext(
-            string id,
+            int taskIndex,
             string jobId,
-            string resourceType,
-            List<string> schemaTypes,
-            DateTimeOffset startTime,
-            DateTimeOffset endTime,
-            string continuationToken,
-            Dictionary<string, int> processedCount,
-            Dictionary<string, int> skippedCount,
-            Dictionary<string, int> partId,
-            int searchCount = 0,
-            bool isCompleted = false)
+            JobScope jobScope,
+            DataPeriod dataPeriod,
+            DateTimeOffset since,
+            IList<TypeFilter> typeFilters,
+            IEnumerable<PatientWrapper> patientIds = null)
         {
-            Id = id;
+            Id = Id = Guid.NewGuid().ToString("N");
+            TaskHash = $@"{taskIndex:d6}";
             JobId = jobId;
-            ResourceType = resourceType;
-            SchemaTypes = schemaTypes;
-            StartTime = startTime;
-            EndTime = endTime;
-            ContinuationToken = continuationToken;
-            SearchCount = searchCount;
-            ProcessedCount = processedCount;
-            SkippedCount = skippedCount;
-            PartId = partId;
-            IsCompleted = isCompleted;
+            JobScope = jobScope;
+            DataPeriod = dataPeriod;
+            Since = since;
+            TypeFilters = typeFilters;
+
+            PatientIds = patientIds;
+
+            // fields to record progress
+            SearchProgress = new SearchProgress();
+            OutputFileIndexMap = new Dictionary<string, int>();
+            SearchCount = new Dictionary<string, int>();
+            ProcessedCount = new Dictionary<string, int>();
+            SkippedCount = new Dictionary<string, int>();
+            IsCompleted = false;
         }
 
         /// <summary>
         /// Task id.
         /// </summary>
-        public string Id { get; set; }
+        [JsonProperty("id")]
+        public string Id { get; }
+
+        /// <summary>
+        /// Task hash
+        /// </summary>
+        [JsonProperty("taskHash")]
+        public string TaskHash { get; }
 
         /// <summary>
         /// Job id.
         /// </summary>
-        public string JobId { get; set; }
+        [JsonProperty("jobId")]
+        public string JobId { get; }
 
         /// <summary>
-        /// Resource type for task.
+        /// Job Scope.
         /// </summary>
-        public string ResourceType { get; set; }
+        [JsonProperty("jobScope")]
+        public JobScope JobScope { get; }
 
         /// <summary>
-        /// Schema types for task.
+        /// Will process all data with timestamp greater than or equal to DataPeriod.Start and less than DataPeriod.End.
+        /// For FHIR data, we use the lastUpdated field as the record timestamp.
         /// </summary>
-        public List<string> SchemaTypes { get; set; }
+        [JsonProperty("dataPeriod")]
+        public DataPeriod DataPeriod { get; }
 
         /// <summary>
-        /// Start time for task.
+        /// The start timestamp specified in job configuration.
         /// </summary>
-        public DateTimeOffset StartTime { get; set; }
+        [JsonProperty("since")]
+        public DateTimeOffset Since { get; }
 
         /// <summary>
-        /// End time for task.
+        /// Type filter list.
         /// </summary>
-        public DateTimeOffset EndTime { get; set; }
+        [JsonProperty("typeFilters")]
+        public IList<TypeFilter> TypeFilters { get; }
 
         /// <summary>
-        /// Part id for for each schema type, the value will be appended to output files.
-        /// The format is '{SchemaType}_{JobId}_{PartId}.parquet', e.g. Patient_1ab3edcefsi789ed_0001.parquet.
+        /// Patient id list, used in "Group" scope.
         /// </summary>
-        public Dictionary<string, int> PartId { get; set; }
+        [JsonProperty("patientIds")]
+        public IEnumerable<PatientWrapper> PatientIds { get; }
 
         /// <summary>
-        /// Task progress.
+        /// Search progress
         /// </summary>
-        public string ContinuationToken { get; set; }
+        [JsonProperty("searchProgress")]
+        public SearchProgress SearchProgress { get; set; }
 
         /// <summary>
-        /// Search count.
+        /// Output file index map for all resources/schemas.
+        /// The value of each schemaType will be appended to output files.
+        /// The format is '{SchemaType}_{TaskHash}_{index}.parquet', e.g. Patient_000001_0001.parquet.
         /// </summary>
-        public int SearchCount { get; set; }
+        [JsonProperty("taskProgress")]
+        public Dictionary<string, int> OutputFileIndexMap { get; set; }
+
+        /// <summary>
+        /// Search count for each resource type.
+        /// </summary>
+        public Dictionary<string, int> SearchCount { get; set; }
 
         /// <summary>
         /// Skipped count for each schema type.
@@ -100,38 +124,5 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// Has completed all resources.
         /// </summary>
         public bool IsCompleted { get; set; }
-
-        public static TaskContext Create(
-            string resourceType,
-            List<string> schemaTypes,
-            Job job)
-        {
-            var isCompleted = job.CompletedResources.Contains(resourceType);
-
-            var resourceProcessedCounts = new Dictionary<string, int>();
-            var resourceSkippedCounts = new Dictionary<string, int>();
-            var resourcePartIds = new Dictionary<string, int>();
-
-            foreach (var schemaType in schemaTypes)
-            {
-                resourceProcessedCounts.Add(schemaType, job.ProcessedResourceCounts.GetValueOrDefault(schemaType));
-                resourceSkippedCounts.Add(schemaType, job.SkippedResourceCounts.GetValueOrDefault(schemaType));
-                resourcePartIds.Add(schemaType, job.PartIds.GetValueOrDefault(schemaType));
-            }
-
-            return new TaskContext(
-                Guid.NewGuid().ToString("N"),
-                job.Id,
-                resourceType,
-                schemaTypes,
-                job.DataPeriod.Start,
-                job.DataPeriod.End,
-                job.ResourceProgresses[resourceType],
-                resourceProcessedCounts,
-                resourceSkippedCounts,
-                resourcePartIds,
-                job.TotalResourceCounts[resourceType],
-                isCompleted);
-        }
     }
 }

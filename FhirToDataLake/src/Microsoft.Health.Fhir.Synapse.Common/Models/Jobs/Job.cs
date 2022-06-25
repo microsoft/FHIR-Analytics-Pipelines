@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
@@ -14,44 +16,45 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public Job(
             string containerName,
             JobStatus status,
-            IEnumerable<string> resourceTypes,
             DataPeriod dataPeriod,
+            DateTimeOffset since,
+            FilterContext filterContext,
             DateTimeOffset lastHeartBeat,
-            Dictionary<string, string> resourceProgresses = null,
+            IEnumerable<PatientWrapper> patients = null,
+            int nextTaskIndex = 0,
+            Dictionary<string, TaskContext> runningTasks = null,
             Dictionary<string, int> totalResourceCounts = null,
             Dictionary<string, int> processedResourceCounts = null,
             Dictionary<string, int> skippedResourceCounts = null,
-            Dictionary<string, int> partIds = null,
-            HashSet<string> completedResources = null,
             string resumedJobId = null)
         {
             Id = Guid.NewGuid().ToString("N");
             CreatedTime = DateTimeOffset.UtcNow;
             ContainerName = containerName;
             Status = status;
-            ResourceTypes = resourceTypes ?? new List<string>();
             DataPeriod = dataPeriod;
+            Since = since;
+            FilterContext = filterContext;
+
             LastHeartBeat = lastHeartBeat;
-            ResourceProgresses = resourceProgresses ?? new Dictionary<string, string>();
+
+            Patients = patients ?? new List<PatientWrapper>();
+
+            // fields to record job progress
+            NextTaskIndex = nextTaskIndex;
+            RunningTasks = runningTasks ?? new Dictionary<string, TaskContext>();
             TotalResourceCounts = totalResourceCounts ?? new Dictionary<string, int>();
             ProcessedResourceCounts = processedResourceCounts ?? new Dictionary<string, int>();
             SkippedResourceCounts = skippedResourceCounts ?? new Dictionary<string, int>();
-            PartIds = partIds ?? new Dictionary<string, int>();
-            CompletedResources = completedResources ?? new HashSet<string>();
-            ResumedJobId = resumedJobId;
 
-            foreach (var resource in ResourceTypes)
-            {
-                _ = ResourceProgresses.TryAdd(resource, null);
-                _ = TotalResourceCounts.TryAdd(resource, 0);
-            }
+            ResumedJobId = resumedJobId;
         }
 
         /// <summary>
         /// Job id.
         /// </summary>
         [JsonProperty("id")]
-        public string Id { get; set; }
+        public string Id { get; }
 
         /// <summary>
         /// Created timestamp of job.
@@ -78,17 +81,29 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public JobStatus Status { get; set; }
 
         /// <summary>
-        /// All resource types to process.
-        /// </summary>
-        [JsonProperty("resourceTypes")]
-        public IEnumerable<string> ResourceTypes { get; set; }
-
-        /// <summary>
         /// Will process all data with timestamp greater than or equal to DataPeriod.Start and less than DataPeriod.End.
         /// For FHIR data, we use the lastUpdated field as the record timestamp.
         /// </summary>
         [JsonProperty("dataPeriod")]
         public DataPeriod DataPeriod { get; }
+
+        /// <summary>
+        /// The start timestamp specified in job configuration.
+        /// </summary>
+        [JsonProperty("since")]
+        public DateTimeOffset Since { get; }
+
+        /// <summary>
+        /// The filter context.
+        /// </summary>
+        [JsonProperty("filterContext")]
+        public FilterContext FilterContext { get; }
+
+        /// <summary>
+        /// Patient list
+        /// </summary>
+        [JsonProperty("patients")]
+        public IEnumerable<PatientWrapper> Patients { get; set; }
 
         /// <summary>
         /// Gets or sets last heartbeat timestamp of job.
@@ -97,40 +112,34 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public DateTimeOffset LastHeartBeat { get; set; }
 
         /// <summary>
-        /// Gets or sets resource progresses (continuation tokens for search) of job.
+        /// The next task index
         /// </summary>
-        [JsonProperty("resourceProgresses")]
-        public Dictionary<string, string> ResourceProgresses { get; }
+        [JsonProperty("nextTaskIndex")]
+        public int NextTaskIndex { get; set; }
+
+        /// <summary>
+        /// The running tasks
+        /// </summary>
+        [JsonProperty("runningTasks")]
+        public Dictionary<string, TaskContext> RunningTasks { get; set; }
 
         /// <summary>
         /// Total resource count (from data source) for each resource types.
         /// </summary>
         [JsonProperty("totalResourceCounts")]
-        public Dictionary<string, int> TotalResourceCounts { get; }
+        public Dictionary<string, int> TotalResourceCounts { get; set; }
 
         /// <summary>
         /// Processed resource count for each schema type.
         /// </summary>
         [JsonProperty("processedResourceCounts")]
-        public Dictionary<string, int> ProcessedResourceCounts { get; }
+        public Dictionary<string, int> ProcessedResourceCounts { get; set; }
 
         /// <summary>
         /// Skipped resource count for each schema type.
         /// </summary>
         [JsonProperty("skippedResourceCounts")]
-        public Dictionary<string, int> SkippedResourceCounts { get; }
-
-        /// <summary>
-        /// Resource set that has completed processing.
-        /// </summary>
-        [JsonProperty("completedResources")]
-        public HashSet<string> CompletedResources { get; }
-
-        /// <summary>
-        /// Part id for each schema type.
-        /// </summary>
-        [JsonProperty("partIds")]
-        public Dictionary<string, int> PartIds { get; }
+        public Dictionary<string, int> SkippedResourceCounts { get; set; }
 
         /// <summary>
         /// Failure reason for this job.
@@ -142,6 +151,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// Id of the resumed job.
         /// </summary>
         [JsonProperty("ResumedJobId")]
-        public string ResumedJobId { get; set; }
+        public string ResumedJobId { get; }
     }
 }
