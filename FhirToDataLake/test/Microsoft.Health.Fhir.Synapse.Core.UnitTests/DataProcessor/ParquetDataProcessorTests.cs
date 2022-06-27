@@ -14,6 +14,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
+using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
@@ -27,6 +28,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
     {
         private static readonly FhirParquetSchemaManager _fhirSchemaManager;
         private static readonly IOptions<ArrowConfiguration> _arrowConfigurationOptions;
+        private static readonly DefaultConverter _defaultConverter;
+        private static readonly FhirConverter _fhirConverter;
+
         private static readonly NullLogger<ParquetDataProcessor> _nullParquetDataProcessorLogger = NullLogger<ParquetDataProcessor>.Instance;
 
         private const string _testDataFolder = "./TestData";
@@ -43,6 +47,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var jsonSchemaCollectionsProvider = new JsonSchemaCollectionProvider(Substitute.For<IContainerRegistryTokenProvider>(), NullLogger<JsonSchemaCollectionProvider>.Instance);
 
             _fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance);
+            _defaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
+            _fhirConverter = new FhirConverter(NullLogger<FhirConverter>.Instance);
+
             _arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             _testPatient = TestUtils.LoadNdjsonData(Path.Combine(_testDataFolder, "Basic_Raw_Patient.ndjson")).First();
@@ -53,16 +60,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         public static void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(null, _arrowConfigurationOptions, _nullParquetDataProcessorLogger));
+                () => new ParquetDataProcessor(null, _arrowConfigurationOptions, _defaultConverter, _fhirConverter, _nullParquetDataProcessorLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(_fhirSchemaManager, null, _nullParquetDataProcessorLogger));
+                () => new ParquetDataProcessor(_fhirSchemaManager, null, _defaultConverter, _fhirConverter, _nullParquetDataProcessorLogger));
         }
 
         [Fact]
         public static async Task GivenAValidInputData_WhenProcess_CorrectResultShouldBeReturned()
         {
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
+            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _defaultConverter, _fhirConverter, _nullParquetDataProcessorLogger);
 
             var jsonBatchData = new JsonBatchData(_testPatients);
 
@@ -83,7 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(_testDataFolder, "Large_Patient.ndjson"));
             var largeTestData = Enumerable.Repeat(largePatientSingleSet, 100).SelectMany(x => x);
 
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
+            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _defaultConverter, _fhirConverter, _nullParquetDataProcessorLogger);
 
             var jsonBatchData = new JsonBatchData(largeTestData);
 
@@ -103,7 +110,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         {
             var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(_testDataFolder, "Large_Patient.ndjson"));
 
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
+            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _defaultConverter, _fhirConverter, _nullParquetDataProcessorLogger);
 
             var jsonBatchData = new JsonBatchData(largePatientSingleSet);
 
@@ -134,7 +141,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
                 ReadOptions = new ArrowReadOptionsConfiguration() { BlockSize = 50 },
             });
 
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, arrowConfigurationOptions, _nullParquetDataProcessorLogger);
+            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, arrowConfigurationOptions, _defaultConverter, _fhirConverter, _nullParquetDataProcessorLogger);
 
             var jsonBatchData = new JsonBatchData(testData);
 
@@ -157,7 +164,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
                 ReadOptions = new ArrowReadOptionsConfiguration() { BlockSize = 50 },
             });
 
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, arrowConfigurationOptions, _nullParquetDataProcessorLogger);
+            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, arrowConfigurationOptions, _defaultConverter, _fhirConverter, _nullParquetDataProcessorLogger);
 
             var testData = new List<JObject>(_testPatients);
             var jsonBatchData = new JsonBatchData(testData);
@@ -169,7 +176,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         [Fact]
         public static async Task GivenInvalidSchemaType_WhenProcess_ExceptionShouldBeThrown()
         {
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
+            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _defaultConverter, _fhirConverter, _nullParquetDataProcessorLogger);
 
             var jsonBatchData = new JsonBatchData(_testPatients);
 
@@ -180,7 +187,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         [Fact]
         public static async Task GivenInvalidJsonBatchData_WhenProcess_ExceptionShouldBeThrown()
         {
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
+            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _defaultConverter, _fhirConverter, _nullParquetDataProcessorLogger);
 
             var invalidTestData = new JObject
             {
@@ -191,310 +198,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var invalidJsonBatchData = new JsonBatchData(new List<JObject> { invalidTestData, invalidTestData });
 
             await Assert.ThrowsAsync<ParquetDataProcessorException>(() => parquetDataProcessor.ProcessAsync(invalidJsonBatchData, new ProcessParameters("Patient")));
-        }
-
-        [Fact]
-        public static void GivenAValidBasicSchema_WhenPreprocess_CorrectResultShouldBeReturned()
-        {
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
-
-            var result = parquetDataProcessor.Preprocess(
-                CreateTestJsonBatchData(_testPatient),
-                "Patient");
-
-            var expectedResult = TestUtils.LoadNdjsonData(Path.Combine(_expectTestDataFolder, "Expected_Processed_Patient.ndjson"));
-
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedResult.First()));
-        }
-
-        [Fact]
-        public static void GivenAValidStructData_WhenPreprocess_CorrectResultShouldBeReturned()
-        {
-            JObject rawStructFormatData = new JObject
-            {
-                {
-                    "text", new JObject
-                    {
-                        { "status", "generated" },
-                        { "div", "Test div in text" },
-                    }
-                },
-            };
-
-            // Expected struct format fields are same with raw struct format fields.
-            JObject expectedStructFormatResult = new JObject
-            {
-                {
-                    "text", new JObject
-                    {
-                        { "status", "generated" },
-                        { "div", "Test div in text" },
-                    }
-                },
-            };
-
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
-
-            var result = parquetDataProcessor.Preprocess(
-                CreateTestJsonBatchData(rawStructFormatData),
-                "Patient");
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedStructFormatResult));
-        }
-
-        [Fact]
-        public static void GivenAValidArrayData_WhenPreprocess_CorrectResultShouldBeReturned()
-        {
-            JObject rawArrayFormatData = new JObject
-            {
-                {
-                    "name", new JArray
-                    {
-                        new JObject
-                        {
-                            { "use", "official" },
-                            { "family", "Chalmers" },
-                            { "given", new JArray { "Peter", "James" } },
-                        },
-                        new JObject
-                        {
-                            { "use", "maiden" },
-                            { "given", new JArray { "Jim" } },
-                        },
-                    }
-                },
-            };
-
-            // Expected array format fields are same with raw array format fields.
-            JObject expectedArrayFormatResult = new JObject
-            {
-                {
-                    "name", new JArray
-                    {
-                        new JObject
-                        {
-                            { "use", "official" },
-                            { "family", "Chalmers" },
-                            { "given", new JArray { "Peter", "James" } },
-                        },
-                        new JObject
-                        {
-                            { "use", "maiden" },
-                            { "given", new JArray { "Jim" } },
-                        },
-                    }
-                },
-            };
-
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
-            var result = parquetDataProcessor.Preprocess(
-                CreateTestJsonBatchData(rawArrayFormatData),
-                "Patient");
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedArrayFormatResult));
-        }
-
-        [Fact]
-        public static void GivenAValidDataWithDeepArrayField_WhenPreprocess_DeepFieldsShouldBeWrappedIntoJsonString()
-        {
-            JObject rawDeepFieldsData = new JObject
-            {
-                {
-                    "contact", new JArray
-                    {
-                        new JObject
-                        {
-                            {
-                                "relationship", new JArray
-                                {
-                                    new JObject
-                                    {
-                                        {
-                                            "coding", new JArray
-                                            {
-                                                new JObject
-                                                {
-                                                    { "system", "http://terminology.hl7.org/CodeSystem/v2-0131" },
-                                                    { "code", "E" },
-                                                },
-                                            }
-                                        },
-                                    },
-                                }
-                            },
-                        },
-                    }
-                },
-            };
-
-            JObject expectedJsonStringFieldsResult = new JObject
-            {
-                {
-                    "contact", new JArray
-                    {
-                        new JObject
-                        {
-                            {
-                                "relationship", new JArray
-                                {
-                                    new JObject
-                                    {
-                                        {
-                                            "coding", "[{\"system\":\"http://terminology.hl7.org/CodeSystem/v2-0131\",\"code\":\"E\"}]"
-                                        },
-                                    },
-                                }
-                            },
-                        },
-                    }
-                },
-            };
-
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
-            var result = parquetDataProcessor.Preprocess(
-                CreateTestJsonBatchData(rawDeepFieldsData),
-                "Patient");
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedJsonStringFieldsResult));
-        }
-
-        [Fact]
-        public static void GivenAValidDataWithDeepStructField_WhenPreprocess_DeepFieldsShouldBeWrappedIntoJsonString()
-        {
-            JObject rawDeepFieldsData = new JObject
-            {
-                {
-                    "contact", new JArray
-                    {
-                        new JObject
-                        {
-                            {
-                                "relationship", new JArray
-                                {
-                                    new JObject
-                                    {
-                                        {
-                                            "coding", new JArray
-                                            {
-                                                new JObject
-                                                {
-                                                    { "system", "http://terminology.hl7.org/CodeSystem/v2-0131" },
-                                                    { "code", "E" },
-                                                },
-                                            }
-                                        },
-                                    },
-                                }
-                            },
-                        },
-                    }
-                },
-            };
-
-            JObject expectedJsonStringFieldsResult = new JObject
-            {
-                {
-                    "contact", new JArray
-                    {
-                        new JObject
-                        {
-                            {
-                                "relationship", new JArray
-                                {
-                                    new JObject
-                                    {
-                                        {
-                                            "coding", "[{\"system\":\"http://terminology.hl7.org/CodeSystem/v2-0131\",\"code\":\"E\"}]"
-                                        },
-                                    },
-                                }
-                            },
-                        },
-                    }
-                },
-            };
-
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
-            var result = parquetDataProcessor.Preprocess(
-                CreateTestJsonBatchData(rawDeepFieldsData),
-                "Patient");
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedJsonStringFieldsResult));
-        }
-
-        [Fact]
-        public static void GivenAValidPrimitiveChoiceTypeData_WhenPreprocess_CorrectResultShouldBeReturned()
-        {
-            JObject rawPrimitiveChoiceTypeData = new JObject
-            {
-                { "effectiveDateTime", "1905-08-23" },
-            };
-
-            // Primitive choice data type
-            JObject expectedPrimitiveChoiceTypeResult = new JObject
-            {
-                { "effective", new JObject { { "dateTime", "1905-08-23" } } },
-            };
-
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
-            var result = parquetDataProcessor.Preprocess(
-                CreateTestJsonBatchData(rawPrimitiveChoiceTypeData),
-                "Observation");
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedPrimitiveChoiceTypeResult));
-        }
-
-        [Fact]
-        public static void GivenAValidStructChoiceTypeData_WhenPreprocess_CorrectResultShouldBeReturned()
-        {
-            JObject rawStructChoiceTypeData = new JObject
-            {
-                { "effectivePeriod", new JObject { { "start", "1905-08-23" } } },
-            };
-
-            // Struct choice data type
-            JObject expectedStructChoiceTypeResult = new JObject
-            {
-                { "effective", new JObject { { "period", new JObject { { "start", "1905-08-23" } } } } },
-            };
-
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
-            var result = parquetDataProcessor.Preprocess(
-                CreateTestJsonBatchData(rawStructChoiceTypeData),
-                "Observation");
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedStructChoiceTypeResult));
-        }
-
-        [Fact]
-        public static void GivenInvalidSchemaType_WhenPreprocess_ExceptionShouldBeReturned()
-        {
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
-
-            Assert.Throws<ParquetDataProcessorException>(
-                () => parquetDataProcessor.Preprocess(
-                    CreateTestJsonBatchData(_testPatient),
-                    "UnsupportedSchemaType"));
-        }
-
-        [Fact]
-        public static void GivenInvalidData_WhenPreprocess_ExceptionShouldBeReturned()
-        {
-            var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
-            var invalidFieldData = new JObject
-            {
-                { "name", "Invalid data fields, should be array." },
-            };
-
-            Assert.Throws<ParquetDataProcessorException>(
-                () => parquetDataProcessor.Preprocess(
-                    CreateTestJsonBatchData(invalidFieldData),
-                    "Patient").Values.Count());
-
-            Assert.Throws<ParquetDataProcessorException>(
-                () => parquetDataProcessor.Preprocess(
-                    CreateTestJsonBatchData(null),
-                    "Patient").Values.Count());
-        }
-
-        private static JsonBatchData CreateTestJsonBatchData(JObject testJObjectData)
-        {
-            var testData = new List<JObject>() { testJObjectData };
-            return new JsonBatchData(testData);
         }
 
         private static MemoryStream GetExpectedParquetStream(string filePath)

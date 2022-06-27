@@ -51,8 +51,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             _logger = logger;
         }
 
-        // To do:
-        // Add cancelling
         public async Task<TaskResult> ExecuteAsync(
             TaskContext taskContext,
             JobProgressUpdater progressUpdater,

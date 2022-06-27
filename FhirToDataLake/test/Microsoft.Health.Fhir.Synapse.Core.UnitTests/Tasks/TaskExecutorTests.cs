@@ -18,6 +18,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
+using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
@@ -132,9 +133,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance);
             var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
+            var defaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
+            var fhirConverter = new FhirConverter(NullLogger<FhirConverter>.Instance);
+
             return new ParquetDataProcessor(
             fhirSchemaManager,
             arrowConfigurationOptions,
+            defaultConverter,
+            fhirConverter,
             NullLogger<ParquetDataProcessor>.Instance);
         }
 

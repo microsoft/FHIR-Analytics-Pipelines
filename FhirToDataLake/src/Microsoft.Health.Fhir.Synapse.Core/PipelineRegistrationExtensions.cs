@@ -5,6 +5,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
+using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
@@ -21,6 +22,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core
             services.AddSingleton<JobProgressUpdaterFactory, JobProgressUpdaterFactory>();
 
             services.AddSingleton<JobManager, JobManager>();
+
+            services.AddSingleton<JobExecutor, JobExecutor>();
+
+            services.AddSingleton<DefaultConverter, DefaultConverter>();
+
+            services.AddSingleton<FhirConverter, FhirConverter>();
 
             services.AddSingleton<JobExecutor, JobExecutor>();
 
