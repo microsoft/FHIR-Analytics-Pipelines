@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Newtonsoft.Json;
@@ -14,12 +15,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
     public class Job
     {
         public Job(
+            string id,
             string containerName,
             JobStatus status,
             DataPeriod dataPeriod,
             DateTimeOffset since,
             FilterContext filterContext,
             DateTimeOffset lastHeartBeat,
+            DateTimeOffset createdTime,
             IEnumerable<PatientWrapper> patients = null,
             int nextTaskIndex = 0,
             Dictionary<string, TaskContext> runningTasks = null,
@@ -28,8 +31,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             Dictionary<string, int> skippedResourceCounts = null,
             string resumedJobId = null)
         {
-            Id = Guid.NewGuid().ToString("N");
-            CreatedTime = DateTimeOffset.UtcNow;
+            Id = id;
+            CreatedTime = createdTime;
             ContainerName = containerName;
             Status = status;
             DataPeriod = dataPeriod;
@@ -152,5 +155,37 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// </summary>
         [JsonProperty("ResumedJobId")]
         public string ResumedJobId { get; }
+
+        public static Job Create(
+            string containerName,
+            JobStatus status,
+            DataPeriod dataPeriod,
+            DateTimeOffset since,
+            FilterContext filterContext,
+            IEnumerable<PatientWrapper> patients = null,
+            int nextTaskIndex = 0,
+            Dictionary<string, TaskContext> runningTasks = null,
+            Dictionary<string, int> totalResourceCounts = null,
+            Dictionary<string, int> processedResourceCounts = null,
+            Dictionary<string, int> skippedResourceCounts = null,
+            string resumedJobId = null)
+        {
+            return new Job(
+                Guid.NewGuid().ToString("N"),
+                containerName,
+                status,
+                dataPeriod,
+                since,
+                filterContext,
+                DateTimeOffset.UtcNow,
+                DateTimeOffset.UtcNow,
+                patients,
+                nextTaskIndex,
+                runningTasks,
+                totalResourceCounts,
+                processedResourceCounts,
+                skippedResourceCounts,
+                resumedJobId);
+        }
     }
 }

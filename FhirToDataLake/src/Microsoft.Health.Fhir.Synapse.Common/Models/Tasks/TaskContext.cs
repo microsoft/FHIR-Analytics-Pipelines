@@ -124,5 +124,21 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// Has completed all resources.
         /// </summary>
         public bool IsCompleted { get; set; }
+
+        public static TaskContext Create(
+            Job job,
+            int taskIndex,
+            IList<TypeFilter> typeFilters,
+            IEnumerable<PatientWrapper> patients = null)
+        {
+            return new TaskContext(
+                taskIndex,
+                job.Id,
+                job.FilterContext.JobScope,
+                job.DataPeriod,
+                job.Since,
+                typeFilters,
+                patients);
+        }
     }
 }

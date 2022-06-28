@@ -93,13 +93,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             if (schedulerSetting?.UnfinishedJobs?.Any() == true)
             {
                 var resumedJob = schedulerSetting.UnfinishedJobs.First();
-                return new Job(
+                return Job.Create(
                     resumedJob.ContainerName,
                     JobStatus.New,
                     resumedJob.DataPeriod,
                     resumedJob.Since,
                     resumedJob.FilterContext,
-                    DateTimeOffset.UtcNow,
                     resumedJob.Patients,
                     resumedJob.NextTaskIndex,
                     resumedJob.RunningTasks,
@@ -135,13 +134,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var filterContext =
                 new FilterContext(_filterConfiguration.JobScope, _filterConfiguration.GroupId, typeFilters, processedPatients);
 
-            var newJob = new Job(
+            var newJob = Job.Create(
                 _jobConfiguration.ContainerName,
                 JobStatus.New,
                 new DataPeriod(triggerStart, triggerEnd),
                 _jobConfiguration.StartTime,
-                filterContext,
-                DateTimeOffset.UtcNow);
+                filterContext);
             return newJob;
         }
 

@@ -1,0 +1,90 @@
+{
+  "resourceType": "Bundle",
+  "id": "bundle-example",
+  "meta": {
+    "lastUpdated": "2014-08-18T01:43:30Z"
+  },
+  "type": "searchset",
+  "total": 3,
+  "link": [
+    {
+      "relation": "self",
+      "url": "https://example.com/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00&_lastUpdated=lt2021-08-09T12%3A40%3A59&_count=500&_sort=_lastUpdated&ct=Y29udGludWF0aW9udG9rZW4%3d"
+    }
+  ],
+  "entry": [
+    {
+      "fullUrl": "https://example.com/base/Patient/example-id",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "example-id",
+        "meta": {
+          "lastUpdated": "2014-08-18T01:43:34Z"
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Generated Narrative with Details</b></p><p><b>id</b>: 3123</p><p><b>status</b>: unknown</p><p><b>intent</b>: order</p><p><b>medication</b>: <a>Medication/example</a></p><p><b>subject</b>: <a>Patient/347</a></p></div>"
+        },
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "family": "Chalmers",
+            "given": [
+              "Peter",
+              "James"
+            ]
+          },
+          {
+            "use": "usual",
+            "given": [
+              "Jim"
+            ]
+          },
+          {
+            "use": "maiden",
+            "family": "Windsor",
+            "given": [
+              "Peter",
+              "James"
+            ],
+            "period": {
+              "end": "2002"
+            }
+          }
+        ],
+        "telecom": [
+          {
+            "use": "home"
+          },
+          {
+            "system": "phone",
+            "value": "(03) 5555 6473",
+            "use": "work",
+            "rank": 1
+          },
+          {
+            "system": "phone",
+            "value": "(03) 3410 5613",
+            "use": "mobile",
+            "rank": 2
+          },
+          {
+            "system": "phone",
+            "value": "(03) 5555 8834",
+            "use": "old",
+            "period": {
+              "end": "2014"
+            }
+          }
+        ],
+        "gender": "male",
+        "birthDate": "1974-12-25"
+      },
+      "search": {
+        "mode": "match",
+        "score": 1
+      }
+    }
+  ]
+}

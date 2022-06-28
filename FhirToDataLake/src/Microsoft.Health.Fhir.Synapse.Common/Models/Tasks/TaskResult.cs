@@ -11,17 +11,23 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
     public class TaskResult
     {
         public TaskResult(
+            bool isCompleted,
             Dictionary<string, int> searchCount,
             Dictionary<string, int> skippedCount,
             Dictionary<string, int> processedCount,
             string result)
         {
+            IsCompleted = isCompleted;
             SearchCount = searchCount;
             SkippedCount = skippedCount;
             ProcessedCount = processedCount;
             Result = result;
         }
 
+        /// <summary>
+        /// Is this task completed.
+        /// </summary>
+        public bool IsCompleted { get; set; }
 
         /// <summary>
         /// Search count.
@@ -46,6 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public static TaskResult CreateFromTaskContext(TaskContext context)
         {
             return new TaskResult(
+                context.IsCompleted,
                 context.SearchCount,
                 context.SkippedCount,
                 context.ProcessedCount,

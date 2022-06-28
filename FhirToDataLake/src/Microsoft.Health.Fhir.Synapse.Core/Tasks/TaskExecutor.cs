@@ -116,10 +116,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 case JobScope.System:
                     {
                         var parameters = new List<KeyValuePair<string, string>>
-                    {
-                        new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.DataPeriod.Start.ToInstantString()}"),
-                        new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
-                    };
+                        {
+                            new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.DataPeriod.Start.ToInstantString()}"),
+                            new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
+                        };
                         var searchOption = new BaseSearchOptions(null, parameters);
 
                         if (cacheResult.SearchProgress.Stage != TaskStage.GetResources)
@@ -314,8 +314,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError(exception, "Failed to parse fhir search result for resource 'patient'.");
-                    throw new FhirDataParseExeption($"Failed to parse fhir search result for resource patient", exception);
+                    _logger.LogError(exception, "Failed to parse fhir search result.");
+                    throw new FhirDataParseExeption($"Failed to parse fhir search result", exception);
                 }
 
                 var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject).ToList();
@@ -345,6 +345,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             foreach (var resource in fhirResources)
             {
                 var resourceType = resource["resourceType"]?.ToString();
+                if (string.IsNullOrEmpty(resourceType))
+                {
+                    _logger.LogError($"Failed to parse fhir search resource {resource}");
+                    throw new FhirDataParseExeption($"Failed to parse fhir search resource {resource}");
+                }
+
                 if (!cacheResult.Resources.ContainsKey(resourceType))
                 {
                     cacheResult.Resources[resourceType] = new List<JObject>();
