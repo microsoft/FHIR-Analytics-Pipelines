@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
@@ -25,12 +26,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenNoContextUpdates_WhenUpdateJobProgress_NoProgressShouldBeUpdated()
         {
-            var activeJob = new Job(
+            var typeFilters = new List<TypeFilter> { new ("Patient", null), new ("Observation", null) };
+            var filterContext = new FilterContext(JobScope.System, null, typeFilters, null);
+
+            var activeJob = Job.Create(
                 ContainerName,
                 JobStatus.Running,
-                new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                DateTimeOffset.Now.AddMinutes(-11));
+                DateTimeOffset.MinValue,
+                filterContext);
 
             var containerClient = new InMemoryBlobContainerClient();
             var jobProgressUpdater = GetInMemoryJobProgressUpdater(activeJob, containerClient);
@@ -38,55 +42,54 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             jobProgressUpdater.Complete();
             await updateTask;
 
-            foreach (var resource in activeJob.ResourceProgresses.Keys)
-            {
-                Assert.Null(activeJob.ResourceProgresses[resource]);
-                Assert.Equal(0, activeJob.TotalResourceCounts[resource]);
-                Assert.Empty(activeJob.ProcessedResourceCounts);
-                Assert.Empty(activeJob.SkippedResourceCounts);
-            }
-
             var persistedJob = await containerClient.GetValue<Job>($"jobs/activeJobs/{activeJob.Id}.json");
-            foreach (var resource in persistedJob.ResourceProgresses.Keys)
-            {
-                Assert.Null(persistedJob.ResourceProgresses[resource]);
-                Assert.Equal(0, persistedJob.TotalResourceCounts[resource]);
-                Assert.Empty(persistedJob.ProcessedResourceCounts);
-                Assert.Empty(persistedJob.SkippedResourceCounts);
-            }
+            Assert.Equal(activeJob.ToString(), persistedJob.ToString());
         }
 
         [Fact]
         public async Task GivenContextUpdates_WhenUpdateJobProgress_ProgressShouldBeUpdatedCorrectly()
         {
-            var activeJob = new Job(
+            var typeFilters = new List<TypeFilter> { new("Patient", null), new("Observation", null) };
+            var filterContext = new FilterContext(JobScope.System, null, typeFilters, null);
+
+            var activeJob = Job.Create(
                 ContainerName,
                 JobStatus.Running,
-                new List<string> { "Patient", "Observation" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                DateTimeOffset.Now.AddMinutes(-11));
+                DateTimeOffset.MinValue,
+                filterContext);
 
-            var context = new TaskContext(
-                "test",
-                activeJob.Id,
-                "Patient",
-                new List<string>() { "Patient", "Patient_customized" },
-                activeJob.DataPeriod.Start,
-                activeJob.DataPeriod.End,
-                "exampleContinuationToken",
-                new Dictionary<string, int>() { { "Patient", 10 }, { "Patient_customized", 10 } },
-                new Dictionary<string, int>() { { "Patient", 0 }, { "Patient_customized", 0 } },
-                new Dictionary<string, int>() { { "Patient", 1 }, { "Patient_customized", 1 } },
-                10);
+            var context = TaskContext.Create(
+                activeJob,
+                0,
+                typeFilters);
+
+            activeJob.RunningTasks[context.Id] = context;
+
+            context.SearchCount = new Dictionary<string, int>() { {"Patient", 10}, {"Patient_customized", 10}};
+            context.SkippedCount = new Dictionary<string, int>() { {"Patient", 0}, {"Patient_customized", 0}};
+            context.ProcessedCount = new Dictionary<string, int>() { {"Patient", 10}, {"Patient_customized", 10}};
+            context.OutputFileIndexMap = new Dictionary<string, int>() { {"Patient", 1}, {"Patient_customized", 1}};
+            context.SearchProgress.ContinuationToken = "exampleContinuationToken";
 
             var containerClient = new InMemoryBlobContainerClient();
             var jobProgressUpdater = GetInMemoryJobProgressUpdater(activeJob, containerClient);
             var updateTask = Task.Run(() => jobProgressUpdater.Consume());
+            //await jobProgressUpdater.Produce(context);
+
+            //Assert.True(activeJob.RunningTasks.ContainsKey(context.Id));
+            //Assert.Equal("exampleContinuationToken", activeJob.RunningTasks[context.Id].SearchProgress.ContinuationToken);
+            //Assert.Empty(activeJob.TotalResourceCounts);
+            //Assert.Empty(activeJob.ProcessedResourceCounts);
+            //Assert.Empty(activeJob.SkippedResourceCounts);
+
+            context.IsCompleted = true;
             await jobProgressUpdater.Produce(context);
+
             jobProgressUpdater.Complete();
             await updateTask;
 
-            Assert.Equal("exampleContinuationToken", activeJob.ResourceProgresses["Patient"]);
+            Assert.False( activeJob.RunningTasks.ContainsKey(context.Id));
             Assert.Equal(10, activeJob.TotalResourceCounts["Patient"]);
             Assert.Equal(10, activeJob.ProcessedResourceCounts["Patient"]);
             Assert.Equal(0, activeJob.SkippedResourceCounts["Patient"]);
@@ -94,20 +97,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(0, activeJob.SkippedResourceCounts["Patient_customized"]);
 
             var persistedJob = await containerClient.GetValue<Job>($"jobs/activeJobs/{activeJob.Id}.json");
-            Assert.Equal("exampleContinuationToken", persistedJob.ResourceProgresses["Patient"]);
+            Assert.False(persistedJob.RunningTasks.ContainsKey(context.Id));
             Assert.Equal(10, persistedJob.TotalResourceCounts["Patient"]);
             Assert.Equal(10, persistedJob.ProcessedResourceCounts["Patient"]);
             Assert.Equal(0, persistedJob.SkippedResourceCounts["Patient"]);
         }
 
-        public static JobProgressUpdater GetInMemoryJobProgressUpdater(Job job, IAzureBlobContainerClient containerClient)
+        private static JobProgressUpdater GetInMemoryJobProgressUpdater(Job job, IAzureBlobContainerClient containerClient)
         {
             var jobConfiguration = new JobConfiguration
             {
                 ContainerName = "jobprogressupdater",
                 StartTime = DateTimeOffset.MinValue,
                 EndTime = DateTimeOffset.MaxValue,
-                ResourceTypeFilters = new List<string> { "Patient", "Observation" },
             };
 
             var storeConfiguration = new DataLakeStoreConfiguration

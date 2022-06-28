@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
@@ -27,9 +28,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
     public class InMemoryJobStoreTests
     {
         private const string TestContainerName = "TestJobContainer";
-        private static readonly DateTimeOffset _testStartTime = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.FromHours(0));
-        private static readonly DateTimeOffset _testEndTime = new DateTimeOffset(2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0));
-        private static readonly List<string> _testResourceTypeFilters = new List<string> { "Patient", "Observation" };
+        private static readonly DateTimeOffset _testStartTime = new (2020, 1, 1, 0, 0, 0, TimeSpan.FromHours(0));
+        private static readonly DateTimeOffset _testEndTime = new (2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0));
+
+        private static readonly List<TypeFilter> _testResourceTypeFilters =
+            new List<TypeFilter> { new ("Patient", null), new ("Observation", null) };
+
+        private static readonly FilterContext _filterContext = new FilterContext(JobScope.System, null, _testResourceTypeFilters, null);
 
         [Fact]
         public async Task GivenJobLocked_WhenAcquireJob_ExceptionWillBeThrown()
@@ -55,17 +60,41 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
+        public async Task GivenAnActiveJobInActiveFolder_WhenAcquireJob_TheJobShouldBeReturned()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+            var jobStore = CreateInMemoryJobStore(blobClient);
+
+            var activeJob = Job.Create(
+                TestContainerName,
+                JobStatus.Running,
+                new DataPeriod(_testStartTime, _testEndTime),
+                _testStartTime,
+                _filterContext);
+            await blobClient.CreateJob(activeJob);
+
+            var returnedJob = await jobStore.AcquireActiveJobAsync();
+
+            // Assert the returned job is not null.
+            Assert.NotNull(returnedJob);
+
+            Assert.Equal(activeJob.ToString(), returnedJob.ToString());
+
+            jobStore.Dispose();
+        }
+
+        [Fact]
         public async Task GivenACompletedJobInActiveFolder_WhenAcquireJob_TheJobShouldBeCompleted_NoJobWillBeReturned()
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
 
-            var activeJob = new Job(
+            var activeJob = Job.Create(
                 TestContainerName,
                 JobStatus.Succeeded,
-                _testResourceTypeFilters,
                 new DataPeriod(_testStartTime, _testEndTime),
-                DateTimeOffset.Now.AddMinutes(-1));
+                _testStartTime,
+                _filterContext);
             await blobClient.CreateJob(activeJob);
 
             var newJob = await jobStore.AcquireActiveJobAsync();
@@ -78,7 +107,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(activeJob.Id, completedJob.Id);
             Assert.Equal(activeJob.DataPeriod.Start, completedJob.DataPeriod.Start);
             Assert.Equal(activeJob.DataPeriod.End, completedJob.DataPeriod.End);
-            Assert.Equal(activeJob.ResourceTypes, completedJob.ResourceTypes);
+            Assert.Equal(JobStatus.Succeeded, completedJob.Status);
+            Assert.NotNull(completedJob.CompletedTime);
 
             jobStore.Dispose();
         }
@@ -89,23 +119,60 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
 
-            var activeJob = new Job(
+            var activeJob = Job.Create(
                 TestContainerName,
                 JobStatus.Failed,
-                _testResourceTypeFilters,
                 new DataPeriod(_testStartTime, _testEndTime),
-                DateTimeOffset.Now.AddMinutes(-1));
+                _testStartTime,
+                _filterContext);
             await blobClient.CreateJob(activeJob);
 
-            var newjob = await jobStore.AcquireActiveJobAsync();
+            var newJob = await jobStore.AcquireActiveJobAsync();
 
             // Assert returned job is null.
-            Assert.Null(newjob);
+            Assert.Null(newJob);
 
             // Assert the failed job has been completed.
             var savedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.CompletedJobFolder}/{activeJob.Id}.json");
             Assert.Equal(activeJob.Id, savedJob.Id);
             Assert.Equal(JobStatus.Failed, savedJob.Status);
+            Assert.NotNull(savedJob.CompletedTime);
+
+            jobStore.Dispose();
+        }
+
+        [Fact]
+        public async Task GivenNullJob_WhenUpdateJob_ExceptionShouldBeThrown()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+            var jobStore = CreateInMemoryJobStore(blobClient);
+
+            Job job = null;
+            _ = await Assert.ThrowsAsync<ArgumentNullException>(() => jobStore.UpdateJobAsync(job));
+        }
+
+        [Fact]
+        public async Task GivenNewJob_WhenUpdateJob_JobShouldBeUploaded()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+            var jobStore = CreateInMemoryJobStore(blobClient);
+
+            var newJob = Job.Create(
+                TestContainerName,
+                JobStatus.New,
+                new DataPeriod(_testStartTime, _testEndTime),
+                _testStartTime,
+                _filterContext);
+
+            await jobStore.UpdateJobAsync(newJob);
+
+            var returnedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.ActiveJobFolder}/{newJob.Id}.json");
+
+            // Assert the returned job is not null.
+            Assert.NotNull(returnedJob);
+
+            // the new job is stored in job store
+            Assert.Equal(newJob.ToString(), returnedJob.ToString());
         }
 
         [Fact]
@@ -114,17 +181,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
 
-            var activeJob = new Job(
+            var activeJob = Job.Create(
                 TestContainerName,
                 JobStatus.Running,
-                _testResourceTypeFilters,
                 new DataPeriod(_testStartTime, _testEndTime),
-                DateTimeOffset.Now.AddMinutes(-1));
+                _testStartTime,
+                _filterContext);
             await blobClient.CreateJob(activeJob);
 
-            activeJob.ResourceProgresses["Patient"] = "test1234";
-            activeJob.PartIds["Patient"] = 2;
-            activeJob.PartIds["Patient_customized"] = 2;
+            var returnedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
+            Assert.NotNull(returnedJob);
+            Assert.Equal(activeJob.ToString(), returnedJob.ToString());
+
+            //activeJob.ResourceProgresses["Patient"] = "test1234";
+            //activeJob.PartIds["Patient"] = 2;
+            //activeJob.PartIds["Patient_customized"] = 2;
+            activeJob.TotalResourceCounts["Patient"] = 100;
             activeJob.ProcessedResourceCounts["Patient"] = 100;
             activeJob.ProcessedResourceCounts["Patient_customized"] = 95;
             activeJob.SkippedResourceCounts["Patient"] = 0;
@@ -137,9 +209,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // Assert job is updated.
             Assert.Equal(activeJob.Id, updatedJob.Id);
             Assert.Equal(JobStatus.Running, updatedJob.Status);
-            Assert.Equal("test1234", activeJob.ResourceProgresses["Patient"]);
-            Assert.Equal(2, activeJob.PartIds["Patient"]);
-            Assert.Equal(2, activeJob.PartIds["Patient_customized"]);
+            //Assert.Equal("test1234", activeJob.ResourceProgresses["Patient"]);
+            //Assert.Equal(2, activeJob.PartIds["Patient"]);
+            //Assert.Equal(2, activeJob.PartIds["Patient_customized"]);
             Assert.Equal(100, activeJob.ProcessedResourceCounts["Patient"]);
             Assert.Equal(95, activeJob.ProcessedResourceCounts["Patient_customized"]);
             Assert.Equal(0, activeJob.SkippedResourceCounts["Patient"]);
@@ -153,12 +225,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
-            var activeJob = new Job(
+            var activeJob = Job.Create(
                 TestContainerName,
                 JobStatus.Running,
-                _testResourceTypeFilters,
                 new DataPeriod(_testStartTime, _testEndTime),
-                DateTimeOffset.Now.AddMinutes(-1));
+                _testStartTime,
+                _filterContext);
             await blobClient.CreateJob(activeJob);
 
             await Assert.ThrowsAsync<ArgumentException>(() => jobStore.CompleteJobAsync(activeJob));
@@ -170,12 +242,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
-            var activeJob = new Job(
+            var activeJob = Job.Create(
                 TestContainerName,
                 JobStatus.Running,
-                _testResourceTypeFilters,
                 new DataPeriod(_testStartTime, _testEndTime),
-                DateTimeOffset.Now.AddMinutes(-1));
+                _testStartTime,
+                _filterContext);
             await blobClient.CreateJob(activeJob);
 
             // job has been persisted to active folder.
@@ -196,12 +268,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
-            var activeJob = new Job(
+            var activeJob = Job.Create(
                 TestContainerName,
                 JobStatus.Running,
-                _testResourceTypeFilters,
                 new DataPeriod(_testStartTime, _testEndTime),
-                DateTimeOffset.Now.AddMinutes(-1));
+                _testStartTime,
+                _filterContext);
             await blobClient.CreateJob(activeJob);
 
             // job has been persisted to active folder.
@@ -229,12 +301,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public async Task GivenJobDataStaged_WhenCommit_CorrectResultShouldBeCommitted()
         {
             var blobClient = new InMemoryBlobContainerClient();
-            var activeJob = new Job(
+            var activeJob = Job.Create(
                 TestContainerName,
                 JobStatus.Succeeded,
-                new List<string> { "Patient", "Observation" },
-                new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                DateTimeOffset.Now.AddMinutes(-1));
+                new DataPeriod(_testStartTime, _testEndTime),
+                _testStartTime,
+                _filterContext);
 
             // Upload parquet data
             var jobStore = CreateInMemoryJobStore(blobClient);
@@ -267,8 +339,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 await blobClient.CreateBlobAsync(blobName, new MemoryStream(data));
             }
 
-            activeJob.PartIds["Patient"] = 4;
-            activeJob.PartIds["Patient_customized"] = 4;
+            //activeJob.PartIds["Patient"] = 4;
+            //activeJob.PartIds["Patient_customized"] = 4;
             await jobStore.CompleteJobAsync(activeJob);
 
             // Make sure data has been moved to result folder.
@@ -285,16 +357,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             jobStore.Dispose();
         }
 
+        /*
         [Fact]
         public async Task GivenJobDataStaged_WhenCommit_UnrecordedDataShouldBeRemoved()
         {
             var blobClient = new InMemoryBlobContainerClient();
-            var activeJob = new Job(
+            var activeJob = Job.Create(
                 TestContainerName,
                 JobStatus.Succeeded,
-                new List<string> { "Patient", "Observation" },
-                new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                DateTimeOffset.Now.AddMinutes(-1));
+                new DataPeriod(_testStartTime, _testEndTime),
+                _testStartTime,
+                _filterContext);
 
             // Upload parquet data
             var jobStore = CreateInMemoryJobStore(blobClient);
@@ -320,7 +393,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
 
             // Only blobs of partId 0 and 1 should be kept.
-            activeJob.PartIds["Patient"] = 2;
+            //activeJob.PartIds["Patient"] = 2;
             await jobStore.CompleteJobAsync(activeJob);
 
             // Make sure data has been moved to result folder.
@@ -336,6 +409,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             jobStore.Dispose();
         }
+        */
 
         private static async Task<Job> LoadJobFromBlob(InMemoryBlobContainerClient blobClient, string blobName)
         {

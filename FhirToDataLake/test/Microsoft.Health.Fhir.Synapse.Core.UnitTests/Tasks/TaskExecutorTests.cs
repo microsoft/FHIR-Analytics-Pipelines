@@ -42,17 +42,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var containerName = Guid.NewGuid().ToString("N");
             var taskExecutor = GetTaskExecutor(TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile1), containerName);
 
-            var typeFilters = new List<TypeFilter> { new("Patient", null) };
+            var typeFilters = new List<TypeFilter> { new ("Patient", null) };
             var filterContext = new FilterContext(JobScope.System, null, typeFilters, null);
 
             // Create an active job.
-            var activeJob = new Job(
+            var activeJob = Job.Create(
                 containerName,
                 JobStatus.Running,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.MinValue,
-                filterContext,
-                DateTimeOffset.Now.AddMinutes(-11));
+                filterContext);
 
             var taskContext = new TaskContext(0, activeJob.Id, activeJob.FilterContext.JobScope, activeJob.DataPeriod, activeJob.Since, typeFilters);
 
@@ -71,7 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             // verify blob data;
             var blobClient = new BlobContainerClient(TestBlobEndpoint, containerName);
             var blobPages = blobClient.GetBlobs(prefix: "staging").AsPages();
-            Assert.Equal(1, blobPages.First().Values.Count());
+            Assert.Single(blobPages.First().Values);
 
             // verify job data
             var jobBlob = blobClient.GetBlobClient($"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
@@ -81,17 +80,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             using var streamReader = new StreamReader(stream);
             var jobContent = streamReader.ReadToEnd();
             var job = JsonConvert.DeserializeObject<Job>(jobContent);
-            //Assert.Equal(activeJob.Id, job.Id);
+            Assert.Equal(activeJob.Id, job.Id);
             //Assert.Equal(JobStatus.Succeeded, job.Status);
 
-            Assert.Equal(0, job.RunningTasks.Count);
+            Assert.Empty(job.RunningTasks);
 
             //Assert.Equal(1, job.NextTaskIndex);
             Assert.Equal(3, job.ProcessedResourceCounts["Patient"]);
             Assert.Equal(3, job.TotalResourceCounts["Patient"]);
             Assert.Equal(0, job.SkippedResourceCounts["Patient"]);
 
-            blobClient.DeleteIfExists();
+            await blobClient.DeleteIfExistsAsync();
         }
 
         [Theory]
@@ -107,13 +106,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var filterContext = new FilterContext(JobScope.System, null, typeFilters, null);
 
             // Create an active job.
-            var activeJob = new Job(
+            var activeJob = Job.Create(
                 containerName,
                 JobStatus.Running,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.MinValue,
-                filterContext,
-                DateTimeOffset.Now.AddMinutes(-11));
+                filterContext);
             var taskContext = TaskContext.Create(activeJob, 0, typeFilters);
 
             var jobUpdater = GetJobUpdater(activeJob);
