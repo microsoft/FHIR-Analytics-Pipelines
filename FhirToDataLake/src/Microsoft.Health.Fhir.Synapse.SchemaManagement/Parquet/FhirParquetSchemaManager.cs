@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.CustomizedSchema;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 {
@@ -23,20 +23,15 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         private readonly Dictionary<string, List<string>> _schemaTypesMap;
         private readonly Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
         private readonly ILogger<FhirParquetSchemaManager> _logger;
-        private readonly JsonSchemaParser _jsonSchemaParser;
-        private readonly JsonSchemaCollectionProvider _jsonSchemaCollectionsProvider;
 
         // Will be moved to schema configurations
         private readonly bool _customizedSchema = false;
 
         public FhirParquetSchemaManager(
             IOptions<SchemaConfiguration> schemaConfiguration,
-            JsonSchemaCollectionProvider jSchemaCollectionsProvider,
             ILogger<FhirParquetSchemaManager> logger)
         {
             _logger = logger;
-            _jsonSchemaParser = new JsonSchemaParser();
-            _jsonSchemaCollectionsProvider = jSchemaCollectionsProvider;
 
             _resourceSchemaNodesMap = LoadDefaultSchemas(schemaConfiguration.Value.SchemaCollectionDirectory);
             _logger.LogInformation($"{_resourceSchemaNodesMap.Count} resource default schemas been loaded.");
@@ -45,7 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             {
                 var resourceCustomizedSchemaNodesMap = LoadCustomizedSchemas(schemaConfiguration.Value.CustomizedSchemaImageReference);
                 _logger.LogInformation($"{resourceCustomizedSchemaNodesMap.Count} resource customized schemas been loaded.");
-                _resourceSchemaNodesMap.Concat(resourceCustomizedSchemaNodesMap).ToDictionary(x => x.Key, x => x.Value);
+                _resourceSchemaNodesMap = _resourceSchemaNodesMap.Concat(resourceCustomizedSchemaNodesMap).ToDictionary(x => x.Key, x => x.Value);
             }
 
             _logger.LogInformation($"Initialize FHIR schemas completed.");
@@ -99,74 +94,16 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             return new Dictionary<string, FhirParquetSchemaNode>(_resourceSchemaNodesMap);
         }
 
-        private Dictionary<string, FhirParquetSchemaNode> LoadDefaultSchemas(string schemaDirectoryPath)
-        {
-            if (!Directory.Exists(schemaDirectoryPath))
-            {
-                _logger.LogError($"Schema directory \"{schemaDirectoryPath}\" not exist.");
-                throw new FhirSchemaException($"Schema directory \"{schemaDirectoryPath}\" not exist.");
-            }
-
-            var schemaFiles = Directory.EnumerateFiles(schemaDirectoryPath, "*.json");
-            if (schemaFiles.Count() == 0)
-            {
-                _logger.LogError($"No schema can be found in \"{schemaDirectoryPath}\".");
-                throw new FhirSchemaException($"No schema can be found in \"{schemaDirectoryPath}\".");
-            }
-
-            var defaultSchemaNodesMap = new Dictionary<string, FhirParquetSchemaNode>();
-
-            foreach (string file in schemaFiles)
-            {
-                string schemaNodeString;
-                FhirParquetSchemaNode schemaNode;
-                try
-                {
-                    schemaNodeString = File.ReadAllText(file);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Read schema file failed for \"{file}\". Reason: {ex.Message}.");
-                    throw new FhirSchemaException($"Read schema file failed for \"{file}\". Reason: {ex.Message}.", ex);
-                }
-
-                try
-                {
-                    schemaNode = JsonSerializer.Deserialize<FhirParquetSchemaNode>(schemaNodeString);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Parse schema file failed for \"{file}\". Reason: {ex.Message}.");
-                    throw new FhirSchemaException($"Parse schema file failed for \"{file}\". Reason: {ex.Message}.", ex);
-                }
-
-                if (string.IsNullOrEmpty(schemaNode.Type))
-                {
-                    _logger.LogError($"Invalid resource type {schemaNode.Type} for schema file \"{file}\".");
-                    throw new FhirSchemaException($"Invalid resource type {schemaNode.Type} for schema file \"{file}\".");
-                }
-
-                if (defaultSchemaNodesMap.ContainsKey(schemaNode.Type))
-                {
-                    _logger.LogError($"Find duplicated schema for \"{schemaNode.Type}\" when loading schema file \"{file}\".");
-                    throw new FhirSchemaException($"Find duplicated schema for \"{schemaNode.Type}\" when loading schema file \"{file}\".");
-                }
-
-                defaultSchemaNodesMap.Add(schemaNode.Type, schemaNode);
-            }
-
-            return defaultSchemaNodesMap;
-        }
-
         private Dictionary<string, FhirParquetSchemaNode> LoadCustomizedSchemas(string schemaImageReference)
         {
             var jSchemaCollections = _jsonSchemaCollectionsProvider.GetJsonSchemaCollectionAsync(schemaImageReference, CancellationToken.None).Result;
-            _logger.LogInformation($"{jSchemaCollections.Count} resource customized schemas been fetched from {schemaImageReference}.");
+            _logger.LogInformation($"{jSchemaCollections.Count} resource customized schemas have been fetched from {schemaImageReference}.");
 
             var customizedSchemaNodesMap = new Dictionary<string, FhirParquetSchemaNode>();
 
             foreach (var jSchemaItem in jSchemaCollections)
             {
+                // The customized schema keys are "{resourceType}_customized". E.g. "Patient_customized"
                 var parquetSchemaNode = _jsonSchemaParser.ParseJSchema(jSchemaItem.Key, jSchemaItem.Value);
                 customizedSchemaNodesMap.Add(parquetSchemaNode.Name, parquetSchemaNode);
             }

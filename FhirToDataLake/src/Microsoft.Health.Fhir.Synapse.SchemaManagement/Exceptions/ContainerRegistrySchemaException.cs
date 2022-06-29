@@ -7,7 +7,7 @@ using System;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions
 {
-    public class ContainerRegistrySchemaException : Exception
+    public class ContainerRegistrySchemaException : FhirSchemaException
     {
         public ContainerRegistrySchemaException(string message)
             : base(message)
