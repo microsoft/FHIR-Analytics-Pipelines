@@ -156,7 +156,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private DateTimeOffset GetTriggerEndTime()
         {
             // Add two minutes latency here to allow latency in saving resources to database.
-            var nowEnd = DateTimeOffset.Now.AddMinutes(-1 * AzureBlobJobConstants.JobQueryLatencyInMinutes);
+            var nowEnd = DateTimeOffset.UtcNow.AddMinutes(-1 * AzureBlobJobConstants.JobQueryLatencyInMinutes);
             if (_jobConfiguration.EndTime != null
                 && nowEnd > _jobConfiguration.EndTime)
             {
