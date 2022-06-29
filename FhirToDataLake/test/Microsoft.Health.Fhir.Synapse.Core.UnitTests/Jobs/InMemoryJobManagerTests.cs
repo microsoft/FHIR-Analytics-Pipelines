@@ -57,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var jobManager = CreateJobManager(CreateBrokenJobStore(), _testStartTime, _testEndTime);
             await Assert.ThrowsAsync<Exception>(() => jobManager.RunAsync());
         }
-        
+
         [Fact]
         public async Task GivenALeasedActiveJobRunning_WhenExecute_NoJobWillBeCreated()
         {
@@ -220,7 +220,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
+            var triggeredStartTime = DateTimeOffset.UtcNow;
             await jobManager.RunAsync();
+            var triggeredEndTime = DateTimeOffset.UtcNow;
             Assert.NotEmpty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
             var blobName = (await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder)).First();
@@ -232,8 +234,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(_testStartTime, job.DataPeriod.Start);
 
             // Test end data period
-            Assert.True(job.DataPeriod.End < DateTimeOffset.UtcNow.AddMinutes(-2));
-            Assert.True(job.DataPeriod.End > DateTimeOffset.UtcNow.AddMinutes(-3));
+            Assert.True(job.DataPeriod.End > triggeredStartTime.AddMinutes(-2));
+            Assert.True(job.DataPeriod.End < triggeredEndTime.AddMinutes(-2));
 
             jobManager.Dispose();
         }
