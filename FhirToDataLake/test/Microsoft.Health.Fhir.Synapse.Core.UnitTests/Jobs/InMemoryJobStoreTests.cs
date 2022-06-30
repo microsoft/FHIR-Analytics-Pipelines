@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
@@ -84,7 +85,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
-        public async Task GivenACompletedJobInActiveFolder_WhenAcquireJob_TheJobShouldBeCompleted_NoJobWillBeReturned()
+        public async Task GivenASucceededJobInActiveFolder_WhenAcquireJob_TheJobShouldBeCompleted_NoJobWillBeReturned()
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
@@ -183,7 +184,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var activeJob = Job.Create(
                 TestContainerName,
-                JobStatus.Running,
+                JobStatus.New,
                 new DataPeriod(_testStartTime, _testEndTime),
                 _testStartTime,
                 _filterContext);
@@ -193,30 +194,45 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.NotNull(returnedJob);
             Assert.Equal(activeJob.ToString(), returnedJob.ToString());
 
-            //activeJob.ResourceProgresses["Patient"] = "test1234";
-            //activeJob.PartIds["Patient"] = 2;
-            //activeJob.PartIds["Patient_customized"] = 2;
+            activeJob.Status = JobStatus.Running;
+            activeJob.NextTaskIndex = 1;
             activeJob.TotalResourceCounts["Patient"] = 100;
             activeJob.ProcessedResourceCounts["Patient"] = 100;
             activeJob.ProcessedResourceCounts["Patient_customized"] = 95;
             activeJob.SkippedResourceCounts["Patient"] = 0;
             activeJob.SkippedResourceCounts["Patient_customized"] = 5;
 
+            var context = TaskContext.Create(
+                activeJob,
+                0,
+                _testResourceTypeFilters);
+
+            context.SearchCount = new Dictionary<string, int>() { { "Patient", 10 }, { "Patient_customized", 10 } };
+            context.SkippedCount = new Dictionary<string, int>() { { "Patient", 0 }, { "Patient_customized", 0 } };
+            context.ProcessedCount = new Dictionary<string, int>() { { "Patient", 10 }, { "Patient_customized", 10 } };
+            context.OutputFileIndexMap = new Dictionary<string, int>() { { "Patient", 1 }, { "Patient_customized", 1 } };
+            context.SearchProgress.ContinuationToken = "exampleContinuationToken";
+
+            activeJob.RunningTasks[context.Id] = context;
+
             await jobStore.UpdateJobAsync(activeJob);
 
             var updatedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
 
             // Assert job is updated.
+            Assert.Equal(activeJob.ToString(), updatedJob.ToString());
+
             Assert.Equal(activeJob.Id, updatedJob.Id);
             Assert.Equal(JobStatus.Running, updatedJob.Status);
-            //Assert.Equal("test1234", activeJob.ResourceProgresses["Patient"]);
-            //Assert.Equal(2, activeJob.PartIds["Patient"]);
-            //Assert.Equal(2, activeJob.PartIds["Patient_customized"]);
-            Assert.Equal(100, activeJob.ProcessedResourceCounts["Patient"]);
-            Assert.Equal(95, activeJob.ProcessedResourceCounts["Patient_customized"]);
-            Assert.Equal(0, activeJob.SkippedResourceCounts["Patient"]);
-            Assert.Equal(5, activeJob.SkippedResourceCounts["Patient_customized"]);
+            Assert.Equal(1, updatedJob.NextTaskIndex);
+            Assert.Equal(100, updatedJob.TotalResourceCounts["Patient"]);
+            Assert.Equal(100, updatedJob.ProcessedResourceCounts["Patient"]);
+            Assert.Equal(95, updatedJob.ProcessedResourceCounts["Patient_customized"]);
+            Assert.Equal(0, updatedJob.SkippedResourceCounts["Patient"]);
+            Assert.Equal(5, updatedJob.SkippedResourceCounts["Patient_customized"]);
 
+            Assert.True(updatedJob.RunningTasks.ContainsKey(context.Id));
+            Assert.Equal(context.ToString(), updatedJob.RunningTasks[context.Id].ToString());
             jobStore.Dispose();
         }
 
@@ -298,6 +314,85 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
+        public async Task GivenAGroupScopeSucceededJob_WhenCompleteJob_PatientsShouldBeAddedToScheduleMetadata()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+            var jobStore = CreateInMemoryJobStore(blobClient);
+            var filterContext = new FilterContext(JobScope.Group, "groupId", _testResourceTypeFilters, null);
+            var patients = new List<PatientWrapper>
+                {new PatientWrapper("patientId1"), new PatientWrapper("patientId2")};
+
+            var activeJob = Job.Create(
+                TestContainerName,
+                JobStatus.Running,
+                new DataPeriod(_testStartTime, _testEndTime),
+                _testStartTime,
+                filterContext,
+                patients);
+            await blobClient.CreateJob(activeJob);
+
+            // job has been persisted to active folder.
+            var persistedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
+            Assert.NotNull(persistedJob);
+
+            activeJob.Status = JobStatus.Succeeded;
+            await jobStore.CompleteJobAsync(activeJob);
+
+            // job has been moved to completed folder.
+            Assert.Null(await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json"));
+            var completedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.CompletedJobFolder}/{activeJob.Id}.json");
+            Assert.Equal(activeJob.Id, completedJob.Id);
+
+            using var streamReader = new StreamReader(await blobClient.GetBlobAsync($"{AzureBlobJobConstants.SchedulerMetadataFileName}"));
+            var metadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader.ReadToEnd());
+            Assert.Contains("patientId1", metadata.ProcessedPatientIds);
+            Assert.Contains("patientId2", metadata.ProcessedPatientIds);
+
+            jobStore.Dispose();
+        }
+
+        [Fact]
+        public async Task GivenAGroupScopeFailedJob_WhenCompleteJob_PatientsShouldNotBeAddedToScheduleMetadata()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+            var jobStore = CreateInMemoryJobStore(blobClient);
+            var filterContext = new FilterContext(JobScope.Group, "groupId", _testResourceTypeFilters, null);
+            var patients = new List<PatientWrapper>
+                {new PatientWrapper("patientId1"), new PatientWrapper("patientId2")};
+
+            var activeJob = Job.Create(
+                TestContainerName,
+                JobStatus.Running,
+                new DataPeriod(_testStartTime, _testEndTime),
+                _testStartTime,
+                filterContext,
+                patients);
+            await blobClient.CreateJob(activeJob);
+
+            // job has been persisted to active folder.
+            var persistedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
+            Assert.NotNull(persistedJob);
+
+            activeJob.Status = JobStatus.Failed;
+            await jobStore.CompleteJobAsync(activeJob);
+
+            // job has been moved to completed folder.
+            Assert.Null(await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json"));
+            var completedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.CompletedJobFolder}/{activeJob.Id}.json");
+            Assert.Equal(activeJob.Id, completedJob.Id);
+
+            // job has been added to unfinishedJobs
+            using var streamReader = new StreamReader(await blobClient.GetBlobAsync($"{AzureBlobJobConstants.SchedulerMetadataFileName}"));
+            var metadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader.ReadToEnd());
+            Assert.Empty(metadata.ProcessedPatientIds);
+            Assert.Equal(activeJob.Id, metadata.UnfinishedJobs.First().Id);
+            Assert.Equal(activeJob.DataPeriod.Start, metadata.UnfinishedJobs.First().DataPeriod.Start);
+            Assert.Equal(activeJob.DataPeriod.End, metadata.UnfinishedJobs.First().DataPeriod.End);
+
+            jobStore.Dispose();
+        }
+
+        [Fact]
         public async Task GivenJobDataStaged_WhenCommit_CorrectResultShouldBeCommitted()
         {
             var blobClient = new InMemoryBlobContainerClient();
@@ -313,25 +408,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var data = Encoding.UTF8.GetBytes("test");
             var stageBlobList = new List<string>
             {
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/01/Patient_{activeJob.Id}_00000.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/01/Patient_customized_{activeJob.Id}_00000.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/02/Patient_{activeJob.Id}_00001.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/02/Patient_customized_{activeJob.Id}_00001.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/03/Patient_{activeJob.Id}_00002.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/03/Patient_customized_{activeJob.Id}_00002.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/04/Patient_{activeJob.Id}_00003.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/04/Patient_customized_{activeJob.Id}_00003.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/01/Patient_000000_00000.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/01/Patient_customized_000000_00000.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/02/Patient_000000_00001.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/02/Patient_customized_000000_00001.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/03/Patient_000000_00002.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/03/Patient_customized_000000_00002.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/04/Patient_000000_00003.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/04/Patient_customized_000000_00003.parquet",
             };
             var resultBlobList = new List<string>
             {
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/01/{activeJob.Id}/Patient_{activeJob.Id}_00000.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/01/{activeJob.Id}/Patient_customized_{activeJob.Id}_00000.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/02/{activeJob.Id}/Patient_{activeJob.Id}_00001.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/02/{activeJob.Id}/Patient_customized_{activeJob.Id}_00001.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/03/{activeJob.Id}/Patient_{activeJob.Id}_00002.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/03/{activeJob.Id}/Patient_customized_{activeJob.Id}_00002.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/04/{activeJob.Id}/Patient_{activeJob.Id}_00003.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/04/{activeJob.Id}/Patient_customized_{activeJob.Id}_00003.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/01/{activeJob.Id}/Patient_000000_00000.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/01/{activeJob.Id}/Patient_customized_000000_00000.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/02/{activeJob.Id}/Patient_000000_00001.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/02/{activeJob.Id}/Patient_customized_000000_00001.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/03/{activeJob.Id}/Patient_000000_00002.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/03/{activeJob.Id}/Patient_customized_000000_00002.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/04/{activeJob.Id}/Patient_000000_00003.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/04/{activeJob.Id}/Patient_customized_000000_00003.parquet",
             };
 
             foreach (var blobName in stageBlobList)
@@ -339,8 +434,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 await blobClient.CreateBlobAsync(blobName, new MemoryStream(data));
             }
 
-            //activeJob.PartIds["Patient"] = 4;
-            //activeJob.PartIds["Patient_customized"] = 4;
+            activeJob.NextTaskIndex = 1;
             await jobStore.CompleteJobAsync(activeJob);
 
             // Make sure data has been moved to result folder.
@@ -357,7 +451,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             jobStore.Dispose();
         }
 
-        /*
         [Fact]
         public async Task GivenJobDataStaged_WhenCommit_UnrecordedDataShouldBeRemoved()
         {
@@ -374,17 +467,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var data = Encoding.UTF8.GetBytes("test");
             var stageBlobList = new List<string>
             {
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/01/Patient_{activeJob.Id}_00000.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/02/Patient_{activeJob.Id}_00001.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/03/Patient_{activeJob.Id}_00002.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/04/Patient_{activeJob.Id}_00003.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/01/Patient_000000_00000.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/02/Patient_000000_00001.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/03/Patient_000001_00000.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/04/Patient_000002_00001.parquet",
             };
             var resultBlobList = new List<string>
             {
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/01/{activeJob.Id}/Patient_{activeJob.Id}_00000.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/02/{activeJob.Id}/Patient_{activeJob.Id}_00001.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/03/{activeJob.Id}/Patient_{activeJob.Id}_00002.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/04/{activeJob.Id}/Patient_{activeJob.Id}_00003.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/01/{activeJob.Id}/Patient_000000_00000.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/02/{activeJob.Id}/Patient_000000_00001.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/03/{activeJob.Id}/Patient_000001_00000.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/04/{activeJob.Id}/Patient_000002_00001.parquet",
             };
 
             foreach (var blobName in stageBlobList)
@@ -392,14 +485,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 await blobClient.CreateBlobAsync(blobName, new MemoryStream(data));
             }
 
-            // Only blobs of partId 0 and 1 should be kept.
-            //activeJob.PartIds["Patient"] = 2;
+            // Only blobs of taskIndex 0 and 1 should be kept.
+            activeJob.NextTaskIndex = 2;
             await jobStore.CompleteJobAsync(activeJob);
 
             // Make sure data has been moved to result folder.
             Assert.NotNull(await blobClient.GetBlobAsync(resultBlobList[0]));
             Assert.NotNull(await blobClient.GetBlobAsync(resultBlobList[1]));
-            Assert.Null(await blobClient.GetBlobAsync(resultBlobList[2]));
+            Assert.NotNull(await blobClient.GetBlobAsync(resultBlobList[2]));
             Assert.Null(await blobClient.GetBlobAsync(resultBlobList[3]));
 
             foreach (var blobName in stageBlobList)
@@ -409,7 +502,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             jobStore.Dispose();
         }
-        */
 
         private static async Task<Job> LoadJobFromBlob(InMemoryBlobContainerClient blobClient, string blobName)
         {

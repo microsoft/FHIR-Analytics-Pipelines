@@ -54,15 +54,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 if (channelReader.TryRead(out TaskContext context))
                 {
-                    _job.RunningTasks[context.Id] = context;
-
-                    if (context.IsCompleted)
+                    // if a uncompleted context is produced, and before this context is consumed, it is updated to completed.
+                    // there are two context in this channel, since the context is a object, so the value of them are the same, both are completed.
+                    // when the first context is consumed, its data are merged to job and it is removed from the job, so we do nothing for the second context.
+                    if (_job.RunningTasks.ContainsKey(context.Id))
                     {
-                        _job.TotalResourceCounts = DictionaryExtensions.ConcatDictionaryCount(_job.TotalResourceCounts, context.SearchCount);
-                        _job.SkippedResourceCounts = DictionaryExtensions.ConcatDictionaryCount(_job.SkippedResourceCounts, context.SkippedCount);
-                        _job.ProcessedResourceCounts = DictionaryExtensions.ConcatDictionaryCount(_job.ProcessedResourceCounts, context.ProcessedCount);
+                        _job.RunningTasks[context.Id] = context;
 
-                        _job.RunningTasks.Remove(context.Id);
+                        if (context.IsCompleted)
+                        {
+                            _job.TotalResourceCounts = DictionaryExtensions.ConcatDictionaryCount(_job.TotalResourceCounts, context.SearchCount);
+                            _job.SkippedResourceCounts = DictionaryExtensions.ConcatDictionaryCount(_job.SkippedResourceCounts, context.SkippedCount);
+                            _job.ProcessedResourceCounts = DictionaryExtensions.ConcatDictionaryCount(_job.ProcessedResourceCounts, context.ProcessedCount);
+
+                            _job.RunningTasks.Remove(context.Id);
+                        }
                     }
 
                     if (uploadTime.AddSeconds(UploadDataIntervalInSeconds) < DateTimeOffset.UtcNow)

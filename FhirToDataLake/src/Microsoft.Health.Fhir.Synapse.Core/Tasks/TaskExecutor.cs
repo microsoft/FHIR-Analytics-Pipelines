@@ -371,8 +371,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             {
                 foreach (var (resourceType, resources) in cacheResult.Resources)
                 {
-                    var originalSkippedCount = taskContext.SkippedCount;
-
                     var inputData = new JsonBatchData(resources);
 
                     var schemaTypes = _fhirSchemaManager.GetSchemaTypes(resourceType);

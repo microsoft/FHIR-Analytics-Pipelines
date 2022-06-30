@@ -20,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class JobManager : IDisposable
     {
         private readonly IJobStore _jobStore;
-        private readonly JobExecutor _jobExecutor;
+        private readonly IJobExecutor _jobExecutor;
         private readonly ITypeFilterParser _typeFilterParser;
         private readonly JobConfiguration _jobConfiguration;
         private readonly FilterConfiguration _filterConfiguration;
@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public JobManager(
             IJobStore jobStore,
-            JobExecutor jobExecutor,
+            IJobExecutor jobExecutor,
             ITypeFilterParser typeFilterParser,
             IOptions<JobConfiguration> jobConfiguration,
             IOptions<FilterConfiguration> filterConfiguration,

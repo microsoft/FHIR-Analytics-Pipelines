@@ -49,6 +49,84 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenContextUpdates_WhenUpdateJobProgress_ProgressShouldBeUpdatedCorrectly()
         {
+            var typeFilters = new List<TypeFilter> { new ("Patient", null), new ("Observation", null) };
+            var filterContext = new FilterContext(JobScope.System, null, typeFilters, null);
+
+            var activeJob = Job.Create(
+                ContainerName,
+                JobStatus.Running,
+                new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
+                DateTimeOffset.MinValue,
+                filterContext);
+
+            var context1 = TaskContext.Create(
+                activeJob,
+                activeJob.NextTaskIndex,
+                typeFilters);
+
+            var containerClient = new InMemoryBlobContainerClient();
+            var jobProgressUpdater = GetInMemoryJobProgressUpdater(activeJob, containerClient);
+            var updateTask = Task.Run(() => jobProgressUpdater.Consume());
+
+            activeJob.RunningTasks[context1.Id] = context1;
+            activeJob.NextTaskIndex++;
+
+            Assert.True(activeJob.RunningTasks.ContainsKey(context1.Id));
+            Assert.Equal(context1.ToString(), activeJob.RunningTasks[context1.Id].ToString());
+            Assert.Empty(activeJob.TotalResourceCounts);
+            Assert.Empty(activeJob.ProcessedResourceCounts);
+            Assert.Empty(activeJob.SkippedResourceCounts);
+
+            // context 1 is updated amd uncompleted
+            context1.SearchCount = new Dictionary<string, int>() { {"Patient", 10}};
+            context1.SkippedCount = new Dictionary<string, int>() { {"Patient", 0}, {"Patient_customized", 0}};
+            context1.ProcessedCount = new Dictionary<string, int>() { {"Patient", 10}, {"Patient_customized", 10}};
+            context1.OutputFileIndexMap = new Dictionary<string, int>() { {"Patient", 1}, {"Patient_customized", 1}};
+            context1.SearchProgress.ContinuationToken = "exampleContinuationToken";
+
+            Assert.True(activeJob.RunningTasks.ContainsKey(context1.Id));
+            Assert.Equal("exampleContinuationToken", activeJob.RunningTasks[context1.Id].SearchProgress.ContinuationToken);
+            Assert.Empty(activeJob.TotalResourceCounts);
+            Assert.Empty(activeJob.ProcessedResourceCounts);
+            Assert.Empty(activeJob.SkippedResourceCounts);
+
+            // sync up the updated context to job
+            await jobProgressUpdater.Produce(context1);
+
+            var context2 = TaskContext.Create(
+                activeJob,
+                activeJob.NextTaskIndex,
+                typeFilters);
+
+            activeJob.RunningTasks[context2.Id] = context2;
+            activeJob.NextTaskIndex++;
+
+            // context 2 is completed
+            context2.SearchCount = new Dictionary<string, int>() { { "Patient", 20 } };
+            context2.SkippedCount = new Dictionary<string, int>() { { "Patient", 0 }, { "Patient_customized", 0 } };
+            context2.ProcessedCount = new Dictionary<string, int>() { { "Patient", 20 }, { "Patient_customized", 20 } };
+            context2.OutputFileIndexMap = new Dictionary<string, int>() { { "Patient", 1 }, { "Patient_customized", 1 } };
+            context2.IsCompleted = true;
+
+            await jobProgressUpdater.Produce(context2);
+
+            jobProgressUpdater.Complete();
+            await updateTask;
+
+            Assert.True(activeJob.RunningTasks.ContainsKey(context1.Id));
+            Assert.False(activeJob.RunningTasks.ContainsKey(context2.Id));
+            Assert.Equal("exampleContinuationToken", activeJob.RunningTasks[context1.Id].SearchProgress.ContinuationToken);
+            Assert.Single(activeJob.TotalResourceCounts);
+            Assert.Equal(20, activeJob.TotalResourceCounts["Patient"]);
+            Assert.Equal(20, activeJob.ProcessedResourceCounts["Patient"]);
+            Assert.Equal(20, activeJob.ProcessedResourceCounts["Patient_customized"]);
+            Assert.Equal(0, activeJob.SkippedResourceCounts["Patient"]);
+            Assert.Equal(0, activeJob.SkippedResourceCounts["Patient_customized"]);
+        }
+
+        [Fact]
+        public async Task GivenTaskUpdateContextTwice_WhenUpdateJobProgress_ProgressShouldBeUpdatedCorrectly()
+        {
             var typeFilters = new List<TypeFilter> { new("Patient", null), new("Observation", null) };
             var filterContext = new FilterContext(JobScope.System, null, typeFilters, null);
 
@@ -64,41 +142,49 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 0,
                 typeFilters);
 
-            activeJob.RunningTasks[context.Id] = context;
-
-            context.SearchCount = new Dictionary<string, int>() { {"Patient", 10}, {"Patient_customized", 10}};
-            context.SkippedCount = new Dictionary<string, int>() { {"Patient", 0}, {"Patient_customized", 0}};
-            context.ProcessedCount = new Dictionary<string, int>() { {"Patient", 10}, {"Patient_customized", 10}};
-            context.OutputFileIndexMap = new Dictionary<string, int>() { {"Patient", 1}, {"Patient_customized", 1}};
-            context.SearchProgress.ContinuationToken = "exampleContinuationToken";
-
             var containerClient = new InMemoryBlobContainerClient();
             var jobProgressUpdater = GetInMemoryJobProgressUpdater(activeJob, containerClient);
             var updateTask = Task.Run(() => jobProgressUpdater.Consume());
-            //await jobProgressUpdater.Produce(context);
 
-            //Assert.True(activeJob.RunningTasks.ContainsKey(context.Id));
-            //Assert.Equal("exampleContinuationToken", activeJob.RunningTasks[context.Id].SearchProgress.ContinuationToken);
-            //Assert.Empty(activeJob.TotalResourceCounts);
-            //Assert.Empty(activeJob.ProcessedResourceCounts);
-            //Assert.Empty(activeJob.SkippedResourceCounts);
+            activeJob.RunningTasks[context.Id] = context;
+            activeJob.NextTaskIndex++;
+
+            // context is updated
+            context.SearchCount = new Dictionary<string, int>() { { "Patient", 10 }};
+            context.SkippedCount = new Dictionary<string, int>() { { "Patient", 0 }, { "Patient_customized", 0 } };
+            context.ProcessedCount = new Dictionary<string, int>() { { "Patient", 10 }, { "Patient_customized", 10 } };
+            context.OutputFileIndexMap = new Dictionary<string, int>() { { "Patient", 1 }, { "Patient_customized", 1 } };
+            context.SearchProgress.ContinuationToken = "exampleContinuationToken";
+
+            // sync up the updated context to job
+            await jobProgressUpdater.Produce(context);
+
+            Assert.True(activeJob.RunningTasks.ContainsKey(context.Id));
+            Assert.Equal("exampleContinuationToken", activeJob.RunningTasks[context.Id].SearchProgress.ContinuationToken);
+            Assert.Empty(activeJob.TotalResourceCounts);
+            Assert.Empty(activeJob.ProcessedResourceCounts);
+            Assert.Empty(activeJob.SkippedResourceCounts);
 
             context.IsCompleted = true;
+            context.SearchCount["Patient"] = 15;
+            context.SkippedCount["Patient_customized"] = 2;
+            context.ProcessedCount["Patient_customized"] = 13;
             await jobProgressUpdater.Produce(context);
 
             jobProgressUpdater.Complete();
             await updateTask;
 
-            Assert.False( activeJob.RunningTasks.ContainsKey(context.Id));
-            Assert.Equal(10, activeJob.TotalResourceCounts["Patient"]);
+            Assert.Empty(activeJob.RunningTasks);
+            Assert.Equal(15, activeJob.TotalResourceCounts["Patient"]);
             Assert.Equal(10, activeJob.ProcessedResourceCounts["Patient"]);
             Assert.Equal(0, activeJob.SkippedResourceCounts["Patient"]);
-            Assert.Equal(10, activeJob.ProcessedResourceCounts["Patient_customized"]);
-            Assert.Equal(0, activeJob.SkippedResourceCounts["Patient_customized"]);
+            Assert.Equal(13, activeJob.ProcessedResourceCounts["Patient_customized"]);
+            Assert.Equal(2, activeJob.SkippedResourceCounts["Patient_customized"]);
 
             var persistedJob = await containerClient.GetValue<Job>($"jobs/activeJobs/{activeJob.Id}.json");
-            Assert.False(persistedJob.RunningTasks.ContainsKey(context.Id));
-            Assert.Equal(10, persistedJob.TotalResourceCounts["Patient"]);
+            Assert.Equal(activeJob.ToString(), persistedJob.ToString());
+            Assert.Empty(persistedJob.RunningTasks);
+            Assert.Equal(15, persistedJob.TotalResourceCounts["Patient"]);
             Assert.Equal(10, persistedJob.ProcessedResourceCounts["Patient"]);
             Assert.Equal(0, persistedJob.SkippedResourceCounts["Patient"]);
         }

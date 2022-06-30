@@ -53,7 +53,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
                 DateTimeOffset.MinValue,
                 filterContext);
 
-            var taskContext = new TaskContext(0, activeJob.Id, activeJob.FilterContext.JobScope, activeJob.DataPeriod, activeJob.Since, typeFilters);
+            var taskContext = new TaskContext(
+                Guid.NewGuid().ToString("N"),
+                0,
+                activeJob.Id,
+                activeJob.FilterContext.JobScope,
+                activeJob.DataPeriod,
+                activeJob.Since,
+                typeFilters);
+
+            activeJob.RunningTasks[taskContext.Id] = taskContext;
 
             var jobUpdater = GetJobUpdater(activeJob);
             var taskResult = await taskExecutor.ExecuteAsync(taskContext, jobUpdater);
@@ -81,11 +90,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var jobContent = streamReader.ReadToEnd();
             var job = JsonConvert.DeserializeObject<Job>(jobContent);
             Assert.Equal(activeJob.Id, job.Id);
-            //Assert.Equal(JobStatus.Succeeded, job.Status);
 
             Assert.Empty(job.RunningTasks);
 
-            //Assert.Equal(1, job.NextTaskIndex);
             Assert.Equal(3, job.ProcessedResourceCounts["Patient"]);
             Assert.Equal(3, job.TotalResourceCounts["Patient"]);
             Assert.Equal(0, job.SkippedResourceCounts["Patient"]);

@@ -18,12 +18,10 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
-    public class JobExecutor
+    public class JobExecutor : IJobExecutor
     {
         private readonly ITaskExecutor _taskExecutor;
         private readonly JobProgressUpdaterFactory _jobProgressUpdaterFactory;
@@ -116,6 +114,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             var typeFilters = new List<TypeFilter>
                                 { job.FilterContext.TypeFilters.ToList()[job.NextTaskIndex] };
                             taskContext = new TaskContext(
+                                Guid.NewGuid().ToString("N"),
                                 job.NextTaskIndex,
                                 job.Id,
                                 job.FilterContext.JobScope,
@@ -131,6 +130,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             var selectedPatients = job.Patients.Skip(job.NextTaskIndex * NumberOfPatientsPerTask)
                                 .Take(NumberOfPatientsPerTask);
                             taskContext = new TaskContext(
+                                Guid.NewGuid().ToString("N"),
                                 job.NextTaskIndex,
                                 job.Id,
                                 job.FilterContext.JobScope,

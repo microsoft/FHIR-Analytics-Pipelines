@@ -13,24 +13,26 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// <summary>
         /// The job scope, "System" and "Group" are supported now.
         /// </summary>
-        [JsonProperty("jobScope")] public JobScope JobScope { get; set; } = JobScope.System;
+        [JsonProperty("jobScope")]
+        public JobScope JobScope { get; set; }
 
         /// <summary>
         /// The group id for "Group" job scope.
         /// </summary>
-        [JsonProperty("groupId")] public string GroupId { get; set; } = string.Empty;
+        [JsonProperty("groupId")]
+        public string GroupId { get; set; } = string.Empty;
 
         /// <summary>
         /// Selected resource types, delimited by comma.
         /// If no resources are present, we will process all resource types.
         /// </summary>
-        [JsonProperty("type")]
+        [JsonProperty("requiredTypes")]
         public string RequiredTypes { get; set; } = string.Empty;
 
         /// <summary>
         /// type filter string, delimited by comma
         /// </summary>
-        [JsonProperty("typeFilter")]
+        [JsonProperty("typeFilters")]
         public string TypeFilters { get; set; } = string.Empty;
     }
 }

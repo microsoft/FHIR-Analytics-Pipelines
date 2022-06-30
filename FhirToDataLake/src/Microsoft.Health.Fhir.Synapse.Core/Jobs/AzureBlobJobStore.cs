@@ -47,7 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         // Staged data file path: "staging/{jobid}/{schemaType}/{year}/{month}/{day}/{schemaType}_{taskHash}_{partId}.parquet"
         // Committed data file path: "result/{schemaType}/{year}/{month}/{day}/{jobid}/{schemaType}_{taskHash}_{partId}.parquet"
-        private readonly Regex _stagingDataBlobRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/[A-Za-z_]+/\d{4}/\d{2}/\d{2}/(?<schema>[A-Za-z_]+)_[0-9]{6}_(?<partId>\d+).parquet$");
+        private readonly Regex _stagingDataBlobRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/[A-Za-z_]+/\d{4}/\d{2}/\d{2}/(?<schema>[A-Za-z_]+)_(?<taskHash>\d{6})_(?<partId>\d+).parquet$");
 
         public AzureBlobJobStore(
             IAzureBlobContainerClientFactory blobContainerFactory,
@@ -239,9 +239,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 schedulerSetting.UnfinishedJobs = unfinishedJobs;
 
                 // update processed patient list
-                if (job.Status == JobStatus.Succeeded)
+                if (job.FilterContext.JobScope == JobScope.Group && job.Status == JobStatus.Succeeded)
                 {
-                    schedulerSetting.ProcessedPatientIds.ToHashSet().UnionWith(job.Patients.Select(x => x.PatientId));
+                    var processedPatientIds = schedulerSetting.ProcessedPatientIds.ToHashSet();
+                    processedPatientIds.UnionWith(job.Patients.Select(x => x.PatientId));
+                    schedulerSetting.ProcessedPatientIds = processedPatientIds;
                 }
 
                 await SaveSchedulerMetadataAsync(schedulerSetting, cancellationToken);
@@ -305,6 +307,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     {
                         var destination = $"{AzureStorageConstants.ResultFolderName}/{match.Groups["partition"].Value}/{job.Id}";
                         directoryPairs.Add(new Tuple<string, string>(path.Name, destination));
+                    }
+                }
+                else
+                {
+                    // remove parquet files not saved in this job.
+                    var match = _stagingDataBlobRegex.Match(path.Name);
+                    if (match.Success)
+                    {
+                        var taskIndex = int.Parse(match.Groups["taskHash"].Value);
+                        if (taskIndex >= job.NextTaskIndex)
+                        {
+                            await _blobContainerClient.DeleteBlobAsync(path.Name, cancellationToken);
+                        }
                     }
                 }
             }

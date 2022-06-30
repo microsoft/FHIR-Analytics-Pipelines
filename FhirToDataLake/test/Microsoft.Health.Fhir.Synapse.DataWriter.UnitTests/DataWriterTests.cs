@@ -73,6 +73,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         private TaskContext GetTaskContext()
         {
             return new TaskContext(
+                Guid.NewGuid().ToString("N"),
                 0,
                 "mockjob",
                 JobScope.System,

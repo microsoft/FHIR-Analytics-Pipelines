@@ -15,6 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
     {
         // TODO: Refine this together with TaskExecutor class. Maybe this is more like a task class.
         public TaskContext(
+            string id,
             int taskIndex,
             string jobId,
             JobScope jobScope,
@@ -23,7 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             IList<TypeFilter> typeFilters,
             IEnumerable<PatientWrapper> patientIds = null)
         {
-            Id = Id = Guid.NewGuid().ToString("N");
+            Id = id;
             TaskHash = $@"{taskIndex:d6}";
             JobId = jobId;
             JobScope = jobScope;
@@ -132,6 +133,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             IEnumerable<PatientWrapper> patients = null)
         {
             return new TaskContext(
+                Guid.NewGuid().ToString("N"),
                 taskIndex,
                 job.Id,
                 job.FilterContext.JobScope,

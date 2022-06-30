@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
             services.AddSingleton<JobManager, JobManager>();
 
-            services.AddSingleton<JobExecutor, JobExecutor>();
+            services.AddSingleton<IJobExecutor, JobExecutor>();
 
             services.AddSingleton<ITaskExecutor, TaskExecutor>();
 
