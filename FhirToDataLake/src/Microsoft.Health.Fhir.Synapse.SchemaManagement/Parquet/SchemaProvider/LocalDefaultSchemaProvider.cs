@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -25,19 +24,19 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             _logger = logger;
         }
 
-        public Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(string schemaDirectoryPath, CancellationToken cancellationToken)
+        public Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(string schemaDirectoryPath, CancellationToken cancellationToken = default)
         {
             if (!Directory.Exists(schemaDirectoryPath))
             {
                 _logger.LogError($"Schema directory \"{schemaDirectoryPath}\" not exist.");
-                throw new ParseJsonSchemaException($"Schema directory \"{schemaDirectoryPath}\" not exist.");
+                throw new GenerateFhirParquetSchemaNodeException($"Schema directory \"{schemaDirectoryPath}\" not exist.");
             }
 
             var schemaFiles = Directory.EnumerateFiles(schemaDirectoryPath, "*.json");
             if (schemaFiles.Count() == 0)
             {
                 _logger.LogError($"No schema can be found in \"{schemaDirectoryPath}\".");
-                throw new ParseJsonSchemaException($"No schema can be found in \"{schemaDirectoryPath}\".");
+                throw new GenerateFhirParquetSchemaNodeException($"No schema can be found in \"{schemaDirectoryPath}\".");
             }
 
             var defaultSchemaNodesMap = new Dictionary<string, FhirParquetSchemaNode>();
@@ -53,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                 catch (Exception ex)
                 {
                     _logger.LogError($"Read schema file failed for \"{file}\". Reason: {ex.Message}.");
-                    throw new ParseJsonSchemaException($"Read schema file failed for \"{file}\". Reason: {ex.Message}.", ex);
+                    throw new GenerateFhirParquetSchemaNodeException($"Read schema file failed for \"{file}\". Reason: {ex.Message}.", ex);
                 }
 
                 try
@@ -63,19 +62,19 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                 catch (Exception ex)
                 {
                     _logger.LogError($"Parse schema file failed for \"{file}\". Reason: {ex.Message}.");
-                    throw new ParseJsonSchemaException($"Parse schema file failed for \"{file}\". Reason: {ex.Message}.", ex);
+                    throw new GenerateFhirParquetSchemaNodeException($"Parse schema file failed for \"{file}\". Reason: {ex.Message}.", ex);
                 }
 
                 if (string.IsNullOrEmpty(schemaNode.Type))
                 {
                     _logger.LogError($"Invalid resource type {schemaNode.Type} for schema file \"{file}\".");
-                    throw new ParseJsonSchemaException($"Invalid resource type {schemaNode.Type} for schema file \"{file}\".");
+                    throw new GenerateFhirParquetSchemaNodeException($"Invalid resource type {schemaNode.Type} for schema file \"{file}\".");
                 }
 
                 if (defaultSchemaNodesMap.ContainsKey(schemaNode.Type))
                 {
                     _logger.LogError($"Find duplicated schema for \"{schemaNode.Type}\" when loading schema file \"{file}\".");
-                    throw new ParseJsonSchemaException($"Find duplicated schema for \"{schemaNode.Type}\" when loading schema file \"{file}\".");
+                    throw new GenerateFhirParquetSchemaNodeException($"Find duplicated schema for \"{schemaNode.Type}\" when loading schema file \"{file}\".");
                 }
 
                 defaultSchemaNodesMap.Add(schemaNode.Type, schemaNode);

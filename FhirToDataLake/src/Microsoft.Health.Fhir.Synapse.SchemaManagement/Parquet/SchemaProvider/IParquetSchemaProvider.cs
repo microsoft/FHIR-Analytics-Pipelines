@@ -9,8 +9,10 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 {
+    public delegate IParquetSchemaProvider ParquetSchemaProviderDelegate(string name);
+
     public interface IParquetSchemaProvider
     {
-        public Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(string schemaSource, CancellationToken cancellationToken);
+        public Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(string schemaSource, CancellationToken cancellationToken = default);
     }
 }

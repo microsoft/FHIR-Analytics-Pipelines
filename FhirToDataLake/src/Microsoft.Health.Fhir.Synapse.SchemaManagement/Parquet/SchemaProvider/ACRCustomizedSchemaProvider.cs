@@ -3,80 +3,49 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DotLiquid;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
+using Microsoft.Health.Fhir.TemplateManagement;
+using Microsoft.Health.Fhir.TemplateManagement.Exceptions;
+using Microsoft.Health.Fhir.TemplateManagement.Models;
 using Newtonsoft.Json.Schema;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 {
     public class ACRCustomizedSchemaProvider : IParquetSchemaProvider
     {
-        private readonly JsonSchemaCollectionProvider _jsonSchemaCollectionsProvider;
+        private readonly IContainerRegistryTokenProvider _containerRegistryTokenProvider;
+        private readonly ITemplateCollectionProviderFactory _templateCollectionProviderFactory;
+        private readonly ILogger<ACRCustomizedSchemaProvider> _logger;
 
         public ACRCustomizedSchemaProvider(
-            JsonSchemaCollectionProvider jsonSchemaCollectionProvider)
+            IContainerRegistryTokenProvider containerRegistryTokenProvider,
+            ILogger<ACRCustomizedSchemaProvider> logger)
         {
-            _jsonSchemaCollectionsProvider = jsonSchemaCollectionProvider;
+            _containerRegistryTokenProvider = containerRegistryTokenProvider;
+            _logger = logger;
+
+            var templateCollectionCache = new MemoryCache(new MemoryCacheOptions() { SizeLimit = 100000000 });
+            var config = new TemplateCollectionConfiguration();
+            _templateCollectionProviderFactory = new TemplateCollectionProviderFactory(templateCollectionCache, Options.Create(config));
         }
 
-        public async Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(string schemaImageReference, CancellationToken cancellationToken)
+        public async Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(string schemaImageReference, CancellationToken cancellationToken = default)
         {
-            var jsonSchemaCollection = await _jsonSchemaCollectionsProvider.GetJsonSchemaCollectionAsync(schemaImageReference, cancellationToken);
+            var jsonSchemaCollection = await GetJsonSchemaCollectionAsync(schemaImageReference, cancellationToken);
 
             return jsonSchemaCollection
-                .Select(x => ParseJSchema(GetCustomizedSchemaType(x.Key), x.Value))
+                .Select(x => JsonSchemaParser.ParseJSchema(GetCustomizedSchemaType(x.Key), x.Value))
                 .ToDictionary(x => x.Type, x => x);
-        }
-
-        private FhirParquetSchemaNode ParseJSchema(string schemaType, JSchema jSchema)
-        {
-            if (jSchema.Type == null || jSchema.Type == JSchemaType.Null)
-            {
-                throw new ParseJsonSchemaException(string.Format("The \"{0}\" customized schema have no \"type\" keyword or \"type\" is null.", schemaType));
-            }
-
-            if (jSchema.Type != JSchemaType.Object)
-            {
-                throw new ParseJsonSchemaException(string.Format("The \"{0}\" customized schema type \"{1}\" should be \"object\".", schemaType, jSchema.Type));
-            }
-
-            var fhirPath = new List<string>() { schemaType };
-
-            var customizedSchemaNode = new FhirParquetSchemaNode()
-            {
-                Name = schemaType,
-                Type = schemaType,
-                Depth = 0,
-                NodePaths = new List<string>(fhirPath),
-                SubNodes = new Dictionary<string, FhirParquetSchemaNode>(),
-            };
-
-            foreach (var property in jSchema.Properties)
-            {
-                fhirPath.Add(property.Key);
-
-                if (property.Value.Type == null || property.Value.Type == JSchemaType.Null)
-                {
-                    throw new ParseJsonSchemaException(string.Format("Property \"{0}\" for \"{1}\" customized schema have no \"type\" keyword or \"type\" is null.", property.Key, schemaType));
-                }
-
-                if (!FhirParquetSchemaNodeConstants.BasicJSchemaTypeMap.ContainsKey(property.Value.Type.Value))
-                {
-                    throw new ParseJsonSchemaException(string.Format("Property \"{0}\" type \"{1}\" for \"{2}\" customized schema is not basic type.", property.Key, property.Value.Type.Value, schemaType));
-                }
-
-                customizedSchemaNode.SubNodes.Add(
-                    property.Key,
-                    BuildLeafNode(property.Key, FhirParquetSchemaNodeConstants.BasicJSchemaTypeMap[property.Value.Type.Value], 1, fhirPath));
-
-                fhirPath.RemoveAt(fhirPath.Count - 1);
-            }
-
-            return customizedSchemaNode;
         }
 
         public string GetCustomizedSchemaType(string resourceType)
@@ -84,15 +53,47 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             return $"{resourceType}_Customized";
         }
 
-        private FhirParquetSchemaNode BuildLeafNode(string propertyName, string propertyType, int curDepth, List<string> curFhirPath)
+        private async Task<Dictionary<string, JSchema>> GetJsonSchemaCollectionAsync(string schemaImageReference, CancellationToken cancellationToken)
         {
-            return new FhirParquetSchemaNode()
+            /*
+            List<Dictionary<string, Template>> templateCollections = await GetTemplateCollectionsAsync(schemaImageReference, cancellationToken);
+            */
+
+            // Will implement later when integrating the FHIR-Converter.
+            // Will do a try drive among templates for all resource types with empty Json data, to get involved Json schemas.
+            throw new NotImplementedException();
+        }
+
+        private async Task<List<Dictionary<string, Template>>> GetTemplateCollectionsAsync(string schemaImageReference, CancellationToken cancellationToken)
+        {
+            ImageInfo imageInfo = ImageInfo.CreateFromImageReference(schemaImageReference);
+            var accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
+
+            try
             {
-                Name = propertyName,
-                Type = propertyType,
-                Depth = curDepth,
-                NodePaths = new List<string>(curFhirPath),
-            };
+                var provider = _templateCollectionProviderFactory.CreateTemplateCollectionProvider(schemaImageReference, accessToken);
+                return await provider.GetTemplateCollectionAsync(cancellationToken);
+            }
+            catch (ContainerRegistryAuthenticationException authEx)
+            {
+                _logger.LogError(authEx, "Failed to access container registry.");
+                throw new ContainerRegistrySchemaException("Failed to access container registry.", authEx);
+            }
+            catch (ImageFetchException fetchEx)
+            {
+                _logger.LogError(fetchEx, "Failed to fetch template image.");
+                throw new ContainerRegistrySchemaException("Failed to fetch template image.", fetchEx);
+            }
+            catch (TemplateManagementException templateEx)
+            {
+                _logger.LogError(templateEx, "Template collection is invalid.");
+                throw new ContainerRegistrySchemaException("Template collection is invalid.", templateEx);
+            }
+            catch (Exception unhandledEx)
+            {
+                _logger.LogError(unhandledEx, "Unhandled exception: failed to get template collection.");
+                throw new ContainerRegistrySchemaException("Unhandled exception: failed to get template collection.", unhandledEx);
+            }
         }
     }
 }

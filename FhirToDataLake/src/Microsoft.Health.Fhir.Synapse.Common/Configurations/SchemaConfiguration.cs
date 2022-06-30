@@ -20,6 +20,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// Gets or sets Azure Container Registry image reference of customized schema templates.
         /// </summary>
         [JsonProperty("customizedSchemaImageReference")]
-        public string CustomizedSchemaImageReference { get; set; } = null;
+        public string CustomizedSchemaImageReference { get; set; } = string.Empty;
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using NSubstitute;
 using Xunit;
 
@@ -24,9 +25,13 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
             {
                 SchemaCollectionDirectory = "../../../../../data/schemas",
             });
-            var jsonSchemaCollectionsProvider = new JsonSchemaCollectionProvider(Substitute.For<IContainerRegistryTokenProvider>(), NullLogger<JsonSchemaCollectionProvider>.Instance);
 
-            _testParquetSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance);
+            _testParquetSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
+        }
+
+        private static IParquetSchemaProvider ParquetSchemaProviderDelegate(string name)
+        {
+            return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
         }
 
         [InlineData("Patient", 24)]
@@ -92,11 +97,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
             {
                 SchemaCollectionDirectory = schemaDirectoryPath,
             });
-            var jsonSchemaCollectionsProvider = new JsonSchemaCollectionProvider(Substitute.For<IContainerRegistryTokenProvider>(), NullLogger<JsonSchemaCollectionProvider>.Instance);
 
-
-            Assert.Throws<FhirSchemaException>(
-                () => new FhirParquetSchemaManager(invalidSchemaConfigurationOption, jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance));
+            Assert.Throws<GenerateFhirParquetSchemaNodeException>(
+                () => new FhirParquetSchemaManager(invalidSchemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance));
         }
     }
 }

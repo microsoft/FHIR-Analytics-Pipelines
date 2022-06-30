@@ -23,23 +23,34 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         private readonly Dictionary<string, List<string>> _schemaTypesMap;
         private readonly Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
         private readonly ILogger<FhirParquetSchemaManager> _logger;
+        private readonly IParquetSchemaProvider _defaultSchemaProvider;
+        private readonly IParquetSchemaProvider _customizedSchemaProvider;
 
         // Will be moved to schema configurations
-        private readonly bool _customizedSchema = false;
+        private readonly bool _customSchema = false;
 
         public FhirParquetSchemaManager(
             IOptions<SchemaConfiguration> schemaConfiguration,
+            ParquetSchemaProviderDelegate parquetSchemaDelegate,
             ILogger<FhirParquetSchemaManager> logger)
         {
             _logger = logger;
 
-            _resourceSchemaNodesMap = LoadDefaultSchemas(schemaConfiguration.Value.SchemaCollectionDirectory);
-            _logger.LogInformation($"{_resourceSchemaNodesMap.Count} resource default schemas been loaded.");
+            _defaultSchemaProvider = parquetSchemaDelegate("default");
+            _customizedSchemaProvider = parquetSchemaDelegate("custom");
 
-            if (_customizedSchema)
+            _resourceSchemaNodesMap = _defaultSchemaProvider.GetSchemasAsync(schemaConfiguration.Value.SchemaCollectionDirectory).Result;
+            _logger.LogInformation($"{_resourceSchemaNodesMap.Count} resource default schemas have been loaded.");
+
+            if (_customSchema)
             {
-                var resourceCustomizedSchemaNodesMap = LoadCustomizedSchemas(schemaConfiguration.Value.CustomizedSchemaImageReference);
-                _logger.LogInformation($"{resourceCustomizedSchemaNodesMap.Count} resource customized schemas been loaded.");
+                if (string.IsNullOrEmpty(schemaConfiguration.Value.CustomizedSchemaImageReference))
+                {
+                    throw new FhirSchemaException("When enable customized schema, schema image reference cannot be null or empty.");
+                }
+
+                var resourceCustomizedSchemaNodesMap = _customizedSchemaProvider.GetSchemasAsync(schemaConfiguration.Value.CustomizedSchemaImageReference).Result;
+                _logger.LogInformation($"{resourceCustomizedSchemaNodesMap.Count} resource customized schemas have been loaded.");
                 _resourceSchemaNodesMap = _resourceSchemaNodesMap.Concat(resourceCustomizedSchemaNodesMap).ToDictionary(x => x.Key, x => x.Value);
             }
 
@@ -92,23 +103,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         public Dictionary<string, FhirParquetSchemaNode> GetAllSchemas()
         {
             return new Dictionary<string, FhirParquetSchemaNode>(_resourceSchemaNodesMap);
-        }
-
-        private Dictionary<string, FhirParquetSchemaNode> LoadCustomizedSchemas(string schemaImageReference)
-        {
-            var jSchemaCollections = _jsonSchemaCollectionsProvider.GetJsonSchemaCollectionAsync(schemaImageReference, CancellationToken.None).Result;
-            _logger.LogInformation($"{jSchemaCollections.Count} resource customized schemas have been fetched from {schemaImageReference}.");
-
-            var customizedSchemaNodesMap = new Dictionary<string, FhirParquetSchemaNode>();
-
-            foreach (var jSchemaItem in jSchemaCollections)
-            {
-                // The customized schema keys are "{resourceType}_customized". E.g. "Patient_customized"
-                var parquetSchemaNode = _jsonSchemaParser.ParseJSchema(jSchemaItem.Key, jSchemaItem.Value);
-                customizedSchemaNodesMap.Add(parquetSchemaNode.Name, parquetSchemaNode);
-            }
-
-            return customizedSchemaNodesMap;
         }
     }
 }

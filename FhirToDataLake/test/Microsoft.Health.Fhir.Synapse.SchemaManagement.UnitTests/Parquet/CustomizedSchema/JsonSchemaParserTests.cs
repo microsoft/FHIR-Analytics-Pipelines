@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.CustomizedSchema;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
@@ -30,12 +30,14 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Custo
         public void GivenAJsonSchema_WhenParseJSchema_CorrectResultShouldBeReturned()
         {
             var testSchema = JSchema.Parse(File.ReadAllText(Path.Join(_customizedSchemaDirectory, "ValidSchema.schema.json")));
-            var schemaParser = new JsonSchemaParser();
-            var parquetSchemaNode = schemaParser.ParseJSchema("testType", testSchema);
+            var parquetSchemaNode = JsonSchemaParser.ParseJSchema("testType", testSchema);
+            var expectedSchemaNode = JSchema.Parse(File.ReadAllText(Path.Join(_customizedSchemaDirectory, "ExpectedValidParquetSchemaNode.json")));
+
+            var result = JsonConvert.SerializeObject(parquetSchemaNode);
 
             Assert.True(JToken.DeepEquals(
                 JObject.Parse(JsonConvert.SerializeObject(parquetSchemaNode)),
-                JObject.Parse(File.ReadAllText(Path.Join(_customizedSchemaDirectory, "ExpectedValidParquetSchemaNode.json")))));
+                JObject.Parse(JsonConvert.SerializeObject(expectedSchemaNode))));
         }
 
         [Theory]
@@ -43,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Custo
         public void GivenAInvalidJsonSchema_WhenParseJSchema_ExceptionsShouldBeThrown(JSchema jSchema)
         {
             var schemaParser = new JsonSchemaParser();
-            Assert.Throws<ParseJsonSchemaException>(() => schemaParser.ParseJSchema("testType", jSchema));
+            Assert.Throws<GenerateFhirParquetSchemaNodeException>(() => JsonSchemaParser.ParseJSchema("testType", jSchema));
         }
     }
 }
