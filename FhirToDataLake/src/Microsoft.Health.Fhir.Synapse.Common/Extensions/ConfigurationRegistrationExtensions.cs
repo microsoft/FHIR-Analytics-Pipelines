@@ -86,19 +86,13 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 
         private static void ValidateTypeFilterConfiguration(FilterConfiguration filterConfiguration)
         {
-            // TODO: add more filter configuration validation
-            if (filterConfiguration == null)
-            {
-                throw new ConfigurationErrorException($"Filter configuration can't not be empty.");
-            }
-
-            if (filterConfiguration.JobScope != JobScope.System && filterConfiguration.JobScope != JobScope.Group)
+            if (filterConfiguration.FilterScope != FilterScope.System && filterConfiguration.FilterScope != FilterScope.Group)
             {
                 throw new ConfigurationErrorException(
-                    $"Filter Scope '{filterConfiguration.JobScope}' is not supported.");
+                    $"Filter Scope '{filterConfiguration.FilterScope}' is not supported.");
             }
 
-            if (filterConfiguration.JobScope == JobScope.Group && string.IsNullOrEmpty(filterConfiguration.GroupId))
+            if (filterConfiguration.FilterScope == FilterScope.Group && string.IsNullOrEmpty(filterConfiguration.GroupId))
             {
                 throw new ConfigurationErrorException($"Group id '{filterConfiguration.GroupId}' can not be empty for `Group` scope.");
             }

@@ -5,11 +5,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Core;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
@@ -40,8 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly ILogger<TaskExecutor> _logger;
 
-        private const int NumberOfResourcesPeCommit = 10000;
-        private const int ReportProgressBatchCount = 10;
+        private const int NumberOfResourcesPerCommit = 10000;
 
         // TODO: Refine TaskExecutor here, current TaskExecutor is more like a manager class.
         public TaskExecutor(
@@ -80,9 +77,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             // Initialize cache result from the search progress of task context
             var cacheResult = new CacheResult(taskContext.SearchProgress);
 
-            switch (taskContext.JobScope)
+            switch (taskContext.FilterScope)
             {
-                case JobScope.Group:
+                case FilterScope.Group:
                     {
                         await GetPatientResourcesAsync(taskContext, cacheResult, progressUpdater, cancellationToken);
 
@@ -113,7 +110,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
 
                         break;
                     }
-                case JobScope.System:
+                case FilterScope.System:
                     {
                         var parameters = new List<KeyValuePair<string, string>>
                         {
@@ -131,7 +128,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                         break;
                     }
                 default:
-                    throw new ArgumentOutOfRangeException($"The JobScope {taskContext.JobScope} isn't supported now.");
+                    throw new ArgumentOutOfRangeException($"The FilterScope {taskContext.FilterScope} isn't supported now.");
             }
 
             await TryCommitResultAsync(taskContext, true, cacheResult, progressUpdater, cancellationToken);
@@ -367,7 +364,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             JobProgressUpdater progressUpdater,
             CancellationToken cancellationToken)
         {
-            if (cacheResult.GetResourceCount() % NumberOfResourcesPeCommit == 0 || forceCommit)
+            if (cacheResult.GetResourceCount() % NumberOfResourcesPerCommit == 0 || forceCommit)
             {
                 foreach (var (resourceType, resources) in cacheResult.Resources)
                 {

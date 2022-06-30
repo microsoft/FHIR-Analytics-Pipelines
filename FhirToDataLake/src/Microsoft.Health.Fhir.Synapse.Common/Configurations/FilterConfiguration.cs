@@ -11,13 +11,13 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
     public class FilterConfiguration
     {
         /// <summary>
-        /// The job scope, "System" and "Group" are supported now.
+        /// The filter scope, "System" and "Group" are supported now.
         /// </summary>
-        [JsonProperty("jobScope")]
-        public JobScope JobScope { get; set; }
+        [JsonProperty("filterScope")]
+        public FilterScope FilterScope { get; set; } = FilterScope.System;
 
         /// <summary>
-        /// The group id for "Group" job scope.
+        /// The group id for "Group" filter scope.
         /// </summary>
         [JsonProperty("groupId")]
         public string GroupId { get; set; } = string.Empty;

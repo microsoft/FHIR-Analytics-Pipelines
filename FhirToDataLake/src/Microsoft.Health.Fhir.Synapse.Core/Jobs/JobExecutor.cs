@@ -57,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _logger.LogInformation("Start executing job '{jobId}'.", job.Id);
 
             // extract patient ids from group if they aren't extracted before for group
-            if (job.FilterContext.JobScope == JobScope.Group && !job.Patients.Any())
+            if (job.FilterContext.FilterScope == FilterScope.Group && !job.Patients.Any())
             {
                 _logger.LogInformation("Start extracting patients from group '{groupId}'.", job.FilterContext.GroupId);
 
@@ -106,9 +106,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 TaskContext taskContext = null;
 
-                switch (job.FilterContext.JobScope)
+                switch (job.FilterContext.FilterScope)
                 {
-                    case JobScope.System:
+                    case FilterScope.System:
                         if (job.NextTaskIndex < job.FilterContext.TypeFilters.Count())
                         {
                             var typeFilters = new List<TypeFilter>
@@ -117,14 +117,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 Guid.NewGuid().ToString("N"),
                                 job.NextTaskIndex,
                                 job.Id,
-                                job.FilterContext.JobScope,
+                                job.FilterContext.FilterScope,
                                 job.DataPeriod,
                                 job.Since,
                                 typeFilters);
                         }
 
                         break;
-                    case JobScope.Group:
+                    case FilterScope.Group:
                         if (job.NextTaskIndex * NumberOfPatientsPerTask < job.Patients.ToList().Count)
                         {
                             var selectedPatients = job.Patients.Skip(job.NextTaskIndex * NumberOfPatientsPerTask)
@@ -133,7 +133,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 Guid.NewGuid().ToString("N"),
                                 job.NextTaskIndex,
                                 job.Id,
-                                job.FilterContext.JobScope,
+                                job.FilterContext.FilterScope,
                                 job.DataPeriod,
                                 job.Since,
                                 job.FilterContext.TypeFilters.ToList(),
@@ -143,7 +143,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         break;
                     default:
                         // this case should not happen
-                        throw new ArgumentOutOfRangeException($"The jobScope {job.FilterContext.JobScope} isn't supported now.");
+                        throw new ArgumentOutOfRangeException($"The filterScope {job.FilterContext.FilterScope} isn't supported now.");
                 }
 
                 // if there is no new task context created, then all the tasks are generated, break the while loop;

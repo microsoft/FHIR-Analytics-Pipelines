@@ -18,7 +18,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             string id,
             int taskIndex,
             string jobId,
-            JobScope jobScope,
+            FilterScope filterScope,
             DataPeriod dataPeriod,
             DateTimeOffset since,
             IList<TypeFilter> typeFilters,
@@ -27,7 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             Id = id;
             TaskHash = $@"{taskIndex:d6}";
             JobId = jobId;
-            JobScope = jobScope;
+            FilterScope = filterScope;
             DataPeriod = dataPeriod;
             Since = since;
             TypeFilters = typeFilters;
@@ -62,10 +62,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public string JobId { get; }
 
         /// <summary>
-        /// Job Scope.
+        /// Filter Scope.
         /// </summary>
-        [JsonProperty("jobScope")]
-        public JobScope JobScope { get; }
+        [JsonProperty("filterScope")]
+        public FilterScope FilterScope { get; }
 
         /// <summary>
         /// Will process all data with timestamp greater than or equal to DataPeriod.Start and less than DataPeriod.End.
@@ -136,7 +136,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
                 Guid.NewGuid().ToString("N"),
                 taskIndex,
                 job.Id,
-                job.FilterContext.JobScope,
+                job.FilterContext.FilterScope,
                 job.DataPeriod,
                 job.Since,
                 typeFilters,

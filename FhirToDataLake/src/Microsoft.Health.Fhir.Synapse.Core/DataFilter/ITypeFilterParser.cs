@@ -13,12 +13,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         /// 3. the resource type in typefilter is in types
         /// 4. the parameters are supported parameters, search result parameters aren't supported
         /// </summary>
-        /// <param name="jobType">the job type.</param>
+        /// <param name="filterScope">the filter scope.</param>
         /// <param name="typeString">the input typeString.</param>
         /// <param name="filterString">the input filterString.</param>
         /// <returns>type filter list</returns>
         public IEnumerable<TypeFilter> CreateTypeFilters(
-            JobScope jobType,
+            FilterScope filterScope,
             string typeString,
             string filterString);
     }

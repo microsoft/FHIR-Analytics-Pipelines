@@ -27,7 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public async Task GivenNoContextUpdates_WhenUpdateJobProgress_NoProgressShouldBeUpdated()
         {
             var typeFilters = new List<TypeFilter> { new ("Patient", null), new ("Observation", null) };
-            var filterContext = new FilterContext(JobScope.System, null, typeFilters, null);
+            var filterContext = new FilterContext(FilterScope.System, null, typeFilters, null);
 
             var activeJob = Job.Create(
                 ContainerName,
@@ -50,7 +50,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public async Task GivenContextUpdates_WhenUpdateJobProgress_ProgressShouldBeUpdatedCorrectly()
         {
             var typeFilters = new List<TypeFilter> { new ("Patient", null), new ("Observation", null) };
-            var filterContext = new FilterContext(JobScope.System, null, typeFilters, null);
+            var filterContext = new FilterContext(FilterScope.System, null, typeFilters, null);
 
             var activeJob = Job.Create(
                 ContainerName,
@@ -128,7 +128,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public async Task GivenTaskUpdateContextTwice_WhenUpdateJobProgress_ProgressShouldBeUpdatedCorrectly()
         {
             var typeFilters = new List<TypeFilter> { new("Patient", null), new("Observation", null) };
-            var filterContext = new FilterContext(JobScope.System, null, typeFilters, null);
+            var filterContext = new FilterContext(FilterScope.System, null, typeFilters, null);
 
             var activeJob = Job.Create(
                 ContainerName,

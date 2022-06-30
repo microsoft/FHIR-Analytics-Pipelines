@@ -14,7 +14,6 @@ using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core;
@@ -23,7 +22,6 @@ using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.Tool;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -177,7 +175,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
                     // The status should be succeeded, which means succeeded
                     Assert.Equal(JobStatus.Succeeded, completedJob.Status);
-                    Assert.Equal(expectedJob.FilterContext.JobScope, completedJob.FilterContext.JobScope);
+                    Assert.Equal(expectedJob.FilterContext.FilterScope, completedJob.FilterContext.FilterScope);
                     Assert.Equal(expectedJob.FilterContext.GroupId, completedJob.FilterContext.GroupId);
                     Assert.True(completedJob.FilterContext.ProcessedPatientIds.ToHashSet().SetEquals(expectedJob.FilterContext.ProcessedPatientIds.ToHashSet()));
                     Assert.Equal(expectedJob.FilterContext.TypeFilters.Count(), completedJob.FilterContext.TypeFilters.Count());

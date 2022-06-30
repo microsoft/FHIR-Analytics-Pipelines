@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -76,7 +75,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
                 Guid.NewGuid().ToString("N"),
                 0,
                 "mockjob",
-                JobScope.System,
+                FilterScope.System,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
                 DateTimeOffset.MinValue,
                 null,

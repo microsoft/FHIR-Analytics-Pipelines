@@ -56,7 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("Patient", 1)]
         public void GivenValidTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForSystem_ThenTheTypeFiltersForEachResourceTypesAreReturned( string typeString, int resourceTypeCount)
         {
-            var typeFilters = _typeFilterParser.CreateTypeFilters(JobScope.System, typeString, null).ToList();
+            var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.System, typeString, null).ToList();
 
             Assert.NotNull(typeFilters);
             Assert.Equal(resourceTypeCount, typeFilters.Count());
@@ -71,7 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData( "")]
         public void GivenNullTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForGroup_ThenOneTypeFilterAreReturned(string typeString)
         {
-            var typeFilters = _typeFilterParser.CreateTypeFilters(JobScope.Group, typeString, null).ToList();
+            var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.Group, typeString, null).ToList();
 
             Assert.Single(typeFilters);
             Assert.Equal("*", typeFilters[0].ResourceType);
@@ -84,7 +84,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("Patient,Patient", "Patient")] // *?_type=Patient
         public void GivenValidTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForGroup_ThenOneTypeFilterAreReturned(string typeString, string expectedTypes)
         {
-            var typeFilters = _typeFilterParser.CreateTypeFilters(JobScope.Group, typeString, null).ToList();
+            var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.Group, typeString, null).ToList();
 
             Assert.Single(typeFilters);
             Assert.Equal("*", typeFilters[0].ResourceType);
@@ -96,7 +96,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [Fact]
         public void GivenEmptyStringTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturned()
         {
-            var typeFilters = _typeFilterParser.CreateTypeFilters(JobScope.System, "Patient", string.Empty).ToList();
+            var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.System, "Patient", string.Empty).ToList();
 
             Assert.Single(typeFilters);
             Assert.Equal("Patient", typeFilters[0].ResourceType);
@@ -106,7 +106,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [Fact]
         public void GivenEmptyTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturned()
         {
-            var typeFilters = _typeFilterParser.CreateTypeFilters(JobScope.System, "Patient", "").ToList();
+            var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.System, "Patient", "").ToList();
 
             Assert.Single(typeFilters);
             Assert.Equal("Patient", typeFilters[0].ResourceType);
@@ -116,7 +116,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [Fact]
         public void GivenNullTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturned()
         {
-            var typeFilters = _typeFilterParser.CreateTypeFilters(JobScope.System, "Patient", null).ToList();
+            var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.System, "Patient", null).ToList();
 
             Assert.Single(typeFilters);
             Assert.Equal("Patient", typeFilters[0].ResourceType);
@@ -124,30 +124,30 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         }
 
         [Theory]
-        [InlineData(JobScope.Group, ",")]
-        [InlineData(JobScope.Group, "InvalidResourceType")]
-        [InlineData(JobScope.Group, "Device")]
+        [InlineData(FilterScope.Group, ",")]
+        [InlineData(FilterScope.Group, "InvalidResourceType")]
+        [InlineData(FilterScope.Group, "Device")]
 
-        [InlineData(JobScope.System, ",")]
-        [InlineData(JobScope.System, "InvalidResourceType")]
-        [InlineData(JobScope.System, "patient")]
-        [InlineData(JobScope.System, "Patient,Account,")]
-        [InlineData(JobScope.System, ",Patient,Account")]
-        [InlineData(JobScope.System, "Patient,&&,Account")]
-        [InlineData(JobScope.System, "Patient,,Account")]
+        [InlineData(FilterScope.System, ",")]
+        [InlineData(FilterScope.System, "InvalidResourceType")]
+        [InlineData(FilterScope.System, "patient")]
+        [InlineData(FilterScope.System, "Patient,Account,")]
+        [InlineData(FilterScope.System, ",Patient,Account")]
+        [InlineData(FilterScope.System, "Patient,&&,Account")]
+        [InlineData(FilterScope.System, "Patient,,Account")]
 
-        public void GivenInvalidTypeString_WhenParseType_ExceptionShouldBeThrown(JobScope jobType, string typeString)
+        public void GivenInvalidTypeString_WhenParseType_ExceptionShouldBeThrown(FilterScope filterScope, string typeString)
         {
             Assert.Throws<ConfigurationErrorException>(() =>
-                _typeFilterParser.CreateTypeFilters(jobType, typeString, null));
+                _typeFilterParser.CreateTypeFilters(filterScope, typeString, null));
         }
 
         [Fact]
-        public void GivenInvalidJobType_WhenParseType_ExceptionShouldBeThrown()
+        public void GivenInvalidFilterScope_WhenParseType_ExceptionShouldBeThrown()
         {
-            const JobScope jobType = (JobScope)2;
+            const FilterScope filterScope = (FilterScope)2;
             Assert.Throws<ConfigurationErrorException>(() =>
-                _typeFilterParser.CreateTypeFilters(jobType, null, null));
+                _typeFilterParser.CreateTypeFilters(filterScope, null, null));
         }
 
         [Fact]
@@ -156,7 +156,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             var type = "Condition,MedicationRequest";
             var typeFilter =
                 "MedicationRequest?status=active,MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z";
-            var typeFilters = _typeFilterParser.CreateTypeFilters(JobScope.Group, type, typeFilter).ToList();
+            var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.Group, type, typeFilter).ToList();
 
             Assert.NotNull(typeFilters);
             Assert.Equal(3, typeFilters.Count());
@@ -185,7 +185,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             var type = "Condition,MedicationRequest";
             var typeFilter =
                 "MedicationRequest?status=active,MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z";
-            var typeFilters = _typeFilterParser.CreateTypeFilters(JobScope.System, type, typeFilter).ToList();
+            var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.System, type, typeFilter).ToList();
 
             Assert.NotNull(typeFilters);
             Assert.Equal(3, typeFilters.Count());
@@ -228,7 +228,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("Observation", "Observation?patient.identifier=http://example.com/fhir/identifier/mrn|123456")]
         public void GivenValidTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturned(string type, string typeFilter)
         {
-            var typeFilters = _typeFilterParser.CreateTypeFilters(JobScope.System, type, typeFilter).ToList();
+            var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.System, type, typeFilter).ToList();
 
             var expectedTypes = type.Split(',');
 
@@ -243,7 +243,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         public void GivenTypeFilterNotInType_WhenParseTypeFilter_ExceptionShouldBeThrown(string type, string typeFilter)
         {
             Assert.Throws<ConfigurationErrorException>(() =>
-                _typeFilterParser.CreateTypeFilters(JobScope.System, type, typeFilter));
+                _typeFilterParser.CreateTypeFilters(FilterScope.System, type, typeFilter));
         }
 
         [Theory]
@@ -275,7 +275,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         public void GivenInvalidTypeFilter_WhenParseTypeFilter_ExceptionShouldBeThrown(string type, string typeFilter)
         {
             Assert.Throws<ConfigurationErrorException>(() =>
-                _typeFilterParser.CreateTypeFilters(JobScope.System, type, typeFilter));
+                _typeFilterParser.CreateTypeFilters(FilterScope.System, type, typeFilter));
         }
     }
 }

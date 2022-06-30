@@ -125,14 +125,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
 
             var typeFilters = _typeFilterParser.CreateTypeFilters(
-                _filterConfiguration.JobScope,
+                _filterConfiguration.FilterScope,
                 _filterConfiguration.RequiredTypes,
                 _filterConfiguration.TypeFilters);
 
             var processedPatients = schedulerSetting?.ProcessedPatientIds;
 
             var filterContext =
-                new FilterContext(_filterConfiguration.JobScope, _filterConfiguration.GroupId, typeFilters, processedPatients);
+                new FilterContext(_filterConfiguration.FilterScope, _filterConfiguration.GroupId, typeFilters, processedPatients);
 
             var newJob = Job.Create(
                 _jobConfiguration.ContainerName,

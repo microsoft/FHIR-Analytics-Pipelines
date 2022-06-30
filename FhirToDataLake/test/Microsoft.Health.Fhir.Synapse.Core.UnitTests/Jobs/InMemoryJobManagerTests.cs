@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static readonly List<TypeFilter> _testResourceTypeFilters =
             new List<TypeFilter> {new ("Patient", null), new ("Observation", null) };
 
-        private static readonly FilterContext _filterContext = new FilterContext(JobScope.System, null, _testResourceTypeFilters, null);
+        private static readonly FilterContext _filterContext = new FilterContext(FilterScope.System, null, _testResourceTypeFilters, null);
 
         private static readonly FhirParquetSchemaManager _fhirSchemaManager;
 
@@ -221,7 +221,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             var jobStore = CreateInMemoryJobStore(blobClient, jobConfig);
-            var jobManager = CreateJobManager(jobStore, _testStartTime, _testEndTime, JobScope.Group);
+            var jobManager = CreateJobManager(jobStore, _testStartTime, _testEndTime, FilterScope.Group);
 
             var schedulerBlob = await blobClient.GetBlobAsync($"{AzureBlobJobConstants.SchedulerMetadataFileName}");
             Assert.Null(schedulerBlob);
@@ -258,7 +258,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata))));
 
             var jobStore = CreateInMemoryJobStore(blobClient, jobConfig);
-            var jobManager = CreateJobManager(jobStore, _testStartTime, _testEndTime, JobScope.Group);
+            var jobManager = CreateJobManager(jobStore, _testStartTime, _testEndTime, FilterScope.Group);
 
             await jobManager.RunAsync();
 
@@ -359,11 +359,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var filterConfiguration = new FilterConfiguration
             {
-                JobScope = JobScope.System,
+                FilterScope = FilterScope.System,
             };
 
             var typeFilterParser = Substitute.For<ITypeFilterParser>();
-            typeFilterParser.CreateTypeFilters(Arg.Any<JobScope>(), Arg.Any<string>(), Arg.Any<string>()).Returns(_testResourceTypeFilters);
+            typeFilterParser.CreateTypeFilters(Arg.Any<FilterScope>(), Arg.Any<string>(), Arg.Any<string>()).Returns(_testResourceTypeFilters);
 
             var taskExecutor = Substitute.For<ITaskExecutor>();
             taskExecutor.ExecuteAsync(Arg.Any<TaskContext>(), Arg.Any<JobProgressUpdater>(), Arg.Any<CancellationToken>()).Returns(CreateTestTaskResult());
@@ -420,7 +420,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             IJobStore jobStore,
             DateTimeOffset start,
             DateTimeOffset end,
-            JobScope jobScope = JobScope.System)
+            FilterScope filterScope = FilterScope.System)
         {
             var schedulerConfig = new JobSchedulerConfiguration
             {
@@ -436,11 +436,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var filterConfiguration = new FilterConfiguration
             {
-                JobScope = jobScope,
+                FilterScope = filterScope,
             };
 
             var typeFilterParser = Substitute.For<ITypeFilterParser>();
-            typeFilterParser.CreateTypeFilters(Arg.Any<JobScope>(), Arg.Any<string>(), Arg.Any<string>()).Returns(_testResourceTypeFilters);
+            typeFilterParser.CreateTypeFilters(Arg.Any<FilterScope>(), Arg.Any<string>(), Arg.Any<string>()).Returns(_testResourceTypeFilters);
 
             var groupMemberExtractor = Substitute.For<IGroupMemberExtractor>();
 

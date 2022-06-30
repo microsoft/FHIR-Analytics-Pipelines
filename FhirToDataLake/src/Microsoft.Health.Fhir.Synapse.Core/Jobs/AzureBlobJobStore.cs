@@ -239,7 +239,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 schedulerSetting.UnfinishedJobs = unfinishedJobs;
 
                 // update processed patient list
-                if (job.FilterContext.JobScope == JobScope.Group && job.Status == JobStatus.Succeeded)
+                if (job.FilterContext.FilterScope == FilterScope.Group && job.Status == JobStatus.Succeeded)
                 {
                     var processedPatientIds = schedulerSetting.ProcessedPatientIds.ToHashSet();
                     processedPatientIds.UnionWith(job.Patients.Select(x => x.PatientId));

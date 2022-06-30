@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static readonly List<TypeFilter> _testResourceTypeFilters =
             new List<TypeFilter> { new ("Patient", null), new ("Observation", null) };
 
-        private static readonly FilterContext _filterContext = new FilterContext(JobScope.System, null, _testResourceTypeFilters, null);
+        private static readonly FilterContext _filterContext = new FilterContext(FilterScope.System, null, _testResourceTypeFilters, null);
 
         [Fact]
         public async Task GivenJobLocked_WhenAcquireJob_ExceptionWillBeThrown()
@@ -318,7 +318,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
-            var filterContext = new FilterContext(JobScope.Group, "groupId", _testResourceTypeFilters, null);
+            var filterContext = new FilterContext(FilterScope.Group, "groupId", _testResourceTypeFilters, null);
             var patients = new List<PatientWrapper>
                 {new PatientWrapper("patientId1"), new PatientWrapper("patientId2")};
 
@@ -356,7 +356,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
-            var filterContext = new FilterContext(JobScope.Group, "groupId", _testResourceTypeFilters, null);
+            var filterContext = new FilterContext(FilterScope.Group, "groupId", _testResourceTypeFilters, null);
             var patients = new List<PatientWrapper>
                 {new PatientWrapper("patientId1"), new PatientWrapper("patientId2")};
 

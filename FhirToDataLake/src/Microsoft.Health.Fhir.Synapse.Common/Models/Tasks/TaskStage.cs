@@ -13,17 +13,17 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         New,
 
         /// <summary>
-        /// Get newly join patient resources, required in "Group" job scope.
+        /// Get newly join patient resources, required in "Group" filter scope.
         /// </summary>
         GetNewPatient,
 
         /// <summary>
-        /// Get updated patient resources for processed patients, required in "Group" job scope.
+        /// Get updated patient resources for processed patients, required in "Group" filter scope.
         /// </summary>
         GetUpdatedPatient,
 
         /// <summary>
-        /// Get resources for "System" job scope, or get compartment resources for "Group" job scope.
+        /// Get resources for "System" filter scope, or get compartment resources for "Group" filter scope.
         /// </summary>
         GetResources,
 

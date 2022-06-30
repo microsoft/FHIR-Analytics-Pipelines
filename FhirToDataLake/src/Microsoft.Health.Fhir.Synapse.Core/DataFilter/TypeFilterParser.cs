@@ -34,9 +34,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             _logger = logger;
         }
 
-        public IEnumerable<TypeFilter> CreateTypeFilters(JobScope jobScope, string typeString, string filterString)
+        public IEnumerable<TypeFilter> CreateTypeFilters(FilterScope filterScope, string typeString, string filterString)
         {
-            var requiredTypes = ParseType(jobScope, typeString).ToHashSet();
+            var requiredTypes = ParseType(filterScope, typeString).ToHashSet();
             var typeFilters = ParseTypeFilter(filterString).ToList();
             ValidateTypeFilters(requiredTypes, typeFilters);
 
@@ -50,12 +50,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
             if (nonFilterTypes.Any())
             {
-                switch (jobScope)
+                switch (filterScope)
                 {
-                    case JobScope.System:
+                    case FilterScope.System:
                         typeFilters.AddRange(nonFilterTypes.Select(type => new TypeFilter(type, null)));
                         break;
-                    case JobScope.Group:
+                    case FilterScope.Group:
                         List<Tuple<string, string>> parameters = null;
                         if (typeFilters.Count != 0 || !string.IsNullOrEmpty(typeString))
                         {
@@ -66,7 +66,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                         break;
                     default:
                         // this case should not happen
-                        throw new ArgumentOutOfRangeException($"The jobScope {jobScope} isn't supported now");
+                        throw new ArgumentOutOfRangeException($"The filterScope {filterScope} isn't supported now");
                 }
             }
 
@@ -78,16 +78,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         /// If the type is null, return all resource types for system job and return patient compartment resource types for group job.
         /// If the type isn't supported, will throw an exception.
         /// </summary>
-        /// <param name="jobScope">job scope.</param>
+        /// <param name="filterScope">filter scope.</param>
         /// <param name="typeString">type string.</param>
         /// <returns>a list of resource type.</returns>
-        private IEnumerable<string> ParseType(JobScope jobScope, string typeString)
+        private IEnumerable<string> ParseType(FilterScope filterScope, string typeString)
         {
-            HashSet<string> supportedResourceTypes = jobScope switch
+            HashSet<string> supportedResourceTypes = filterScope switch
             {
-                JobScope.System => _fhirSpecificationProvider.GetAllResourceTypes().ToHashSet(),
-                JobScope.Group => _fhirSpecificationProvider.GetCompartmentResourceTypes(FhirConstants.PatientResource).ToHashSet(),
-                _ => throw new ConfigurationErrorException($"The JobScope {jobScope} isn't supported now.")
+                FilterScope.System => _fhirSpecificationProvider.GetAllResourceTypes().ToHashSet(),
+                FilterScope.Group => _fhirSpecificationProvider.GetCompartmentResourceTypes(FhirConstants.PatientResource).ToHashSet(),
+                _ => throw new ConfigurationErrorException($"The FilterScope {filterScope} isn't supported now.")
             };
 
             if (string.IsNullOrEmpty(typeString))
@@ -105,7 +105,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             foreach (var type in types.Where(type => !supportedResourceTypes.Contains(type)))
             {
                 throw new ConfigurationErrorException(
-                    $"The required resource type {type} isn't supported for scope {jobScope}");
+                    $"The required resource type {type} isn't supported for scope {filterScope}");
             }
 
             return types;

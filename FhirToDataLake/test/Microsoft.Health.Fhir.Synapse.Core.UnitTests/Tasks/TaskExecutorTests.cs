@@ -43,7 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var taskExecutor = GetTaskExecutor(TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile1), containerName);
 
             var typeFilters = new List<TypeFilter> { new ("Patient", null) };
-            var filterContext = new FilterContext(JobScope.System, null, typeFilters, null);
+            var filterContext = new FilterContext(FilterScope.System, null, typeFilters, null);
 
             // Create an active job.
             var activeJob = Job.Create(
@@ -57,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
                 Guid.NewGuid().ToString("N"),
                 0,
                 activeJob.Id,
-                activeJob.FilterContext.JobScope,
+                activeJob.FilterContext.FilterScope,
                 activeJob.DataPeriod,
                 activeJob.Since,
                 typeFilters);
@@ -110,7 +110,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var taskExecutor = GetTaskExecutor(invalidBundle, containerName);
 
             var typeFilters = new List<TypeFilter> { new ("Patient", null) };
-            var filterContext = new FilterContext(JobScope.System, null, typeFilters, null);
+            var filterContext = new FilterContext(FilterScope.System, null, typeFilters, null);
 
             // Create an active job.
             var activeJob = Job.Create(

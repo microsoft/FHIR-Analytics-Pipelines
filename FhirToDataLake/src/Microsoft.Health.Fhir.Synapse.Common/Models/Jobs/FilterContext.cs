@@ -12,20 +12,19 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
     public class FilterContext
     {
         public FilterContext(
-            JobScope jobScope,
+            FilterScope filterScope,
             string groupId,
             IEnumerable<TypeFilter> typeFilters,
             IEnumerable<string> processedPatientIds)
         {
-            JobScope = jobScope;
+            FilterScope = filterScope;
             GroupId = groupId;
             TypeFilters = typeFilters;
             ProcessedPatientIds = processedPatientIds ?? new HashSet<string>();
-
         }
 
-        [JsonProperty("jobScope")]
-        public JobScope JobScope { get; }
+        [JsonProperty("filterScope")]
+        public FilterScope FilterScope { get; }
 
         [JsonProperty("groupId")]
         public string GroupId { get; }
