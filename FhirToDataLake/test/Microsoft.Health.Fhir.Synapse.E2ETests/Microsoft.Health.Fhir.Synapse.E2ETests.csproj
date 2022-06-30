@@ -28,6 +28,9 @@
     <None Update="appsettings.test.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="TestData\Expected\System_Patient_Observation.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

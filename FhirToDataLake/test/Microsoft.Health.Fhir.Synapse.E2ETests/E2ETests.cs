@@ -4,7 +4,9 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.Identity;
@@ -14,11 +16,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.Tool;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -32,6 +36,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
         private const string _configurationPath = "appsettings.test.json";
         private const int TriggerIntervalInMinutes = 5;
+
+        private const string _expectedDataFolder = "./TestData/Expected";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="E2ETests"/> class.
@@ -50,7 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         }
 
         [SkippableFact]
-        public async Task GivenPreviousDateRange_WhenProcess_CorrectResultShouldBeReturnedAsync()
+        public async Task GivenSystemScope_WhenProcess_CorrectResultShouldBeReturnedAsync()
         {
             Skip.If(_blobServiceClient == null);
             var uniqueContainerName = Guid.NewGuid().ToString("N");
@@ -61,6 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
             // Load configuration
             Environment.SetEnvironmentVariable("job:containerName", uniqueContainerName);
+
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile(_configurationPath)
                 .AddEnvironmentVariables()
@@ -73,11 +80,14 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 await host.RunAsync();
 
                 // Check job status
-                await CheckJobStatus(blobContainerClient);
+                var fileName = Path.Combine(_expectedDataFolder, "System_Patient_Observation.json");
+                var expectedJob = JsonConvert.DeserializeObject<Job>(File.ReadAllText(fileName));
+
+                await CheckJobStatus(blobContainerClient, expectedJob);
 
                 // Check result files
-                Assert.Equal(2, await GetResultFileCount(blobContainerClient, "result/Observation/2000/09/01"));
-                Assert.Equal(2, await GetResultFileCount(blobContainerClient, "result/Patient/2000/09/01"));
+                Assert.Equal(4, await GetResultFileCount(blobContainerClient, "result/Observation/2022/06/30"));
+                Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Patient/2022/06/30"));
             }
             finally
             {
@@ -85,6 +95,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             }
         }
 
+        /*
         [SkippableFact]
         public async Task GivenRecentDateRange_WhenProcess_CorrectResultShouldBeReturnedAsync()
         {
@@ -113,7 +124,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 await host.RunAsync();
 
                 // Check job status
-                await CheckJobStatus(blobContainerClient);
+                var fileName = Path.Combine(_expectedDataFolder, "System_Patient_Observation.json");
+                var expectedJob = JsonConvert.DeserializeObject<Job>(File.ReadAllText(fileName));
+
+                await CheckJobStatus(blobContainerClient, expectedJob);
 
                 // Check parquet files
                 Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Observation/2000/09/01"));
@@ -125,7 +139,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 blobContainerClient.DeleteIfExists();
             }
         }
-
+        */
         private async Task<int> GetResultFileCount(BlobContainerClient blobContainerClient, string filePrefix)
         {
             var resultFileCount = 0;
@@ -146,7 +160,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             return resultFileCount;
         }
 
-        private async Task CheckJobStatus(BlobContainerClient blobContainerClient)
+        private async Task CheckJobStatus(BlobContainerClient blobContainerClient, Job expectedJob)
         {
             var hasCompletedJobs = false;
             await foreach (var blobItem in blobContainerClient.GetBlobsAsync(prefix: "jobs/completedJobs"))
@@ -159,10 +173,20 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                     var blobClient = blobContainerClient.GetBlobClient(blobItem.Name);
                     var blobDownloadInfo = await blobClient.DownloadAsync();
                     using var reader = new StreamReader(blobDownloadInfo.Value.Content, Encoding.UTF8);
-                    var content = await reader.ReadToEndAsync();
+                    var completedJob = JsonConvert.DeserializeObject<Job>(await reader.ReadToEndAsync());
 
-                    // The status should be 2, which means succeeded
-                    Assert.Equal(2, JObject.Parse(content)["status"]?.Value<int>());
+                    // The status should be succeeded, which means succeeded
+                    Assert.Equal(JobStatus.Succeeded, completedJob.Status);
+                    Assert.Equal(expectedJob.FilterContext.JobScope, completedJob.FilterContext.JobScope);
+                    Assert.Equal(expectedJob.FilterContext.GroupId, completedJob.FilterContext.GroupId);
+                    Assert.True(completedJob.FilterContext.ProcessedPatientIds.ToHashSet().SetEquals(expectedJob.FilterContext.ProcessedPatientIds.ToHashSet()));
+                    Assert.Equal(expectedJob.FilterContext.TypeFilters.Count(), completedJob.FilterContext.TypeFilters.Count());
+                    Assert.Equal(expectedJob.FilterContext.TypeFilters.Count(), completedJob.FilterContext.TypeFilters.Count());
+                    Assert.Empty(expectedJob.RunningTasks);
+
+                    Assert.True(DictionaryEquals(expectedJob.TotalResourceCounts, completedJob.TotalResourceCounts));
+                    Assert.True(DictionaryEquals(expectedJob.ProcessedResourceCounts, completedJob.ProcessedResourceCounts));
+                    Assert.True(DictionaryEquals(expectedJob.SkippedResourceCounts, completedJob.SkippedResourceCounts));
 
                     break;
                 }
@@ -171,6 +195,36 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             _testOutputHelper.WriteLine($"Checked job status {hasCompletedJobs}.");
 
             Assert.True(hasCompletedJobs);
+        }
+
+        private static bool DictionaryEquals(
+            Dictionary<string, int> expectedDictionary,
+            Dictionary<string, int> actualDictionary)
+        {
+            if (expectedDictionary.Count != actualDictionary.Count)
+            {
+                return false;
+            }
+
+            if (expectedDictionary.Keys.Except(actualDictionary.Keys).Any())
+            {
+                return false;
+            }
+
+            if (actualDictionary.Keys.Except(expectedDictionary.Keys).Any())
+            {
+                return false;
+            }
+
+            foreach (var pair in actualDictionary)
+            {
+                if (expectedDictionary[pair.Key] != pair.Value)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static IHostBuilder CreateHostBuilder(IConfiguration configuration) =>
