@@ -84,8 +84,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 await CheckJobStatus(blobContainerClient, expectedJob);
 
                 // Check result files
-                Assert.Equal(4, await GetResultFileCount(blobContainerClient, "result/Observation/2022/06/30"));
-                Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Patient/2022/06/30"));
+                Assert.Equal(4, await GetResultFileCount(blobContainerClient, "result/Observation/2022/07/01"));
+                Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Patient/2022/07/01"));
             }
             finally
             {
