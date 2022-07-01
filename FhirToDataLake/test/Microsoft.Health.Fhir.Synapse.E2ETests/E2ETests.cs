@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private const string _configurationPath = "appsettings.test.json";
         private const int TriggerIntervalInMinutes = 5;
 
-        private const string _expectedDataFolder = "./TestData/Expected";
+        private const string _expectedDataFolder = "TestData/Expected";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="E2ETests"/> class.

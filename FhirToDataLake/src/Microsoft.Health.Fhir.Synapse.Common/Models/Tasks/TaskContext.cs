@@ -25,7 +25,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             IEnumerable<PatientWrapper> patientIds = null)
         {
             Id = id;
-            TaskHash = $@"{taskIndex:d6}";
+            TaskIndex = taskIndex;
             JobId = jobId;
             FilterScope = filterScope;
             DataPeriod = dataPeriod;
@@ -50,10 +50,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public string Id { get; }
 
         /// <summary>
-        /// Task hash
+        /// Task index
         /// </summary>
-        [JsonProperty("taskHash")]
-        public string TaskHash { get; }
+        [JsonProperty("taskIndex")]
+        public int TaskIndex { get; }
 
         /// <summary>
         /// Job id.
@@ -101,29 +101,33 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// <summary>
         /// Output file index map for all resources/schemas.
         /// The value of each schemaType will be appended to output files.
-        /// The format is '{SchemaType}_{TaskHash}_{index}.parquet', e.g. Patient_000001_0001.parquet.
+        /// The format is '{SchemaType}_{TaskIndex:d10}_{index:d10}.parquet', e.g. Patient_0000000001_0000000001.parquet.
         /// </summary>
-        [JsonProperty("taskProgress")]
+        [JsonProperty("outputFileIndexMap")]
         public Dictionary<string, int> OutputFileIndexMap { get; set; }
 
         /// <summary>
         /// Search count for each resource type.
         /// </summary>
+        [JsonProperty("searchCount")]
         public Dictionary<string, int> SearchCount { get; set; }
 
         /// <summary>
         /// Skipped count for each schema type.
         /// </summary>
+        [JsonProperty("skippedCount")]
         public Dictionary<string, int> SkippedCount { get; set; }
 
         /// <summary>
         /// Processed count for each schema type.
         /// </summary>
+        [JsonProperty("processedCount")]
         public Dictionary<string, int> ProcessedCount { get; set; }
 
         /// <summary>
-        /// Has completed all resources.
+        /// Is this task completed.
         /// </summary>
+        [JsonProperty("isCompleted")]
         public bool IsCompleted { get; set; }
 
         public static TaskContext Create(
@@ -138,7 +142,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
                 job.Id,
                 job.FilterContext.FilterScope,
                 job.DataPeriod,
-                job.Since,
+                job.FilterContext.Since,
                 typeFilters,
                 patients);
         }

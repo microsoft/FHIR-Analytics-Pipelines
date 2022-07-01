@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         private readonly CancellationToken _noneCancellationToken = CancellationToken.None;
 
-        private const string _testDataFolder = "./DataFilter/TestData";
+        private const string _testDataFolder = "DataFilter/TestData";
 
         private readonly DateTimeOffset _triggerTime = new DateTimeOffset(new DateTime(2021, 1, 1));
 

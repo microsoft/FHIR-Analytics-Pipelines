@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static readonly List<TypeFilter> _testResourceTypeFilters =
             new List<TypeFilter> {new ("Patient", null), new ("Observation", null) };
 
-        private static readonly FilterContext _filterContext = new FilterContext(FilterScope.System, null, _testResourceTypeFilters, null);
+        private static readonly FilterContext _filterContext = new FilterContext(FilterScope.System, null, DateTimeOffset.MinValue, _testResourceTypeFilters, null);
 
         private static readonly FhirParquetSchemaManager _fhirSchemaManager;
 
@@ -74,7 +74,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Running,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                DateTimeOffset.MinValue,
                 _filterContext);
 
             await blobClient.CreateJob(activeJob, "SampleLease");
@@ -105,7 +104,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Running,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                DateTimeOffset.MinValue,
                 _filterContext);
             await blobClient.CreateJob(activeJob, "SampleLease");
 
@@ -172,7 +170,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Failed,
                 new DataPeriod(_testStartTime, _testEndTime),
-                DateTimeOffset.MinValue,
                 _filterContext);
 
             var metadata = new SchedulerMetadata();

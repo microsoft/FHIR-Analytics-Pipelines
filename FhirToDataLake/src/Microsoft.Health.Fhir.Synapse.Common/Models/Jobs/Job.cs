@@ -18,7 +18,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             string containerName,
             JobStatus status,
             DataPeriod dataPeriod,
-            DateTimeOffset since,
             FilterContext filterContext,
             DateTimeOffset lastHeartBeat,
             DateTimeOffset createdTime,
@@ -35,7 +34,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             ContainerName = containerName;
             Status = status;
             DataPeriod = dataPeriod;
-            Since = since;
             FilterContext = filterContext;
 
             LastHeartBeat = lastHeartBeat;
@@ -88,12 +86,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// </summary>
         [JsonProperty("dataPeriod")]
         public DataPeriod DataPeriod { get; }
-
-        /// <summary>
-        /// The start timestamp specified in job configuration.
-        /// </summary>
-        [JsonProperty("since")]
-        public DateTimeOffset Since { get; }
 
         /// <summary>
         /// The filter context.
@@ -159,7 +151,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             string containerName,
             JobStatus status,
             DataPeriod dataPeriod,
-            DateTimeOffset since,
             FilterContext filterContext,
             IEnumerable<PatientWrapper> patients = null,
             int nextTaskIndex = 0,
@@ -174,7 +165,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
                 containerName,
                 status,
                 dataPeriod,
-                since,
                 filterContext,
                 DateTimeOffset.UtcNow,
                 DateTimeOffset.UtcNow,

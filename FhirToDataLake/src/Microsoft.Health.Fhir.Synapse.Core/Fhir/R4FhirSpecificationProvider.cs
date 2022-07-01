@@ -30,12 +30,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         /// <summary>
         /// Download from http://hl7.org/fhir/R4/compartmentdefinition-patient.json
         /// </summary>
-        private readonly IEnumerable<string> _compartmentFiles = new List<string> { "./Fhir/Data/R4/compartmentdefinition-patient.json" };
+        private readonly IEnumerable<string> _compartmentFiles = new List<string> { "Fhir/Data/R4/compartmentdefinition-patient.json" };
 
         /// <summary>
         /// Download from http://hl7.org/fhir/R4/search-parameters.json, which is defined in http://hl7.org/fhir/R4/searchparameter-registry.html
         /// </summary>
-        private readonly string _searchParameterFile = "./Fhir/Data/R4/search-parameters.json";
+        private readonly string _searchParameterFile = "Fhir/Data/R4/search-parameters.json";
 
         private readonly Dictionary<string, HashSet<string>> _compartmentResourceTypesLookup;
 
@@ -111,11 +111,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
             return _resourceTypeSearchParametersLookup[resourceType];
         }
 
-        public bool IsValidSearchModifier(string modifier)
-        {
-            return Enum.IsDefined(typeof(SearchParameter.SearchModifierCode), modifier);
-        }
-
         private bool IsValidCompartmentType(string compartmentType)
         {
             return compartmentType != null && Enum.IsDefined(typeof(CompartmentType), compartmentType);
@@ -128,7 +123,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 
             foreach (var compartmentFile in _compartmentFiles)
             {
-                var compartmentContext = File.ReadAllText(compartmentFile);
+                string compartmentContext = null;
+                try
+                {
+                    compartmentContext = File.ReadAllText(compartmentFile);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.");
+                    throw new FhirSpecificationProviderException($"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.", ex);
+                }
+
                 CompartmentDefinition compartment;
 
                 try
@@ -168,16 +173,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
                 throw new FhirSpecificationProviderException($"Failed to parse capability statement from FHIR server metadata.", exception);
             }
 
-            var resources = capabilityStatement.Rest.First().Resource;
+            var resources = capabilityStatement?.Rest?.First().Resource;
             var searchParameters = new Dictionary<string, HashSet<string>>();
             var searchParameterIds = new Dictionary<string, string>();
-            foreach (var resource in resources)
+            if (resources == null)
             {
-                var type = resource.Type?.ToString();
-                if (type != null)
+                _logger.LogWarning($"Build a empty search parameters lookup: the resource is null.");
+            }
+            else
+            {
+                foreach (var resource in resources)
                 {
-                    searchParameters[type] = resource.SearchParam.Select(x => x.Name).ToHashSet();
-                    resource.SearchParam.ForEach(x => searchParameterIds[SearchParameterKey(type, x.Name)] = x.Definition);
+                    var type = resource.Type?.ToString();
+                    if (!string.IsNullOrEmpty(type))
+                    {
+                        searchParameters[type] = resource.SearchParam.Select(x => x.Name).ToHashSet();
+                        resource.SearchParam.ForEach(x => searchParameterIds[SearchParameterKey(type, x.Name)] = x.Definition);
+                    }
                 }
             }
 
@@ -192,7 +204,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         {
             var parser = new FhirJsonParser();
 
-            var bundleContext = File.ReadAllText(_searchParameterFile);
+            string bundleContext = null;
+            try
+            {
+                bundleContext = File.ReadAllText(_searchParameterFile);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Read search parameter file \"{_searchParameterFile}\" failed. Reason: {ex.Message}.");
+                throw new FhirSpecificationProviderException($"Read search parameter file \"{_searchParameterFile}\" failed. Reason: {ex.Message}.", ex);
+            }
+
             Bundle bundle;
             try
             {
@@ -200,8 +222,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
             }
             catch (Exception exception)
             {
-                _logger.LogError($"Failed to search parameter bundle from file {_searchParameterFile}.");
-                throw new FhirSpecificationProviderException($"Failed to search parameter bundle from file {_searchParameterFile}.", exception);
+                _logger.LogError($"Failed to parse parameter bundle from file {_searchParameterFile}.");
+                throw new FhirSpecificationProviderException($"Failed to parse parameter bundle from file {_searchParameterFile}.", exception);
             }
 
             var searchParameterDefinition = new Dictionary<string, SearchParameter>();

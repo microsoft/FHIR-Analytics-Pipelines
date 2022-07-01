@@ -37,7 +37,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         /// <param name="resourceType">the resource type.</param>
         /// <returns>the search parameters</returns>
         public IEnumerable<string> GetSearchParametersByResourceType(string resourceType);
-
-        public bool IsValidSearchModifier(string modifier);
     }
 }

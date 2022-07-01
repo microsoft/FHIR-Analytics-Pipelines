@@ -33,10 +33,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         {
             throw new NotImplementedException();
         }
-
-        public bool IsValidSearchModifier(string modifier)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

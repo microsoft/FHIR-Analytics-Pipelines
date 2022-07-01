@@ -135,8 +135,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             taskContext.IsCompleted = true;
 
             _logger.LogInformation(
-                "Finished processing task '{taskHash}'.",
-                taskContext.TaskHash);
+                "Finished processing task '{taskIndex}'.",
+                taskContext.TaskIndex);
 
             return TaskResult.CreateFromTaskContext(taskContext);
         }
@@ -159,11 +159,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             // move task stage to get new compartment stage
             if (cacheResult.SearchProgress.Stage == TaskStage.New)
             {
-                cacheResult.SearchProgress.UpdateStage(TaskStage.GetNewPatient);
+                cacheResult.SearchProgress.UpdateStage(TaskStage.GetPatientResourceFull);
             }
 
             // get patient resources for newly patients
-            if (cacheResult.SearchProgress.Stage == TaskStage.GetNewPatient &&
+            if (cacheResult.SearchProgress.Stage == TaskStage.GetPatientResourceFull &&
                 cacheResult.SearchProgress.IsCurrentSearchCompleted == false)
             {
                 var newPatientIds = taskContext.PatientIds.Where(x => x.IsNewPatient == true).Select(x => x.PatientId);
@@ -183,14 +183,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             }
 
             // move task stage to get updated compartment stage
-            if (cacheResult.SearchProgress.Stage == TaskStage.GetNewPatient &&
+            if (cacheResult.SearchProgress.Stage == TaskStage.GetPatientResourceFull &&
                 cacheResult.SearchProgress.IsCurrentSearchCompleted)
             {
-                cacheResult.SearchProgress.UpdateStage(TaskStage.GetUpdatedPatient);
+                cacheResult.SearchProgress.UpdateStage(TaskStage.GetPatientResourceIncremental);
             }
 
             // get updated patients
-            if (cacheResult.SearchProgress.Stage == TaskStage.GetUpdatedPatient && cacheResult.SearchProgress.IsCurrentSearchCompleted == false)
+            if (cacheResult.SearchProgress.Stage == TaskStage.GetPatientResourceIncremental && cacheResult.SearchProgress.IsCurrentSearchCompleted == false)
             {
                 // get updated patient resources
                 var oldPatientIds = taskContext.PatientIds.Where(x => x.IsNewPatient == false).Select(x => x.PatientId);
@@ -211,7 +211,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 await ExecuteSearchAsync(searchOption, taskContext, cacheResult, progressUpdater, cancellationToken);
             }
 
-            if (cacheResult.SearchProgress.Stage == TaskStage.GetUpdatedPatient && cacheResult.SearchProgress.IsCurrentSearchCompleted)
+            if (cacheResult.SearchProgress.Stage == TaskStage.GetPatientResourceIncremental && cacheResult.SearchProgress.IsCurrentSearchCompleted)
             {
                 cacheResult.SearchProgress.UpdateStage(TaskStage.GetResources);
             }
@@ -386,7 +386,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                             }
 
                             // Upload to blob and log result
-                            var blobUrl = await _dataWriter.WriteAsync(parquetStream, taskContext.JobId, taskContext.TaskHash, taskContext.OutputFileIndexMap[schemaType], taskContext.DataPeriod.End, cancellationToken);
+                            var blobUrl = await _dataWriter.WriteAsync(parquetStream, taskContext.JobId, taskContext.TaskIndex, taskContext.OutputFileIndexMap[schemaType], taskContext.DataPeriod.End, cancellationToken);
                             taskContext.OutputFileIndexMap[schemaType] += 1;
 
                             var batchResult = new BatchDataResult(

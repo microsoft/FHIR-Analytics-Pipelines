@@ -97,15 +97,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
             var types = typeString?.Split(',').ToHashSet();
 
-            foreach (var type in types.Where(type => !_fhirSpecificationProvider.IsValidFhirResourceType(type)))
-            {
-                throw new ConfigurationErrorException($"The required resource type {type} isn't a valid resource type.");
-            }
+            var invalidFhirResourceTypes =
+                types.Where(type => !_fhirSpecificationProvider.IsValidFhirResourceType(type)).ToList();
 
-            foreach (var type in types.Where(type => !supportedResourceTypes.Contains(type)))
+            if (invalidFhirResourceTypes.Any())
             {
                 throw new ConfigurationErrorException(
-                    $"The required resource type {type} isn't supported for scope {filterScope}");
+                    $"The required resource types \"{string.Join(',', invalidFhirResourceTypes)}\" aren't valid resource types");
+            }
+
+            var unsupportedTypes = types.Where(type => !supportedResourceTypes.Contains(type)).ToList();
+
+            if (unsupportedTypes.Any())
+            {
+                throw new ConfigurationErrorException(
+                    $"The required resource types \"{string.Join(',', unsupportedTypes)}\" aren't supported for scope {filterScope}");
             }
 
             return types;
@@ -127,7 +133,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 {
                     var parameterIndex = filter.IndexOf("?", StringComparison.Ordinal);
 
-                    if (parameterIndex < 0 || parameterIndex == filter.Length - 1)
+                    if (parameterIndex <= 0 || parameterIndex == filter.Length - 1)
                     {
                         throw new ConfigurationErrorException(
                             $"The typeFilter segment '{filter}' could not be parsed.");

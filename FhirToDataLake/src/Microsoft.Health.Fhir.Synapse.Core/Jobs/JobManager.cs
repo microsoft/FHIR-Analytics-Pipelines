@@ -97,7 +97,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     resumedJob.ContainerName,
                     JobStatus.New,
                     resumedJob.DataPeriod,
-                    resumedJob.Since,
                     resumedJob.FilterContext,
                     resumedJob.Patients,
                     resumedJob.NextTaskIndex,
@@ -132,13 +131,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var processedPatients = schedulerSetting?.ProcessedPatientIds;
 
             var filterContext =
-                new FilterContext(_filterConfiguration.FilterScope, _filterConfiguration.GroupId, typeFilters, processedPatients);
+                new FilterContext(_filterConfiguration.FilterScope, _filterConfiguration.GroupId, _jobConfiguration.StartTime, typeFilters, processedPatients);
 
             var newJob = Job.Create(
                 _jobConfiguration.ContainerName,
                 JobStatus.New,
                 new DataPeriod(triggerStart, triggerEnd),
-                _jobConfiguration.StartTime,
                 filterContext);
             return newJob;
         }

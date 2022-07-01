@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static readonly List<TypeFilter> _testResourceTypeFilters =
             new List<TypeFilter> { new ("Patient", null), new ("Observation", null) };
 
-        private static readonly FilterContext _filterContext = new FilterContext(FilterScope.System, null, _testResourceTypeFilters, null);
+        private static readonly FilterContext _filterContext = new FilterContext(FilterScope.System, null, _testStartTime, _testResourceTypeFilters, null);
 
         [Fact]
         public async Task GivenJobLocked_WhenAcquireJob_ExceptionWillBeThrown()
@@ -70,7 +70,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Running,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _testStartTime,
                 _filterContext);
             await blobClient.CreateJob(activeJob);
 
@@ -94,7 +93,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Succeeded,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _testStartTime,
                 _filterContext);
             await blobClient.CreateJob(activeJob);
 
@@ -124,7 +122,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Failed,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _testStartTime,
                 _filterContext);
             await blobClient.CreateJob(activeJob);
 
@@ -162,7 +159,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.New,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _testStartTime,
                 _filterContext);
 
             await jobStore.UpdateJobAsync(newJob);
@@ -186,7 +182,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.New,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _testStartTime,
                 _filterContext);
             await blobClient.CreateJob(activeJob);
 
@@ -245,7 +240,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Running,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _testStartTime,
                 _filterContext);
             await blobClient.CreateJob(activeJob);
 
@@ -262,7 +256,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Running,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _testStartTime,
                 _filterContext);
             await blobClient.CreateJob(activeJob);
 
@@ -288,7 +281,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Running,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _testStartTime,
                 _filterContext);
             await blobClient.CreateJob(activeJob);
 
@@ -318,7 +310,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
-            var filterContext = new FilterContext(FilterScope.Group, "groupId", _testResourceTypeFilters, null);
+            var filterContext = new FilterContext(FilterScope.Group, "groupId", _testStartTime, _testResourceTypeFilters, null);
             var patients = new List<PatientWrapper>
                 {new PatientWrapper("patientId1"), new PatientWrapper("patientId2")};
 
@@ -326,7 +318,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Running,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _testStartTime,
                 filterContext,
                 patients);
             await blobClient.CreateJob(activeJob);
@@ -356,7 +347,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var blobClient = new InMemoryBlobContainerClient();
             var jobStore = CreateInMemoryJobStore(blobClient);
-            var filterContext = new FilterContext(FilterScope.Group, "groupId", _testResourceTypeFilters, null);
+            var filterContext = new FilterContext(FilterScope.Group, "groupId", _testStartTime, _testResourceTypeFilters, null);
             var patients = new List<PatientWrapper>
                 {new PatientWrapper("patientId1"), new PatientWrapper("patientId2")};
 
@@ -364,7 +355,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Running,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _testStartTime,
                 filterContext,
                 patients);
             await blobClient.CreateJob(activeJob);
@@ -400,7 +390,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Succeeded,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _testStartTime,
                 _filterContext);
 
             // Upload parquet data
@@ -408,25 +397,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var data = Encoding.UTF8.GetBytes("test");
             var stageBlobList = new List<string>
             {
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/01/Patient_000000_00000.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/01/Patient_customized_000000_00000.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/02/Patient_000000_00001.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/02/Patient_customized_000000_00001.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/03/Patient_000000_00002.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/03/Patient_customized_000000_00002.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/04/Patient_000000_00003.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/04/Patient_customized_000000_00003.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/01/Patient_0000000000_0000000000.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/01/Patient_customized_0000000000_0000000000.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/02/Patient_0000000000_0000000001.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/02/Patient_customized_0000000000_0000000001.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/03/Patient_0000000000_0000000002.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/03/Patient_customized_0000000000_0000000002.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/04/Patient_0000000000_0000000003.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient_customized/2020/11/04/Patient_customized_0000000000_0000000003.parquet",
             };
             var resultBlobList = new List<string>
             {
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/01/{activeJob.Id}/Patient_000000_00000.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/01/{activeJob.Id}/Patient_customized_000000_00000.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/02/{activeJob.Id}/Patient_000000_00001.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/02/{activeJob.Id}/Patient_customized_000000_00001.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/03/{activeJob.Id}/Patient_000000_00002.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/03/{activeJob.Id}/Patient_customized_000000_00002.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/04/{activeJob.Id}/Patient_000000_00003.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/04/{activeJob.Id}/Patient_customized_000000_00003.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/01/{activeJob.Id}/Patient_0000000000_0000000000.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/01/{activeJob.Id}/Patient_customized_0000000000_0000000000.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/02/{activeJob.Id}/Patient_0000000000_0000000001.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/02/{activeJob.Id}/Patient_customized_0000000000_0000000001.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/03/{activeJob.Id}/Patient_0000000000_0000000002.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/03/{activeJob.Id}/Patient_customized_0000000000_0000000002.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/04/{activeJob.Id}/Patient_0000000000_0000000003.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient_customized/2020/11/04/{activeJob.Id}/Patient_customized_0000000000_0000000003.parquet",
             };
 
             foreach (var blobName in stageBlobList)
@@ -459,7 +448,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Succeeded,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _testStartTime,
                 _filterContext);
 
             // Upload parquet data
@@ -467,17 +455,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var data = Encoding.UTF8.GetBytes("test");
             var stageBlobList = new List<string>
             {
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/01/Patient_000000_00000.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/02/Patient_000000_00001.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/03/Patient_000001_00000.parquet",
-                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/04/Patient_000002_00001.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/01/Patient_0000000000_0000000000.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/02/Patient_0000000000_0000000001.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/03/Patient_0000000001_0000000000.parquet",
+                $"{AzureStorageConstants.StagingFolderName}/{activeJob.Id}/Patient/2020/11/04/Patient_0000000002_0000000001.parquet",
             };
             var resultBlobList = new List<string>
             {
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/01/{activeJob.Id}/Patient_000000_00000.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/02/{activeJob.Id}/Patient_000000_00001.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/03/{activeJob.Id}/Patient_000001_00000.parquet",
-                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/04/{activeJob.Id}/Patient_000002_00001.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/01/{activeJob.Id}/Patient_0000000000_0000000000.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/02/{activeJob.Id}/Patient_0000000000_0000000001.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/03/{activeJob.Id}/Patient_0000000001_0000000000.parquet",
+                $"{AzureStorageConstants.ResultFolderName}/Patient/2020/11/04/{activeJob.Id}/Patient_0000000002_0000000001.parquet",
             };
 
             foreach (var blobName in stageBlobList)

@@ -42,10 +42,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             var dataWriter = GetLocalDataWriter();
             var streamData = new StreamBatchData(stream, 1, TestResourceType);
             var context = GetTaskContext();
-            await dataWriter.WriteAsync(streamData, context.JobId, context.TaskHash, 0, _testDate);
+            await dataWriter.WriteAsync(streamData, context.JobId, context.TaskIndex, 0, _testDate);
 
             var containerClient = new AzureBlobContainerClientFactory(new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
-            var blobStream = await containerClient.GetBlobAsync($"staging/mockjob/Patient/2021/10/01/Patient_000000_00000.parquet");
+            var blobStream = await containerClient.GetBlobAsync($"staging/mockjob/Patient/2021/10/01/Patient_0000000000_0000000000.parquet");
             Assert.NotNull(blobStream);
 
             var resultStream = new MemoryStream();
@@ -60,7 +60,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             var streamData = new StreamBatchData(null, 0, TestResourceType);
             var context = GetTaskContext();
 
-            await Assert.ThrowsAsync<ArgumentNullException>(() => dataWriter.WriteAsync(streamData, context.JobId, context.TaskHash, 0, _testDate));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => dataWriter.WriteAsync(streamData, context.JobId, context.TaskIndex, 0, _testDate));
         }
 
         [Fact]

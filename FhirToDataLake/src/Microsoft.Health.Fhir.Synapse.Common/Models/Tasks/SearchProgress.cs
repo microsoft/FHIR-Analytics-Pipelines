@@ -17,13 +17,13 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             int currentIndex = 0,
             int currentFilter = 0,
             string continuationToken = null,
-            bool isCompleted = false)
+            bool isCurrentSearchCompleted = false)
         {
             Stage = stage;
             CurrentIndex = currentIndex;
             CurrentFilter = currentFilter;
             ContinuationToken = continuationToken;
-            IsCurrentSearchCompleted = isCompleted;
+            IsCurrentSearchCompleted = isCurrentSearchCompleted;
         }
 
         /// <summary>
