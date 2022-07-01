@@ -54,7 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         }
 
         [SkippableFact]
-        public async Task GivenSystemScope_WhenProcess_CorrectResultShouldBeReturnedAsync()
+        public async Task GivenRequiredTypes_WhenProcessSystemScope_CorrectResultShouldBeReturnedAsync()
         {
             Skip.If(_blobServiceClient == null);
             var uniqueContainerName = Guid.NewGuid().ToString("N");
@@ -65,6 +65,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
             // Load configuration
             Environment.SetEnvironmentVariable("job:containerName", uniqueContainerName);
+            Environment.SetEnvironmentVariable("filter:requiredTypes", "Patient,Observation");
 
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile(_configurationPath)
@@ -78,7 +79,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 await host.RunAsync();
 
                 // Check job status
-                var fileName = Path.Combine(_expectedDataFolder, "System_Patient_Observation.json");
+                var fileName = Path.Combine(_expectedDataFolder, "SystemScope_Patient_Observation.json");
                 var expectedJob = JsonConvert.DeserializeObject<Job>(File.ReadAllText(fileName));
 
                 await CheckJobStatus(blobContainerClient, expectedJob);
@@ -93,6 +94,50 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             }
         }
 
+        [SkippableFact]
+        public async Task GivenOnePatientGroup_WhenProcessGroupScope_CorrectResultShouldBeReturnedAsync()
+        {
+            Skip.If(_blobServiceClient == null);
+            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            BlobContainerClient blobContainerClient = _blobServiceClient.GetBlobContainerClient(uniqueContainerName);
+
+            // Make sure the container is deleted before running the tests
+            Assert.False(await blobContainerClient.ExistsAsync());
+
+            // Load configuration
+            Environment.SetEnvironmentVariable("job:containerName", uniqueContainerName);
+            Environment.SetEnvironmentVariable("filter:filterScope", "Group");
+
+            // only patient cbe1a164-c5c8-65b4-747a-829a6bd4e85f is included in this group
+            Environment.SetEnvironmentVariable("filter:groupId", "af3aba4f-7bb6-41e3-85e4-d931d7653ede");
+
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile(_configurationPath)
+                .AddEnvironmentVariables()
+                .Build();
+
+            try
+            {
+                // Run e2e
+                var host = CreateHostBuilder(configuration).Build();
+                await host.RunAsync();
+
+                // Check job status
+                var fileName = Path.Combine(_expectedDataFolder, "GroupScope_OnePatient_All.json");
+                var expectedJob = JsonConvert.DeserializeObject<Job>(File.ReadAllText(fileName));
+
+                await CheckJobStatus(blobContainerClient, expectedJob);
+
+                // Check result files
+                Assert.Equal(14, await GetResultFileCount(blobContainerClient, "result"));
+            }
+            finally
+            {
+                blobContainerClient.DeleteIfExists();
+            }
+        }
+
+        // TODO: enable to test incremental search when script is ready
         /*
         [SkippableFact]
         public async Task GivenRecentDateRange_WhenProcess_CorrectResultShouldBeReturnedAsync()

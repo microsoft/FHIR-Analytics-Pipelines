@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Hl7.Fhir.Specification;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
@@ -80,53 +81,65 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             switch (taskContext.FilterScope)
             {
                 case FilterScope.Group:
+                {
+                    // the patient resource isn't included in compartment search,
+                    // so we need additional requests for patient resources if the patient resource type is required
+                    if (IsPatientResourcesRequired(taskContext))
                     {
                         await GetPatientResourcesAsync(taskContext, cacheResult, progressUpdater, cancellationToken);
+                    }
 
-                        for (var p = cacheResult.SearchProgress.CurrentIndex; p < taskContext.PatientIds.Count(); p++)
-                        {
-                            var startDateTime = taskContext.PatientIds.ToList()[p].IsNewPatient
-                                ? taskContext.Since
-                                : taskContext.DataPeriod.Start;
-                            var parameters = new List<KeyValuePair<string, string>>
+                    if (cacheResult.SearchProgress.Stage != TaskStage.GetResources)
+                    {
+                        cacheResult.SearchProgress.UpdateStage(TaskStage.GetResources);
+                    }
+
+                    for (var p = cacheResult.SearchProgress.CurrentIndex; p < taskContext.PatientIds.Count(); p++)
+                    {
+                        var startDateTime = taskContext.PatientIds.ToList()[p].IsNewPatient
+                            ? taskContext.Since
+                            : taskContext.DataPeriod.Start;
+                        var parameters = new List<KeyValuePair<string, string>>
                         {
                             new (FhirApiConstants.LastUpdatedKey, $"ge{startDateTime.ToInstantString()}"),
                             new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
                         };
 
-                            var searchOption = new CompartmentSearchOptions(
-                                FhirConstants.PatientResource,
-                                taskContext.PatientIds.ToList()[p].PatientId,
-                                null,
-                                parameters);
+                        var searchOption = new CompartmentSearchOptions(
+                            FhirConstants.PatientResource,
+                            taskContext.PatientIds.ToList()[p].PatientId,
+                            null,
+                            parameters);
 
-                            if (cacheResult.SearchProgress.CurrentIndex != p)
-                            {
-                                cacheResult.SearchProgress.UpdateCurrentIndex(p);
-                            }
-
-                            await SearchFiltersAsync(taskContext, searchOption, cacheResult, progressUpdater, cancellationToken);
-                        }
-
-                        break;
-                    }
-                case FilterScope.System:
-                    {
-                        var parameters = new List<KeyValuePair<string, string>>
+                        if (cacheResult.SearchProgress.CurrentIndex != p)
                         {
-                            new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.DataPeriod.Start.ToInstantString()}"),
-                            new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
-                        };
-                        var searchOption = new BaseSearchOptions(null, parameters);
-
-                        if (cacheResult.SearchProgress.Stage != TaskStage.GetResources)
-                        {
-                            cacheResult.SearchProgress.UpdateStage(TaskStage.GetResources);
+                            cacheResult.SearchProgress.UpdateCurrentIndex(p);
                         }
 
                         await SearchFiltersAsync(taskContext, searchOption, cacheResult, progressUpdater, cancellationToken);
-                        break;
                     }
+
+                    break;
+                }
+
+                case FilterScope.System:
+                {
+                    var parameters = new List<KeyValuePair<string, string>>
+                    {
+                        new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.DataPeriod.Start.ToInstantString()}"),
+                        new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
+                    };
+                    var searchOption = new BaseSearchOptions(null, parameters);
+
+                    if (cacheResult.SearchProgress.Stage != TaskStage.GetResources)
+                    {
+                        cacheResult.SearchProgress.UpdateStage(TaskStage.GetResources);
+                    }
+
+                    await SearchFiltersAsync(taskContext, searchOption, cacheResult, progressUpdater, cancellationToken);
+                    break;
+                }
+
                 default:
                     throw new ArgumentOutOfRangeException($"The FilterScope {taskContext.FilterScope} isn't supported now.");
             }
@@ -139,6 +152,36 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 taskContext.TaskIndex);
 
             return TaskResult.CreateFromTaskContext(taskContext);
+        }
+
+        private static bool IsPatientResourcesRequired(TaskContext taskContext)
+        {
+            foreach (var typeFilter in taskContext.TypeFilters)
+            {
+                switch (typeFilter.ResourceType)
+                {
+                    case FhirConstants.PatientResource:
+                        return true;
+                    case FhirConstants.AllResource:
+                    {
+                        foreach (var (param, value) in typeFilter.Parameters)
+                        {
+                            if (param == FhirApiConstants.TypeKey)
+                            {
+                                var types = value.Split(',');
+                                if (types.Contains(FhirConstants.PatientResource))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -166,20 +209,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             if (cacheResult.SearchProgress.Stage == TaskStage.GetPatientResourceFull &&
                 cacheResult.SearchProgress.IsCurrentSearchCompleted == false)
             {
-                var newPatientIds = taskContext.PatientIds.Where(x => x.IsNewPatient == true).Select(x => x.PatientId);
-                var patientParameters = new List<KeyValuePair<string, string>>
+                var newPatientIds = taskContext.PatientIds.Where(x => x.IsNewPatient == true).Select(x => x.PatientId).ToHashSet();
+                if (newPatientIds.Any())
                 {
-                    new (FhirApiConstants.IdKey, string.Join(',', newPatientIds)),
-                    new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
-                };
+                    var patientParameters = new List<KeyValuePair<string, string>>
+                    {
+                        new (FhirApiConstants.IdKey, string.Join(',', newPatientIds)),
+                    };
 
-                if (cacheResult.SearchProgress.ContinuationToken != null)
-                {
-                    patientParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, cacheResult.SearchProgress.ContinuationToken));
+                    if (cacheResult.SearchProgress.ContinuationToken != null)
+                    {
+                        patientParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, cacheResult.SearchProgress.ContinuationToken));
+                    }
+
+                    var searchOption = new BaseSearchOptions(FhirConstants.PatientResource, patientParameters);
+                    await ExecuteSearchAsync(searchOption, taskContext, cacheResult, progressUpdater, cancellationToken);
                 }
 
-                var searchOption = new BaseSearchOptions(FhirConstants.PatientResource, patientParameters);
-                await ExecuteSearchAsync(searchOption, taskContext, cacheResult, progressUpdater, cancellationToken);
+                cacheResult.SearchProgress.IsCurrentSearchCompleted = true;
             }
 
             // move task stage to get updated compartment stage
@@ -193,22 +240,27 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             if (cacheResult.SearchProgress.Stage == TaskStage.GetPatientResourceIncremental && cacheResult.SearchProgress.IsCurrentSearchCompleted == false)
             {
                 // get updated patient resources
-                var oldPatientIds = taskContext.PatientIds.Where(x => x.IsNewPatient == false).Select(x => x.PatientId);
-                var patientParameters = new List<KeyValuePair<string, string>>
+                var oldPatientIds = taskContext.PatientIds.Where(x => x.IsNewPatient == false).Select(x => x.PatientId).ToHashSet();
+                if (oldPatientIds.Any())
                 {
-                    new (FhirApiConstants.IdKey, string.Join(',', oldPatientIds)),
-                    new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.DataPeriod.Start.ToInstantString()}"),
-                    new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
-                };
+                    var patientParameters = new List<KeyValuePair<string, string>>
+                    {
+                        new (FhirApiConstants.IdKey, string.Join(',', oldPatientIds)),
+                        new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.DataPeriod.Start.ToInstantString()}"),
+                        new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
+                    };
 
-                if (cacheResult.SearchProgress.ContinuationToken != null)
-                {
-                    patientParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, cacheResult.SearchProgress.ContinuationToken));
+                    if (cacheResult.SearchProgress.ContinuationToken != null)
+                    {
+                        patientParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, cacheResult.SearchProgress.ContinuationToken));
+                    }
+
+                    var searchOption = new BaseSearchOptions(FhirConstants.PatientResource, patientParameters);
+
+                    await ExecuteSearchAsync(searchOption, taskContext, cacheResult, progressUpdater, cancellationToken);
                 }
 
-                var searchOption = new BaseSearchOptions(FhirConstants.PatientResource, patientParameters);
-
-                await ExecuteSearchAsync(searchOption, taskContext, cacheResult, progressUpdater, cancellationToken);
+                cacheResult.SearchProgress.IsCurrentSearchCompleted = true;
             }
 
             if (cacheResult.SearchProgress.Stage == TaskStage.GetPatientResourceIncremental && cacheResult.SearchProgress.IsCurrentSearchCompleted)

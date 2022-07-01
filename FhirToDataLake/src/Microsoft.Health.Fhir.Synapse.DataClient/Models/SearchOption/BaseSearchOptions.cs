@@ -22,7 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption
 
         public List<KeyValuePair<string, string>> QueryParameters { get; set; }
 
-        public string RelativeUri()
+        public virtual string RelativeUri()
         {
             return ResourceType;
         }

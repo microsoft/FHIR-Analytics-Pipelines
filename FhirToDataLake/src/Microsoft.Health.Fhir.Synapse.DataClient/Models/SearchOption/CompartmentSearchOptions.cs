@@ -25,7 +25,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption
 
         public string CompartmentId { get; set; }
 
-        public new string RelativeUri()
+        public override string RelativeUri()
         {
             return $"{CompartmentType}/{CompartmentId}/{ResourceType}";
         }
