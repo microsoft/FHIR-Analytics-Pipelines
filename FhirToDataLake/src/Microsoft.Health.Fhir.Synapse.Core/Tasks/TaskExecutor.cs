@@ -284,15 +284,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             JobProgressUpdater progressUpdater,
             CancellationToken cancellationToken)
         {
-            IEnumerable<JObject> resources = new List<JObject>();
+            var sharedQueryParameters = new List<KeyValuePair<string, string>>(searchOptions.QueryParameters);
 
-            List<KeyValuePair<string, string>> sharedQueryParameters =
-                new List<KeyValuePair<string, string>>(searchOptions.QueryParameters);
-
-            for (int i = cacheResult.SearchProgress.CurrentFilter; i < taskContext.TypeFilters.Count; i++)
+            for (var i = cacheResult.SearchProgress.CurrentFilter; i < taskContext.TypeFilters.Count; i++)
             {
                 searchOptions.ResourceType = taskContext.TypeFilters[i].ResourceType;
-                searchOptions.QueryParameters = sharedQueryParameters;
+                searchOptions.QueryParameters = new List<KeyValuePair<string, string>>(sharedQueryParameters);
                 foreach (var parameter in taskContext.TypeFilters[i].Parameters)
                 {
                     searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(parameter.Item1, parameter.Item2));
@@ -312,11 +309,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
         /// the continuation token is updated for taskContext after each request, marked as IsCompleted if there is no continuation token anymore.
         /// If there is any operationOutcomes, will throw an exception
         /// </summary>
-        /// <param name="searchOptions">search options.</param>
-        /// <param name="taskContext">task context.</param>
-        /// <param name="cacheResult">cache result.</param>
-        /// <param name="cancellationToken">cancellation token.</param>
-        /// <returns>task.</returns>
         private async Task ExecuteSearchAsync(
             BaseSearchOptions searchOptions,
             TaskContext taskContext,

@@ -136,6 +136,63 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
                 // Check result files
                 Assert.Equal(14, await GetResultFileCount(blobContainerClient, "result"));
+
+                var schedulerMetadata = await GetSchedulerMetadata(blobContainerClient);
+
+                Assert.Empty(schedulerMetadata.UnfinishedJobs);
+                Assert.Single(schedulerMetadata.ProcessedPatientIds);
+            }
+            finally
+            {
+                await blobContainerClient.DeleteIfExistsAsync();
+            }
+        }
+
+        [SkippableFact]
+        public async Task GivenAllPatientGroupWithFilters_WhenProcessGroupScope_CorrectResultShouldBeReturnedAsync()
+        {
+            Skip.If(_blobServiceClient == null);
+            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            BlobContainerClient blobContainerClient = _blobServiceClient.GetBlobContainerClient(uniqueContainerName);
+
+            // Make sure the container is deleted before running the tests
+            Assert.False(await blobContainerClient.ExistsAsync());
+
+            // Load configuration
+            Environment.SetEnvironmentVariable("job:containerName", uniqueContainerName);
+            Environment.SetEnvironmentVariable("filter:filterScope", "Group");
+            Environment.SetEnvironmentVariable("filter:requiredTypes", "Condition,MedicationRequest,Patient");
+            Environment.SetEnvironmentVariable("filter:typeFilters", "MedicationRequest?status=active,MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z");
+
+            // this group includes all the 80 patients
+            Environment.SetEnvironmentVariable("filter:groupId", "72d653ce-2dbb-4432-bfa0-9ac47d0e0a2c");
+
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile(_configurationPath)
+                .AddEnvironmentVariables()
+                .Build();
+
+            try
+            {
+                // Run e2e
+                var host = CreateHostBuilder(configuration).Build();
+                await host.RunAsync();
+
+                // Check job status
+                var fileName = Path.Combine(_expectedDataFolder, "GroupScope_AllPatient_Filters.json");
+                var expectedJob = JsonConvert.DeserializeObject<Job>(File.ReadAllText(fileName));
+
+                await CheckJobStatus(blobContainerClient, expectedJob);
+
+                // Check result files
+                Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Patient/2022/07/01"));
+                Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Condition/2022/07/01"));
+                Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/MedicationRequest/2022/07/01"));
+
+                var schedulerMetadata = await GetSchedulerMetadata(blobContainerClient);
+
+                Assert.Empty(schedulerMetadata.UnfinishedJobs);
+                Assert.Equal(80, schedulerMetadata.ProcessedPatientIds.Count());
             }
             finally
             {
@@ -189,6 +246,15 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             }
         }
         */
+
+        private async Task<SchedulerMetadata> GetSchedulerMetadata(BlobContainerClient blobContainerClient)
+        {
+            var blobClient = blobContainerClient.GetBlobClient("jobs/scheduler.metadata");
+            var blobDownloadInfo = await blobClient.DownloadAsync();
+            using var reader = new StreamReader(blobDownloadInfo.Value.Content, Encoding.UTF8);
+            return JsonConvert.DeserializeObject<SchedulerMetadata>(await reader.ReadToEndAsync());
+        }
+
         private async Task<int> GetResultFileCount(BlobContainerClient blobContainerClient, string filePrefix)
         {
             var resultFileCount = 0;
@@ -227,7 +293,11 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                     // The status should be succeeded, which means succeeded
                     Assert.Equal(JobStatus.Succeeded, completedJob.Status);
                     Assert.Equal(expectedJob.FilterContext.FilterScope, completedJob.FilterContext.FilterScope);
-                    Assert.Equal(expectedJob.FilterContext.GroupId, completedJob.FilterContext.GroupId);
+                    if (completedJob.FilterContext.FilterScope == FilterScope.Group)
+                    {
+                        Assert.Equal(expectedJob.FilterContext.GroupId, completedJob.FilterContext.GroupId);
+                    }
+
                     Assert.True(completedJob.FilterContext.ProcessedPatientIds.ToHashSet().SetEquals(expectedJob.FilterContext.ProcessedPatientIds.ToHashSet()));
                     Assert.Equal(expectedJob.FilterContext.TypeFilters.Count(), completedJob.FilterContext.TypeFilters.Count());
                     Assert.Equal(expectedJob.FilterContext.TypeFilters.Count(), completedJob.FilterContext.TypeFilters.Count());
