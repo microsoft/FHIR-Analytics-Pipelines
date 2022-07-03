@@ -65,7 +65,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
             // Load configuration
             Environment.SetEnvironmentVariable("job:containerName", uniqueContainerName);
+
+            Environment.SetEnvironmentVariable("filter:filterScope", "System");
             Environment.SetEnvironmentVariable("filter:requiredTypes", "Patient,Observation");
+            Environment.SetEnvironmentVariable("filter:typeFilters", string.Empty);
 
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile(_configurationPath)
@@ -90,7 +93,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             }
             finally
             {
-                blobContainerClient.DeleteIfExists();
+                await blobContainerClient.DeleteIfExistsAsync();
             }
         }
 
@@ -106,10 +109,13 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
             // Load configuration
             Environment.SetEnvironmentVariable("job:containerName", uniqueContainerName);
+
             Environment.SetEnvironmentVariable("filter:filterScope", "Group");
 
             // only patient cbe1a164-c5c8-65b4-747a-829a6bd4e85f is included in this group
             Environment.SetEnvironmentVariable("filter:groupId", "af3aba4f-7bb6-41e3-85e4-d931d7653ede");
+            Environment.SetEnvironmentVariable("filter:requiredTypes", string.Empty);
+            Environment.SetEnvironmentVariable("filter:typeFilters", string.Empty);
 
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile(_configurationPath)
@@ -133,7 +139,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             }
             finally
             {
-                blobContainerClient.DeleteIfExists();
+                await blobContainerClient.DeleteIfExistsAsync();
             }
         }
 
