@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
 {
@@ -23,9 +24,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
             Parameters = parameters ?? new List<Tuple<string, string>>();
         }
 
+        [JsonProperty("resourceType")]
         public string ResourceType { get; set; }
 
         // we should use List here, the parameter keys may be the same, such as lastUpdated=gt1900-01-01&lastUpdated=lt2000-01-01
+        [JsonProperty("parameters")]
         public IList<Tuple<string, string>> Parameters { get; set; }
     }
 }

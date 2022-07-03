@@ -176,7 +176,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
                 $"{fhirServerUrl.TrimEnd('/')}/MedicationRequest?_id=3123&_count=1000&_sort=_lastUpdated",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
-                $"{fhirServerUrl.TrimEnd('/')}/*?_lastUpdated=ge2021-08-01T12%3a00%3a00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3a40%3a59%2b08%3a00&_count=1000&_sort=_lastUpdated",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient/347/*?_lastUpdated=ge2021-08-01T12%3a00%3a00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3a40%3a59%2b08%3a00&_count=1000&_sort=_lastUpdated",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/metadata",

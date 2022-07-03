@@ -173,9 +173,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
                 throw new FhirSpecificationProviderException($"Failed to parse capability statement from FHIR server metadata.", exception);
             }
 
-            var resources = capabilityStatement?.Rest?.First().Resource;
             var searchParameters = new Dictionary<string, HashSet<string>>();
             var searchParameterIds = new Dictionary<string, string>();
+
+            var resources = capabilityStatement?.Rest?.First().Resource;
+
             if (resources == null)
             {
                 _logger.LogWarning($"Build a empty search parameters lookup: the resource is null.");

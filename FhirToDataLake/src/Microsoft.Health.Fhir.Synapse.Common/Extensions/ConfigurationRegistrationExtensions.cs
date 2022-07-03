@@ -94,7 +94,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 
             if (filterConfiguration.FilterScope == FilterScope.Group && string.IsNullOrEmpty(filterConfiguration.GroupId))
             {
-                throw new ConfigurationErrorException($"Group id '{filterConfiguration.GroupId}' can not be empty for `Group` scope.");
+                throw new ConfigurationErrorException("Group id can not be null or empty for `Group` filter scope.");
             }
         }
     }

@@ -1,4 +1,9 @@
-﻿using System.Collections.Generic;
+﻿// -------------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// -------------------------------------------------------------------------------------------------
+
+using System.Collections.Generic;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 
@@ -10,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         /// Parse type filter and validate it.
         /// 1. the types are valid resource types
         /// 2. for group export, the types are patient compartment resource types
-        /// 3. the resource type in typefilter is in types
+        /// 3. the resource type in typeFilter is in types
         /// 4. the parameters are supported parameters, search result parameters aren't supported
         /// </summary>
         /// <param name="filterScope">the filter scope.</param>

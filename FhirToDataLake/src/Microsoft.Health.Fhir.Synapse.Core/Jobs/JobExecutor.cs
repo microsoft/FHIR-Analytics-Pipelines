@@ -68,7 +68,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     cancellationToken);
 
                 // for processed patient id, set IsNewPatient to false
-                // the processed patient ids may be an empty hashset at the beginning, and will be updated when complete succeed job.
+                // the processed patient ids may be an empty hashset at the beginning, and will be updated when completing a successful job.
                 foreach (var patient in job.Patients.Where(patient => job.FilterContext.ProcessedPatientIds.ToHashSet().Contains(patient.PatientId)))
                 {
                     patient.IsNewPatient = false;

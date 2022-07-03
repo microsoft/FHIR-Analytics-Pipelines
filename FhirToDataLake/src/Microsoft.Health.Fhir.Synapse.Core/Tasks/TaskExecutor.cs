@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using Hl7.Fhir.Specification;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
@@ -372,8 +371,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 var operationOutcomes = FhirBundleParser.GetOperationOutcomes(fhirResources).ToList();
                 if (operationOutcomes.Any())
                 {
-                    _logger.LogError($"There is operationOutcome returned from FHIR server. {operationOutcomes}");
-                    throw new FhirSearchException($"There is operationOutcome returned from FHIR server. {operationOutcomes}");
+                    _logger.LogError($"There are operationOutcomes returned from FHIR server: {string.Join(',', operationOutcomes)}");
+                    throw new FhirSearchException($"There is operationOutcome returned from FHIR server: {string.Join(',', operationOutcomes)}");
                 }
 
                 AddSearchResultToCache(fhirResources, cacheResult);
