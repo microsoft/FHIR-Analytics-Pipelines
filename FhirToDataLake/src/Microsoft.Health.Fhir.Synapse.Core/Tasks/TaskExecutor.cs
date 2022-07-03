@@ -22,7 +22,7 @@ using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
-using Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;

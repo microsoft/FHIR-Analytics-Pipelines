@@ -16,7 +16,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
-using Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -45,7 +45,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         {
             var client = CreateDataClient(FhirServerUri, _mockProvider);
 
-            var metaData = await client.GetMetaDataAsync();
+            var metadataOption = new MetadataOptions();
+            var metaData = await client.SearchAsync(metadataOption);
 
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile), metaData);
         }

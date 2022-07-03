@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption
+namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption
 {
     public class CompartmentSearchOptions : BaseSearchOptions
     {

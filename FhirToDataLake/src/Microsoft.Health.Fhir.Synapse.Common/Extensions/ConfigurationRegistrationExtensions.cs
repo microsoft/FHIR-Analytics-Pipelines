@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -86,7 +87,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 
         private static void ValidateTypeFilterConfiguration(FilterConfiguration filterConfiguration)
         {
-            if (filterConfiguration.FilterScope != FilterScope.System && filterConfiguration.FilterScope != FilterScope.Group)
+            if (Enum.IsDefined(typeof(FilterScope), filterConfiguration.FilterScope))
             {
                 throw new ConfigurationErrorException(
                     $"Filter Scope '{filterConfiguration.FilterScope}' is not supported.");

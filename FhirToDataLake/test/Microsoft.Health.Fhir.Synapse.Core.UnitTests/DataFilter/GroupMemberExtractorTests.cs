@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
 using NSubstitute;
 using Xunit;

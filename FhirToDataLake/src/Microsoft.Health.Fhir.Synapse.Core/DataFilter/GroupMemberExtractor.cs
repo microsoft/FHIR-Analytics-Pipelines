@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Bundle = FhirR4::Hl7.Fhir.Model.Bundle;
 using FhirDateTime = Hl7.Fhir.Model.FhirDateTime;
 using Group = FhirR4::Hl7.Fhir.Model.Group;

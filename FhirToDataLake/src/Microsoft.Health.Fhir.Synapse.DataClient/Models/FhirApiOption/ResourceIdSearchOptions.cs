@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption
+namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption
 {
     public class ResourceIdSearchOptions : BaseSearchOptions
     {

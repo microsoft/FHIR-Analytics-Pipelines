@@ -5,10 +5,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption
+namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption
 {
-
-    public class BaseSearchOptions
+    public class BaseSearchOptions : BaseFhirApiOptions
     {
         public BaseSearchOptions(
             string resourceType,
@@ -20,9 +19,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption
 
         public string ResourceType { get; set; }
 
-        public List<KeyValuePair<string, string>> QueryParameters { get; set; }
+        public override bool IsAccessTokenRequired() => true;
 
-        public virtual string RelativeUri()
+        public override string RelativeUri()
         {
             return ResourceType;
         }

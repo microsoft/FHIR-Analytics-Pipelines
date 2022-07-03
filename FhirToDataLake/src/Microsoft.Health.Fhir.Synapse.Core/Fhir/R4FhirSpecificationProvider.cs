@@ -14,6 +14,7 @@ using FhirR4::Hl7.Fhir.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using R4FhirModelInfo = FhirR4::Hl7.Fhir.Model.ModelInfo;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
@@ -159,7 +160,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 
         private Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>> BuildSearchParametersLookup()
         {
-            string metaData = _dataClient.GetMetaDataAsync().Result;
+            var metadataOptions = new MetadataOptions();
+            string metaData = _dataClient.SearchAsync(metadataOptions).Result;
             var parser = new FhirJsonParser();
 
             CapabilityStatement capabilityStatement;

@@ -5,7 +5,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.Fhir.Synapse.DataClient.Models.SearchOption;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient
 {
@@ -14,18 +14,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
         /// <summary>
         /// Returns a FHIR bundle which contains the matching search results.
         /// </summary>
-        /// <param name="fhirSearchOptions">search options.</param>
+        /// <param name="fhirApiOptions">fhir api options.</param>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>returned bundle.</returns>
         public Task<string> SearchAsync(
-            BaseSearchOptions fhirSearchOptions,
+            BaseFhirApiOptions fhirApiOptions,
             CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Get metadata of the FHIR server.
-        /// </summary>
-        /// <param name="cancellationToken">cancellation token.</param>
-        /// <returns>returned bundle.</returns>
-        public Task<string> GetMetaDataAsync(CancellationToken cancellationToken = default);
     }
 }
