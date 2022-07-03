@@ -87,7 +87,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 
         private static void ValidateTypeFilterConfiguration(FilterConfiguration filterConfiguration)
         {
-            if (Enum.IsDefined(typeof(FilterScope), filterConfiguration.FilterScope))
+            if (!Enum.IsDefined(typeof(FilterScope), filterConfiguration.FilterScope))
             {
                 throw new ConfigurationErrorException(
                     $"Filter Scope '{filterConfiguration.FilterScope}' is not supported.");
