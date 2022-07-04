@@ -455,13 +455,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                         }
 
                         taskContext.SkippedCount =
-                            DictionaryExtensions.AddToDictionary(taskContext.SkippedCount, schemaType, skippedCount);
+                            taskContext.SkippedCount.AddToDictionary(schemaType, skippedCount);
                         taskContext.ProcessedCount =
-                            DictionaryExtensions.AddToDictionary(taskContext.ProcessedCount, schemaType, parquetStream.BatchSize);
+                            taskContext.ProcessedCount.AddToDictionary(schemaType, parquetStream.BatchSize);
                     }
 
                     taskContext.SearchCount =
-                        DictionaryExtensions.AddToDictionary(taskContext.SearchCount, resourceType, resources.Count);
+                        taskContext.SearchCount.AddToDictionary(resourceType, resources.Count);
                 }
 
                 // update task context based on cache

@@ -63,9 +63,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                         if (context.IsCompleted)
                         {
-                            _job.TotalResourceCounts = DictionaryExtensions.ConcatDictionaryCount(_job.TotalResourceCounts, context.SearchCount);
-                            _job.SkippedResourceCounts = DictionaryExtensions.ConcatDictionaryCount(_job.SkippedResourceCounts, context.SkippedCount);
-                            _job.ProcessedResourceCounts = DictionaryExtensions.ConcatDictionaryCount(_job.ProcessedResourceCounts, context.ProcessedCount);
+                            _job.TotalResourceCounts = _job.TotalResourceCounts.ConcatDictionaryCount(context.SearchCount);
+                            _job.SkippedResourceCounts = _job.SkippedResourceCounts.ConcatDictionaryCount(context.SkippedCount);
+                            _job.ProcessedResourceCounts = _job.ProcessedResourceCounts.ConcatDictionaryCount(context.ProcessedCount);
 
                             _job.RunningTasks.Remove(context.Id);
                         }
