@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
 {
     public class ContainerRegistryConstants
