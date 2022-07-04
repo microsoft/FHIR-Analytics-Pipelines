@@ -56,6 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("", 145)]
         [InlineData("Patient,Account", 2)]
         [InlineData("Patient", 1)]
+        [InlineData("Patient,Patient", 1)]
         public void GivenValidTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForSystem_ThenTheTypeFiltersForEachResourceTypesAreReturned( string typeString, int resourceTypeCount)
         {
             var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.System, typeString, null).ToList();

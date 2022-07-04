@@ -75,7 +75,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
         /// <summary>
         /// Parse the type configuration from a string to a list of resource types.
-        /// If the type is null, return all resource types for system job and return patient compartment resource types for group job.
+        /// If the type is null or empty, return all resource types for system job and return patient compartment resource types for group job.
         /// If the type isn't supported, will throw an exception.
         /// </summary>
         /// <param name="filterScope">filter scope.</param>
