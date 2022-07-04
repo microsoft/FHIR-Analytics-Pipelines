@@ -48,7 +48,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                 .ToDictionary(x => x.Type, x => x);
         }
 
-        public string GetCustomizedSchemaType(string resourceType)
+        private string GetCustomizedSchemaType(string resourceType)
         {
             return $"{resourceType}_Customized";
         }

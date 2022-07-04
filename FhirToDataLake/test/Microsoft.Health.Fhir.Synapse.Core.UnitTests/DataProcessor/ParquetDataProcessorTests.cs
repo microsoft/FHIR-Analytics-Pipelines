@@ -82,7 +82,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         }
 
         // It may takes few minutes to run this large input data test.
-        [Fact]
+        [Fact(Skip = "test")]
         public static async Task GivenAValidMultipleLargeInputData_WhenProcess_CorrectResultShouldBeReturned()
         {
             var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(_testDataFolder, "Large_Patient.ndjson"));

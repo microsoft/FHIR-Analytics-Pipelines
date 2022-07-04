@@ -50,14 +50,14 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                     throw new GenerateFhirParquetSchemaNodeException(string.Format("Property \"{0}\" for \"{1}\" customized schema have no \"type\" keyword or \"type\" is null.", property.Key, schemaType));
                 }
 
-                if (!FhirParquetSchemaNodeConstants.BasicJSchemaTypeMap.ContainsKey(property.Value.Type.Value))
+                if (!FhirParquetSchemaConstants.BasicJSchemaTypeMap.ContainsKey(property.Value.Type.Value))
                 {
                     throw new GenerateFhirParquetSchemaNodeException(string.Format("Property \"{0}\" type \"{1}\" for \"{2}\" customized schema is not basic type.", property.Key, property.Value.Type.Value, schemaType));
                 }
 
                 customizedSchemaNode.SubNodes.Add(
                     property.Key,
-                    BuildLeafNode(property.Key, FhirParquetSchemaNodeConstants.BasicJSchemaTypeMap[property.Value.Type.Value], 1, fhirPath));
+                    BuildLeafNode(property.Key, FhirParquetSchemaConstants.BasicJSchemaTypeMap[property.Value.Type.Value], 1, fhirPath));
 
                 fhirPath.RemoveAt(fhirPath.Count - 1);
             }

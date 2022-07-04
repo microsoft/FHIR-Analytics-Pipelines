@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             }
 
             var schemaFiles = Directory.EnumerateFiles(schemaDirectoryPath, "*.json");
-            if (schemaFiles.Count() == 0)
+            if (!schemaFiles.Any())
             {
                 _logger.LogError($"No schema can be found in \"{schemaDirectoryPath}\".");
                 throw new GenerateFhirParquetSchemaNodeException($"No schema can be found in \"{schemaDirectoryPath}\".");

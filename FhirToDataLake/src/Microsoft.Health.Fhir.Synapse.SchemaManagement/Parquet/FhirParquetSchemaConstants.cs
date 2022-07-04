@@ -8,10 +8,13 @@ using Newtonsoft.Json.Schema;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 {
-    public static class FhirParquetSchemaNodeConstants
+    public static class FhirParquetSchemaConstants
     {
+        public const string DefaultSchemaProviderKey = "default";
+        public const string CustomSchemaProviderKey = "custom";
+
         /// <summary>
-        /// Fields with this type will be wrapped into single Json string.
+        /// Fields with this schema type will be wrapped into single Json string.
         /// </summary>
         public const string JsonStringType = "JSONSTRING";
 

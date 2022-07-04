@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
@@ -34,9 +33,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
             {
                 switch (name)
                 {
-                    case "default":
+                    case FhirParquetSchemaConstants.DefaultSchemaProviderKey:
                         return delegateProvider.GetService<LocalDefaultSchemaProvider>();
-                    case "custom":
+                    case FhirParquetSchemaConstants.CustomSchemaProviderKey:
                         return delegateProvider.GetService<ACRCustomizedSchemaProvider>();
                     default:
                         throw new FhirSchemaException($"Schema delegate name {name} not found when injecting");
