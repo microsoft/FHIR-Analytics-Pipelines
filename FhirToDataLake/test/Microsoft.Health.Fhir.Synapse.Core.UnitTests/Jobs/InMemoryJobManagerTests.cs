@@ -441,9 +441,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var groupMemberExtractor = Substitute.For<IGroupMemberExtractor>();
 
-            var patients = new List<PatientWrapper> { new PatientWrapper("patientId1"), new PatientWrapper("patientId2") };
+            var patients = new HashSet<string> { "patientId1", "patientId2"};
 
-            groupMemberExtractor.GetGroupPatients(default, default, default, default).ReturnsForAnyArgs(patients);
+            groupMemberExtractor.GetGroupPatientsAsync(default, default, default, default).ReturnsForAnyArgs(patients);
 
             var taskExecutor = Substitute.For<ITaskExecutor>();
             taskExecutor.ExecuteAsync(Arg.Any<TaskContext>(), Arg.Any<JobProgressUpdater>(), Arg.Any<CancellationToken>()).Returns(CreateTestTaskResult());

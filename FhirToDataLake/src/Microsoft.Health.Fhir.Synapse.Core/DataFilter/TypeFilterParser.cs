@@ -34,7 +34,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             _logger = logger;
         }
 
-        public IEnumerable<TypeFilter> CreateTypeFilters(FilterScope filterScope, string typeString, string filterString)
+        public IEnumerable<TypeFilter> CreateTypeFilters(
+            FilterScope filterScope,
+            string typeString,
+            string filterString)
         {
             var requiredTypes = ParseType(filterScope, typeString).ToHashSet();
             var typeFilters = ParseTypeFilter(filterString).ToList();

@@ -8,18 +8,22 @@ extern alias FhirR4;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using FhirR4::Hl7.Fhir.Serialization; 
+using FhirR4::Hl7.Fhir.Serialization;
+using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Bundle = FhirR4::Hl7.Fhir.Model.Bundle;
 using FhirDateTime = Hl7.Fhir.Model.FhirDateTime;
 using Group = FhirR4::Hl7.Fhir.Model.Group;
+using R4FhirModelInfo = FhirR4::Hl7.Fhir.Model.ModelInfo;
 using ResourceType = FhirR4::Hl7.Fhir.Model.ResourceType;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
@@ -27,68 +31,82 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
     public class GroupMemberExtractor : IGroupMemberExtractor
     {
         private readonly IFhirDataClient _dataClient;
+        private readonly IFhirApiDataSource _dataSource;
         private readonly ILogger<GroupMemberExtractor> _logger;
+
+        private const string ResourceTypeCapture = "resourceType";
+        private const string ResourceIdCapture = "resourceId";
+        private static readonly string[] SupportedSchemes = { Uri.UriSchemeHttps, Uri.UriSchemeHttp };
+        private static readonly string ResourceTypesPattern = string.Join('|', R4FhirModelInfo.SupportedResources);
+        private static readonly string ReferenceCaptureRegexPattern = $@"(?<{ResourceTypeCapture}>{ResourceTypesPattern})\/(?<{ResourceIdCapture}>[A-Za-z0-9\-\.]{{1,64}})(\/_history\/[A-Za-z0-9\-\.]{{1,64}})?";
+
+        private static readonly Regex ReferenceRegex = new (
+            ReferenceCaptureRegexPattern,
+            RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         public GroupMemberExtractor(
             IFhirDataClient dataClient,
+            IFhirApiDataSource dataSource,
             ILogger<GroupMemberExtractor> logger)
         {
             EnsureArg.IsNotNull(dataClient, nameof(dataClient));
+            EnsureArg.IsNotNull(dataSource, nameof(dataSource));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _dataClient = dataClient;
+            _dataSource = dataSource;
             _logger = logger;
         }
 
-        public async Task<List<PatientWrapper>> GetGroupPatients(
+        public async Task<HashSet<string>> GetGroupPatientsAsync(
             string groupId,
             List<KeyValuePair<string, string>> queryParameters,
             DateTimeOffset groupMembershipTime,
             CancellationToken cancellationToken)
         {
-            var patientIds = await GetGroupPatientIds(groupId, queryParameters, groupMembershipTime, null, cancellationToken);
-
-            return patientIds.Select(patientId => new PatientWrapper(patientId)).ToList();
+            return await GetGroupPatientsAsyncInternal(groupId, queryParameters, groupMembershipTime, null, true, cancellationToken);
         }
 
         /// <summary>
-        /// Gets a set of Patient ids that are included in a Group, either as members or as members of nested Groups. Implicit members of a group are not included.
+        /// Internal method to get group patients, skip process groups in "groupsAlreadyChecked" set.
         /// </summary>
-        /// <param name="groupId">The id of the Group.</param>
-        /// <param name="queryParameters">parameters to filter groups.</param>
-        /// <param name="groupMembershipTime">Only returns Patients that were in the Group at this time.</param>
-        /// <param name="groupsAlreadyChecked">The already checked groups</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>A set of Patient ids</returns>
-        private async Task<HashSet<string>> GetGroupPatientIds(
+        private async Task<HashSet<string>> GetGroupPatientsAsyncInternal(
             string groupId,
             List<KeyValuePair<string, string>> queryParameters,
             DateTimeOffset groupMembershipTime,
             HashSet<string> groupsAlreadyChecked,
+            bool isRootGroup,
             CancellationToken cancellationToken)
         {
             groupsAlreadyChecked ??= new HashSet<string>();
 
             groupsAlreadyChecked.Add(groupId);
 
-            var groupMembers = await GetGroupMembers(groupId, queryParameters, groupMembershipTime, cancellationToken);
+            var groupMembers = await GetGroupMembersAsync(groupId, queryParameters, groupMembershipTime, isRootGroup, cancellationToken);
 
+            // hashset is used to deduplicate patients
             var patientIds = new HashSet<string>();
 
-            foreach (var (resourceId, resourceType) in groupMembers)
+            foreach (var (resourceType, resourceId ) in groupMembers)
             {
-                // Only Patient resources and their compartment resources are exported as part of a Group export. All other resource types are ignored.
+                // Only Patient resources and their compartment resources are exported. All other resource types are ignored.
                 // Nested Group resources are checked to see if they contain other Patients.
                 switch (resourceType)
                 {
                     case FhirConstants.PatientResource:
-                        patientIds.Add(resourceId);
+                        var isAdd = patientIds.Add(resourceId);
+                        if (!isAdd)
+                        {
+                            _logger.LogDebug($"The patient {resourceId} is duplicated in group.");
+                        }
+
                         break;
                     case FhirConstants.GroupResource:
                         // need to check that loops aren't happening
                         if (!groupsAlreadyChecked.Contains(resourceId))
                         {
-                            patientIds.UnionWith(await GetGroupPatientIds(resourceId, queryParameters, groupMembershipTime, groupsAlreadyChecked, cancellationToken));
+                            // handle nested group
+                            patientIds.UnionWith(await GetGroupPatientsAsyncInternal(resourceId, queryParameters, groupMembershipTime, groupsAlreadyChecked, false, cancellationToken));
                         }
 
                         break;
@@ -101,77 +119,161 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             return patientIds;
         }
 
-        private async Task<List<Tuple<string, string>>> GetGroupMembers (
+        /// <summary>
+        /// Request group resource from fhir server and extract the group members.
+        /// </summary>
+        // TODO: this method parses result as R4 resource now. We need to define a interface and implement both R4 and Stu3 version to support both STU3 and R4 in the future.
+        private async Task<List<Tuple<string, string>>> GetGroupMembersAsync(
             string groupId,
             List<KeyValuePair<string, string>> queryParameters,
             DateTimeOffset groupMembershipTime,
+            bool isRootGroup,
             CancellationToken cancellationToken)
         {
-            // TODO: support both STU3 and R4
-            // TODO: need to distinguish group doesn't exist and the group member is empty?
-            var members = new List<Tuple<string, string>>();
-
             var searchOptions = new ResourceIdSearchOptions(nameof(ResourceType.Group), groupId, queryParameters);
 
-            // TODO: handle exception in dataClient and return empty?
+            // If there is an exception thrown while requesting group resource, do nothing about it and the job will crash.
             var fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
 
             var parser = new FhirJsonParser();
-            Bundle bundle = null;
+            Bundle bundle;
             try
             {
                 bundle = parser.Parse<Bundle>(fhirBundleResult);
             }
             catch (Exception exception)
             {
-                // TODO: throw exception here?
-                _logger.LogError(exception, "Failed to parse fhir search result for resource Group.");
-                return members;
+                _logger.LogError(exception, $"Failed to parse fhir bundle {fhirBundleResult}.");
+                throw new GroupMemberExtractorException($"Failed to parse fhir bundle {fhirBundleResult}.", exception);
             }
 
-            if (!bundle.Entry.Any())
+            var members = new List<Tuple<string, string>>();
+
+            if (bundle.Entry == null || !bundle.Entry.Any())
             {
-                _logger.LogError($"Group {groupId} was not found");
+                // throw an exception if the specified group id isn't found.
+                if (isRootGroup)
+                {
+                    _logger.LogError($"Group {groupId} is not found.");
+                    throw new GroupMemberExtractorException($"Group {groupId} is not found.");
+                }
+
+                // for the nested group, log a warning if the group doesn't exist.
+                _logger.LogWarning($"Group {groupId} is not found.");
                 return members;
             }
 
+            // OperationOutcome
+            var invalidEntries = bundle.Entry.Where(entry => entry.Resource.TypeName != FhirConstants.GroupResource);
+            if (invalidEntries.Any())
+            {
+                _logger.LogError($"There are invalid group entries returned: {string.Join(',', invalidEntries.ToString())}.");
+                throw new GroupMemberExtractorException($"There are invalid group entries returned: {string.Join(',', invalidEntries.ToString())}");
+            }
+
+            // this case should not happen
             if (bundle.Entry.Count > 1)
             {
-                _logger.LogError($"There are {bundle.Entry.Count} groups found.");
-                return members;
+                _logger.LogError($"There are {bundle.Entry.Count} groups found for group id {groupId}.");
+                throw new GroupMemberExtractorException($"There are {bundle.Entry.Count} groups found for group id {groupId}.");
+            }
+
+            if (bundle.Entry[0].Resource == null)
+            {
+                _logger.LogError($"The resource of Group {groupId} is null.");
+                throw new GroupMemberExtractorException($"The resource of Group {groupId} is null.");
             }
 
             var groupResource = (Group) bundle.Entry[0].Resource;
 
             var fhirGroupMembershipTime = new FhirDateTime(groupMembershipTime);
-
             foreach (var member in groupResource.Member)
             {
-                if (
-                    (member.Inactive == null
-                     || member.Inactive == false)
+                // only take the member who is active and it is in this group at fhirGroupMembershipTime
+                if (member.Inactive is null or false
                     && (member.Period?.EndElement == null
                         || member.Period?.EndElement > fhirGroupMembershipTime)
                     && (member.Period?.StartElement == null
                         || member.Period?.StartElement < fhirGroupMembershipTime))
                 {
-                    var parameterIndex = member.Entity.Reference.IndexOf("/", StringComparison.Ordinal);
-
-                    if (parameterIndex < 0 || parameterIndex == member.Entity.Reference.Length - 1)
+                    var resourceTypeIdTuple = ResolveReference(member.Entity?.Reference);
+                    if (resourceTypeIdTuple != null)
                     {
-                        _logger.LogError($"Fail to parse group member reference {member.Entity.Reference}");
-                        continue;
+                        members.Add(resourceTypeIdTuple);
                     }
-
-                    var resourceType = member.Entity.Reference.Substring(0, parameterIndex);
-
-                    var id = member.Entity.Reference.Substring(parameterIndex + 1);
-
-                    members.Add(Tuple.Create(id, resourceType));
                 }
             }
 
             return members;
+        }
+
+        /// <summary>
+        /// There are several reference values defined in https://www.hl7.org/fhir/references.html.
+        /// We only handle the literal references https://www.hl7.org/fhir/references-definitions.html#Reference.reference,
+        /// and ignore the logical references https://www.hl7.org/fhir/references-definitions.html#Reference.identifier and reference description https://www.hl7.org/fhir/references-definitions.html#Reference.display.
+        /// For literal reference, relative URL and absolute URL pointing to an internal resource are handled, while absolute URL pointing to an external resource is ignored.
+        /// For all the ignored or invalid cases, we will log warning for it and return null.
+        /// </summary>
+        private Tuple<string, string> ResolveReference(string reference)
+        {
+            if (string.IsNullOrWhiteSpace(reference))
+            {
+                _logger.LogWarning("The reference is null or white space.");
+                return null;
+            }
+
+            // the default error message
+            var message = $"Fail to parse group member reference {reference}.";
+            var match = ReferenceRegex.Match(reference);
+
+            if (match.Success)
+            {
+                var resourceTypeInString = match.Groups[ResourceTypeCapture].Value;
+
+                if (R4FhirModelInfo.IsKnownResource(resourceTypeInString))
+                {
+                    var resourceId = match.Groups[ResourceIdCapture].Value;
+
+                    var resourceTypeStartIndex = match.Groups[ResourceTypeCapture].Index;
+
+                    if (resourceTypeStartIndex == 0)
+                    {
+                        // This is relative URL.
+                        return new Tuple<string, string>(resourceTypeInString, resourceId);
+                    }
+
+                    try
+                    {
+                        var baseUri = new Uri(reference.Substring(0, resourceTypeStartIndex), UriKind.RelativeOrAbsolute);
+                        if (baseUri.IsAbsoluteUri)
+                        {
+                            if (baseUri.AbsoluteUri == _dataSource.FhirServerUrl)
+                            {
+                                // This is an absolute URL pointing to an internal resource.
+                                return new Tuple<string, string>(resourceTypeInString, resourceId);
+                            }
+
+                            if (SupportedSchemes.Contains(baseUri.Scheme, StringComparer.OrdinalIgnoreCase))
+                            {
+                                // This is an absolute URL pointing to an external resource.
+                                message = $"The reference {reference} is a absolute URL pointing to an external resource.";
+                            }
+                        }
+                    }
+                    catch (UriFormatException ex)
+                    {
+                        // The reference is not a relative reference but is not a valid absolute reference either.
+                        message = $"The reference {reference} is not a relative reference but is not a valid absolute reference either. UriFormatException: {ex}.";
+                    }
+                }
+                else
+                {
+                    message = $"The resource type {resourceTypeInString} in reference {reference} isn't a known resource type.";
+                }
+            }
+
+            _logger.LogWarning(message);
+            return null;
         }
     }
 }

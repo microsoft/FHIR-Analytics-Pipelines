@@ -61,15 +61,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _logger.LogInformation("Start extracting patients from group '{groupId}'.", job.FilterContext.GroupId);
 
-                job.Patients = await _groupMemberExtractor.GetGroupPatients(
+                // For now, the queryParameters is always null.
+                // This parameter will be used when we enable filter groups in the future.
+                var patientIds = await _groupMemberExtractor.GetGroupPatientsAsync(
                     job.FilterContext.GroupId,
                     null,
                     job.DataPeriod.End,
                     cancellationToken);
 
+                job.Patients = patientIds.Select(patientId => new PatientWrapper(patientId));
+
                 // for processed patient id, set IsNewPatient to false
                 // the processed patient ids may be an empty hashset at the beginning, and will be updated when completing a successful job.
-                foreach (var patient in job.Patients.Where(patient => job.FilterContext.ProcessedPatientIds.ToHashSet().Contains(patient.PatientId)))
+                var processedPatientIds = job.FilterContext.ProcessedPatientIds.ToHashSet();
+                foreach (var patient in job.Patients.Where(patient => processedPatientIds.Contains(patient.PatientId)))
                 {
                     patient.IsNewPatient = false;
                 }

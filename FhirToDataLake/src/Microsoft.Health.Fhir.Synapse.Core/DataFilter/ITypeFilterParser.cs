@@ -12,7 +12,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
     public interface ITypeFilterParser
     {
         /// <summary>
-        /// Parse type filter and validate it.
+        /// Create a list of <see cref="TypeFilter"/> objects from input string.
+        /// Will validate:
         /// 1. the types are valid resource types
         /// 2. for group export, the types are patient compartment resource types
         /// 3. the resource type in typeFilter is in types
@@ -21,7 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         /// <param name="filterScope">the filter scope.</param>
         /// <param name="typeString">the input typeString.</param>
         /// <param name="filterString">the input filterString.</param>
-        /// <returns>type filter list</returns>
+        /// <returns>a list of <see cref="TypeFilter"/> objects, will throw an exception if invalid.</returns>
         public IEnumerable<TypeFilter> CreateTypeFilters(
             FilterScope filterScope,
             string typeString,
