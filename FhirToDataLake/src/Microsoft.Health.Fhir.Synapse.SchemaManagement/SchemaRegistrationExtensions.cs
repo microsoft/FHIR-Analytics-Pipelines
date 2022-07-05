@@ -5,7 +5,9 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
 {
@@ -14,10 +16,32 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
         public static IServiceCollection AddSchema(this IServiceCollection services)
         {
             services.AddSingleton<IContainerRegistryTokenProvider, ContainerRegistryAccessTokenProvider>();
+            services.AddSingleton<IContainerRegistryTemplateProvider, ContainerRegistryTemplateProvider>();
 
-            services.AddSingleton<JsonSchemaCollectionProvider, JsonSchemaCollectionProvider>();
+            services.AddSchemaProviders();
 
             services.AddSingleton<IFhirSchemaManager<FhirParquetSchemaNode>, FhirParquetSchemaManager>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddSchemaProviders(this IServiceCollection services)
+        {
+            services.AddTransient<ACRCustomizedSchemaProvider>();
+            services.AddTransient<LocalDefaultSchemaProvider>();
+
+            services.AddTransient<ParquetSchemaProviderDelegate>(delegateProvider => name =>
+            {
+                switch (name)
+                {
+                    case FhirParquetSchemaConstants.DefaultSchemaProviderKey:
+                        return delegateProvider.GetService<LocalDefaultSchemaProvider>();
+                    case FhirParquetSchemaConstants.CustomSchemaProviderKey:
+                        return delegateProvider.GetService<ACRCustomizedSchemaProvider>();
+                    default:
+                        throw new FhirSchemaException($"Schema delegate name {name} not found when injecting");
+                }
+            });
 
             return services;
         }

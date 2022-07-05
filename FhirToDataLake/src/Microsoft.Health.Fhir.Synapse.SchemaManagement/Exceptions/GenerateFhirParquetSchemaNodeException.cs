@@ -7,14 +7,14 @@ using System;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions
 {
-    public class ContainerRegistrySchemaException : FhirSchemaException
+    public class GenerateFhirParquetSchemaNodeException : FhirSchemaException
     {
-        public ContainerRegistrySchemaException(string message)
+        public GenerateFhirParquetSchemaNodeException(string message)
             : base(message)
         {
         }
 
-        public ContainerRegistrySchemaException(string message, Exception innerException)
+        public GenerateFhirParquetSchemaNodeException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

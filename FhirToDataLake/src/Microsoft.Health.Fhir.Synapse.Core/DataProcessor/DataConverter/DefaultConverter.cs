@@ -135,7 +135,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
         private JValue ProcessLeafObject(JToken fhirObject, FhirParquetSchemaNode schemaNode)
         {
-            if (schemaNode.Type == FhirParquetSchemaNodeConstants.JsonStringType)
+            if (schemaNode.Type == FhirParquetSchemaConstants.JsonStringType)
             {
                 return new JValue(fhirObject.ToString(Formatting.None));
             }

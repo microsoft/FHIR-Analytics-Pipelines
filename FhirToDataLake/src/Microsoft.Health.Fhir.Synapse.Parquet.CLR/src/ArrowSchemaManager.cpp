@@ -99,17 +99,17 @@ namespace Microsoft
                         std::shared_ptr<arrow::Field> ArrowSchemaManager::GeneratePrimitiveArrowField(FhirParquetSchemaNode^ schemaNode, std::string fieldName)
                         {
                             // Pleaser refer to "Types" in https://parquet.apache.org/documentation/latest/ for data types of parquet format
-                            if (FhirParquetSchemaNodeConstants::IntTypes->Contains(schemaNode->Type))
+                            if (FhirParquetSchemaConstants::IntTypes->Contains(schemaNode->Type))
                             {
                                 return arrow::field(fieldName, arrow::int32());
                             }
 
-                            if (FhirParquetSchemaNodeConstants::DecimalTypes->Contains(schemaNode->Type))
+                            if (FhirParquetSchemaConstants::DecimalTypes->Contains(schemaNode->Type))
                             {
                                 return arrow::field(fieldName, arrow::float64());
                             }
 
-                            if (FhirParquetSchemaNodeConstants::BooleanTypes->Contains(schemaNode->Type))
+                            if (FhirParquetSchemaConstants::BooleanTypes->Contains(schemaNode->Type))
                             {
                                 return arrow::field(fieldName, arrow::boolean());
                             }

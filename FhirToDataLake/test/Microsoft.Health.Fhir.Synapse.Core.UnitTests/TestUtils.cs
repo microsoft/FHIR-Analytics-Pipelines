@@ -5,6 +5,8 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -25,6 +27,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             {
                 yield return JsonConvert.DeserializeObject<JObject>(line, serializerSettings);
             }
+        }
+
+        public static IParquetSchemaProvider MockParquetSchemaProviderDelegate(string name)
+        {
+            return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
         }
     }
 }

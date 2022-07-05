@@ -79,6 +79,8 @@ steps:
     codeCoverageEnabled: true
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+  env:
+    TestContainerRegistryPassword: $(TestContainerRegistryPasswordSecret)
 
 - task: PowerShell@2
   displayName: Logout Azure Account

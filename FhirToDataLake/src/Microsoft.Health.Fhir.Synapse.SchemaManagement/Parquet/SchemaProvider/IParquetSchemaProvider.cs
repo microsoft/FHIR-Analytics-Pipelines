@@ -3,13 +3,16 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
+namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 {
-    public interface IContainerRegistryTokenProvider
+    public delegate IParquetSchemaProvider ParquetSchemaProviderDelegate(string name);
+
+    public interface IParquetSchemaProvider
     {
-        public Task<string> GetTokenAsync(string registryServer, CancellationToken cancellationToken);
+        public Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(string schemaSource, CancellationToken cancellationToken = default);
     }
 }

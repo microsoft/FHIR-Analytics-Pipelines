@@ -3,13 +3,15 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using DotLiquid;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
 {
-    public interface IContainerRegistryTokenProvider
+    public interface IContainerRegistryTemplateProvider
     {
-        public Task<string> GetTokenAsync(string registryServer, CancellationToken cancellationToken);
+        public Task<List<Dictionary<string, Template>>> GetTemplateCollectionAsync(string schemaImageReference, CancellationToken cancellationToken);
     }
 }

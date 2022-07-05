@@ -6,10 +6,8 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
-using NSubstitute;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
@@ -22,11 +20,15 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         {
             var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
             {
-                SchemaCollectionDirectory = "../../../../../data/schemas",
+                SchemaCollectionDirectory = TestConstants.DefaultSchemaDirectory,
             });
-            var jsonSchemaCollectionsProvider = new JsonSchemaCollectionProvider(Substitute.For<IContainerRegistryTokenProvider>(), NullLogger<JsonSchemaCollectionProvider>.Instance);
 
-            _testParquetSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance);
+            _testParquetSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
+        }
+
+        private static IParquetSchemaProvider ParquetSchemaProviderDelegate(string name)
+        {
+            return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
         }
 
         [InlineData("Patient", 24)]
@@ -78,25 +80,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
 
             var schemaTypes = _testParquetSchemaManager.GetSchemaTypes(resourceType);
             Assert.Empty(schemaTypes);
-        }
-
-        [InlineData("")]
-        [InlineData(null)]
-        [InlineData("../../../TestData/InvalidSchemas/NoSchemaDirectory")]
-        [InlineData("../../../TestData/InvalidSchemas/NoSchemaType")]
-        [InlineData("../../../TestData/InvalidSchemas/InvalidSchemaFile")]
-        [Theory]
-        public static void GivenInvalidSchema_WhenInitialize_ExceptionShouldBeThrown(string schemaDirectoryPath)
-        {
-            var invalidSchemaConfigurationOption = Options.Create(new SchemaConfiguration()
-            {
-                SchemaCollectionDirectory = schemaDirectoryPath,
-            });
-            var jsonSchemaCollectionsProvider = new JsonSchemaCollectionProvider(Substitute.For<IContainerRegistryTokenProvider>(), NullLogger<JsonSchemaCollectionProvider>.Instance);
-
-
-            Assert.Throws<FhirSchemaException>(
-                () => new FhirParquetSchemaManager(invalidSchemaConfigurationOption, jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance));
         }
     }
 }

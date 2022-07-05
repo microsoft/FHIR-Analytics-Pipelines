@@ -12,10 +12,8 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json.Linq;
-using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConverter
@@ -36,10 +34,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
             {
                 SchemaCollectionDirectory = TestUtils.DefaultSchemaDirectoryPath,
             });
-            var jsonSchemaCollectionsProvider = new JsonSchemaCollectionProvider(Substitute.For<IContainerRegistryTokenProvider>(), NullLogger<JsonSchemaCollectionProvider>.Instance);
 
             _testDefaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
-            _schemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, jsonSchemaCollectionsProvider, NullLogger<FhirParquetSchemaManager>.Instance);
+            _schemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.MockParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
             _testPatient = TestUtils.LoadNdjsonData(Path.Combine(_testDataFolder, "Basic_Raw_Patient.ndjson")).First();
         }
 
