@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
 {
     /// <summary>
-    /// Task progress.
+    /// Search progress of a task.
     /// </summary>
     public class SearchProgress
     {
@@ -33,13 +33,13 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public TaskStage Stage { get; set; }
 
         /// <summary>
-        /// Current compartment index for processing,
+        /// Current compartment index for processing, used for group filter scope.
         /// </summary>
         [JsonProperty("currentIndex")]
         public int CurrentIndex { get; set; }
 
         /// <summary>
-        /// Current type filter index for processing,
+        /// Current type filter index for processing
         /// </summary>
         [JsonProperty("currentFilter")]
         public int CurrentFilter { get; set; }

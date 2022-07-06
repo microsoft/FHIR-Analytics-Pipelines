@@ -67,10 +67,18 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException($"Target azure container name '{jobConfiguration.ContainerName}' can not be empty.");
             }
 
-            var filterConfiguration = services
-                .BuildServiceProvider()
-                .GetRequiredService<IOptions<FilterConfiguration>>()
-                .Value;
+            FilterConfiguration filterConfiguration;
+            try
+            {
+                filterConfiguration = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<FilterConfiguration>>()
+                    .Value;
+            }
+            catch (Exception ex)
+            {
+                throw new ConfigurationErrorException("Failed to parse filter configuration", ex);
+            }
 
             ValidateTypeFilterConfiguration(filterConfiguration);
 
@@ -93,9 +101,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                     $"Filter Scope '{filterConfiguration.FilterScope}' is not supported.");
             }
 
-            if (filterConfiguration.FilterScope == FilterScope.Group && string.IsNullOrEmpty(filterConfiguration.GroupId))
+            if (filterConfiguration.FilterScope == FilterScope.Group && string.IsNullOrWhiteSpace(filterConfiguration.GroupId))
             {
-                throw new ConfigurationErrorException("Group id can not be null or empty for `Group` filter scope.");
+                throw new ConfigurationErrorException("Group id can not be null, empty or white space for `Group` filter scope.");
             }
         }
     }

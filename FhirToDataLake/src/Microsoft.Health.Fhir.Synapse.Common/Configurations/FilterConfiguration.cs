@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public string RequiredTypes { get; set; } = string.Empty;
 
         /// <summary>
-        /// type filter string, delimited by comma
+        /// Type filter string, delimited by comma
         /// </summary>
         [JsonProperty("typeFilters")]
         public string TypeFilters { get; set; } = string.Empty;

@@ -26,7 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         private readonly IFhirDataClient _dataClient;
         private readonly ILogger<R4FhirSpecificationProvider> _logger;
 
-        private readonly IEnumerable<string> _excludeTypes = new List<string> { "StructureDefinition" };
+        private readonly IEnumerable<string> _excludeTypes = new List<string> { FhirConstants.StructureDefinition };
 
         /// <summary>
         /// Download from http://hl7.org/fhir/R4/compartmentdefinition-patient.json

@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// Scheduled jobs that have been stopped due to errors.
         /// New triggers will resume the execution.
         /// </summary>
-        [JsonProperty("unfinishedJobs")]
-        public IEnumerable<Job> UnfinishedJobs { get; set; } = new List<Job>();
+        [JsonProperty("failedJobs")]
+        public IEnumerable<Job> FailedJobs { get; set; } = new List<Job>();
     }
 }

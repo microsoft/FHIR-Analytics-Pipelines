@@ -14,7 +14,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
         /// <summary>
         /// Initializes a new instance of the <see cref="TypeFilter"/> class.
         /// We will trigger a http request for each typeFilter,
-        /// if the resourceType is "*" means want to get all the compartment resources.
         /// </summary>
         /// <param name="resourceType">resource type</param>
         /// <param name="parameters">query parameters</param>
@@ -24,10 +23,16 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
             Parameters = parameters ?? new List<Tuple<string, string>>();
         }
 
+        /// <summary>
+        /// Resource type, if the resourceType is "*" means want to get all the compartment resources.
+        /// </summary>
         [JsonProperty("resourceType")]
         public string ResourceType { get; set; }
 
-        // we should use List here, the parameter keys may be the same, such as lastUpdated=gt1900-01-01&lastUpdated=lt2000-01-01
+        /// <summary>
+        /// The parameters, which is a parameter name/value pair list.
+        /// We should use List instead of dictionary here, since the parameter keys may be the same, such as lastUpdated=gt1900-01-01&lastUpdated=lt2000-01-01
+        /// </summary>
         [JsonProperty("parameters")]
         public IList<Tuple<string, string>> Parameters { get; set; }
     }

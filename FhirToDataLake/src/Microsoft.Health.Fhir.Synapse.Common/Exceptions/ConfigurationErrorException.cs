@@ -16,5 +16,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Exceptions
             : base(message)
         {
         }
+
+        public ConfigurationErrorException(string message, Exception inner)
+            : base(message, inner)
+        {
+        }
     }
 }

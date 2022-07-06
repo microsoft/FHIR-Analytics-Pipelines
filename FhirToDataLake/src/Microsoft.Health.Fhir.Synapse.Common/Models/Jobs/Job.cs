@@ -18,9 +18,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             string containerName,
             JobStatus status,
             DataPeriod dataPeriod,
-            FilterContext filterContext,
-            DateTimeOffset lastHeartBeat,
+            FilterInfo filterInfo,
             DateTimeOffset createdTime,
+            DateTimeOffset lastHeartBeat,
             IEnumerable<PatientWrapper> patients = null,
             int nextTaskIndex = 0,
             Dictionary<string, TaskContext> runningTasks = null,
@@ -29,25 +29,30 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             Dictionary<string, int> skippedResourceCounts = null,
             string resumedJobId = null)
         {
+            // immutable fields
             Id = id;
             CreatedTime = createdTime;
             ContainerName = containerName;
-            Status = status;
             DataPeriod = dataPeriod;
-            FilterContext = filterContext;
+            FilterInfo = filterInfo;
+            ResumedJobId = resumedJobId;
 
-            LastHeartBeat = lastHeartBeat;
-
+            // fields will be assigned in the process of job executing
             Patients = patients ?? new List<PatientWrapper>();
+
+            // fields to record job status
+            // the following two fields "CompletedTime" and "FailedReason" are set when a job is completed
+            Status = status;
+            LastHeartBeat = lastHeartBeat;
 
             // fields to record job progress
             NextTaskIndex = nextTaskIndex;
             RunningTasks = runningTasks ?? new Dictionary<string, TaskContext>();
+
+            // statistical fields
             TotalResourceCounts = totalResourceCounts ?? new Dictionary<string, int>();
             ProcessedResourceCounts = processedResourceCounts ?? new Dictionary<string, int>();
             SkippedResourceCounts = skippedResourceCounts ?? new Dictionary<string, int>();
-
-            ResumedJobId = resumedJobId;
         }
 
         /// <summary>
@@ -75,12 +80,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public string ContainerName { get; }
 
         /// <summary>
-        /// Job status.
-        /// </summary>
-        [JsonProperty("status")]
-        public JobStatus Status { get; set; }
-
-        /// <summary>
         /// Will process all data with timestamp greater than or equal to DataPeriod.Start and less than DataPeriod.End.
         /// For FHIR data, we use the lastUpdated field as the record timestamp.
         /// </summary>
@@ -88,13 +87,25 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public DataPeriod DataPeriod { get; }
 
         /// <summary>
-        /// The filter context.
+        /// The filter information.
         /// </summary>
-        [JsonProperty("filterContext")]
-        public FilterContext FilterContext { get; }
+        [JsonProperty("filterInfo")]
+        public FilterInfo FilterInfo { get; }
 
         /// <summary>
-        /// Patient list
+        /// Id of the resumed job.
+        /// </summary>
+        [JsonProperty("ResumedJobId")]
+        public string ResumedJobId { get; }
+
+        /// <summary>
+        /// Job status.
+        /// </summary>
+        [JsonProperty("status")]
+        public JobStatus Status { get; set; }
+
+        /// <summary>
+        /// Patient list to be processed, which are extracted from group member
         /// </summary>
         [JsonProperty("patients")]
         public IEnumerable<PatientWrapper> Patients { get; set; }
@@ -104,6 +115,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// </summary>
         [JsonProperty("lastHeartBeat")]
         public DateTimeOffset LastHeartBeat { get; set; }
+
+        /// <summary>
+        /// Failure reason for this job.
+        /// </summary>
+        [JsonProperty("failedReason")]
+        public string FailedReason { get; set; }
 
         /// <summary>
         /// The next task index
@@ -135,23 +152,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         [JsonProperty("skippedResourceCounts")]
         public Dictionary<string, int> SkippedResourceCounts { get; set; }
 
-        /// <summary>
-        /// Failure reason for this job.
-        /// </summary>
-        [JsonProperty("failedReason")]
-        public string FailedReason { get; set; }
-
-        /// <summary>
-        /// Id of the resumed job.
-        /// </summary>
-        [JsonProperty("ResumedJobId")]
-        public string ResumedJobId { get; }
-
         public static Job Create(
             string containerName,
             JobStatus status,
             DataPeriod dataPeriod,
-            FilterContext filterContext,
+            FilterInfo filterInfo,
             IEnumerable<PatientWrapper> patients = null,
             int nextTaskIndex = 0,
             Dictionary<string, TaskContext> runningTasks = null,
@@ -165,7 +170,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
                 containerName,
                 status,
                 dataPeriod,
-                filterContext,
+                filterInfo,
                 DateTimeOffset.UtcNow,
                 DateTimeOffset.UtcNow,
                 patients,

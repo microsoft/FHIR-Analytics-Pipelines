@@ -27,13 +27,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public async Task GivenNoContextUpdates_WhenUpdateJobProgress_NoProgressShouldBeUpdated()
         {
             var typeFilters = new List<TypeFilter> { new ("Patient", null), new ("Observation", null) };
-            var filterContext = new FilterContext(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
+            var filterInfo = new FilterInfo(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
 
             var activeJob = Job.Create(
                 ContainerName,
                 JobStatus.Running,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                filterContext);
+                filterInfo);
 
             var containerClient = new InMemoryBlobContainerClient();
             var jobProgressUpdater = GetInMemoryJobProgressUpdater(activeJob, containerClient);
@@ -49,17 +49,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public async Task GivenContextUpdates_WhenUpdateJobProgress_ProgressShouldBeUpdatedCorrectly()
         {
             var typeFilters = new List<TypeFilter> { new ("Patient", null), new ("Observation", null) };
-            var filterContext = new FilterContext(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
+            var filterInfo = new FilterInfo(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
 
             var activeJob = Job.Create(
                 ContainerName,
                 JobStatus.Running,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                filterContext);
+                filterInfo);
 
-            var context1 = TaskContext.Create(
+            var context1 = TaskContext.CreateFromJob(
                 activeJob,
-                activeJob.NextTaskIndex,
                 typeFilters);
 
             var containerClient = new InMemoryBlobContainerClient();
@@ -91,9 +90,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // sync up the updated context to job
             await jobProgressUpdater.Produce(context1);
 
-            var context2 = TaskContext.Create(
+            var context2 = TaskContext.CreateFromJob(
                 activeJob,
-                activeJob.NextTaskIndex,
                 typeFilters);
 
             activeJob.RunningTasks[context2.Id] = context2;
@@ -126,17 +124,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public async Task GivenTaskUpdateContextTwice_WhenUpdateJobProgress_ProgressShouldBeUpdatedCorrectly()
         {
             var typeFilters = new List<TypeFilter> { new("Patient", null), new("Observation", null) };
-            var filterContext = new FilterContext(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
+            var filterInfo = new FilterInfo(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
 
             var activeJob = Job.Create(
                 ContainerName,
                 JobStatus.Running,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                filterContext);
+                filterInfo);
 
-            var context = TaskContext.Create(
+            var context = TaskContext.CreateFromJob(
                 activeJob,
-                0,
                 typeFilters);
 
             var containerClient = new InMemoryBlobContainerClient();

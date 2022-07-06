@@ -43,23 +43,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var taskExecutor = GetTaskExecutor(TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile1), containerName);
 
             var typeFilters = new List<TypeFilter> { new ("Patient", null) };
-            var filterContext = new FilterContext(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
+            var filterInfo = new FilterInfo(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
 
             // Create an active job.
             var activeJob = Job.Create(
                 containerName,
                 JobStatus.Running,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                filterContext);
+                filterInfo);
 
-            var taskContext = new TaskContext(
-                Guid.NewGuid().ToString("N"),
-                0,
-                activeJob.Id,
-                activeJob.FilterContext.FilterScope,
-                activeJob.DataPeriod,
-                activeJob.FilterContext.Since,
-                typeFilters);
+            var taskContext = TaskContext.CreateFromJob(activeJob, typeFilters);
 
             activeJob.RunningTasks[taskContext.Id] = taskContext;
 
@@ -109,15 +102,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var taskExecutor = GetTaskExecutor(invalidBundle, containerName);
 
             var typeFilters = new List<TypeFilter> { new ("Patient", null) };
-            var filterContext = new FilterContext(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
+            var filterInfo = new FilterInfo(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
 
             // Create an active job.
             var activeJob = Job.Create(
                 containerName,
                 JobStatus.Running,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                filterContext);
-            var taskContext = TaskContext.Create(activeJob, 0, typeFilters);
+                filterInfo);
+            var taskContext = TaskContext.CreateFromJob(activeJob, typeFilters);
 
             var jobUpdater = GetJobUpdater(activeJob);
             await Assert.ThrowsAsync<FhirDataParseExeption>(() => taskExecutor.ExecuteAsync(taskContext, jobUpdater));

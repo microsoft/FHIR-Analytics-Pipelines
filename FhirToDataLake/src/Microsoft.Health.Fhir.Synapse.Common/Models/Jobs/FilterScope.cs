@@ -6,7 +6,7 @@
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
 {
     /// <summary>
-    /// Supported types to process FHIR data.
+    /// Supported filter scope to process FHIR data.
     /// </summary>
     public enum FilterScope
     {
@@ -16,7 +16,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         System = 0,
 
         /// <summary>
-        /// Process data of various types pretained to all patients in a given group.
+        /// Process data of various types pertained to all patients in a given group.
         /// </summary>
         Group = 1,
     }

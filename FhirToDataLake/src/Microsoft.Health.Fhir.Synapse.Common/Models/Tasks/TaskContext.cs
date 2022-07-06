@@ -22,8 +22,15 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             DataPeriod dataPeriod,
             DateTimeOffset since,
             IList<TypeFilter> typeFilters,
-            IEnumerable<PatientWrapper> patientIds = null)
+            IEnumerable<PatientWrapper> patientIds = null,
+            SearchProgress searchProgress = null,
+            Dictionary<string, int> outputFileIndexMap = null,
+            Dictionary<string, int> searchCount = null,
+            Dictionary<string, int> processedCount = null,
+            Dictionary<string, int> skippedCount = null,
+            bool isCompleted = false)
         {
+            // immutable fields
             Id = id;
             TaskIndex = taskIndex;
             JobId = jobId;
@@ -31,16 +38,17 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             DataPeriod = dataPeriod;
             Since = since;
             TypeFilters = typeFilters;
-
             PatientIds = patientIds;
 
             // fields to record progress
-            SearchProgress = new SearchProgress();
-            OutputFileIndexMap = new Dictionary<string, int>();
-            SearchCount = new Dictionary<string, int>();
-            ProcessedCount = new Dictionary<string, int>();
-            SkippedCount = new Dictionary<string, int>();
-            IsCompleted = false;
+            SearchProgress = searchProgress ?? new SearchProgress();
+            OutputFileIndexMap = outputFileIndexMap ?? new Dictionary<string, int>();
+            IsCompleted = isCompleted;
+
+            // statistical fields
+            SearchCount = searchCount ?? new Dictionary<string, int>();
+            ProcessedCount = processedCount ?? new Dictionary<string, int>();
+            SkippedCount = skippedCount ?? new Dictionary<string, int>();
         }
 
         /// <summary>
@@ -130,19 +138,18 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         [JsonProperty("isCompleted")]
         public bool IsCompleted { get; set; }
 
-        public static TaskContext Create(
+        public static TaskContext CreateFromJob(
             Job job,
-            int taskIndex,
             IList<TypeFilter> typeFilters,
             IEnumerable<PatientWrapper> patients = null)
         {
             return new TaskContext(
                 Guid.NewGuid().ToString("N"),
-                taskIndex,
+                job.NextTaskIndex,
                 job.Id,
-                job.FilterContext.FilterScope,
+                job.FilterInfo.FilterScope,
                 job.DataPeriod,
-                job.FilterContext.Since,
+                job.FilterInfo.Since,
                 typeFilters,
                 patients);
         }

@@ -77,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         public void GivenNullOrEmptyKey_WhenAddToDictionary_ExceptionShouldBeThrown()
         {
             var dic = new Dictionary<string, int>();
-            Assert.Throws<ArgumentException>(() => dic.AddToDictionary(null, 1));
+            Assert.Throws<ArgumentNullException>(() => dic.AddToDictionary(null, 1));
             Assert.Throws<ArgumentException>(() => dic.AddToDictionary(string.Empty, 1));
         }
 

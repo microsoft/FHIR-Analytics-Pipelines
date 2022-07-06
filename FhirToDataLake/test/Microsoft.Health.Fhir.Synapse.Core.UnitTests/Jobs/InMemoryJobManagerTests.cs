@@ -21,7 +21,6 @@ using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
@@ -38,18 +37,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static readonly List<TypeFilter> _testResourceTypeFilters =
             new List<TypeFilter> {new ("Patient", null), new ("Observation", null) };
 
-        private static readonly FilterContext _filterContext = new FilterContext(FilterScope.System, null, DateTimeOffset.MinValue, _testResourceTypeFilters, null);
-
-        private static readonly FhirParquetSchemaManager _fhirSchemaManager;
+        private static readonly FilterInfo _filterInfo = new FilterInfo(FilterScope.System, null, DateTimeOffset.MinValue, _testResourceTypeFilters, null);
 
         static InMemoryJobManagerTests()
         {
-            var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
-            {
-                SchemaCollectionDirectory = TestUtils.DefaultSchemaDirectoryPath,
-            });
-
-            _fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, NullLogger<FhirParquetSchemaManager>.Instance);
         }
 
         [Fact]
@@ -74,7 +65,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Running,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                _filterContext);
+                _filterInfo);
 
             await blobClient.CreateJob(activeJob, "SampleLease");
 
@@ -104,7 +95,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Running,
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                _filterContext);
+                _filterInfo);
             await blobClient.CreateJob(activeJob, "SampleLease");
 
             await blobClient.ReleaseLeaseAsync(AzureBlobJobConstants.JobLockFileName, "SampleLease");
@@ -170,10 +161,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TestContainerName,
                 JobStatus.Failed,
                 new DataPeriod(_testStartTime, _testEndTime),
-                _filterContext);
+                _filterInfo);
 
             var metadata = new SchedulerMetadata();
-            metadata.UnfinishedJobs = new List<Job>()
+            metadata.FailedJobs = new List<Job>()
             {
                 failedJob,
             };
@@ -202,7 +193,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             using var streamReader2 = new StreamReader(await blobClient.GetBlobAsync($"{AzureBlobJobConstants.SchedulerMetadataFileName}"));
             var newMetadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader2.ReadToEnd());
-            Assert.Empty(newMetadata.UnfinishedJobs);
+            Assert.Empty(newMetadata.FailedJobs);
 
             jobManager.Dispose();
         }
@@ -218,7 +209,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             var jobStore = CreateInMemoryJobStore(blobClient, jobConfig);
-            var jobManager = CreateJobManager(jobStore, _testStartTime, _testEndTime, FilterScope.Group);
+            var filterConfiguration = new FilterConfiguration()
+            {
+                FilterScope = FilterScope.Group,
+            };
+
+            var jobManager = CreateJobManager(jobStore, _testStartTime, _testEndTime, filterConfiguration);
 
             var schedulerBlob = await blobClient.GetBlobAsync($"{AzureBlobJobConstants.SchedulerMetadataFileName}");
             Assert.Null(schedulerBlob);
@@ -228,7 +224,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             using var streamReader = new StreamReader(await blobClient.GetBlobAsync($"{AzureBlobJobConstants.SchedulerMetadataFileName}"));
             var newMetadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader.ReadToEnd());
             Assert.Equal(_testEndTime, newMetadata.LastScheduledTimestamp);
-            Assert.Empty(newMetadata.UnfinishedJobs);
+            Assert.Empty(newMetadata.FailedJobs);
             Assert.Contains("patientId1", newMetadata.ProcessedPatientIds);
             Assert.Contains("patientId2", newMetadata.ProcessedPatientIds);
 
@@ -255,14 +251,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata))));
 
             var jobStore = CreateInMemoryJobStore(blobClient, jobConfig);
-            var jobManager = CreateJobManager(jobStore, _testStartTime, _testEndTime, FilterScope.Group);
+            var filterConfiguration = new FilterConfiguration()
+            {
+                FilterScope = FilterScope.Group,
+            };
+
+            var jobManager = CreateJobManager(jobStore, _testStartTime, _testEndTime, filterConfiguration);
 
             await jobManager.RunAsync();
 
             using var streamReader = new StreamReader(await blobClient.GetBlobAsync($"{AzureBlobJobConstants.SchedulerMetadataFileName}"));
             var newMetadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader.ReadToEnd());
             Assert.Equal(_testEndTime, newMetadata.LastScheduledTimestamp);
-            Assert.Empty(newMetadata.UnfinishedJobs);
+            Assert.Empty(newMetadata.FailedJobs);
             Assert.Contains("patientId0", newMetadata.ProcessedPatientIds);
             Assert.Contains("patientId1", newMetadata.ProcessedPatientIds);
             Assert.Contains("patientId2", newMetadata.ProcessedPatientIds);
@@ -417,7 +418,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             IJobStore jobStore,
             DateTimeOffset start,
             DateTimeOffset end,
-            FilterScope filterScope = FilterScope.System)
+            FilterConfiguration filterConfiguration = null)
         {
             var schedulerConfig = new JobSchedulerConfiguration
             {
@@ -431,10 +432,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 EndTime = end,
             };
 
-            var filterConfiguration = new FilterConfiguration
-            {
-                FilterScope = filterScope,
-            };
+            filterConfiguration ??= new FilterConfiguration();
 
             var typeFilterParser = Substitute.For<ITypeFilterParser>();
             typeFilterParser.CreateTypeFilters(Arg.Any<FilterScope>(), Arg.Any<string>(), Arg.Any<string>()).Returns(_testResourceTypeFilters);

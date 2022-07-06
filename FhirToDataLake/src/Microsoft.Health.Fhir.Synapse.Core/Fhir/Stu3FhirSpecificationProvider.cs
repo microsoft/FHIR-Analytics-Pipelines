@@ -13,7 +13,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 {
     public class Stu3FhirSpecificationProvider : IFhirSpecificationProvider
     {
-        private readonly IEnumerable<string> _excludeTypes = new List<string> { "StructureDefinition" };
+        private readonly IEnumerable<string> _excludeTypes = new List<string> { FhirConstants.StructureDefinition };
 
         public IEnumerable<string> GetAllResourceTypes()
         {

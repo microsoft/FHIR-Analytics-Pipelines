@@ -10,9 +10,12 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
 {
-    public class FilterContext
+    /// <summary>
+    /// The filter information of a job, which is immutable once a job is created.
+    /// </summary>
+    public class FilterInfo
     {
-        public FilterContext(
+        public FilterInfo(
             FilterScope filterScope,
             string groupId,
             DateTimeOffset since,
@@ -22,13 +25,19 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             FilterScope = filterScope;
             GroupId = groupId;
             Since = since;
-            TypeFilters = typeFilters;
+            TypeFilters = typeFilters ?? new List<TypeFilter>();
             ProcessedPatientIds = processedPatientIds ?? new HashSet<string>();
         }
 
+        /// <summary>
+        /// The filter scope
+        /// </summary>
         [JsonProperty("filterScope")]
         public FilterScope FilterScope { get; }
 
+        /// <summary>
+        /// The group id
+        /// </summary>
         [JsonProperty("groupId")]
         public string GroupId { get; }
 
@@ -38,9 +47,16 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         [JsonProperty("since")]
         public DateTimeOffset Since { get; }
 
+        /// <summary>
+        /// The type filters
+        /// </summary>
         [JsonProperty("typeFilters")]
         public IEnumerable<TypeFilter> TypeFilters { get; }
 
+        /// <summary>
+        /// The patient ids have been processed in the previous jobs.
+        /// For these patients, we only retrieve the patient resources when they are updated.
+        /// </summary>
         [JsonProperty("processedPatientIds")]
         public IEnumerable<string> ProcessedPatientIds { get; }
     }

@@ -7,6 +7,9 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
 {
+    /// <summary>
+    /// Wrap the patient information used for Fhir search
+    /// </summary>
     public class PatientWrapper
     {
         public PatientWrapper(
@@ -17,9 +20,15 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
             IsNewPatient = isNewPatient;
         }
 
+        /// <summary>
+        /// Patient id
+        /// </summary>
         [JsonProperty("patientId")]
         public string PatientId { get; }
 
+        /// <summary>
+        /// Is new patient
+        /// </summary>
         [JsonProperty("isNewPatient")]
         public bool IsNewPatient { get; set; }
     }

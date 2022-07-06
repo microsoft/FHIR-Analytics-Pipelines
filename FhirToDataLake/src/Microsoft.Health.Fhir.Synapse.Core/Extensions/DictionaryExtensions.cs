@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using EnsureThat;
 
@@ -43,11 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
         public static Dictionary<string, int> AddToDictionary(this Dictionary<string, int> dic, string key, int count)
         {
             EnsureArg.IsNotNull(dic, nameof(dic));
-
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentException($"The input key is null or empty");
-            }
+            EnsureArg.IsNotNullOrEmpty(key, nameof(key));
 
             if (!dic.ContainsKey(key))
             {

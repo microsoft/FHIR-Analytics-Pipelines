@@ -227,19 +227,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
 
                 // Remove the job information that have been resumed and executed.
-                // If the current job fails, save it to unfinishedJob list.
-                var unfinishedJobs = schedulerSetting.UnfinishedJobs.ToList();
-                unfinishedJobs.RemoveAll(unfinished => unfinished.Id == job.ResumedJobId);
+                // If the current job fails, save it to failedJob list.
+                var failedJobs = schedulerSetting.FailedJobs.ToList();
+                failedJobs.RemoveAll(unfinished => unfinished.Id == job.ResumedJobId);
 
                 if (job.Status == JobStatus.Failed)
                 {
-                    unfinishedJobs.Add(job);
+                    failedJobs.Add(job);
                 }
 
-                schedulerSetting.UnfinishedJobs = unfinishedJobs;
+                schedulerSetting.FailedJobs = failedJobs;
 
                 // update processed patient list
-                if (job.FilterContext.FilterScope == FilterScope.Group && job.Status == JobStatus.Succeeded)
+                if (job.FilterInfo.FilterScope == FilterScope.Group && job.Status == JobStatus.Succeeded)
                 {
                     var processedPatientIds = schedulerSetting.ProcessedPatientIds.ToHashSet();
                     processedPatientIds.UnionWith(job.Patients.Select(x => x.PatientId));

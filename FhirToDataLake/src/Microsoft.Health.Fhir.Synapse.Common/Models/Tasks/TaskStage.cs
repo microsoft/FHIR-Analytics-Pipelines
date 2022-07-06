@@ -8,7 +8,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
     public enum TaskStage
     {
         /// <summary>
-        /// A task is new created
+        /// New task.
         /// </summary>
         New,
 
