@@ -13,7 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using FhirR4::Hl7.Fhir.Serialization;
-using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;

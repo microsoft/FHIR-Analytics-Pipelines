@@ -54,6 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [Theory]
         [InlineData(null, 145)]
         [InlineData("", 145)]
+        [InlineData(" ", 145)]
         [InlineData("Patient,Account", 2)]
         [InlineData("Patient", 1)]
         [InlineData("Patient,Patient", 1)]
@@ -71,8 +72,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         [Theory]
         [InlineData(null)]
-        [InlineData( "")]
-        public void GivenNullTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForGroup_ThenOneTypeFilterAreReturned(string typeString)
+        [InlineData("")]
+        [InlineData("  ")]
+        public void GivenNullOrWhiteSpaceTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForGroup_ThenOneTypeFilterAreReturned(string typeString)
         {
             var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.Group, typeString, null).ToList();
 
@@ -83,7 +85,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         [Theory]
         [InlineData("Patient", "Patient")] // *?_type=Patient
-        [InlineData("Patient,Account", "Patient,Account")] //*?_type=Patient,Account
+        [InlineData("Patient,Account", "Patient,Account")] // *?_type=Patient,Account
         [InlineData("Patient,Patient", "Patient")] // *?_type=Patient
         public void GivenValidTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForGroup_ThenOneTypeFilterAreReturned(string typeString, string expectedTypes)
         {
@@ -106,20 +108,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             Assert.Empty(typeFilters[0].Parameters);
         }
 
-        [Fact]
-        public void GivenEmptyTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturned()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("  ")]
+        public void GivenNullOrWhiteSpaceTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturned(string filterString)
         {
-            var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.System, "Patient", "").ToList();
-
-            Assert.Single(typeFilters);
-            Assert.Equal("Patient", typeFilters[0].ResourceType);
-            Assert.Empty(typeFilters[0].Parameters);
-        }
-
-        [Fact]
-        public void GivenNullTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturned()
-        {
-            var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.System, "Patient", null).ToList();
+            var typeFilters = _typeFilterParser.CreateTypeFilters(FilterScope.System, "Patient", filterString).ToList();
 
             Assert.Single(typeFilters);
             Assert.Equal("Patient", typeFilters[0].ResourceType);

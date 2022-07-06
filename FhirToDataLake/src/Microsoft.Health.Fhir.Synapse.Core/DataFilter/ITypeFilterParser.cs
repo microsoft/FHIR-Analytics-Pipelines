@@ -14,9 +14,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         /// <summary>
         /// Create a list of <see cref="TypeFilter"/> objects from input string.
         /// Will validate:
-        /// 1. the types are valid resource types
-        /// 2. for group export, the types are patient compartment resource types
-        /// 3. the resource type in typeFilter is in types
+        /// 1. the required types are valid resource types
+        /// 2. for group filter scope, the required types are patient compartment resource types
+        /// 3. the resource types in typeFilter are in the required types
         /// 4. the parameters are supported parameters, search result parameters aren't supported
         /// </summary>
         /// <param name="filterScope">the filter scope.</param>
