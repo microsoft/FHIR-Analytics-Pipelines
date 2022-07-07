@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using EnsureThat;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption
 {
@@ -13,6 +14,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption
             string resourceType,
             List<KeyValuePair<string, string>> queryParameters)
         {
+            EnsureArg.IsNotNullOrEmpty(resourceType, nameof(resourceType));
+
             ResourceType = resourceType;
             QueryParameters = queryParameters ?? new List<KeyValuePair<string, string>>();
         }

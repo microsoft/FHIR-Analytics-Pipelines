@@ -347,7 +347,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 var fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
 
                 // Parse bundle result.
-                JObject fhirBundleObject = null;
+                JObject fhirBundleObject;
                 try
                 {
                     fhirBundleObject = JObject.Parse(fhirBundleResult);

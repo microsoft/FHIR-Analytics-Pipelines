@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -24,8 +23,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 {
     public class FhirApiDataClientTests
     {
-        private readonly AzureAccessTokenProvider _brokenProvider = new(new NullLogger<AzureAccessTokenProvider>());
-        private readonly MockAccessTokenProvider _mockProvider = new();
+        private readonly AzureAccessTokenProvider _brokenProvider = new (new NullLogger<AzureAccessTokenProvider>());
+        private readonly MockAccessTokenProvider _mockProvider = new ();
+        private readonly NullLogger<FhirApiDataClient> _nullFhirApiDataClientLogger =
+            NullLogger<FhirApiDataClient>.Instance;
 
         private const string SampleResourceType = "Patient";
         private const string SampleStartTime = "2021-08-01T12:00:00+08:00";
@@ -38,6 +39,27 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         {
             Assert.Throws<ArgumentNullException>(
                 () => new FhirApiDataClient(null, null, null, null));
+
+            var fhirServerConfiguration = new FhirServerConfiguration()
+            {
+                ServerUrl = FhirServerUri,
+            };
+
+            var dataSource = new FhirApiDataSource(Options.Create(fhirServerConfiguration));
+
+            var httpClient = new HttpClient(new MockHttpMessageHandler(new Dictionary<string, HttpResponseMessage>()));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new FhirApiDataClient(null, httpClient, _mockProvider, _nullFhirApiDataClientLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new FhirApiDataClient(dataSource, null, _mockProvider, _nullFhirApiDataClientLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new FhirApiDataClient(dataSource, httpClient, null, _nullFhirApiDataClientLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new FhirApiDataClient(dataSource, httpClient, _mockProvider, null));
         }
 
         [Fact]
@@ -182,16 +204,19 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/metadata",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile)));
-            var fhirServerConfig = new FhirServerConfiguration();
-            fhirServerConfig.ServerUrl = fhirServerUrl;
-            fhirServerConfig.Authentication = AuthenticationType.ManagedIdentity;
+
+            var fhirServerConfig = new FhirServerConfiguration
+            {
+                ServerUrl = fhirServerUrl,
+                Authentication = AuthenticationType.ManagedIdentity,
+            };
+
             var fhirServerOption = Options.Create(fhirServerConfig);
             var dataSource = new FhirApiDataSource(fhirServerOption);
 
             var httpClient = new HttpClient(new MockHttpMessageHandler(requestMap));
-            ILogger<FhirApiDataClient> logger = new NullLogger<FhirApiDataClient>();
 
-            var dataClient = new FhirApiDataClient(dataSource, httpClient, accessTokenProvider, logger);
+            var dataClient = new FhirApiDataClient(dataSource, httpClient, accessTokenProvider, _nullFhirApiDataClientLogger);
             return dataClient;
         }
 

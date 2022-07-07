@@ -112,8 +112,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             // add shared parameters _count & sort
             var queryParameters = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
-                new KeyValuePair<string, string>(FhirApiConstants.SortKey, FhirApiConstants.LastUpdatedKey),
+                new (FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
+                new (FhirApiConstants.SortKey, FhirApiConstants.LastUpdatedKey),
             };
 
             return uri.AddQueryString(queryParameters);
