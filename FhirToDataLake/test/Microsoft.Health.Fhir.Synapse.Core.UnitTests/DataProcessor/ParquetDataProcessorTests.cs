@@ -41,7 +41,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             {
                 SchemaCollectionDirectory = TestUtils.DefaultSchemaDirectoryPath,
             });
-            
             _fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
             _arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
