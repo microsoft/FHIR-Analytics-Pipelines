@@ -29,14 +29,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         private readonly NullLogger<R4FhirSpecificationProvider> _nullR4FhirSpecificationProviderLogger =
             NullLogger<R4FhirSpecificationProvider>.Instance;
 
-        private readonly CancellationToken _noneCancellationToken = CancellationToken.None;
-
         public TypeFilterParserTests()
         {
             var dataClient = Substitute.For<IFhirDataClient>();
 
             var metadataOptions = new MetadataOptions();
-            dataClient.SearchAsync(metadataOptions, _noneCancellationToken)
+            dataClient.Search(metadataOptions)
                 .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile));
 
             var fhirSpecificationProvider = new R4FhirSpecificationProvider(dataClient, _nullR4FhirSpecificationProviderLogger);
