@@ -191,7 +191,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
             string metaData;
             try
             {
-                metaData = _dataClient.SearchAsync(metadataOptions).Result;
+                metaData = _dataClient.Search(metadataOptions);
             }
             catch (Exception exception)
             {

@@ -30,8 +30,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private readonly ILogger<JobExecutor> _logger;
 
-        private const int NumberOfPatientsPerTask = 100;
-
         public JobExecutor(
             ITaskExecutor taskExecutor,
             JobProgressUpdaterFactory jobProgressUpdaterFactory,
@@ -123,10 +121,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                         break;
                     case FilterScope.Group:
-                        if (job.NextTaskIndex * NumberOfPatientsPerTask < job.Patients.ToList().Count)
+                        if (job.NextTaskIndex * JobConfigurationConstants.NumberOfPatientsPerTask < job.Patients.ToList().Count)
                         {
-                            var selectedPatients = job.Patients.Skip(job.NextTaskIndex * NumberOfPatientsPerTask)
-                                .Take(NumberOfPatientsPerTask);
+                            var selectedPatients = job.Patients.Skip(job.NextTaskIndex * JobConfigurationConstants.NumberOfPatientsPerTask)
+                                .Take(JobConfigurationConstants.NumberOfPatientsPerTask);
                             taskContext = TaskContext.CreateFromJob(job, job.FilterInfo.TypeFilters.ToList(), selectedPatients);
 
                         }

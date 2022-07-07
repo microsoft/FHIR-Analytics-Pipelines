@@ -38,8 +38,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly ILogger<TaskExecutor> _logger;
 
-        private const int NumberOfResourcesPerCommit = 10000;
-
         // TODO: Refine TaskExecutor here, current TaskExecutor is more like a manager class.
         public TaskExecutor(
             IFhirDataClient dataClient,
@@ -407,7 +405,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             JobProgressUpdater progressUpdater,
             CancellationToken cancellationToken)
         {
-            if (cacheResult.GetResourceCount() % NumberOfResourcesPerCommit == 0 || forceCommit)
+            var cacheResourceCount = cacheResult.GetResourceCount();
+            if ((cacheResourceCount > 0 && cacheResourceCount % JobConfigurationConstants.NumberOfResourcesPerCommit == 0) || forceCommit)
             {
                 foreach (var (resourceType, resources) in cacheResult.Resources)
                 {
@@ -474,6 +473,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 cacheResult.Resources.Clear();
             }
         }
-
     }
 }

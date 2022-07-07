@@ -63,7 +63,18 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         }
 
         [Fact]
-        public async Task GivenAValidDataClient_WhenGetMetadata_MetadataBundleShouldBeReturned()
+        public void GivenAValidDataClient_WhenGetMetadataSync_MetadataBundleShouldBeReturned()
+        {
+            var client = CreateDataClient(FhirServerUri, _mockProvider);
+
+            var metadataOption = new MetadataOptions();
+            var metaData = client.Search(metadataOption);
+
+            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile), metaData);
+        }
+
+        [Fact]
+        public async Task GivenAValidDataClient_WhenGetMetadataASync_MetadataBundleShouldBeReturned()
         {
             var client = CreateDataClient(FhirServerUri, _mockProvider);
 
@@ -71,6 +82,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var metaData = await client.SearchAsync(metadataOption);
 
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile), metaData);
+        }
+
+        [Fact]
+        public void GivenSearchOptionRequiredAccessToken_WhenSearchFhirDataSync_ExceptionShouldBeThrown()
+        {
+            var client = CreateDataClient(FhirServerUri, _mockProvider);
+            var searchOptions = new BaseSearchOptions("Patient", null);
+            Assert.Throws<FhirSearchException>(() => client.Search(searchOptions));
         }
 
         [Theory]

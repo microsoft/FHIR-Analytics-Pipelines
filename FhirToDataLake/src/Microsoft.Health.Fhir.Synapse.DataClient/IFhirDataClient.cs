@@ -20,5 +20,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
         public Task<string> SearchAsync(
             BaseFhirApiOptions fhirApiOptions,
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Returns a FHIR bundle which contains the matching search results.
+        /// </summary>
+        /// <param name="fhirApiOptions">fhir api options.</param>
+        /// <returns>returned bundle.</returns>
+        public string Search(BaseFhirApiOptions fhirApiOptions);
     }
 }

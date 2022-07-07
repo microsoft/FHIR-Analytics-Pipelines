@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -93,6 +94,29 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             return await GetResponseFromHttpRequestAsync(searchUri, accessToken, cancellationToken);
         }
 
+        public string Search(BaseFhirApiOptions fhirApiOptions)
+        {
+            if (fhirApiOptions.IsAccessTokenRequired() && _dataSource.Authentication == AuthenticationType.ManagedIdentity)
+            {
+                _logger.LogError("Synchronous search doesn't support AccessToken, please use Asynchronous method SearchAsync() instead.");
+                throw new FhirSearchException(
+                    "Synchronous search doesn't support AccessToken, please use Asynchronous method SearchAsync() instead.");
+            }
+
+            Uri searchUri;
+            try
+            {
+                searchUri = CreateSearchUri(fhirApiOptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Create search Uri failed, Reason: '{reason}'", ex);
+                throw new FhirSearchException("Create search Uri failed", ex);
+            }
+
+            return GetResponseFromHttpRequest(searchUri);
+        }
+
         private Uri CreateSearchUri(BaseFhirApiOptions fhirApiOptions)
         {
             var serverUrl = _dataSource.FhirServerUrl;
@@ -140,6 +164,30 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 _logger.LogInformation("Successfully retrieved result for url: '{url}'.", uri);
 
                 return await response.Content.ReadAsStringAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Get response from http request failed. Url: '{url}', Reason: '{reason}'", uri, ex);
+                throw new FhirSearchException(
+                    string.Format(Resource.FhirSearchFailed, uri),
+                    ex);
+            }
+        }
+
+        private string GetResponseFromHttpRequest(Uri uri)
+        {
+            try
+            {
+                var searchRequest = new HttpRequestMessage(HttpMethod.Get, uri);
+
+                HttpResponseMessage response = _httpClient.Send(searchRequest);
+                response.EnsureSuccessStatusCode();
+                _logger.LogInformation("Successfully retrieved result for url: '{url}'.", uri);
+
+                var stream = response.Content.ReadAsStream();
+                stream.Seek(0, SeekOrigin.Begin);
+                StreamReader reader = new StreamReader(stream);
+                return reader.ReadToEnd();
             }
             catch (Exception ex)
             {

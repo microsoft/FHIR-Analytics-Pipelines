@@ -22,9 +22,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly Channel<TaskContext> _progressChannel;
         private readonly ILogger<JobProgressUpdater> _logger;
 
-        // Time interval to sync job to store.
-        private const int UploadDataIntervalInSeconds = 30;
-
         public JobProgressUpdater(
             IJobStore jobStore,
             Job job,
@@ -71,7 +68,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         }
                     }
 
-                    if (uploadTime.AddSeconds(UploadDataIntervalInSeconds) < DateTimeOffset.UtcNow)
+                    if (uploadTime.AddSeconds(JobConfigurationConstants.UploadDataIntervalInSeconds) < DateTimeOffset.UtcNow)
                     {
                         uploadTime = DateTimeOffset.UtcNow;
 
