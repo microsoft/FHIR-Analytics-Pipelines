@@ -56,7 +56,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 throw new OperationCanceledException();
             }
 
-            var searchUri = CreateSearchUri(fhirApiOptions);
+            Uri searchUri;
+            try
+            {
+                searchUri = CreateSearchUri(fhirApiOptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Create search Uri failed, Reason: '{reason}'", ex);
+                throw new FhirSearchException("Create search Uri failed", ex);
+            }
 
             string accessToken = null;
             if (fhirApiOptions.IsAccessTokenRequired())

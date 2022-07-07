@@ -27,7 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         {
             var operationOutcomes = resources.Where(x =>
                 x?.GetValue(FhirBundleConstants.ResourceTypeKey)?.ToString() ==
-                FhirBundleConstants.OperationOutcomeKey).Select(x => x.GetValue(FhirBundleConstants.IssueKey) as JObject).ToList();
+                FhirBundleConstants.OperationOutcomeKey).ToList();
             return operationOutcomes ?? new List<JObject>();
         }
 
