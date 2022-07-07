@@ -14,6 +14,7 @@ using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core;
@@ -51,6 +52,52 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 _testOutputHelper.WriteLine($"Using custom data lake storage uri {storageUri}");
                 _blobServiceClient = new BlobServiceClient(new Uri(storageUri), new DefaultAzureCredential());
             }
+        }
+
+        [Fact]
+        public void GivenInvalidFilterScope_WhenBuildHost_ExceptionShouldBeThrown()
+        {
+            Environment.SetEnvironmentVariable("filter:filterScope", "Unsupported");
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile(_configurationPath)
+                .AddEnvironmentVariables()
+                .Build();
+            Assert.Throws<ConfigurationErrorException>(() => CreateHostBuilder(configuration).Build());
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void GivenEmptyGroupId_WhenBuildHostForGroupFilterScope_ExceptionShouldBeThrown(string groupId)
+        {
+            Environment.SetEnvironmentVariable("filter:filterScope", "Group");
+            Environment.SetEnvironmentVariable("filter:groupId", groupId);
+
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile(_configurationPath)
+                .AddEnvironmentVariables()
+                .Build();
+            Assert.Throws<ConfigurationErrorException>(() => CreateHostBuilder(configuration).Build());
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData("invalidGroupId")]
+        [InlineData("d73baac10af90c4b931357b2e8ef9d8b")]
+        public void GivenAnyGroupId_WhenBuildHostForSystemFilterScope_NoExceptionShouldBeThrown(string groupId)
+        {
+            Environment.SetEnvironmentVariable("filter:filterScope", "System");
+            Environment.SetEnvironmentVariable("filter:groupId", groupId);
+
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile(_configurationPath)
+                .AddEnvironmentVariables()
+                .Build();
+            var exception = Record.Exception(() => CreateHostBuilder(configuration).Build());
+            Assert.Null(exception);
         }
 
         [SkippableFact]
@@ -139,7 +186,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
                 var schedulerMetadata = await GetSchedulerMetadata(blobContainerClient);
 
-                Assert.Empty(schedulerMetadata.UnfinishedJobs);
+                Assert.Empty(schedulerMetadata.FailedJobs);
                 Assert.Single(schedulerMetadata.ProcessedPatientIds);
             }
             finally
@@ -191,7 +238,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
                 var schedulerMetadata = await GetSchedulerMetadata(blobContainerClient);
 
-                Assert.Empty(schedulerMetadata.UnfinishedJobs);
+                Assert.Empty(schedulerMetadata.FailedJobs);
                 Assert.Equal(80, schedulerMetadata.ProcessedPatientIds.Count());
             }
             finally
@@ -292,15 +339,15 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
                     // The status should be succeeded, which means succeeded
                     Assert.Equal(JobStatus.Succeeded, completedJob.Status);
-                    Assert.Equal(expectedJob.FilterContext.FilterScope, completedJob.FilterContext.FilterScope);
-                    if (completedJob.FilterContext.FilterScope == FilterScope.Group)
+                    Assert.Equal(expectedJob.FilterInfo.FilterScope, completedJob.FilterInfo.FilterScope);
+                    if (completedJob.FilterInfo.FilterScope == FilterScope.Group)
                     {
-                        Assert.Equal(expectedJob.FilterContext.GroupId, completedJob.FilterContext.GroupId);
+                        Assert.Equal(expectedJob.FilterInfo.GroupId, completedJob.FilterInfo.GroupId);
                     }
 
-                    Assert.True(completedJob.FilterContext.ProcessedPatientIds.ToHashSet().SetEquals(expectedJob.FilterContext.ProcessedPatientIds.ToHashSet()));
-                    Assert.Equal(expectedJob.FilterContext.TypeFilters.Count(), completedJob.FilterContext.TypeFilters.Count());
-                    Assert.Equal(expectedJob.FilterContext.TypeFilters.Count(), completedJob.FilterContext.TypeFilters.Count());
+                    Assert.True(completedJob.FilterInfo.ProcessedPatientIds.ToHashSet().SetEquals(expectedJob.FilterInfo.ProcessedPatientIds.ToHashSet()));
+                    Assert.Equal(expectedJob.FilterInfo.TypeFilters.Count(), completedJob.FilterInfo.TypeFilters.Count());
+                    Assert.Equal(expectedJob.FilterInfo.TypeFilters.Count(), completedJob.FilterInfo.TypeFilters.Count());
                     Assert.Empty(expectedJob.RunningTasks);
 
                     Assert.True(DictionaryEquals(expectedJob.TotalResourceCounts, completedJob.TotalResourceCounts));
