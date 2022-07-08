@@ -14,14 +14,14 @@ using Newtonsoft.Json.Schema;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 {
-    public class ACRCustomizedSchemaProvider : IParquetSchemaProvider
+    public class AcrCustomizedSchemaProvider : IParquetSchemaProvider
     {
         private readonly IContainerRegistryTemplateProvider _containerRegistryTemplateProvider;
-        private readonly ILogger<ACRCustomizedSchemaProvider> _logger;
+        private readonly ILogger<AcrCustomizedSchemaProvider> _logger;
 
-        public ACRCustomizedSchemaProvider(
+        public AcrCustomizedSchemaProvider(
             IContainerRegistryTemplateProvider containerRegistryTemplateProvider,
-            ILogger<ACRCustomizedSchemaProvider> logger)
+            ILogger<AcrCustomizedSchemaProvider> logger)
         {
             _containerRegistryTemplateProvider = containerRegistryTemplateProvider;
             _logger = logger;

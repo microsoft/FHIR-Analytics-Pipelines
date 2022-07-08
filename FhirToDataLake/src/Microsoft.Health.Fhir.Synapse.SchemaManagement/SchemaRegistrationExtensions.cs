@@ -27,7 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
 
         public static IServiceCollection AddSchemaProviders(this IServiceCollection services)
         {
-            services.AddTransient<ACRCustomizedSchemaProvider>();
+            services.AddTransient<AcrCustomizedSchemaProvider>();
             services.AddTransient<LocalDefaultSchemaProvider>();
 
             services.AddTransient<ParquetSchemaProviderDelegate>(delegateProvider => name =>
@@ -37,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
                     case FhirParquetSchemaConstants.DefaultSchemaProviderKey:
                         return delegateProvider.GetService<LocalDefaultSchemaProvider>();
                     case FhirParquetSchemaConstants.CustomSchemaProviderKey:
-                        return delegateProvider.GetService<ACRCustomizedSchemaProvider>();
+                        return delegateProvider.GetService<AcrCustomizedSchemaProvider>();
                     default:
                         throw new FhirSchemaException($"Schema delegate name {name} not found when injecting");
                 }

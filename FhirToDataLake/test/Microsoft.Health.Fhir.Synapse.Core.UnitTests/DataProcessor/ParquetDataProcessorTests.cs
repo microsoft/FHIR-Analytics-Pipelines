@@ -42,7 +42,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             {
                 SchemaCollectionDirectory = TestUtils.DefaultSchemaDirectoryPath,
             });
-
             _defaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
             _fhirConverter = new FhirConverter(NullLogger<FhirConverter>.Instance);
 

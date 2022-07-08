@@ -80,7 +80,8 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
   env:
-    TestContainerRegistryPassword: $(TestContainerRegistryPasswordSecret)
+    TestContainerRegistryServer: $(pipeline-container-registry-server)
+    TestContainerRegistryPassword: $(pipeline-container-registry-password)
 
 - task: PowerShell@2
   displayName: Logout Azure Account
