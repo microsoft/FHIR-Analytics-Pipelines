@@ -11,6 +11,7 @@ using DotLiquid;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.TemplateManagement;
 using Microsoft.Health.Fhir.TemplateManagement.Exceptions;
@@ -23,27 +24,39 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
         private readonly IContainerRegistryTokenProvider _containerRegistryTokenProvider;
         private readonly ITemplateCollectionProviderFactory _templateCollectionProviderFactory;
         private readonly ILogger<ContainerRegistryTemplateProvider> _logger;
+        private readonly string _schemaImageReference;
 
         public ContainerRegistryTemplateProvider(
             IContainerRegistryTokenProvider containerRegistryTokenProvider,
+            IOptions<ContainerRegistryConfiguration> containerRegistryConfiguration,
             ILogger<ContainerRegistryTemplateProvider> logger)
         {
             _containerRegistryTokenProvider = containerRegistryTokenProvider;
             _logger = logger;
 
-            var templateCollectionCache = new MemoryCache(new MemoryCacheOptions() { SizeLimit = 100000000 });
-            var config = new TemplateCollectionConfiguration();
-            _templateCollectionProviderFactory = new TemplateCollectionProviderFactory(templateCollectionCache, Options.Create(config));
+            if (!string.IsNullOrEmpty(containerRegistryConfiguration.Value.SchemaImageReference))
+            {
+                _schemaImageReference = containerRegistryConfiguration.Value.SchemaImageReference;
+                var templateCollectionCache = new MemoryCache(new MemoryCacheOptions() { SizeLimit = 100000000 });
+                var config = new TemplateCollectionConfiguration();
+                _templateCollectionProviderFactory = new TemplateCollectionProviderFactory(templateCollectionCache, Options.Create(config));
+            }
         }
 
-        public async Task<List<Dictionary<string, Template>>> GetTemplateCollectionAsync(string schemaImageReference, CancellationToken cancellationToken)
+        public async Task<List<Dictionary<string, Template>>> GetTemplateCollectionAsync(CancellationToken cancellationToken)
         {
-            ImageInfo imageInfo = ImageInfo.CreateFromImageReference(schemaImageReference);
+            if (string.IsNullOrEmpty(_schemaImageReference))
+            {
+                _logger.LogError("Schema image reference is null or empty.");
+                throw new ContainerRegistrySchemaException("Schema image reference is null or empty.");
+            }
+
+            ImageInfo imageInfo = ImageInfo.CreateFromImageReference(_schemaImageReference);
             var accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
 
             try
             {
-                var provider = _templateCollectionProviderFactory.CreateTemplateCollectionProvider(schemaImageReference, accessToken);
+                var provider = _templateCollectionProviderFactory.CreateTemplateCollectionProvider(_schemaImageReference, accessToken);
                 return await provider.GetTemplateCollectionAsync(cancellationToken);
             }
             catch (ContainerRegistryAuthenticationException authEx)

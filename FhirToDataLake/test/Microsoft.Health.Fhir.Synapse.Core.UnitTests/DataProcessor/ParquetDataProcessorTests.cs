@@ -24,7 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 {
     public class ParquetDataProcessorTests
     {
-        private static readonly FhirParquetSchemaManager _fhirSchemaManager;
+        private static readonly FhirDefaultParquetSchemaManager _fhirSchemaManager;
         private static readonly IOptions<ArrowConfiguration> _arrowConfigurationOptions;
         private static readonly DefaultConverter _defaultConverter;
         private static readonly FhirConverter _fhirConverter;
@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             _defaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
             _fhirConverter = new FhirConverter(NullLogger<FhirConverter>.Instance);
 
-            _fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.MockParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
+            _fhirSchemaManager = new FhirDefaultParquetSchemaManager(schemaConfigurationOption, TestUtils.MockParquetSchemaProviderDelegate, NullLogger<FhirDefaultParquetSchemaManager>.Instance);
 
             _arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 

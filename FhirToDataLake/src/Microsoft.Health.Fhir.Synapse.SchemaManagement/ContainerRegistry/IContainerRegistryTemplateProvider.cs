@@ -12,6 +12,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
 {
     public interface IContainerRegistryTemplateProvider
     {
-        public Task<List<Dictionary<string, Template>>> GetTemplateCollectionAsync(string schemaImageReference, CancellationToken cancellationToken);
+        public Task<List<Dictionary<string, Template>>> GetTemplateCollectionAsync(CancellationToken cancellationToken);
     }
 }

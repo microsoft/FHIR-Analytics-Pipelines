@@ -18,7 +18,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         private readonly Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
         private readonly ILogger<FhirParquetSchemaManager> _logger;
         private readonly IParquetSchemaProvider _defaultSchemaProvider;
-        private readonly IParquetSchemaProvider _customizedSchemaProvider;
 
         public FhirParquetSchemaManager(
             IOptions<SchemaConfiguration> schemaConfiguration,
@@ -38,7 +37,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
                 var customizedSchemaProvider = parquetSchemaDelegate(FhirParquetSchemaConstants.CustomSchemaProviderKey);
 
                 // Get default schema, the customized schema keys are resource types with "_customized" suffix, like "Patient_Customized", "Encounter_Customized".
-                var resourceCustomizedSchemaNodesMap = customizedSchemaProvider.GetSchemasAsync(schemaConfiguration.Value.CustomizedSchemaImageReference).Result;
+                var resourceCustomizedSchemaNodesMap = customizedSchemaProvider.GetSchemasAsync(
+                    schemaConfiguration.Value.ContainerRegistry.SchemaImageReference).Result;
+
                 _logger.LogInformation($"{resourceCustomizedSchemaNodesMap.Count} resource customized schemas have been loaded.");
                 _resourceSchemaNodesMap = _resourceSchemaNodesMap.Concat(resourceCustomizedSchemaNodesMap).ToDictionary(x => x.Key, x => x.Value);
             }

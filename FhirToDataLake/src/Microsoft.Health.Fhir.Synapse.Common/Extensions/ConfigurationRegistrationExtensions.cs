@@ -31,6 +31,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
             services.Configure<SchemaConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey).Bind(options));
 
+            services.Configure<ContainerRegistryConfiguration>(options =>
+                configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey)
+                            .GetSection(ConfigurationConstants.ContainerRegistryConfigurationKey).Bind(options));
+
             // Validates the input configs.
             services.ValidateConfiguration();
             return services;
@@ -78,7 +82,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 .GetRequiredService<IOptions<SchemaConfiguration>>()
                 .Value;
 
-            if (schemaConfiguration.EnableCustomizedSchema && string.IsNullOrEmpty(schemaConfiguration.CustomizedSchemaImageReference))
+            if (schemaConfiguration.EnableCustomizedSchema && string.IsNullOrEmpty(schemaConfiguration.ContainerRegistry.SchemaImageReference))
             {
                 throw new ConfigurationErrorException($"Customized schema image reference can not be empty when customized schema is enable.");
             }

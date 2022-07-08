@@ -20,12 +20,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// Gets bool value for whether enable customized schema.
         /// </summary>
         [JsonProperty("enableCustomizedSchema")]
-        public bool EnableCustomizedSchema { get; } = false;
+        public bool EnableCustomizedSchema { get; set; } = false;
 
-        /// <summary>
-        /// Gets Azure Container Registry image reference of customized schema templates.
-        /// </summary>
-        [JsonProperty("customizedSchemaImageReference")]
-        public string CustomizedSchemaImageReference { get; } = string.Empty;
+        [JsonProperty("containerRegistry")]
+        public ContainerRegistryConfiguration ContainerRegistry { get; set; } = new ContainerRegistryConfiguration();
     }
 }

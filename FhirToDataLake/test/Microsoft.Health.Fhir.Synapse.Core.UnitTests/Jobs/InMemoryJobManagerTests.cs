@@ -37,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static readonly DateTimeOffset _testEndTime = new DateTimeOffset(2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0));
         private static readonly List<string> _testResourceTypeFilters = new List<string> { "Patient", "Observation" };
 
-        private static readonly FhirParquetSchemaManager _fhirSchemaManager;
+        private static readonly FhirDefaultParquetSchemaManager _fhirSchemaManager;
 
         static InMemoryJobManagerTests()
         {
@@ -46,7 +46,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 SchemaCollectionDirectory = TestUtils.DefaultSchemaDirectoryPath,
             });
 
-            _fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
+            _fhirSchemaManager = new FhirDefaultParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirDefaultParquetSchemaManager>.Instance);
         }
 
         private static IParquetSchemaProvider ParquetSchemaProviderDelegate(string name)

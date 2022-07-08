@@ -14,6 +14,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         public const string CustomSchemaProviderKey = "custom";
 
         public const string JsonSchemaTemplateFileExtension = ".schema.json";
+        public const string CustomizedSchemaSuffix = "_Customized";
 
         /// <summary>
         /// Fields with this schema type will be wrapped into single Json string.

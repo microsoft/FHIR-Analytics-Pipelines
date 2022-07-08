@@ -17,6 +17,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 
         public const string SchemaConfigurationKey = "schema";
 
+        public const string ContainerRegistryConfigurationKey = "containerRegistry";
+
         public const string SchedulerConfigurationKey = "scheduler";
 
         public const string DefaultSchemaDirectory = "../../../../../../data/schemas";

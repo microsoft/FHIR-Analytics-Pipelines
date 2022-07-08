@@ -81,7 +81,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             }
 
             // Convert data based on schema
-            JsonBatchData processedData = _defaultDataConverter.Convert(inputData, schema, cancellationToken);
+            JsonBatchData processedData;
+            if (IsCustomizedSchemaType(processParameters.SchemaType))
+            {
+                processedData = _fhirDataConverter.Convert(inputData, processParameters.ResourceType, cancellationToken);
+            }
+            else
+            {
+                processedData = _defaultDataConverter.Convert(inputData, schema, cancellationToken);
+            }
 
             var inputStream = TransformJsonDataToStream(processParameters.SchemaType, processedData.Values);
             if (inputStream == null)
@@ -136,6 +144,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             }
 
             return true;
+        }
+
+        private bool IsCustomizedSchemaType(string schemaType)
+        {
+            return schemaType.EndsWith(FhirParquetSchemaConstants.CustomizedSchemaSuffix);
         }
     }
 }

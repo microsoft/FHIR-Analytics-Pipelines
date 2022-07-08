@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -12,22 +13,27 @@ using Microsoft.Health.Fhir.Liquid.Converter.Models;
 using Microsoft.Health.Fhir.Liquid.Converter.Processors;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
-using Newtonsoft.Json;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 {
     public class FhirConverter
     {
-        private readonly string SchemaDirectory = "../../../../../../schemaTemplates";
         private readonly JsonProcessor _jsonProcessor;
+        private readonly ITemplateProvider _templateProvider;
         private readonly ILogger<FhirConverter> _logger;
 
-        public FhirConverter(ILogger<FhirConverter> logger)
+        public FhirConverter(
+            IContainerRegistryTemplateProvider containerRegistryTemplateProvider,
+            ILogger<FhirConverter> logger)
         {
-            _jsonProcessor = new JsonProcessor(new ProcessorSettings());
+            var templateCollections = containerRegistryTemplateProvider.GetTemplateCollectionAsync(CancellationToken.None).Result;
+
             _logger = logger;
+            _jsonProcessor = new JsonProcessor(new ProcessorSettings());
+
+            _templateProvider = new TemplateProvider(templateCollections);
         }
 
         public JsonBatchData Convert(
@@ -37,16 +43,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var results = new List<JObject>();
-
-            var templateProvider = new TemplateProvider(SchemaDirectory, DataType.Json);
-            foreach (var jsonData in inputData.Values)
+            IEnumerable<JObject> processedData;
+            try
             {
-                var result = _jsonProcessor.Convert(jsonData.ToString(), resourceType, templateProvider);
-                results.Add(JObject.Parse(result));
+                processedData = inputData.Values.Select(
+                    dataObject => JObject.Parse(_jsonProcessor.Convert(dataObject.ToString(), resourceType, _templateProvider)));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Convert customized data for {resourceType} failed. " + ex.Message);
+                throw new ParquetDataProcessorException($"Convert customized data for {resourceType} failed.", ex);
             }
 
-            return new JsonBatchData(results);
+            return new JsonBatchData(processedData);
         }
     }
 }
