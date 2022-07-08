@@ -30,8 +30,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private readonly BlobServiceClient _blobServiceClient;
         private readonly ITestOutputHelper _testOutputHelper;
 
-        private const string _configurationPath = "appsettings.test.json";
+        private const string TestConfigurationPath = "appsettings.test.json";
         private const int TriggerIntervalInMinutes = 5;
+        private const string FakeFhirServerUrl = "http://127.0.0.1:5000";
+        private const string FhirServerNoneAuthentication = "None";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="E2ETests"/> class.
@@ -40,6 +42,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         /// <param name="testOutputHelper">output helper.</param>
         public E2ETests(ITestOutputHelper testOutputHelper)
         {
+            Environment.SetEnvironmentVariable("fhirServer:authentication", FhirServerNoneAuthentication);
+            Environment.SetEnvironmentVariable("fhirServer:serverUrl", FakeFhirServerUrl);
+
             _testOutputHelper = testOutputHelper;
             var storageUri = Environment.GetEnvironmentVariable("dataLakeStore:storageUrl");
             if (!string.IsNullOrEmpty(storageUri))
@@ -62,7 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             // Load configuration
             Environment.SetEnvironmentVariable("job:containerName", uniqueContainerName);
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile(_configurationPath)
+                .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
 
@@ -98,7 +103,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             // Load configuration and set endTime to yesterday
             Environment.SetEnvironmentVariable("job:containerName", uniqueContainerName);
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile(_configurationPath)
+                .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
             var now = DateTime.UtcNow;

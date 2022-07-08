@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 
             if (string.IsNullOrEmpty(fhirServerConfiguration.ServerUrl))
             {
-                throw new ConfigurationErrorException($"Fhir server url '{fhirServerConfiguration.ServerUrl}' can not be empty.");
+                throw new ConfigurationErrorException($"Fhir server url can not be empty.");
             }
 
             if (fhirServerConfiguration.Version != FhirVersion.R4)
@@ -60,7 +60,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 
             if (string.IsNullOrEmpty(jobConfiguration.ContainerName))
             {
-                throw new ConfigurationErrorException($"Target azure container name '{jobConfiguration.ContainerName}' can not be empty.");
+                throw new ConfigurationErrorException($"Target azure container name can not be empty.");
             }
 
             var storeConfiguration = services
@@ -70,7 +70,17 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 
             if (string.IsNullOrEmpty(storeConfiguration.StorageUrl))
             {
-                throw new ConfigurationErrorException($"Target azure storage url '{storeConfiguration.StorageUrl}' can not be empty.");
+                throw new ConfigurationErrorException($"Target azure storage url can not be empty.");
+            }
+
+            var schemaConfiguration = services
+                .BuildServiceProvider()
+                .GetRequiredService<IOptions<SchemaConfiguration>>()
+                .Value;
+
+            if (schemaConfiguration.EnableCustomizedSchema && string.IsNullOrEmpty(schemaConfiguration.CustomizedSchemaImageReference))
+            {
+                throw new ConfigurationErrorException($"Customized schema image reference can not be empty when customized schema is enable.");
             }
         }
     }
