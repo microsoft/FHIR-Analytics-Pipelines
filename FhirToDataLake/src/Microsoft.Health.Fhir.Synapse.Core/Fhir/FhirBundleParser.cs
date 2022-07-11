@@ -50,6 +50,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
             return null;
         }
 
+        public static int ExtractVersionId(JObject bundle)
+        {
+            var meta = bundle?.GetValue(FhirBundleConstants.MetaKey) as JObject;
+            var versionId = meta?.GetValue(FhirBundleConstants.VersionIdKey)?.Value<int>();
+            return versionId ?? 0;
+        }
+
         private static string ParseContinuationToken(string nextUrl)
         {
             if (string.IsNullOrEmpty(nextUrl))

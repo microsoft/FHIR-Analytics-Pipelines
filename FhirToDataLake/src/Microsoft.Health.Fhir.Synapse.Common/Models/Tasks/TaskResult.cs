@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
@@ -15,12 +16,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             Dictionary<string, int> searchCount,
             Dictionary<string, int> skippedCount,
             Dictionary<string, int> processedCount,
+            IEnumerable<PatientWrapper> patients,
             string result)
         {
             IsCompleted = isCompleted;
             SearchCount = searchCount;
             SkippedCount = skippedCount;
             ProcessedCount = processedCount;
+            Patients = patients;
             Result = result;
         }
 
@@ -45,6 +48,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public Dictionary<string, int> ProcessedCount { get; set; }
 
         /// <summary>
+        /// The patients
+        /// </summary>
+        public IEnumerable<PatientWrapper> Patients { get; set; }
+
+        /// <summary>
         /// Text result message.
         /// </summary>
         public string Result { get; set; }
@@ -56,6 +64,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
                 context.SearchCount,
                 context.SkippedCount,
                 context.ProcessedCount,
+                context.Patients,
                 JsonConvert.SerializeObject(context));
         }
     }

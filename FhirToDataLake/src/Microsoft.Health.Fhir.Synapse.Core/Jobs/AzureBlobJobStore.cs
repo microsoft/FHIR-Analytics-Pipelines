@@ -241,9 +241,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // update processed patient list
                 if (job.FilterInfo.FilterScope == FilterScope.Group && job.Status == JobStatus.Succeeded)
                 {
-                    var processedPatientIds = schedulerSetting.ProcessedPatientIds.ToHashSet();
-                    processedPatientIds.UnionWith(job.Patients.Select(x => x.PatientId));
-                    schedulerSetting.ProcessedPatientIds = processedPatientIds;
+                    foreach (var (patientId, versionId) in job.PatientVersionId)
+                    {
+                        if (versionId != 0)
+                        {
+                            schedulerSetting.ProcessedPatients[patientId] = versionId;
+                        }
+                    }
                 }
 
                 await SaveSchedulerMetadataAsync(schedulerSetting, cancellationToken);

@@ -25,6 +25,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 
         public const string LastUpdatedKey = "lastUpdated";
 
+        public const string VersionIdKey = "versionId";
+
         public const string LinkKey = "link";
 
         public const string LinkRelationKey = "relation";

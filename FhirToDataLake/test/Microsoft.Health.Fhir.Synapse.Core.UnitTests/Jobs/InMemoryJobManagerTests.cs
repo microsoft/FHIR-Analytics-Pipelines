@@ -225,8 +225,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var newMetadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader.ReadToEnd());
             Assert.Equal(_testEndTime, newMetadata.LastScheduledTimestamp);
             Assert.Empty(newMetadata.FailedJobs);
-            Assert.Contains("patientId1", newMetadata.ProcessedPatientIds);
-            Assert.Contains("patientId2", newMetadata.ProcessedPatientIds);
+            //Assert.True(newMetadata.ProcessedPatientIds.ContainsKey("patientId1"));
+            //Assert.True(newMetadata.ProcessedPatientIds.ContainsKey("patientId2"));
 
             jobManager.Dispose();
         }
@@ -243,7 +243,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var metadata = new SchedulerMetadata()
             {
-                ProcessedPatientIds = new List<string>{"patientId0", "patientId1"},
+                ProcessedPatients = new Dictionary<string, int> { {"patientId0", 1 }, {"patientId1", 1 } },
             };
 
             await blobClient.CreateBlobAsync(
@@ -264,9 +264,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var newMetadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader.ReadToEnd());
             Assert.Equal(_testEndTime, newMetadata.LastScheduledTimestamp);
             Assert.Empty(newMetadata.FailedJobs);
-            Assert.Contains("patientId0", newMetadata.ProcessedPatientIds);
-            Assert.Contains("patientId1", newMetadata.ProcessedPatientIds);
-            Assert.Contains("patientId2", newMetadata.ProcessedPatientIds);
+            Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId0"));
+            Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId1"));
+            //Assert.True(newMetadata.ProcessedPatientIds.ContainsKey("patientId2"));
 
             jobManager.Dispose();
         }
@@ -411,6 +411,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 new Dictionary<string, int>() { { "Patient", 100 } },
                 new Dictionary<string, int>() { { "Patient", 0 } },
                 new Dictionary<string, int>() { { "Patient", 100 } },
+                new List<PatientWrapper>() { new PatientWrapper("patientId1", 1), new PatientWrapper("patientId2", 0) },
                 string.Empty);
         }
 

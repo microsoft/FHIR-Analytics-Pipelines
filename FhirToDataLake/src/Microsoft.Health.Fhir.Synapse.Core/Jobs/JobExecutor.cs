@@ -67,21 +67,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     job.DataPeriod.End,
                     cancellationToken);
 
-                job.Patients = patientIds.Select(patientId => new PatientWrapper(patientId));
-
-                // for processed patient id, set IsNewPatient to false
-                // the processed patient ids may be an empty hashset at the beginning, and will be updated when completing a successful job.
-                var processedPatientIds = job.FilterInfo.ProcessedPatientIds.ToHashSet();
-                foreach (var patient in job.Patients.Where(patient => processedPatientIds.Contains(patient.PatientId)))
-                {
-                    patient.IsNewPatient = false;
-                }
+                // set the version id for processed patient
+                // the processed patients is empty at the beginning , and will be updated when completing a successful job.
+                job.Patients = patientIds.Select(patientId =>
+                    new PatientWrapper(
+                        patientId,
+                        job.FilterInfo.ProcessedPatients.ContainsKey(patientId) ? job.FilterInfo.ProcessedPatients[patientId] : 0));
 
                 _logger.LogInformation(
                     "Extract {patientCount} patients from group '{groupId}', including {newPatientCount} new patients.",
-                    job.Patients.ToHashSet().Count,
+                    patientIds.Count,
                     job.FilterInfo.GroupId,
-                    job.Patients.Where(p => p.IsNewPatient).ToHashSet().Count);
+                    job.Patients.Where(p => p.VersionId == 0).ToList().Count);
             }
 
             var jobProgressUpdater = _jobProgressUpdaterFactory.Create(job);
@@ -124,7 +121,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         if (job.NextTaskIndex * JobConfigurationConstants.NumberOfPatientsPerTask < job.Patients.ToList().Count)
                         {
                             var selectedPatients = job.Patients.Skip(job.NextTaskIndex * JobConfigurationConstants.NumberOfPatientsPerTask)
-                                .Take(JobConfigurationConstants.NumberOfPatientsPerTask);
+                                .Take(JobConfigurationConstants.NumberOfPatientsPerTask).ToList();
                             taskContext = TaskContext.CreateFromJob(job, job.FilterInfo.TypeFilters.ToList(), selectedPatients);
 
                         }

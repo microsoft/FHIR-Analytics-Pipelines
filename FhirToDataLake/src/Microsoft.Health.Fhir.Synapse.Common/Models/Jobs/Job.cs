@@ -27,6 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             Dictionary<string, int> totalResourceCounts = null,
             Dictionary<string, int> processedResourceCounts = null,
             Dictionary<string, int> skippedResourceCounts = null,
+            Dictionary<string, int> patientVersionId = null,
             string resumedJobId = null)
         {
             // immutable fields
@@ -53,6 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             TotalResourceCounts = totalResourceCounts ?? new Dictionary<string, int>();
             ProcessedResourceCounts = processedResourceCounts ?? new Dictionary<string, int>();
             SkippedResourceCounts = skippedResourceCounts ?? new Dictionary<string, int>();
+            PatientVersionId = patientVersionId ?? new Dictionary<string, int>();
         }
 
         /// <summary>
@@ -152,6 +154,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         [JsonProperty("skippedResourceCounts")]
         public Dictionary<string, int> SkippedResourceCounts { get; set; }
 
+        /// <summary>
+        /// The version id for each new/updated patient.
+        /// </summary>
+        [JsonProperty("patientVersionId")]
+        public Dictionary<string, int> PatientVersionId { get; set; }
+
         public static Job Create(
             string containerName,
             JobStatus status,
@@ -163,6 +171,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             Dictionary<string, int> totalResourceCounts = null,
             Dictionary<string, int> processedResourceCounts = null,
             Dictionary<string, int> skippedResourceCounts = null,
+            Dictionary<string, int> patientVersionId = null,
             string resumedJobId = null)
         {
             return new Job(
@@ -179,6 +188,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
                 totalResourceCounts,
                 processedResourceCounts,
                 skippedResourceCounts,
+                patientVersionId,
                 resumedJobId);
         }
     }

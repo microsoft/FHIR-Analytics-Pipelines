@@ -20,13 +20,13 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             string groupId,
             DateTimeOffset since,
             IEnumerable<TypeFilter> typeFilters,
-            IEnumerable<string> processedPatientIds)
+            Dictionary<string, int> processedPatients)
         {
             FilterScope = filterScope;
             GroupId = groupId;
             Since = since;
             TypeFilters = typeFilters ?? new List<TypeFilter>();
-            ProcessedPatientIds = processedPatientIds ?? new HashSet<string>();
+            ProcessedPatients = processedPatients ?? new Dictionary<string, int>();
         }
 
         /// <summary>
@@ -54,10 +54,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public IEnumerable<TypeFilter> TypeFilters { get; }
 
         /// <summary>
-        /// The patient ids have been processed in the previous jobs.
+        /// The patient ids have been processed in the previous jobs and their version ids.
         /// For these patients, we only retrieve the patient resources when they are updated.
         /// </summary>
-        [JsonProperty("processedPatientIds")]
-        public IEnumerable<string> ProcessedPatientIds { get; }
+        [JsonProperty("processedPatients")]
+        public Dictionary<string, int> ProcessedPatients { get; }
     }
 }

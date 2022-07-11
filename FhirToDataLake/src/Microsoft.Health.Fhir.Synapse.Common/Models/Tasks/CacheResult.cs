@@ -10,13 +10,13 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
 {
     /// <summary>
-    /// Cache the resources retrieved from Fhir server in memory,
+    /// Cache the resources retrieved from Fhir server and search progress in memory,
     /// so we can process the resources and save them to blob storage in batch.
     /// </summary>
     public class CacheResult
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CacheResult"/> class based on the provided resources and taskProgress.
+        /// Initializes a new instance of the <see cref="CacheResult"/> class based on the provided resources and searchProgress.
         /// </summary>
         /// <param name="searchProgress">the search progress.</param>
         /// <param name="resources">the resources.</param>

@@ -22,7 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             DataPeriod dataPeriod,
             DateTimeOffset since,
             IList<TypeFilter> typeFilters,
-            IEnumerable<PatientWrapper> patientIds = null,
+            IList<PatientWrapper> patients = null,
             SearchProgress searchProgress = null,
             Dictionary<string, int> outputFileIndexMap = null,
             Dictionary<string, int> searchCount = null,
@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             DataPeriod = dataPeriod;
             Since = since;
             TypeFilters = typeFilters;
-            PatientIds = patientIds;
+            Patients = patients;
 
             // fields to record progress
             SearchProgress = searchProgress ?? new SearchProgress();
@@ -97,8 +97,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// <summary>
         /// Patient id list, used in "Group" scope.
         /// </summary>
-        [JsonProperty("patientIds")]
-        public IEnumerable<PatientWrapper> PatientIds { get; }
+        [JsonProperty("patients")]
+        public IList<PatientWrapper> Patients { get; }
 
         /// <summary>
         /// Search progress
@@ -141,7 +141,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public static TaskContext CreateFromJob(
             Job job,
             IList<TypeFilter> typeFilters,
-            IEnumerable<PatientWrapper> patients = null)
+            IList<PatientWrapper> patients = null)
         {
             return new TaskContext(
                 Guid.NewGuid().ToString("N"),

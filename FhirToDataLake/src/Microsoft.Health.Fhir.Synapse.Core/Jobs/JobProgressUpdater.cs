@@ -64,6 +64,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             _job.SkippedResourceCounts = _job.SkippedResourceCounts.ConcatDictionaryCount(context.SkippedCount);
                             _job.ProcessedResourceCounts = _job.ProcessedResourceCounts.ConcatDictionaryCount(context.ProcessedCount);
 
+                            if (context.FilterScope == FilterScope.Group)
+                            {
+                                foreach (var (patientId, versionId) in context.SearchProgress.PatientVersionId)
+                                {
+
+                                    _job.PatientVersionId[patientId] = versionId;
+                                }
+                            }
+
                             _job.RunningTasks.Remove(context.Id);
                         }
                     }

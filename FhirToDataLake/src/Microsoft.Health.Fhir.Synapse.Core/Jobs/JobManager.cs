@@ -104,6 +104,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     resumedJob.TotalResourceCounts,
                     resumedJob.ProcessedResourceCounts,
                     resumedJob.SkippedResourceCounts,
+                    resumedJob.PatientVersionId,
                     resumedJob.Id);
             }
 
@@ -128,7 +129,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _filterConfiguration.RequiredTypes,
                 _filterConfiguration.TypeFilters);
 
-            var processedPatients = schedulerSetting?.ProcessedPatientIds;
+            var processedPatients = schedulerSetting?.ProcessedPatients;
 
             var filterInfo =
                 new FilterInfo(_filterConfiguration.FilterScope, _filterConfiguration.GroupId, _jobConfiguration.StartTime, typeFilters, processedPatients);

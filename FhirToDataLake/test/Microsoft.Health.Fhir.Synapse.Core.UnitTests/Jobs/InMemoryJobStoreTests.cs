@@ -311,7 +311,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var jobStore = CreateInMemoryJobStore(blobClient);
             var filterInfo = new FilterInfo(FilterScope.Group, "groupId", _testStartTime, _testResourceTypeFilters, null);
             var patients = new List<PatientWrapper>
-                {new PatientWrapper("patientId1"), new PatientWrapper("patientId2")};
+                { new PatientWrapper("patientId1", 1), new PatientWrapper("patientId2", 0)};
 
             var activeJob = Job.Create(
                 TestContainerName,
@@ -325,6 +325,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var persistedJob = await LoadJobFromBlob(blobClient, $"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
             Assert.NotNull(persistedJob);
 
+            activeJob.PatientVersionId["patientId1"] = 1;
             activeJob.Status = JobStatus.Succeeded;
             await jobStore.CompleteJobAsync(activeJob);
 
@@ -335,8 +336,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             using var streamReader = new StreamReader(await blobClient.GetBlobAsync($"{AzureBlobJobConstants.SchedulerMetadataFileName}"));
             var metadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader.ReadToEnd());
-            Assert.Contains("patientId1", metadata.ProcessedPatientIds);
-            Assert.Contains("patientId2", metadata.ProcessedPatientIds);
+            Assert.Single(metadata.ProcessedPatients);
+            Assert.True(metadata.ProcessedPatients.ContainsKey("patientId1"));
+            Assert.Equal(1, metadata.ProcessedPatients["patientId1"]);
+            Assert.False(metadata.ProcessedPatients.ContainsKey("patientId2"));
 
             jobStore.Dispose();
         }
@@ -348,7 +351,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var jobStore = CreateInMemoryJobStore(blobClient);
             var filterInfo = new FilterInfo(FilterScope.Group, "groupId", _testStartTime, _testResourceTypeFilters, null);
             var patients = new List<PatientWrapper>
-                {new PatientWrapper("patientId1"), new PatientWrapper("patientId2")};
+                { new PatientWrapper("patientId1", 1), new PatientWrapper("patientId2", 0)};
 
             var activeJob = Job.Create(
                 TestContainerName,
@@ -373,7 +376,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // job has been added to failedJobs
             using var streamReader = new StreamReader(await blobClient.GetBlobAsync($"{AzureBlobJobConstants.SchedulerMetadataFileName}"));
             var metadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader.ReadToEnd());
-            Assert.Empty(metadata.ProcessedPatientIds);
+            Assert.Empty(metadata.ProcessedPatients);
             Assert.Equal(activeJob.Id, metadata.FailedJobs.First().Id);
             Assert.Equal(activeJob.DataPeriod.Start, metadata.FailedJobs.First().DataPeriod.Start);
             Assert.Equal(activeJob.DataPeriod.End, metadata.FailedJobs.First().DataPeriod.End);

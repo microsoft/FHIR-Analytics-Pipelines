@@ -187,7 +187,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 var schedulerMetadata = await GetSchedulerMetadata(blobContainerClient);
 
                 Assert.Empty(schedulerMetadata.FailedJobs);
-                Assert.Single(schedulerMetadata.ProcessedPatientIds);
+                Assert.Single(schedulerMetadata.ProcessedPatients);
             }
             finally
             {
@@ -239,7 +239,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 var schedulerMetadata = await GetSchedulerMetadata(blobContainerClient);
 
                 Assert.Empty(schedulerMetadata.FailedJobs);
-                Assert.Equal(80, schedulerMetadata.ProcessedPatientIds.Count());
+                Assert.Equal(80, schedulerMetadata.ProcessedPatients.Count());
             }
             finally
             {
@@ -345,7 +345,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                         Assert.Equal(expectedJob.FilterInfo.GroupId, completedJob.FilterInfo.GroupId);
                     }
 
-                    Assert.True(completedJob.FilterInfo.ProcessedPatientIds.ToHashSet().SetEquals(expectedJob.FilterInfo.ProcessedPatientIds.ToHashSet()));
+                    Assert.True(completedJob.FilterInfo.ProcessedPatients.ToHashSet().SetEquals(expectedJob.FilterInfo.ProcessedPatients.ToHashSet()));
                     Assert.Equal(expectedJob.FilterInfo.TypeFilters.Count(), completedJob.FilterInfo.TypeFilters.Count());
                     Assert.Equal(expectedJob.FilterInfo.TypeFilters.Count(), completedJob.FilterInfo.TypeFilters.Count());
                     Assert.Empty(expectedJob.RunningTasks);

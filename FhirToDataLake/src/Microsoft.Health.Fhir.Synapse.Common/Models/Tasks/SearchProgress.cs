@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
@@ -13,24 +14,18 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
     public class SearchProgress
     {
         public SearchProgress(
-            TaskStage stage = TaskStage.New,
             int currentIndex = 0,
             int currentFilter = 0,
             string continuationToken = null,
-            bool isCurrentSearchCompleted = false)
+            bool isCurrentSearchCompleted = false,
+            Dictionary<string, int> patientVersionId = null)
         {
-            Stage = stage;
             CurrentIndex = currentIndex;
             CurrentFilter = currentFilter;
             ContinuationToken = continuationToken;
             IsCurrentSearchCompleted = isCurrentSearchCompleted;
+            PatientVersionId = patientVersionId ?? new Dictionary<string, int>();
         }
-
-        /// <summary>
-        /// Task stage
-        /// </summary>
-        [JsonProperty("stage")]
-        public TaskStage Stage { get; set; }
 
         /// <summary>
         /// Current compartment index for processing, used for group filter scope.
@@ -57,14 +52,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public bool IsCurrentSearchCompleted { get; set; }
 
         /// <summary>
-        /// Update to the specified stage.
+        /// The version id of processed patients
         /// </summary>
-        /// <param name="stage">the target stage.</param>
-        public void UpdateStage(TaskStage stage)
-        {
-            Stage = stage;
-            ClearContinuationToken();
-        }
+        [JsonProperty("patientVersionId")]
+        public Dictionary<string, int> PatientVersionId { get; set; }
 
         /// <summary>
         /// Update CurrentIndex the the specified index.
