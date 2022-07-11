@@ -42,12 +42,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            List<JObject> processedData;
 
-            IEnumerable<JObject> processedData;
             try
             {
-                processedData = inputData.Values.Select(
-                    dataObject => JObject.Parse(_jsonProcessor.Convert(dataObject.ToString(), resourceType, _templateProvider)));
+                processedData = inputData.Values.Select(dataObject 
+                    => JObject.Parse(_jsonProcessor.Convert(dataObject.ToString(), resourceType, _templateProvider))).ToList();
             }
             catch (Exception ex)
             {

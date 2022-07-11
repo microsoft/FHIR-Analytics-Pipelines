@@ -14,7 +14,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
 {
     public class FhirParquetSchemaManagerTests
     {
-        private static readonly FhirDefaultParquetSchemaManager _testParquetSchemaManager;
+        private static readonly FhirParquetSchemaManager _testParquetSchemaManager;
 
         static FhirParquetSchemaManagerTests()
         {
@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
                 SchemaCollectionDirectory = TestConstants.DefaultSchemaDirectory,
             });
 
-            _testParquetSchemaManager = new FhirDefaultParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirDefaultParquetSchemaManager>.Instance);
+            _testParquetSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
         }
 
         private static IParquetSchemaProvider ParquetSchemaProviderDelegate(string name)

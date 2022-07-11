@@ -84,7 +84,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             JsonBatchData processedData;
             if (IsCustomizedSchemaType(processParameters.SchemaType))
             {
-                processedData = _fhirDataConverter.Convert(inputData, processParameters.ResourceType, cancellationToken);
+                var rawResourceType = processParameters.SchemaType
+                    .Substring(0, processParameters.SchemaType.Length - FhirParquetSchemaConstants.CustomizedSchemaSuffix.Length);
+                processedData = _fhirDataConverter.Convert(inputData, rawResourceType, cancellationToken);
             }
             else
             {

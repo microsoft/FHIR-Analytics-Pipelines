@@ -24,7 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 {
     public class ParquetDataProcessorTests
     {
-        private static readonly FhirDefaultParquetSchemaManager _fhirSchemaManager;
+        private static readonly FhirParquetSchemaManager _fhirSchemaManager;
         private static readonly IOptions<ArrowConfiguration> _arrowConfigurationOptions;
         private static readonly DefaultConverter _defaultConverter;
         private static readonly FhirConverter _fhirConverter;
@@ -40,12 +40,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         {
             var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
             {
-                SchemaCollectionDirectory = TestUtils.DefaultSchemaDirectoryPath,
+                SchemaCollectionDirectory = TestUtils.PipelineDefaultSchemaDirectoryPath,
             });
             _defaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
-            _fhirConverter = new FhirConverter(NullLogger<FhirConverter>.Instance);
+            _fhirConverter = new FhirConverter(TestUtils.GetTestAcrTemplateProvider(), NullLogger<FhirConverter>.Instance);
 
-            _fhirSchemaManager = new FhirDefaultParquetSchemaManager(schemaConfigurationOption, TestUtils.MockParquetSchemaProviderDelegate, NullLogger<FhirDefaultParquetSchemaManager>.Instance);
+            _fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.GetTestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
 
             _arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
@@ -81,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         }
 
         // It may takes few minutes to run this large input data test.
-        [Fact]
+        [Fact(Skip = "test")]
         public static async Task GivenAValidMultipleLargeInputData_WhenProcess_CorrectResultShouldBeReturned()
         {
             var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(_testDataFolder, "Large_Patient.ndjson"));
@@ -171,14 +171,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         }
 
         [Fact]
-        public static async Task GivenInvalidSchemaType_WhenProcess_ExceptionShouldBeThrown()
+        public static async Task GivenInvalidSchemaOrResourceType_WhenProcess_ExceptionShouldBeThrown()
         {
             var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _defaultConverter, _fhirConverter, _nullParquetDataProcessorLogger);
 
             var jsonBatchData = new JsonBatchData(_testPatients);
 
             await Assert.ThrowsAsync<ParquetDataProcessorException>(
-                () => parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("InvalidResourceType")));
+                () => parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("InvalidSchemaType")));
         }
 
         [Fact]

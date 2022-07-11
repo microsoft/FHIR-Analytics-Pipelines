@@ -46,6 +46,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
             var templateCollections = await _containerRegistryTemplateProvider.GetTemplateCollectionAsync(cancellationToken);
 
+            // Fetch all files with suffix ".schema.json" as Json schema template.
             foreach (var templates in templateCollections)
             {
                 foreach (var templateItem in templates)

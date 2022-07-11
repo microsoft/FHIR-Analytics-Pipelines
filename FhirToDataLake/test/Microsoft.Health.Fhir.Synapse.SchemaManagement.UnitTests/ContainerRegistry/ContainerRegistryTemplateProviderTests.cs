@@ -7,7 +7,10 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Castle.Core.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.TemplateManagement.Models;
@@ -18,37 +21,40 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
 {
     public class ContainerRegistryTemplateProviderTests
     {
-        private readonly string _testContainerRegistryServer;
-        private readonly string _testContainerRegistryAccessToken;
         private readonly string _testImageReference;
+        private readonly string _testContainerRegistryAccessToken;
+        private readonly IContainerRegistryTokenProvider _testTokenProvider;
 
         public ContainerRegistryTemplateProviderTests()
         {
-            _testContainerRegistryServer = Environment.GetEnvironmentVariable("TestContainerRegistryServer");
-            if (_testContainerRegistryServer == null)
+            var testContainerRegistryServer = Environment.GetEnvironmentVariable("TestContainerRegistryServer");
+            if (testContainerRegistryServer == null)
             {
                 return;
             }
 
-            _testImageReference = $"{_testContainerRegistryServer}/synapsetesttemplates:latest";
+            _testImageReference = $"{testContainerRegistryServer}/synapsetesttemplates:latest";
 
             var testContainerRegistryUsername = Environment.GetEnvironmentVariable("TestContainerRegistryServer")?.Split('.')[0];
             var testContainerRegistryPassword = Environment.GetEnvironmentVariable("TestContainerRegistryPassword");
-            Console.WriteLine($"Password length: {testContainerRegistryPassword.Length}");
 
-            _testContainerRegistryAccessToken = GetContainerRegistryAccessToken(testContainerRegistryUsername, testContainerRegistryPassword);
+            _testContainerRegistryAccessToken = GetTestAccessToken(testContainerRegistryUsername, testContainerRegistryPassword);
+            _testTokenProvider = GetTestAcrTokenProvider(_testContainerRegistryAccessToken);
         }
 
         [SkippableFact]
         public async Task GivenTemplateReference_WhenFetchingTemplates_CorrectTemplateCollectionsShouldBeReturned()
         {
-            Skip.If(_testContainerRegistryServer == null);
+            Skip.If(_testImageReference == null);
 
             ImageInfo imageInfo = ImageInfo.CreateFromImageReference(_testImageReference);
             await ContainerRegistryTestUtils.GenerateTemplateImageAsync(imageInfo, _testContainerRegistryAccessToken, TestConstants.TestTemplateTarGzPath);
 
-            var containerRegistryTemplateProvider = GetTestTemplateProvider(_testContainerRegistryAccessToken);
-            var templateCollection = await containerRegistryTemplateProvider.GetTemplateCollectionAsync(_testImageReference, CancellationToken.None);
+            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
+                _testTokenProvider,
+                Options.Create(new ContainerRegistryConfiguration() { SchemaImageReference = _testImageReference }),
+                new NullLogger<ContainerRegistryTemplateProvider>());
+            var templateCollection = await containerRegistryTemplateProvider.GetTemplateCollectionAsync(CancellationToken.None);
 
             Assert.NotEmpty(templateCollection);
         }
@@ -56,21 +62,25 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         [SkippableFact]
         public async Task GivenAnInvalidToken_WhenFetchingTemplates_ExceptionShouldBeThrown()
         {
-            Skip.If(_testContainerRegistryServer == null);
-            var containerRegistryTemplateProvider = GetTestTemplateProvider("invalid token");
+            Skip.If(_testImageReference == null);
 
-            await Assert.ThrowsAsync<ContainerRegistrySchemaException>(() => containerRegistryTemplateProvider.GetTemplateCollectionAsync(_testImageReference, CancellationToken.None));
+            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
+                GetTestAcrTokenProvider("invalid token"),
+                Options.Create(new ContainerRegistryConfiguration() { SchemaImageReference = _testImageReference }),
+                new NullLogger<ContainerRegistryTemplateProvider>());
+
+            await Assert.ThrowsAsync<ContainerRegistrySchemaException>(() => containerRegistryTemplateProvider.GetTemplateCollectionAsync(CancellationToken.None));
         }
 
-        private IContainerRegistryTemplateProvider GetTestTemplateProvider(string accessToken)
+        private IContainerRegistryTokenProvider GetTestAcrTokenProvider(string accessToken)
         {
-            IContainerRegistryTokenProvider tokenProvider = Substitute.For<IContainerRegistryTokenProvider>();
-            tokenProvider.GetTokenAsync(default, default).ReturnsForAnyArgs($"Basic {accessToken}");
+            var tokenProvider = Substitute.For<IContainerRegistryTokenProvider>();
 
-            return new ContainerRegistryTemplateProvider(tokenProvider, new NullLogger<ContainerRegistryTemplateProvider>());
+            tokenProvider.GetTokenAsync(default, default).ReturnsForAnyArgs($"Basic {accessToken}");
+            return tokenProvider;
         }
 
-        private string GetContainerRegistryAccessToken(string serverUsername, string serverPassword)
+        private string GetTestAccessToken(string serverUsername, string serverPassword)
         {
             return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{serverUsername}:{serverPassword}"));
         }

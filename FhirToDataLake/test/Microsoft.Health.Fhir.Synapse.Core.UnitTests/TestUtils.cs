@@ -5,17 +5,26 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using DotLiquid;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
+using Microsoft.Health.Fhir.TemplateManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NSubstitute;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 {
     public static class TestUtils
     {
-        public const string DefaultSchemaDirectoryPath = "../../../../../data/schemas";
-        public const string TestSchemaDirectoryPath = "./TestData/schemas";
+        public const string PipelineDefaultSchemaDirectoryPath = "../../../../../data/schemas";
+
+        public const string TestDataFolder = "./TestData";
+        public const string ExpectTestDataFolder = TestDataFolder + "/Expected";
+        public const string TestNativeSchemaDirectoryPath = TestDataFolder + "/schemas";
+        public const string TestCustomizedSchemaDirectoryPath = TestDataFolder + "/CustomizedSchema";
 
         public static IEnumerable<JObject> LoadNdjsonData(string filePath)
         {
@@ -29,7 +38,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             }
         }
 
-        public static IParquetSchemaProvider MockParquetSchemaProviderDelegate(string name)
+        public static IContainerRegistryTemplateProvider GetTestAcrTemplateProvider()
+        {
+            var templateContents = Directory.GetFiles(TestCustomizedSchemaDirectoryPath, "*", SearchOption.AllDirectories)
+                .Select(filePath => 
+                {
+                    var templateContent = File.ReadAllBytes(filePath);
+                    return new KeyValuePair<string, byte[]>(Path.GetRelativePath(TestCustomizedSchemaDirectoryPath, filePath), templateContent);
+                }).ToDictionary(x => x.Key, x => x.Value);
+
+            var templateCollection = TemplateLayerParser.ParseToTemplates(templateContents);
+
+            var templateProvider = Substitute.For<IContainerRegistryTemplateProvider>();
+            templateProvider.GetTemplateCollectionAsync(default).ReturnsForAnyArgs(new List<Dictionary<string, Template>> { templateCollection });
+            return templateProvider;
+        }
+
+        public static IParquetSchemaProvider GetTestParquetSchemaProviderDelegate(string name)
         {
             return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
         }

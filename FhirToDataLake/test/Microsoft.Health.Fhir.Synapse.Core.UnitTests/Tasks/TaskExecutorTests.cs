@@ -7,10 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
-using EnsureThat.Enforcers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -23,11 +21,9 @@ using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Newtonsoft.Json;
@@ -131,14 +127,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
         {
             var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
             {
-                SchemaCollectionDirectory = TestUtils.TestSchemaDirectoryPath,
+                SchemaCollectionDirectory = TestUtils.TestNativeSchemaDirectoryPath,
             });
 
-            var fhirSchemaManager = new FhirDefaultParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirDefaultParquetSchemaManager>.Instance);
+            var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
             var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             var defaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
-            var fhirConverter = new FhirConverter(NullLogger<FhirConverter>.Instance);
+            var fhirConverter = new FhirConverter(TestUtils.GetTestAcrTemplateProvider(), NullLogger<FhirConverter>.Instance);
 
             return new ParquetDataProcessor(
             fhirSchemaManager,

@@ -20,40 +20,37 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 {
     public class DefaultConverterTests
     {
-        private const string _testDataFolder = "./TestData";
-        private const string _expectTestDataFolder = "./TestData/Expected";
-
         private static readonly JObject _testPatient;
         private static readonly DefaultConverter _testDefaultConverter;
-        private static readonly FhirDefaultParquetSchemaManager _schemaManager;
+        private static readonly FhirParquetSchemaManager _schemaManager;
 
         static DefaultConverterTests()
         {
 
             var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
             {
-                SchemaCollectionDirectory = TestUtils.DefaultSchemaDirectoryPath,
+                SchemaCollectionDirectory = TestUtils.PipelineDefaultSchemaDirectoryPath,
             });
 
             _testDefaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
-            _schemaManager = new FhirDefaultParquetSchemaManager(schemaConfigurationOption, TestUtils.MockParquetSchemaProviderDelegate, NullLogger<FhirDefaultParquetSchemaManager>.Instance);
-            _testPatient = TestUtils.LoadNdjsonData(Path.Combine(_testDataFolder, "Basic_Raw_Patient.ndjson")).First();
+            _schemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.GetTestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
+            _testPatient = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson")).First();
         }
 
         [Fact]
-        public static void GivenAValidBasicSchema_WhenPreprocess_CorrectResultShouldBeReturned()
+        public static void GivenAValidBasicSchema_WhenConvert_CorrectResultShouldBeReturned()
         {
             var result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(_testPatient),
                 _schemaManager.GetSchema("Patient"));
 
-            var expectedResult = TestUtils.LoadNdjsonData(Path.Combine(_expectTestDataFolder, "Expected_Processed_Patient.ndjson"));
+            var expectedResult = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Processed_Patient.ndjson"));
 
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedResult.First()));
         }
 
         [Fact]
-        public static void GivenAValidStructData_WhenPreprocess_CorrectResultShouldBeReturned()
+        public static void GivenAValidStructData_WhenConvert_CorrectResultShouldBeReturned()
         {
             JObject rawStructFormatData = new JObject
             {
@@ -85,7 +82,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidArrayData_WhenPreprocess_CorrectResultShouldBeReturned()
+        public static void GivenAValidArrayData_WhenConvert_CorrectResultShouldBeReturned()
         {
             JObject rawArrayFormatData = new JObject
             {
@@ -135,7 +132,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidDataWithDeepArrayField_WhenPreprocess_DeepFieldsShouldBeWrappedIntoJsonString()
+        public static void GivenAValidDataWithDeepArrayField_WhenConvert_DeepFieldsShouldBeWrappedIntoJsonString()
         {
             JObject rawDeepFieldsData = new JObject
             {
@@ -197,7 +194,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidDataWithDeepStructField_WhenPreprocess_DeepFieldsShouldBeWrappedIntoJsonString()
+        public static void GivenAValidDataWithDeepStructField_WhenConvert_DeepFieldsShouldBeWrappedIntoJsonString()
         {
             JObject rawDeepFieldsData = new JObject
             {
@@ -259,7 +256,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidPrimitiveChoiceTypeData_WhenPreprocess_CorrectResultShouldBeReturned()
+        public static void GivenAValidPrimitiveChoiceTypeData_WhenConvert_CorrectResultShouldBeReturned()
         {
             JObject rawPrimitiveChoiceTypeData = new JObject
             {
@@ -279,7 +276,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidStructChoiceTypeData_WhenPreprocess_CorrectResultShouldBeReturned()
+        public static void GivenAValidStructChoiceTypeData_WhenConvert_CorrectResultShouldBeReturned()
         {
             JObject rawStructChoiceTypeData = new JObject
             {
@@ -313,7 +310,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenInvalidData_WhenPreprocess_ExceptionShouldBeReturned()
+        public static void GivenInvalidData_WhenConvert_ExceptionShouldBeReturned()
         {
             var invalidFieldData = new JObject
             {
