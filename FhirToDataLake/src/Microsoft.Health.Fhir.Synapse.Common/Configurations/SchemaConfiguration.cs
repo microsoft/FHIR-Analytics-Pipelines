@@ -15,5 +15,17 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// </summary>
         [JsonProperty("schemaCollectionDirectory")]
         public string SchemaCollectionDirectory { get; set; } = ConfigurationConstants.DefaultSchemaDirectory;
+
+        /// <summary>
+        /// Gets bool value for whether enable customized schema.
+        /// </summary>
+        [JsonProperty("enableCustomizedSchema")]
+        public bool EnableCustomizedSchema { get; } = false;
+
+        /// <summary>
+        /// Gets Azure Container Registry image reference of customized schema templates.
+        /// </summary>
+        [JsonProperty("customizedSchemaImageReference")]
+        public string CustomizedSchemaImageReference { get; } = string.Empty;
     }
 }

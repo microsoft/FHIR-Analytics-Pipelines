@@ -33,8 +33,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private readonly BlobServiceClient _blobServiceClient;
         private readonly ITestOutputHelper _testOutputHelper;
 
-        private const string _configurationPath = "appsettings.test.json";
+        private const string TestConfigurationPath = "appsettings.test.json";
         private const int TriggerIntervalInMinutes = 5;
+        private const string FakeFhirServerUrl = "http://127.0.0.1:5000";
+        private const string FhirServerNoneAuthentication = "None";
 
         private const string _expectedDataFolder = "TestData/Expected";
 
@@ -59,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         {
             Environment.SetEnvironmentVariable("filter:filterScope", "Unsupported");
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile(_configurationPath)
+                .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
             Assert.Throws<ConfigurationErrorException>(() => CreateHostBuilder(configuration).Build());
@@ -75,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Environment.SetEnvironmentVariable("filter:groupId", groupId);
 
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile(_configurationPath)
+                .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
             Assert.Throws<ConfigurationErrorException>(() => CreateHostBuilder(configuration).Build());
@@ -93,7 +95,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Environment.SetEnvironmentVariable("filter:groupId", groupId);
 
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile(_configurationPath)
+                .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
             var exception = Record.Exception(() => CreateHostBuilder(configuration).Build());
@@ -118,7 +120,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Environment.SetEnvironmentVariable("filter:typeFilters", string.Empty);
 
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile(_configurationPath)
+                .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
 
@@ -165,7 +167,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Environment.SetEnvironmentVariable("filter:typeFilters", string.Empty);
 
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile(_configurationPath)
+                .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
 
@@ -215,7 +217,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Environment.SetEnvironmentVariable("filter:groupId", "72d653ce-2dbb-4432-bfa0-9ac47d0e0a2c");
 
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile(_configurationPath)
+                .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
 
@@ -262,7 +264,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             // Load configuration and set endTime to yesterday
             Environment.SetEnvironmentVariable("job:containerName", uniqueContainerName);
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile(_configurationPath)
+                .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
             var now = DateTime.UtcNow;
