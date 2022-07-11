@@ -58,9 +58,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 .GetRequiredService<IOptions<JobConfiguration>>()
                 .Value;
 
-            if (string.IsNullOrEmpty(jobConfiguration.ContainerName))
+            if (string.IsNullOrEmpty(jobConfiguration.AgentId))
             {
-                throw new ConfigurationErrorException($"Target azure container name '{jobConfiguration.ContainerName}' can not be empty.");
+                throw new ConfigurationErrorException($"Target agent ID '{jobConfiguration.AgentId}' can not be empty.");
             }
 
             var storeConfiguration = services

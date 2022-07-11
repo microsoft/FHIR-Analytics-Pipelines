@@ -4,20 +4,21 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 {
     public class FhirSearchParameters
     {
-        public FhirSearchParameters(string resourceType, DateTimeOffset startTime, DateTimeOffset endTime, string continuationToken)
+        public FhirSearchParameters(IEnumerable<string> resourceTypes, DateTimeOffset startTime, DateTimeOffset endTime, string continuationToken)
         {
-            ResourceType = resourceType;
+            ResourceTypes = resourceTypes;
             StartTime = startTime;
             EndTime = endTime;
             ContinuationToken = continuationToken;
         }
 
-        public string ResourceType { get; }
+        public IEnumerable<string> ResourceTypes { get; }
 
         public DateTimeOffset StartTime { get; }
 

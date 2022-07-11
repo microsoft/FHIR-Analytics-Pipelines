@@ -3,18 +3,20 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Threading;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
-using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 
-namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
+namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
 {
-    public interface ITaskExecutor
+    public enum TriggerStatus
     {
-        public Task<TaskResult> ExecuteAsync(
-            TaskContext taskContext,
-            JobProgressUpdater progressUpdater,
-            CancellationToken cancellationToken = default);
+        New,
+
+        Running,
+
+        Completed,
     }
 }

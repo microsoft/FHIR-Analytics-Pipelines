@@ -11,11 +11,20 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 {
     public class JobConfiguration
     {
-        /// <summary>
-        /// Container name for this job.
-        /// </summary>
-        [JsonProperty("containerName")]
-        public string ContainerName { get; set; }
+        [JsonProperty("queueType")]
+        public byte QueueType { get; set; }
+
+        [JsonProperty("tableUrl")]
+        public string TableUrl { get; set; }
+
+        [JsonProperty("queueUrl")]
+        public string QueueUrl { get; set; }
+
+        [JsonProperty("schedulerCronExpression")]
+        public string SchedulerCronExpression { get; set; }
+
+        [JsonProperty("agentId")]
+        public string AgentId { get; set; }
 
         /// <summary>
         /// Start time of the job.

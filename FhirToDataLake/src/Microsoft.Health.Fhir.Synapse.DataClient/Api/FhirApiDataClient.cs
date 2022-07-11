@@ -103,11 +103,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 serverUrl = $"{_dataSource.FhirServerUrl}/";
             }
 
-            var baseUri = new Uri(serverUrl);
-            var uri = new Uri(baseUri, searchParameters.ResourceType);
+            var uri = new Uri(serverUrl);
 
             var queryParameters = new List<KeyValuePair<string, string>>
             {
+                new KeyValuePair<string, string>(FhirApiConstants.TypeKey, string.Join(',', searchParameters.ResourceTypes)),
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{searchParameters.StartTime.ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{searchParameters.EndTime.ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),

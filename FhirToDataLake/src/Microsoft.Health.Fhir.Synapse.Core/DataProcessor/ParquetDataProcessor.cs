@@ -76,7 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
                 throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
             }
 
-            var inputStream = ConvertJsonDataToStream(processParameters.SchemaType, preprocessedData.Values);
+            using var inputStream = ConvertJsonDataToStream(processParameters.SchemaType, preprocessedData.Values);
             if (inputStream == null)
             {
                 // Return null if no data has been converted.

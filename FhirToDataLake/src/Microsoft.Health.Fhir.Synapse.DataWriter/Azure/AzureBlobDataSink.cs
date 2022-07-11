@@ -19,7 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             EnsureArg.IsNotNull(jobConfig, nameof(jobConfig));
 
             StorageUrl = storageConfig.Value.StorageUrl;
-            Location = jobConfig.Value.ContainerName;
+            Location = jobConfig.Value.AgentId;
         }
 
         public string StorageUrl { get; }

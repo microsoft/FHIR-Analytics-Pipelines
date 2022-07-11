@@ -35,5 +35,38 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
                 throw new FhirDataParseExeption("Failed to parse lastUpdated value from resource.", exception);
             }
         }
+
+        /// <summary>
+        /// Extract last update information from resource.
+        /// </summary>
+        /// <param name="resource">input resource.</param>
+        /// <returns>lastupdate timestamp of the bundle.</returns>
+        public static DateTimeOffset? GetLastUpdated(this JObject resource)
+        {
+            var result = (resource.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<string>(FhirBundleConstants.LastUpdatedKey);
+            if (result == null)
+            {
+                throw new FhirDataParseExeption("Failed to find lastUpdated value in resource.");
+            }
+
+            try
+            {
+                return DateTimeOffset.Parse(result.ToString());
+            }
+            catch (Exception exception)
+            {
+                throw new FhirDataParseExeption("Failed to parse lastUpdated value from resource.", exception);
+            }
+        }
+
+        /// <summary>
+        /// Extract resource type information from resource.
+        /// </summary>
+        /// <param name="resource">input resource.</param>
+        /// <returns>lastupdate timestamp of the bundle.</returns>
+        public static string GetResourceType(this JObject resource)
+        {
+            return resource.GetValue(FhirBundleConstants.ResourceTypeKey)?.ToString();
+        }
     }
 }
