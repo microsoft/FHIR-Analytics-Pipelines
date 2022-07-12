@@ -28,6 +28,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         private readonly FhirApiDataSource _dataSource;
 
+        private readonly R4ReferenceParser _referenceParser;
+
         private readonly NullLogger<GroupMemberExtractor> _nullGroupMemberExtractorLogger =
             NullLogger<GroupMemberExtractor>.Instance;
 
@@ -77,15 +79,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             };
             var fhirServerOption = Options.Create(fhirServerConfig);
             _dataSource = new FhirApiDataSource(fhirServerOption);
-
-            _groupMemberExtractor = new GroupMemberExtractor(dataClient, _dataSource, _nullGroupMemberExtractorLogger);
+            _referenceParser = new R4ReferenceParser(_dataSource, NullLogger<R4ReferenceParser>.Instance);
+            _groupMemberExtractor = new GroupMemberExtractor(dataClient, _referenceParser, _nullGroupMemberExtractorLogger);
         }
 
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new GroupMemberExtractor(null, _dataSource, _nullGroupMemberExtractorLogger));
+                () => new GroupMemberExtractor(null, _referenceParser, _nullGroupMemberExtractorLogger));
 
             var dataClient = Substitute.For<IFhirDataClient>();
             Assert.Throws<ArgumentNullException>(

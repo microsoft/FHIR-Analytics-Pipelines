@@ -35,6 +35,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
             services.AddSingleton<ITypeFilterParser, TypeFilterParser>();
 
+            services.AddSingleton<IReferenceParser, R4ReferenceParser>();
+
             return services;
         }
     }
