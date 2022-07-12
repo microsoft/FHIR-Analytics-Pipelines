@@ -126,6 +126,39 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile2), bundle2);
         }
 
+        [Theory]
+        [InlineData("https://example.com#")]
+        [InlineData("https://example.com#/")]
+        [InlineData("https://example.com/#")]
+        [InlineData("https://example.com/#/")]
+        public async Task GivenServerUrlWithPoundKey_WhenSearchFhirData_CorrectBatchDataShouldBeReturned(string serverUrl)
+        {
+            var datasource = CreateFhirApiDataSource(serverUrl, AuthenticationType.ManagedIdentity);
+            var client = CreateDataClient("https://example.com", _mockProvider, datasource);
+
+            // First batch
+            var queryParameters = new List<KeyValuePair<string, string>>
+            {
+                new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
+                new (FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+            };
+
+            var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
+            var bundle1 = await client.SearchAsync(searchOptions);
+
+            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
+
+            // Get continuation token
+            JObject bundleJObject = JObject.Parse(bundle1);
+            var continuationToken = FhirBundleParser.ExtractContinuationToken(bundleJObject);
+
+            searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, continuationToken));
+
+            var bundle2 = await client.SearchAsync(searchOptions);
+
+            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile2), bundle2);
+        }
+
         [Fact]
         public async Task GivenNullQueryParameters_WhenSearchFhirData_CorrectBatchDataShouldBeReturned()
         {
@@ -194,7 +227,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
         }
 
-        private FhirApiDataClient CreateDataClient(string fhirServerUrl, IAccessTokenProvider accessTokenProvider)
+        private FhirApiDataClient CreateDataClient(string fhirServerUrl, IAccessTokenProvider accessTokenProvider, IFhirApiDataSource dataSource = null)
         {
             // Set up http client.
             var comparer = StringComparer.OrdinalIgnoreCase;
@@ -224,19 +257,26 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
                 $"{fhirServerUrl.TrimEnd('/')}/metadata",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile)));
 
-            var fhirServerConfig = new FhirServerConfiguration
-            {
-                ServerUrl = fhirServerUrl,
-                Authentication = AuthenticationType.ManagedIdentity,
-            };
-
-            var fhirServerOption = Options.Create(fhirServerConfig);
-            var dataSource = new FhirApiDataSource(fhirServerOption);
+            dataSource ??= CreateFhirApiDataSource(fhirServerUrl, AuthenticationType.ManagedIdentity);
 
             var httpClient = new HttpClient(new MockHttpMessageHandler(requestMap));
 
             var dataClient = new FhirApiDataClient(dataSource, httpClient, accessTokenProvider, _nullFhirApiDataClientLogger);
             return dataClient;
+        }
+
+        private IFhirApiDataSource CreateFhirApiDataSource(string fhirServerUrl, AuthenticationType authenticationType)
+        {
+            var fhirServerConfig = new FhirServerConfiguration
+            {
+                ServerUrl = fhirServerUrl,
+                Authentication = authenticationType,
+            };
+
+            var fhirServerOption = Options.Create(fhirServerConfig);
+            var dataSource = new FhirApiDataSource(fhirServerOption);
+
+            return dataSource;
         }
 
         private HttpResponseMessage CreateResponseMessage(

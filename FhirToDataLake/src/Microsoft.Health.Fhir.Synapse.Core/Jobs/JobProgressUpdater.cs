@@ -27,13 +27,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             Job job,
             ILogger<JobProgressUpdater> logger)
         {
-            EnsureArg.IsNotNull(jobStore, nameof(jobStore));
-            EnsureArg.IsNotNull(job, nameof(job));
-            EnsureArg.IsNotNull(logger, nameof(logger));
-
-            _jobStore = jobStore;
-            _job = job;
-            _logger = logger;
+            _jobStore = EnsureArg.IsNotNull(jobStore, nameof(jobStore));
+            _job = EnsureArg.IsNotNull(job, nameof(job));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             var channelOptions = new UnboundedChannelOptions
             {
                 SingleReader = true,

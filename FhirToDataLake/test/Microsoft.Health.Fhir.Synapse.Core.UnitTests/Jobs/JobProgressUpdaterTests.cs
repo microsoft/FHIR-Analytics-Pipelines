@@ -144,9 +144,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             activeJob.NextTaskIndex++;
 
             // context is updated
-            context.SearchCount = new Dictionary<string, int>() { { "Patient", 10 }};
-            context.SkippedCount = new Dictionary<string, int>() { { "Patient", 0 }, { "Patient_customized", 0 } };
-            context.ProcessedCount = new Dictionary<string, int>() { { "Patient", 10 }, { "Patient_customized", 10 } };
+            context.SearchCount = new Dictionary<string, int>() { { "Patient", 15 }};
+            context.SkippedCount = new Dictionary<string, int>() { { "Patient", 0 }, { "Patient_customized", 2 } };
+            context.ProcessedCount = new Dictionary<string, int>() { { "Patient", 10 }, { "Patient_customized", 13 } };
             context.OutputFileIndexMap = new Dictionary<string, int>() { { "Patient", 1 }, { "Patient_customized", 1 } };
             context.SearchProgress.ContinuationToken = "exampleContinuationToken";
 
@@ -160,9 +160,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Empty(activeJob.SkippedResourceCounts);
 
             context.IsCompleted = true;
-            context.SearchCount["Patient"] = 15;
-            context.SkippedCount["Patient_customized"] = 2;
-            context.ProcessedCount["Patient_customized"] = 13;
             await jobProgressUpdater.Produce(context);
 
             jobProgressUpdater.Complete();

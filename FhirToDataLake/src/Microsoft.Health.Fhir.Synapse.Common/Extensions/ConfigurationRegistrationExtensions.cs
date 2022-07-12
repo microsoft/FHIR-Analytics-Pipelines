@@ -42,10 +42,19 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 
         private static void ValidateConfiguration(this IServiceCollection services)
         {
-            var fhirServerConfiguration = services
-                .BuildServiceProvider()
-                .GetRequiredService<IOptions<FhirServerConfiguration>>()
-                .Value;
+            FhirServerConfiguration fhirServerConfiguration;
+            try
+            {
+                // include enum field, an exception will be thrown when parse invalid enum string
+                fhirServerConfiguration = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<FhirServerConfiguration>>()
+                    .Value;
+            }
+            catch (Exception ex)
+            {
+                throw new ConfigurationErrorException("Failed to parse fhir server configuration", ex);
+            }
 
             if (string.IsNullOrEmpty(fhirServerConfiguration.ServerUrl))
             {
@@ -57,10 +66,18 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException($"Fhir version {fhirServerConfiguration.Version} is not supported.");
             }
 
-            var jobConfiguration = services
-                .BuildServiceProvider()
-                .GetRequiredService<IOptions<JobConfiguration>>()
-                .Value;
+            JobConfiguration jobConfiguration;
+            try
+            {
+                jobConfiguration = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<JobConfiguration>>()
+                    .Value;
+            }
+            catch (Exception ex)
+            {
+                throw new ConfigurationErrorException("Failed to parse job configuration", ex);
+            }
 
             if (string.IsNullOrEmpty(jobConfiguration.ContainerName))
             {

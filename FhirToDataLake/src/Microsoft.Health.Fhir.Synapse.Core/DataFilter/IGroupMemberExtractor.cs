@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         /// <param name="groupMembershipTime">Only returns patients that were in the group at this time.</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Patient id hashset.</returns>
-        public Task<HashSet<string>> GetGroupPatientsAsync(
+        Task<HashSet<string>> GetGroupPatientsAsync(
             string groupId,
             List<KeyValuePair<string, string>> queryParameters,
             DateTimeOffset groupMembershipTime,

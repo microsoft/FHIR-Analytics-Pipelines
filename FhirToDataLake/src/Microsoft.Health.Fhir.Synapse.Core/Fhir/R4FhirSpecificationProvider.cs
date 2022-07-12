@@ -64,12 +64,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
             IFhirDataClient dataClient,
             ILogger<R4FhirSpecificationProvider> logger)
         {
-            EnsureArg.IsNotNull(dataClient, nameof(dataClient));
-
-            EnsureArg.IsNotNull(logger, nameof(logger));
-
-            _dataClient = dataClient;
-            _logger = logger;
+            _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _compartmentResourceTypesLookup = BuildCompartmentResourceTypesLookup();
 

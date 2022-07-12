@@ -48,13 +48,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             IFhirApiDataSource dataSource,
             ILogger<GroupMemberExtractor> logger)
         {
-            EnsureArg.IsNotNull(dataClient, nameof(dataClient));
-            EnsureArg.IsNotNull(dataSource, nameof(dataSource));
-            EnsureArg.IsNotNull(logger, nameof(logger));
-
-            _dataClient = dataClient;
-            _dataSource = dataSource;
-            _logger = logger;
+            _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
+            _dataSource = EnsureArg.IsNotNull(dataSource, nameof(dataSource));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         public async Task<HashSet<string>> GetGroupPatientsAsync(
@@ -129,6 +125,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             bool isRootGroup,
             CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(groupId))
+            {
+                _logger.LogError("The input group id is null or white space.");
+                throw new GroupMemberExtractorException("The input group id is null or white space.");
+            }
+
             var searchOptions = new ResourceIdSearchOptions(nameof(ResourceType.Group), groupId, queryParameters);
 
             // If there is an exception thrown while requesting group resource, do nothing about it and the job will crash.

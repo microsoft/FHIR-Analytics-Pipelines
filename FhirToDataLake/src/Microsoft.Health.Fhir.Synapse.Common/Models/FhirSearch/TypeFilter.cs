@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using EnsureThat;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
@@ -17,10 +18,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
         /// </summary>
         /// <param name="resourceType">resource type</param>
         /// <param name="parameters">query parameters</param>
-        public TypeFilter(string resourceType, IList<Tuple<string, string>> parameters)
+        public TypeFilter(string resourceType, IList<KeyValuePair<string, string>> parameters)
         {
-            ResourceType = resourceType;
-            Parameters = parameters ?? new List<Tuple<string, string>>();
+            ResourceType = EnsureArg.IsNotEmptyOrWhiteSpace(resourceType, nameof(resourceType));
+            Parameters = parameters ?? new List<KeyValuePair<string, string>>();
         }
 
         /// <summary>
@@ -34,6 +35,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
         /// We should use List instead of dictionary here, since the parameter keys may be the same, such as lastUpdated=gt1900-01-01&lastUpdated=lt2000-01-01
         /// </summary>
         [JsonProperty("parameters")]
-        public IList<Tuple<string, string>> Parameters { get; set; }
+        public IList<KeyValuePair<string, string>> Parameters { get; set; }
     }
 }

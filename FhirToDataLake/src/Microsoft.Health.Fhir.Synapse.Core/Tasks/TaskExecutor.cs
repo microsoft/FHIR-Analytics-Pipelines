@@ -47,18 +47,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             ILogger<TaskExecutor> logger)
         {
-            EnsureArg.IsNotNull(dataClient, nameof(dataClient));
-            EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
-            EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
-            EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
-
-            EnsureArg.IsNotNull(logger, nameof(logger));
-
-            _dataClient = dataClient;
-            _dataWriter = dataWriter;
-            _parquetDataProcessor = parquetDataProcessor;
-            _fhirSchemaManager = fhirSchemaManager;
-            _logger = logger;
+            _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
+            _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
+            _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
+            _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         // the job/task main progress:
@@ -294,7 +287,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 searchOptions.QueryParameters = new List<KeyValuePair<string, string>>(sharedQueryParameters);
                 foreach (var parameter in taskContext.TypeFilters[i].Parameters)
                 {
-                    searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(parameter.Item1, parameter.Item2));
+                    searchOptions.QueryParameters.Add(parameter);
                 }
 
                 // reset the fields to start to process a new filter

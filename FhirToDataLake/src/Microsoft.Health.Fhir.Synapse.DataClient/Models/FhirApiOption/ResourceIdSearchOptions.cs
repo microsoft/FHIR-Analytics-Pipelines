@@ -17,13 +17,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption
             List<KeyValuePair<string, string>> queryParameters)
             : base(resourceType, queryParameters)
         {
-            EnsureArg.IsNotNullOrEmpty(resourceId, nameof(resourceId));
-
-            ResourceId = resourceId;
+            ResourceId = EnsureArg.IsNotNullOrEmpty(resourceId, nameof(resourceId));
 
             QueryParameters.Add(new KeyValuePair<string, string>(FhirApiConstants.IdKey, ResourceId));
         }
 
-        public string ResourceId { get; set; }
+        public string ResourceId { get; }
     }
 }

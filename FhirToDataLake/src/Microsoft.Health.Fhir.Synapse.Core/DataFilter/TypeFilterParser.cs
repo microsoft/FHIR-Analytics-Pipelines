@@ -25,11 +25,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             IFhirSpecificationProvider fhirSpecificationProvider,
             ILogger<TypeFilterParser> logger)
         {
-            EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
-            EnsureArg.IsNotNull(logger, nameof(logger));
-
-            _fhirSpecificationProvider = fhirSpecificationProvider;
-            _logger = logger;
+            _fhirSpecificationProvider = EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         public IEnumerable<TypeFilter> CreateTypeFilters(
@@ -63,13 +60,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
                     // For group filter scope, just generate a typeFilter for all the resource types
                     case FilterScope.Group:
-                        List<Tuple<string, string>> parameters = null;
+                        List<KeyValuePair<string, string>> parameters = null;
 
                         // if both typeString and filterString aren't specified, the request url is "https://{fhirURL}/Patient/{patientId}/*"
                         // otherwise, the request url is "https://{fhirURL}/Patient/{patientId}/*?_type={nonFilterTypes}"
                         if (!string.IsNullOrWhiteSpace(typeString) || !string.IsNullOrWhiteSpace(filterString))
                         {
-                            parameters = new List<Tuple<string, string>> { new (FhirApiConstants.TypeKey, string.Join(',', nonFilterTypes)) };
+                            parameters = new List<KeyValuePair<string, string>> { new (FhirApiConstants.TypeKey, string.Join(',', nonFilterTypes)) };
                         }
 
                         typeFilters.Add(new TypeFilter(FhirConstants.AllResource, parameters));
@@ -166,7 +163,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 var filterType = filter.Substring(0, parameterIndex);
 
                 var filterParameters = filter.Substring(parameterIndex + 1).Split("&");
-                var parameterTupleList = new List<Tuple<string, string>>();
+                var parameterTupleList = new List<KeyValuePair<string, string>>();
 
                 foreach (var parameter in filterParameters)
                 {
@@ -179,7 +176,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                             $"The typeFilter segment '{filter}' could not be parsed.");
                     }
 
-                    parameterTupleList.Add(new Tuple<string, string>(keyValue[0], keyValue[1]));
+                    parameterTupleList.Add(new KeyValuePair<string, string>(keyValue[0], keyValue[1]));
                 }
 
                 filters.Add(new TypeFilter(filterType, parameterTupleList));

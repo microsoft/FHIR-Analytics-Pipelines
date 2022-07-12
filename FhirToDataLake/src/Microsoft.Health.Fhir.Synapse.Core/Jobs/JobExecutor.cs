@@ -37,17 +37,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IOptions<JobSchedulerConfiguration> schedulerConfiguration,
             ILogger<JobExecutor> logger)
         {
-            EnsureArg.IsNotNull(taskExecutor, nameof(taskExecutor));
-            EnsureArg.IsNotNull(jobProgressUpdaterFactory, nameof(jobProgressUpdaterFactory));
-            EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
-            EnsureArg.IsNotNull(logger, nameof(logger));
-
-            _taskExecutor = taskExecutor;
-            _jobProgressUpdaterFactory = jobProgressUpdaterFactory;
-            _groupMemberExtractor = groupMemberExtractor;
             _schedulerConfiguration = schedulerConfiguration.Value;
-            _logger = logger;
+
+            _taskExecutor = EnsureArg.IsNotNull(taskExecutor, nameof(taskExecutor));
+            _jobProgressUpdaterFactory = EnsureArg.IsNotNull(jobProgressUpdaterFactory, nameof(jobProgressUpdaterFactory));
+            _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger)); ;
         }
 
         public async Task ExecuteAsync(Job job, CancellationToken cancellationToken)

@@ -58,10 +58,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             EnsureArg.IsNotNull(blobContainerFactory, nameof(blobContainerFactory));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             EnsureArg.IsNotNull(storeConfiguration, nameof(storeConfiguration));
-            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _blobContainerClient = blobContainerFactory.Create(storeConfiguration.Value.StorageUrl, jobConfiguration.Value.ContainerName);
-            _logger = logger;
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _renewLockTimer = new Timer(TimeSpan.FromSeconds(AzureBlobJobConstants.JobLeaseRefreshIntervalInSeconds).TotalMilliseconds);
             _renewLockTimer.Elapsed += async (sender, e) => await RenewJobLockLeaseAsync();

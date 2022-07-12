@@ -34,20 +34,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IOptions<FilterConfiguration> filterConfiguration,
             ILogger<JobManager> logger)
         {
-            EnsureArg.IsNotNull(jobStore, nameof(jobStore));
-            EnsureArg.IsNotNull(jobExecutor, nameof(jobExecutor));
-            EnsureArg.IsNotNull(typeFilterParser, nameof(typeFilterParser));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             EnsureArg.IsNotNull(filterConfiguration, nameof(filterConfiguration));
-            EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _jobStore = jobStore;
-            _jobExecutor = jobExecutor;
-            _typeFilterParser = typeFilterParser;
             _jobConfiguration = jobConfiguration.Value;
             _filterConfiguration = filterConfiguration.Value;
 
-            _logger = logger;
+            _jobStore = EnsureArg.IsNotNull(jobStore, nameof(jobStore));
+            _jobExecutor = EnsureArg.IsNotNull(jobExecutor, nameof(jobExecutor));
+            _typeFilterParser = EnsureArg.IsNotNull(typeFilterParser, nameof(typeFilterParser));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         /// <summary>
@@ -64,7 +60,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var job = await _jobStore.AcquireActiveJobAsync(cancellationToken) ?? await CreateNewJobAsync(cancellationToken);
 
             // Update the running job to job store.
-            // For new/resume job, add the created job to job store; For active job, update the last hart beat.
+            // For new/resume job, add the created job to job store; For active job, update the last heart beat.
             await _jobStore.UpdateJobAsync(job, cancellationToken);
 
             try
@@ -133,7 +129,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             var filterInfo =
                 new FilterInfo(_filterConfiguration.FilterScope, _filterConfiguration.GroupId, _jobConfiguration.StartTime, typeFilters, processedPatients);
-
             var newJob = Job.Create(
                 _jobConfiguration.ContainerName,
                 JobStatus.New,

@@ -91,8 +91,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             Assert.Single(typeFilters);
             Assert.Equal("*", typeFilters[0].ResourceType);
             Assert.Single(typeFilters[0].Parameters);
-            Assert.Equal("_type", typeFilters[0].Parameters[0].Item1);
-            Assert.Equal(expectedTypes, typeFilters[0].Parameters[0].Item2);
+            Assert.Equal("_type", typeFilters[0].Parameters[0].Key);
+            Assert.Equal(expectedTypes, typeFilters[0].Parameters[0].Value);
         }
 
         [Fact]
@@ -158,20 +158,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             Assert.Equal("MedicationRequest", typeFilters[0].ResourceType);
             Assert.Single(typeFilters[0].Parameters);
-            Assert.Equal("status", typeFilters[0].Parameters[0].Item1);
-            Assert.Equal("active", typeFilters[0].Parameters[0].Item2);
+            Assert.Equal("status", typeFilters[0].Parameters[0].Key);
+            Assert.Equal("active", typeFilters[0].Parameters[0].Value);
 
             Assert.Equal("MedicationRequest", typeFilters[1].ResourceType);
             Assert.Equal(2, typeFilters[1].Parameters.Count);
-            Assert.Equal("status", typeFilters[1].Parameters[0].Item1);
-            Assert.Equal("completed", typeFilters[1].Parameters[0].Item2);
-            Assert.Equal("date", typeFilters[1].Parameters[1].Item1);
-            Assert.Equal("gt2018-07-01T00:00:00Z", typeFilters[1].Parameters[1].Item2);
+            Assert.Equal("status", typeFilters[1].Parameters[0].Key);
+            Assert.Equal("completed", typeFilters[1].Parameters[0].Value);
+            Assert.Equal("date", typeFilters[1].Parameters[1].Key);
+            Assert.Equal("gt2018-07-01T00:00:00Z", typeFilters[1].Parameters[1].Value);
 
             Assert.Equal("*", typeFilters[2].ResourceType);
             Assert.Single(typeFilters[2].Parameters);
-            Assert.Equal("_type", typeFilters[2].Parameters[0].Item1);
-            Assert.Equal("Condition", typeFilters[2].Parameters[0].Item2);
+            Assert.Equal("_type", typeFilters[2].Parameters[0].Key);
+            Assert.Equal("Condition", typeFilters[2].Parameters[0].Value);
         }
 
         [Fact]
@@ -187,15 +187,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             Assert.Equal("MedicationRequest", typeFilters[0].ResourceType);
             Assert.Single(typeFilters[0].Parameters);
-            Assert.Equal("status", typeFilters[0].Parameters[0].Item1);
-            Assert.Equal("active", typeFilters[0].Parameters[0].Item2);
+            Assert.Equal("status", typeFilters[0].Parameters[0].Key);
+            Assert.Equal("active", typeFilters[0].Parameters[0].Value);
 
             Assert.Equal("MedicationRequest", typeFilters[1].ResourceType);
             Assert.Equal(2, typeFilters[1].Parameters.Count);
-            Assert.Equal("status", typeFilters[1].Parameters[0].Item1);
-            Assert.Equal("completed", typeFilters[1].Parameters[0].Item2);
-            Assert.Equal("date", typeFilters[1].Parameters[1].Item1);
-            Assert.Equal("gt2018-07-01T00:00:00Z", typeFilters[1].Parameters[1].Item2);
+            Assert.Equal("status", typeFilters[1].Parameters[0].Key);
+            Assert.Equal("completed", typeFilters[1].Parameters[0].Value);
+            Assert.Equal("date", typeFilters[1].Parameters[1].Key);
+            Assert.Equal("gt2018-07-01T00:00:00Z", typeFilters[1].Parameters[1].Value);
 
             Assert.Equal("Condition", typeFilters[2].ResourceType);
             Assert.Empty(typeFilters[2].Parameters);
