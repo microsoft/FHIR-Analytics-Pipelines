@@ -17,8 +17,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         private readonly Dictionary<string, List<string>> _schemaTypesMap;
         private readonly Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
         private readonly ILogger<FhirParquetSchemaManager> _logger;
-        private readonly IParquetSchemaProvider _defaultSchemaProvider;
-        private readonly IParquetSchemaProvider _customizedSchemaProvider;
 
         public FhirParquetSchemaManager(
             IOptions<SchemaConfiguration> schemaConfiguration,
@@ -27,10 +25,10 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         {
             _logger = logger;
 
-            _defaultSchemaProvider = parquetSchemaDelegate(FhirParquetSchemaConstants.DefaultSchemaProviderKey);
+            var defaultSchemaProvider = parquetSchemaDelegate(FhirParquetSchemaConstants.DefaultSchemaProviderKey);
 
             // Get default schema, the default schema keys are resource types, like "Patient", "Encounter".
-            _resourceSchemaNodesMap = _defaultSchemaProvider.GetSchemasAsync(schemaConfiguration.Value.SchemaCollectionDirectory).Result;
+            _resourceSchemaNodesMap = defaultSchemaProvider.GetSchemasAsync(schemaConfiguration.Value.SchemaCollectionDirectory).Result;
             _logger.LogInformation($"{_resourceSchemaNodesMap.Count} resource default schemas have been loaded.");
 
             if (schemaConfiguration.Value.EnableCustomizedSchema)

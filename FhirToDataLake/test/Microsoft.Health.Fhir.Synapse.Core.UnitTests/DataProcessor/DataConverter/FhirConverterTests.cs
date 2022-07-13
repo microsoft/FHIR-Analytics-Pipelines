@@ -3,16 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json.Linq;
 using Xunit;
 

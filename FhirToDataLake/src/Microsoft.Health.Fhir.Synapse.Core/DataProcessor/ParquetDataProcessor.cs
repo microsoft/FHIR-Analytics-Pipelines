@@ -43,6 +43,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
         {
             EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
             EnsureArg.IsNotNull(arrowConfiguration, nameof(arrowConfiguration));
+            EnsureArg.IsNotNull(defaultConverter, nameof(defaultConverter));
+            EnsureArg.IsNotNull(fhirConverter, nameof(fhirConverter));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _fhirSchemaManager = fhirSchemaManager;

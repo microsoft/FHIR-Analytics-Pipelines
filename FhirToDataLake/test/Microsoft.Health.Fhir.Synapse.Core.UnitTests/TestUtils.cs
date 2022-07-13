@@ -9,6 +9,7 @@ using System.Linq;
 using DotLiquid;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Microsoft.Health.Fhir.TemplateManagement;
 using Newtonsoft.Json;
@@ -56,7 +57,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
         public static IParquetSchemaProvider GetTestParquetSchemaProviderDelegate(string name)
         {
-            return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
+            if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
+            {
+                return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
+            }
+            else
+            {
+                return new AcrCustomizedSchemaProvider(GetTestAcrTemplateProvider(), NullLogger<AcrCustomizedSchemaProvider>.Instance);
+            }
         }
     }
 }

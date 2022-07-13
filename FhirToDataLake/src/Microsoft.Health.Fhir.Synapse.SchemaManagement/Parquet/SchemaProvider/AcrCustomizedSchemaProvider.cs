@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
             return jsonSchemaCollection
                 .Select(x => JsonSchemaParser.ParseJSchema(x.Key, x.Value))
-                .ToDictionary(x => GetCustomizedSchemaType(x.Type), x => x);
+                .ToDictionary(x => x.Type, x => x);
         }
 
         private async Task<Dictionary<string, JSchema>> GetJsonSchemaCollectionAsync(CancellationToken cancellationToken)
@@ -47,14 +48,33 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             var templateCollections = await _containerRegistryTemplateProvider.GetTemplateCollectionAsync(cancellationToken);
 
             // Fetch all files with suffix ".schema.json" as Json schema template.
+            // All Json schema files should be in "Schema" directory under the root path of the image.
             foreach (var templates in templateCollections)
             {
                 foreach (var templateItem in templates)
                 {
-                    if (templateItem.Key.EndsWith(FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension))
+                    var templatePathSegments = templateItem.Key.Split('/');
+
+                    if (!string.Equals(templatePathSegments[0], FhirParquetSchemaConstants.JsonSchemaTemplateDirectory, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        var customizedSchemaKey = Path.ChangeExtension(templateItem.Key, null);
-                        customizedSchemaKey = Path.ChangeExtension(customizedSchemaKey, null);
+                        continue;
+                    }
+
+                    if (templatePathSegments.Length != 2)
+                    {
+                        _logger.LogError($"All Json schema should be directly in \"Schema\" directory.");
+                        throw new ContainerRegistrySchemaException($"All Json schema should be directly in \"Schema\" directory.");
+                    }
+
+                    if (!templatePathSegments[1].EndsWith(FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        _logger.LogWarning($"None Json schema {templatePathSegments[1]} be found in \"Schema\" directory.");
+                    }
+                    else
+                    {
+                        // The customized schema keys are like "Patient_Customized", "Observation_Customized"...
+                        var customizedSchemaKey = GetCustomizedSchemaType(
+                            templatePathSegments[1].Substring(0, templatePathSegments[1].Length - FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension.Length));
 
                         if (!(templateItem.Value.Root is JSchemaDocument customizedSchemaDocument) || customizedSchemaDocument.Schema == null)
                         {
