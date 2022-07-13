@@ -79,7 +79,6 @@ steps:
     AZURE_CLIENT_SECRET: $(pipeline-service-principal-password)
     AZURE_TENANT_ID: $(pipeline-tenant-id)
 
-
 - task: Docker@2
   displayName: Stop mock-data-source
   condition: succeededOrFailed()
