@@ -39,7 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             }
         }
 
-        public static IContainerRegistryTemplateProvider GetTestAcrTemplateProvider()
+        public static IContainerRegistryTemplateProvider GetMockAcrTemplateProvider()
         {
             var templateContents = Directory.GetFiles(TestCustomizedSchemaDirectoryPath, "*", SearchOption.AllDirectories)
                 .Select(filePath => 
@@ -55,7 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             return templateProvider;
         }
 
-        public static IParquetSchemaProvider GetTestParquetSchemaProviderDelegate(string name)
+        public static IParquetSchemaProvider TestParquetSchemaProviderDelegate(string name)
         {
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
             {
@@ -63,7 +63,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             }
             else
             {
-                return new AcrCustomizedSchemaProvider(GetTestAcrTemplateProvider(), NullLogger<AcrCustomizedSchemaProvider>.Instance);
+                return new AcrCustomizedSchemaProvider(GetMockAcrTemplateProvider(), NullLogger<AcrCustomizedSchemaProvider>.Instance);
             }
         }
     }

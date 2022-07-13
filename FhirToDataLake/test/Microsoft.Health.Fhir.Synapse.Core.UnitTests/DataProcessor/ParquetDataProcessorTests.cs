@@ -47,7 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
             _fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
                 schemaConfigurationOptionWithoutCustomizedSchema,
-                TestUtils.GetTestParquetSchemaProviderDelegate,
+                TestUtils.TestParquetSchemaProviderDelegate,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
             var schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
@@ -62,11 +62,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
             _fhirSchemaManagerWithCustomizedSchema = new FhirParquetSchemaManager(
                 schemaConfigurationOptionWithCustomizedSchema,
-                TestUtils.GetTestParquetSchemaProviderDelegate,
+                TestUtils.TestParquetSchemaProviderDelegate,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
             _defaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
-            _fhirConverter = new FhirConverter(TestUtils.GetTestAcrTemplateProvider(), NullLogger<FhirConverter>.Instance);
+            _fhirConverter = new FhirConverter(TestUtils.GetMockAcrTemplateProvider(), NullLogger<FhirConverter>.Instance);
 
             _arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
@@ -128,7 +128,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         }
 
         // It may takes few minutes to run this large input data test.
-        [Fact(Skip = "test")]
+        [Fact]
         public static async Task GivenAValidMultipleLargeInputData_WhenProcess_CorrectResultShouldBeReturned()
         {
             var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Large_Patient.ndjson"));

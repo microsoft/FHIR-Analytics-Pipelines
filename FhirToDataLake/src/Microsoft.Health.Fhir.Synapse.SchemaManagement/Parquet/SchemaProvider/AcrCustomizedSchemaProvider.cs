@@ -5,14 +5,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Liquid.Converter.Models.Json;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Newtonsoft.Json.Schema;
@@ -38,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
             return jsonSchemaCollection
                 .Select(x => JsonSchemaParser.ParseJSchema(x.Key, x.Value))
-                .ToDictionary(x => x.Type, x => x);
+                .ToDictionary(x => GetCustomizedSchemaType(x.Type), x => x);
         }
 
         private async Task<Dictionary<string, JSchema>> GetJsonSchemaCollectionAsync(CancellationToken cancellationToken)
@@ -73,8 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                     else
                     {
                         // The customized schema keys are like "Patient_Customized", "Observation_Customized"...
-                        var customizedSchemaKey = GetCustomizedSchemaType(
-                            templatePathSegments[1].Substring(0, templatePathSegments[1].Length - FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension.Length));
+                        var resourceType = templatePathSegments[1].Substring(0, templatePathSegments[1].Length - FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension.Length);
 
                         if (!(templateItem.Value.Root is JSchemaDocument customizedSchemaDocument) || customizedSchemaDocument.Schema == null)
                         {
@@ -82,7 +78,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                             throw new ContainerRegistrySchemaException($"Invalid Json schema template {templateItem.Key}, no JSchema content be found.");
                         }
 
-                        result.Add(customizedSchemaKey, customizedSchemaDocument.Schema);
+                        result.Add(resourceType, customizedSchemaDocument.Schema);
                     }
                 }
             }

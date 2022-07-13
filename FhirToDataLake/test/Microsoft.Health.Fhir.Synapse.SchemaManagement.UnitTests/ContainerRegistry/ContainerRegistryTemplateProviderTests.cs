@@ -37,18 +37,17 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
             var testContainerRegistryUsername = Environment.GetEnvironmentVariable("TestContainerRegistryServer")?.Split('.')[0];
             var testContainerRegistryPassword = Environment.GetEnvironmentVariable("TestContainerRegistryPassword");
 
-            _testContainerRegistryAccessToken = GetTestAccessToken(testContainerRegistryUsername, testContainerRegistryPassword);
-            _testTokenProvider = GetTestAcrTokenProvider(_testContainerRegistryAccessToken);
+            _testContainerRegistryAccessToken = TestUtils.GetAcrAccessToken(testContainerRegistryUsername, testContainerRegistryPassword);
+            _testTokenProvider = TestUtils.GetMockAcrTokenProvider(_testContainerRegistryAccessToken);
         }
 
         [SkippableFact]
         public async Task GivenTemplateReference_WhenFetchingTemplates_CorrectTemplateCollectionsShouldBeReturned()
         {
-
             Skip.If(_testImageReference == null);
 
             ImageInfo imageInfo = ImageInfo.CreateFromImageReference(_testImageReference);
-            await ContainerRegistryTestUtils.GenerateTemplateImageAsync(imageInfo, _testContainerRegistryAccessToken, TestConstants.TestTemplateTarGzPath);
+            await ContainerRegistryTestUtils.GenerateTemplateImageAsync(imageInfo, _testContainerRegistryAccessToken, TestUtils.TestTemplateTarGzPath);
 
             var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
                 _testTokenProvider,
@@ -65,24 +64,11 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
             Skip.If(_testImageReference == null);
 
             var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
-                GetTestAcrTokenProvider("invalid token"),
+                TestUtils.GetMockAcrTokenProvider("invalid token"),
                 Options.Create(new ContainerRegistryConfiguration() { SchemaImageReference = _testImageReference }),
                 new NullLogger<ContainerRegistryTemplateProvider>());
 
             await Assert.ThrowsAsync<ContainerRegistrySchemaException>(() => containerRegistryTemplateProvider.GetTemplateCollectionAsync(CancellationToken.None));
-        }
-
-        private IContainerRegistryTokenProvider GetTestAcrTokenProvider(string accessToken)
-        {
-            var tokenProvider = Substitute.For<IContainerRegistryTokenProvider>();
-
-            tokenProvider.GetTokenAsync(default, default).ReturnsForAnyArgs($"Basic {accessToken}");
-            return tokenProvider;
-        }
-
-        private string GetTestAccessToken(string serverUsername, string serverPassword)
-        {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{serverUsername}:{serverPassword}"));
         }
     }
 }

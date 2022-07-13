@@ -26,7 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [Theory]
         public static async void GivenSchemaDirectory_WhenGetSchema_CorrectResultShouldBeReturned(string schemaType, int propertyCount)
         {
-            var defaultSchemas = await _testLocalDefaultSchemaProvider.GetSchemasAsync(TestConstants.DefaultSchemaDirectory);
+            var defaultSchemas = await _testLocalDefaultSchemaProvider.GetSchemasAsync(TestUtils.PipelineDefaultSchemaDirectoryPath);
 
             Assert.Equal(145, defaultSchemas.Count);
 

@@ -135,7 +135,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             var defaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
-            var fhirConverter = new FhirConverter(TestUtils.GetTestAcrTemplateProvider(), NullLogger<FhirConverter>.Instance);
+            var fhirConverter = new FhirConverter(TestUtils.GetMockAcrTemplateProvider(), NullLogger<FhirConverter>.Instance);
 
             return new ParquetDataProcessor(
             fhirSchemaManager,

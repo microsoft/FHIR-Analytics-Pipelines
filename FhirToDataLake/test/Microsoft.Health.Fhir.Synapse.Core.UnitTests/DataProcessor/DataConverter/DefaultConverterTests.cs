@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
             });
 
             _testDefaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
-            _schemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.GetTestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
+            _schemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.TestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
             _testPatient = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson")).First();
         }
 
