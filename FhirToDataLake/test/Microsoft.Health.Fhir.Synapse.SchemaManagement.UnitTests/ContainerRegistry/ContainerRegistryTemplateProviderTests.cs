@@ -34,7 +34,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
 
             var testContainerRegistryUsername = Environment.GetEnvironmentVariable("TestContainerRegistryServer")?.Split('.')[0];
             var testContainerRegistryPassword = Environment.GetEnvironmentVariable("TestContainerRegistryPassword");
-            Console.WriteLine($"Password length: {testContainerRegistryPassword.Length}");
 
             _testContainerRegistryAccessToken = GetContainerRegistryAccessToken(testContainerRegistryUsername, testContainerRegistryPassword);
         }
