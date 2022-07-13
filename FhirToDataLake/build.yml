@@ -48,13 +48,6 @@ steps:
     SecretsFilter: '*'
     RunAsPreJob: false
 
-- task: PowerShell@2
-  displayName: Login Azure Account
-  inputs:
-    targetType: 'inline'
-    script: |
-      az login -u $(pipeline-service-principal-name) -p $(pipeline-service-principal-password) --service-principal --tenant $(pipeline-tenant-id)
-
 - task: VSTest@2
   displayName: 'Run native tests'
   inputs:
@@ -82,14 +75,10 @@ steps:
   env:
     TestContainerRegistryServer: $(pipeline-container-registry-server)
     TestContainerRegistryPassword: $(pipeline-container-registry-password)
+    AZURE_CLIENT_ID: $(pipeline-service-principal-name)
+    AZURE_CLIENT_SECRET: $(pipeline-service-principal-password)
+    AZURE_TENANT_ID: $(pipeline-tenant-id)
 
-- task: PowerShell@2
-  displayName: Logout Azure Account
-  inputs:
-    targetType: 'inline'
-    script: |
-      az logout
-      Write-Host "Cleared Azure Account successfully."
 
 - task: Docker@2
   displayName: Stop mock-data-source

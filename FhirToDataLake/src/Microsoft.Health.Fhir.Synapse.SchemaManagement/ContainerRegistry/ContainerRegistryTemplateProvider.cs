@@ -52,6 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             }
 
             ImageInfo imageInfo = ImageInfo.CreateFromImageReference(_schemaImageReference);
+
             var accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
 
             try

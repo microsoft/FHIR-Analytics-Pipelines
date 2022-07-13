@@ -7,7 +7,6 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Castle.Core.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -45,6 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         [SkippableFact]
         public async Task GivenTemplateReference_WhenFetchingTemplates_CorrectTemplateCollectionsShouldBeReturned()
         {
+
             Skip.If(_testImageReference == null);
 
             ImageInfo imageInfo = ImageInfo.CreateFromImageReference(_testImageReference);

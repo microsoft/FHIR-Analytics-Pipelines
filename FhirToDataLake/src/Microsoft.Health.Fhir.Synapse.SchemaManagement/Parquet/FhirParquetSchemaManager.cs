@@ -18,6 +18,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         private readonly Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
         private readonly ILogger<FhirParquetSchemaManager> _logger;
         private readonly IParquetSchemaProvider _defaultSchemaProvider;
+        private readonly IParquetSchemaProvider _customizedSchemaProvider;
 
         public FhirParquetSchemaManager(
             IOptions<SchemaConfiguration> schemaConfiguration,
