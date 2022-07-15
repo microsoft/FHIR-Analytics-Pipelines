@@ -431,7 +431,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             CancellationToken cancellationToken)
         {
             var cacheResourceCount = cacheResult.GetResourceCount();
-            if ((cacheResourceCount > 0 && cacheResourceCount % JobConfigurationConstants.NumberOfResourcesPerCommit == 0) || forceCommit)
+            if ((cacheResourceCount >= JobConfigurationConstants.NumberOfResourcesPerCommit) || forceCommit)
             {
                 foreach (var (resourceType, resources) in cacheResult.Resources)
                 {

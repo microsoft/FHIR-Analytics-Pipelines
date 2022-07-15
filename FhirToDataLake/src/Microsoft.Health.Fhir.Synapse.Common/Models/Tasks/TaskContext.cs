@@ -67,7 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// Job id.
         /// </summary>
         [JsonProperty("jobId")]
-        public string JobId { get; }
+        public string JobId { get; set; }
 
         /// <summary>
         /// Filter Scope.

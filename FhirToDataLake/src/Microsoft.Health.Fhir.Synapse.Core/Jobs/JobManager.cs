@@ -59,6 +59,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             // Acquire an active job from the job store.
             var job = await _jobStore.AcquireActiveJobAsync(cancellationToken) ?? await CreateNewJobAsync(cancellationToken);
 
+            _logger.LogInformation($"The running job id is {job.Id}");
+
             // Update the running job to job store.
             // For new/resume job, add the created job to job store; For active job, update the last heart beat.
             await _jobStore.UpdateJobAsync(job, cancellationToken);
@@ -88,23 +90,33 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             // If there are failedJobs, continue the progress from a new job.
             if (schedulerSetting?.FailedJobs?.Any() == true)
             {
-                var resumedJob = schedulerSetting.FailedJobs.First();
-                return Job.Create(
-                    resumedJob.ContainerName,
+                var failedJob = schedulerSetting.FailedJobs.First();
+                var resumeJob = Job.Create(
+                    failedJob.ContainerName,
                     JobStatus.New,
-                    resumedJob.DataPeriod,
-                    resumedJob.FilterInfo,
-                    resumedJob.Patients,
-                    resumedJob.NextTaskIndex,
-                    resumedJob.RunningTasks,
-                    resumedJob.TotalResourceCounts,
-                    resumedJob.ProcessedResourceCounts,
-                    resumedJob.SkippedResourceCounts,
-                    resumedJob.PatientVersionId,
-                    resumedJob.Id);
+                    failedJob.DataPeriod,
+                    failedJob.FilterInfo,
+                    failedJob.Patients,
+                    failedJob.NextTaskIndex,
+                    failedJob.RunningTasks,
+                    failedJob.TotalResourceCounts,
+                    failedJob.ProcessedResourceCounts,
+                    failedJob.SkippedResourceCounts,
+                    failedJob.PatientVersionId,
+                    failedJob.Id);
+
+                // update the job id of running task, which is used to generate the result blob file name
+                foreach (var runningTask in resumeJob.RunningTasks.Values)
+                {
+                    runningTask.JobId = resumeJob.Id;
+                }
+
+                return resumeJob;
             }
 
             DateTimeOffset triggerStart = GetTriggerStartTime(schedulerSetting);
+
+            // todo: throw exception?
             if (triggerStart >= _jobConfiguration.EndTime)
             {
                 _logger.LogError("Job has been scheduled to end.");
