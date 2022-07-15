@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -15,21 +16,20 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 {
     public class FhirRestClient
     {
-
-        private readonly ILogger<FhirRestClient> _logger;
         private readonly HttpPipelinePolicy _pipelinePolicy;
         private readonly HttpPipeline _pipeline;
-        
-        public FhirRestClient(
-            Uri storageUri, TokenCredential credential)
-        {
-            EnsureArg.IsNotNull(storageUri, nameof(storageUri));
 
-            _pipelinePolicy = new BearerTokenAuthenticationPolicy(credential, "");
+        public FhirRestClient(
+            Uri fhirServerUri, TokenCredential credential)
+        {
+            EnsureArg.IsNotNull(fhirServerUri, nameof(fhirServerUri));
+
+            var scopes = new string[] { fhirServerUri.ToString().EndsWith(@"/", StringComparison.InvariantCulture) ? fhirServerUri + ".default" : fhirServerUri + "/.default" };
+            _pipelinePolicy = new BearerTokenAuthenticationPolicy(credential, scopes);
             _pipeline = HttpPipelineBuilder.Build(ClientOptions.Default, _pipelinePolicy);
         }
 
-        public  async ValueTask<string> QueryAsync(
+        public async ValueTask<string> QueryAsync(
                 Uri resourceUri,
                 bool async = true,
                 string operationName = "BlobClient.Query",
@@ -56,7 +56,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                     }
                     Response _response = _message.Response;
                     cancellationToken.ThrowIfCancellationRequested();
-                    return _message.ExtractResponseContent().ToString();
+                    var content = _message.ExtractResponseContent();
+                    using StreamReader reader = new StreamReader(content, Encoding.UTF8);
+                    return reader.ReadToEnd();
                 }
             }
             catch (Exception ex)

@@ -115,7 +115,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
                     // The thread-safe AzureServiceTokenProvider class caches the token in memory and retrieves it from Azure AD just before expiration.
                     // https://docs.microsoft.com/en-us/dotnet/api/overview/azure/service-to-service-authentication#using-the-library
-                    return await client.QueryAsync(searchUri);
+                    var result =  await client.QueryAsync(searchUri);
+                    return result;
                 }
 
                 response = await _httpClient.SendAsync(searchRequest, cancellationToken);
