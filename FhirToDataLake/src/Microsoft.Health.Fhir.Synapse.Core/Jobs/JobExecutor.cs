@@ -94,6 +94,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     if (finishedTask.IsFaulted)
                     {
                         _logger.LogError(finishedTask.Exception, "Process task failed.");
+
+                        // if there is a task failed, we need to consume all the task contexts before exit jobExecutor
+                        // otherwise, the task contexts may be consumed and update the job to active after the job is completed in JobManager
+                        jobProgressUpdater.Complete();
+                        await progressReportTask;
+
                         throw new ExecuteTaskFailedException("Task execution failed", finishedTask.Exception);
                     }
 
@@ -149,9 +155,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogError(ex, "Process task failed.");
                 throw new ExecuteTaskFailedException("Task execution failed", ex);
             }
-
-            jobProgressUpdater.Complete();
-            await progressReportTask;
+            finally
+            {
+                // if there is a task failed, we need to consume all the task contexts before exit jobExecutor
+                // otherwise, the task contexts may be consumed and update the job to active after the job is completed in JobManager
+                jobProgressUpdater.Complete();
+                await progressReportTask;
+            }
 
             _logger.LogInformation("Finish scheduling job '{jobId}'", job.Id);
         }

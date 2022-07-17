@@ -18,8 +18,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public const int UploadDataIntervalInSeconds = 30;
 
         /// <summary>
-        /// The cache resources number, if there are more resources than this value in cache, will commit it to storage.
+        /// The cache resources number, will commit the cache to storage if there are more resources than this value in cache.
         /// </summary>
         public const int NumberOfResourcesPerCommit = 10000;
+
+        /// <summary>
+        /// The data size of cache in bytes, will commit the cache to storage it the data size is larger than this value.
+        /// </summary>
+        public const int DataSizeInBytesPerCommit = 512 * 1024 * 1024;
     }
 }

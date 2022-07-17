@@ -22,9 +22,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// <param name="resources">the resources.</param>
         public CacheResult(
             SearchProgress searchProgress = null,
+            int cacheSize = 0,
             Dictionary<string, List<JObject>> resources = null)
         {
             SearchProgress = searchProgress ?? new SearchProgress();
+            CacheSize = cacheSize;
             Resources = resources ?? new Dictionary<string, List<JObject>>();
         }
 
@@ -32,6 +34,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// The fhir resources of each resource type
         /// </summary>
         public Dictionary<string, List<JObject>> Resources { get; set; }
+
+        /// <summary>
+        /// The data size of cached resources in bytes.
+        /// </summary>
+        public int CacheSize { get; set; }
 
         /// <summary>
         /// The search progress, which is consistent with the cached resources.
@@ -46,6 +53,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public int GetResourceCount()
         {
             return Resources.Values.Sum(resources => resources.Count);
+        }
+
+        public void ClearCache()
+        {
+            Resources.Clear();
+            CacheSize = 0;
         }
     }
 }

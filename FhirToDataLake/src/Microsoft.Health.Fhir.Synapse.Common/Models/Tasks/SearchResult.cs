@@ -12,13 +12,17 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
     {
         public SearchResult(
             List<JObject> fhirResources,
+            int resultSizeInBytes,
             string continuationToken)
         {
             FhirResources = fhirResources;
+            ResultSizeInBytes = resultSizeInBytes;
             ContinuationToken = continuationToken;
         }
 
         public List<JObject> FhirResources { get; }
+
+        public int ResultSizeInBytes { get; }
 
         public string ContinuationToken { get; }
     }

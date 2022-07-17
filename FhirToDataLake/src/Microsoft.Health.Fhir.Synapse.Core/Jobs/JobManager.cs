@@ -59,27 +59,37 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             // Acquire an active job from the job store.
             var job = await _jobStore.AcquireActiveJobAsync(cancellationToken) ?? await CreateNewJobAsync(cancellationToken);
 
-            _logger.LogInformation($"The running job id is {job.Id}");
-
-            // Update the running job to job store.
-            // For new/resume job, add the created job to job store; For active job, update the last heart beat.
-            await _jobStore.UpdateJobAsync(job, cancellationToken);
-
-            try
+            if (job == null)
             {
-                job.Status = JobStatus.Running;
-                await _jobExecutor.ExecuteAsync(job, cancellationToken);
-                job.Status = JobStatus.Succeeded;
-                await _jobStore.CompleteJobAsync(job, cancellationToken);
+                _logger.LogWarning("Job has been scheduled to end.");
+
+                // release job lock
+                Dispose();
             }
-            catch (Exception exception)
+            else
             {
-                job.Status = JobStatus.Failed;
-                job.FailedReason = exception.ToString();
-                await _jobStore.CompleteJobAsync(job, cancellationToken);
+                _logger.LogInformation($"The running job id is {job.Id}");
 
-                _logger.LogError(exception, "Process job '{jobId}' failed.", job.Id);
-                throw;
+                // Update the running job to job store.
+                // For new/resume job, add the created job to job store; For active job, update the last heart beat.
+                await _jobStore.UpdateJobAsync(job, cancellationToken);
+
+                try
+                {
+                    job.Status = JobStatus.Running;
+                    await _jobExecutor.ExecuteAsync(job, cancellationToken);
+                    job.Status = JobStatus.Succeeded;
+                    await _jobStore.CompleteJobAsync(job, cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    job.Status = JobStatus.Failed;
+                    job.FailedReason = exception.ToString();
+                    await _jobStore.CompleteJobAsync(job, cancellationToken);
+
+                    _logger.LogError(exception, "Process job '{jobId}' failed.", job.Id);
+                    throw;
+                }
             }
         }
 
@@ -116,11 +126,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             DateTimeOffset triggerStart = GetTriggerStartTime(schedulerSetting);
 
-            // todo: throw exception?
             if (triggerStart >= _jobConfiguration.EndTime)
             {
-                _logger.LogError("Job has been scheduled to end.");
-                throw new StartJobFailedException("Job has been scheduled to end.");
+                _logger.LogInformation($"The job trigger start time {triggerStart} is greater than the end time {_jobConfiguration.EndTime} in configuration, no need to start a new job.");
+                return null;
             }
 
             // End data period for this trigger

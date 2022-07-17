@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -26,6 +27,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         private readonly HttpClient _httpClient;
         private readonly IAccessTokenProvider _accessTokenProvider;
         private readonly ILogger<FhirApiDataClient> _logger;
+
+        private const bool RetryFor429Exceptions = true;
 
         public FhirApiDataClient(
             IFhirApiDataSource dataSource,
@@ -160,6 +163,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 }
 
                 HttpResponseMessage response = await _httpClient.SendAsync(searchRequest, cancellationToken);
+
+                // If retry for 429 exception
+                if (RetryFor429Exceptions && response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    _logger.LogError("Get response from http request failed. Url: '{url}', Reason: 429 Too many requests, will retry it.", uri );
+
+                    response = await _httpClient.SendAsync(searchRequest, cancellationToken);
+                }
+
                 response.EnsureSuccessStatusCode();
                 _logger.LogInformation("Successfully retrieved result for url: '{url}'.", uri);
 
