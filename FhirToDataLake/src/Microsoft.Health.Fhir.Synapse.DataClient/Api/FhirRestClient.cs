@@ -82,12 +82,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             Request _request = _message.Request;
 
             // Set the endpoint
-            _request.Method = RequestMethod.Post;
+            _request.Method = RequestMethod.Get;
             _request.Uri.Reset(resourceUri);
 
             // Add request headers
 
             // Create the body
+            _request.Headers.SetValue("Content-Type", "application/json");
 
             return _message;
         }
