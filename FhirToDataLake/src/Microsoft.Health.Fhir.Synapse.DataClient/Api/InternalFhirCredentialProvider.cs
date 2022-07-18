@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 {
-    public class InternalFhirCredentialProvider : IFhirCredentialProvider
+    public class InternalFhirCredentialProvider : ICredentialProvider
     {
 
         private readonly ILogger<InternalFhirCredentialProvider> _logger;

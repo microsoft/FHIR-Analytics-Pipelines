@@ -22,8 +22,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 {
     public class FhirApiDataClientTests
     {
-        private readonly InternalFhirCredentialProvider _brokenProvider = new InternalFhirCredentialProvider(new NullLogger<InternalFhirCredentialProvider>());
-        private readonly MockCredentialProvider _mockProvider = new MockCredentialProvider();
+        private readonly AzureAccessTokenProvider _brokenProvider = new AzureAccessTokenProvider(new InternalFhirCredentialProvider(new Logger<InternalFhirCredentialProvider>(new LoggerFactory())), new NullLogger<AzureAccessTokenProvider>());
+        private readonly MockAccessTokenProvider _mockProvider = new MockAccessTokenProvider();
 
         private const string SampleResourceType = "Patient";
         private const string SampleStartTime = "2021-08-01T12:00:00+08:00";
@@ -78,7 +78,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchParameters));
         }
 
-        private FhirApiDataClient CreateDataClient(string fhirServerUrl, IFhirCredentialProvider credentialProvider)
+        private FhirApiDataClient CreateDataClient(string fhirServerUrl, IAccessTokenProvider accessTokenProvider)
         {
             // Set up http client.
             var comparer = StringComparer.OrdinalIgnoreCase;
@@ -105,7 +105,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var httpClient = new HttpClient(new MockHttpMessageHandler(requestMap));
             ILogger<FhirApiDataClient> logger = new NullLogger<FhirApiDataClient>();
 
-            var dataClient = new FhirApiDataClient(dataSource, httpClient, credentialProvider, logger);
+            var dataClient = new FhirApiDataClient(dataSource, httpClient, accessTokenProvider, logger);
             return dataClient;
         }
 

@@ -60,6 +60,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
 
         private ContainerRegistryAccessTokenProvider GetMockAcrTokenProvider(HttpStatusCode statusCode, string content = "")
         {
+
             IAccessTokenProvider tokenProvider = Substitute.For<IAccessTokenProvider>();
             tokenProvider.GetAccessTokenAsync(default, default).ReturnsForAnyArgs("Bearer test");
             var httpClient = new HttpClient(new MockHttpMessageHandler(content, statusCode));
