@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Core;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common;
@@ -23,8 +22,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
     {
         private readonly IFhirApiDataSource _dataSource;
         private readonly HttpClient _httpClient;
-        private readonly ILogger<FhirApiDataClient> _logger;
         private readonly IAccessTokenProvider _accessTokenProvider;
+        private readonly ILogger<FhirApiDataClient> _logger;
 
         public FhirApiDataClient(
             IFhirApiDataSource dataSource,
