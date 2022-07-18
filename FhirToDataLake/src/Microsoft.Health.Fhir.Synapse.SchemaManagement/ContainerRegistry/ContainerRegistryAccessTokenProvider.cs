@@ -35,15 +35,15 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
         private readonly ILogger<ContainerRegistryAccessTokenProvider> _logger;
 
         public ContainerRegistryAccessTokenProvider(
-            IAccessTokenProvider accessTokenProvider,
+            IAccessTokenProvider aadTokenProvider,
             HttpClient httpClient,
             ILogger<ContainerRegistryAccessTokenProvider> logger)
         {
-            EnsureArg.IsNotNull(accessTokenProvider, nameof(accessTokenProvider));
+            EnsureArg.IsNotNull(aadTokenProvider, nameof(aadTokenProvider));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _aadTokenProvider = accessTokenProvider;
+            _aadTokenProvider = aadTokenProvider;
             _client = httpClient;
             _logger = logger;
         }
