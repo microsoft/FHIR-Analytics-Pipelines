@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
         private const string ExchangeAcrRefreshTokenUrl = "oauth2/exchange";
         private const string GetAcrAccessTokenUrl = "oauth2/token";
 
-        private readonly IAccessTokenProvider _accessTokenProvider;
+        private readonly IAccessTokenProvider _aadTokenProvider;
         private readonly HttpClient _client;
         private readonly ILogger<ContainerRegistryAccessTokenProvider> _logger;
 
@@ -43,7 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _accessTokenProvider = accessTokenProvider;
+            _aadTokenProvider = accessTokenProvider;
             _client = httpClient;
             _logger = logger;
         }
@@ -55,7 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             string aadToken;
             try
             {
-                aadToken = await _accessTokenProvider.GetAccessTokenAsync(ContainerRegistryConstants.ArmResourceManagerIdForAzureCloud, cancellationToken);
+                aadToken = await _aadTokenProvider.GetAccessTokenAsync(ContainerRegistryConstants.ArmResourceManagerIdForAzureCloud, cancellationToken);
             }
             catch (Exception ex)
             {
