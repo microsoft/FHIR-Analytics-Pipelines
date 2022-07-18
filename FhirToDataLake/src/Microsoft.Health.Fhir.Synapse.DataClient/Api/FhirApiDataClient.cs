@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Identity;
+using Azure.Core;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common;
@@ -23,70 +23,34 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
     {
         private readonly IFhirApiDataSource _dataSource;
         private readonly HttpClient _httpClient;
-        private readonly IAccessTokenProvider _accessTokenProvider;
+        private readonly IFhirCredentialProvider _fhirCredentialProvider;
         private readonly ILogger<FhirApiDataClient> _logger;
+        private readonly AccessTokenProvider _accessTokenProvider;
 
         public FhirApiDataClient(
             IFhirApiDataSource dataSource,
             HttpClient httpClient,
-            IAccessTokenProvider accessTokenProvider,
+            IFhirCredentialProvider fhirCrendentialProvider,
             ILogger<FhirApiDataClient> logger)
         {
             EnsureArg.IsNotNull(dataSource, nameof(dataSource));
             EnsureArg.IsNotNullOrEmpty(dataSource.FhirServerUrl, nameof(dataSource.FhirServerUrl));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
-            EnsureArg.IsNotNull(accessTokenProvider, nameof(accessTokenProvider));
+            EnsureArg.IsNotNull(fhirCrendentialProvider, nameof(fhirCrendentialProvider));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _dataSource = dataSource;
             _httpClient = httpClient;
-            _accessTokenProvider = accessTokenProvider;
+            _fhirCredentialProvider = fhirCrendentialProvider;
             _logger = logger;
+
+            if (_dataSource.Authentication == AuthenticationType.ManagedIdentity)
+            {
+                _accessTokenProvider = new AccessTokenProvider(_dataSource.FhirServerUrl, _fhirCredentialProvider.GetCredential());
+            }
 
             // Timeout will be handled by Polly policy.
             _httpClient.Timeout = Timeout.InfiniteTimeSpan;
-        }
-
-        public async Task<string> OldSearchAsync(
-            FhirSearchParameters searchParameters,
-            CancellationToken cancellationToken = default)
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                throw new OperationCanceledException();
-            }
-
-            var searchUri = CreateSearchUri(searchParameters);
-            HttpResponseMessage response;
-
-            try
-            {
-                var searchRequest = new HttpRequestMessage(HttpMethod.Get, searchUri);
-                if (_dataSource.Authentication == AuthenticationType.ManagedIdentity)
-                {
-                    // Currently we support accessing FHIR server endpoints with Managed Identity.
-                    // Obtaining access token against a resource uri only works with Azure API for FHIR now.
-                    // To do: add configuration for OSS FHIR server endpoints.
-
-                    // The thread-safe AzureServiceTokenProvider class caches the token in memory and retrieves it from Azure AD just before expiration.
-                    // https://docs.microsoft.com/en-us/dotnet/api/overview/azure/service-to-service-authentication#using-the-library
-                    var accessToken = await _accessTokenProvider.GetAccessTokenAsync(_dataSource.FhirServerUrl, cancellationToken);
-                    searchRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                }
-
-                response = await _httpClient.SendAsync(searchRequest, cancellationToken);
-                response.EnsureSuccessStatusCode();
-                _logger.LogInformation("Successfully retrieved search result for url: '{url}'.", searchUri);
-
-                return await response.Content.ReadAsStringAsync(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Search FHIR server failed. Url: '{url}', Reason: '{reason}'", searchUri, ex);
-                throw new FhirSearchException(
-                    string.Format(Resource.FhirSearchFailed, searchUri),
-                    ex);
-            }
         }
 
         public async Task<string> SearchAsync(
@@ -106,17 +70,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 var searchRequest = new HttpRequestMessage(HttpMethod.Get, searchUri);
                 if (_dataSource.Authentication == AuthenticationType.ManagedIdentity)
                 {
-                    var uri = new Uri(_dataSource.FhirServerUrl);
-                    var client = new FhirRestClient(uri, new DefaultAzureCredential());
-
                     // Currently we support accessing FHIR server endpoints with Managed Identity.
                     // Obtaining access token against a resource uri only works with Azure API for FHIR now.
                     // To do: add configuration for OSS FHIR server endpoints.
-
-                    // The thread-safe AzureServiceTokenProvider class caches the token in memory and retrieves it from Azure AD just before expiration.
-                    // https://docs.microsoft.com/en-us/dotnet/api/overview/azure/service-to-service-authentication#using-the-library
-                    var result =  await client.QueryAsync(searchUri);
-                    return result;
+                    var accessToken = await _accessTokenProvider.GetAccessTokenAsync(cancellationToken);
+                    searchRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.Token);
                 }
 
                 response = await _httpClient.SendAsync(searchRequest, cancellationToken);
@@ -166,6 +124,37 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             }
 
             return uri.AddQueryString(queryParameters);
+        }
+
+        /// <summary>
+        /// Provide access token for the given FHIR url
+        /// Access token will be cached and will be refreshed if expired.
+        /// </summary>
+        internal class AccessTokenProvider
+        {
+            public AccessTokenProvider(string url, TokenCredential tokenCredential)
+            {
+                TokenCredential = tokenCredential;
+                var uri = new Uri(EnsureArg.IsNotNull(url, nameof(url)));
+                Scopes = new string[] { uri.ToString().EndsWith(@"/", StringComparison.InvariantCulture) ? uri + ".default" : uri + "/.default" };
+            }
+
+            private TokenCredential TokenCredential { get; }
+
+            private string[] Scopes { get; }
+
+            private AccessToken AccessToken { get; set; }
+
+            public async Task<AccessToken> GetAccessTokenAsync(CancellationToken cancellationToken)
+            {
+                if (string.IsNullOrEmpty(AccessToken.Token) || AccessToken.ExpiresOn < DateTime.UtcNow.AddMinutes(1))
+                {
+                    var requestContext = new TokenRequestContext(Scopes);
+                    AccessToken = await TokenCredential.GetTokenAsync(requestContext, cancellationToken);
+                }
+
+                return AccessToken;
+            }
         }
     }
 }

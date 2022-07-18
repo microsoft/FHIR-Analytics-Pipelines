@@ -22,7 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
         {
             services.AddSingleton<IFhirApiDataSource, FhirApiDataSource>();
             services.AddSingleton<IFhirDataClient, FhirApiDataClient>();
-            services.AddSingleton<IAccessTokenProvider, AzureAccessTokenProvider>();
+            services.AddSingleton<IFhirCredentialProvider, InternalFhirCredentialProvider>();
 
             var fhirServerConfiguration = services
                 .BuildServiceProvider()
