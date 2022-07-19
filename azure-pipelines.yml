@@ -22,7 +22,7 @@ stages:
   pool:
     vmImage: ubuntu-latest
   jobs:
-  - job: Build parquet nuget
+  - job: Buildnuget
     steps:
     - template: FhirToDataLake/build-native-nugets.yml
 
