@@ -73,7 +73,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             }
 
             string accessToken = null;
-            if (fhirApiOptions.IsAccessTokenRequired())
+            if (fhirApiOptions.IsAccessTokenRequired)
             {
                 try
                 {
@@ -100,7 +100,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
         public string Search(BaseFhirApiOptions fhirApiOptions)
         {
-            if (fhirApiOptions.IsAccessTokenRequired() && _dataSource.Authentication == AuthenticationType.ManagedIdentity)
+            if (fhirApiOptions.IsAccessTokenRequired && _dataSource.Authentication == AuthenticationType.ManagedIdentity)
             {
                 _logger.LogError("Synchronous search doesn't support AccessToken, please use Asynchronous method SearchAsync() instead.");
                 throw new FhirSearchException(

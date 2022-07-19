@@ -99,6 +99,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                             }
 
                             var patientInfo = taskContext.Patients[patientIndex];
+                            var lastPatientVersionId = patientInfo.VersionId;
 
                             // the patient resource isn't included in compartment search,
                             // so we need additional request to get the patient resource
@@ -115,16 +116,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                                     continue;
                                 }
 
-                                var versionId = FhirBundleParser.ExtractVersionId(patientResource);
+                                var currentPatientVersionId = FhirBundleParser.ExtractVersionId(patientResource);
 
-                                if (versionId == 0)
+                                if (currentPatientVersionId == 0)
                                 {
                                     _logger.LogError($"Failed to extract version id for patient {patientInfo.PatientId}.");
                                     throw new FhirSearchException($"Failed to extract version id for patient {patientInfo.PatientId}.");
                                 }
 
                                 // New patient or the patient is updated.
-                                if (patientInfo.VersionId != versionId)
+                                if (lastPatientVersionId != currentPatientVersionId)
                                 {
                                     // save the patient resource to cache if the patient resource type is required in the result
                                     if (isPatientResourcesRequired)
@@ -135,14 +136,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
 
                                 // add this patient's version id in cacheResult,
                                 // the version id will be synced to taskContext when the cache result is committed, and be recorded in job/schedule metadata further
-                                cacheResult.SearchProgress.PatientVersionId[patientInfo.PatientId] = versionId;
+                                cacheResult.SearchProgress.PatientVersionId[patientInfo.PatientId] = currentPatientVersionId;
                                 _logger.LogInformation($"Get patient resource {patientInfo.PatientId} successfully.");
                             }
 
                             // the version id is 0 for newly patient
                             // for new patient, we will retrieve all its compartments resources from {since}
                             // for processed patient, we will only retrieve the updated compartment resources from last scheduled time
-                            var startDateTime = patientInfo.VersionId == 0
+                            var startDateTime = lastPatientVersionId == 0
                                 ? taskContext.Since
                                 : taskContext.DataPeriod.Start;
                             var parameters = new List<KeyValuePair<string, string>>

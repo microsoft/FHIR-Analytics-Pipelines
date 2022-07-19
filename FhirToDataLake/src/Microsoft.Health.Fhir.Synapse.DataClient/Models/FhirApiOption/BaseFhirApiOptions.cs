@@ -11,7 +11,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption
     {
         public List<KeyValuePair<string, string>> QueryParameters { get; set; } = null;
 
-        public virtual bool IsAccessTokenRequired() => false;
+        public bool IsAccessTokenRequired { get; set; } = false;
 
         public virtual string RelativeUri()
         {

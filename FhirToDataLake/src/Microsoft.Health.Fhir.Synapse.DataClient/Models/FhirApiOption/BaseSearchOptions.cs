@@ -15,11 +15,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption
         {
             ResourceType = resourceType;
             QueryParameters = queryParameters ?? new List<KeyValuePair<string, string>>();
+            IsAccessTokenRequired = true;
         }
 
         public string ResourceType { get; set; }
-
-        public override bool IsAccessTokenRequired() => true;
 
         public override string RelativeUri()
         {

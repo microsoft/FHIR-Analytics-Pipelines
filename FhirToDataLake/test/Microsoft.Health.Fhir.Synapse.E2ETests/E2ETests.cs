@@ -35,8 +35,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
         private const string TestConfigurationPath = "appsettings.test.json";
         private const int TriggerIntervalInMinutes = 5;
-        private const string FakeFhirServerUrl = "http://127.0.0.1:5000";
-        private const string FhirServerNoneAuthentication = "None";
 
         private const string _expectedDataFolder = "TestData/Expected";
 
@@ -137,7 +135,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 await CheckJobStatus(blobContainerClient, expectedJob);
 
                 // Check result files
-                Assert.Equal(4, await GetResultFileCount(blobContainerClient, "result/Observation/2022/07/01"));
+                Assert.Equal(8, await GetResultFileCount(blobContainerClient, "result/Observation/2022/07/01"));
                 Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Patient/2022/07/01"));
             }
             finally
@@ -184,7 +182,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 await CheckJobStatus(blobContainerClient, expectedJob);
 
                 // Check result files
-                Assert.Equal(14, await GetResultFileCount(blobContainerClient, "result"));
+                Assert.Equal(20, await GetResultFileCount(blobContainerClient, "result"));
 
                 var schedulerMetadata = await GetSchedulerMetadata(blobContainerClient);
 

@@ -20,8 +20,6 @@ using R4FhirModelInfo = FhirR4::Hl7.Fhir.Model.ModelInfo;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 {
-    extern alias FhirStu3;
-
     public class R4FhirSpecificationProvider : IFhirSpecificationProvider
     {
         private readonly IFhirDataClient _dataClient;

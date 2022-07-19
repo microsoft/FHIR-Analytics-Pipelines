@@ -84,10 +84,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             try
             {
-                // and running task to task list for resume job
+                // add running task to task list for resume job
                 tasks.AddRange(job.RunningTasks.Values.Select(taskContext => Task.Run(async () =>
                     await _taskExecutor.ExecuteAsync(taskContext, jobProgressUpdater, cancellationToken))).ToList());
 
+                var filters = job.FilterInfo.TypeFilters.ToList();
                 while (true)
                 {
                     if (tasks.Count >= _schedulerConfiguration.MaxConcurrencyCount)
@@ -115,7 +116,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             if (job.NextTaskIndex < job.FilterInfo.TypeFilters.Count())
                             {
                                 var typeFilters = new List<TypeFilter>
-                                    { job.FilterInfo.TypeFilters.ToList()[job.NextTaskIndex] };
+                                    { filters[job.NextTaskIndex] };
                                 taskContext = TaskContext.CreateFromJob(job, typeFilters);
                             }
 
@@ -125,7 +126,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             {
                                 var selectedPatients = job.Patients.Skip(job.NextTaskIndex * JobConfigurationConstants.NumberOfPatientsPerTask)
                                     .Take(JobConfigurationConstants.NumberOfPatientsPerTask).ToList();
-                                taskContext = TaskContext.CreateFromJob(job, job.FilterInfo.TypeFilters.ToList(), selectedPatients);
+                                taskContext = TaskContext.CreateFromJob(job, filters, selectedPatients);
 
                             }
 
