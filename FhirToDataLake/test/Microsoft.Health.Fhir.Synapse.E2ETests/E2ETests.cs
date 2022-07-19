@@ -14,10 +14,12 @@ using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core;
+using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
@@ -34,7 +36,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private readonly ITestOutputHelper _testOutputHelper;
 
         private const string TestConfigurationPath = "appsettings.test.json";
-        private const int TriggerIntervalInMinutes = 5;
 
         private const string _expectedDataFolder = "TestData/Expected";
 
@@ -247,10 +248,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             }
         }
 
-        // TODO: enable to test incremental search when script is ready
-        /*
         [SkippableFact]
-        public async Task GivenRecentDateRange_WhenProcess_CorrectResultShouldBeReturnedAsync()
+        public async Task GivenTwoEndTimes_WhenProcessIncrementalData_CorrectResultShouldBeReturnedAsync()
         {
             Skip.If(_blobServiceClient == null);
             var uniqueContainerName = Guid.NewGuid().ToString("N");
@@ -259,32 +258,84 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             // Make sure the container is deleted before running the tests
             Assert.False(await blobContainerClient.ExistsAsync());
 
-            // Load configuration and set endTime to yesterday
+            // Load configuration
             Environment.SetEnvironmentVariable("job:containerName", uniqueContainerName);
+            Environment.SetEnvironmentVariable("filter:filterScope", "Group");
+            Environment.SetEnvironmentVariable("filter:requiredTypes", "Condition,MedicationRequest,Patient");
+            Environment.SetEnvironmentVariable("filter:typeFilters", "MedicationRequest?status=active,MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z");
+
+            // this group includes all the 80 patients
+            Environment.SetEnvironmentVariable("filter:groupId", "72d653ce-2dbb-4432-bfa0-9ac47d0e0a2c");
+
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
-            var now = DateTime.UtcNow;
-            configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["startTime"] = now.AddMinutes(-1 * TriggerIntervalInMinutes).ToString("o");
-            configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"] = now.ToString("o");
-            configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["containerName"] = uniqueContainerName;
+
+            // set end time to the time that not all the resources are imported.
+            configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"] = "2022-06-29T16:00:00.000Z";
 
             try
             {
-                // Run e2e
-                var host = CreateHostBuilder(configuration).Build();
-                await host.RunAsync();
+                // trigger first time, only the resources imported before end time are synced.
+                var host_1 = CreateHostBuilder(configuration).Build();
+                await host_1.RunAsync();
 
                 // Check job status
-                var fileName = Path.Combine(_expectedDataFolder, "System_Patient_Observation.json");
+                var fileName = Path.Combine(_expectedDataFolder, "GroupScope_AllPatient_Filters_part1.json");
                 var expectedJob = JsonConvert.DeserializeObject<Job>(File.ReadAllText(fileName));
 
                 await CheckJobStatus(blobContainerClient, expectedJob);
 
-                // Check parquet files
-                Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Observation/2000/09/01"));
-                Assert.Equal(0, await GetResultFileCount(blobContainerClient, "result/Patient/2000/09/01"));
+                // modify the job end time to fake incremental sync.
+                // the second triggered job should sync the other resources
+                configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"] =
+                    "2022-07-01T00:00:00.000Z";
+
+                var host_2 = CreateHostBuilder(configuration).Build();
+                await host_2.RunAsync();
+
+                var completedJobCount = 0;
+                Dictionary<string, int> totalResourceCount = new Dictionary<string, int>();
+                await foreach (var blobItem in blobContainerClient.GetBlobsAsync(prefix: "jobs/completedJobs"))
+                {
+                    _testOutputHelper.WriteLine($"Queried blob {blobItem.Name}.");
+
+                    if (blobItem.Name.EndsWith(".json"))
+                    {
+                        completedJobCount++;
+                        var blobClient = blobContainerClient.GetBlobClient(blobItem.Name);
+                        var blobDownloadInfo = await blobClient.DownloadAsync();
+                        using var reader = new StreamReader(blobDownloadInfo.Value.Content, Encoding.UTF8);
+                        var completedJob = JsonConvert.DeserializeObject<Job>(await reader.ReadToEndAsync());
+
+                        Assert.Equal(JobStatus.Succeeded, completedJob.Status);
+
+                        totalResourceCount =
+                            totalResourceCount.ConcatDictionaryCount(completedJob.TotalResourceCounts);
+
+                        // Check parquet files
+                        Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Patient/2022/06/29"));
+                        Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Condition/2022/06/29"));
+                        Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Condition/2022/07/01"));
+                        Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/MedicationRequest/2022/06/29"));
+                        Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/MedicationRequest/2022/07/01"));
+
+                        var schedulerMetadata = await GetSchedulerMetadata(blobContainerClient);
+
+                        Assert.Empty(schedulerMetadata.FailedJobs);
+                        Assert.Equal(80, schedulerMetadata.ProcessedPatients.Count());
+                    }
+                }
+
+                // there should be two completed jobs
+                Assert.Equal(2, completedJobCount);
+
+                var allResourceFileName = Path.Combine(_expectedDataFolder, "GroupScope_AllPatient_Filters.json");
+                var allResourceJob = JsonConvert.DeserializeObject<Job>(File.ReadAllText(allResourceFileName));
+
+                // the total resource count of these two job should equal to all the resources count
+                Assert.True(DictionaryEquals(allResourceJob.TotalResourceCounts, totalResourceCount));
             }
             finally
             {
@@ -292,7 +343,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 blobContainerClient.DeleteIfExists();
             }
         }
-        */
 
         private async Task<SchedulerMetadata> GetSchedulerMetadata(BlobContainerClient blobContainerClient)
         {
