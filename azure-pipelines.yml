@@ -18,7 +18,7 @@ variables:
   version: $(major).$(minor).$(patch).$(buildnum)
 
 stages:
-- stage: Pack native nuget
+- stage: Packnuget
   pool:
     vmImage: ubuntu-latest
   jobs:
