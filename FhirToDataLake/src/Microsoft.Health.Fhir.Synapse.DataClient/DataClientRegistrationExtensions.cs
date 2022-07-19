@@ -8,6 +8,7 @@ using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Polly;
@@ -22,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
         {
             services.AddSingleton<IFhirApiDataSource, FhirApiDataSource>();
             services.AddSingleton<IFhirDataClient, FhirApiDataClient>();
-            services.AddSingleton<ICredentialProvider, InternalFhirCredentialProvider>();
+            services.AddSingleton<ITokenCredentialProvider, ExternalTokenCredentialProvider>();
             services.AddSingleton<IAccessTokenProvider, AzureAccessTokenProvider>();
 
             var fhirServerConfiguration = services

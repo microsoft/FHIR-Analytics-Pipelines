@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter
@@ -12,6 +13,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter
     {
         public static IServiceCollection AddAzure(this IServiceCollection services)
         {
+            services.AddSingleton<ITokenCredentialProvider, ExternalTokenCredentialProvider>();
             services.AddSingleton<IAzureBlobContainerClientFactory, AzureBlobContainerClientFactory>();
             services.AddSingleton<IDataSink, AzureBlobDataSink>();
             services.AddSingleton<IFhirDataWriter, AzureBlobDataWriter>();

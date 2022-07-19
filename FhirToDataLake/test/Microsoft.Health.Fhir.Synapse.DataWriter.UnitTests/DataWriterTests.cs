@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
@@ -44,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             var context = GetTaskContext();
             await dataWriter.WriteAsync(streamData, context.JobId, 0, _testDate);
 
-            var containerClient = new AzureBlobContainerClientFactory(new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
+            var containerClient = new AzureBlobContainerClientFactory(new ExternalTokenCredentialProvider(new NullLogger<ExternalTokenCredentialProvider>()), new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
             var blobStream = await containerClient.GetBlobAsync($"staging/mockjob/Patient/2021/10/01/Patient_mockjob_00000.parquet");
             Assert.NotNull(blobStream);
 
@@ -122,7 +123,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         private AzureBlobDataWriter GetLocalDataWriter()
         {
             return new AzureBlobDataWriter(
-                new AzureBlobContainerClientFactory(new NullLoggerFactory()),
+                new AzureBlobContainerClientFactory(
+                    new ExternalTokenCredentialProvider(new NullLogger<ExternalTokenCredentialProvider>()),
+                    new NullLoggerFactory()),
                 GetLocalDataSink(),
                 new NullLogger<AzureBlobDataWriter>());
         }
@@ -130,7 +133,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         private AzureBlobDataWriter GetDataWriter()
         {
             return new AzureBlobDataWriter(
-                new AzureBlobContainerClientFactory(new NullLoggerFactory()),
+                new AzureBlobContainerClientFactory(
+                    new ExternalTokenCredentialProvider(new NullLogger<ExternalTokenCredentialProvider>()),
+                    new NullLoggerFactory()),
                 GetDataSink(),
                 new NullLogger<AzureBlobDataWriter>());
         }

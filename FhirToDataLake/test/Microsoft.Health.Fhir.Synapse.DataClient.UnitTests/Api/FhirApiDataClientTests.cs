@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
@@ -22,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 {
     public class FhirApiDataClientTests
     {
-        private readonly AzureAccessTokenProvider _brokenProvider = new AzureAccessTokenProvider(new InternalFhirCredentialProvider(new NullLogger<InternalFhirCredentialProvider>()), new NullLogger<AzureAccessTokenProvider>());
+        private readonly AzureAccessTokenProvider _brokenProvider = new AzureAccessTokenProvider(new ExternalTokenCredentialProvider(new NullLogger<ExternalTokenCredentialProvider>()), new NullLogger<AzureAccessTokenProvider>());
         private readonly MockAccessTokenProvider _mockProvider = new MockAccessTokenProvider();
 
         private const string SampleResourceType = "Patient";

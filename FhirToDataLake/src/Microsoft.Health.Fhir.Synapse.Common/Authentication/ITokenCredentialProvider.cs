@@ -5,9 +5,9 @@
 
 using Azure.Core;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
+namespace Microsoft.Health.Fhir.Synapse.Common.Authentication
 {
-    public interface ICredentialProvider
+    public interface ITokenCredentialProvider
     {
         public TokenCredential GetCredential();
     }

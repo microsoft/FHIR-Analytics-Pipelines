@@ -11,7 +11,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
@@ -19,6 +18,7 @@ using Azure.Storage.Files.DataLake;
 using Azure.Storage.Files.DataLake.Models;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
@@ -39,6 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         public AzureBlobContainerClient(
             Uri storageUri,
+            ITokenCredentialProvider credentialProvider,
             ILogger<AzureBlobContainerClient> logger)
         {
             EnsureArg.IsNotNull(storageUri, nameof(storageUri));
@@ -48,10 +49,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
             _blobContainerClient = new BlobContainerClient(
                 storageUri,
-                new DefaultAzureCredential());
+                credentialProvider.GetCredential());
             _dataLakeFileSystemClient = new DataLakeFileSystemClient(
                 storageUri,
-                new DefaultAzureCredential());
+                credentialProvider.GetCredential());
             InitializeBlobContainerClient();
         }
 

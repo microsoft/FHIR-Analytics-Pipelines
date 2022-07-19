@@ -9,14 +9,14 @@ using Azure.Identity;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
+namespace Microsoft.Health.Fhir.Synapse.Common.Authentication
 {
-    public class InternalFhirCredentialProvider : ICredentialProvider
+    public class ExternalTokenCredentialProvider : ITokenCredentialProvider
     {
 
-        private readonly ILogger<InternalFhirCredentialProvider> _logger;
+        private readonly ILogger<ExternalTokenCredentialProvider> _logger;
 
-        public InternalFhirCredentialProvider(ILogger<InternalFhirCredentialProvider> logger)
+        public ExternalTokenCredentialProvider(ILogger<ExternalTokenCredentialProvider> logger)
         {
             EnsureArg.IsNotNull(logger, nameof(logger));
 
@@ -28,12 +28,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             try
             {
                 var credential = new DefaultAzureCredential();
-                _logger.LogInformation("Get internal token credential successfully.");
+                _logger.LogInformation("Get external token credential successfully.");
                 return credential;
             }
             catch (Exception exception)
             {
-                _logger.LogError("Get internal token credential failed. Reason: '{0}'", exception);
+                _logger.LogError("Get external token credential failed. Reason: '{0}'", exception);
                 throw;
             }
         }
