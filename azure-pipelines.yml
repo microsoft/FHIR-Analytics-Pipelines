@@ -22,10 +22,11 @@ stages:
   pool:
     vmImage: ubuntu-latest
   jobs:
-  - job: Buildnuget
+  - job: BuildNuget
     steps:
     - template: FhirToDataLake/build-native-nugets.yml
 
   - job: BuildFhirToDataLake
+    dependsOn: BuildNuget
     steps:
     - template: FhirToDataLake/build.yml
