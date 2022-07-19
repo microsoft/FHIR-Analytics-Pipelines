@@ -30,8 +30,8 @@ add_library(${LIBRARY_NAME}_static
 
 target_link_libraries(${LIBRARY_NAME}_static
         PRIVATE
-        ${PARQUET_LIBRARIES}
-        ${ARROW_LIBRARIES}
+	parquet
+	arrow
         jsoncpp_object
         jsoncpp_static
         JsonCpp::JsonCpp
