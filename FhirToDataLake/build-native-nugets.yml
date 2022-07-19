@@ -1,4 +1,7 @@
 steps:
+- checkout: self
+  submodules: true
+
 - script: |
     sudo apt update
     sudo apt install -y -V ca-certificates lsb-release wget
@@ -7,12 +10,6 @@ steps:
     sudo apt-get update
     sudo apt-get install -y libarrow-dev libparquet-dev
   displayName: 'Install Arrow'
-
-- script: |
-    git submodule init
-    git submodule update
-  workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
-  displayName: 'Get vcpkg'
 
 - task: CMake@1
   displayName: CMake generate configuration
