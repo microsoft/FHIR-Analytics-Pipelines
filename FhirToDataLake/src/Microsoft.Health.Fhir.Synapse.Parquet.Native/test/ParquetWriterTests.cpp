@@ -216,7 +216,6 @@ TEST (ParquetWriter, WriteExamplePatient)
     string exampleSchema = read_file_text(TestDataDir + "patient_example_schema.json");
     ParquetWriter writer;
     int schemaStatus = writer.RegisterSchema(resourceType, exampleSchema);
-    EXPECT_EQ(3874, exampleSchema.size());
     EXPECT_EQ(0, schemaStatus);
 
     int status = writer.Write(resourceType, PatientData.c_str(), PatientData.size(), outputData, &outputLength);
