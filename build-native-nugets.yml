@@ -1,0 +1,58 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+- synapse
+- refs/heads/synapse
+
+variables:
+  buildConfiguration: 'Release'
+  buildPlatform: 'x64'
+  major: 0
+  minor: 3
+  patch: 0
+  buildnum: $[counter(format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch']), 1)]
+  version: $(major).$(minor).$(patch).$(buildnum)
+
+stages:
+- stage: Build
+  pool:
+    vmImage: ubuntu-latest
+  jobs:
+  - job: Build Parquet Native
+    steps:
+    - script: |
+        sudo apt-get update
+        sudo apt-get install -y libarrow-dev libparquet-dev
+      displayName: 'Install Arrow'
+
+    - task: CMake@1
+      displayName: CMake generate configuration
+      inputs:
+        workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
+        cmakeArgs: " -B build -S ."
+
+    - task: CMake@1
+      displayName: CMake build
+      inputs:
+        workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
+        cmakeArgs: " --build build"    
+
+    - script: make test ARGS=-V
+      workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native/build
+      displayName: Run native tests
+
+    - script: | 
+        mkdir -p ../Microsoft.Health.Fhir.Synapse.Parquet/bin
+        cp build/src/libParquetNative.so ../Microsoft.Health.Fhir.Synapse.Parquet/bin
+      workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
+      displayName: Copy native library
+    
+    - script: |
+        dotnet pack Microsoft.Health.Fhir.Synapse.Parquet.csproj -p:NuspecFile=BuildParquet.nuspec -c Release -o $(Build.ArtifactStagingDirectory)
+      workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)' 
+        artifactName: 'parquetnugetpack' 
+
