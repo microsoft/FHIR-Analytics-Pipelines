@@ -8,7 +8,7 @@ steps:
     wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
     sudo apt install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
     sudo apt-get update
-    sudo apt-get install -y libarrow-dev libparquet-dev
+    sudo apt-get install -y libarrow-dev=8.0.0-1 libparquet-dev=8.0.0-1
   displayName: 'Install Arrow'
 
 - task: CMake@1
@@ -21,7 +21,7 @@ steps:
   displayName: CMake build
   inputs:
     workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
-    cmakeArgs: " --build build"    
+    cmakeArgs: " --build build  --config Release"    
 
 - script: make test ARGS=-V
   workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native/build
@@ -34,11 +34,20 @@ steps:
   displayName: Copy native library
 
 - script: |
-    dotnet pack Microsoft.Health.Fhir.Synapse.Parquet.csproj -p:NuspecFile=BuildParquet.nuspec -c Release -o $(Build.ArtifactStagingDirectory)
+    dotnet pack Microsoft.Health.Fhir.Synapse.Parquet.csproj -p:NuspecFile=BuildParquet.nuspec  -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
   workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet
+  displayName: Nuget pack
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)' 
+    pathToPublish: '$(Build.ArtifactStagingDirectory)/nupkgs'
     artifactName: 'parquetnugetpack' 
+
+- task: NuGetCommand@2
+  displayName: 'NuGet push'
+  inputs:
+    command: push
+    publishVstsFeed: 'FhirAnalytics/FhirAnalyticsPublic'
+    allowPackageConflicts: true
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/nupkgs/*.nupkg
 

@@ -7,13 +7,6 @@ steps:
   inputs:
     versionSpec: 5.11
 
-- task: NuGetCommand@2
-  displayName: 'NuGet restore packages.config'
-  inputs:
-    restoreSolution: '**/*.Native/packages.config'
-    vstsFeed: 'FhirAnalytics/FhirAnalyticsPublic'
-    restoreDirectory: '../../packages'
-
 - task: DotNetCoreCLI@2
   displayName: 'dotnet restore solution'
   inputs:
@@ -32,9 +25,10 @@ steps:
     msbuildArguments: '-p:ApplicationVersion=$(version)'
 
 - script: |
-    "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" init /server "(localdb)\MsSqlLocalDb"
-    "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start
-  displayName: 'Start Azure Storage Emulator'
+    docker pull mcr.microsoft.com/azure-storage/azurite
+    docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+        mcr.microsoft.com/azure-storage/azurite
+  displayName: 'Start Azurite Emulator'
 
 - script: |
     docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
@@ -47,18 +41,6 @@ steps:
     KeyVaultName: 'fhiranalyticspipeline'
     SecretsFilter: '*'
     RunAsPreJob: false
-
-- task: VSTest@2
-  displayName: 'Run native tests'
-  inputs:
-    testAssemblyVer2: |
-      **\*Native*\**\*UnitTests.dll
-      !**\obj\**
-      !**\ref\**
-    searchFolder: '$(Build.SourcesDirectory)'
-    codeCoverageEnabled: true
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
 
 - task: VSTest@2
   displayName: 'Run managed tests'
