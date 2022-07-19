@@ -21,7 +21,7 @@ steps:
   displayName: CMake build
   inputs:
     workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
-    cmakeArgs: " --build build  --config Release"    
+    cmakeArgs: " --build build --config Release"    
 
 - script: make test ARGS=-V
   workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native/build
@@ -49,5 +49,5 @@ steps:
     command: push
     publishVstsFeed: 'FhirAnalytics/FhirAnalyticsPublic'
     allowPackageConflicts: true
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/nupkgs/*.nupkg
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/nupkgs/*.nupkg'
 
