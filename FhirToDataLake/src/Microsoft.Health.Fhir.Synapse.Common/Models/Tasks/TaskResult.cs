@@ -17,7 +17,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             Dictionary<string, int> skippedCount,
             Dictionary<string, int> processedCount,
             IEnumerable<PatientWrapper> patients,
-            Dictionary<string, int> patientVersionId,
             string result)
         {
             IsCompleted = isCompleted;
@@ -25,7 +24,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             SkippedCount = skippedCount;
             ProcessedCount = processedCount;
             Patients = patients;
-            PatientVersionId = patientVersionId;
             Result = result;
         }
 
@@ -55,11 +53,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public IEnumerable<PatientWrapper> Patients { get; set; }
 
         /// <summary>
-        /// Patient version id.
-        /// </summary>
-        public Dictionary<string, int> PatientVersionId { get; set; }
-
-        /// <summary>
         /// Text result message.
         /// </summary>
         public string Result { get; set; }
@@ -72,7 +65,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
                 context.SkippedCount,
                 context.ProcessedCount,
                 context.Patients,
-                context.SearchProgress.PatientVersionId,
                 JsonConvert.SerializeObject(context));
         }
     }
