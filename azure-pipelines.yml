@@ -18,17 +18,13 @@ variables:
   version: $(major).$(minor).$(patch).$(buildnum)
 
 stages:
-- stage: Build
+- stage: Pack native nuget
   pool:
-    vmImage: windows-2019
+    vmImage: ubuntu-latest
   jobs:
-  - job: BuildFhirToCdm
+  - job: Build parquet nuget
     steps:
-    - template: FhirToCdm/build.yml
-
-  - job: BuildFhirToDataLake
-    steps:
-    - template: FhirToDataLake/build.yml
+    - template: FhirToDataLake/build-native-nugets.yml
 
 - stage: Release
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
