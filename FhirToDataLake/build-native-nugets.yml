@@ -34,8 +34,14 @@ steps:
   displayName: Copy native library
 
 - script: |
-    dotnet pack Microsoft.Health.Fhir.Synapse.Parquet.csproj -p:NuspecFile=BuildParquet.nuspec  -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
-  workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet
+    dotnet pack src/Microsoft.Health.Fhir.Synapse.Parquet/Microsoft.Health.Fhir.Synapse.Parquet.csproj -p:NuspecFile=BuildParquet.nuspec  -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
+    dotnet pack src/Microsoft.Health.Fhir.Synapse.Common/Microsoft.Health.Fhir.Synapse.Common.csproj -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
+    dotnet pack src/Microsoft.Health.Fhir.Synapse.Core/Microsoft.Health.Fhir.Synapse.Core.csproj -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
+    dotnet pack src/Microsoft.Health.Fhir.Synapse.DataClient/Microsoft.Health.Fhir.Synapse.DataClient.csproj -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
+    dotnet pack src/Microsoft.Health.Fhir.Synapse.DataWriter/Microsoft.Health.Fhir.Synapse.DataWriter.csproj -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
+    dotnet pack src/Microsoft.Health.Fhir.Synapse.SchemaManagement/Microsoft.Health.Fhir.Synapse.SchemaManagement.csproj -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
+
+  workingDirectory: FhirToDataLake
   displayName: Nuget pack
 
 - task: PublishBuildArtifacts@1
