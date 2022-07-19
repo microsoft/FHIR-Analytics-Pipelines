@@ -225,8 +225,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var newMetadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader.ReadToEnd());
             Assert.Equal(_testEndTime, newMetadata.LastScheduledTimestamp);
             Assert.Empty(newMetadata.FailedJobs);
-            //Assert.True(newMetadata.ProcessedPatientIds.ContainsKey("patientId1"));
-            //Assert.True(newMetadata.ProcessedPatientIds.ContainsKey("patientId2"));
+            Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId1"));
+            Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId2"));
 
             jobManager.Dispose();
         }
@@ -266,7 +266,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Empty(newMetadata.FailedJobs);
             Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId0"));
             Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId1"));
-            //Assert.True(newMetadata.ProcessedPatientIds.ContainsKey("patientId2"));
+            Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId2"));
 
             jobManager.Dispose();
         }
@@ -414,6 +414,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 new Dictionary<string, int>() { { "Patient", 0 } },
                 new Dictionary<string, int>() { { "Patient", 100 } },
                 new List<PatientWrapper>() { new PatientWrapper("patientId1", 1), new PatientWrapper("patientId2", 0) },
+                new Dictionary<string, int>() { { "patientId1", 1 }, { "patientId2", 1 } },
                 string.Empty);
         }
 
