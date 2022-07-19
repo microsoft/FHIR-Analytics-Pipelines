@@ -26,7 +26,7 @@ steps:
 
 - script: |
     docker pull mcr.microsoft.com/azure-storage/azurite
-    docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+    docker run -d --name azurite-emulator-analytics-ci -p 10000:10000 -p 10001:10001 -p 10002:10002 \
         mcr.microsoft.com/azure-storage/azurite
   displayName: 'Start Azurite Emulator'
 
@@ -67,6 +67,13 @@ steps:
   inputs:
     command: stop
     container: mock-data-source
+
+- task: Docker@2
+  displayName: Stop Azurite Emulator
+  condition: succeededOrFailed()
+  inputs:
+    command: stop
+    container: azurite-emulator-analytics-ci
 
 # ref: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-function-app?view=azure-devops#error-publish-using-zip-deploy-option-is-not-supported-for-msbuild-package-type
 - task: MSBuild@1
