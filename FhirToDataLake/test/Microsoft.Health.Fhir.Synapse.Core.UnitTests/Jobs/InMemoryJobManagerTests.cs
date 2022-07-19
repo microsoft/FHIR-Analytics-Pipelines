@@ -323,7 +323,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
-        public async Task GivenCompletedTimeRange_WhenExecute_ExceptionWillBeThrown()
+        public async Task GivenCompletedTimeRange_WhenExecute_NoExceptionWillBeThrown()
         {
             var jobConfig = new JobConfiguration()
             {
@@ -336,8 +336,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
-            var exception = await Assert.ThrowsAsync<StartJobFailedException>(() => jobManager.RunAsync());
-            Assert.Contains("Job has been scheduled to end", exception.Message);
+            var exception = await Record.ExceptionAsync(async () => await jobManager.RunAsync());
+            Assert.Null(exception);
+
+            Assert.Empty(await blobClient.ListBlobsAsync(AzureBlobJobConstants.CompletedJobFolder));
 
             jobManager.Dispose();
         }

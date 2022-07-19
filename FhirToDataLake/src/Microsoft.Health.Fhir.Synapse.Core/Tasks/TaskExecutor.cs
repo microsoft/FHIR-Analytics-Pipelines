@@ -79,9 +79,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             // Initialize cache result from the search progress of task context
             var cacheResult = new CacheResult(taskContext.SearchProgress);
 
-            switch (taskContext.FilterScope)
+            try
             {
-                case FilterScope.Group:
+                switch (taskContext.FilterScope)
+                {
+                    case FilterScope.Group:
                     {
                         var isPatientResourcesRequired = IsPatientResourcesRequired(taskContext);
 
@@ -144,10 +146,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                                 ? taskContext.Since
                                 : taskContext.DataPeriod.Start;
                             var parameters = new List<KeyValuePair<string, string>>
-                        {
-                            new (FhirApiConstants.LastUpdatedKey, $"ge{startDateTime.ToInstantString()}"),
-                            new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
-                        };
+                            {
+                                new (FhirApiConstants.LastUpdatedKey, $"ge{startDateTime.ToInstantString()}"),
+                                new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
+                            };
 
                             // create initial compartment search option for this patient,
                             // the resource type and customized parameters of each filter will be set later.
@@ -166,15 +168,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                         break;
                     }
 
-                case FilterScope.System:
+                    case FilterScope.System:
                     {
                         // create initial base search option for this task,
                         // the resource type and customized parameters of each filter will be set later.
                         var parameters = new List<KeyValuePair<string, string>>
-                    {
-                        new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.DataPeriod.Start.ToInstantString()}"),
-                        new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
-                    };
+                        {
+                            new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.DataPeriod.Start.ToInstantString()}"),
+                            new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
+                        };
                         var searchOption = new BaseSearchOptions(null, parameters);
 
                         // retrieve resources for all the type filters.
@@ -182,23 +184,30 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                         break;
                     }
 
-                default:
-                    throw new ArgumentOutOfRangeException($"The FilterScope {taskContext.FilterScope} isn't supported now.");
+                    default:
+                        throw new ArgumentOutOfRangeException($"The FilterScope {taskContext.FilterScope} isn't supported now.");
+                }
+
+                // force to commit result.
+                await TryCommitResultAsync(taskContext, true, cacheResult, progressUpdater, cancellationToken);
+
+                taskContext.IsCompleted = true;
+
+                // update the completed task context to job
+                await progressUpdater.Produce(taskContext, cancellationToken);
+
+                _logger.LogInformation(
+                    "Finished processing task '{taskIndex}'.",
+                    taskContext.TaskIndex);
+
+                return TaskResult.CreateFromTaskContext(taskContext);
             }
-
-            // force to commit result.
-            await TryCommitResultAsync(taskContext, true, cacheResult, progressUpdater, cancellationToken);
-
-            taskContext.IsCompleted = true;
-
-            // update the completed task context to job
-            await progressUpdater.Produce(taskContext, cancellationToken);
-
-            _logger.LogInformation(
-                "Finished processing task '{taskIndex}'.",
-                taskContext.TaskIndex);
-
-            return TaskResult.CreateFromTaskContext(taskContext);
+            catch (Exception ex)
+            {
+                // force to commit result before throw exception
+                await TryCommitResultAsync(taskContext, true, cacheResult, progressUpdater, cancellationToken);
+                throw;
+            }
         }
 
         /// <summary>
@@ -386,7 +395,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 throw new FhirDataParseExeption($"Failed to parse fhir search result", exception);
             }
 
-            var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject).ToList();
+            var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject);
 
             var operationOutcomes = FhirBundleParser.GetOperationOutcomes(fhirResources).ToList();
             if (operationOutcomes.Any())
@@ -397,7 +406,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
 
             var continuationToken = FhirBundleParser.ExtractContinuationToken(fhirBundleObject);
 
-            return new SearchResult(fhirResources, fhirBundleResult.Length * sizeof(char), continuationToken);
+            return new SearchResult(fhirResources.ToList(), fhirBundleResult.Length * sizeof(char), continuationToken);
         }
 
         /// <summary>

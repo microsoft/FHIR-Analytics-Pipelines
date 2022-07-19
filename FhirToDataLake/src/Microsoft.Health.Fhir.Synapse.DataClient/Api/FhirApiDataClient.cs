@@ -28,7 +28,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         private readonly IAccessTokenProvider _accessTokenProvider;
         private readonly ILogger<FhirApiDataClient> _logger;
 
-        private const bool RetryFor429Exceptions = true;
+        private const int RetryCount = 1;
+        private const int RetryTimeSpan = 5000;
 
         public FhirApiDataClient(
             IFhirApiDataSource dataSource,
@@ -162,14 +163,23 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                     searchRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
                 }
 
+                var retryCount = 0;
+                var retry = true;
                 HttpResponseMessage response = await _httpClient.SendAsync(searchRequest, cancellationToken);
-
-                // If retry for 429 exception
-                if (RetryFor429Exceptions && response.StatusCode == HttpStatusCode.TooManyRequests)
+                while (retry)
                 {
-                    _logger.LogError("Get response from http request failed. Url: '{url}', Reason: 429 Too many requests, will retry it.", uri );
-
-                    response = await _httpClient.SendAsync(searchRequest, cancellationToken);
+                    // retry for 429 exception
+                    if (retryCount < RetryCount && response.StatusCode == HttpStatusCode.TooManyRequests)
+                    {
+                        _logger.LogError("Get response from http request failed due to 429 too many requests, will deplay for {}ms and retry it. Url: '{url}',", RetryTimeSpan, uri);
+                        Thread.Sleep(RetryTimeSpan);
+                        response = await _httpClient.SendAsync(searchRequest, cancellationToken);
+                        retryCount++;
+                    }
+                    else
+                    {
+                        retry = false;
+                    }
                 }
 
                 response.EnsureSuccessStatusCode();

@@ -82,72 +82,71 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             var tasks = new List<Task<TaskResult>>();
 
-            // and running task to task list for resume job
-            tasks.AddRange(job.RunningTasks.Values.Select(taskContext => Task.Run(async () =>
-                await _taskExecutor.ExecuteAsync(taskContext, jobProgressUpdater, cancellationToken))).ToList());
-
-            while (true)
-            {
-                if (tasks.Count >= _schedulerConfiguration.MaxConcurrencyCount)
-                {
-                    var finishedTask = await Task.WhenAny(tasks);
-                    if (finishedTask.IsFaulted)
-                    {
-                        _logger.LogError(finishedTask.Exception, "Process task failed.");
-
-                        // if there is a task failed, we need to consume all the task contexts before exit jobExecutor
-                        // otherwise, the task contexts may be consumed and update the job to active after the job is completed in JobManager
-                        jobProgressUpdater.Complete();
-                        await progressReportTask;
-
-                        throw new ExecuteTaskFailedException("Task execution failed", finishedTask.Exception);
-                    }
-
-                    tasks.Remove(finishedTask);
-                }
-
-                TaskContext taskContext = null;
-
-                switch (job.FilterInfo.FilterScope)
-                {
-                    case FilterScope.System:
-                        if (job.NextTaskIndex < job.FilterInfo.TypeFilters.Count())
-                        {
-                            var typeFilters = new List<TypeFilter>
-                                { job.FilterInfo.TypeFilters.ToList()[job.NextTaskIndex] };
-                            taskContext = TaskContext.CreateFromJob(job, typeFilters);
-                        }
-
-                        break;
-                    case FilterScope.Group:
-                        if (job.NextTaskIndex * JobConfigurationConstants.NumberOfPatientsPerTask < job.Patients.ToList().Count)
-                        {
-                            var selectedPatients = job.Patients.Skip(job.NextTaskIndex * JobConfigurationConstants.NumberOfPatientsPerTask)
-                                .Take(JobConfigurationConstants.NumberOfPatientsPerTask).ToList();
-                            taskContext = TaskContext.CreateFromJob(job, job.FilterInfo.TypeFilters.ToList(), selectedPatients);
-
-                        }
-
-                        break;
-                    default:
-                        // this case should not happen
-                        throw new ArgumentOutOfRangeException($"The filterScope {job.FilterInfo.FilterScope} isn't supported now.");
-                }
-
-                // if there is no new task context created, then all the tasks are generated, break the while loop;
-                if (taskContext == null)
-                {
-                    break;
-                }
-
-                job.RunningTasks[taskContext.Id] = taskContext;
-                tasks.Add(Task.Run(async () => await _taskExecutor.ExecuteAsync(taskContext, jobProgressUpdater, cancellationToken)));
-                _logger.LogInformation("Start processing task '{taskIndex}'", job.NextTaskIndex);
-                job.NextTaskIndex++;
-            }
-
             try
             {
+                // and running task to task list for resume job
+                tasks.AddRange(job.RunningTasks.Values.Select(taskContext => Task.Run(async () =>
+                    await _taskExecutor.ExecuteAsync(taskContext, jobProgressUpdater, cancellationToken))).ToList());
+
+                while (true)
+                {
+                    if (tasks.Count >= _schedulerConfiguration.MaxConcurrencyCount)
+                    {
+                        var finishedTask = await Task.WhenAny(tasks);
+                        tasks.Remove(finishedTask);
+
+                        if (finishedTask.IsFaulted)
+                        {
+                            _logger.LogError(finishedTask.Exception, "Process task failed.");
+
+                            // if there is a task failed, we need to wait all the task to be completed
+                            // otherwise, the data in other tasks may be missing 
+                            await Task.WhenAll(tasks);
+
+                            throw new ExecuteTaskFailedException("Task execution failed", finishedTask.Exception);
+                        }
+                    }
+
+                    TaskContext taskContext = null;
+
+                    switch (job.FilterInfo.FilterScope)
+                    {
+                        case FilterScope.System:
+                            if (job.NextTaskIndex < job.FilterInfo.TypeFilters.Count())
+                            {
+                                var typeFilters = new List<TypeFilter>
+                                    { job.FilterInfo.TypeFilters.ToList()[job.NextTaskIndex] };
+                                taskContext = TaskContext.CreateFromJob(job, typeFilters);
+                            }
+
+                            break;
+                        case FilterScope.Group:
+                            if (job.NextTaskIndex * JobConfigurationConstants.NumberOfPatientsPerTask < job.Patients.ToList().Count)
+                            {
+                                var selectedPatients = job.Patients.Skip(job.NextTaskIndex * JobConfigurationConstants.NumberOfPatientsPerTask)
+                                    .Take(JobConfigurationConstants.NumberOfPatientsPerTask).ToList();
+                                taskContext = TaskContext.CreateFromJob(job, job.FilterInfo.TypeFilters.ToList(), selectedPatients);
+
+                            }
+
+                            break;
+                        default:
+                            // this case should not happen
+                            throw new ArgumentOutOfRangeException($"The filterScope {job.FilterInfo.FilterScope} isn't supported now.");
+                    }
+
+                    // if there is no new task context created, then all the tasks are generated, break the while loop;
+                    if (taskContext == null)
+                    {
+                        break;
+                    }
+
+                    job.RunningTasks[taskContext.Id] = taskContext;
+                    tasks.Add(Task.Run(async () => await _taskExecutor.ExecuteAsync(taskContext, jobProgressUpdater, cancellationToken)));
+                    _logger.LogInformation("Start processing task '{taskIndex}'", job.NextTaskIndex);
+                    job.NextTaskIndex++;
+                }
+
                 var taskResults = await Task.WhenAll(tasks);
             }
             catch (Exception ex)
