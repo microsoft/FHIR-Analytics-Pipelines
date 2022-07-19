@@ -309,7 +309,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     {
                         var schemaType = match.Groups["schema"].Value;
                         var partId = int.Parse(match.Groups["partId"].Value);
-                        if (partId >= job.PartIds[schemaType])
+                        if (!job.PartIds.ContainsKey(schemaType) || partId >= job.PartIds[schemaType])
                         {
                             await _blobContainerClient.DeleteBlobAsync(path.Name, cancellationToken);
                         }

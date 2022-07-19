@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.Parquet.CLR;
+using Microsoft.Health.Fhir.Synapse.Parquet;
+
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json;
@@ -29,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly ArrowConfiguration _arrowConfiguration;
         private readonly ILogger<ParquetDataProcessor> _logger;
-        private readonly ParquetConverterWrapper _parquetConverterWrapper;
+        private readonly ParquetConverter _parquetConverter;
 
         public ParquetDataProcessor(
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
@@ -43,18 +45,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             _fhirSchemaManager = fhirSchemaManager;
             _arrowConfiguration = arrowConfiguration.Value;
             _logger = logger;
+            _parquetConverter = new ParquetConverter();
 
-            try
-            {
-                _parquetConverterWrapper = new ParquetConverterWrapper(_fhirSchemaManager.GetAllSchemas(), arrowConfiguration.Value);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Create ParquetConverterWrapper failed.");
-                throw new ParquetDataProcessorException("Create ParquetConverterWrapper failed. " + ex.Message, ex);
-            }
-
-            _logger.LogInformation($"ParquetDataProcessor initialized successfully with ArrowConfiguration: {JsonConvert.SerializeObject(arrowConfiguration.Value)}.");
+            var schemaSet = _fhirSchemaManager.GetAllSchemaContent();
+            _parquetConverter.InitializeSchemaSet(schemaSet);
+            _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
         }
 
         public Task<StreamBatchData> ProcessAsync(
@@ -76,8 +71,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
                 throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
             }
 
-            var inputStream = ConvertJsonDataToStream(processParameters.SchemaType, preprocessedData.Values);
-            if (inputStream == null)
+            var inputContent = string.Join(
+                Environment.NewLine,
+                preprocessedData.Values.Select(jsonObject => jsonObject.ToString(Formatting.None))
+                         .Where(result => CheckBlockSize(processParameters.SchemaType, result)));
+            if (string.IsNullOrEmpty(inputContent))
             {
                 // Return null if no data has been converted.
                 return Task.FromResult<StreamBatchData>(null);
@@ -86,13 +84,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             // Convert JSON data to parquet stream.
             try
             {
-                var resultStream = _parquetConverterWrapper.ConvertToParquetStream(processParameters.SchemaType, inputStream);
+                var resultStream = _parquetConverter.ConvertJsonToParquet(processParameters.SchemaType, inputContent);
                 return Task.FromResult(
                     new StreamBatchData(
                         resultStream,
                         preprocessedData.Values.Count(),
-                        processParameters.SchemaType)
-                    );
+                        processParameters.SchemaType));
             }
             catch (Exception ex)
             {

@@ -24,6 +24,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
         /// <returns>Instance of FhirSchemaNode, represents the schema for given resource type.</returns>
         public T GetSchema(string schemaType);
 
+        public Dictionary<string, string> GetAllSchemaContent();
+
         /// <summary>
         /// Get FHIR schema nodes for all schema types.
         /// </summary>
