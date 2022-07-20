@@ -67,7 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 
             _compartmentResourceTypesLookup = BuildCompartmentResourceTypesLookup();
 
-            _searchParameterDefinitionLookup = BuildSearchParameterDefinitionLookup();
+            // _searchParameterDefinitionLookup = BuildSearchParameterDefinitionLookup();
 
             (_resourceTypeSearchParametersLookup, _searchParameterIdLookup) = BuildSearchParametersLookup();
         }
