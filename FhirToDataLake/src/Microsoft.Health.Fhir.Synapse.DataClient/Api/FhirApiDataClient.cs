@@ -171,7 +171,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                     // retry for 429 exception
                     if (retryCount < RetryCount && response.StatusCode == HttpStatusCode.TooManyRequests)
                     {
-                        _logger.LogError("Get response from http request failed due to 429 too many requests, will deplay for {}ms and retry it. Url: '{url}',", RetryTimeSpan, uri);
+                        _logger.LogError("Get response from http request failed due to 429 too many requests, will delay for {}ms and retry it. Url: '{url}',", RetryTimeSpan, uri);
                         Thread.Sleep(RetryTimeSpan);
                         response = await _httpClient.SendAsync(searchRequest, cancellationToken);
                         retryCount++;
