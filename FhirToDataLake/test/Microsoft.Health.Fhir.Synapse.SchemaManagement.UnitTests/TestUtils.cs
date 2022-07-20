@@ -42,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
         public static IContainerRegistryTemplateProvider GetMockAcrTemplateProvider(List<Dictionary<string, Template>> templateCollections)
         {
             var templateProvider = Substitute.For<IContainerRegistryTemplateProvider>();
-            templateProvider.GetTemplateCollectionAsync(default).ReturnsForAnyArgs(templateCollections);
+            templateProvider.GetTemplateCollectionAsync(default, default).ReturnsForAnyArgs(templateCollections);
             return templateProvider;
         }
 

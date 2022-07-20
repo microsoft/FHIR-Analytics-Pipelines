@@ -51,7 +51,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             var templateCollection = TemplateLayerParser.ParseToTemplates(templateContents);
 
             var templateProvider = Substitute.For<IContainerRegistryTemplateProvider>();
-            templateProvider.GetTemplateCollectionAsync(default).ReturnsForAnyArgs(new List<Dictionary<string, Template>> { templateCollection });
+            templateProvider.GetTemplateCollectionAsync(default, default).ReturnsForAnyArgs(new List<Dictionary<string, Template>> { templateCollection });
             return templateProvider;
         }
 

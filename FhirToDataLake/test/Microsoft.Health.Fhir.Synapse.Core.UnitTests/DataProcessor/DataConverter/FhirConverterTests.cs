@@ -6,6 +6,8 @@
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
@@ -20,7 +22,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
         static FhirConverterTests()
         {
-            _testFhirConverter = new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), NullLogger<CustomSchemaConverter>.Instance);
+            var schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
+            {
+                SchemaCollectionDirectory = TestUtils.PipelineDefaultSchemaDirectoryPath,
+                EnableCustomizedSchema = true,
+                SchemaImageReference = "testacr.azurecr.io/customizedtemplate:default",
+            });
+
+            _testFhirConverter = new CustomSchemaConverter(
+                TestUtils.GetMockAcrTemplateProvider(),
+                schemaConfigurationOptionWithCustomizedSchema,
+                NullLogger<CustomSchemaConverter>.Instance);
         }
 
         [Fact]
