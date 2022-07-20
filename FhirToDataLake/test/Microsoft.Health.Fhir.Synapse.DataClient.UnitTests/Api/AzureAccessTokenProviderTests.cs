@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
@@ -32,6 +33,21 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var accessTokenProvider = new AzureAccessTokenProvider(new ExternalTokenCredentialProvider(new NullLogger<ExternalTokenCredentialProvider>()), new NullLogger<AzureAccessTokenProvider>());
 
             _ = await Assert.ThrowsAsync<ArgumentNullException>(() => accessTokenProvider.GetAccessTokenAsync(resourceUrl));
+        }
+
+        [Fact]
+        public async Task GivenAResourceUrl_WhenGetAccessToken_CachedAccessTokenWillBeReturnedIfNotExpired()
+        {
+            var resourceUrl = "http://test";
+            var accessTokenProvider = new AzureAccessTokenProvider(new MockTokenCredentialProvider(), new NullLogger<AzureAccessTokenProvider>());
+
+            var accessToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
+            Thread.Sleep(2000);
+            var cachedToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
+            Thread.Sleep(5000);
+            var newToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
+            Assert.Equal(accessToken, cachedToken);
+            Assert.NotEqual(accessToken, newToken);
         }
     }
 }
