@@ -77,138 +77,129 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
             _logger.LogInformation($"Start execute task {taskContext.TaskIndex}.");
 
             // Initialize cache result from the search progress of task context
-            var cacheResult = new CacheResult(taskContext.SearchProgress);
+            var cacheResult = new CacheResult(taskContext.SearchProgress.Copy());
 
-            try
+            switch (taskContext.FilterScope)
             {
-                switch (taskContext.FilterScope)
+                case FilterScope.Group:
                 {
-                    case FilterScope.Group:
+                    var isPatientResourcesRequired = IsPatientResourcesRequired(taskContext);
+
+                    for (var patientIndex = cacheResult.SearchProgress.CurrentIndex; patientIndex < taskContext.Patients.Count; patientIndex++)
                     {
-                        var isPatientResourcesRequired = IsPatientResourcesRequired(taskContext);
-
-                        for (var patientIndex = cacheResult.SearchProgress.CurrentIndex; patientIndex < taskContext.Patients.Count; patientIndex++)
+                        // start a new patient, reset all the search progress fields except currentIndex to initial value,
+                        // otherwise, there are two possible cases:
+                        // 1. this is a new task, the currentIndex is 0, in this case, all the search progress fields are initial values
+                        // 2. this is a resumed task, continue with the recorded search progress
+                        if (cacheResult.SearchProgress.CurrentIndex != patientIndex)
                         {
-                            // start a new patient, reset all the search progress fields except currentIndex to initial value,
-                            // otherwise, there are two possible cases:
-                            // 1. this is a new task, the currentIndex is 0, in this case, all the search progress fields are initial values
-                            // 2. this is a resumed task, continue with the recorded search progress
-                            if (cacheResult.SearchProgress.CurrentIndex != patientIndex)
-                            {
-                                cacheResult.SearchProgress.UpdateCurrentIndex(patientIndex);
-                            }
-
-                            var patientInfo = taskContext.Patients[patientIndex];
-                            var lastPatientVersionId = patientInfo.VersionId;
-
-                            // the patient resource isn't included in compartment search,
-                            // so we need additional request to get the patient resource
-
-                            // the patient resource is not retrieved yet,
-                            // for resumed task, the current patient may be retrieved and its version id exists.
-                            if (!cacheResult.SearchProgress.PatientVersionId.ContainsKey(patientInfo.PatientId))
-                            {
-                                var patientResource = await GetPatientResource(patientInfo, cancellationToken);
-
-                                // the patient does not exist
-                                if (patientResource == null)
-                                {
-                                    continue;
-                                }
-
-                                var currentPatientVersionId = FhirBundleParser.ExtractVersionId(patientResource);
-
-                                if (currentPatientVersionId == 0)
-                                {
-                                    _logger.LogError($"Failed to extract version id for patient {patientInfo.PatientId}.");
-                                    throw new FhirSearchException($"Failed to extract version id for patient {patientInfo.PatientId}.");
-                                }
-
-                                // New patient or the patient is updated.
-                                if (lastPatientVersionId != currentPatientVersionId)
-                                {
-                                    // save the patient resource to cache if the patient resource type is required in the result
-                                    if (isPatientResourcesRequired)
-                                    {
-                                        AddFhirResourcesToCache(new List<JObject> { patientResource }, cacheResult);
-                                    }
-                                }
-
-                                // add this patient's version id in cacheResult,
-                                // the version id will be synced to taskContext when the cache result is committed, and be recorded in job/schedule metadata further
-                                cacheResult.SearchProgress.PatientVersionId[patientInfo.PatientId] = currentPatientVersionId;
-                                _logger.LogInformation($"Get patient resource {patientInfo.PatientId} successfully.");
-                            }
-
-                            // the version id is 0 for newly patient
-                            // for new patient, we will retrieve all its compartments resources from {since}
-                            // for processed patient, we will only retrieve the updated compartment resources from last scheduled time
-                            var startDateTime = lastPatientVersionId == 0
-                                ? taskContext.Since
-                                : taskContext.DataPeriod.Start;
-                            var parameters = new List<KeyValuePair<string, string>>
-                            {
-                                new (FhirApiConstants.LastUpdatedKey, $"ge{startDateTime.ToInstantString()}"),
-                                new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
-                            };
-
-                            // create initial compartment search option for this patient,
-                            // the resource type and customized parameters of each filter will be set later.
-                            var searchOption = new CompartmentSearchOptions(
-                                FhirConstants.PatientResource,
-                                patientInfo.PatientId,
-                                null,
-                                parameters);
-
-                            // retrieve this patient's compartment resources for all the filters
-                            await ProcessFiltersAsync(taskContext, searchOption, cacheResult, progressUpdater, cancellationToken);
-
-                            _logger.LogInformation($"Process patient resource {patientInfo.PatientId} successfully.");
+                            cacheResult.SearchProgress.UpdateCurrentIndex(patientIndex);
                         }
 
-                        break;
-                    }
+                        var patientInfo = taskContext.Patients[patientIndex];
+                        var lastPatientVersionId = patientInfo.VersionId;
 
-                    case FilterScope.System:
-                    {
-                        // create initial base search option for this task,
-                        // the resource type and customized parameters of each filter will be set later.
+                        // the patient resource isn't included in compartment search,
+                        // so we need additional request to get the patient resource
+
+                        // the patient resource is not retrieved yet,
+                        // for resumed task, the current patient may be retrieved and its version id exists.
+                        if (!cacheResult.SearchProgress.PatientVersionId.ContainsKey(patientInfo.PatientId))
+                        {
+                            var patientResource = await GetPatientResource(patientInfo, cancellationToken);
+
+                            // the patient does not exist
+                            if (patientResource == null)
+                            {
+                                continue;
+                            }
+
+                            var currentPatientVersionId = FhirBundleParser.ExtractVersionId(patientResource);
+
+                            if (currentPatientVersionId == 0)
+                            {
+                                _logger.LogError($"Failed to extract version id for patient {patientInfo.PatientId}.");
+                                throw new FhirSearchException($"Failed to extract version id for patient {patientInfo.PatientId}.");
+                            }
+
+                            // New patient or the patient is updated.
+                            if (lastPatientVersionId != currentPatientVersionId)
+                            {
+                                // save the patient resource to cache if the patient resource type is required in the result
+                                if (isPatientResourcesRequired)
+                                {
+                                    AddFhirResourcesToCache(new List<JObject> { patientResource }, cacheResult);
+                                }
+                            }
+
+                            // add this patient's version id in cacheResult,
+                            // the version id will be synced to taskContext when the cache result is committed, and be recorded in job/schedule metadata further
+                            cacheResult.SearchProgress.PatientVersionId[patientInfo.PatientId] = currentPatientVersionId;
+                            _logger.LogInformation($"Get patient resource {patientInfo.PatientId} successfully.");
+                        }
+
+                        // the version id is 0 for newly patient
+                        // for new patient, we will retrieve all its compartments resources from {since}
+                        // for processed patient, we will only retrieve the updated compartment resources from last scheduled time
+                        var startDateTime = lastPatientVersionId == 0
+                            ? taskContext.Since
+                            : taskContext.DataPeriod.Start;
                         var parameters = new List<KeyValuePair<string, string>>
                         {
-                            new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.DataPeriod.Start.ToInstantString()}"),
+                            new (FhirApiConstants.LastUpdatedKey, $"ge{startDateTime.ToInstantString()}"),
                             new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
                         };
-                        var searchOption = new BaseSearchOptions(null, parameters);
 
-                        // retrieve resources for all the type filters.
+                        // create initial compartment search option for this patient,
+                        // the resource type and customized parameters of each filter will be set later.
+                        var searchOption = new CompartmentSearchOptions(
+                            FhirConstants.PatientResource,
+                            patientInfo.PatientId,
+                            null,
+                            parameters);
+
+                        // retrieve this patient's compartment resources for all the filters
                         await ProcessFiltersAsync(taskContext, searchOption, cacheResult, progressUpdater, cancellationToken);
-                        break;
+
+                        _logger.LogInformation($"Process patient resource {patientInfo.PatientId} successfully.");
                     }
 
-                    default:
-                        throw new ArgumentOutOfRangeException($"The FilterScope {taskContext.FilterScope} isn't supported now.");
+                    break;
                 }
 
-                // force to commit result.
-                await TryCommitResultAsync(taskContext, true, cacheResult, progressUpdater, cancellationToken);
+                case FilterScope.System:
+                {
+                    // create initial base search option for this task,
+                    // the resource type and customized parameters of each filter will be set later.
+                    var parameters = new List<KeyValuePair<string, string>>
+                    {
+                        new (FhirApiConstants.LastUpdatedKey, $"ge{taskContext.DataPeriod.Start.ToInstantString()}"),
+                        new (FhirApiConstants.LastUpdatedKey, $"lt{taskContext.DataPeriod.End.ToInstantString()}"),
+                    };
+                    var searchOption = new BaseSearchOptions(null, parameters);
 
-                taskContext.IsCompleted = true;
+                    // retrieve resources for all the type filters.
+                    await ProcessFiltersAsync(taskContext, searchOption, cacheResult, progressUpdater, cancellationToken);
+                    break;
+                }
 
-                // update the completed task context to job
-                await progressUpdater.Produce(taskContext, cancellationToken);
-
-                _logger.LogInformation(
-                    "Finished processing task '{taskIndex}'.",
-                    taskContext.TaskIndex);
-
-                return TaskResult.CreateFromTaskContext(taskContext);
+                default:
+                    throw new ArgumentOutOfRangeException($"The FilterScope {taskContext.FilterScope} isn't supported now.");
             }
-            catch (Exception ex)
-            {
-                // force to commit result before throw exception
-                await TryCommitResultAsync(taskContext, true, cacheResult, progressUpdater, cancellationToken);
-                throw;
-            }
+
+            // force to commit result when all the resources of this task are processed.
+            await TryCommitResultAsync(taskContext, true, cacheResult, progressUpdater, cancellationToken);
+
+            taskContext.IsCompleted = true;
+
+            // update the completed task context to job
+            await progressUpdater.Produce(taskContext, cancellationToken);
+
+            _logger.LogInformation(
+                "Finished processing task '{taskIndex}'.",
+                taskContext.TaskIndex);
+
+            return TaskResult.CreateFromTaskContext(taskContext);
         }
 
         /// <summary>
@@ -451,6 +442,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 cacheResult.CacheSize > JobConfigurationConstants.DataSizeInBytesPerCommit ||
                 forceCommit)
             {
+                _logger.LogInformation($"commit data: {cacheResourceCount} resources, {cacheResult.CacheSize} data size");
+
                 foreach (var (resourceType, resources) in cacheResult.Resources)
                 {
                     var inputData = new JsonBatchData(resources);
@@ -507,7 +500,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                 }
 
                 // update task context based on cache
-                taskContext.SearchProgress = cacheResult.SearchProgress;
+                taskContext.SearchProgress = cacheResult.SearchProgress.Copy();
 
                 // update task context to job
                 await progressUpdater.Produce(taskContext, cancellationToken);

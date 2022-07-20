@@ -101,7 +101,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             _logger.LogError(finishedTask.Exception, "Process task failed.");
 
                             // if there is a task failed, we need to wait all the task to be completed
-                            // otherwise, the data in other tasks may be missing 
+                            // otherwise, the data in other tasks may be missing.
                             await Task.WhenAll(tasks);
 
                             throw new ExecuteTaskFailedException("Task execution failed", finishedTask.Exception);

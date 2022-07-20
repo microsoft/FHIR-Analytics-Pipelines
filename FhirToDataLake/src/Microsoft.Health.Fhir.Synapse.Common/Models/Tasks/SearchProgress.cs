@@ -86,5 +86,15 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             ContinuationToken = null;
             IsCurrentSearchCompleted = false;
         }
+
+        public SearchProgress Copy()
+        {
+            return new SearchProgress(
+                CurrentIndex,
+                CurrentFilter,
+                ContinuationToken,
+                IsCurrentSearchCompleted,
+                new Dictionary<string, int>(PatientVersionId));
+        }
     }
 }

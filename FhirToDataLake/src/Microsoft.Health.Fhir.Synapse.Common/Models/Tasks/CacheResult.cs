@@ -19,6 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// Initializes a new instance of the <see cref="CacheResult"/> class based on the provided resources and searchProgress.
         /// </summary>
         /// <param name="searchProgress">the search progress.</param>
+        /// <param name="cacheSize">the cached data size.</param>
         /// <param name="resources">the resources.</param>
         public CacheResult(
             SearchProgress searchProgress = null,
