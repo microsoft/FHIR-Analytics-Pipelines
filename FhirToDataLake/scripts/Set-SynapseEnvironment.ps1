@@ -27,6 +27,10 @@
 .PARAMETER Concurrent
     Default: 30
     Max concurrent tasks number that will be used to upload place holder files and execute SQL scripts.
+.PARAMETER CustomizedSchema
+    Whether the customized schema is enable on the pipeline. 
+.PARAMETER CustomizedSchemaImage
+    Customized schema image reference.
 #>
 
 [cmdletbinding()]
@@ -40,11 +44,14 @@ Param(
     [string]$ResultPath = "result",
     [string]$SqlScriptCollectionPath = "sql/Resources",
     [string]$MasterKey = "FhirSynapseLink0!",
-    [int]$Concurrent = 30
+    [int]$Concurrent = 30,
+    [string]$CustomizedSchemaImage
 )
 
 $jobName = "FhirSynapseJob"
 $readmePath = ".readme.txt"
+
+$customizedTemplateDirectory = "CustomizedSchema"
 
 # TODO: Align tags here and ARM template, maybe save schemas in Storage/ACR and run remotely.
 $tags = @{
@@ -189,7 +196,7 @@ function New-TableAndViewsForResources
     $files = Get-ChildItem $SqlScriptCollectionPath -Filter "*.sql"
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
 
-    Write-Host " -> Start creating TABLEs and VIEWs on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
+    Write-Host " -> Start creating default TABLEs and VIEWs on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
     
     foreach ($file in $files) {
         $jobs = @(Get-Job -Name $jobName -ErrorAction Ignore)
@@ -228,6 +235,116 @@ function New-TableAndViewsForResources
         }
     }
 }
+
+
+function Get-CustomizedSchemaImage {
+    param (
+        [string]$schemaImageReference,
+        [string]$customizedTemplateDirectory
+    )
+
+    $registryName = $imageReference.Substring(0, $imageReference.IndexOf('.azurecr.io'))
+    Connect-AzContainerRegistry -Name $registryName -ErrorAction stop
+
+    # Leverage the oras to pull the image from Container Registry.
+    oras.exe pull $schemaImageReference
+
+    $compressImages = Get-ChildItem -Path * -Include '*.tar.gz' -Name
+    if (!(Test-Path $customizedTemplateDirectory)){
+        New-Item $customizedTemplateDirectory -ItemType Directory
+    }
+
+    foreach ($compressImage in $compressImages){
+        tar -zxvf $compressImage -C $customizedTemplateDirectory
+    }
+}
+
+function Get-CustomizedTableSql {
+    param (
+        [string]$schemaType,
+        [Hashtable]$jsonSchemaObject
+    )
+
+    $customizedTableProperties = ""
+    foreach ($property in $jsonSchemaObject['properties'].GetEnumerator()){
+        $sqlType = switch($property.Value['type']) 
+        {
+            'number' { 'float' ; Break }
+            'integer' { 'bigint' ; Break }
+            'boolean' { 'bit' ; Break }
+            'string' { 'NVARCHAR(4000)' ; Break }
+            Default {
+                Write-Host "Invalid property type in '$($schemaType).$($property.Name)': $($property.Value['type'])"
+                throw
+            }
+        }
+
+        $customizedTableProperties += "    [$($property.Name)] $sqlType,"
+    }
+    
+    $createCustomizedTableSql = "CREATE EXTERNAL TABLE [fhir].[$($schemaType)] (
+        $customizedTableProperties
+        ) WITH (
+            LOCATION='/$($schemaType)/**',
+            DATA_SOURCE = ParquetSource,
+            FILE_FORMAT = ParquetFormat
+        );"
+        
+    return $createCustomizedTableSql
+}
+
+function New-CustomizedTables
+{
+    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$customizedSchemaDirectory)
+
+    $schemaFiles = Get-ChildItem -Path $(Join-Path -Path $customizedSchemaDirectory -ChildPath *) -Include '*.schema.json' -Name
+    $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
+
+    Write-Host " -> Start creating customized Tables on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
+    
+    foreach ($schemaFile in $schemaFiles){
+        $jobs = @(Get-Job -Name $jobName -ErrorAction Ignore)
+        if ($jobs.Count -ge $Concurrent) {
+            $finishedJob = (Get-Job -Name $jobName | Wait-Job -Any)
+            Remove-Job -Job $finishedJob
+
+            if ($finishedJob.State -eq 'Failed') {
+                Write-Host " -> $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
+                Get-Job -Name $jobName | Wait-Job | Remove-Job | Out-Null
+                throw "Create customized Table failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+            }
+        }
+
+        $schemaFilePath = Join-Path -Path $customizedSchemaDirectory -ChildPath $schemaFile
+        $testObject = Get-Content $schemaFilePath | Out-String | ConvertFrom-Json -AsHashtable -ErrorAction stop
+        $resourceType = $schemaFile.Substring(0, $schemaFile.IndexOf('.schema.json'))
+        $schemaType = "$($resourceType)_Customized"
+    
+        $sql = Get-CustomizedTableSql -schemaType $schemaType -jsonSchemaObject $testObject -ErrorAction stop
+
+        Write-Host " -> Create customized table from schema file: $schemaFile" -ForegroundColor Green 
+        Start-Job -Name $jobName -ScriptBlock{
+            Invoke-Sqlcmd `
+                -ServerInstance $args[0] `
+                -Database $args[1] `
+                -AccessToken $args[2] `
+                -Query $args[3] `
+                -ConnectionTimeout 120 `
+                -ErrorAction Stop
+        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $sql | Out-Null
+    }
+
+    foreach ($finishedJob in (Get-Job -Name $jobName | Wait-Job)) {
+        Remove-Job -Job $finishedJob
+
+        if ($finishedJob.State -eq 'Failed') {
+            Write-Host " -> $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
+            Get-Job -Name $jobName | Wait-Job | Remove-Job | Out-Null
+            throw "Create customized Table failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+        }
+    }
+}
+
 
 $stopwatch =  [system.diagnostics.stopwatch]::StartNew()
 
@@ -285,7 +402,7 @@ try{
     ###
     # 2. Place holder blobs
     ###
-    New-PlaceHolderBlobs -storage $StorageName -container $Container -resultPath $ResultPath
+    # New-PlaceHolderBlobs -storage $StorageName -container $Container -resultPath $ResultPath
 }
 catch
 {
@@ -317,13 +434,35 @@ try{
     ###
     # 3. Create TABLEs and VIEWs on Synapse.
     ###
-    New-TableAndViewsForResources `
+    <#
+        New-TableAndViewsForResources `
         -serviceEndpoint $synapseSqlServerEndpoint `
         -databaseName $Database `
         -masterKey $MasterKey `
         -storage $StorageName `
         -container $Container
+    #>
 
+    ###
+    # 4. Create EXTERNAL TABLE for customized schema data
+    ###
+    if ($CustomizedSchemaImage) {
+        Write-Host "Create Tables for customized schema data, use schema image from $($CustomizedSchemaImage)." -ForegroundColor Green 
+
+        # Get and parse customized schema
+        Get-CustomizedSchemaImage `
+            -schemaImageReference $CustomizedSchemaImage `
+            -customizedTemplateDirectory $customizedTemplateDirectory
+
+        $customizedSchemaDirectory = Join-Path -Path $customizedTemplateDirectory -ChildPath "Schema"
+
+        # Create customized TABLEs Synapse.
+        New-CustomizedTables `
+            -serviceEndpoint $synapseSqlServerEndpoint `
+            -databaseName $Database `
+            -masterKey $MasterKey `
+            -customizedSchemaDirectory $customizedSchemaDirectory
+    }
 }
 catch{
     Write-Host " -> Create TABLEs and VIEWs Failed, will try to drop database '$Database'." -ForegroundColor Red
