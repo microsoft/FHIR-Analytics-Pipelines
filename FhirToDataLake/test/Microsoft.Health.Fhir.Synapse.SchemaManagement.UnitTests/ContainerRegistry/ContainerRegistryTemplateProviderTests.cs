@@ -51,7 +51,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
 
             var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
                 _testTokenProvider,
-                Options.Create(new ContainerRegistryConfiguration() { SchemaImageReference = _testImageReference }),
+                Options.Create(new SchemaConfiguration() { SchemaImageReference = _testImageReference }),
                 new NullLogger<ContainerRegistryTemplateProvider>());
             var templateCollection = await containerRegistryTemplateProvider.GetTemplateCollectionAsync(CancellationToken.None);
 
@@ -65,7 +65,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
 
             var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
                 TestUtils.GetMockAcrTokenProvider("invalid token"),
-                Options.Create(new ContainerRegistryConfiguration() { SchemaImageReference = _testImageReference }),
+                Options.Create(new SchemaConfiguration() { SchemaImageReference = _testImageReference }),
                 new NullLogger<ContainerRegistryTemplateProvider>());
 
             await Assert.ThrowsAsync<ContainerRegistrySchemaException>(() => containerRegistryTemplateProvider.GetTemplateCollectionAsync(CancellationToken.None));

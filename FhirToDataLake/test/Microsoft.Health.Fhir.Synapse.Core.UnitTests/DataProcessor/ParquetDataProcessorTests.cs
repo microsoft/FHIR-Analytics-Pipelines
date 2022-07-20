@@ -30,8 +30,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         private static readonly FhirParquetSchemaManager _fhirSchemaManagerWithoutCustomizedSchema;
         private static readonly FhirParquetSchemaManager _fhirSchemaManagerWithCustomizedSchema;
         private static readonly IOptions<ArrowConfiguration> _arrowConfigurationOptions;
-        private static readonly DefaultConverter _defaultConverter;
-        private static readonly FhirConverter _fhirConverter;
+        private static readonly DefaultSchemaConverter _defaultConverter;
+        private static readonly CustomSchemaConverter _fhirConverter;
 
         private static readonly NullLogger<ParquetDataProcessor> _nullParquetDataProcessorLogger = NullLogger<ParquetDataProcessor>.Instance;
 
@@ -54,10 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             {
                 SchemaCollectionDirectory = TestUtils.PipelineDefaultSchemaDirectoryPath,
                 EnableCustomizedSchema = true,
-                ContainerRegistry = new ContainerRegistryConfiguration()
-                {
-                    SchemaImageReference = "testacr.azurecr.io/customizedtemplate:default",
-                },
+                SchemaImageReference = "testacr.azurecr.io/customizedtemplate:default",
             });
 
             _fhirSchemaManagerWithCustomizedSchema = new FhirParquetSchemaManager(
@@ -65,8 +62,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
                 TestUtils.TestParquetSchemaProviderDelegate,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
-            _defaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
-            _fhirConverter = new FhirConverter(TestUtils.GetMockAcrTemplateProvider(), NullLogger<FhirConverter>.Instance);
+            _defaultConverter = new DefaultSchemaConverter(NullLogger<DefaultSchemaConverter>.Instance);
+            _fhirConverter = new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), NullLogger<CustomSchemaConverter>.Instance);
 
             _arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
@@ -128,7 +125,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         }
 
         // It may takes few minutes to run this large input data test.
-        [Fact]
+        [Fact(Skip = "test")]
         public static async Task GivenAValidMultipleLargeInputData_WhenProcess_CorrectResultShouldBeReturned()
         {
             var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Large_Patient.ndjson"));

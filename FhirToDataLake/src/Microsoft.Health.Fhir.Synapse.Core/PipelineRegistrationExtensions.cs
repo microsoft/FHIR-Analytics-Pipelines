@@ -25,9 +25,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
             services.AddSingleton<JobExecutor, JobExecutor>();
 
-            services.AddSingleton<DefaultConverter, DefaultConverter>();
+            services.AddSingleton<DefaultSchemaConverter, DefaultSchemaConverter>();
 
-            services.AddSingleton<FhirConverter, FhirConverter>();
+            services.AddSingleton<CustomSchemaConverter, CustomSchemaConverter>();
 
             services.AddSingleton<JobExecutor, JobExecutor>();
 

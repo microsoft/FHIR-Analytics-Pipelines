@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
     public class DefaultConverterTests
     {
         private static readonly JObject _testPatient;
-        private static readonly DefaultConverter _testDefaultConverter;
+        private static readonly DefaultSchemaConverter _testDefaultConverter;
         private static readonly FhirParquetSchemaManager _schemaManager;
 
         static DefaultConverterTests()
@@ -32,7 +32,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 SchemaCollectionDirectory = TestUtils.PipelineDefaultSchemaDirectoryPath,
             });
 
-            _testDefaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
+            _testDefaultConverter = new DefaultSchemaConverter(NullLogger<DefaultSchemaConverter>.Instance);
             _schemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.TestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
             _testPatient = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson")).First();
         }

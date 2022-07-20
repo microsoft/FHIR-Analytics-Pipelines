@@ -14,11 +14,11 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 {
-    public class DefaultConverter
+    public class DefaultSchemaConverter
     {
-        private readonly ILogger<DefaultConverter> _logger;
+        private readonly ILogger<DefaultSchemaConverter> _logger;
 
-        public DefaultConverter(ILogger<DefaultConverter> logger)
+        public DefaultSchemaConverter(ILogger<DefaultSchemaConverter> logger)
         {
             _logger = logger;
         }
@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (inputData == null || inputData.Values == null )
+            if (inputData?.Values == null)
             {
                 _logger.LogError($"Conversion input data or data value is NULL.");
                 throw new ParquetDataProcessorException($"Conversion input data or data value is NULL.");

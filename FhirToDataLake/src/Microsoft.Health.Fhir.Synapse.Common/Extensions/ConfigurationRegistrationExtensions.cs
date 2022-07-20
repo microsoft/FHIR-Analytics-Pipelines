@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -14,6 +16,15 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 {
     public static class ConfigurationRegistrationExtensions
     {
+        private const char ImageDigestDelimiter = '@';
+        private const char ImageTagDelimiter = ':';
+        private const char ImageRegistryDelimiter = '/';
+
+        private static readonly Regex LoginServersRegex = new Regex("^[a-zA-Z0-9]{5,50}.(azurecr.io|azurecr-test.io|azurecr.us)$");
+
+        // Reference docker's image name format: https://docs.docker.com/engine/reference/commandline/tag/#extended-description
+        private static readonly Regex ImageNameRegex = new Regex(@"^[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*(\/[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*)*$");
+
         public static IServiceCollection AddConfiguration(
             this IServiceCollection services,
             IConfiguration configuration)
@@ -30,10 +41,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 configuration.GetSection(ConfigurationConstants.SchedulerConfigurationKey).Bind(options));
             services.Configure<SchemaConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey).Bind(options));
-
-            services.Configure<ContainerRegistryConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey)
-                            .GetSection(ConfigurationConstants.ContainerRegistryConfigurationKey).Bind(options));
 
             // Validates the input configs.
             services.ValidateConfiguration();
@@ -82,9 +89,64 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 .GetRequiredService<IOptions<SchemaConfiguration>>()
                 .Value;
 
-            if (schemaConfiguration.EnableCustomizedSchema && string.IsNullOrEmpty(schemaConfiguration.ContainerRegistry.SchemaImageReference))
+            if (string.IsNullOrWhiteSpace(schemaConfiguration.SchemaImageReference))
             {
-                throw new ConfigurationErrorException($"Customized schema image reference can not be empty when customized schema is enable.");
+                if (schemaConfiguration.EnableCustomizedSchema)
+                {
+                    throw new ConfigurationErrorException($"Customized schema image reference can not be empty when customized schema is enable.");
+                }
+            }
+            else
+            { 
+                ValidateImageReference(schemaConfiguration.SchemaImageReference);
+            }
+        }
+
+        private static void ValidateImageReference(string imageReference)
+        {
+            var registryDelimiterPosition = imageReference.IndexOf(ImageRegistryDelimiter, StringComparison.InvariantCultureIgnoreCase);
+            if (registryDelimiterPosition <= 0 || registryDelimiterPosition == imageReference.Length - 1)
+            {
+                throw new ConfigurationErrorException("Customized schema image format is invalid: registry server is missing.");
+            }
+
+            imageReference = imageReference[(registryDelimiterPosition + 1)..];
+            string imageName = imageReference;
+            if (imageReference.Contains(ImageDigestDelimiter, StringComparison.OrdinalIgnoreCase))
+            {
+                Tuple<string, string> imageMeta = ParseImageMeta(imageReference, ImageDigestDelimiter);
+                if (string.IsNullOrEmpty(imageMeta.Item1) || string.IsNullOrEmpty(imageMeta.Item2))
+                {
+                    throw new ConfigurationErrorException("Customized schema image format is invalid: digest is missing.");
+                }
+
+                imageName = imageMeta.Item1;
+            }
+            else if (imageReference.Contains(ImageTagDelimiter, StringComparison.OrdinalIgnoreCase))
+            {
+                Tuple<string, string> imageMeta = ParseImageMeta(imageReference, ImageTagDelimiter);
+                if (string.IsNullOrEmpty(imageMeta.Item1) || string.IsNullOrEmpty(imageMeta.Item2))
+                {
+                    throw new ConfigurationErrorException("Customized schema image reference format is invalid: tag is missing.");
+                }
+
+                imageName = imageMeta.Item1;
+            }
+
+            ValidateImageName(imageName);
+        }
+
+        private static Tuple<string, string> ParseImageMeta(string input, char delimiter)
+        {
+            var index = input.IndexOf(delimiter, StringComparison.InvariantCultureIgnoreCase);
+            return new Tuple<string, string>(input.Substring(0, index), input[(index + 1)..]);
+        }
+
+        private static void ValidateImageName(string imageName)
+        {
+            if (!ImageNameRegex.IsMatch(imageName))
+            {
+                throw new ConfigurationErrorException(@"Customized schema image name is invalid. Image name should contains lowercase letters, digits and separators. The valid format is ^[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*(\/[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*)*$");
             }
         }
     }

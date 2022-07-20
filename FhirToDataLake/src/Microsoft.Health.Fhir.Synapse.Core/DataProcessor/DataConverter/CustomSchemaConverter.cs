@@ -8,9 +8,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Liquid.Converter;
 using Microsoft.Health.Fhir.Liquid.Converter.Models;
 using Microsoft.Health.Fhir.Liquid.Converter.Processors;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
@@ -18,21 +20,31 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 {
-    public class FhirConverter
+    /// <summary>
+    /// Leverage the FHIR-Converter (https://github.com/microsoft/FHIR-Converter) to convert data to target structure.
+    /// </summary>
+    public class CustomSchemaConverter
     {
         private readonly JsonProcessor _jsonProcessor;
         private readonly ITemplateProvider _templateProvider;
-        private readonly ILogger<FhirConverter> _logger;
+        private readonly ILogger<CustomSchemaConverter> _logger;
 
-        public FhirConverter(
+        public CustomSchemaConverter(
             IContainerRegistryTemplateProvider containerRegistryTemplateProvider,
-            ILogger<FhirConverter> logger)
+            IOptions<SchemaConfiguration> schemaConfiguration,
+            ILogger<CustomSchemaConverter> logger)
         {
-            var templateCollections = containerRegistryTemplateProvider.GetTemplateCollectionAsync(CancellationToken.None).Result;
-
             _logger = logger;
-            _jsonProcessor = new JsonProcessor(new ProcessorSettings());
+            if (string.IsNullOrWhiteSpace(schemaConfiguration.Value.SchemaImageReference))
+            {
+                return;
+            }
 
+            var templateCollections = containerRegistryTemplateProvider.GetTemplateCollectionAsync(
+                schemaConfiguration.Value.SchemaImageReference,
+                CancellationToken.None).Result;
+
+            _jsonProcessor = new JsonProcessor(new ProcessorSettings());
             _templateProvider = new TemplateProvider(templateCollections);
         }
 
@@ -42,11 +54,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            List<JObject> processedData;
 
+            if (_templateProvider == null)
+            {
+                _logger.LogError($"No valid template provider be found, maybe the schema image reference is empty or null.");
+                throw new ParquetDataProcessorException($"No valid template provider be found, maybe the schema image reference is empty or null.");
+            }
+
+            List<JObject> processedData;
             try
             {
-                processedData = inputData.Values.Select(dataObject 
+                // TODO: Update FHIR-Converter, add an interface to directly convert an Object.
+                processedData = inputData.Values.Select(dataObject
                     => JObject.Parse(_jsonProcessor.Convert(dataObject.ToString(), resourceType, _templateProvider))).ToList();
             }
             catch (Exception ex)

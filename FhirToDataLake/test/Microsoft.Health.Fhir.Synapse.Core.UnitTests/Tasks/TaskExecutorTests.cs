@@ -134,8 +134,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
             var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
-            var defaultConverter = new DefaultConverter(NullLogger<DefaultConverter>.Instance);
-            var fhirConverter = new FhirConverter(TestUtils.GetMockAcrTemplateProvider(), NullLogger<FhirConverter>.Instance);
+            var defaultConverter = new DefaultSchemaConverter(NullLogger<DefaultSchemaConverter>.Instance);
+            var fhirConverter = new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), NullLogger<CustomSchemaConverter>.Instance);
 
             return new ParquetDataProcessor(
             fhirSchemaManager,

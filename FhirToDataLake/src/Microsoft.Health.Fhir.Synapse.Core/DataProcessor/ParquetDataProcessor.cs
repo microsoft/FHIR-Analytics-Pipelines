@@ -31,14 +31,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
         private readonly ArrowConfiguration _arrowConfiguration;
         private readonly ILogger<ParquetDataProcessor> _logger;
         private readonly ParquetConverterWrapper _parquetConverterWrapper;
-        private readonly DefaultConverter _defaultDataConverter;
-        private readonly FhirConverter _fhirDataConverter;
+        private readonly DefaultSchemaConverter _defaultDataConverter;
+        private readonly CustomSchemaConverter _fhirDataConverter;
 
         public ParquetDataProcessor(
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             IOptions<ArrowConfiguration> arrowConfiguration,
-            DefaultConverter defaultConverter,
-            FhirConverter fhirConverter,
+            DefaultSchemaConverter defaultConverter,
+            CustomSchemaConverter fhirConverter,
             ILogger<ParquetDataProcessor> logger)
         {
             EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));

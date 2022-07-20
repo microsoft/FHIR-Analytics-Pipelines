@@ -35,22 +35,18 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             {
                 var customizedSchemaProvider = parquetSchemaDelegate(FhirParquetSchemaConstants.CustomSchemaProviderKey);
 
-                // Get default schema, the customized schema keys are resource types with "_customized" suffix, like "Patient_Customized", "Encounter_Customized".
+                // Get customized schema, the customized schema keys are resource types with "_customized" suffix, like "Patient_Customized", "Encounter_Customized".
                 var resourceCustomizedSchemaNodesMap = customizedSchemaProvider.GetSchemasAsync(
-                    schemaConfiguration.Value.ContainerRegistry.SchemaImageReference).Result;
+                    schemaConfiguration.Value.SchemaImageReference).Result;
 
                 _logger.LogInformation($"{resourceCustomizedSchemaNodesMap.Count} resource customized schemas have been loaded.");
                 _resourceSchemaNodesMap = _resourceSchemaNodesMap.Concat(resourceCustomizedSchemaNodesMap).ToDictionary(x => x.Key, x => x.Value);
             }
 
-            _logger.LogInformation($"Initialize FHIR schemas completed.");
-
             _schemaTypesMap = new Dictionary<string, List<string>>();
 
-            // Temporarily set schema type list only contains single value for each resource type
-            // E.g:
-            // Schema list for "Patient" resource is ["Patient"]
-            // Schema list for "Observation" resource is ["Observation"]
+            // Each resource type may map to multiple output schema types
+            // E.g: Schema type list for "Patient" resource can be ["Patient", "Patient_Customized"]
             foreach (var schemaNodeItem in _resourceSchemaNodesMap)
             {
                 if (_schemaTypesMap.ContainsKey(schemaNodeItem.Value.Type))
@@ -62,6 +58,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
                     _schemaTypesMap.Add(schemaNodeItem.Value.Type, new List<string>() { schemaNodeItem.Key });
                 }
             }
+
+            _logger.LogInformation($"Initialize FHIR schemas completed.");
         }
 
         public List<string> GetSchemaTypes(string resourceType)

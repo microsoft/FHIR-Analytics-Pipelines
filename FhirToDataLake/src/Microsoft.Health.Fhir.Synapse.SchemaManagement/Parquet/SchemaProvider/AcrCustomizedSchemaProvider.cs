@@ -31,18 +31,18 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
         public async Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(string schemaImageReference, CancellationToken cancellationToken = default)
         {
-            var jsonSchemaCollection = await GetJsonSchemaCollectionAsync(cancellationToken);
+            var jsonSchemaCollection = await GetJsonSchemaCollectionAsync(schemaImageReference, cancellationToken);
 
             return jsonSchemaCollection
                 .Select(x => JsonSchemaParser.ParseJSchema(x.Key, x.Value))
                 .ToDictionary(x => GetCustomizedSchemaType(x.Type), x => x);
         }
 
-        private async Task<Dictionary<string, JSchema>> GetJsonSchemaCollectionAsync(CancellationToken cancellationToken)
+        private async Task<Dictionary<string, JSchema>> GetJsonSchemaCollectionAsync(string schemaImageReference, CancellationToken cancellationToken)
         {
             var result = new Dictionary<string, JSchema>();
 
-            var templateCollections = await _containerRegistryTemplateProvider.GetTemplateCollectionAsync(cancellationToken);
+            var templateCollections = await _containerRegistryTemplateProvider.GetTemplateCollectionAsync(schemaImageReference, cancellationToken);
 
             // Fetch all files with suffix ".schema.json" as Json schema template.
             // All Json schema files should be in "Schema" directory under the root path of the image.
@@ -65,7 +65,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
                     if (!templatePathSegments[1].EndsWith(FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        _logger.LogWarning($"None Json schema {templatePathSegments[1]} be found in \"Schema\" directory.");
+                        _logger.LogWarning($"{templatePathSegments[1]} doesn't have {FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension} extension in \"Schema\" directory.");
                     }
                     else
                     {

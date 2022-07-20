@@ -16,11 +16,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 {
     public class FhirConverterTests
     {
-        private static readonly FhirConverter _testFhirConverter;
+        private static readonly CustomSchemaConverter _testFhirConverter;
 
         static FhirConverterTests()
         {
-            _testFhirConverter = new FhirConverter(TestUtils.GetMockAcrTemplateProvider(), NullLogger<FhirConverter>.Instance);
+            _testFhirConverter = new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), NullLogger<CustomSchemaConverter>.Instance);
         }
 
         [Fact]
