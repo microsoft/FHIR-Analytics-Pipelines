@@ -43,6 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             ILogger<AzureBlobContainerClient> logger)
         {
             EnsureArg.IsNotNull(storageUri, nameof(storageUri));
+            EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _logger = logger;

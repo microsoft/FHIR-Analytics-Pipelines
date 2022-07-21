@@ -13,7 +13,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Authentication
 {
     public class InternalTokenCredentialProvider : ITokenCredentialProvider
     {
-
         private readonly ILogger<InternalTokenCredentialProvider> _logger;
 
         public InternalTokenCredentialProvider(ILogger<InternalTokenCredentialProvider> logger)

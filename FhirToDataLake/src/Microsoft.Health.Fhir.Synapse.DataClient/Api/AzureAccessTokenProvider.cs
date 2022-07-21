@@ -23,6 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         private readonly ILogger<AzureAccessTokenProvider> _logger;
         private readonly TokenCredential _tokenCredential;
         private ConcurrentDictionary<string, AccessToken> _accessTokenDic = new ();
+        private const int _tokenExpireInterval = 5;
 
         public AzureAccessTokenProvider(ITokenCredentialProvider credentialProvider, ILogger<AzureAccessTokenProvider> logger)
         {
@@ -39,10 +40,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
             try
             {
-                if (!_accessTokenDic.TryGetValue(resourceUrl, out AccessToken accessToken) || string.IsNullOrEmpty(accessToken.Token) || accessToken.ExpiresOn < DateTime.UtcNow.AddMinutes(1))
+                if (!_accessTokenDic.TryGetValue(resourceUrl, out AccessToken accessToken) || string.IsNullOrEmpty(accessToken.Token) || accessToken.ExpiresOn < DateTime.UtcNow.AddMinutes(_tokenExpireInterval))
                 {
-                    var uri = new Uri(resourceUrl);
-                    var scopes = new string[] { uri.ToString().EndsWith(@"/", StringComparison.InvariantCulture) ? uri + ".default" : uri + "/.default" };
+                    var scopes = new string[] { resourceUrl.TrimEnd('/') + "/.default" };
                     accessToken = await _tokenCredential.GetTokenAsync(new TokenRequestContext(scopes), cancellationToken);
                     _accessTokenDic.AddOrUpdate(resourceUrl, accessToken, (key, value) => accessToken);
                 }
