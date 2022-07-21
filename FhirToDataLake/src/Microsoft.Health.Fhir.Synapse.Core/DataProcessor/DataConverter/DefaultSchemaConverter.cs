@@ -3,43 +3,49 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Data;
 using System.Linq;
 using System.Threading;
+using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 {
-    public class DefaultSchemaConverter
+    public class DefaultSchemaConverter : IDataSchemaConverter
     {
+        IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly ILogger<DefaultSchemaConverter> _logger;
 
-        public DefaultSchemaConverter(ILogger<DefaultSchemaConverter> logger)
+        public DefaultSchemaConverter(
+            IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
+            ILogger<DefaultSchemaConverter> logger)
         {
+            _fhirSchemaManager = fhirSchemaManager;
             _logger = logger;
         }
 
         public JsonBatchData Convert(
             JsonBatchData inputData,
-            FhirParquetSchemaNode schema,
+            string schemaType,
             CancellationToken cancellationToken = default)
         {
+            EnsureArg.IsNotNull(inputData?.Values);
+            EnsureArg.IsNotNullOrWhiteSpace(schemaType);
+
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (inputData?.Values == null)
-            {
-                _logger.LogError($"Conversion input data or data value is NULL.");
-                throw new ParquetDataProcessorException($"Conversion input data or data value is NULL.");
-            }
-
+            // Get FHIR schema for the input data.
+            var schema = _fhirSchemaManager.GetSchema(schemaType);
             if (schema == null)
             {
-                _logger.LogError($"Conversion schema is NULL.");
-                throw new ParquetDataProcessorException($"Conversion schema is NULL.");
+                _logger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
+                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{schemaType}'.");
             }
 
             var processedJsonData = inputData.Values

@@ -56,7 +56,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
                 TestUtils.TestParquetSchemaProviderDelegate,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
-            _defaultConverter = new DefaultSchemaConverter(NullLogger<DefaultSchemaConverter>.Instance);
+            _defaultConverter = new DefaultSchemaConverter(
+                _fhirSchemaManagerWithCustomizedSchema,
+                NullLogger<DefaultSchemaConverter>.Instance);
+
             _fhirConverter = new CustomSchemaConverter(
                 TestUtils.GetMockAcrTemplateProvider(),
                 schemaConfigurationOptionWithCustomizedSchema,

@@ -27,7 +27,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
 {
     public sealed class ParquetDataProcessor : IColumnDataProcessor
     {
-        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly ArrowConfiguration _arrowConfiguration;
         private readonly ILogger<ParquetDataProcessor> _logger;
         private readonly ParquetConverterWrapper _parquetConverterWrapper;
@@ -47,7 +46,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             EnsureArg.IsNotNull(fhirConverter, nameof(fhirConverter));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _fhirSchemaManager = fhirSchemaManager;
             _arrowConfiguration = arrowConfiguration.Value;
             _defaultDataConverter = defaultConverter;
             _fhirDataConverter = fhirConverter;
@@ -55,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
 
             try
             {
-                _parquetConverterWrapper = new ParquetConverterWrapper(_fhirSchemaManager.GetAllSchemas(), arrowConfiguration.Value);
+                _parquetConverterWrapper = new ParquetConverterWrapper(fhirSchemaManager.GetAllSchemas(), arrowConfiguration.Value);
             }
             catch (Exception ex)
             {
@@ -73,15 +71,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Get FHIR schema for the input data.
-            var schema = _fhirSchemaManager.GetSchema(processParameters.SchemaType);
-
-            if (schema == null)
-            {
-                _logger.LogError($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
-                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
-            }
-
             // Convert data based on schema
             JsonBatchData processedData;
             if (IsCustomizedSchemaType(processParameters.SchemaType))
@@ -92,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             }
             else
             {
-                processedData = _defaultDataConverter.Convert(inputData, schema, cancellationToken);
+                processedData = _defaultDataConverter.Convert(inputData, processParameters.SchemaType, cancellationToken);
             }
 
             var inputStream = TransformJsonDataToStream(processParameters.SchemaType, processedData.Values);

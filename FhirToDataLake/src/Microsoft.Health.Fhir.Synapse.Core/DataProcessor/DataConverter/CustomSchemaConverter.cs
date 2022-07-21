@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Liquid.Converter;
@@ -23,7 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
     /// <summary>
     /// Leverage the FHIR-Converter (https://github.com/microsoft/FHIR-Converter) to convert data to target structure.
     /// </summary>
-    public class CustomSchemaConverter
+    public class CustomSchemaConverter : IDataSchemaConverter
     {
         private readonly JsonProcessor _jsonProcessor;
         private readonly ITemplateProvider _templateProvider;
@@ -53,6 +54,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             string resourceType,
             CancellationToken cancellationToken = default)
         {
+            EnsureArg.IsNotNull(inputData?.Values);
+            EnsureArg.IsNotNullOrWhiteSpace(resourceType);
+
             cancellationToken.ThrowIfCancellationRequested();
 
             if (_templateProvider == null)

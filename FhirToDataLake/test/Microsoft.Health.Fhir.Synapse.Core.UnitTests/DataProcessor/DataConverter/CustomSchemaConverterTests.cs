@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,6 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
     public class CustomSchemaConverterTests
     {
         private static readonly CustomSchemaConverter _testFhirConverter;
+        private static readonly JsonBatchData _testData;
 
         static CustomSchemaConverterTests()
         {
@@ -32,14 +34,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 TestUtils.GetMockAcrTemplateProvider(),
                 schemaConfigurationOptionWithCustomizedSchema,
                 NullLogger<CustomSchemaConverter>.Instance);
+
+            var testDataContent = File.ReadLines(Path.Join(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson"))
+                        .Select(dataContent => JObject.Parse(dataContent));
+
+            _testData = new JsonBatchData(testDataContent);
         }
 
         [Fact]
         public static void GivenAValidJsonBatchData_WhenConvert_CorrectResultShouldBeReturned()
         {
-            var testData = File.ReadLines(Path.Join(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson"))
-                        .Select(dataContent => JObject.Parse(dataContent));
-            var result = _testFhirConverter.Convert(new JsonBatchData(testData), "Patient").Values.ToList();
+            var result = _testFhirConverter.Convert(_testData, "Patient").Values.ToList();
 
             var expectedResult = File.ReadLines(Path.Join(TestUtils.ExpectTestDataFolder, "CustomizedSchema/Expected_basic_patient.ndjson"))
                         .Select(dataContent => JObject.Parse(dataContent)).ToList();
@@ -55,17 +60,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public static void GivenInvalidTemplate_WhenConvert_ExceptionShouldBeThrown()
         {
-            var testData = File.ReadLines(Path.Join(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson"))
-                        .Select(dataContent => JObject.Parse(dataContent));
-
-            Assert.Throws<ParquetDataProcessorException>(() => _testFhirConverter.Convert(new JsonBatchData(testData), "Invalid_patient"));
+            Assert.Throws<ParquetDataProcessorException>(() => _testFhirConverter.Convert(_testData, "Invalid_patient"));
         }
 
         [Fact]
-        public static void GivenNullJsonBatchData_WhenConvert_ExceptionShouldBeThrown()
+        public static void GivenNullOrEmptyInput_WhenConvert_ExceptionShouldBeThrown()
         {
-            Assert.Throws<ParquetDataProcessorException>(() => _testFhirConverter.Convert(null, "Patient"));
-            Assert.Throws<ParquetDataProcessorException>(() => _testFhirConverter.Convert(new JsonBatchData(null), "Patient"));
+            Assert.Throws<ArgumentNullException>(() => _testFhirConverter.Convert(null, "Patient"));
+            Assert.Throws<ArgumentNullException>(() => _testFhirConverter.Convert(new JsonBatchData(null), "Patient"));
+            Assert.Throws<ArgumentNullException>(() => _testFhirConverter.Convert(_testData, null));
+            Assert.Throws<ArgumentException>(() => _testFhirConverter.Convert(_testData, string.Empty));
         }
 
         [Fact]

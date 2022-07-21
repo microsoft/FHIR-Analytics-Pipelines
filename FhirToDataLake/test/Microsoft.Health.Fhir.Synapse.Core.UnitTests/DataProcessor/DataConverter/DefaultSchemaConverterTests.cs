@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,14 +23,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
     {
         private static readonly JObject _testPatient;
         private static readonly DefaultSchemaConverter _testDefaultConverter;
-        private static readonly FhirParquetSchemaManager _schemaManager;
 
         static DefaultSchemaConverterTests()
         {
             var schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
-            _testDefaultConverter = new DefaultSchemaConverter(NullLogger<DefaultSchemaConverter>.Instance);
-            _schemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.TestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
+            var schemaManager = new FhirParquetSchemaManager(
+                schemaConfigurationOption,
+                TestUtils.TestParquetSchemaProviderDelegate,
+                NullLogger<FhirParquetSchemaManager>.Instance);
+
+            _testDefaultConverter = new DefaultSchemaConverter(schemaManager, NullLogger<DefaultSchemaConverter>.Instance);
             _testPatient = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson")).First();
         }
 
@@ -38,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         {
             var result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(_testPatient),
-                _schemaManager.GetSchema("Patient"));
+                "Patient");
 
             var expectedResult = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Processed_Patient.ndjson"));
 
@@ -73,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
             var result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(rawStructFormatData),
-                _schemaManager.GetSchema("Patient"));
+                "Patient");
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedStructFormatResult));
         }
 
@@ -123,7 +127,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
             var result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(rawArrayFormatData),
-                _schemaManager.GetSchema("Patient"));
+                "Patient");
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedArrayFormatResult));
         }
 
@@ -185,7 +189,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
             var result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(rawDeepFieldsData),
-                _schemaManager.GetSchema("Patient"));
+                "Patient");
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedJsonStringFieldsResult));
         }
 
@@ -247,7 +251,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
             var result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(rawDeepFieldsData),
-                _schemaManager.GetSchema("Patient"));
+                "Patient");
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedJsonStringFieldsResult));
         }
 
@@ -267,7 +271,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
             var result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(rawPrimitiveChoiceTypeData),
-                _schemaManager.GetSchema("Observation"));
+                "Observation");
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedPrimitiveChoiceTypeResult));
         }
 
@@ -287,22 +291,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
             var result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(rawStructChoiceTypeData),
-                _schemaManager.GetSchema("Observation"));
+                "Observation");
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedStructChoiceTypeResult));
         }
 
         [Fact]
         public static void GivenNullschema_WhenConvert_ExceptionShouldBeReturned()
         {
-            Assert.Throws<ParquetDataProcessorException>(
+            Assert.Throws<ArgumentNullException> (
                 () => _testDefaultConverter.Convert(
                     CreateTestJsonBatchData(_testPatient),
                     null));
 
-            Assert.Throws<ParquetDataProcessorException>(
+            Assert.Throws<ArgumentNullException>(
                 () => _testDefaultConverter.Convert(
                     null,
-                    _schemaManager.GetSchema("Observation")));
+                    "Observation"));
         }
 
         [Fact]
@@ -313,17 +317,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 { "name", "Invalid data fields, should be array." },
             };
 
-            Assert.Throws<ParquetDataProcessorException>(
-                () => _testDefaultConverter.Convert(
-                    CreateTestJsonBatchData(invalidFieldData),
-                    _schemaManager.GetSchema("Patient"))
-                .Values.Count());
+            Assert.Throws<ParquetDataProcessorException>(()
+                => _testDefaultConverter.Convert(CreateTestJsonBatchData(invalidFieldData), "Patient").Values.Count());
 
-            Assert.Throws<ParquetDataProcessorException>(
-                () => _testDefaultConverter.Convert(
-                    CreateTestJsonBatchData(null),
-                    _schemaManager.GetSchema("Patient"))
-                .Values.Count());
+            Assert.Throws<ParquetDataProcessorException>(()
+                => _testDefaultConverter.Convert(CreateTestJsonBatchData(null), "Patient").Values.Count());
         }
 
         private static JsonBatchData CreateTestJsonBatchData(JObject testJObjectData)
