@@ -1,0 +1,32 @@
+{
+  "resourceType": "Bundle",
+  "id": "empty-bundle",
+  "meta": {
+    "lastUpdated": "2022-07-05T13:43:33.6538024+00:00"
+  },
+  "type": "searchset",
+  "link": [
+    {
+      "relation": "self",
+      "url": "https://example.com/Group?_id=groupId1"
+    }
+  ],
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "OperationOutcome",
+        "id": "e10d5ab996f68a48a15d078b16aef96f",
+        "issue": [
+          {
+            "severity": "warning",
+            "code": "not-supported",
+            "diagnostics": "The search parameter 'invalid' is not supported for resource type 'Group'."
+          }
+        ]
+      },
+      "search": {
+        "mode": "outcome"
+      }
+    }
+  ]
+}

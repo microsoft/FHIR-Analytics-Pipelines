@@ -7,14 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
-using EnsureThat.Enforcers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
@@ -22,11 +21,10 @@ using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Newtonsoft.Json;
@@ -43,25 +41,29 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
         public async Task GivenValidDataClient_WhenExecuteTask_DataShouldBeSavedToBlob()
         {
             var containerName = Guid.NewGuid().ToString("N");
-            var taskExecutor = GetTaskExecutor(TestDataProvider.GetBundleFromFile("TestData/bundle1.json"), containerName);
+            var taskExecutor = GetTaskExecutor(TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile1), containerName);
+
+            var typeFilters = new List<TypeFilter> { new ("Patient", null) };
+            var filterInfo = new FilterInfo(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
 
             // Create an active job.
-            var activeJob = new Job(
+            var activeJob = Job.Create(
                 containerName,
                 JobStatus.Running,
-                new List<string> { "Patient" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                DateTimeOffset.Now.AddMinutes(-11));
+                filterInfo);
 
-            var taskContext = TaskContext.Create("Patient", new List<string>() { "Patient" }, activeJob);
+            var taskContext = TaskContext.CreateFromJob(activeJob, typeFilters);
+
+            activeJob.RunningTasks[taskContext.Id] = taskContext;
 
             var jobUpdater = GetJobUpdater(activeJob);
             var taskResult = await taskExecutor.ExecuteAsync(taskContext, jobUpdater);
 
             // verify task result;
-            Assert.Null(taskResult.ContinuationToken);
-            Assert.Equal(3, taskResult.SearchCount);
-            Assert.Equal(2, taskResult.PartId["Patient"]);
+            Assert.True(taskResult.IsCompleted);
+            Assert.Equal(3, taskResult.SearchCount["Patient"]);
+            Assert.Equal(3, taskResult.ProcessedCount["Patient"]);
             Assert.Equal(0, taskResult.SkippedCount["Patient"]);
 
             jobUpdater.Complete();
@@ -70,7 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             // verify blob data;
             var blobClient = new BlobContainerClient(TestBlobEndpoint, containerName);
             var blobPages = blobClient.GetBlobs(prefix: "staging").AsPages();
-            Assert.Equal(2, blobPages.First().Values.Count());
+            Assert.Single(blobPages.First().Values);
 
             // verify job data
             var jobBlob = blobClient.GetBlobClient($"{AzureBlobJobConstants.ActiveJobFolder}/{activeJob.Id}.json");
@@ -81,12 +83,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var jobContent = streamReader.ReadToEnd();
             var job = JsonConvert.DeserializeObject<Job>(jobContent);
             Assert.Equal(activeJob.Id, job.Id);
-            Assert.Contains("Patient", job.CompletedResources);
-            Assert.Equal(2, job.PartIds["Patient"]);
-            Assert.Equal(3, job.ProcessedResourceCounts["Patient"]);
-            Assert.Null(job.ResourceProgresses["Patient"]);
 
-            blobClient.DeleteIfExists();
+            Assert.Empty(job.RunningTasks);
+
+            Assert.Equal(3, job.ProcessedResourceCounts["Patient"]);
+            Assert.Equal(3, job.TotalResourceCounts["Patient"]);
+            Assert.Equal(0, job.SkippedResourceCounts["Patient"]);
+
+            await blobClient.DeleteIfExistsAsync();
         }
 
         [Theory]
@@ -98,14 +102,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var containerName = Guid.NewGuid().ToString("N");
             var taskExecutor = GetTaskExecutor(invalidBundle, containerName);
 
+            var typeFilters = new List<TypeFilter> { new ("Patient", null) };
+            var filterInfo = new FilterInfo(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
+
             // Create an active job.
-            var activeJob = new Job(
+            var activeJob = Job.Create(
                 containerName,
                 JobStatus.Running,
-                new List<string> { "Patient" },
                 new DataPeriod(DateTimeOffset.MinValue, DateTimeOffset.MaxValue),
-                DateTimeOffset.Now.AddMinutes(-11));
-            var taskContext = TaskContext.Create("Patient", new List<string>() { "Patient" }, activeJob);
+                filterInfo);
+            var taskContext = TaskContext.CreateFromJob(activeJob, typeFilters);
 
             var jobUpdater = GetJobUpdater(activeJob);
             await Assert.ThrowsAsync<FhirDataParseExeption>(() => taskExecutor.ExecuteAsync(taskContext, jobUpdater));
@@ -116,7 +122,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             var dataClient = Substitute.For<IFhirDataClient>();
 
             // Get bundle from next link
-            string nextBundle = TestDataProvider.GetBundleFromFile("TestData/bundle2.json");
+            string nextBundle = TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile2);
             dataClient.SearchAsync(default, default).ReturnsForAnyArgs(firstBundle, nextBundle);
             return dataClient;
         }
@@ -124,6 +130,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
         private static IParquetSchemaProvider ParquetSchemaProviderDelegate(string name)
         {
             return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
+        }
+
+        private static IFhirSchemaManager<FhirParquetSchemaNode> GetFhirSchemaManager()
+        {
+            var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
+            {
+                SchemaCollectionDirectory = TestUtils.TestSchemaDirectoryPath,
+            });
+
+            return new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
         }
 
         private static ParquetDataProcessor GetParquetDataProcessor()
@@ -160,7 +176,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private ITaskExecutor GetTaskExecutor(string bundleResult, string containerName)
         {
-            return new TaskExecutor(GetMockFhirDataClient(bundleResult), GetDataWriter(containerName), GetParquetDataProcessor(), new NullLogger<TaskExecutor>());
+            return new TaskExecutor(GetMockFhirDataClient(bundleResult), GetDataWriter(containerName), GetParquetDataProcessor(), GetFhirSchemaManager(), new NullLogger<TaskExecutor>());
         }
 
         private JobProgressUpdater GetJobUpdater(Job job)
