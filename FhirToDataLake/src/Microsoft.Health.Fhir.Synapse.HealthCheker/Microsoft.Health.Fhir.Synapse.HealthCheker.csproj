@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <Platforms>x64</Platforms>
+    </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ensure.That" Version="10.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.DataClient\Microsoft.Health.Fhir.Synapse.DataClient.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.DataWriter\Microsoft.Health.Fhir.Synapse.DataWriter.csproj" />
+  </ItemGroup>
+
+</Project>
