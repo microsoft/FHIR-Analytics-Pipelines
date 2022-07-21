@@ -97,7 +97,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException("Failed to parse filter configuration", ex);
             }
 
-            ValidateTypeFilterConfiguration(filterConfiguration);
+            ValidateFilterConfiguration(filterConfiguration);
 
             var storeConfiguration = services
                 .BuildServiceProvider()
@@ -120,7 +120,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
             }
         }
 
-        private static void ValidateTypeFilterConfiguration(FilterConfiguration filterConfiguration)
+        private static void ValidateFilterConfiguration(FilterConfiguration filterConfiguration)
         {
             if (!Enum.IsDefined(typeof(FilterScope), filterConfiguration.FilterScope))
             {

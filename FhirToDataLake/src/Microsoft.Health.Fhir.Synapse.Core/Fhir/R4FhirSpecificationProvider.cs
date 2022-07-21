@@ -20,6 +20,7 @@ using R4FhirModelInfo = FhirR4::Hl7.Fhir.Model.ModelInfo;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 {
+    // TODO: Maybe we can get all FHIR specification directly through 'metadata' API. Thus we can remove the hard dependency with FHIR libs (which targets specific version)
     public class R4FhirSpecificationProvider : IFhirSpecificationProvider
     {
         private readonly IFhirDataClient _dataClient;
@@ -84,7 +85,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 
         public IEnumerable<string> GetCompartmentResourceTypes(string compartmentType)
         {
-
             if (!IsValidCompartmentType(compartmentType))
             {
                 _logger.LogError($"The compartment type {compartmentType} isn't a valid compartment type.");

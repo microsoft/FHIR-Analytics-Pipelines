@@ -67,6 +67,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             Assert.Equal("123", fhirReference.ResourceId);
         }
 
+        [Fact]
+        public void GivenDataSourceServerUrlEndsWithSlash_WhenParseReference_ParsedReferenceShouldBeReturned()
+        {
+            var fhirServerConfig = new FhirServerConfiguration
+            {
+                ServerUrl = "https://example.com/",
+                Authentication = AuthenticationType.None,
+            };
+
+            var fhirServerOption = Options.Create(fhirServerConfig);
+            var dataSource = new FhirApiDataSource(fhirServerOption);
+            var referenceParser = new R4ReferenceParser(dataSource, _nullR4ReferenceParserLogger);
+
+            var fhirReference = referenceParser.Parse("https://example.com/Patient/123/_history/2");
+            Assert.NotNull(fhirReference);
+            Assert.Equal("Patient", fhirReference.ResourceType);
+            Assert.Equal("123", fhirReference.ResourceId);
+        }
+
         [Theory]
         [InlineData("patient/123")]
         [InlineData("Patient")]
