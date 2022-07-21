@@ -5,6 +5,8 @@
 
 using System.IO;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Newtonsoft.Json.Schema;
@@ -14,15 +16,28 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
 {
     public class AcrCustomizedSchemaProviderTests
     {
+        private static readonly SchemaConfiguration _schemaConfigurationWithCustomizedSchema;
+
+        static AcrCustomizedSchemaProviderTests()
+        {
+            _schemaConfigurationWithCustomizedSchema = new SchemaConfiguration()
+            {
+                EnableCustomizedSchema = true,
+                SchemaImageReference = TestUtils.MockSchemaImageReference,
+            };
+        }
+
         [Fact]
         public static async void GivenImageReference_WhenGetSchemaWithMockTemplateProvider_CorrectResultShouldBeReturned()
         {
             var testSchemaTemplateCollections = TestUtils.GetSchemaTemplateCollections("Schema/Patient.schema.json", File.ReadAllBytes(TestUtils.TestJsonSchemaFilePath));
+
             var schemaProvider = new AcrCustomizedSchemaProvider(
                 TestUtils.GetMockAcrTemplateProvider(testSchemaTemplateCollections),
+                Options.Create(_schemaConfigurationWithCustomizedSchema),
                 NullLogger<AcrCustomizedSchemaProvider>.Instance);
 
-            var schemaCollections = await schemaProvider.GetSchemasAsync(TestUtils.MockSchemaImageReference);
+            var schemaCollections = await schemaProvider.GetSchemasAsync();
             var expectedSchemaNode = JsonSchemaParser.ParseJSchema("Patient", JSchema.Parse(File.ReadAllText(TestUtils.TestJsonSchemaFilePath)));
 
             Assert.Equal(expectedSchemaNode.Name, schemaCollections["Patient_Customized"].Name);
@@ -35,9 +50,10 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
             var testSchemaTemplateCollections = TestUtils.GetSchemaTemplateCollections(schemaKey, File.ReadAllBytes(TestUtils.TestJsonSchemaFilePath));
             var schemaProvider = new AcrCustomizedSchemaProvider(
                 TestUtils.GetMockAcrTemplateProvider(testSchemaTemplateCollections),
+                Options.Create(_schemaConfigurationWithCustomizedSchema),
                 NullLogger<AcrCustomizedSchemaProvider>.Instance);
 
-            await Assert.ThrowsAsync<ContainerRegistrySchemaException>(() => schemaProvider.GetSchemasAsync(TestUtils.MockSchemaImageReference));
+            await Assert.ThrowsAsync<ContainerRegistrySchemaException>(() => schemaProvider.GetSchemasAsync());
         }
     }
 }

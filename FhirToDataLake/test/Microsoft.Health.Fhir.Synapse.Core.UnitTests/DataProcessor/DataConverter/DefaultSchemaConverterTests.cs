@@ -18,19 +18,15 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConverter
 {
-    public class DefaultConverterTests
+    public class DefaultSchemaConverterTests
     {
         private static readonly JObject _testPatient;
         private static readonly DefaultSchemaConverter _testDefaultConverter;
         private static readonly FhirParquetSchemaManager _schemaManager;
 
-        static DefaultConverterTests()
+        static DefaultSchemaConverterTests()
         {
-
-            var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
-            {
-                SchemaCollectionDirectory = TestUtils.PipelineDefaultSchemaDirectoryPath,
-            });
+            var schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
             _testDefaultConverter = new DefaultSchemaConverter(NullLogger<DefaultSchemaConverter>.Instance);
             _schemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.TestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);

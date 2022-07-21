@@ -38,10 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
         static ParquetDataProcessorTests()
         {
-            var schemaConfigurationOptionWithoutCustomizedSchema = Options.Create(new SchemaConfiguration()
-            {
-                SchemaCollectionDirectory = TestUtils.PipelineDefaultSchemaDirectoryPath,
-            });
+            var schemaConfigurationOptionWithoutCustomizedSchema = Options.Create(new SchemaConfiguration());
 
             _fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
                 schemaConfigurationOptionWithoutCustomizedSchema,
@@ -50,7 +47,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
             var schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
             {
-                SchemaCollectionDirectory = TestUtils.PipelineDefaultSchemaDirectoryPath,
                 EnableCustomizedSchema = true,
                 SchemaImageReference = "testacr.azurecr.io/customizedtemplate:default",
             });

@@ -10,13 +10,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
     public class SchemaConfiguration
     {
         /// <summary>
-        /// Gets or sets path of directory that contains schema Json files.
-        /// For now we only support loading schemas from default directory.
-        /// </summary>
-        [JsonProperty("schemaCollectionDirectory")]
-        public string SchemaCollectionDirectory { get; set; } = ConfigurationConstants.DefaultSchemaDirectory;
-
-        /// <summary>
         /// Gets or sets bool value for whether enable customized schema.
         /// </summary>
         [JsonProperty("enableCustomizedSchema")]

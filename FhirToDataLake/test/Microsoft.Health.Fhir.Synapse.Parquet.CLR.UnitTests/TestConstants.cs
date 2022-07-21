@@ -11,7 +11,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.CLR.UnitTests
 {
     public static class TestConstants
     {
-        public static Dictionary<string, FhirParquetSchemaNode> TestSchemaMap = CreateSchemaMap();
+        public static readonly Dictionary<string, FhirParquetSchemaNode> TestSchemaMap = CreateSchemaMap();
 
         private static Dictionary<string, FhirParquetSchemaNode> CreateSchemaMap()
         {

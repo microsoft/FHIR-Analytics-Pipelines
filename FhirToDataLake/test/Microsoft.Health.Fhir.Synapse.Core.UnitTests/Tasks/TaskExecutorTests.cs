@@ -24,7 +24,6 @@ using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Newtonsoft.Json;
@@ -35,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 {
     public class TaskExecutorTests
     {
-        private string TestBlobEndpoint = "UseDevelopmentStorage=true";
+        private static readonly string TestBlobEndpoint = "UseDevelopmentStorage=true";
 
         [Fact]
         public async Task GivenValidDataClient_WhenExecuteTask_DataShouldBeSavedToBlob()
@@ -126,10 +125,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private static ParquetDataProcessor GetParquetDataProcessor()
         {
-            var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
-            {
-                SchemaCollectionDirectory = TestUtils.TestNativeSchemaDirectoryPath,
-            });
+            var schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
             var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
             var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());

@@ -19,16 +19,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
 
         static FhirParquetSchemaManagerTests()
         {
-            var schemaConfigurationOptionWithoutCustomizedSchema = Options.Create(new SchemaConfiguration()
-            {
-                SchemaCollectionDirectory = TestUtils.PipelineDefaultSchemaDirectoryPath,
-            });
+            var schemaConfigurationOptionWithoutCustomizedSchema = Options.Create(new SchemaConfiguration());
 
             var schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
             {
-                SchemaCollectionDirectory = TestUtils.PipelineDefaultSchemaDirectoryPath,
                 EnableCustomizedSchema = true,
-                SchemaImageReference = "testacr.azurecr.io/customizedtemplate:default",
+                SchemaImageReference = TestUtils.MockSchemaImageReference,
             });
 
             _testParquetSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithoutCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);

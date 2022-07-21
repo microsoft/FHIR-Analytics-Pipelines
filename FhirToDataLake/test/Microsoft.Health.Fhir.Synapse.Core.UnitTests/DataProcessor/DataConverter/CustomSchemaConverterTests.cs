@@ -16,15 +16,14 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConverter
 {
-    public class FhirConverterTests
+    public class CustomSchemaConverterTests
     {
         private static readonly CustomSchemaConverter _testFhirConverter;
 
-        static FhirConverterTests()
+        static CustomSchemaConverterTests()
         {
             var schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
             {
-                SchemaCollectionDirectory = TestUtils.PipelineDefaultSchemaDirectoryPath,
                 EnableCustomizedSchema = true,
                 SchemaImageReference = "testacr.azurecr.io/customizedtemplate:default",
             });

@@ -41,10 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         static InMemoryJobManagerTests()
         {
-            var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
-            {
-                SchemaCollectionDirectory = TestUtils.PipelineDefaultSchemaDirectoryPath,
-            });
+            var schemaConfigurationOption = Options.Create(new SchemaConfiguration(){});
 
             _fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
         }

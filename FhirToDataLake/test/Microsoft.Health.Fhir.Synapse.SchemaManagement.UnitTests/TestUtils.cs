@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using DotLiquid;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
@@ -20,8 +22,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
 {
     public static class TestUtils
     {
-        public const string PipelineDefaultSchemaDirectoryPath = "../../../../../data/schemas";
-
         public const string TestDataDirectory = "../../../TestData";
 
         public const string ExpectedDataDirectory = TestDataDirectory + "/Expected";
@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
 
         public static IParquetSchemaProvider TestParquetSchemaProviderDelegate(string name)
         {
-            var testSchemaTemplateCollections = TestUtils.GetSchemaTemplateCollections("Schema/Patient.schema.json", File.ReadAllBytes(TestUtils.TestJsonSchemaFilePath));
+            var testSchemaTemplateCollections = GetSchemaTemplateCollections("Schema/Patient.schema.json", File.ReadAllBytes(TestJsonSchemaFilePath));
 
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
             {
@@ -69,7 +69,16 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
             }
             else
             {
-                return new AcrCustomizedSchemaProvider(GetMockAcrTemplateProvider(testSchemaTemplateCollections), NullLogger<AcrCustomizedSchemaProvider>.Instance);
+                var schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
+                {
+                    EnableCustomizedSchema = true,
+                    SchemaImageReference = MockSchemaImageReference,
+                });
+
+                return new AcrCustomizedSchemaProvider(
+                    GetMockAcrTemplateProvider(testSchemaTemplateCollections),
+                    schemaConfigurationOptionWithCustomizedSchema,
+                    NullLogger<AcrCustomizedSchemaProvider>.Instance);
             }
         }
     }
