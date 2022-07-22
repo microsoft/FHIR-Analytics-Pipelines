@@ -57,7 +57,7 @@
             "type": "string",
             "defaultValue": "System",
             "metadata": {
-                "description": "The filter scope, System or Group."
+                "description": "The export scope, System or Group."
             }
         },
         "groupId":{
@@ -71,14 +71,14 @@
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "The resources type you want to export. Will continuous export all resource types if not specified."
+                "description": "Specify which types of resources will be included. For example, _type=Patient would return only patient resources. Will export all resource types if not specified."
             }
         },
         "typeFilters":{
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "The type filters you want to filter the data. Will continuous export all data if not specified."
+                "description": "Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. Will export all data of requiredTypes if not specified."
             }
         },
         "packageUrl": {
