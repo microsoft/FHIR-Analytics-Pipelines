@@ -31,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _logger = logger;
-            _tokenCredential = credentialProvider.GetCredential();
+            _tokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.External);
         }
 
         public async Task<string> GetAccessTokenAsync(string resourceUrl, CancellationToken cancellationToken = default)

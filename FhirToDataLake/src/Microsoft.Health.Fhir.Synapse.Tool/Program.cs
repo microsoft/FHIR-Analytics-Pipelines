@@ -30,6 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
                         .AddAzure()
                         .AddJobScheduler()
                         .AddDataSource()
+                        .AddDataWriter()
                         .AddSchema()
                         .AddHostedService<SynapseLinkService>());
     }

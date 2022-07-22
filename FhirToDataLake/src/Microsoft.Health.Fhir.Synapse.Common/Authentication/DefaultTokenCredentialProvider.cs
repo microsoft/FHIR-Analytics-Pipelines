@@ -11,29 +11,28 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Authentication
 {
-    public class ExternalTokenCredentialProvider : ITokenCredentialProvider
+    public class DefaultTokenCredentialProvider : ITokenCredentialProvider
     {
+        private readonly ILogger<DefaultTokenCredentialProvider> _logger;
 
-        private readonly ILogger<ExternalTokenCredentialProvider> _logger;
-
-        public ExternalTokenCredentialProvider(ILogger<ExternalTokenCredentialProvider> logger)
+        public DefaultTokenCredentialProvider(ILogger<DefaultTokenCredentialProvider> logger)
         {
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _logger = logger;
         }
 
-        public TokenCredential GetCredential()
+        public TokenCredential GetCredential(TokenCredentialTypes type)
         {
             try
             {
                 var credential = new DefaultAzureCredential();
-                _logger.LogInformation("Get external token credential successfully.");
+                _logger.LogInformation($"Get {type} token credential successfully.");
                 return credential;
             }
             catch (Exception exception)
             {
-                _logger.LogError("Get external token credential failed. Reason: '{0}'", exception);
+                _logger.LogError($"Get {type} token credential failed. Reason: '{0}'", exception);
                 throw;
             }
         }

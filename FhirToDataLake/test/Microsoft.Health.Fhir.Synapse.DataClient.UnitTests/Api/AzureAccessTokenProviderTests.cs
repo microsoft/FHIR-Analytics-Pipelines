@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [InlineData("    ")]
         public async Task GivenAnInvalidResourceUrl_WhenGetAccessToken_ArgumentExceptionShouldBeThrown(string resourceUrl)
         {
-            var accessTokenProvider = new AzureAccessTokenProvider(new ExternalTokenCredentialProvider(new NullLogger<ExternalTokenCredentialProvider>()), new NullLogger<AzureAccessTokenProvider>());
+            var accessTokenProvider = new AzureAccessTokenProvider(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLogger<AzureAccessTokenProvider>());
 
             _ = await Assert.ThrowsAsync<ArgumentException>(() => accessTokenProvider.GetAccessTokenAsync(resourceUrl));
         }
@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [InlineData(null)]
         public async Task GivenANullResourceUrl_WhenGetAccessToken_ArgumentNullExceptionShouldBeThrown(string resourceUrl)
         {
-            var accessTokenProvider = new AzureAccessTokenProvider(new ExternalTokenCredentialProvider(new NullLogger<ExternalTokenCredentialProvider>()), new NullLogger<AzureAccessTokenProvider>());
+            var accessTokenProvider = new AzureAccessTokenProvider(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLogger<AzureAccessTokenProvider>());
 
             _ = await Assert.ThrowsAsync<ArgumentNullException>(() => accessTokenProvider.GetAccessTokenAsync(resourceUrl));
         }

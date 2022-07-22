@@ -11,6 +11,7 @@ using Microsoft.Health.Fhir.Synapse.Core;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
+using Microsoft.Health.Fhir.Synapse.Tool;
 
 namespace Microsoft.Health.Fhir.Synapse.FunctionApp
 {
@@ -30,6 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
                         .AddConfiguration(context.Configuration)
                         .AddJobScheduler()
                         .AddDataSource()
+                        .AddDataWriter()
                         .AddAzure()
                         .AddSchema();
                 })

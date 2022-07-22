@@ -3,16 +3,19 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Azure.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
+namespace Microsoft.Health.Fhir.Synapse.Tool
 {
-    public class MockTokenCredentialProvider : ITokenCredentialProvider
+    public static class AzureDependencyRegistrationExtensions
     {
-        public TokenCredential GetCredential(TokenCredentialTypes type)
+        public static IServiceCollection AddAzure(this IServiceCollection services)
         {
-            return new MockTokenCredential();
+            services.AddSingleton<ITokenCredentialProvider, DefaultTokenCredentialProvider>();
+
+            return services;
         }
+
     }
 }

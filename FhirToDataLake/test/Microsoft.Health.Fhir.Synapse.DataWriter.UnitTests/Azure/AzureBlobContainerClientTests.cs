@@ -702,7 +702,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
                 return null;
             }
 
-            return new AzureBlobContainerClient(new Uri(new Uri(storageUrl), containerName), new ExternalTokenCredentialProvider(new NullLogger<ExternalTokenCredentialProvider>()), new NullLogger<AzureBlobContainerClient>());
+            return new AzureBlobContainerClient(new Uri(new Uri(storageUrl), containerName), new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLogger<AzureBlobContainerClient>());
         }
 
         private BlobContainerClient GetBlobContainerClient(string containerName)

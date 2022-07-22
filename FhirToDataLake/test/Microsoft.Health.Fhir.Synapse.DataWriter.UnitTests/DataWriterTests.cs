@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             var context = GetTaskContext();
             await dataWriter.WriteAsync(streamData, context.JobId, 0, _testDate);
 
-            var containerClient = new AzureBlobContainerClientFactory(new ExternalTokenCredentialProvider(new NullLogger<ExternalTokenCredentialProvider>()), new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
+            var containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
             var blobStream = await containerClient.GetBlobAsync($"staging/mockjob/Patient/2021/10/01/Patient_mockjob_00000.parquet");
             Assert.NotNull(blobStream);
 
@@ -124,7 +124,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         {
             return new AzureBlobDataWriter(
                 new AzureBlobContainerClientFactory(
-                    new ExternalTokenCredentialProvider(new NullLogger<ExternalTokenCredentialProvider>()),
+                    new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
                     new NullLoggerFactory()),
                 GetLocalDataSink(),
                 new NullLogger<AzureBlobDataWriter>());
@@ -134,7 +134,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         {
             return new AzureBlobDataWriter(
                 new AzureBlobContainerClientFactory(
-                    new ExternalTokenCredentialProvider(new NullLogger<ExternalTokenCredentialProvider>()),
+                    new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
                     new NullLoggerFactory()),
                 GetDataSink(),
                 new NullLogger<AzureBlobDataWriter>());

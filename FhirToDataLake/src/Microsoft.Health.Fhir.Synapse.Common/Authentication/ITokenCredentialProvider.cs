@@ -9,6 +9,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Authentication
 {
     public interface ITokenCredentialProvider
     {
-        public TokenCredential GetCredential();
+        public TokenCredential GetCredential(TokenCredentialTypes type);
     }
 }
