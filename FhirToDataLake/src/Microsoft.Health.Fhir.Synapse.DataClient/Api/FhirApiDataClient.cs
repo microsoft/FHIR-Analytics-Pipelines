@@ -157,13 +157,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                     // Currently we support accessing FHIR server endpoints with Managed Identity.
                     // Obtaining access token against a resource uri only works with Azure API for FHIR now.
                     // To do: add configuration for OSS FHIR server endpoints.
-<<<<<<< HEAD
-                    var accessToken = await _accessTokenProvider.GetAccessTokenAsync(_dataSource.FhirServerUrl, cancellationToken);
-=======
 
                     // The thread-safe AzureServiceTokenProvider class caches the token in memory and retrieves it from Azure AD just before expiration.
                     // https://docs.microsoft.com/en-us/dotnet/api/overview/azure/service-to-service-authentication#using-the-library
->>>>>>> 3a202ecb150ff3ac42da3d3c5bae862ea61ebf31
                     searchRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
                 }
 

@@ -25,10 +25,7 @@ using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
-<<<<<<< HEAD
-=======
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
->>>>>>> 3a202ecb150ff3ac42da3d3c5bae862ea61ebf31
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Newtonsoft.Json;

@@ -24,15 +24,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 {
     public class FhirApiDataClientTests
     {
-<<<<<<< HEAD
-        private readonly AzureAccessTokenProvider _brokenProvider = new AzureAccessTokenProvider(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLogger<AzureAccessTokenProvider>());
-        private readonly MockAccessTokenProvider _mockProvider = new MockAccessTokenProvider();
-=======
-        private readonly AzureAccessTokenProvider _brokenProvider = new (new NullLogger<AzureAccessTokenProvider>());
+        private readonly AzureAccessTokenProvider _brokenProvider = new (new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLogger<AzureAccessTokenProvider>());
         private readonly MockAccessTokenProvider _mockProvider = new ();
         private readonly NullLogger<FhirApiDataClient> _nullFhirApiDataClientLogger =
             NullLogger<FhirApiDataClient>.Instance;
->>>>>>> 3a202ecb150ff3ac42da3d3c5bae862ea61ebf31
 
         private const string SampleResourceType = "Patient";
         private const string SampleStartTime = "2021-08-01T12:00:00+08:00";
