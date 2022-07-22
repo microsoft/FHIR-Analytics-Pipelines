@@ -3,12 +3,14 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 {
@@ -22,6 +24,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options));
             services.Configure<JobConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.JobConfigurationKey).Bind(options));
+            services.Configure<FilterConfiguration>(options =>
+                configuration.GetSection(ConfigurationConstants.FilterConfigurationKey).Bind(options));
             services.Configure<DataLakeStoreConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.DataLakeStoreConfigurationKey).Bind(options));
             services.Configure<ArrowConfiguration>(options =>
@@ -38,10 +42,19 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 
         private static void ValidateConfiguration(this IServiceCollection services)
         {
-            var fhirServerConfiguration = services
-                .BuildServiceProvider()
-                .GetRequiredService<IOptions<FhirServerConfiguration>>()
-                .Value;
+            FhirServerConfiguration fhirServerConfiguration;
+            try
+            {
+                // include enum field, an exception will be thrown when parse invalid enum string
+                fhirServerConfiguration = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<FhirServerConfiguration>>()
+                    .Value;
+            }
+            catch (Exception ex)
+            {
+                throw new ConfigurationErrorException("Failed to parse fhir server configuration", ex);
+            }
 
             if (string.IsNullOrEmpty(fhirServerConfiguration.ServerUrl))
             {
@@ -53,15 +66,38 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException($"Fhir version {fhirServerConfiguration.Version} is not supported.");
             }
 
-            var jobConfiguration = services
-                .BuildServiceProvider()
-                .GetRequiredService<IOptions<JobConfiguration>>()
-                .Value;
+            JobConfiguration jobConfiguration;
+            try
+            {
+                jobConfiguration = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<JobConfiguration>>()
+                    .Value;
+            }
+            catch (Exception ex)
+            {
+                throw new ConfigurationErrorException("Failed to parse job configuration", ex);
+            }
 
             if (string.IsNullOrEmpty(jobConfiguration.ContainerName))
             {
                 throw new ConfigurationErrorException($"Target azure container name can not be empty.");
             }
+
+            FilterConfiguration filterConfiguration;
+            try
+            {
+                filterConfiguration = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<FilterConfiguration>>()
+                    .Value;
+            }
+            catch (Exception ex)
+            {
+                throw new ConfigurationErrorException("Failed to parse filter configuration", ex);
+            }
+
+            ValidateFilterConfiguration(filterConfiguration);
 
             var storeConfiguration = services
                 .BuildServiceProvider()
@@ -81,6 +117,20 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
             if (schemaConfiguration.EnableCustomizedSchema && string.IsNullOrEmpty(schemaConfiguration.CustomizedSchemaImageReference))
             {
                 throw new ConfigurationErrorException($"Customized schema image reference can not be empty when customized schema is enable.");
+            }
+        }
+
+        private static void ValidateFilterConfiguration(FilterConfiguration filterConfiguration)
+        {
+            if (!Enum.IsDefined(typeof(FilterScope), filterConfiguration.FilterScope))
+            {
+                throw new ConfigurationErrorException(
+                    $"Filter Scope '{filterConfiguration.FilterScope}' is not supported.");
+            }
+
+            if (filterConfiguration.FilterScope == FilterScope.Group && string.IsNullOrWhiteSpace(filterConfiguration.GroupId))
+            {
+                throw new ConfigurationErrorException("Group id can not be null, empty or white space for `Group` filter scope.");
             }
         }
     }

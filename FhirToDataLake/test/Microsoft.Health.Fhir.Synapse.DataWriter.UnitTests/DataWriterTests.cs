@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -12,7 +11,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 using Xunit;
@@ -42,11 +40,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
 
             var dataWriter = GetLocalDataWriter();
             var streamData = new StreamBatchData(stream, 1, TestResourceType);
-            var context = GetTaskContext();
-            await dataWriter.WriteAsync(streamData, context.JobId, 0, _testDate);
+            await dataWriter.WriteAsync(streamData, "mockJob", 0, 0, _testDate);
 
+<<<<<<< HEAD
             var containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
             var blobStream = await containerClient.GetBlobAsync($"staging/mockjob/Patient/2021/10/01/Patient_mockjob_00000.parquet");
+=======
+            var containerClient = new AzureBlobContainerClientFactory(new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
+            var blobStream = await containerClient.GetBlobAsync($"staging/mockJob/Patient/2021/10/01/Patient_0000000000_0000000000.parquet");
+>>>>>>> 3a202ecb150ff3ac42da3d3c5bae862ea61ebf31
             Assert.NotNull(blobStream);
 
             var resultStream = new MemoryStream();
@@ -59,31 +61,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         {
             var dataWriter = GetLocalDataWriter();
             var streamData = new StreamBatchData(null, 0, TestResourceType);
-            var context = GetTaskContext();
-
-            await Assert.ThrowsAsync<ArgumentNullException>(() => dataWriter.WriteAsync(streamData, context.JobId, 0, _testDate));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => dataWriter.WriteAsync(streamData, "mockJob", 0, 0, _testDate));
         }
 
         [Fact]
         public void GivenAnInvalidBlobContainerClient_WhenCreateDataWriter_ExceptionShouldBeThrown()
         {
-            Assert.Throws<AzureBlobOperationFailedException>(() => GetDataWriter());
-        }
-
-        private TaskContext GetTaskContext()
-        {
-            return new TaskContext(
-                string.Empty,
-                "mockjob",
-                TestResourceType,
-                new List<string>() { TestResourceType },
-                DateTimeOffset.MinValue,
-                DateTimeOffset.MaxValue,
-                null,
-                new Dictionary<string, int>() { { TestResourceType, 0 } },
-                new Dictionary<string, int>() { { TestResourceType, 0 } },
-                new Dictionary<string, int>() { { TestResourceType, 0 } },
-                0);
+            Assert.Throws<AzureBlobOperationFailedException>(GetDataWriter);
         }
 
         private IDataSink GetDataSink()
