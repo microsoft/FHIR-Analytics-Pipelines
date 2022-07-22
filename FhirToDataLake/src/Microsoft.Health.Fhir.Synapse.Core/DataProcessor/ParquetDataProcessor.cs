@@ -30,25 +30,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
         private readonly ArrowConfiguration _arrowConfiguration;
         private readonly ILogger<ParquetDataProcessor> _logger;
         private readonly ParquetConverterWrapper _parquetConverterWrapper;
-        private readonly DefaultSchemaConverter _defaultDataConverter;
-        private readonly CustomSchemaConverter _fhirDataConverter;
+        private readonly DefaultSchemaConverter _defaultSchemaConverter;
+        private readonly CustomSchemaConverter _customSchemaConverter;
 
         public ParquetDataProcessor(
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             IOptions<ArrowConfiguration> arrowConfiguration,
-            DefaultSchemaConverter defaultConverter,
-            CustomSchemaConverter fhirConverter,
+            DefaultSchemaConverter defaultSchemaConverter,
+            CustomSchemaConverter customSchemaConverter,
             ILogger<ParquetDataProcessor> logger)
         {
             EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
             EnsureArg.IsNotNull(arrowConfiguration, nameof(arrowConfiguration));
-            EnsureArg.IsNotNull(defaultConverter, nameof(defaultConverter));
-            EnsureArg.IsNotNull(fhirConverter, nameof(fhirConverter));
+            EnsureArg.IsNotNull(defaultSchemaConverter, nameof(defaultSchemaConverter));
+            EnsureArg.IsNotNull(customSchemaConverter, nameof(customSchemaConverter));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _arrowConfiguration = arrowConfiguration.Value;
-            _defaultDataConverter = defaultConverter;
-            _fhirDataConverter = fhirConverter;
+            _defaultSchemaConverter = defaultSchemaConverter;
+            _customSchemaConverter = customSchemaConverter;
             _logger = logger;
 
             try
@@ -73,15 +73,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
 
             // Convert data based on schema
             JsonBatchData processedData;
-            if (IsCustomizedSchemaType(processParameters.SchemaType))
+
+            // Currently the default schema type of each resource type is themselves
+            if (string.Equals(processParameters.SchemaType, processParameters.ResourceType, StringComparison.InvariantCulture))
             {
-                var rawResourceType = processParameters.SchemaType
-                    .Substring(0, processParameters.SchemaType.Length - FhirParquetSchemaConstants.CustomizedSchemaSuffix.Length);
-                processedData = _fhirDataConverter.Convert(inputData, rawResourceType, cancellationToken);
+                processedData = _defaultSchemaConverter.Convert(inputData, processParameters.SchemaType, cancellationToken);
             }
             else
             {
-                processedData = _defaultDataConverter.Convert(inputData, processParameters.SchemaType, cancellationToken);
+                processedData = _customSchemaConverter.Convert(inputData, processParameters.ResourceType, cancellationToken);
             }
 
             var inputStream = TransformJsonDataToStream(processParameters.SchemaType, processedData.Values);
@@ -137,11 +137,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             }
 
             return true;
-        }
-
-        private bool IsCustomizedSchemaType(string schemaType)
-        {
-            return schemaType.EndsWith(FhirParquetSchemaConstants.CustomizedSchemaSuffix);
         }
     }
 }

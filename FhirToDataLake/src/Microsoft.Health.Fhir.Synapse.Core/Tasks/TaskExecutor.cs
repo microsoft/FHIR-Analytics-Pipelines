@@ -62,7 +62,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
         // 4. once the task context is updated either from step 2 or step 3, calls "JobProgressUpdater.Produce()" to sync task context to job
         // 5. "JobProgressUpdater.Consume" will handle the updated task context,
         //    when the task is completed, add statistical fields and patient version id to job and remove it from runningTasks;
-        // 6. call "_jobStore.UpdateJobAsync()" to save the job context to storage in "JobProgressUpdater.Consume()" at regular intervals or when completing producing task context 
+        // 6. call "_jobStore.UpdateJobAsync()" to save the job context to storage in "JobProgressUpdater.Consume()" at regular intervals or when completing producing task context.
         public async Task<TaskResult> ExecuteAsync(
             TaskContext taskContext,
             JobProgressUpdater progressUpdater,
@@ -452,7 +452,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                     foreach (var schemaType in schemaTypes)
                     {
                         // Convert grouped data to parquet stream
-                        var processParameters = new ProcessParameters(schemaType);
+                        var processParameters = new ProcessParameters(schemaType, resourceType);
                         var parquetStream = await _parquetDataProcessor.ProcessAsync(inputData, processParameters, cancellationToken);
                         var skippedCount = inputData.Values.Count() - parquetStream.BatchSize;
 
@@ -478,7 +478,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                                 batchResult.ResourceCount,
                                 batchResult.ProcessedCount,
                                 batchResult.ToString());
-
                         }
                         else
                         {
