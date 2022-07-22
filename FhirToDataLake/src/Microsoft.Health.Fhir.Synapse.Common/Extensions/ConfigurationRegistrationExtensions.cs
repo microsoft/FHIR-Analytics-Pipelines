@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 {
@@ -23,6 +24,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options));
             services.Configure<JobConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.JobConfigurationKey).Bind(options));
+            services.Configure<FilterConfiguration>(options =>
+                configuration.GetSection(ConfigurationConstants.FilterConfigurationKey).Bind(options));
             services.Configure<DataLakeStoreConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.DataLakeStoreConfigurationKey).Bind(options));
             services.Configure<ArrowConfiguration>(options =>
@@ -39,10 +42,19 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 
         private static void ValidateConfiguration(this IServiceCollection services)
         {
-            var fhirServerConfiguration = services
-                .BuildServiceProvider()
-                .GetRequiredService<IOptions<FhirServerConfiguration>>()
-                .Value;
+            FhirServerConfiguration fhirServerConfiguration;
+            try
+            {
+                // include enum field, an exception will be thrown when parse invalid enum string
+                fhirServerConfiguration = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<FhirServerConfiguration>>()
+                    .Value;
+            }
+            catch (Exception ex)
+            {
+                throw new ConfigurationErrorException("Failed to parse fhir server configuration", ex);
+            }
 
             if (string.IsNullOrEmpty(fhirServerConfiguration.ServerUrl))
             {
@@ -54,15 +66,38 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException($"Fhir version {fhirServerConfiguration.Version} is not supported.");
             }
 
-            var jobConfiguration = services
-                .BuildServiceProvider()
-                .GetRequiredService<IOptions<JobConfiguration>>()
-                .Value;
+            JobConfiguration jobConfiguration;
+            try
+            {
+                jobConfiguration = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<JobConfiguration>>()
+                    .Value;
+            }
+            catch (Exception ex)
+            {
+                throw new ConfigurationErrorException("Failed to parse job configuration", ex);
+            }
 
             if (string.IsNullOrEmpty(jobConfiguration.ContainerName))
             {
                 throw new ConfigurationErrorException($"Target azure container name can not be empty.");
             }
+
+            FilterConfiguration filterConfiguration;
+            try
+            {
+                filterConfiguration = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<FilterConfiguration>>()
+                    .Value;
+            }
+            catch (Exception ex)
+            {
+                throw new ConfigurationErrorException("Failed to parse filter configuration", ex);
+            }
+
+            ValidateFilterConfiguration(filterConfiguration);
 
             var storeConfiguration = services
                 .BuildServiceProvider()
@@ -100,7 +135,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException("Customized schema image format is invalid: registry server is missing.");
             }
 
-            imageReference = imageReference[(registryDelimiterPosition + 1)..];
+            imageReference = imageReference[(registryDelimiterPosition + 1) ..];
             string imageName = imageReference;
             if (imageReference.Contains(ConfigurationConstants.ImageDigestDelimiter, StringComparison.OrdinalIgnoreCase))
             {
@@ -129,7 +164,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
         private static Tuple<string, string> ParseImageMeta(string input, char delimiter)
         {
             var index = input.IndexOf(delimiter, StringComparison.InvariantCultureIgnoreCase);
-            return new Tuple<string, string>(input.Substring(0, index), input[(index + 1)..]);
+            return new Tuple<string, string>(input[0..index], input[(index + 1) ..]);
         }
 
         private static void ValidateImageName(string imageName)
@@ -137,6 +172,20 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
             if (!ConfigurationConstants.ImageNameRegex.IsMatch(imageName))
             {
                 throw new ConfigurationErrorException(@"Customized schema image name is invalid. Image name should contains lowercase letters, digits and separators. The valid format is ^[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*(\/[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*)*$");
+            }
+        }
+
+        private static void ValidateFilterConfiguration(FilterConfiguration filterConfiguration)
+        {
+            if (!Enum.IsDefined(typeof(FilterScope), filterConfiguration.FilterScope))
+            {
+                throw new ConfigurationErrorException(
+                    $"Filter Scope '{filterConfiguration.FilterScope}' is not supported.");
+            }
+
+            if (filterConfiguration.FilterScope == FilterScope.Group && string.IsNullOrWhiteSpace(filterConfiguration.GroupId))
+            {
+                throw new ConfigurationErrorException("Group id can not be null, empty or white space for `Group` filter scope.");
             }
         }
     }

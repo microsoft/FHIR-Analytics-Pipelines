@@ -9,8 +9,33 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 {
     public interface IFhirSpecificationProvider
     {
+        /// <summary>
+        /// Get all the resource types
+        /// </summary>
+        /// <returns>the resource types.</returns>
         public IEnumerable<string> GetAllResourceTypes();
 
+        /// <summary>
+        /// check if the resource type is a valid FHIR resource type.
+        /// </summary>
+        /// <param name="resourceType">the resource type</param>
+        /// <returns>return true if it is a valid FHIR resource type.</returns>
         public bool IsValidFhirResourceType(string resourceType);
+
+        /// <summary>
+        /// Get all the resource types pertaining to the specified compartmentType,
+        /// which is fetched from FHIR definitions. http://hl7.org/fhir/R4/compartmentdefinition.html
+        /// </summary>
+        /// <param name="compartmentType">the compartment type.</param>
+        /// <returns>the resource types.</returns>
+        public IEnumerable<string> GetCompartmentResourceTypes(string compartmentType);
+
+        /// <summary>
+        /// Get the supported search parameters of the specified resource type,
+        /// which is fetched from FHIR server metadata.
+        /// </summary>
+        /// <param name="resourceType">the resource type.</param>
+        /// <returns>the search parameters</returns>
+        public IEnumerable<string> GetSearchParametersByResourceType(string resourceType);
     }
 }

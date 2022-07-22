@@ -298,7 +298,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public static void GivenNullschema_WhenConvert_ExceptionShouldBeReturned()
         {
-            Assert.Throws<ArgumentNullException> (
+            Assert.Throws<ArgumentNullException>(
                 () => _testDefaultConverter.Convert(
                     CreateTestJsonBatchData(_testPatient),
                     null));

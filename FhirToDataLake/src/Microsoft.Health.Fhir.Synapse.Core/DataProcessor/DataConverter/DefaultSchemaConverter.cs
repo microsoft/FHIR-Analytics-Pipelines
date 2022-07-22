@@ -19,7 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 {
     public class DefaultSchemaConverter : IDataSchemaConverter
     {
-        IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly ILogger<DefaultSchemaConverter> _logger;
 
         public DefaultSchemaConverter(

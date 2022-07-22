@@ -49,7 +49,7 @@ steps:
     RunAsPreJob: false
 
 - task: VSTest@2
-  displayName: 'Run native tests'
+  displayName: 'Run native unit tests'
   inputs:
     testAssemblyVer2: |
       **\*Native*\**\*UnitTests.dll
@@ -61,10 +61,11 @@ steps:
     configuration: '$(buildConfiguration)'
 
 - task: VSTest@2
-  displayName: 'Run managed tests'
+  displayName: 'Run managed unit tests'
   inputs:
     testAssemblyVer2: |
       FhirToDataLake\**\*Tests.dll
+      !**\*E2ETests.dll
       !**\*Native*\**\*UnitTests.dll
       !**\obj\**
       !**\ref\**
@@ -78,6 +79,16 @@ steps:
     AZURE_CLIENT_ID: $(pipeline-service-principal-name)
     AZURE_CLIENT_SECRET: $(pipeline-service-principal-password)
     AZURE_TENANT_ID: $(pipeline-tenant-id)
+
+- task: AzureCLI@2
+  displayName: Run E2E tests
+  inputs:
+    azureSubscription: 'ResoluteOpenSource'
+    workingDirectory: '$(Build.SourcesDirectory)'
+    scriptType: ps
+    scriptLocation: inlineScript
+    inlineScript: |
+      dotnet test **\bin\**\*E2ETests.dll --verbosity detailed
 
 - task: Docker@2
   displayName: Stop mock-data-source
