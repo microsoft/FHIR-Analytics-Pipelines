@@ -20,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
             var time = DateTimeOffset.Now.ToString();
-            return ValueTask.FromResult(new AccessToken(requestContext.Scopes[0] + time, DateTimeOffset.Now.AddMinutes(1.1)));
+            return ValueTask.FromResult(new AccessToken(requestContext.Scopes[0] + time, DateTimeOffset.Now.AddMinutes(5.1)));
         }
     }
 }

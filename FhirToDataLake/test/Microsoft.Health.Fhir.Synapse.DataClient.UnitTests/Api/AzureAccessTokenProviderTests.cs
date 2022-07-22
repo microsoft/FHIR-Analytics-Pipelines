@@ -44,10 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var accessToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
             Thread.Sleep(2000);
             var cachedToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
-            Thread.Sleep(5000);
-            var newToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
             Assert.Equal(accessToken, cachedToken);
-            Assert.NotEqual(accessToken, newToken);
         }
     }
 }
