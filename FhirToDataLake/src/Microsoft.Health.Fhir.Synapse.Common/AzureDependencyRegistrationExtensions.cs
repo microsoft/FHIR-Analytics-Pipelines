@@ -6,7 +6,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 
-namespace Microsoft.Health.Fhir.Synapse.Tool
+namespace Microsoft.Health.Fhir.Synapse.Common
 {
     public static class AzureDependencyRegistrationExtensions
     {

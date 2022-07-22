@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             // Create client for local emulator.
             if (string.Equals(storeUrl, StorageEmulatorConnectionString, StringComparison.OrdinalIgnoreCase))
             {
-                return CreateUsingConnectionString(StorageEmulatorConnectionString, containerName);
+                return new AzureBlobContainerClient(StorageEmulatorConnectionString, containerName, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
             }
 
             var storageUri = new Uri(storeUrl);
@@ -45,14 +45,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 containerUrl,
                 _credentialProvider,
                 _loggerFactory.CreateLogger<AzureBlobContainerClient>());
-        }
-
-        public IAzureBlobContainerClient CreateUsingConnectionString(string connectionString, string containerName)
-        {
-            EnsureArg.IsNotNull(connectionString, nameof(connectionString));
-            EnsureArg.IsNotNull(containerName, nameof(containerName));
-
-            return new AzureBlobContainerClient(connectionString, containerName, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
         }
     }
 }

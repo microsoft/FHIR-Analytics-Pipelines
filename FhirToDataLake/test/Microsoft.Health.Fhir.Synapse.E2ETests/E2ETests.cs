@@ -14,6 +14,7 @@ using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
@@ -451,6 +452,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                         .AddAzure()
                         .AddJobScheduler()
                         .AddDataSource()
+                        .AddDataWriter()
                         .AddSchema()
                         .AddHostedService<SynapseLinkService>());
     }
