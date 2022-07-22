@@ -26,18 +26,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Models
 
         public string ErrorMessage { get; set; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
-        public HealthCheckStatus AzureBlobStorageWriteStatus { get; set; } = HealthCheckStatus.UNKNOWN;
-
-        [JsonConverter(typeof(StringEnumConverter))]
-        public HealthCheckStatus AzureBlobStorageReadStatus { get; set; } = HealthCheckStatus.UNKNOWN;
-
-        [JsonConverter(typeof(StringEnumConverter))]
-        public HealthCheckStatus AzureBlobStorageDeleteStatus { get; set; } = HealthCheckStatus.UNKNOWN;
-
-        [JsonConverter(typeof(StringEnumConverter))]
-        public HealthCheckStatus FhirServiceSearchStatus { get; set; } = HealthCheckStatus.UNKNOWN;
-
         /// <summary>
         /// The time the Health Check started
         /// </summary>

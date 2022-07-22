@@ -4,16 +4,14 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Health.Fhir.Synapse.HealthCheker.Models;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Models
+namespace Microsoft.Health.Fhir.Synapse.HealthCheker
 {
-    public class HealthStatus
+    public interface IHealthCheckEngine
     {
-        public DateTime StartTime { get; set; } = DateTime.UtcNow;
-
-        public DateTime EndTime { get; set; } = DateTime.UtcNow;
-
-        public IList<HealthCheckResult> HealthCheckResults { get; set; }
+        Task CheckHealthAsync(HealthStatus healthStatus, AsyncCallback callBack = null, CancellationToken cancellationToken = default);
     }
 }
