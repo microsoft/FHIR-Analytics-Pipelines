@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Azure.Core;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 {
@@ -25,13 +24,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         private ConcurrentDictionary<string, AccessToken> _accessTokenDic = new ();
         private const int _tokenExpireInterval = 5;
 
-        public AzureAccessTokenProvider(ITokenCredentialProvider credentialProvider, ILogger<AzureAccessTokenProvider> logger)
+        public AzureAccessTokenProvider(TokenCredential tokenCredential, ILogger<AzureAccessTokenProvider> logger)
         {
-            EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
+            EnsureArg.IsNotNull(tokenCredential, nameof(tokenCredential));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _logger = logger;
-            _tokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.External);
+            _tokenCredential = tokenCredential;
         }
 
         public async Task<string> GetAccessTokenAsync(string resourceUrl, CancellationToken cancellationToken = default)
