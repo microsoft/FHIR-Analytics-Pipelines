@@ -10,7 +10,7 @@ using Azure.Core;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 {
-    public class MockTokenCredential : TokenCredential
+    public class MockTimeBasedTokenCredential : TokenCredential
     {
         public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
@@ -19,7 +19,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 
         public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
-            return ValueTask.FromResult(new AccessToken(TestDataConstants.TestAccessToken, DateTimeOffset.Now.AddMinutes(5.1)));
+            var time = DateTimeOffset.Now.ToString();
+            return ValueTask.FromResult(new AccessToken(TestDataConstants.TestAccessToken + time, DateTimeOffset.Now.AddMinutes(5.1)));
         }
     }
 }

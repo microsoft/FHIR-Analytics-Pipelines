@@ -24,8 +24,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 {
     public class FhirApiDataClientTests
     {
-        private readonly AzureAccessTokenProvider _brokenProvider = new (new MockTokenCredential(), new NullLogger<AzureAccessTokenProvider>());
-        private readonly MockAccessTokenProvider _mockProvider = new ();
         private readonly MockTokenCredentialProvider _mockTokenCredentialProvider = new ();
         private readonly NullLogger<FhirApiDataClient> _nullFhirApiDataClientLogger =
             NullLogger<FhirApiDataClient>.Instance;
