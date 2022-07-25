@@ -12,12 +12,11 @@ add_library(${LIBRARY_NAME}
     ParquetLib.h
     ParquetLib.cpp)
 target_link_libraries(${LIBRARY_NAME}
-	  parquet
-	  arrow
-      jsoncpp_object
-      jsoncpp_static
-      JsonCpp::JsonCpp
-      )
+    ${PARQUET_LIBRARIES}
+    ${ARROW_LIBRARIES}
+    jsoncpp_lib
+    jsoncpp_object
+    JsonCpp::JsonCpp)
 
 add_library(${LIBRARY_NAME}_static
     SchemaManager.h
@@ -29,10 +28,9 @@ add_library(${LIBRARY_NAME}_static
     ParquetLib.cpp)
 
 target_link_libraries(${LIBRARY_NAME}_static
-        PRIVATE
-	parquet
-	arrow
-        jsoncpp_object
-        jsoncpp_static
-        JsonCpp::JsonCpp
-        )
+    PRIVATE
+    ${PARQUET_LIBRARIES}
+    ${ARROW_LIBRARIES}
+    jsoncpp_lib
+    jsoncpp_object
+    JsonCpp::JsonCpp)

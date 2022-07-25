@@ -19,7 +19,8 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Look for installed packages the system
-find_package(Arrow REQUIRED)
+find_package(Arrow CONFIG REQUIRED)
+find_package(Parquet CONFIG REQUIRED)
 find_package(jsoncpp CONFIG REQUIRED)
 
 # Fetch gtest
