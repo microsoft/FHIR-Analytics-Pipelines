@@ -16,6 +16,5 @@ namespace Microsoft.Health.Fhir.Synapse.Common
 
             return services;
         }
-
     }
 }

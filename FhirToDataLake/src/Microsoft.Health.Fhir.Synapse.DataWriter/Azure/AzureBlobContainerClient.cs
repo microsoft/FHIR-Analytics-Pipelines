@@ -48,12 +48,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
             _logger = logger;
 
+            var externalTokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.External);
             _blobContainerClient = new BlobContainerClient(
                 storageUri,
-                credentialProvider.GetCredential(TokenCredentialTypes.External));
+                externalTokenCredential);
             _dataLakeFileSystemClient = new DataLakeFileSystemClient(
                 storageUri,
-                credentialProvider.GetCredential(TokenCredentialTypes.External));
+                externalTokenCredential);
             InitializeBlobContainerClient();
         }
 
