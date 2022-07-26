@@ -1,6 +1,8 @@
 steps:
 - checkout: self
   submodules: true
+  
+- task: NuGetAuthenticate@0
 
 - task: CMake@1
   displayName: CMake generate configuration
