@@ -24,7 +24,6 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
             Assert.Equal("Parse given schema failed.", exception.Message);
         }
 
-        /* ToDo: make schema set transient
         [Fact]
         public void GivenNoSchemaFile_WhenConvertingToJson_ExceptionShouldBeThrown()
         {
@@ -33,7 +32,6 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
             var exception = Assert.Throws<ParquetException>(() => parquetConverter.ConvertJsonToParquet(PatientResourceType, jsonInput));
             Assert.Equal("Target schema is not found.", exception.Message);
         }
-        */
 
         [Theory]
         [InlineData("")]

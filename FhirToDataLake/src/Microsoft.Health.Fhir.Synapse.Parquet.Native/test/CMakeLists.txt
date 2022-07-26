@@ -2,8 +2,11 @@ set(TEST_PROJECT_NAME
     ParquetTests
 )
 set(LIBRARY_TESTS_SOURCE
+    ParquetTestUtilities.h
+    ParquetTestUtilities.cpp
     SchemaManagerTests.cpp
     ParquetWriterTests.cpp
+    ParquetLibTests.cpp
 )
 
 include_directories (${ArrowParquetNative_SOURCE_DIR}/src)

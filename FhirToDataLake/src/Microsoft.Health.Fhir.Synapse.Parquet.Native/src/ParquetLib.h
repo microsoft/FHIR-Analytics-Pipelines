@@ -18,6 +18,14 @@
 
 using namespace std;
 
-extern "C" EXPORT int RegisterParquetSchema(char* schemaKey, char* schemaData);
+// Create a parquet writer.
+extern "C" EXPORT ParquetWriter* CreateParquetWriter();
+// Detroy the parquet writer and release memory.
+extern "C" EXPORT void DestroyParquetWriter(ParquetWriter* writer);
+
+// Register json schema.
+extern "C" EXPORT int RegisterParquetSchema(ParquetWriter* writer, const char* schemaKey, const char* schemaData);
+// Convert input json to parquet bytes.
+extern "C" EXPORT int ConvertJsonToParquet(ParquetWriter* writer, const char* schemaKey, const char* inputJson, int inputLength, byte** outputData, int *outputLength);
+// Release memory of parquet bytes.
 extern "C" EXPORT int ReleaseUnmanagedData(byte** data);
-extern "C" EXPORT int ConvertJsonToParquet(char* schemaKey, const char* inputJson, int inputLength, byte** outputData, int *outputLength);
