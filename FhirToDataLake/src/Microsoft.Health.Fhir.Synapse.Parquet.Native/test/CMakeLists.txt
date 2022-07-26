@@ -14,14 +14,12 @@ endif()
 
 add_executable(${TEST_PROJECT_NAME} ${LIBRARY_TESTS_SOURCE})
 target_link_libraries(${TEST_PROJECT_NAME}
-    PUBLIC
+    PRIVATE
     ParquetNative_static
     ${PARQUET_LIBRARIES}
     ${ARROW_LIBRARIES}
     gtest
     gtest_main
-    jsoncpp_lib
-    jsoncpp_object
     JsonCpp::JsonCpp)
 
 add_test(${TEST_PROJECT_NAME} ${TEST_PROJECT_NAME})

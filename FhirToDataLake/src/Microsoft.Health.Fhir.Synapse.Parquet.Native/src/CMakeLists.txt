@@ -14,8 +14,6 @@ add_library(${LIBRARY_NAME}
 target_link_libraries(${LIBRARY_NAME}
     ${PARQUET_LIBRARIES}
     ${ARROW_LIBRARIES}
-    jsoncpp_lib
-    jsoncpp_object
     JsonCpp::JsonCpp)
 
 add_library(${LIBRARY_NAME}_static
@@ -31,6 +29,4 @@ target_link_libraries(${LIBRARY_NAME}_static
     PRIVATE
     ${PARQUET_LIBRARIES}
     ${ARROW_LIBRARIES}
-    jsoncpp_lib
-    jsoncpp_object
     JsonCpp::JsonCpp)
