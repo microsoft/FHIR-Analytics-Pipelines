@@ -6,7 +6,7 @@ steps:
   displayName: CMake generate configuration
   inputs:
     workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
-    cmakeArgs: " -B build -S . --config release"
+    cmakeArgs: " -B build -S . -DCMAKE_BUILD_TYPE=Release"
 
 - task: CMake@1
   displayName: CMake build
