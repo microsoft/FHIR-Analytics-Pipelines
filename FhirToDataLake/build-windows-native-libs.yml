@@ -1,0 +1,30 @@
+steps:
+- checkout: self
+  submodules: true
+
+- task: CMake@1
+  displayName: CMake generate configuration
+  inputs:
+    workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
+    cmakeArgs: " -B build -S . --config release"
+
+- task: CMake@1
+  displayName: CMake build
+  inputs:
+    workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
+    cmakeArgs: " --build build --config Release"
+
+- script: ctest -V
+  workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native/build
+  displayName: Run native tests
+
+# Pack target shared library and all dependencies to artifact.
+- script: | 
+    cp build/src/Release/*.dll '$(Build.ArtifactStagingDirectory)/native-windows-x64'
+  workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
+  displayName: Copy native libraries
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)/native-windows-x64'
+    artifactName: 'native-windows-x64'

@@ -18,15 +18,32 @@ variables:
   version: $(major).$(minor).$(patch).$(buildnum)
 
 stages:
-- stage: Packnuget
-  pool:
-    vmImage: ubuntu-latest
+- stage: PackNugets
   jobs:
-  - job: BuildNuget
+  - job: BuildLinuxNuget
+    pool:
+      vmImage: 'ubuntu-latest'
     steps:
-    - template: FhirToDataLake/build-native-nugets.yml
+    - template: FhirToDataLake/build-linux-native-libs.yml
+
+  - job: BuildWindowsNuget
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - template: FhirToDataLake/build-windows-native-libs.yml
+
+  - job: PackNugets
+    pool:
+      vmImage: 'ubuntu-latest'
+    dependsOn:
+    - BuildLinuxNuget
+    - BuildWindowsNuget
+    steps:
+    - template: FhirToDataLake/pack-nugets.yml
 
   - job: BuildFhirToDataLake
-    dependsOn: BuildNuget
+    pool:
+      vmImage: 'ubuntu-latest'
+    dependsOn: PackNugets
     steps:
     - template: FhirToDataLake/build.yml

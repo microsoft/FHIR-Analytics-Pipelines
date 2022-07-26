@@ -16,6 +16,13 @@ target_link_libraries(${LIBRARY_NAME}
     ${ARROW_LIBRARIES}
     JsonCpp::JsonCpp)
 
+# Currently work only in windows platform. https://cmake.org/cmake/help/git-stage/manual/cmake-generator-expressions.7.html#genex:TARGET_RUNTIME_DLLS
+add_custom_command(TARGET ${LIBRARY_NAME} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:${LIBRARY_NAME}> $<TARGET_FILE_DIR:${LIBRARY_NAME}> 
+  COMMAND_EXPAND_LISTS
+)
+
+
 add_library(${LIBRARY_NAME}_static
     SchemaManager.h
     SchemaManager.cpp

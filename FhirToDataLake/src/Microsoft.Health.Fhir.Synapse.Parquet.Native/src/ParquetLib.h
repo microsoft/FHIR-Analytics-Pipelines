@@ -18,6 +18,6 @@
 
 using namespace std;
 
-extern "C" int RegisterParquetSchema(char* schemaKey, char* schemaData);
-extern "C" int ReleaseUnmanagedData(byte** data);
-extern "C" int ConvertJsonToParquet(char* schemaKey, const char* inputJson, int inputLength, byte** outputData, int *outputLength);
+extern "C" EXPORT int RegisterParquetSchema(char* schemaKey, char* schemaData);
+extern "C" EXPORT int ReleaseUnmanagedData(byte** data);
+extern "C" EXPORT int ConvertJsonToParquet(char* schemaKey, const char* inputJson, int inputLength, byte** outputData, int *outputLength);
