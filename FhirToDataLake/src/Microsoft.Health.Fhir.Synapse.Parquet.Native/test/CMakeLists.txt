@@ -45,9 +45,9 @@ if ("${VCPKG_TARGET_TRIPLET}" STREQUAL "x64-linux")
     crypto
     lz4
     z
-    thriftd
-    thriftnbd
-    thriftzd
+    thrift
+    thriftnb
+    thriftz
     brotlidec-static
     brotlienc-static
     brotlicommon-static)
