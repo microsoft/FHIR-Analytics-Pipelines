@@ -16,7 +16,7 @@ variables:
   patch: 0
   buildnum: $[counter(format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch']), 1)]
   version: $(major).$(minor).$(patch).$(buildnum)
-- name: VCPKG_BINARY_SOURCES
+- name: 'VCPKG_BINARY_SOURCES'
   value: 'clear;nuget,https://microsofthealthoss.pkgs.visualstudio.com/FhirAnalytics/_packaging/VcpkgSource/nuget/v3/index.json,readwrite'
 
 stages:
