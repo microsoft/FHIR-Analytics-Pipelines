@@ -2,14 +2,15 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>Microsoft.Health.Fhir.Synapse.Parquet</id>
-        <version>0.0.2</version>
+        <version>1.0.0.0</version>
         <description>Parquet library built with Arrow cpp.</description>
 		<authors>Microsoft</authors>
     </metadata>
     <files>
         <file src="bin/Release/net5.0/Microsoft.Health.Fhir.Synapse.Parquet.dll" target="lib/net5.0"/>
         <!-- binding libraries -->
-        <file src="bin/libParquetNative.so" target="runtimes/linux-x64"/>
+	<file src="native/linux-x64/**" target="runtimes/linux-x64"/>
+	<file src="native/windows-x64/**" target="runtimes/windows-x64"/>
         <!-- targets file -->
         <file src="Microsoft.Health.Fhir.Synapse.Parquet.targets" target="build/"/>
     </files>

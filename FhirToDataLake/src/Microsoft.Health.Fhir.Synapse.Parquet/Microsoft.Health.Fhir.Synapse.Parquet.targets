@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <Project>
     <ItemGroup Condition=" '$(OS)' == 'WINDOWS_NT'">
-        <Content Include="$(MSBuildThisFileDirectory)..\runtimes\windows10-x64\*.dll">
+        <Content Include="$(MSBuildThisFileDirectory)..\runtimes\windows-x64\*.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Link>%(FileName)%(Extension)</Link>
         </Content>
     </ItemGroup>
     <ItemGroup Condition=" '$(OS)' == 'UNIX'">
-        <Content Include="$(MSBuildThisFileDirectory)..\runtimes\linux-x64\*.so">
+        <Content Include="$(MSBuildThisFileDirectory)..\runtimes\linux-x64\*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Link>%(FileName)%(Extension)</Link>
         </Content>
