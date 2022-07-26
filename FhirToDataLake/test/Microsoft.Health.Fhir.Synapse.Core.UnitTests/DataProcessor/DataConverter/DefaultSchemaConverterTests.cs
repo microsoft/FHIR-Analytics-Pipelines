@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidBasicSchema_WhenConvert_CorrectResultShouldBeReturned()
+        public void GivenAValidBasicSchema_WhenConvert_CorrectResultShouldBeReturned()
         {
             var result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(_testPatient),
@@ -50,7 +50,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidStructData_WhenConvert_CorrectResultShouldBeReturned()
+        public void GivenAValidStructData_WhenConvert_CorrectResultShouldBeReturned()
         {
             JObject rawStructFormatData = new JObject
             {
@@ -82,7 +82,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidArrayData_WhenConvert_CorrectResultShouldBeReturned()
+        public void GivenAValidArrayData_WhenConvert_CorrectResultShouldBeReturned()
         {
             JObject rawArrayFormatData = new JObject
             {
@@ -132,7 +132,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidDataWithDeepArrayField_WhenConvert_DeepFieldsShouldBeWrappedIntoJsonString()
+        public void GivenAValidDataWithDeepArrayField_WhenConvert_DeepFieldsShouldBeWrappedIntoJsonString()
         {
             JObject rawDeepFieldsData = new JObject
             {
@@ -194,7 +194,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidDataWithDeepStructField_WhenConvert_DeepFieldsShouldBeWrappedIntoJsonString()
+        public void GivenAValidDataWithDeepStructField_WhenConvert_DeepFieldsShouldBeWrappedIntoJsonString()
         {
             JObject rawDeepFieldsData = new JObject
             {
@@ -256,7 +256,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidPrimitiveChoiceTypeData_WhenConvert_CorrectResultShouldBeReturned()
+        public void GivenAValidPrimitiveChoiceTypeData_WhenConvert_CorrectResultShouldBeReturned()
         {
             JObject rawPrimitiveChoiceTypeData = new JObject
             {
@@ -276,7 +276,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidStructChoiceTypeData_WhenConvert_CorrectResultShouldBeReturned()
+        public void GivenAValidStructChoiceTypeData_WhenConvert_CorrectResultShouldBeReturned()
         {
             JObject rawStructChoiceTypeData = new JObject
             {
@@ -296,7 +296,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenNullschema_WhenConvert_ExceptionShouldBeReturned()
+        public void GivenNullschema_WhenConvert_ExceptionShouldBeReturned()
         {
             Assert.Throws<ArgumentNullException>(
                 () => _testDefaultConverter.Convert(
@@ -310,7 +310,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenInvalidData_WhenConvert_ExceptionShouldBeReturned()
+        public void GivenInvalidData_WhenConvert_ExceptionShouldBeReturned()
         {
             var invalidFieldData = new JObject
             {

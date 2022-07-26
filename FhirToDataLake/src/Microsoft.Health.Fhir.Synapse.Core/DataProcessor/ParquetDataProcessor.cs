@@ -30,25 +30,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
         private readonly ArrowConfiguration _arrowConfiguration;
         private readonly ILogger<ParquetDataProcessor> _logger;
         private readonly ParquetConverterWrapper _parquetConverterWrapper;
-        private readonly DefaultSchemaConverter _defaultSchemaConverter;
-        private readonly CustomSchemaConverter _customSchemaConverter;
+        private readonly IDataSchemaConverter _defaultSchemaConverter;
+        private readonly IDataSchemaConverter _customSchemaConverter;
 
         public ParquetDataProcessor(
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             IOptions<ArrowConfiguration> arrowConfiguration,
-            DefaultSchemaConverter defaultSchemaConverter,
-            CustomSchemaConverter customSchemaConverter,
+            DataSchemaConverterDelegate schemaConverterDelegate,
             ILogger<ParquetDataProcessor> logger)
         {
             EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
             EnsureArg.IsNotNull(arrowConfiguration, nameof(arrowConfiguration));
-            EnsureArg.IsNotNull(defaultSchemaConverter, nameof(defaultSchemaConverter));
-            EnsureArg.IsNotNull(customSchemaConverter, nameof(customSchemaConverter));
+            EnsureArg.IsNotNull(schemaConverterDelegate, nameof(schemaConverterDelegate));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _arrowConfiguration = arrowConfiguration.Value;
-            _defaultSchemaConverter = defaultSchemaConverter;
-            _customSchemaConverter = customSchemaConverter;
+            _defaultSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.DefaultSchemaProviderKey);
+            _customSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.CustomSchemaProviderKey);
             _logger = logger;
 
             try

@@ -10,6 +10,8 @@ using DotLiquid;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
@@ -26,6 +28,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         public const string ExpectTestDataFolder = TestDataFolder + "/Expected";
         public const string TestNativeSchemaDirectoryPath = TestDataFolder + "/schemas";
         public const string TestCustomizedSchemaDirectoryPath = TestDataFolder + "/CustomizedSchema";
+
+        public static readonly SchemaConfiguration TestDefaultSchemaConfiguration = new SchemaConfiguration();
+        public static readonly SchemaConfiguration TestCustomSchemaConfiguration = new SchemaConfiguration()
+        {
+            EnableCustomizedSchema = true,
+            SchemaImageReference = "testacr.azurecr.io/customizedtemplate:default",
+        };
 
         public static IEnumerable<JObject> LoadNdjsonData(string filePath)
         {
@@ -63,16 +72,32 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             }
             else
             {
-                var schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
-                {
-                    EnableCustomizedSchema = true,
-                    SchemaImageReference = "testacr.azurecr.io/customizedtemplate:default",
-                });
-
                 return new AcrCustomizedSchemaProvider(
                     GetMockAcrTemplateProvider(),
-                    schemaConfigurationOptionWithCustomizedSchema,
+                    Options.Create(TestCustomSchemaConfiguration),
                     NullLogger<AcrCustomizedSchemaProvider>.Instance);
+            }
+        }
+
+        public static IDataSchemaConverter TestDataSchemaConverterDelegate(string name)
+        {
+            var fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
+                Options.Create(new SchemaConfiguration()),
+                TestParquetSchemaProviderDelegate,
+                NullLogger<FhirParquetSchemaManager>.Instance);
+
+            if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
+            {
+                return new DefaultSchemaConverter(
+                    fhirSchemaManagerWithoutCustomizedSchema,
+                    NullLogger<DefaultSchemaConverter>.Instance);
+            }
+            else
+            {
+                return new CustomSchemaConverter(
+                    GetMockAcrTemplateProvider(),
+                    Options.Create(TestCustomSchemaConfiguration),
+                    NullLogger<CustomSchemaConverter>.Instance);
             }
         }
     }

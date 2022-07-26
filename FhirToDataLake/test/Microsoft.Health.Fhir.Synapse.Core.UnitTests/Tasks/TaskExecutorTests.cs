@@ -153,8 +153,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             return new ParquetDataProcessor(
                 fhirSchemaManager,
                 arrowConfigurationOptions,
-                defaultConverter,
-                fhirConverter,
+                TestUtils.TestDataSchemaConverterDelegate,
                 NullLogger<ParquetDataProcessor>.Instance);
         }
 

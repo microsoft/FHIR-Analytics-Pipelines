@@ -42,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenAValidJsonBatchData_WhenConvert_CorrectResultShouldBeReturned()
+        public void GivenAValidJsonBatchData_WhenConvert_CorrectResultShouldBeReturned()
         {
             var result = _testFhirConverter.Convert(_testData, "Patient").Values.ToList();
 
@@ -58,13 +58,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenInvalidTemplate_WhenConvert_ExceptionShouldBeThrown()
+        public void GivenInvalidTemplate_WhenConvert_ExceptionShouldBeThrown()
         {
             Assert.Throws<ParquetDataProcessorException>(() => _testFhirConverter.Convert(_testData, "Invalid_patient"));
         }
 
         [Fact]
-        public static void GivenNullOrEmptyInput_WhenConvert_ExceptionShouldBeThrown()
+        public void GivenNullOrEmptyInput_WhenConvert_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(() => _testFhirConverter.Convert(null, "Patient"));
             Assert.Throws<ArgumentNullException>(() => _testFhirConverter.Convert(new JsonBatchData(null), "Patient"));
@@ -73,7 +73,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public static void GivenInvalidResourceType_WhenPreprocess_ExceptionShouldBeThrown()
+        public void GivenInvalidResourceType_WhenPreprocess_ExceptionShouldBeThrown()
         {
             var testData = File.ReadLines(Path.Join(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson"))
                     .Select(dataContent => JObject.Parse(dataContent));
