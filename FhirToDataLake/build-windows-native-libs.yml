@@ -1,7 +1,7 @@
 steps:
 - checkout: self
   submodules: true
-  
+
 - task: NuGetAuthenticate@0
 
 - task: CMake@1
@@ -22,7 +22,7 @@ steps:
 
 # Pack target shared library and all dependencies to artifact.
 - script: | 
-    cp build/src/Release/*.dll '$(Build.ArtifactStagingDirectory)/native-windows-x64'
+    xcopy /s /v /e build\src\Release '$(Build.ArtifactStagingDirectory)\native-windows-x64'
   workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
   displayName: Copy native libraries
 
