@@ -22,6 +22,7 @@ steps:
 
 # Pack target shared library and all dependencies to artifact.
 - script: | 
+    mkdir -p '$(System.DefaultWorkingDirectory)/native-linux-x64/'
     cp build/src/libParquetNative.so '$(System.DefaultWorkingDirectory)/native-linux-x64/'
     ldd build/src/libParquetNative.so | awk '/vcpkg_installed/ {print $3}' | xargs -I % cp % '$(System.DefaultWorkingDirectory)/native-linux-x64/'
   workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native

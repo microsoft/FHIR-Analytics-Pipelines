@@ -22,7 +22,7 @@ steps:
 
 # Pack target shared library and all dependencies to artifact.
 - script: | 
-    xcopy /s /v /e build\src\Release '$(System.DefaultWorkingDirectory)\native-windows-x64\'
+    xcopy /S /Q /F /Y build\src\Release '$(System.DefaultWorkingDirectory)\native-windows-x64\'
   workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
   displayName: Copy native libraries
 
