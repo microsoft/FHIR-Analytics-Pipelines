@@ -1,0 +1,33 @@
+steps:
+- checkout: self
+
+- download: current
+  artifact: 'native-linux-x64'
+
+- download: current
+  artifact: 'native-windows-x64'
+
+- script: |
+    ls '$(Pipeline.Workspace)/native'
+    ls '$(Pipeline.Workspace)/linux-x64'
+    ls '$(Pipeline.Workspace)/windows-x64'
+    mkdir -p src/Microsoft.Health.Fhir.Synapse.Parquet/native/linux-x64
+    mkdir -p src/Microsoft.Health.Fhir.Synapse.Parquet/native/windows-x64
+    cp -r '$(Pipeline.Workspace)/native-linux-x64/*' src/Microsoft.Health.Fhir.Synapse.Parquet/native/linux-x64
+    cp -r '$(Pipeline.Workspace)/native-windows-x64/*' src/Microsoft.Health.Fhir.Synapse.Parquet/native/windows-x64
+    dotnet pack src/Microsoft.Health.Fhir.Synapse.Parquet/Microsoft.Health.Fhir.Synapse.Parquet.csproj -p:NuspecFile=BuildParquet.nuspec -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
+  workingDirectory: FhirToDataLake
+  displayName: Nuget pack
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)/nupkgs'
+    artifactName: 'parquetnugetpack' 
+
+- task: NuGetCommand@2
+  displayName: 'NuGet push'
+  inputs:
+    command: push
+    publishVstsFeed: 'FhirAnalytics/FhirAnalyticsPublic'
+    allowPackageConflicts: true
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/nupkgs/*.nupkg'
