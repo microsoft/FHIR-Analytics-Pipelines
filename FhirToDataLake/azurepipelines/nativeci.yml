@@ -17,13 +17,13 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
-    - template: FhirToDataLake/azurepipelines/build-linux-native-libs.yml
+    - template: build-linux-native-libs.yml
 
   - job: BuildWindowsNuget
     pool:
       vmImage: 'windows-latest'
     steps:
-    - template: FhirToDataLake/azurepipelines/build-windows-native-libs.yml
+    - template: build-windows-native-libs.yml
 
   - job: PackNugets
     pool:
@@ -32,5 +32,5 @@ stages:
     - BuildLinuxNuget
     - BuildWindowsNuget
     steps:
-    - template: FhirToDataLake/azurepipelines/pack-nugets.yml
+    - template: pack-nugets.yml
 
