@@ -8,8 +8,9 @@ steps:
   artifact: 'native-windows-x64'
 
 - script: |
-    ls -d '$(Pipeline.Workspace)/native-linux-x64'
-    ls -d '$(Pipeline.Workspace)/native-windows-x64'
+    ls -d -l '$(Pipeline.Workspace)'
+    ls -d -l '$(Pipeline.Workspace)/native-linux-x64'
+    ls -d -l '$(Pipeline.Workspace)/native-windows-x64'
     mkdir -p src/Microsoft.Health.Fhir.Synapse.Parquet/native/linux-x64
     mkdir -p src/Microsoft.Health.Fhir.Synapse.Parquet/native/windows-x64
     cp -r '$(Pipeline.Workspace)/native-linux-x64/**' src/Microsoft.Health.Fhir.Synapse.Parquet/native/linux-x64
