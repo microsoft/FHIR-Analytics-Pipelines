@@ -8,9 +8,10 @@ steps:
   artifact: 'native-windows-x64'
 
 - script: |
-    mkdir -p src/Microsoft.Health.Fhir.Synapse.Parquet/native
-    cp -r '$(System.ArtifactsDirectory)/native-linux-x64/' src/Microsoft.Health.Fhir.Synapse.Parquet/native/linux-x64
-    cp -r '$(System.ArtifactsDirectory)/native-windows-x64/' src/Microsoft.Health.Fhir.Synapse.Parquet/native/windows-x64
+    mkdir -p src/Microsoft.Health.Fhir.Synapse.Parquet/native/linux-x64
+    mkdir -p src/Microsoft.Health.Fhir.Synapse.Parquet/native/windows-x64
+    cp -r '$(Pipeline.Workspace)/native-linux-x64/*' src/Microsoft.Health.Fhir.Synapse.Parquet/native/linux-x64
+    cp -r '$(Pipeline.Workspace)/native-windows-x64/*' src/Microsoft.Health.Fhir.Synapse.Parquet/native/windows-x64
     dotnet pack src/Microsoft.Health.Fhir.Synapse.Parquet/Microsoft.Health.Fhir.Synapse.Parquet.csproj -p:NuspecFile=BuildParquet.nuspec  -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
     dotnet pack src/Microsoft.Health.Fhir.Synapse.Common/Microsoft.Health.Fhir.Synapse.Common.csproj -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
     dotnet pack src/Microsoft.Health.Fhir.Synapse.Core/Microsoft.Health.Fhir.Synapse.Core.csproj -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
