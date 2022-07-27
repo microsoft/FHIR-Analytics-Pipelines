@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-
-    <IsPackable>false</IsPackable>
+	<Platforms>x64</Platforms>
+	<IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,7 +17,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Health.Fhir.Synapse.Parquet" Version="1.0.0.0" />
+    <PackageReference Include="Microsoft.Health.Fhir.Synapse.Parquet" Version="1.0.0.13" />
   </ItemGroup>
   <ItemGroup>
       <None Update="TestData\**\*.*">

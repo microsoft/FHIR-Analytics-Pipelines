@@ -1,9 +1,12 @@
-using System;
+// -------------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// -------------------------------------------------------------------------------------------------
+
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Health.Fhir.Synapse.Parquet;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
@@ -42,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
             var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, File.ReadAllText(SchemaFile) } };
             var parquetConverter = new ParquetConverter();
             parquetConverter.InitializeSchemaSet(validSchemaMap);
-            
+
             var exception = Assert.Throws<ParquetException>(() => parquetConverter.ConvertJsonToParquet(PatientResourceType, patient));
             Assert.Equal("Input json is invalid.", exception.Message);
         }
@@ -53,7 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
             var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, File.ReadAllText(SchemaFile) } };
             var parquetConverter = new ParquetConverter();
             parquetConverter.InitializeSchemaSet(validSchemaMap);
-            
+
             using var stream = parquetConverter.ConvertJsonToParquet(PatientResourceType, File.ReadAllText(InputPatientFile));
             var expectedHash = GetFileHash(ExpectedPatientParquetFile);
             var streamHash = GetStreamHash(stream);
@@ -82,10 +85,11 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
         {
             var sb = new StringBuilder();
 
-            for(var i=0; i<bytes.Length; i++)
+            for (var i = 0; i < bytes.Length; i++)
             {
                 sb.Append(bytes[i].ToString("x"));
             }
+
             return sb.ToString();
         }
     }

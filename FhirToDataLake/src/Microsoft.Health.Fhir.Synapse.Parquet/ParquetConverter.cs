@@ -1,4 +1,9 @@
-﻿using System;
+﻿// -------------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// -------------------------------------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -10,21 +15,6 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet
     {
         private IntPtr _nativeConverter;
 
-        [DllImport("ParquetNative")]
-        private static extern IntPtr CreateParquetWriter();
-
-        [DllImport("ParquetNative")]
-        private static extern void DestroyParquetWriter(IntPtr writer);
-
-        [DllImport("ParquetNative")]
-        private static extern int RegisterParquetSchema(IntPtr writer, string key, string value);
-        
-        [DllImport("ParquetNative")]
-        private static extern int ReleaseUnmanagedData(ref IntPtr outBuffer);
-
-        [DllImport("ParquetNative")]
-        private static extern int ConvertJsonToParquet(IntPtr writer, string key, string json, int inputSize, ref IntPtr outBuffer, out int outputSize);
-
         public ParquetConverter()
         {
             _nativeConverter = CreateParquetWriter();
@@ -35,9 +25,24 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet
             DestroyParquetWriter(_nativeConverter);
         }
 
+        [DllImport("ParquetNative")]
+        private static extern IntPtr CreateParquetWriter();
+
+        [DllImport("ParquetNative")]
+        private static extern void DestroyParquetWriter(IntPtr writer);
+
+        [DllImport("ParquetNative")]
+        private static extern int RegisterParquetSchema(IntPtr writer, string key, string value);
+
+        [DllImport("ParquetNative")]
+        private static extern int ReleaseUnmanagedData(ref IntPtr outBuffer);
+
+        [DllImport("ParquetNative")]
+        private static extern int ConvertJsonToParquet(IntPtr writer, string key, string json, int inputSize, ref IntPtr outBuffer, out int outputSize);
+
         public void InitializeSchemaSet(Dictionary<string, string> schemaSet)
         {
-            foreach(var (key, value) in schemaSet)
+            foreach (var (key, value) in schemaSet)
             {
                 int status = RegisterParquetSchema(_nativeConverter, key, value);
                 if (status != 0)
@@ -49,21 +54,24 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet
 
         public Stream ConvertJsonToParquet(string schemaType, string inputJson)
         {
+            // Output buffer pointer
             IntPtr outputPointer = IntPtr.Zero;
-			int inputSize = Encoding.UTF8.GetByteCount(inputJson);
-            int status = ConvertJsonToParquet(_nativeConverter, schemaType, inputJson, inputSize, ref outputPointer, out int size);
+
+            // Get byte counts from input
+            int inputSize = Encoding.UTF8.GetByteCount(inputJson);
+            int status = ConvertJsonToParquet(_nativeConverter, schemaType, inputJson, inputSize, ref outputPointer, out int outputSize);
             if (status != 0)
             {
                 throw new ParquetException(status);
             }
 
-            if (outputPointer == IntPtr.Zero || size == 0)
+            if (outputPointer == IntPtr.Zero || outputSize == 0)
             {
                 return null;
             }
 
-            byte[] outputBuffer = new byte[size];
-            Marshal.Copy(outputPointer, outputBuffer, 0, size);
+            byte[] outputBuffer = new byte[outputSize];
+            Marshal.Copy(outputPointer, outputBuffer, 0, outputSize);
             ReleaseUnmanagedData(ref outputPointer);
             return new MemoryStream(outputBuffer);
         }
