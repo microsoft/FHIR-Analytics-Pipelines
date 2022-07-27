@@ -22,11 +22,10 @@ steps:
 
 # Pack target shared library and all dependencies to artifact.
 - script: | 
-    xcopy /s /v /e build\src\Release '$(Build.ArtifactStagingDirectory)\native-windows-x64'
+    xcopy /s /v /e build\src\Release '$(System.DefaultWorkingDirectory)\native-windows-x64\'
   workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
   displayName: Copy native libraries
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)/native-windows-x64'
-    artifactName: 'native-windows-x64'
+- publish: $(System.DefaultWorkingDirectory)/native-windows-x64
+  artifact: native-windows-x64
+  displayName: 'Publish native libraries'
