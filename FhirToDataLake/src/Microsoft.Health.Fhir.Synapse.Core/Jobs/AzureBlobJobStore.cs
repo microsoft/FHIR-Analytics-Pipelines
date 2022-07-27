@@ -45,9 +45,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         // Committed data file path: "result/{schemaType}/{year}/{month}/{day}/{jobid}"
         private readonly Regex _stagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/(?<partition>[A-Za-z_]+/\d{4}/\d{2}/\d{2})$");
 
-        // Staged data file path: "staging/{jobid}/{schemaType}/{year}/{month}/{day}/{schemaType}_{jobId}_{partId}.parquet"
-        // Committed data file path: "result/{schemaType}/{year}/{month}/{day}/{jobid}/{schemaType}_{jobId}_{partId}.parquet"
-        private readonly Regex _stagingDataBlobRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/[A-Za-z_]+/\d{4}/\d{2}/\d{2}/(?<schema>[A-Za-z_]+)_[a-z0-9]{32}_(?<partId>\d+).parquet$");
+        // Staged data file path: "staging/{jobid}/{schemaType}/{year}/{month}/{day}/{schemaType}_{taskIndex}_{partId}.parquet"
+        // Committed data file path: "result/{schemaType}/{year}/{month}/{day}/{jobid}/{schemaType}_{taskIndex}_{partId}.parquet"
+        private readonly Regex _stagingDataBlobRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[a-z0-9]{32}/[A-Za-z_]+/\d{4}/\d{2}/\d{2}/(?<schema>[A-Za-z_]+)_(?<taskIndex>\d+)_(?<partId>\d+).parquet$");
 
         public AzureBlobJobStore(
             IAzureBlobContainerClientFactory blobContainerFactory,
@@ -58,10 +58,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             EnsureArg.IsNotNull(blobContainerFactory, nameof(blobContainerFactory));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             EnsureArg.IsNotNull(storeConfiguration, nameof(storeConfiguration));
-            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _blobContainerClient = blobContainerFactory.Create(storeConfiguration.Value.StorageUrl, jobConfiguration.Value.ContainerName);
-            _logger = logger;
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _renewLockTimer = new Timer(TimeSpan.FromSeconds(AzureBlobJobConstants.JobLeaseRefreshIntervalInSeconds).TotalMilliseconds);
             _renewLockTimer.Elapsed += async (sender, e) => await RenewJobLockLeaseAsync();
@@ -82,8 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             foreach (var activeJob in activeJobs)
             {
                 // Complete job if it's already succeeded or failed.
-                if (activeJob.Status == JobStatus.Succeeded
-                    || activeJob.Status == JobStatus.Failed)
+                if (activeJob.Status is JobStatus.Succeeded or JobStatus.Failed)
                 {
                     _logger.LogWarning("Job '{id}' has already finished.", activeJob.Id);
                     await CompleteJobAsyncInternal(activeJob, false, cancellationToken);
@@ -228,16 +226,29 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
 
                 // Remove the job information that have been resumed and executed.
-                // If the current job fails, save it to unfinishedJob list.
-                var unfinishedJobs = schedulerSetting.UnfinishedJobs.ToList();
-                unfinishedJobs.RemoveAll(unfinished => unfinished.Id == job.ResumedJobId);
+                // If the current job fails, save it to failedJob list.
+                var failedJobs = schedulerSetting.FailedJobs.ToList();
+                failedJobs.RemoveAll(unfinished => unfinished.Id == job.ResumedJobId);
 
                 if (job.Status == JobStatus.Failed)
                 {
-                    unfinishedJobs.Add(job);
+                    failedJobs.Add(job);
                 }
 
-                schedulerSetting.UnfinishedJobs = unfinishedJobs;
+                schedulerSetting.FailedJobs = failedJobs;
+
+                // update processed patient list
+                if (job.FilterInfo.FilterScope == FilterScope.Group && job.Status == JobStatus.Succeeded)
+                {
+                    foreach (var (patientId, versionId) in job.PatientVersionId)
+                    {
+                        if (versionId != 0)
+                        {
+                            schedulerSetting.ProcessedPatients[patientId] = versionId;
+                        }
+                    }
+                }
+
                 await SaveSchedulerMetadataAsync(schedulerSetting, cancellationToken);
 
                 // Add job to completed job list.
@@ -272,11 +283,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         ///   "staging/jobid/schemaType/year" directory
         ///   "staging/jobid/schemaType/year/month" directory
         ///   "staging/jobid/schemaType/year/month/day1" directory
-        ///   "staging/jobid/schemaType/year/month/day1/schemaType_jobid_00001.parquet" blob
-        ///   "staging/jobid/schemaType/year/month/day1/schemaType_jobid_00002.parquet" blob
+        ///   "staging/jobid/schemaType/year/month/day1/schemaType_000001_00001.parquet" blob
+        ///   "staging/jobid/schemaType/year/month/day1/schemaType_000001_00002.parquet" blob
         ///   "staging/jobid/schemaType/year/month/day2" directory
-        ///   "staging/jobid/schemaType/year/month/day2/schemaType_jobid_00001.parquet" blob
-        ///   "staging/jobid/schemaType/year/month/day2/schemaType_jobid_00002.parquet" blob
+        ///   "staging/jobid/schemaType/year/month/day2/schemaType_000001_00001.parquet" blob
+        ///   "staging/jobid/schemaType/year/month/day2/schemaType_000001_00002.parquet" blob
         /// For blobs, we need to check the partId to ensure only partIds recorded in the job status are committed in case there are some dangling files.
         /// For directories, we need to find all leaf directory and map to the target directory in result folder.
         /// Then rename the source directory to target directory.
@@ -307,9 +318,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     var match = _stagingDataBlobRegex.Match(path.Name);
                     if (match.Success)
                     {
-                        var schemaType = match.Groups["schema"].Value;
-                        var partId = int.Parse(match.Groups["partId"].Value);
-                        if (!job.PartIds.ContainsKey(schemaType) || partId >= job.PartIds[schemaType])
+                        var taskIndex = int.Parse(match.Groups["taskIndex"].Value);
+                        if (taskIndex >= job.NextTaskIndex)
                         {
                             await _blobContainerClient.DeleteBlobAsync(path.Name, cancellationToken);
                         }

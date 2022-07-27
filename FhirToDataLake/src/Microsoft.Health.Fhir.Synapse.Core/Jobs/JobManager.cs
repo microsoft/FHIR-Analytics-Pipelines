@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,38 +12,38 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
+using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class JobManager : IDisposable
     {
         private readonly IJobStore _jobStore;
-        private readonly JobExecutor _jobExecutor;
-        private readonly IFhirSpecificationProvider _fhirSpecificationProvider;
+        private readonly IJobExecutor _jobExecutor;
+        private readonly ITypeFilterParser _typeFilterParser;
         private readonly JobConfiguration _jobConfiguration;
+        private readonly FilterConfiguration _filterConfiguration;
         private readonly ILogger<JobManager> _logger;
 
         public JobManager(
             IJobStore jobStore,
-            JobExecutor jobExecutor,
-            IFhirSpecificationProvider fhirSpecificationProvider,
+            IJobExecutor jobExecutor,
+            ITypeFilterParser typeFilterParser,
             IOptions<JobConfiguration> jobConfiguration,
+            IOptions<FilterConfiguration> filterConfiguration,
             ILogger<JobManager> logger)
         {
-            EnsureArg.IsNotNull(jobStore, nameof(jobStore));
-            EnsureArg.IsNotNull(jobExecutor, nameof(jobExecutor));
-            EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
-            EnsureArg.IsNotNull(logger, nameof(logger));
+            EnsureArg.IsNotNull(filterConfiguration, nameof(filterConfiguration));
 
-            _jobStore = jobStore;
-            _jobExecutor = jobExecutor;
-            _fhirSpecificationProvider = fhirSpecificationProvider;
             _jobConfiguration = jobConfiguration.Value;
+            _filterConfiguration = filterConfiguration.Value;
 
-            _logger = logger;
+            _jobStore = EnsureArg.IsNotNull(jobStore, nameof(jobStore));
+            _jobExecutor = EnsureArg.IsNotNull(jobExecutor, nameof(jobExecutor));
+            _typeFilterParser = EnsureArg.IsNotNull(typeFilterParser, nameof(typeFilterParser));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         /// <summary>
@@ -55,28 +54,42 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>Completed task.</returns>
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
+            _logger.LogInformation("Job starts running.");
+
             // Acquire an active job from the job store.
-            var job = await _jobStore.AcquireActiveJobAsync(cancellationToken);
+            var job = await _jobStore.AcquireActiveJobAsync(cancellationToken) ?? await CreateNewJobAsync(cancellationToken);
+
             if (job == null)
             {
-                job = await CreateNewJobAsync(cancellationToken);
-            }
+                _logger.LogWarning("Job has been scheduled to end.");
 
-            try
-            {
-                job.Status = JobStatus.Running;
-                await _jobExecutor.ExecuteAsync(job, cancellationToken);
-                job.Status = JobStatus.Succeeded;
-                await _jobStore.CompleteJobAsync(job, cancellationToken);
+                // release job lock
+                Dispose();
             }
-            catch (Exception exception)
+            else
             {
-                job.Status = JobStatus.Failed;
-                job.FailedReason = exception.ToString();
-                await _jobStore.CompleteJobAsync(job, cancellationToken);
+                _logger.LogInformation($"The running job id is {job.Id}");
 
-                _logger.LogError(exception, "Process job '{jobId}' failed.", job.Id);
-                throw;
+                // Update the running job to job store.
+                // For new/resume job, add the created job to job store; For active job, update the last heart beat.
+                await _jobStore.UpdateJobAsync(job, cancellationToken);
+
+                try
+                {
+                    job.Status = JobStatus.Running;
+                    await _jobExecutor.ExecuteAsync(job, cancellationToken);
+                    job.Status = JobStatus.Succeeded;
+                    await _jobStore.CompleteJobAsync(job, cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    job.Status = JobStatus.Failed;
+                    job.FailedReason = exception.ToString();
+                    await _jobStore.CompleteJobAsync(job, cancellationToken);
+
+                    _logger.LogError(exception, "Process job '{jobId}' failed.", job.Id);
+                    throw;
+                }
             }
         }
 
@@ -84,30 +97,39 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             var schedulerSetting = await _jobStore.GetSchedulerMetadataAsync(cancellationToken);
 
-            // If there are unfinishedJobs, continue the progress from a new job.
-            if (schedulerSetting?.UnfinishedJobs?.Any() == true)
+            // If there are failedJobs, continue the progress from a new job.
+            if (schedulerSetting?.FailedJobs?.Any() == true)
             {
-                var resumedJob = schedulerSetting.UnfinishedJobs.First();
-                return new Job(
-                    resumedJob.ContainerName,
+                var failedJob = schedulerSetting.FailedJobs.First();
+                var resumeJob = Job.Create(
+                    failedJob.ContainerName,
                     JobStatus.New,
-                    resumedJob.ResourceTypes,
-                    resumedJob.DataPeriod,
-                    DateTimeOffset.UtcNow,
-                    resumedJob.ResourceProgresses,
-                    null,
-                    null,
-                    null,
-                    null,
-                    resumedJob.CompletedResources,
-                    resumedJob.Id);
+                    failedJob.DataPeriod,
+                    failedJob.FilterInfo,
+                    failedJob.Patients,
+                    failedJob.NextTaskIndex,
+                    failedJob.RunningTasks,
+                    failedJob.TotalResourceCounts,
+                    failedJob.ProcessedResourceCounts,
+                    failedJob.SkippedResourceCounts,
+                    failedJob.PatientVersionId,
+                    failedJob.Id);
+
+                // update the job id of running task, which is used to generate the result blob file name
+                foreach (var runningTask in resumeJob.RunningTasks.Values)
+                {
+                    runningTask.JobId = resumeJob.Id;
+                }
+
+                return resumeJob;
             }
 
             DateTimeOffset triggerStart = GetTriggerStartTime(schedulerSetting);
+
             if (triggerStart >= _jobConfiguration.EndTime)
             {
-                _logger.LogError("Job has been scheduled to end.");
-                throw new StartJobFailedException("Job has been scheduled to end.");
+                _logger.LogInformation($"The job trigger start time {triggerStart} is greater than the end time {_jobConfiguration.EndTime} in configuration, no need to start a new job.");
+                return null;
             }
 
             // End data period for this trigger
@@ -119,19 +141,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 throw new StartJobFailedException($"The start time '{triggerStart}' to trigger is in the future.");
             }
 
-            IEnumerable<string> resourceTypes = _jobConfiguration.ResourceTypeFilters;
-            if (resourceTypes == null || !resourceTypes.Any())
-            {
-                resourceTypes = _fhirSpecificationProvider.GetAllResourceTypes();
-            }
+            var typeFilters = _typeFilterParser.CreateTypeFilters(
+                _filterConfiguration.FilterScope,
+                _filterConfiguration.RequiredTypes,
+                _filterConfiguration.TypeFilters);
 
-            var newJob = new Job(
+            var processedPatients = schedulerSetting?.ProcessedPatients;
+
+            var filterInfo =
+                new FilterInfo(_filterConfiguration.FilterScope, _filterConfiguration.GroupId, _jobConfiguration.StartTime, typeFilters, processedPatients);
+            var newJob = Job.Create(
                 _jobConfiguration.ContainerName,
                 JobStatus.New,
-                resourceTypes,
                 new DataPeriod(triggerStart, triggerEnd),
-                DateTimeOffset.UtcNow);
-            await _jobStore.UpdateJobAsync(newJob, cancellationToken);
+                filterInfo);
             return newJob;
         }
 
@@ -148,7 +171,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private DateTimeOffset GetTriggerEndTime()
         {
             // Add two minutes latency here to allow latency in saving resources to database.
-            var nowEnd = DateTimeOffset.Now.AddMinutes(-1 * AzureBlobJobConstants.JobQueryLatencyInMinutes);
+            var nowEnd = DateTimeOffset.UtcNow.AddMinutes(-1 * AzureBlobJobConstants.JobQueryLatencyInMinutes);
             if (_jobConfiguration.EndTime != null
                 && nowEnd > _jobConfiguration.EndTime)
             {

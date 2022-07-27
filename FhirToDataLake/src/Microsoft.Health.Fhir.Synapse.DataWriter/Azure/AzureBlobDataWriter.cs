@@ -35,8 +35,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         public async Task<string> WriteAsync(
             StreamBatchData data,
             string jobId,
+            int taskIndex,
             int partId,
-            DateTime dateTime,
+            DateTimeOffset dateTime,
             CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(data, nameof(data));
@@ -44,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
             var schemaType = data.SchemaType;
 
-            var blobName = GetDataFileName(dateTime, schemaType, jobId, partId);
+            var blobName = GetDataFileName(dateTime, schemaType, jobId, taskIndex, partId);
             var blobUrl = await _containerClient.UpdateBlobAsync(blobName, data.Value, cancellationToken);
 
             _logger.LogInformation($"Write stream batch data to {blobUrl} successfully.");
@@ -53,14 +54,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         }
 
         private static string GetDataFileName(
-            DateTime dateTime,
+            DateTimeOffset dateTime,
             string schemaType,
             string jobId,
+            int taskIndex,
             int partId)
         {
             var dateTimeKey = dateTime.ToString(DateKeyFormat);
 
-            return $"{AzureStorageConstants.StagingFolderName}/{jobId}/{schemaType}/{dateTimeKey}/{schemaType}_{jobId}_{partId:d5}.parquet";
+            return $"{AzureStorageConstants.StagingFolderName}/{jobId}/{schemaType}/{dateTimeKey}/{schemaType}_{taskIndex:d10}_{partId:d10}.parquet";
         }
     }
 }

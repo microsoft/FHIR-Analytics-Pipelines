@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
@@ -19,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [InlineData("    ")]
         public async Task GivenAnInvalidResourceUrl_WhenGetAccessToken_ArgumentExceptionShouldBeThrown(string resourceUrl)
         {
-            var accessTokenProvider = new AzureAccessTokenProvider(new NullLogger<AzureAccessTokenProvider>());
+            var accessTokenProvider = new AzureAccessTokenProvider(new MockTokenCredential(), new NullLogger<AzureAccessTokenProvider>());
 
             _ = await Assert.ThrowsAsync<ArgumentException>(() => accessTokenProvider.GetAccessTokenAsync(resourceUrl));
         }
@@ -28,9 +29,21 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [InlineData(null)]
         public async Task GivenANullResourceUrl_WhenGetAccessToken_ArgumentNullExceptionShouldBeThrown(string resourceUrl)
         {
-            var accessTokenProvider = new AzureAccessTokenProvider(new NullLogger<AzureAccessTokenProvider>());
+            var accessTokenProvider = new AzureAccessTokenProvider(new MockTokenCredential(), new NullLogger<AzureAccessTokenProvider>());
 
             _ = await Assert.ThrowsAsync<ArgumentNullException>(() => accessTokenProvider.GetAccessTokenAsync(resourceUrl));
+        }
+
+        [Fact]
+        public async Task GivenAResourceUrl_WhenGetAccessToken_CachedAccessTokenWillBeReturnedIfNotExpired()
+        {
+            var resourceUrl = "http://test";
+            var accessTokenProvider = new AzureAccessTokenProvider(new MockTimeBasedTokenCredential(), new NullLogger<AzureAccessTokenProvider>());
+
+            var accessToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
+            Thread.Sleep(2000);
+            var cachedToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
+            Assert.Equal(accessToken, cachedToken);
         }
     }
 }

@@ -6,6 +6,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core;
 using Microsoft.Health.Fhir.Synapse.DataClient;
@@ -30,6 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
                         .AddConfiguration(context.Configuration)
                         .AddJobScheduler()
                         .AddDataSource()
+                        .AddDataWriter()
                         .AddAzure()
                         .AddSchema();
                 })
