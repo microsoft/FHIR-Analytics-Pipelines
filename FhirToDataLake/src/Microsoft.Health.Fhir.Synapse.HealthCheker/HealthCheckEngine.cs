@@ -19,8 +19,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
     public class HealthCheckEngine : IHealthCheckEngine
     {
         private readonly IEnumerable<IHealthChecker> _healthCheckers;
+
+        // Timeout for each health checkers.
         private readonly TimeSpan _healthCheckTimeout;
-        private readonly TimeSpan _healthStatusCollectionTimeout;
         private readonly ILogger<HealthCheckEngine> _logger;
 
         public HealthCheckEngine(
@@ -33,7 +34,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _healthCheckTimeout = healthCheckOptions.HealthCheckTimeout;
-            _healthStatusCollectionTimeout = healthCheckOptions.HealthStatusCollectionTimeout;
         }
 
         public async Task CheckHealthAsync(HealthStatus healthStatus, AsyncCallback callBack = null, CancellationToken cancellationToken = default)
@@ -44,9 +44,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
             var collectedResults = new ConcurrentDictionary<string, HealthCheckResult>();
             var taskNumber = 0;
 
-            using var overallHealthStatusToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            using var healthCheckToken = CancellationTokenSource.CreateLinkedTokenSource(overallHealthStatusToken.Token);
-            overallHealthStatusToken.CancelAfter(_healthStatusCollectionTimeout);
+            // healthCheckToken will be canceled if health check timeout or cancellationToken is canceled.
+            using var healthCheckToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             healthCheckToken.CancelAfter(_healthCheckTimeout);
 
             InitializeHealthCheckResults(_healthCheckers, collectedResults);
@@ -56,27 +55,12 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
                 tasks[taskNumber++] = ExecuteHealthCheck(healthCheck, collectedResults, healthCheckToken.Token);
             }
 
-            try
-            {
-                await Task.WhenAll(tasks);
-            }
-            catch (OperationCanceledException)
-            {
-                var now = DateTime.UtcNow;
-                var names = new List<string>();
-
-                foreach (var timedOutHealthCheck in collectedResults.Values.Where(check => HealthCheckStatus.UNKNOWN.Equals(check.Status)))
-                {
-                    timedOutHealthCheck.EndTime = now;
-                    timedOutHealthCheck.ErrorMessage = $"HealthChecks exceeded the overall Health Status timeout of ${_healthStatusCollectionTimeout}";
-                    names.Add(timedOutHealthCheck.Name);
-                }
-
-                _logger.LogTrace($"One or more HealthChecks exceeded the overall Health Status timeout of ${_healthStatusCollectionTimeout}. Failed HealthChecks: ${string.Join(',', names)}");
-            }
+            await Task.WhenAll(tasks);
 
             healthStatus.EndTime = DateTime.UtcNow;
             healthStatus.HealthCheckResults = collectedResults.Values.ToList();
+
+            _logger.LogTrace($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}. Time using : {(healthStatus.EndTime - healthStatus.StartTime).TotalSeconds} seconds.");
         }
 
         private static void InitializeHealthCheckResults(IEnumerable<IHealthChecker> healthCheckers, ConcurrentDictionary<string, HealthCheckResult> results)

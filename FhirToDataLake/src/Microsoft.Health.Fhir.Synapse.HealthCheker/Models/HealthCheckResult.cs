@@ -15,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Models
     {
         public HealthCheckResult(string name)
         {
-            Name = EnsureArg.IsNotNullOrEmpty(name, nameof(name));
+            Name = EnsureArg.IsNotNull(name, nameof(name));
             StartTime = DateTime.UtcNow;
         }
 

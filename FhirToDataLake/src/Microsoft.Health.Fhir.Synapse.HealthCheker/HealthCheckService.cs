@@ -26,13 +26,19 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _callBack = new (HealthCheckCallbackResultProcess);
-
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
             _healthStatus = new ();
-            _healthCheckEngine.CheckHealthAsync(_healthStatus, _callBack, cancellationToken);
+            try
+            {
+                _healthCheckEngine.CheckHealthAsync(_healthStatus, _callBack, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Health check failed : {ex}");
+            }
         }
 
         public void HealthCheckCallbackResultProcess(IAsyncResult result)

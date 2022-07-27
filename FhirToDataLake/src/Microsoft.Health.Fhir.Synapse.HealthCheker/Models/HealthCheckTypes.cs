@@ -8,10 +8,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Models
     public static class HealthCheckTypes
     {
         public const string AzureBlobStorageCanReadWriteDelete = "AzureBlobStorage:CanReadWriteDelete";
-        public const string SecretStoreCanRead = "SecretStore:CanRead";
-        public const string CredentialStoreIsCustomerFacingMiCredentialBundlePresent = "CredentialStore:IsCustomerFacingMiCredentialBundlePresent";
-        public const string InternalEventHubIsAuthenticated = "InternalEventHub:IsAuthenticated";
-        public const string ExternalEventHubIsAuthenticated = "ExternalEventHub:IsAuthenticated";
-        public const string FhirServiceIsAuthenticated = "FhirService:IsAuthenticated";
+        public const string FhirServiceCanSearch = "FhirService:CanSearch";
     }
 }

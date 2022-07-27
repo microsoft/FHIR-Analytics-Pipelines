@@ -14,17 +14,17 @@ using Microsoft.Health.Fhir.Synapse.HealthCheker.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
 {
-    public class FhirServiceHealthChecker : BaseHealthChecker
+    public class FhirServerHealthChecker : BaseHealthChecker
     {
         private const string SampleResourceType = "Patient";
         private const string SampleStartTime = "2021-08-01T12:00:00+08:00";
         private const string SampleEndTime = "2021-08-09T12:40:59+08:00";
         private readonly IFhirDataClient _fhirApiDataClient;
 
-        public FhirServiceHealthChecker(
+        public FhirServerHealthChecker(
             IFhirDataClient fhirApiDataClient,
-            ILogger<FhirServiceHealthChecker> logger)
-            : base(HealthCheckTypes.AzureBlobStorageCanReadWriteDelete, logger)
+            ILogger<FhirServerHealthChecker> logger)
+            : base(HealthCheckTypes.FhirServiceCanSearch, logger)
         {
             EnsureArg.IsNotNull(fhirApiDataClient, nameof(fhirApiDataClient));
 

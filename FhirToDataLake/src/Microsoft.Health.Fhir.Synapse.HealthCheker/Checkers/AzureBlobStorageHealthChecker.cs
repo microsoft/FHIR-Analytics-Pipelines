@@ -44,9 +44,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
             // Ensure we can write to the storage account
             var blobPath = $"{HealthCheckBlobPrefix}/{Guid.NewGuid()}";
 
-            byte[] bytes = Convert.FromBase64String(HealthCheckBlobPrefix);
+            byte[] bytes = Encoding.UTF8.GetBytes(HealthCheckBlobPrefix);
             MemoryStream stream = new (bytes);
-            await _blobContainerClient.CreateBlobAsync(blobPath, stream, cancellationToken);
+            await _blobContainerClient.UpdateBlobAsync(blobPath, stream, cancellationToken);
 
             // Ensure we can read from the storage account
             var healthCheckStream = await _blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);
@@ -57,13 +57,10 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
                 healthCheckContent = reader.ReadToEnd();
             }
 
-            if (Equals(healthCheckContent, HealthCheckBlobPrefix))
+            if (!Equals(healthCheckContent, HealthCheckBlobPrefix))
             {
                 throw new HealthCheckException("Read/Write content from blob failed.");
             }
-
-            // Ensure we can delete blob from the storage account
-            await _blobContainerClient.DeleteBlobAsync(blobPath, cancellationToken);
 
             healthCheckResult.Status = HealthCheckStatus.PASS;
         }

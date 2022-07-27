@@ -10,11 +10,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Models
     public class HealthCheckOptions
     {
         /// <summary>
-        /// The timeout to use for health results collection
-        /// </summary>
-        public TimeSpan HealthStatusCollectionTimeout { get; set; } = TimeSpan.FromSeconds(30);
-
-        /// <summary>
         /// The timeout to use for a single health check
         /// </summary>
         public TimeSpan HealthCheckTimeout { get; set; } = TimeSpan.FromSeconds(25);
