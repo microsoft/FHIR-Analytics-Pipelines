@@ -14,7 +14,7 @@ int WriteToParquet(const shared_ptr<arrow::Table> table, byte** outputData, int*
     if (!status.ok())
     {
         string errorDetail = status.ToString();
-        strncpy_s(errorMessage, 200, errorDetail.c_str(), 200);
+        strncpy(errorMessage, errorDetail.c_str(), 200);
         return WriteToParquetError;
     }
 
@@ -65,7 +65,7 @@ int ParquetWriter::Write(const string& resourceType, const char* inputJson, int 
     if (!tableReaderResult.ok())
     {
         string errorDetail = tableReaderResult.status().ToString();
-        strncpy_s(errorMessage, 200, errorDetail.c_str(), 200);
+        strncpy(errorMessage, errorDetail.c_str(), 200);
         return ReadInputJsonError;
     }
     const shared_ptr<arrow::json::TableReader> tableReader = tableReaderResult.ValueOrDie();
@@ -74,7 +74,7 @@ int ParquetWriter::Write(const string& resourceType, const char* inputJson, int 
     if (!tableResult.ok())
     {
         string errorDetail = tableResult.status().ToString();
-        strncpy_s(errorMessage, 200, errorDetail.c_str(), 200);
+        strncpy(errorMessage, errorDetail.c_str(), 200);
         return ReadInputJsonError;
     }
 
