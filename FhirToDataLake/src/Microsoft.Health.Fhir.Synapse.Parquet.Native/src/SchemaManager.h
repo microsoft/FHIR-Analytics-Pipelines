@@ -19,12 +19,12 @@ bool LoadJson(const string& json, Json::Value* root);
 
 class SchemaManager
 {
-	private:
-		unordered_map<string, shared_ptr<arrow::Schema>> _schemaSet;
-	
-	public:
+    private:
+        unordered_map<string, shared_ptr<arrow::Schema>> _schemaSet;
+    
+    public:
 
-		int AddSchema(const string& schemaKey, const string& schemaJson);
+        int AddSchema(const string& schemaKey, const string& schemaJson);
 
-		shared_ptr<arrow::Schema> GetSchema(const string& schemaKey); 		
+        shared_ptr<arrow::Schema> GetSchema(const string& schemaKey);
 };
