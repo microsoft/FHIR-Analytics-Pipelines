@@ -47,7 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
             parquetConverter.InitializeSchemaSet(validSchemaMap);
 
             var exception = Assert.Throws<ParquetException>(() => parquetConverter.ConvertJsonToParquet(PatientResourceType, patient));
-            Assert.Equal("Input json is invalid.", exception.Message);
+            Assert.True(exception.Message.StartsWith("Input json is invalid."));
         }
 
         [Fact]

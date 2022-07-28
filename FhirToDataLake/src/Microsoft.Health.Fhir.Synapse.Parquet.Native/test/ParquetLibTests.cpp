@@ -48,8 +48,9 @@ TEST (ParquetLib, WriteExamplePatient)
     string exampleSchema = read_file_text(TestDataDir + "patient_example_schema.json");
     int schemaStatus = RegisterParquetSchema(writer, resourceType.data(), exampleSchema.data());
     EXPECT_EQ(0, schemaStatus);
-
-    int status = ConvertJsonToParquet(writer, resourceType.c_str(), PatientData.c_str(), PatientData.size(), outputData, &outputLength);
+    
+    char* error = new char[256];
+    int status = ConvertJsonToParquet(writer, resourceType.c_str(), PatientData.c_str(), PatientData.size(), outputData, &outputLength, error);
     // Write success.
     EXPECT_EQ(0, status);
     EXPECT_TRUE(outputLength > 0);

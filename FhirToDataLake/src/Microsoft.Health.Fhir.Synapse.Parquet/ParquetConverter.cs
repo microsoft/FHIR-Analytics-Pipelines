@@ -13,7 +13,8 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet
 {
     public class ParquetConverter
     {
-        private IntPtr _nativeConverter;
+        private readonly IntPtr _nativeConverter;
+        private const int ErrorMessageSize = 256;
 
         public ParquetConverter()
         {
@@ -38,7 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet
         private static extern int ReleaseUnmanagedData(ref IntPtr outBuffer);
 
         [DllImport("ParquetNative")]
-        private static extern int ConvertJsonToParquet(IntPtr writer, string key, string json, int inputSize, ref IntPtr outBuffer, out int outputSize);
+        private static extern int ConvertJsonToParquet(IntPtr writer, string key, string json, int inputSize, ref IntPtr outBuffer, out int outputSize, StringBuilder errorMessage);
 
         public void InitializeSchemaSet(Dictionary<string, string> schemaSet)
         {
@@ -59,10 +60,11 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet
 
             // Get byte counts from input
             int inputSize = Encoding.UTF8.GetByteCount(inputJson);
-            int status = ConvertJsonToParquet(_nativeConverter, schemaType, inputJson, inputSize, ref outputPointer, out int outputSize);
+            StringBuilder errorMessage = new StringBuilder(ErrorMessageSize);
+            int status = ConvertJsonToParquet(_nativeConverter, schemaType, inputJson, inputSize, ref outputPointer, out int outputSize, errorMessage);
             if (status != 0)
             {
-                throw new ParquetException(status);
+                throw new ParquetException(status, errorMessage.ToString());
             }
 
             if (outputPointer == IntPtr.Zero || outputSize == 0)

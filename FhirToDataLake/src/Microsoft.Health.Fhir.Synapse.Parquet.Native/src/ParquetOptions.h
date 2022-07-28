@@ -6,7 +6,7 @@ struct ParquetOptions
 {
 	bool UseThreads = true;
 
-	int BlockSize = 1 << 20;
+	int BlockSize = 1 << 30;
 	
 	arrow::json::UnexpectedFieldBehavior UnexpectedFieldBehavior = arrow::json::UnexpectedFieldBehavior::Ignore;
 

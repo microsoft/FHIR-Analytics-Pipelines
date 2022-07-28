@@ -16,8 +16,8 @@ class ParquetWriter
 {
 	private:
 		SchemaManager _schemaManager;
-		ParquetOptions _options;
-
+		ParquetOptions _parquetOptions;
+		arrow::json::ReadOptions _readOptions;
 	public:
 		ParquetWriter();
 		ParquetWriter(const unordered_map<string, string>& schemaData);
@@ -26,5 +26,5 @@ class ParquetWriter
 		int RegisterSchema(const string& schemaKey, const string& schemaData);
 
 		// Write input json of resource type to parquet bytes, will try get schema from schema manager.
-		int Write(const string& resourceType, const char* inputJson, int inSize, byte** outputData, int* outSize);
+		int Write(const string& resourceType, const char* inputJson, int inSize, byte** outputData, int* outSize, char* errorMessage);
 };

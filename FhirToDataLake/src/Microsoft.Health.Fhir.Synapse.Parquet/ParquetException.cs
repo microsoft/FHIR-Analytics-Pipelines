@@ -17,8 +17,8 @@ public class ParquetException : Exception
     {
     }
 
-    public ParquetException(string message, Exception innerException)
-        : base(message, innerException)
+    public ParquetException(int status, string message)
+        : base(GetParquetErrorMessage(status) + " " + message)
     {
     }
 

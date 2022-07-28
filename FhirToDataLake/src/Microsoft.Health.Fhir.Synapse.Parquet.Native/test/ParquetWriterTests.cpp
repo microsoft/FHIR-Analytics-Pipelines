@@ -37,7 +37,8 @@ TEST (ParquetWriter, WritePatientWithNoSchema)
     string resourceType = "Patient";
     ParquetWriter writer;
 
-    int status = writer.Write(resourceType, PatientData.c_str(), static_cast<int>(PatientData.size()), outputData, &outputLength);
+    char error[256];
+    int status = writer.Write(resourceType, PatientData.c_str(), static_cast<int>(PatientData.size()), outputData, &outputLength, error);
     // Write success.
     EXPECT_EQ(11002, status);
 }
@@ -54,11 +55,13 @@ TEST (ParquetWriter, WriteInvalidPatient)
     EXPECT_EQ(0, schemaStatus);
 
     int patientLength = 20;
-    int status = writer.Write(resourceType, PatientData.substr(0, patientLength).c_str(), patientLength, outputData, &outputLength);
+    char error[256];
+    int status = writer.Write(resourceType, PatientData.substr(0, patientLength).c_str(), patientLength, outputData, &outputLength, error);
 
     // Write fail with invalid json.
     EXPECT_EQ(10001, status);
     EXPECT_EQ(0, outputLength);
+    EXPECT_EQ("Invalid: JSON parse error: Missing a closing quotation mark in string. in row 0", std::string(error));
 }
 
 TEST (ParquetWriter, WriteEmptyPatient)
@@ -73,10 +76,12 @@ TEST (ParquetWriter, WriteEmptyPatient)
     EXPECT_EQ(0, schemaStatus);
 
     string emptyPatient = "";
-    int status = writer.Write(resourceType, emptyPatient.c_str(), 0, outputData, &outputLength);
+    char error[256];
+    int status = writer.Write(resourceType, emptyPatient.c_str(), 0, outputData, &outputLength, error);
     // Write success but output is 0
     EXPECT_EQ(10001, status);
     EXPECT_EQ(0, outputLength);
+    EXPECT_EQ("Invalid: Empty JSON file", std::string(error));
 }
 
 TEST (ParquetWriter, WriteExamplePatient)
@@ -89,11 +94,13 @@ TEST (ParquetWriter, WriteExamplePatient)
     int schemaStatus = writer.RegisterSchema(resourceType, exampleSchema);
     EXPECT_EQ(0, schemaStatus);
 
-    int status = writer.Write(resourceType, PatientData.c_str(), static_cast<int>(PatientData.size()), outputData, &outputLength);
+    char error[256];
+    int status = writer.Write(resourceType, PatientData.c_str(), static_cast<int>(PatientData.size()), outputData, &outputLength, error);
     // Write success.
     EXPECT_EQ(0, status);
     EXPECT_TRUE(outputLength > 0);
-
+    EXPECT_EQ("", std::string(error));
+    
     // parse output stream to table again, and check it.
     const auto buffer = std::make_shared<arrow::Buffer>(*outputData, outputLength);
 
@@ -116,11 +123,13 @@ TEST (ParquetWriter, WriteBatchPatient)
     EXPECT_EQ(0, schemaStatus);
 
     string batchPatientData = read_file_text(TestDataDir + "Patient.ndjson");
-    int status = writer.Write(resourceType, batchPatientData.c_str(), static_cast<int>(batchPatientData.size()), outputData, &outputLength);
+    char error[256];
+    int status = writer.Write(resourceType, batchPatientData.c_str(), static_cast<int>(batchPatientData.size()), outputData, &outputLength, error);
     // Write success.
     EXPECT_EQ(0, status);
     EXPECT_TRUE(outputLength > 0);
-    
+    EXPECT_EQ("", std::string(error));
+
     // check the output stream 
     const std::string actual_result(reinterpret_cast<char*>(*outputData), outputLength);
     const std::string expected_result = read_file_to_buffer(ExpectedDataDir + "expected_patient.parquet");
