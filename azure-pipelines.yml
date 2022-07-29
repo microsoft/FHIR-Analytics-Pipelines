@@ -19,14 +19,16 @@ variables:
 
 stages:
 - stage: Build
-  pool:
-    vmImage: windows-2019
   jobs:
   - job: BuildFhirToCdm
+    pool:
+      vmImage: 'windows-latest'
     steps:
     - template: FhirToCdm/build.yml
 
   - job: BuildFhirToDataLake
+    pool:
+      vmImage: 'ubuntu-latest'
     steps:
     - template: FhirToDataLake/azurepipelines/ci.yml
 
