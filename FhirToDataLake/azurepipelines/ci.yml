@@ -38,8 +38,9 @@ steps:
     RunAsPreJob: false
 
 - task: DotNetCoreCLI@2
-  command: 'test'
-  projects: FhirToDataLake/**/*Tests.csproj
+  inputs:
+    command: 'test'
+    projects: FhirToDataLake/**/*Tests.csproj
   env:
     TestContainerRegistryServer: $(pipeline-container-registry-server)
     TestContainerRegistryPassword: $(pipeline-container-registry-password)
