@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
             var parquetConverter = new ParquetConverter();
             string jsonInput = File.ReadAllText(InputPatientFile);
             var exception = Assert.Throws<ParquetException>(() => parquetConverter.ConvertJsonToParquet(PatientResourceType, jsonInput));
-            Assert.Equal("Target schema is not found.", exception.Message);
+            Assert.StartsWith("Target schema is not found.", exception.Message);
         }
 
         [Theory]
@@ -47,7 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
             parquetConverter.InitializeSchemaSet(validSchemaMap);
 
             var exception = Assert.Throws<ParquetException>(() => parquetConverter.ConvertJsonToParquet(PatientResourceType, patient));
-            Assert.True(exception.Message.StartsWith("Input json is invalid."));
+            Assert.StartsWith("Input json is invalid.", exception.Message);
         }
 
         [Fact]
