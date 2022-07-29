@@ -30,11 +30,6 @@ steps:
         mcr.microsoft.com/azure-storage/azurite
   displayName: 'Start Azurite Emulator'
 
-- script: |
-    docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
-    docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
-  displayName: Start mock-data-source
-
 - task: AzureKeyVault@2
   inputs:
     azureSubscription: 'ResoluteOpenSource'
@@ -83,13 +78,6 @@ steps:
     scriptLocation: inlineScript
     inlineScript: |
       dotnet test **\bin\**\*E2ETests.dll --verbosity detailed
-
-- task: Docker@2
-  displayName: Stop mock-data-source
-  condition: succeededOrFailed()
-  inputs:
-    command: stop
-    container: mock-data-source
 
 - task: Docker@2
   displayName: Stop Azurite Emulator
