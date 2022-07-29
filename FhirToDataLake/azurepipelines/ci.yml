@@ -37,31 +37,9 @@ steps:
     SecretsFilter: '*'
     RunAsPreJob: false
 
-- task: VSTest@2
-  displayName: 'Run native unit tests'
-  inputs:
-    testAssemblyVer2: |
-      **\*Native*\**\*UnitTests.dll
-      !**\obj\**
-      !**\ref\**
-    searchFolder: '$(Build.SourcesDirectory)'
-    codeCoverageEnabled: true
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: VSTest@2
-  displayName: 'Run managed unit tests'
-  inputs:
-    testAssemblyVer2: |
-      FhirToDataLake\**\*Tests.dll
-      !**\*E2ETests.dll
-      !**\*Native*\**\*UnitTests.dll
-      !**\obj\**
-      !**\ref\**
-    searchFolder: '$(Build.SourcesDirectory)'
-    codeCoverageEnabled: true
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+- task: DotNetCoreCLI@2
+  command: 'test'
+  projects: FhirToDataLake/**/*Tests.csproj
   env:
     TestContainerRegistryServer: $(pipeline-container-registry-server)
     TestContainerRegistryPassword: $(pipeline-container-registry-password)
