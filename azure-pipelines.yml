@@ -37,7 +37,7 @@ stages:
   jobs:
   - job: SynapseE2ETest
     steps:
-    - template: FhirToDataLake/synapse-e2e-test.yml
+    - template: FhirToDataLake/azurepipelines/synapse-e2e-test.yml
 
   - job: PublishFhirToCdm
     dependsOn: SynapseE2ETest
