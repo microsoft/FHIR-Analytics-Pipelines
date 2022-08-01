@@ -14,6 +14,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 {
     public static class IServiceCollectionExtensions
     {
+        /// <summary>
+        /// Validate configuration in service collection.
+        /// </summary>
+        /// <param name="services">Service collection instance.</param>
+        /// <exception cref="ConfigurationErrorException">Throw ConfigurationErrorException if configuration is invalid.</exception>
         public static void ValidateConfiguration(this IServiceCollection services)
         {
             FhirServerConfiguration fhirServerConfiguration;
@@ -121,8 +126,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
         /// Image reference pattern: <registry>/<name>@<digest> or <registry>/<name>:<tag>
         /// E.g. testacr.azurecr.io/templatetest@sha256:412ea84f1bb1a9d98345efb7b427ba89616ec29ac332d543eff9a2161ca12a58
         /// </summary>
-        /// <param name="imageReference">Image reference.</param>
-        private static void ValidateImageReference(string imageReference)
+        /// <param name="imageReference">Image reference</param>
+        /// <exception cref="ConfigurationErrorException">Throw ConfigurationErrorException if imageReference is invalid</exception>
+        public static void ValidateImageReference(string imageReference)
         {
             var registryDelimiterPosition = imageReference.IndexOf(ConfigurationConstants.ImageRegistryDelimiter, StringComparison.InvariantCultureIgnoreCase);
             if (registryDelimiterPosition <= 0 || registryDelimiterPosition == imageReference.Length - 1)
@@ -171,7 +177,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
             }
         }
 
-        private static void ValidateFilterConfiguration(FilterConfiguration filterConfiguration)
+        /// <summary>
+        /// Validate FilterConfiguration.
+        /// </summary>
+        /// <param name="filterConfiguration">FilterConfiguration instance.</param>
+        /// <exception cref="ConfigurationErrorException">Throw ConfigurationErrorException if filterConfiguration is invalid.</exception>
+        public static void ValidateFilterConfiguration(FilterConfiguration filterConfiguration)
         {
             if (!Enum.IsDefined(typeof(FilterScope), filterConfiguration.FilterScope))
             {

@@ -36,17 +36,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             ILogger<CustomSchemaConverter> logger)
         {
             _logger = logger;
-            if (string.IsNullOrWhiteSpace(schemaConfiguration.Value.SchemaImageReference))
+            if (!string.IsNullOrWhiteSpace(schemaConfiguration.Value.SchemaImageReference))
             {
-                return;
+                var templateCollections = containerRegistryTemplateProvider.GetTemplateCollectionAsync(
+                    schemaConfiguration.Value.SchemaImageReference,
+                    CancellationToken.None).Result;
+
+                _jsonProcessor = new JsonProcessor(new ProcessorSettings());
+                _templateProvider = new TemplateProvider(templateCollections);
             }
-
-            var templateCollections = containerRegistryTemplateProvider.GetTemplateCollectionAsync(
-                schemaConfiguration.Value.SchemaImageReference,
-                CancellationToken.None).Result;
-
-            _jsonProcessor = new JsonProcessor(new ProcessorSettings());
-            _templateProvider = new TemplateProvider(templateCollections);
         }
 
         public JsonBatchData Convert(
