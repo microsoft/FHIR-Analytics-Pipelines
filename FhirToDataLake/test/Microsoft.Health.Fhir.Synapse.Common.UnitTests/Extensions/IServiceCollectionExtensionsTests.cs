@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             yield return new object[] { "schema:schemaImageReference", 12345 };
         }
 
-        public static IEnumerable<object[]> GetInValidImageReference()
+        public static IEnumerable<object[]> GetInvalidImageReference()
         {
             yield return new object[] { "testacr.azurecr.io@v1" };
             yield return new object[] { "testacr.azurecr.io:templateset:v1" };
@@ -54,13 +54,36 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             yield return new object[] { "testacr.azurecr.io/invalid....set" };
             yield return new object[] { "testacr.azurecr.io/invalid._set" };
             yield return new object[] { "testacr.azurecr.io/_invalid" };
+
+            // Invalid case sensitive
             yield return new object[] { "testacr.azurecr.io/Templateset:v1" };
             yield return new object[] { "testacr.azurecr.io/TEMPLATESET:v1" };
         }
 
+        public static IEnumerable<object[]> GetValidImageReference()
+        {
+            yield return new object[] { "testacr.azurecr.io/templateset:v1" };
+            yield return new object[] { "testacr.azurecr.io/templateset@sha256:e6dcff9eaf7604aa7a855e52b2cda22c5cfc5cadaa035892557c4ff19630b612" };
+            yield return new object[] { "testacr.azurecr.io/templateset" };
+            yield return new object[] { "testacr.azurecr.io/org/templateset" };
+            yield return new object[] { "testacr.azurecr.io/org/template-set" };
+            yield return new object[] { "testacr.azurecr.io/org/template.set" };
+            yield return new object[] { "testacr.azurecr.io/org/template__set" };
+            yield return new object[] { "testacr.azurecr.io/org/template-----set" };
+            yield return new object[] { "testacr.azurecr.io/org/template-set_set.set" };
+            yield return new object[] { "testacr.azurecr.io/templateset:V1" };
+
+            // Valid case sensitive
+            yield return new object[] { "Testacr.azurecr.io/templateset:v1" };
+            yield return new object[] { "TESTACR.azurecr.io/templateset:v1" };
+            yield return new object[] { "testacr.Azurecr.io/templateset:v1" };
+            yield return new object[] { "testacr.azurecr.IO/templateset:v1" };
+            yield return new object[] { "testacr.azurecr.io/templateset:V1" };
+        }
+
         [Theory]
         [MemberData(nameof(GetInvalidServiceConfiguration))]
-        public void GivenInValidServiceCollectionConfiguration_WhenValidate_ExceptionShouldBeThrown(string configKey, string configValue)
+        public void GivenInvalidServiceCollectionConfiguration_WhenValidate_ExceptionShouldBeThrown(string configKey, string configValue)
         {
             var config = new Dictionary<string, string>(TestValidConfiguration);
             config[configKey] = configValue;
@@ -100,10 +123,18 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
         }
 
         [Theory]
-        [MemberData(nameof(GetInValidImageReference))]
+        [MemberData(nameof(GetInvalidImageReference))]
         public void GivenInvalidImageReference_WhenValidate_ExceptionShouldBeThrown(string imageReference)
         {
             Assert.Throws<ConfigurationErrorException>(() => IServiceCollectionExtensions.ValidateImageReference(imageReference));
+        }
+
+        [Theory]
+        [MemberData(nameof(GetValidImageReference))]
+        public void GivenValidImageReference_WhenValidate_NoExceptionShouldBeThrown(string imageReference)
+        {
+            var exception = Record.Exception(() => IServiceCollectionExtensions.ValidateImageReference(imageReference));
+            Assert.Null(exception);
         }
 
         private static void RegistryConfiguration(IServiceCollection services, IConfigurationRoot configuration)
