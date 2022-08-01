@@ -83,7 +83,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         public static async Task GivenAValidMultipleLargeInputData_WhenProcess_CorrectResultShouldBeReturned()
         {
             var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(_testDataFolder, "Large_Patient.ndjson"));
-            var largeTestData = Enumerable.Repeat(largePatientSingleSet, 100).SelectMany(x => x);
+
+            // Maximum row number for arrow cpp parser is 100000, see https://github.com/apache/arrow/blob/42a9b32141c3c5a7178bef6644872d14f3051ce6/cpp/src/arrow/json/parser.h#L51
+            var largeTestData = Enumerable.Repeat(largePatientSingleSet, 10).SelectMany(x => x);
 
             var parquetDataProcessor = new ParquetDataProcessor(_fhirSchemaManager, _arrowConfigurationOptions, _nullParquetDataProcessorLogger);
 
