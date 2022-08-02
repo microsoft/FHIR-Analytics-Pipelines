@@ -39,7 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet
         private static extern int ReleaseUnmanagedData(ref IntPtr outBuffer);
 
         [DllImport("ParquetNative")]
-        private static extern int ConvertJsonToParquet(IntPtr writer, string key, string json, int inputSize, ref IntPtr outBuffer, out int outputSize, StringBuilder errorMessage);
+        private static extern int ConvertJsonToParquet(IntPtr writer, string key, [MarshalAs(UnmanagedType.LPUTF8Str)]string json, int inputSize, ref IntPtr outBuffer, out int outputSize, StringBuilder errorMessage);
 
         public void InitializeSchemaSet(Dictionary<string, string> schemaSet)
         {
