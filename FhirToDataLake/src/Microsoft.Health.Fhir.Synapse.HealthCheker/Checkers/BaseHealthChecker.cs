@@ -19,20 +19,20 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
             ILogger<BaseHealthChecker> logger)
         {
             Logger = EnsureArg.IsNotNull(logger, nameof(logger));
-            Name = EnsureArg.IsNotEmptyOrWhiteSpace(healthCheckName, nameof(healthCheckName));
+            Name = EnsureArg.IsNotNullOrWhiteSpace(healthCheckName, nameof(healthCheckName));
         }
 
         protected ILogger<BaseHealthChecker> Logger { get; }
 
-        public string Name { get; }
+        public string Name { get; set; }
 
-        public async Task<HealthCheckResult> PerformHealthCheck(CancellationToken cancellationToken = default)
+        public async Task<HealthCheckResult> PerformHealthCheckAsync(CancellationToken cancellationToken = default)
         {
             var healthCheckResult = new HealthCheckResult(Name);
 
             try
             {
-                await PerformHealthCheckImpl(healthCheckResult, cancellationToken);
+                await PerformHealthCheckImplAsync(healthCheckResult, cancellationToken);
             }
             catch (Exception e)
             {
@@ -42,10 +42,10 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
             }
 
             healthCheckResult.EndTime = DateTime.UtcNow;
-            Logger.LogTrace($"Health check {Name} complete. Status {healthCheckResult.Status}");
+            Logger.LogInformation($"Health check {Name} complete. Status {healthCheckResult.Status}");
             return healthCheckResult;
         }
 
-        protected abstract Task PerformHealthCheckImpl(HealthCheckResult healthCheckResult, CancellationToken cancellationToken);
+        protected abstract Task PerformHealthCheckImplAsync(HealthCheckResult healthCheckResult, CancellationToken cancellationToken);
     }
 }

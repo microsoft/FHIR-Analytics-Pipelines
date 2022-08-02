@@ -20,5 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public const string SchedulerConfigurationKey = "scheduler";
 
         public const string DefaultSchemaDirectory = "../../../../../../data/schemas";
+
+        public const string HealthCheckConfigurationKey = "healthcheck";
     }
 }

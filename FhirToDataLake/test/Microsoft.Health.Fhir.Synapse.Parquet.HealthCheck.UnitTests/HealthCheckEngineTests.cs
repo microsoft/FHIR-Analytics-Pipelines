@@ -9,6 +9,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.HealthCheker;
 using Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers;
 using Microsoft.Health.Fhir.Synapse.HealthCheker.Models;
@@ -26,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
         {
             _fhirServerHealthChecker = Substitute.For<IHealthChecker>();
             _fhirServerHealthChecker.Name.Returns("FhirServer");
-            _fhirServerHealthChecker.PerformHealthCheck(
+            _fhirServerHealthChecker.PerformHealthCheckAsync(
                 Arg.Any<CancellationToken>()).ReturnsForAnyArgs(
                 new HealthCheckResult("FhirServer")
                 {
@@ -34,7 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
                 });
             _azureBlobStorageHealthChecker = Substitute.For<IHealthChecker>();
             _azureBlobStorageHealthChecker.Name.Returns("AzureBlobStorage");
-            _azureBlobStorageHealthChecker.PerformHealthCheck(
+            _azureBlobStorageHealthChecker.PerformHealthCheckAsync(
                 Arg.Any<CancellationToken>()).ReturnsForAnyArgs(
                 new HealthCheckResult("AzureBlobStorage")
                 {
@@ -46,8 +48,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
         public async Task When_All_HealthCheck_Complete_All_AreMaked_WithNonUnknownStatus()
         {
             var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker };
-            var healthCheckOption = new HealthCheckOptions();
-            var healthCheckEngine = new HealthCheckEngine(healthCheckers, healthCheckOption, new NullLogger<HealthCheckEngine>());
+            var healthCheckConfiduration = new HealthCheckConfiguration();
+            var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiduration), new NullLogger<HealthCheckEngine>());
 
             var healthStatus = new HealthStatus();
             await healthCheckEngine.CheckHealthAsync(healthStatus);
@@ -69,12 +71,12 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
         [Fact]
         public async Task When_HealthCheck_ExceedsHealthCheckTimeLimit_HealthCheck_MarkedAsFailed()
         {
-            var healthCheckOption = new HealthCheckOptions();
-            healthCheckOption.HealthCheckTimeout = TimeSpan.FromMilliseconds(100);
+            var healthCheckConfiduration = new HealthCheckConfiguration();
+            healthCheckConfiduration.HealthCheckTimeoutInSeconds = 0.1;
 
             var mockTimeOutHealthChecker = new MockTimeoutHealthChecker(new NullLogger<MockTimeoutHealthChecker>());
             var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, mockTimeOutHealthChecker };
-            var healthCheckEngine = new HealthCheckEngine(healthCheckers, healthCheckOption, new NullLogger<HealthCheckEngine>());
+            var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiduration), new NullLogger<HealthCheckEngine>());
 
             var healthStatus = new HealthStatus();
             await healthCheckEngine.CheckHealthAsync(healthStatus);

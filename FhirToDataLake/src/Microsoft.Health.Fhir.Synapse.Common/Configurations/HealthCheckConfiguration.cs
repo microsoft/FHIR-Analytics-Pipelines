@@ -4,14 +4,22 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Newtonsoft.Json;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Models
+namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 {
-    public class HealthCheckOptions
+    public class HealthCheckConfiguration
     {
         /// <summary>
         /// The timeout to use for a single health check
         /// </summary>
-        public TimeSpan HealthCheckTimeout { get; set; } = TimeSpan.FromSeconds(25);
+        [JsonProperty("healthCheckTimeout")]
+        public double HealthCheckTimeoutInSeconds { get; set; } = 25;
+
+        /// <summary>
+        /// Time interval for health check.
+        /// </summary>
+        [JsonProperty("healthCheckTimeInterval")]
+        public double HealthCheckTimeIntervalInSeconds { get; set; } = 30;
     }
 }

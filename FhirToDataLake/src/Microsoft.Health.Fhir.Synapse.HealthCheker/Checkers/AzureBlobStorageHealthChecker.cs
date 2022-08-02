@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
             IOptions<JobConfiguration> jobConfiguration,
             IOptions<DataLakeStoreConfiguration> storeConfiguration,
             ILogger<AzureBlobStorageHealthChecker> logger)
-            : base(HealthCheckTypes.AzureBlobStorageCanReadWriteDelete, logger)
+            : base(HealthCheckTypes.AzureBlobStorageCanReadWrite, logger)
         {
             EnsureArg.IsNotNull(azureBlobContainerClientFactory, nameof(azureBlobContainerClientFactory));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
@@ -37,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
             _blobContainerClient = azureBlobContainerClientFactory.Create(storeConfiguration.Value.StorageUrl, jobConfiguration.Value.ContainerName);
         }
 
-        protected override async Task PerformHealthCheckImpl(HealthCheckResult healthCheckResult, CancellationToken cancellationToken)
+        protected override async Task PerformHealthCheckImplAsync(HealthCheckResult healthCheckResult, CancellationToken cancellationToken)
         {
             EnsureArg.IsNotNull(healthCheckResult, nameof(healthCheckResult));
 

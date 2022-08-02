@@ -55,7 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 Options.Create(_storeConfig),
                 new NullLogger<AzureBlobStorageHealthChecker>());
 
-            var result = await _storageAccountHealthChecker.PerformHealthCheck(default);
+            var result = await _storageAccountHealthChecker.PerformHealthCheckAsync(default);
             Assert.Equal(HealthCheckStatus.PASS, result.Status);
         }
 
@@ -73,7 +73,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 Options.Create(_storeConfig),
                 new NullLogger<AzureBlobStorageHealthChecker>());
 
-            var result = await _storageAccountHealthChecker.PerformHealthCheck(default);
+            var result = await _storageAccountHealthChecker.PerformHealthCheckAsync(default);
             Assert.Equal(HealthCheckStatus.FAIL, result.Status);
         }
     }

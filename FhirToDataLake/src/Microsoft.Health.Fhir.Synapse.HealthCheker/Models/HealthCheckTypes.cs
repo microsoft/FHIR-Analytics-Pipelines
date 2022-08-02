@@ -7,7 +7,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Models
 {
     public static class HealthCheckTypes
     {
-        public const string AzureBlobStorageCanReadWriteDelete = "AzureBlobStorage:CanReadWriteDelete";
-        public const string FhirServiceCanSearch = "FhirService:CanSearch";
+        public const string AzureBlobStorageCanReadWrite = "AzureBlobStorage:CanReadWrite";
+        public const string FhirServiceCanRead = "FhirService:CanRead";
     }
 }

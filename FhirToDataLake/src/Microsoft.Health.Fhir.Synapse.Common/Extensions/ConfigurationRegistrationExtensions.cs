@@ -30,6 +30,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 configuration.GetSection(ConfigurationConstants.SchedulerConfigurationKey).Bind(options));
             services.Configure<SchemaConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey).Bind(options));
+            services.Configure<HealthCheckConfiguration>(options =>
+                configuration.GetSection(ConfigurationConstants.HealthCheckConfigurationKey).Bind(options));
 
             // Validates the input configs.
             services.ValidateConfiguration();

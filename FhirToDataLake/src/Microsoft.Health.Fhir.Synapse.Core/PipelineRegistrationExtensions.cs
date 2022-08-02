@@ -8,6 +8,8 @@ using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
+using Microsoft.Health.Fhir.Synapse.HealthCheker;
+using Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers;
 
 namespace Microsoft.Health.Fhir.Synapse.Core
 {
@@ -29,6 +31,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core
             services.AddSingleton<IColumnDataProcessor, ParquetDataProcessor>();
 
             services.AddSingleton<IFhirSpecificationProvider, R4FhirSpecificationProvider>();
+
+            services.AddHostedService<HealthCheckBackgroundService>();
+
+            services.AddSingleton<IHealthCheckEngine, HealthCheckEngine>();
+
+            services.AddSingleton<IHealthChecker, AzureBlobStorageHealthChecker>();
+
+            services.AddSingleton<IHealthChecker, FhirServerHealthChecker>();
 
             return services;
         }

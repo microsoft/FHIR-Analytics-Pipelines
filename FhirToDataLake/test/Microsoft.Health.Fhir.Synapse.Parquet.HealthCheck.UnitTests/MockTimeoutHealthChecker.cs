@@ -19,7 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
         {
         }
 
-        protected override async Task PerformHealthCheckImpl(HealthCheckResult healthCheckResult, CancellationToken cancellationToken)
+        protected override async Task PerformHealthCheckImplAsync(HealthCheckResult healthCheckResult, CancellationToken cancellationToken)
         {
             await Task.Delay(TimeSpan.FromMilliseconds(300), cancellationToken);
             healthCheckResult.Status = HealthCheckStatus.PASS;

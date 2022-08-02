@@ -24,14 +24,14 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
         public FhirServerHealthChecker(
             IFhirDataClient fhirApiDataClient,
             ILogger<FhirServerHealthChecker> logger)
-            : base(HealthCheckTypes.FhirServiceCanSearch, logger)
+            : base(HealthCheckTypes.FhirServiceCanRead, logger)
         {
             EnsureArg.IsNotNull(fhirApiDataClient, nameof(fhirApiDataClient));
 
             _fhirApiDataClient = fhirApiDataClient;
         }
 
-        protected override async Task PerformHealthCheckImpl(HealthCheckResult healthCheckResult, CancellationToken cancellationToken)
+        protected override async Task PerformHealthCheckImplAsync(HealthCheckResult healthCheckResult, CancellationToken cancellationToken)
         {
             EnsureArg.IsNotNull(healthCheckResult, nameof(healthCheckResult));
 

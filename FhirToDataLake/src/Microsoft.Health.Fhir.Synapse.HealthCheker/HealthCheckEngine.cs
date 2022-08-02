@@ -11,6 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers;
 using Microsoft.Health.Fhir.Synapse.HealthCheker.Models;
 
@@ -26,17 +28,17 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
 
         public HealthCheckEngine(
             IEnumerable<IHealthChecker> healthCheckers,
-            HealthCheckOptions healthCheckOptions,
+            IOptions<HealthCheckConfiguration> healthCheckConfiguration,
             ILogger<HealthCheckEngine> logger)
         {
-            EnsureArg.IsNotNull(healthCheckOptions, nameof(healthCheckOptions));
+            EnsureArg.IsNotNull(healthCheckConfiguration, nameof(healthCheckConfiguration));
             _healthCheckers = EnsureArg.IsNotNull(healthCheckers, nameof(healthCheckers));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _healthCheckTimeout = healthCheckOptions.HealthCheckTimeout;
+            _healthCheckTimeout = TimeSpan.FromSeconds(healthCheckConfiguration.Value.HealthCheckTimeoutInSeconds);
         }
 
-        public async Task CheckHealthAsync(HealthStatus healthStatus, AsyncCallback callBack = null, CancellationToken cancellationToken = default)
+        public async Task CheckHealthAsync(HealthStatus healthStatus, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(healthStatus, nameof(healthStatus));
 
@@ -60,7 +62,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
             healthStatus.EndTime = DateTime.UtcNow;
             healthStatus.HealthCheckResults = collectedResults.Values.ToList();
 
-            _logger.LogTrace($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}. Time using : {(healthStatus.EndTime - healthStatus.StartTime).TotalSeconds} seconds.");
+            _logger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}. Time using : {(healthStatus.EndTime - healthStatus.StartTime).TotalSeconds} seconds.");
         }
 
         private static void InitializeHealthCheckResults(IEnumerable<IHealthChecker> healthCheckers, ConcurrentDictionary<string, HealthCheckResult> results)
@@ -74,7 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
         private static async Task ExecuteHealthCheck(IHealthChecker healthChecker, ConcurrentDictionary<string, HealthCheckResult> results, CancellationToken cancellationToken)
         {
             // Perform the actual health check and override the initial result
-            results[healthChecker.Name] = await healthChecker.PerformHealthCheck(cancellationToken);
+            results[healthChecker.Name] = await healthChecker.PerformHealthCheckAsync(cancellationToken);
         }
     }
 }

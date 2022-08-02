@@ -12,6 +12,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
 {
     public interface IHealthCheckEngine
     {
-        Task CheckHealthAsync(HealthStatus healthStatus, AsyncCallback callBack = null, CancellationToken cancellationToken = default);
+        Task CheckHealthAsync(HealthStatus healthStatus, CancellationToken cancellationToken = default);
     }
 }
