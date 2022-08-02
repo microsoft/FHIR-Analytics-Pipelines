@@ -13,7 +13,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
     public static class TestUtils
     {
         public const string DefaultSchemaDirectoryPath = "../../../../../data/schemas";
-        public const string TestSchemaDirectoryPath = "./TestData/schemas";
+        public const string TestSchemaDirectoryPath = "./TestData/Schemas";
 
         public static IEnumerable<JObject> LoadNdjsonData(string filePath)
         {
