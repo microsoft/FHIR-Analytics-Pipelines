@@ -75,10 +75,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Empty(activeJob.SkippedResourceCounts);
 
             // context 1 is updated amd uncompleted
-            context1.SearchCount = new Dictionary<string, int>() { {"Patient", 10}};
-            context1.SkippedCount = new Dictionary<string, int>() { {"Patient", 0}, {"Patient_customized", 0}};
-            context1.ProcessedCount = new Dictionary<string, int>() { {"Patient", 10}, {"Patient_customized", 10}};
-            context1.OutputFileIndexMap = new Dictionary<string, int>() { {"Patient", 1}, {"Patient_customized", 1}};
+            context1.SearchCount = new Dictionary<string, int>() { { "Patient", 10 } };
+            context1.SkippedCount = new Dictionary<string, int>() { { "Patient", 0 }, { "Patient_customized", 0 } };
+            context1.ProcessedCount = new Dictionary<string, int>() { { "Patient", 10 }, { "Patient_customized", 10 } };
+            context1.OutputFileIndexMap = new Dictionary<string, int>() { { "Patient", 1 }, { "Patient_customized", 1 } };
             context1.SearchProgress.ContinuationToken = "exampleContinuationToken";
 
             Assert.True(activeJob.RunningTasks.ContainsKey(context1.Id));
@@ -123,7 +123,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenTaskUpdateContextTwice_WhenUpdateJobProgress_ProgressShouldBeUpdatedCorrectly()
         {
-            var typeFilters = new List<TypeFilter> { new("Patient", null), new("Observation", null) };
+            var typeFilters = new List<TypeFilter> { new ("Patient", null), new ("Observation", null) };
             var filterInfo = new FilterInfo(FilterScope.System, null, DateTimeOffset.MinValue, typeFilters, null);
 
             var activeJob = Job.Create(
@@ -144,7 +144,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             activeJob.NextTaskIndex++;
 
             // context is updated
-            context.SearchCount = new Dictionary<string, int>() { { "Patient", 15 }};
+            context.SearchCount = new Dictionary<string, int>() { { "Patient", 15 } };
             context.SkippedCount = new Dictionary<string, int>() { { "Patient", 0 }, { "Patient_customized", 2 } };
             context.ProcessedCount = new Dictionary<string, int>() { { "Patient", 10 }, { "Patient_customized", 13 } };
             context.OutputFileIndexMap = new Dictionary<string, int>() { { "Patient", 1 }, { "Patient_customized", 1 } };

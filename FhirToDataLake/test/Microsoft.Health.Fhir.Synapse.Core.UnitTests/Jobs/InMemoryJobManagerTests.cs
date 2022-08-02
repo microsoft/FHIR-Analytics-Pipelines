@@ -35,13 +35,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static readonly DateTimeOffset _testEndTime = new DateTimeOffset(2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0));
 
         private static readonly List<TypeFilter> _testResourceTypeFilters =
-            new List<TypeFilter> {new ("Patient", null), new ("Observation", null) };
+            new List<TypeFilter> { new ("Patient", null), new ("Observation", null) };
 
         private static readonly FilterInfo _filterInfo = new FilterInfo(FilterScope.System, null, DateTimeOffset.MinValue, _testResourceTypeFilters, null);
-
-        static InMemoryJobManagerTests()
-        {
-        }
 
         [Fact]
         public async Task GivenABrokenJobStore_WhenExecute_ExceptionShouldBeThrown()
@@ -225,9 +221,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var newMetadata = JsonConvert.DeserializeObject<SchedulerMetadata>(streamReader.ReadToEnd());
             Assert.Equal(_testEndTime, newMetadata.LastScheduledTimestamp);
             Assert.Empty(newMetadata.FailedJobs);
-            //Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId1"));
-            //Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId2"));
 
+            // Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId1"));
+            // Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId2"));
             jobManager.Dispose();
         }
 
@@ -243,7 +239,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var metadata = new SchedulerMetadata()
             {
-                ProcessedPatients = new Dictionary<string, int> { {"patientId0", 1 }, {"patientId1", 1 } },
+                ProcessedPatients = new Dictionary<string, int> { { "patientId0", 1 }, { "patientId1", 1 } },
             };
 
             await blobClient.CreateBlobAsync(
@@ -266,8 +262,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Empty(newMetadata.FailedJobs);
             Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId0"));
             Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId1"));
-            //Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId2"));
 
+            // Assert.True(newMetadata.ProcessedPatients.ContainsKey("patientId2"));
             jobManager.Dispose();
         }
 
@@ -407,7 +403,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         private static TaskResult CreateTestTaskResult()
-        { 
+        {
             return new TaskResult(
                 true,
                 new Dictionary<string, int>() { { "Patient", 100 } },
@@ -442,12 +438,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var groupMemberExtractor = Substitute.For<IGroupMemberExtractor>();
 
-            var patients = new HashSet<string> { "patientId1", "patientId2"};
+            var patients = new HashSet<string> { "patientId1", "patientId2" };
 
             groupMemberExtractor.GetGroupPatientsAsync(default, default, default, default).ReturnsForAnyArgs(patients);
 
             var taskExecutor = Substitute.For<ITaskExecutor>();
-            taskExecutor.ExecuteAsync(Arg.Any<TaskContext>(), Arg.Any<JobProgressUpdater>(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs( x => CreateTestTaskResult());
+            taskExecutor.ExecuteAsync(Arg.Any<TaskContext>(), Arg.Any<JobProgressUpdater>(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs(x => CreateTestTaskResult());
 
             var jobExecutor = new JobExecutor(taskExecutor, new JobProgressUpdaterFactory(jobStore, new NullLoggerFactory()), groupMemberExtractor, Options.Create(schedulerConfig), new NullLogger<JobExecutor>());
 

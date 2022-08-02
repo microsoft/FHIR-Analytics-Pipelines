@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var fhirServerConfig = new FhirServerConfiguration();
             Assert.Throws<ArgumentException>(() => new FhirApiDataSource(Options.Create(fhirServerConfig)));
 
-            fhirServerConfig.ServerUrl = "";
+            fhirServerConfig.ServerUrl = string.Empty;
             Assert.Throws<ArgumentException>(() => new FhirApiDataSource(Options.Create(fhirServerConfig)));
         }
 
