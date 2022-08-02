@@ -23,10 +23,16 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public DateTimeOffset? LastScheduledTimestamp { get; set; }
 
         /// <summary>
+        /// The patient id which has been processed before and its version id.
+        /// </summary>
+        [JsonProperty("processedPatients")]
+        public Dictionary<string, int> ProcessedPatients { get; set; } = new Dictionary<string, int>();
+
+        /// <summary>
         /// Scheduled jobs that have been stopped due to errors.
         /// New triggers will resume the execution.
         /// </summary>
-        [JsonProperty("unfinishedJobs")]
-        public IEnumerable<Job> UnfinishedJobs { get; set; } = new List<Job>();
+        [JsonProperty("failedJobs")]
+        public IEnumerable<Job> FailedJobs { get; set; } = new List<Job>();
     }
 }

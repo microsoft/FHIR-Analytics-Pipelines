@@ -17,9 +17,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         }
 
         [JsonProperty("start")]
-        public DateTimeOffset Start { get; set; }
+        public DateTimeOffset Start { get; }
 
         [JsonProperty("end")]
-        public DateTimeOffset End { get; set; }
+        public DateTimeOffset End { get; }
     }
 }

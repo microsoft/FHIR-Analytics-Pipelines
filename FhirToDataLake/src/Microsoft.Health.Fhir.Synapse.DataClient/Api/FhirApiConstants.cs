@@ -17,6 +17,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         public const string LastUpdatedKey = "_lastUpdated";
 
         /// <summary>
+        /// Id search parameter.
+        /// </summary>
+        public const string IdKey = "_id";
+
+        /// <summary>
         /// Page count search parameter.
         /// </summary>
         public const string PageCountKey = "_count";
@@ -30,6 +35,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         /// Sort search parameter.
         /// </summary>
         public const string SortKey = "_sort";
+
+        /// <summary>
+        /// Type search parameter.
+        /// </summary>
+        public const string TypeKey = "_type";
+
+        /// <summary>
+        /// Metadata
+        /// </summary>
+        public const string MetadataKey = "metadata";
 
         /// <summary>
         /// How many resources should be returned in a single page.

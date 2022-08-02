@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
@@ -12,46 +14,54 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
     public class Job
     {
         public Job(
+            string id,
             string containerName,
             JobStatus status,
-            IEnumerable<string> resourceTypes,
             DataPeriod dataPeriod,
+            FilterInfo filterInfo,
+            DateTimeOffset createdTime,
             DateTimeOffset lastHeartBeat,
-            Dictionary<string, string> resourceProgresses = null,
+            IEnumerable<PatientWrapper> patients = null,
+            int nextTaskIndex = 0,
+            Dictionary<string, TaskContext> runningTasks = null,
             Dictionary<string, int> totalResourceCounts = null,
             Dictionary<string, int> processedResourceCounts = null,
             Dictionary<string, int> skippedResourceCounts = null,
-            Dictionary<string, int> partIds = null,
-            HashSet<string> completedResources = null,
+            Dictionary<string, int> patientVersionId = null,
             string resumedJobId = null)
         {
-            Id = Guid.NewGuid().ToString("N");
-            CreatedTime = DateTimeOffset.UtcNow;
+            // immutable fields
+            Id = id;
+            CreatedTime = createdTime;
             ContainerName = containerName;
-            Status = status;
-            ResourceTypes = resourceTypes ?? new List<string>();
             DataPeriod = dataPeriod;
+            FilterInfo = filterInfo;
+            ResumedJobId = resumedJobId;
+
+            // fields will be assigned in the process of job executing
+            Patients = patients ?? new List<PatientWrapper>();
+
+            // fields to record job status
+            // the following two fields "CompletedTime" and "FailedReason" are set when a job is completed
+            Status = status;
             LastHeartBeat = lastHeartBeat;
-            ResourceProgresses = resourceProgresses ?? new Dictionary<string, string>();
+
+            // fields to record job progress
+            NextTaskIndex = nextTaskIndex;
+            RunningTasks = runningTasks ?? new Dictionary<string, TaskContext>();
+
+            // statistical fields
             TotalResourceCounts = totalResourceCounts ?? new Dictionary<string, int>();
             ProcessedResourceCounts = processedResourceCounts ?? new Dictionary<string, int>();
             SkippedResourceCounts = skippedResourceCounts ?? new Dictionary<string, int>();
-            PartIds = partIds ?? new Dictionary<string, int>();
-            CompletedResources = completedResources ?? new HashSet<string>();
-            ResumedJobId = resumedJobId;
-
-            foreach (var resource in ResourceTypes)
-            {
-                _ = ResourceProgresses.TryAdd(resource, null);
-                _ = TotalResourceCounts.TryAdd(resource, 0);
-            }
+            PatientVersionId = patientVersionId ?? new Dictionary<string, int>();
         }
 
         /// <summary>
         /// Job id.
         /// </summary>
         [JsonProperty("id")]
-        public string Id { get; set; }
+        public string Id { get; }
 
         /// <summary>
         /// Created timestamp of job.
@@ -72,23 +82,35 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public string ContainerName { get; }
 
         /// <summary>
+        /// Will process all data with timestamp greater than or equal to DataPeriod.Start and less than DataPeriod.End.
+        /// For FHIR data, we use the lastUpdated field as the record timestamp.
+        /// </summary>
+        [JsonProperty("dataPeriod")]
+        public DataPeriod DataPeriod { get; }
+
+        /// <summary>
+        /// The filter information.
+        /// </summary>
+        [JsonProperty("filterInfo")]
+        public FilterInfo FilterInfo { get; }
+
+        /// <summary>
+        /// Id of the resumed job.
+        /// </summary>
+        [JsonProperty("ResumedJobId")]
+        public string ResumedJobId { get; }
+
+        /// <summary>
         /// Job status.
         /// </summary>
         [JsonProperty("status")]
         public JobStatus Status { get; set; }
 
         /// <summary>
-        /// All resource types to process.
+        /// Patient list to be processed, which are extracted from group member
         /// </summary>
-        [JsonProperty("resourceTypes")]
-        public IEnumerable<string> ResourceTypes { get; set; }
-
-        /// <summary>
-        /// Will process all data with timestamp greater than or equal to DataPeriod.Start and less than DataPeriod.End.
-        /// For FHIR data, we use the lastUpdated field as the record timestamp.
-        /// </summary>
-        [JsonProperty("dataPeriod")]
-        public DataPeriod DataPeriod { get; }
+        [JsonProperty("patients")]
+        public IEnumerable<PatientWrapper> Patients { get; set; }
 
         /// <summary>
         /// Gets or sets last heartbeat timestamp of job.
@@ -97,51 +119,77 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public DateTimeOffset LastHeartBeat { get; set; }
 
         /// <summary>
-        /// Gets or sets resource progresses (continuation tokens for search) of job.
-        /// </summary>
-        [JsonProperty("resourceProgresses")]
-        public Dictionary<string, string> ResourceProgresses { get; }
-
-        /// <summary>
-        /// Total resource count (from data source) for each resource types.
-        /// </summary>
-        [JsonProperty("totalResourceCounts")]
-        public Dictionary<string, int> TotalResourceCounts { get; }
-
-        /// <summary>
-        /// Processed resource count for each schema type.
-        /// </summary>
-        [JsonProperty("processedResourceCounts")]
-        public Dictionary<string, int> ProcessedResourceCounts { get; }
-
-        /// <summary>
-        /// Skipped resource count for each schema type.
-        /// </summary>
-        [JsonProperty("skippedResourceCounts")]
-        public Dictionary<string, int> SkippedResourceCounts { get; }
-
-        /// <summary>
-        /// Resource set that has completed processing.
-        /// </summary>
-        [JsonProperty("completedResources")]
-        public HashSet<string> CompletedResources { get; }
-
-        /// <summary>
-        /// Part id for each schema type.
-        /// </summary>
-        [JsonProperty("partIds")]
-        public Dictionary<string, int> PartIds { get; }
-
-        /// <summary>
         /// Failure reason for this job.
         /// </summary>
         [JsonProperty("failedReason")]
         public string FailedReason { get; set; }
 
         /// <summary>
-        /// Id of the resumed job.
+        /// The next task index
         /// </summary>
-        [JsonProperty("ResumedJobId")]
-        public string ResumedJobId { get; set; }
+        [JsonProperty("nextTaskIndex")]
+        public int NextTaskIndex { get; set; }
+
+        /// <summary>
+        /// The running tasks
+        /// </summary>
+        [JsonProperty("runningTasks")]
+        public Dictionary<string, TaskContext> RunningTasks { get; set; }
+
+        /// <summary>
+        /// Total resource count (from data source) for each resource types.
+        /// </summary>
+        [JsonProperty("totalResourceCounts")]
+        public Dictionary<string, int> TotalResourceCounts { get; set; }
+
+        /// <summary>
+        /// Processed resource count for each schema type.
+        /// </summary>
+        [JsonProperty("processedResourceCounts")]
+        public Dictionary<string, int> ProcessedResourceCounts { get; set; }
+
+        /// <summary>
+        /// Skipped resource count for each schema type.
+        /// </summary>
+        [JsonProperty("skippedResourceCounts")]
+        public Dictionary<string, int> SkippedResourceCounts { get; set; }
+
+        /// <summary>
+        /// The version id for each new/updated patient.
+        /// </summary>
+        [JsonProperty("patientVersionId")]
+        public Dictionary<string, int> PatientVersionId { get; set; }
+
+        public static Job Create(
+            string containerName,
+            JobStatus status,
+            DataPeriod dataPeriod,
+            FilterInfo filterInfo,
+            IEnumerable<PatientWrapper> patients = null,
+            int nextTaskIndex = 0,
+            Dictionary<string, TaskContext> runningTasks = null,
+            Dictionary<string, int> totalResourceCounts = null,
+            Dictionary<string, int> processedResourceCounts = null,
+            Dictionary<string, int> skippedResourceCounts = null,
+            Dictionary<string, int> patientVersionId = null,
+            string resumedJobId = null)
+        {
+            return new Job(
+                Guid.NewGuid().ToString("N"),
+                containerName,
+                status,
+                dataPeriod,
+                filterInfo,
+                DateTimeOffset.UtcNow,
+                DateTimeOffset.UtcNow,
+                patients,
+                nextTaskIndex,
+                runningTasks,
+                totalResourceCounts,
+                processedResourceCounts,
+                skippedResourceCounts,
+                patientVersionId,
+                resumedJobId);
+        }
     }
 }

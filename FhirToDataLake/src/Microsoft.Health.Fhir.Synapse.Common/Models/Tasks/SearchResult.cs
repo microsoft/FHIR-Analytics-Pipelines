@@ -3,25 +3,26 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
+namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
 {
-    public class FhirSearchParameters
+    public class SearchResult
     {
-        public FhirSearchParameters(string resourceType, DateTimeOffset startTime, DateTimeOffset endTime, string continuationToken)
+        public SearchResult(
+            List<JObject> fhirResources,
+            int resultSizeInBytes,
+            string continuationToken)
         {
-            ResourceType = resourceType;
-            StartTime = startTime;
-            EndTime = endTime;
+            FhirResources = fhirResources;
+            ResultSizeInBytes = resultSizeInBytes;
             ContinuationToken = continuationToken;
         }
 
-        public string ResourceType { get; }
+        public List<JObject> FhirResources { get; }
 
-        public DateTimeOffset StartTime { get; }
-
-        public DateTimeOffset EndTime { get; }
+        public int ResultSizeInBytes { get; }
 
         public string ContinuationToken { get; }
     }

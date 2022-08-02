@@ -9,7 +9,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Liquid.Converter.Models.Json;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Newtonsoft.Json.Schema;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
@@ -18,38 +22,84 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
     {
         private readonly IContainerRegistryTemplateProvider _containerRegistryTemplateProvider;
         private readonly ILogger<AcrCustomizedSchemaProvider> _logger;
+        private readonly string _schemaImageReference;
 
         public AcrCustomizedSchemaProvider(
             IContainerRegistryTemplateProvider containerRegistryTemplateProvider,
+            IOptions<SchemaConfiguration> schemaConfiguration,
             ILogger<AcrCustomizedSchemaProvider> logger)
         {
-            _containerRegistryTemplateProvider = containerRegistryTemplateProvider;
             _logger = logger;
+            _containerRegistryTemplateProvider = containerRegistryTemplateProvider;
+            _schemaImageReference = schemaConfiguration.Value.SchemaImageReference;
         }
 
-        public async Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(string schemaImageReference, CancellationToken cancellationToken = default)
+        public async Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default)
         {
-            var jsonSchemaCollection = await GetJsonSchemaCollectionAsync(schemaImageReference, cancellationToken);
+            var jsonSchemaCollection = await GetJsonSchemaCollectionAsync(cancellationToken);
 
             return jsonSchemaCollection
-                .Select(x => JsonSchemaParser.ParseJSchema(GetCustomizedSchemaType(x.Key), x.Value))
-                .ToDictionary(x => x.Type, x => x);
+                .Select(x => JsonSchemaParser.ParseJSchema(x.Key, x.Value))
+                .ToDictionary(x => GetCustomizedSchemaType(x.Type), x => x);
         }
 
-        private async Task<Dictionary<string, JSchema>> GetJsonSchemaCollectionAsync(string schemaImageReference, CancellationToken cancellationToken)
+        private async Task<Dictionary<string, JSchema>> GetJsonSchemaCollectionAsync(CancellationToken cancellationToken)
         {
-            /*
-            List<Dictionary<string, Template>> templateCollections = await GetTemplateCollectionsAsync(schemaImageReference, cancellationToken);
-            */
+            var result = new Dictionary<string, JSchema>();
 
-            // Will implement later when integrating the FHIR-Converter.
-            // Will do a try drive among templates for all resource types with empty Json data, to get involved Json schemas.
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(_schemaImageReference))
+            {
+                _logger.LogError("Schema image reference is null or empty.");
+                throw new ContainerRegistrySchemaException("Schema image reference is null or empty.");
+            }
+
+            var templateCollections = await _containerRegistryTemplateProvider.GetTemplateCollectionAsync(_schemaImageReference, cancellationToken);
+
+            // Fetch all files with suffix ".schema.json" as Json schema template.
+            // All Json schema files should be in "Schema" directory under the root path of the image.
+            foreach (var templates in templateCollections)
+            {
+                foreach (var templateItem in templates)
+                {
+                    var templatePathSegments = templateItem.Key.Split('/');
+
+                    if (!string.Equals(templatePathSegments[0], FhirParquetSchemaConstants.JsonSchemaTemplateDirectory, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (templatePathSegments.Length != 2)
+                    {
+                        _logger.LogError($"All Json schema should be directly in \"Schema\" directory.");
+                        throw new ContainerRegistrySchemaException($"All Json schema should be directly in \"Schema\" directory.");
+                    }
+
+                    if (!templatePathSegments[1].EndsWith(FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        _logger.LogWarning($"{templatePathSegments[1]} doesn't have {FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension} extension in \"Schema\" directory.");
+                    }
+                    else
+                    {
+                        // The customized schema keys are like "Patient_Customized", "Observation_Customized"...
+                        var resourceType = templatePathSegments[1].Substring(0, templatePathSegments[1].Length - FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension.Length);
+
+                        if (!(templateItem.Value.Root is JSchemaDocument customizedSchemaDocument) || customizedSchemaDocument.Schema == null)
+                        {
+                            _logger.LogError($"Invalid Json schema template {templateItem.Key}, no JSchema content be found.");
+                            throw new ContainerRegistrySchemaException($"Invalid Json schema template {templateItem.Key}, no JSchema content be found.");
+                        }
+
+                        result.Add(resourceType, customizedSchemaDocument.Schema);
+                    }
+                }
+            }
+
+            return result;
         }
 
         private string GetCustomizedSchemaType(string resourceType)
         {
-            return $"{resourceType}_Customized";
+            return $"{resourceType}{FhirParquetSchemaConstants.CustomizedSchemaSuffix}";
         }
     }
 }

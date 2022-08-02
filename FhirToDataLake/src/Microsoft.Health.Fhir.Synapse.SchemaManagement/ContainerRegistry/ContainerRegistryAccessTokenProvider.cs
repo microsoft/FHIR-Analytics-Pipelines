@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Newtonsoft.Json;
@@ -35,15 +36,17 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
         private readonly ILogger<ContainerRegistryAccessTokenProvider> _logger;
 
         public ContainerRegistryAccessTokenProvider(
-            IAccessTokenProvider aadTokenProvider,
+            ITokenCredentialProvider tokenCredentialProvider,
             HttpClient httpClient,
             ILogger<ContainerRegistryAccessTokenProvider> logger)
         {
-            EnsureArg.IsNotNull(aadTokenProvider, nameof(aadTokenProvider));
+            EnsureArg.IsNotNull(tokenCredentialProvider, nameof(tokenCredentialProvider));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _aadTokenProvider = aadTokenProvider;
+            _aadTokenProvider = new AzureAccessTokenProvider(
+                tokenCredentialProvider.GetCredential(TokenCredentialTypes.External),
+                new Logger<AzureAccessTokenProvider>(new LoggerFactory()));
             _client = httpClient;
             _logger = logger;
         }
