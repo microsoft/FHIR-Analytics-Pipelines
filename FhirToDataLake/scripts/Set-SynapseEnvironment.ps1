@@ -27,8 +27,6 @@
 .PARAMETER Concurrent
     Default: 30
     Max concurrent tasks number that will be used to upload place holder files and execute SQL scripts.
-.PARAMETER CustomizedSchema
-    Whether the customized schema is enable on the pipeline. 
 .PARAMETER CustomizedSchemaImage
     Customized schema image reference.
 #>
@@ -50,7 +48,7 @@ Param(
 
 $JobName = "FhirSynapseJob"
 $PlaceHolderName = ".readme.txt"
-
+$OrasAppPath = "oras.exe"
 $CustomizedTemplateDirectory = "CustomizedSchema"
 
 # TODO: Align Tags here and ARM template, maybe save schemas in Storage/ACR and run remotely.
@@ -236,21 +234,46 @@ function New-TableAndViewsForResources
 
 
 function Get-CustomizedSchemaImage {
-    param ([string]$schemaImageReference, [string]$CustomizedTemplateDirectory)
+    param ([string]$orasAppPath, [string]$schemaImageReference, [string]$CustomizedTemplateDirectory)
 
-    $registryName = $imageReference.Substring(0, $imageReference.IndexOf('.azurecr.io'))
+    $registryName = $schemaImageReference.Substring(0, $schemaImageReference.IndexOf('.azurecr.io'))
     Connect-AzContainerRegistry -Name $registryName -ErrorAction stop
 
     # Leverage the oras to pull the image from Container Registry.
-    oras.exe pull $schemaImageReference
+    $orasParameters = @(
+        'pull'
+        $schemaImageReference
+    )
+    $response = & $orasAppPath $orasParameters 2>&1
+    
+    if ($LastExitCode -ne 0)
+    {
+        Write-Host $response -ForegroundColor Red
+        throw "Failed to pull the customized schema image: $response" 
+    }
 
-    $compressImages = Get-ChildItem -Path * -Include '*.tar.gz' -Name
+    $compressPackages = Get-ChildItem -Path * -Include '*.tar.gz' -Name
+    Write-Host "Successfully pull the customized schema image: $compressPackages" -ForegroundColor Green
+
+    # Unpack the image compressed package to customized template directory    
     if (!(Test-Path $CustomizedTemplateDirectory)){
         New-Item $CustomizedTemplateDirectory -ItemType Directory
     }
 
-    foreach ($compressImage in $compressImages){
-        tar -zxvf $compressImage -C $CustomizedTemplateDirectory
+    foreach ($compressPackage in $compressPackages){
+        $unpackParameters = @(
+            '-zxvf'
+            $compressPackage
+            '-C'
+            $CustomizedTemplateDirectory
+        )
+        $response = & 'tar' $unpackParameters 2>&1
+
+        if ($LastExitCode -ne 0)
+        {
+            Write-Host $response -ForegroundColor Red
+            throw "Failed to unpack customized schema image: $response" 
+        }
     }
 }
 
@@ -450,6 +473,7 @@ if ($CustomizedSchemaImage) {
     try {
         # a). Pull and parse customized schema from Container Registry.
         Get-CustomizedSchemaImage `
+            -orasAppPath $OrasAppPath `
             -schemaImageReference $CustomizedSchemaImage `
             -customizedTemplateDirectory $CustomizedTemplateDirectory
 
