@@ -45,6 +45,7 @@ steps:
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
+      echo $PWD
       export LD_LIBRARY_PATH=.
       dotnet test test/**/**/bin/Debug/net5.0/*.UnitTests.dll --verbosity detailed
   env:
