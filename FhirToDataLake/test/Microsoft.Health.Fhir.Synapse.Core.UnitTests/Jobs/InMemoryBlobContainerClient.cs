@@ -25,7 +25,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
     {
         private ConcurrentDictionary<string, Stream> _blobStore = new ();
         private ConcurrentDictionary<string, Tuple<string, DateTimeOffset>> _blobLeaseStore = new ();
-        private readonly object _leaseLock = new();
+        private readonly object _leaseLock = new ();
 
         public async Task<T> GetValue<T>(string objectName)
         {

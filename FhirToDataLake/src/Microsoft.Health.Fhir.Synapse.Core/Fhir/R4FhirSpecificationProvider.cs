@@ -69,7 +69,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
             _compartmentResourceTypesLookup = BuildCompartmentResourceTypesLookup();
 
             // _searchParameterDefinitionLookup = BuildSearchParameterDefinitionLookup();
-
             (_resourceTypeSearchParametersLookup, _searchParameterIdLookup) = BuildSearchParametersLookup();
         }
 
@@ -218,7 +217,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 
             var resources = rest.First().Resource;
 
-            if (resources == null || !resources.Any() )
+            if (resources == null || !resources.Any())
             {
                 _logger.LogError($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");
                 throw new FhirSpecificationProviderException($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");

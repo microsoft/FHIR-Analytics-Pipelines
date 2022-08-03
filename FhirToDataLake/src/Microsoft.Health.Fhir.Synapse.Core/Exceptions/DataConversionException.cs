@@ -3,18 +3,20 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
+using System;
+
+namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
-    public class ProcessParameters
+    public class DataConversionException : DataSerializationException
     {
-        public ProcessParameters(string schemaType, string resourceType)
+        public DataConversionException(string message)
+            : base(message)
         {
-            SchemaType = schemaType;
-            ResourceType = resourceType;
         }
 
-        public string SchemaType { get; }
-
-        public string ResourceType { get; }
+        public DataConversionException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
     }
 }

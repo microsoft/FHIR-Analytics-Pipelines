@@ -17,7 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
         /// <param name="dic1">the first dictionary.</param>
         /// <param name="dic2">the second dictionary.</param>
         /// <returns>the concat dictionary.</returns>
-        public static Dictionary<string, int> ConcatDictionaryCount(this Dictionary<string ,int> dic1, Dictionary<string, int> dic2)
+        public static Dictionary<string, int> ConcatDictionaryCount(this Dictionary<string, int> dic1, Dictionary<string, int> dic2)
         {
             EnsureArg.IsNotNull(dic1, nameof(dic1));
             EnsureArg.IsNotNull(dic2, nameof(dic2));

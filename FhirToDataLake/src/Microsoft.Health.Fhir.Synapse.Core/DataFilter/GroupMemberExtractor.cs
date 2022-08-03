@@ -186,7 +186,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 throw new GroupMemberExtractorException($"The resource of Group {groupId} is null.");
             }
 
-            var groupResource = (Group) bundle.Entry[0].Resource;
+            var groupResource = (Group)bundle.Entry[0].Resource;
 
             var fhirGroupMembershipTime = new FhirDateTime(groupMembershipTime);
             foreach (var member in groupResource.Member)

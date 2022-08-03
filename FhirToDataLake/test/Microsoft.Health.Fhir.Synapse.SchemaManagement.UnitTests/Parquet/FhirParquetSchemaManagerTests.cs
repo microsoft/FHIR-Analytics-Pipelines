@@ -14,21 +14,21 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
 {
     public class FhirParquetSchemaManagerTests
     {
-        private static readonly FhirParquetSchemaManager _testParquetSchemaManager;
+        private static readonly FhirParquetSchemaManager _testParquetSchemaManagerWithoutCustomizedSchema;
+        private static readonly FhirParquetSchemaManager _testParquetSchemaManagerWithCustomizedSchema;
 
         static FhirParquetSchemaManagerTests()
         {
-            var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
+            var schemaConfigurationOptionWithoutCustomizedSchema = Options.Create(new SchemaConfiguration());
+
+            var schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
             {
-                SchemaCollectionDirectory = TestConstants.DefaultSchemaDirectory,
+                EnableCustomizedSchema = true,
+                SchemaImageReference = TestUtils.MockSchemaImageReference,
             });
 
-            _testParquetSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
-        }
-
-        private static IParquetSchemaProvider ParquetSchemaProviderDelegate(string name)
-        {
-            return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
+            _testParquetSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithoutCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
+            _testParquetSchemaManagerWithCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
         }
 
         [InlineData("Patient", 24)]
@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Theory]
         public static void GivenASchemaType_WhenGetSchema_CorrectResultShouldBeReturned(string schemaType, int propertyCount)
         {
-            var result = _testParquetSchemaManager.GetSchema(schemaType);
+            var result = _testParquetSchemaManagerWithoutCustomizedSchema.GetSchema(schemaType);
 
             Assert.Equal(schemaType, result.Name);
             Assert.False(result.IsLeaf);
@@ -50,15 +50,24 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         {
             var schemaType = "InvalidSchemaType";
 
-            var result = _testParquetSchemaManager.GetSchema(schemaType);
+            var result = _testParquetSchemaManagerWithoutCustomizedSchema.GetSchema(schemaType);
             Assert.Null(result);
         }
 
         [Fact]
-        public static void WhenGetAllSchemas_CorrectResultShouldBeReturned()
+        public static void WhenGetAllSchemasWithoutCustomizedSchema_CorrectResultShouldBeReturned()
         {
-            var schemas = _testParquetSchemaManager.GetAllSchemas();
+            var schemas = _testParquetSchemaManagerWithoutCustomizedSchema.GetAllSchemas();
             Assert.Equal(145, schemas.Count);
+        }
+
+        [Fact]
+        public static void WhenGetAllSchemasWithCustomizedSchema_CorrectResultShouldBeReturned()
+        {
+            var schemas = _testParquetSchemaManagerWithCustomizedSchema.GetAllSchemas();
+
+            // Test customized schemas contain a "Patient_Customized" schema.
+            Assert.Equal(146, schemas.Count);
         }
 
         [InlineData("Patient")]
@@ -66,11 +75,20 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [InlineData("Encounter")]
         [InlineData("Claim")]
         [Theory]
-        public static void GivenAResourceType_WhenGetSchemaTypes_CorrectResultShouldBeReturned(string resourceType)
+        public static void GivenAResourceType_WhenGetSchemaTypesWithoutCustomizedSchema_CorrectResultShouldBeReturned(string resourceType)
         {
-            var schemaTypes = _testParquetSchemaManager.GetSchemaTypes(resourceType);
+            var schemaTypes = _testParquetSchemaManagerWithoutCustomizedSchema.GetSchemaTypes(resourceType);
             Assert.Single(schemaTypes);
             Assert.Equal(resourceType, schemaTypes[0]);
+        }
+
+        [Fact]
+        public static void GivenAResourceType_WhenGetSchemaTypesWithCustomizedSchema_CorrectResultShouldBeReturned()
+        {
+            var schemaTypes = _testParquetSchemaManagerWithCustomizedSchema.GetSchemaTypes("Patient");
+            Assert.Equal(2, schemaTypes.Count);
+            Assert.Contains<string>("Patient", schemaTypes);
+            Assert.Contains<string>("Patient_Customized", schemaTypes);
         }
 
         [Fact]
@@ -78,7 +96,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         {
             var resourceType = "InvalidResourceType";
 
-            var schemaTypes = _testParquetSchemaManager.GetSchemaTypes(resourceType);
+            var schemaTypes = _testParquetSchemaManagerWithoutCustomizedSchema.GetSchemaTypes(resourceType);
             Assert.Empty(schemaTypes);
         }
     }

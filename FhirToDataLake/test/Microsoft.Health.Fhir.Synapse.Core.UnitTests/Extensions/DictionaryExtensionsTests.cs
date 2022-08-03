@@ -17,7 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenANewKey_WhenAddToDictionary_TheKeyValuePairShouldBeAddedToDictionary()
         {
-            var dic = new Dictionary<string, int> { {_key, 1} };
+            var dic = new Dictionary<string, int> { { _key, 1 } };
             dic = dic.AddToDictionary("b", 2);
             Assert.Equal(2, dic.Count);
             Assert.True(dic.ContainsKey(_key));
@@ -84,7 +84,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenValidDictionary_WhenConcatDictionaryCount_TheDictionaryShouldBeConcatCorrectly()
         {
-            var dic1 = new Dictionary<string, int> { { "key1", 1 }, {"key2", 2} };
+            var dic1 = new Dictionary<string, int> { { "key1", 1 }, { "key2", 2 } };
             var dic2 = new Dictionary<string, int> { { "key2", 3 }, { "key3", 4 } };
             dic1 = dic1.ConcatDictionaryCount(dic2);
 
@@ -121,7 +121,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
 
             Dictionary<string, int> dic2 = null;
             Assert.Throws<ArgumentNullException>(() => dic2.ConcatDictionaryCount(dic1));
-
         }
     }
 }

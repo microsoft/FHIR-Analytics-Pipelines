@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
+using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Parquet;
 
@@ -28,26 +28,30 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
 {
     public sealed class ParquetDataProcessor : IColumnDataProcessor
     {
-        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly ArrowConfiguration _arrowConfiguration;
         private readonly ILogger<ParquetDataProcessor> _logger;
         private readonly ParquetConverter _parquetConverter;
+        private readonly IDataSchemaConverter _defaultSchemaConverter;
+        private readonly IDataSchemaConverter _customSchemaConverter;
 
         public ParquetDataProcessor(
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             IOptions<ArrowConfiguration> arrowConfiguration,
+            DataSchemaConverterDelegate schemaConverterDelegate,
             ILogger<ParquetDataProcessor> logger)
         {
             EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
             EnsureArg.IsNotNull(arrowConfiguration, nameof(arrowConfiguration));
+            EnsureArg.IsNotNull(schemaConverterDelegate, nameof(schemaConverterDelegate));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _fhirSchemaManager = fhirSchemaManager;
             _arrowConfiguration = arrowConfiguration.Value;
+            _defaultSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.DefaultSchemaProviderKey);
+            _customSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.CustomSchemaProviderKey);
             _logger = logger;
             _parquetConverter = new ParquetConverter();
 
-            var schemaSet = _fhirSchemaManager.GetAllSchemaContent();
+            var schemaSet = fhirSchemaManager.GetAllSchemaContent();
             _parquetConverter.InitializeSchemaSet(schemaSet);
             _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
         }
@@ -59,21 +63,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-                // Preprocess data
-            JsonBatchData preprocessedData = Preprocess(inputData, processParameters.SchemaType, cancellationToken);
+            // Convert data based on schema
+            JsonBatchData processedData;
 
-            // Get FHIR schema for the input data.
-            var schema = _fhirSchemaManager.GetSchema(processParameters.SchemaType);
-
-            if (schema == null)
+            // Currently the default schema type of each resource type is themselves
+            if (string.Equals(processParameters.SchemaType, processParameters.ResourceType, StringComparison.InvariantCulture))
             {
-                _logger.LogError($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
-                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{processParameters.SchemaType}'.");
+                processedData = _defaultSchemaConverter.Convert(inputData, processParameters.SchemaType, cancellationToken);
+            }
+            else
+            {
+                processedData = _customSchemaConverter.Convert(inputData, processParameters.ResourceType, cancellationToken);
             }
 
             var inputContent = string.Join(
                 Environment.NewLine,
-                preprocessedData.Values.Select(jsonObject => jsonObject.ToString(Formatting.None))
+                processedData.Values.Select(jsonObject => jsonObject.ToString(Formatting.None))
                          .Where(result => CheckBlockSize(processParameters.SchemaType, result)));
             if (string.IsNullOrEmpty(inputContent))
             {
@@ -88,7 +93,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
                 return Task.FromResult(
                     new StreamBatchData(
                         resultStream,
-                        preprocessedData.Values.Count(),
+                        processedData.Values.Count(),
                         processParameters.SchemaType));
             }
             catch (Exception ex)
@@ -98,145 +103,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             }
         }
 
-        public JsonBatchData Preprocess(
-            JsonBatchData inputData,
-            string schemaType,
-            CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Get FHIR schema for the input data.
-            var schema = _fhirSchemaManager.GetSchema(schemaType);
-
-            if (schema == null)
-            {
-                _logger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
-                throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{schemaType}'.");
-            }
-
-            var processedJsonData = inputData.Values
-                .Select(json => ProcessStructObject(json, schema))
-                .Where(processedResult => processedResult != null);
-
-            return new JsonBatchData(processedJsonData);
-        }
-
-        private JObject ProcessStructObject(JToken structItem, FhirParquetSchemaNode schemaNode)
-        {
-            if (structItem is not JObject fhirJObject)
-            {
-                _logger.LogError($"Current FHIR object is not a valid JObject: {schemaNode.GetNodePath()}.");
-                throw new ParquetDataProcessorException($"Current FHIR object is not a valid JObject: {schemaNode.GetNodePath()}.");
-            }
-
-            JObject processedObject = new JObject();
-
-            foreach (var subItem in fhirJObject)
-            {
-                JToken subObject = subItem.Value;
-
-                // Process choice type FHIR resource.
-                if (schemaNode.ContainsChoiceDataType(subItem.Key))
-                {
-                    var choiceTypeName = schemaNode.ChoiceTypeNodes[subItem.Key].Item1;
-                    var choiceTypeDataType = schemaNode.ChoiceTypeNodes[subItem.Key].Item2;
-
-                    if (!schemaNode.SubNodes[choiceTypeName].SubNodes.ContainsKey(choiceTypeDataType))
-                    {
-                        _logger.LogError($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {schemaNode.GetNodePath()}.");
-                        throw new ParquetDataProcessorException($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {schemaNode.GetNodePath()}.");
-                    }
-
-                    var dataTypeNode = schemaNode.SubNodes[choiceTypeName].SubNodes[choiceTypeDataType];
-                    processedObject.Add(choiceTypeName, ProcessChoiceTypeObject(subObject, dataTypeNode));
-                }
-                else
-                {
-                    // Ignore FHIR data node if it doesn't exist in schema.
-                    if (schemaNode.SubNodes == null || !schemaNode.SubNodes.ContainsKey(subItem.Key))
-                    {
-                        continue;
-                    }
-
-                    FhirParquetSchemaNode subNode = schemaNode.SubNodes[subItem.Key];
-
-                    if (subNode.IsRepeated)
-                    {
-                        // Process array FHIR resource.
-                        processedObject.Add(subNode.Name, ProcessArrayObject(subObject, subNode));
-                    }
-                    else if (subNode.IsLeaf)
-                    {
-                        // Process leaf FHIR resource.
-                        processedObject.Add(subNode.Name, ProcessLeafObject(subObject, subNode));
-                    }
-                    else
-                    {
-                        // Process struct FHIR resource.
-                        processedObject.Add(subNode.Name, ProcessStructObject(subObject, subNode));
-                    }
-                }
-            }
-
-            return processedObject;
-        }
-
-        private JArray ProcessArrayObject(JToken arrayItem, FhirParquetSchemaNode schemaNode)
-        {
-            if (arrayItem is not JArray fhirArrayObject)
-            {
-                _logger.LogError($"Current FHIR object is not a valid JArray: {schemaNode.GetNodePath()}.");
-                throw new ParquetDataProcessorException($"Current FHIR object is not a valid JArray: {schemaNode.GetNodePath()}.");
-            }
-
-            JArray arrayObject = new JArray();
-            foreach (var item in fhirArrayObject)
-            {
-                if (schemaNode.IsLeaf)
-                {
-                    arrayObject.Add(ProcessLeafObject(item, schemaNode));
-                }
-                else
-                {
-                    arrayObject.Add(ProcessStructObject(item, schemaNode));
-                }
-            }
-
-            return arrayObject;
-        }
-
-        private JValue ProcessLeafObject(JToken fhirObject, FhirParquetSchemaNode schemaNode)
-        {
-            if (schemaNode.Type == FhirParquetSchemaConstants.JsonStringType)
-            {
-                return new JValue(fhirObject.ToString(Formatting.None));
-            }
-
-            if (fhirObject is not JValue fhirLeafObject)
-            {
-                _logger.LogError($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
-                throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
-            }
-
-            return fhirLeafObject;
-        }
-
-        private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirParquetSchemaNode schemaNode)
-        {
-            JObject choiceRootObject = new JObject();
-            if (schemaNode.IsLeaf)
-            {
-                choiceRootObject.Add(schemaNode.Name, ProcessLeafObject(fhirObject, schemaNode));
-            }
-            else
-            {
-                choiceRootObject.Add(schemaNode.Name, ProcessStructObject(fhirObject, schemaNode));
-            }
-
-            return choiceRootObject;
-        }
-
-        private MemoryStream ConvertJsonDataToStream(string schemaType, IEnumerable<JObject> inputData)
+        private MemoryStream TransformJsonDataToStream(string schemaType, IEnumerable<JObject> inputData)
         {
             var content = string.Join(
                 Environment.NewLine,
