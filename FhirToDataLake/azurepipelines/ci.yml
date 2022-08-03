@@ -37,6 +37,10 @@ steps:
     SecretsFilter: '*'
     RunAsPreJob: false
 
+- script: |
+    echo '##vso[task.setvariable variable=LD_LIBRARY_PATH]$LD_LIBRARY_PATH:FhirToDataLake/test/Microsoft.Health.Fhir.Synapse.Core.UnitTests/bin/Debug/net5.0'
+  displayName: set environment variable for library path
+
 - task: DotNetCoreCLI@2
   inputs:
     command: 'test'
@@ -53,7 +57,7 @@ steps:
   inputs:
     azureSubscription: 'ResoluteOpenSource'
     workingDirectory: '$(Build.SourcesDirectory)'
-    scriptType: ps
+    scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
       dotnet test **\bin\**\*E2ETests.dll --verbosity detailed
