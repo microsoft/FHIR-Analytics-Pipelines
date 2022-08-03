@@ -45,9 +45,8 @@ steps:
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
-      export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(Build.SourcesDirectory)/test/Microsoft.Health.Fhir.Synapse.Core.UnitTests/bin/Debug/net5.0/
-      echo $LD_LIBRARY_PATH
-      dotnet test **\bin\**\*UnitTests.dll --verbosity detailed
+      export LD_LIBRARY_PATH=.
+      dotnet test FhirToDataLake/test/**/**/bin/Debug/net5.0/*.UnitTests.dll --verbosity detailed
   env:
     TestContainerRegistryServer: $(pipeline-container-registry-server)
     TestContainerRegistryPassword: $(pipeline-container-registry-password)
@@ -63,9 +62,8 @@ steps:
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
-      export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(Build.SourcesDirectory)/test/Microsoft.Health.Fhir.Synapse.Core.UnitTests/bin/Debug/net5.0/
-      echo $LD_LIBRARY_PATH
-      dotnet test **\bin\**\*E2ETests.dll --verbosity detailed
+      export LD_LIBRARY_PATH=.
+      dotnet test FhirToDataLake/test/**/**/bin/Debug/net5.0/*.E2ETests.dll --verbosity detailed
 
 - task: Docker@2
   displayName: Stop Azurite Emulator
