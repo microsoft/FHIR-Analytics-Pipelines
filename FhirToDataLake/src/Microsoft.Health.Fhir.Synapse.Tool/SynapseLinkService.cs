@@ -26,20 +26,15 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-			while (!stoppingToken.IsCancellationRequested)
-			{
-            	try
-            	{
-                	await _jobManager.RunAsync(stoppingToken);
-            	}
-            	catch (Exception ex)
-            	{
-                	Console.WriteLine(ex.ToString());
-					break;
-            	}
-			
-				await Task.Delay(TimeSpan.FromMinutes(2));
-			}
+            try
+            {
+                await _jobManager.RunAsync(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                _hostApplicationLifetime.StopApplication();
+            }
 
             Console.WriteLine("Execute finished sucessfully!");
             _hostApplicationLifetime.StopApplication();
