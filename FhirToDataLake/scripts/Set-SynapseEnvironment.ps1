@@ -48,8 +48,11 @@ Param(
 
 $JobName = "FhirSynapseJob"
 $PlaceHolderName = ".readme.txt"
-$OrasAppPath = "oras.exe"
 $CustomizedTemplateDirectory = "CustomizedSchema"
+
+$OrasDirectoryPath = "Oras"
+$OrasAppPath = "oras.exe"
+$OrasWinUrl = "https://github.com/deislabs/oras/releases/download/v0.12.0/oras_0.12.0_windows_amd64.tar.gz"
 
 # TODO: Align Tags here and ARM template, maybe save schemas in Storage/ACR and run remotely.
 $Tags = @{
@@ -232,6 +235,49 @@ function New-TableAndViewsForResources
     }
 }
 
+function Get-OrasExeApp {
+    param ([string]$orasDirectoryPath, [string]$orasAppPath, [string]$orasUrl)
+
+    $orasGzFile = "oras.tar.gz"
+    # Check if oras.exe have already been downloaded
+    if ((test-Path -Path $orasAppPath))
+    {
+        Write-Host " -> Oras application have already exist" -ForegroundColor Green 
+        return
+    }
+
+    Write-Host " -> Start download oras application from $orasUrl" -ForegroundColor Green 
+    try {
+        Invoke-WebRequest $orasUrl -OutFile $orasGzFile -ErrorAction Stop
+    }
+    catch {
+        Write-Host "Download oras application from $orasUrl failed: $($_.ToString())" -BackgroundColor Red
+        throw
+    }
+
+    # Create Oras directory for unpacking Oras artifact
+    if (!(test-path -path $orasDirectoryPath))
+    {
+        new-item -path $orasDirectoryPath -Itemtype Directory | Out-Null
+    }
+
+    $unpackParameters = @(
+        '-xvf'
+        $orasGzFile
+        '-C'
+        $orasDirectoryPath
+    )
+    $response = & 'tar' $unpackParameters 2>&1
+
+    if ($LastExitCode -ne 0)
+    {
+        Write-Host $response -ForegroundColor Red
+        throw "Failed to unpack Oras artifact: $response" 
+    }
+
+    Copy-Item "$orasDirectoryPath\$orasAppPath" -Destination "."
+    Write-Host " -> Finish download oras application from $orasUrl" -ForegroundColor Green 
+}
 
 function Get-CustomizedSchemaImage {
     param ([string]$orasAppPath, [string]$schemaImageReference, [string]$CustomizedTemplateDirectory)
@@ -471,7 +517,13 @@ catch{
 if ($CustomizedSchemaImage) {
     Write-Host "Create Tables for customized schema data, use schema image from $($CustomizedSchemaImage)." -ForegroundColor Green 
     try {
-        # a). Pull and parse customized schema from Container Registry.
+        # a). Download oras application if it not exist.
+        Get-OrasExeApp `
+            -orasDirectoryPath $OrasDirectoryPath `
+            -orasFileName $OrasAppName `
+            -orasUrl $OrasWinUrl
+
+        # b). Pull and parse customized schema from Container Registry.
         Get-CustomizedSchemaImage `
             -orasAppPath $OrasAppPath `
             -schemaImageReference $CustomizedSchemaImage `
@@ -479,12 +531,12 @@ if ($CustomizedSchemaImage) {
 
         $customizedSchemaDirectory = Join-Path -Path $CustomizedTemplateDirectory -ChildPath "Schema"
         
-        # b). Create place holder blobs for customized schema data.
+        # c). Create place holder blobs for customized schema data.
         $sqlFiles = Get-ChildItem $customizedSchemaDirectory -Filter "*.schema.json" -Name 
         $customizedSchemaTypes = $sqlFiles | ForEach-Object { Get-CustomizedSchemaType -resourceType $($_ -split "\.")[0] }
         New-PlaceHolderBlobs -storage $StorageName -container $Container -resultPath $ResultPath -schemaTypes $customizedSchemaTypes
 
-        # c). Create customized TABLEs Synapse.
+        # d). Create customized TABLEs Synapse.
         New-CustomizedTables `
             -serviceEndpoint $synapseSqlServerEndpoint `
             -databaseName $Database `
