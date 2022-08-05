@@ -18,18 +18,18 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
     {
         public static IEnumerable<object[]> GetInvalidJsonSchemaContents()
         {
-            yield return new object[] { JSchema.Parse(File.ReadAllText(Path.Join(TestConstants.CustomizedTestSchemaDirectory, "SchemaWithInvalidPropertyType.schema.json"))) };
-            yield return new object[] { JSchema.Parse(File.ReadAllText(Path.Join(TestConstants.CustomizedTestSchemaDirectory, "SchemaWithInvalidType.schema.json"))) };
-            yield return new object[] { JSchema.Parse(File.ReadAllText(Path.Join(TestConstants.CustomizedTestSchemaDirectory, "SchemaWithoutPropertyType.schema.json"))) };
-            yield return new object[] { JSchema.Parse(File.ReadAllText(Path.Join(TestConstants.CustomizedTestSchemaDirectory, "SchemaWithoutType.schema.json"))) };
+            yield return new object[] { JSchema.Parse(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithInvalidPropertyType.schema.json"))) };
+            yield return new object[] { JSchema.Parse(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithInvalidType.schema.json"))) };
+            yield return new object[] { JSchema.Parse(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithoutPropertyType.schema.json"))) };
+            yield return new object[] { JSchema.Parse(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithoutType.schema.json"))) };
         }
 
         [Fact]
         public void GivenAJsonSchema_WhenParseJSchema_CorrectResultShouldBeReturned()
         {
-            var testSchema = JSchema.Parse(File.ReadAllText(Path.Join(TestConstants.CustomizedTestSchemaDirectory, "ValidSchema.schema.json")));
+            var testSchema = JSchema.Parse(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "ValidSchema.schema.json")));
             var parquetSchemaNode = JsonSchemaParser.ParseJSchema("testType", testSchema);
-            var expectedSchemaNode = JSchema.Parse(File.ReadAllText(Path.Join(TestConstants.CustomizedTestSchemaDirectory, "ExpectedValidParquetSchemaNode.json")));
+            var expectedSchemaNode = JSchema.Parse(File.ReadAllText(Path.Join(TestUtils.ExpectedDataDirectory, "ExpectedValidParquetSchemaNode.json")));
 
             Assert.True(JToken.DeepEquals(
                 JObject.Parse(JsonConvert.SerializeObject(parquetSchemaNode)),

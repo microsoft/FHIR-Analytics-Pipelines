@@ -81,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [Fact]
         public void GivenNullResources_WhenGetOperationOutcomes_ExceptionShouldBeThrown()
         {
-            Assert.Throws<ArgumentNullException>( () => FhirBundleParser.GetOperationOutcomes(null));
+            Assert.Throws<ArgumentNullException>(() => FhirBundleParser.GetOperationOutcomes(null));
         }
 
         [Fact]

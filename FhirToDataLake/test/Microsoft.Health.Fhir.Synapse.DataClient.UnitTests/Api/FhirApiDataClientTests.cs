@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
@@ -23,8 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 {
     public class FhirApiDataClientTests
     {
-        private readonly AzureAccessTokenProvider _brokenProvider = new (new NullLogger<AzureAccessTokenProvider>());
-        private readonly MockAccessTokenProvider _mockProvider = new ();
+        private readonly MockTokenCredentialProvider _mockTokenCredentialProvider = new ();
         private readonly NullLogger<FhirApiDataClient> _nullFhirApiDataClientLogger =
             NullLogger<FhirApiDataClient>.Instance;
 
@@ -50,22 +50,22 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var httpClient = new HttpClient(new MockHttpMessageHandler(new Dictionary<string, HttpResponseMessage>()));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirApiDataClient(null, httpClient, _mockProvider, _nullFhirApiDataClientLogger));
+                () => new FhirApiDataClient(null, httpClient, _mockTokenCredentialProvider, _nullFhirApiDataClientLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirApiDataClient(dataSource, null, _mockProvider, _nullFhirApiDataClientLogger));
+                () => new FhirApiDataClient(dataSource, null, _mockTokenCredentialProvider, _nullFhirApiDataClientLogger));
 
             Assert.Throws<ArgumentNullException>(
                 () => new FhirApiDataClient(dataSource, httpClient, null, _nullFhirApiDataClientLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirApiDataClient(dataSource, httpClient, _mockProvider, null));
+                () => new FhirApiDataClient(dataSource, httpClient, _mockTokenCredentialProvider, null));
         }
 
         [Fact]
         public void GivenAValidDataClient_WhenGetMetadataSync_MetadataBundleShouldBeReturned()
         {
-            var client = CreateDataClient(FhirServerUri, _mockProvider);
+            var client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
 
             var metadataOption = new MetadataOptions();
             var metaData = client.Search(metadataOption);
@@ -76,7 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [Fact]
         public async Task GivenAValidDataClient_WhenGetMetadataASync_MetadataBundleShouldBeReturned()
         {
-            var client = CreateDataClient(FhirServerUri, _mockProvider);
+            var client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
 
             var metadataOption = new MetadataOptions();
             var metaData = await client.SearchAsync(metadataOption);
@@ -87,7 +87,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [Fact]
         public void GivenSearchOptionRequiredAccessToken_WhenSearchFhirDataSync_ExceptionShouldBeThrown()
         {
-            var client = CreateDataClient(FhirServerUri, _mockProvider);
+            var client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
             var searchOptions = new BaseSearchOptions("Patient", null);
             Assert.Throws<FhirSearchException>(() => client.Search(searchOptions));
         }
@@ -101,7 +101,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [InlineData("https://example.com/a/b/c/")]
         public async Task GivenAValidSearchOption_WhenSearchFhirData_CorrectBatchDataShouldBeReturned(string serverUrl)
         {
-            var client = CreateDataClient(serverUrl, _mockProvider);
+            var client = CreateDataClient(serverUrl, _mockTokenCredentialProvider);
 
             // First batch
             var queryParameters = new List<KeyValuePair<string, string>>
@@ -134,7 +134,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         public async Task GivenServerUrlWithPoundKey_WhenSearchFhirData_CorrectBatchDataShouldBeReturned(string serverUrl)
         {
             var datasource = CreateFhirApiDataSource(serverUrl, AuthenticationType.ManagedIdentity);
-            var client = CreateDataClient("https://example.com", _mockProvider, datasource);
+            var client = CreateDataClient("https://example.com", _mockTokenCredentialProvider, datasource);
 
             // First batch
             var queryParameters = new List<KeyValuePair<string, string>>
@@ -162,7 +162,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [Fact]
         public async Task GivenNullQueryParameters_WhenSearchFhirData_CorrectBatchDataShouldBeReturned()
         {
-            var client = CreateDataClient(FhirServerUri, _mockProvider);
+            var client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
             var searchOptions = new BaseSearchOptions(SampleResourceType, null);
             var bundle1 = await client.SearchAsync(searchOptions);
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
@@ -173,7 +173,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         {
             // A different start time will result in an unknown url to mock http handler.
             // An HttpRequestException will throw during search.
-            var client = CreateDataClient(FhirServerUri, _mockProvider);
+            var client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
             var queryParameters = new List<KeyValuePair<string, string>>
             {
                 new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse("2021-07-07T12:00:00+08:00").ToInstantString()}"),
@@ -189,7 +189,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [Fact]
         public async Task GivenAnInvalidTokenProvider_WhenSearchFhirData_ExceptionShouldBeThrown()
         {
-            var client = CreateDataClient(FhirServerUri, _brokenProvider);
+            var client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
             var queryParameters = new List<KeyValuePair<string, string>>
             {
                 new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
@@ -204,7 +204,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [Fact]
         public async Task GivenAValidResourceIdSearchOption_WhenSearchFhirData_CorrectBatchDataShouldBeReturned()
         {
-            var client = CreateDataClient(FhirServerUri, _mockProvider);
+            var client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
 
             var searchOptions = new ResourceIdSearchOptions("MedicationRequest", "3123", null);
             var bundle1 = await client.SearchAsync(searchOptions);
@@ -215,7 +215,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [Fact]
         public async Task GivenAValidCompartmentSearchOption_WhenSearchFhirData_CorrectBatchDataShouldBeReturned()
         {
-            var client = CreateDataClient(FhirServerUri, _mockProvider);
+            var client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
             var queryParameters = new List<KeyValuePair<string, string>>
             {
                 new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
@@ -227,7 +227,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
         }
 
-        private FhirApiDataClient CreateDataClient(string fhirServerUrl, IAccessTokenProvider accessTokenProvider, IFhirApiDataSource dataSource = null)
+        private FhirApiDataClient CreateDataClient(string fhirServerUrl, ITokenCredentialProvider mockProvider, IFhirApiDataSource dataSource = null)
         {
             // Set up http client.
             var comparer = StringComparer.OrdinalIgnoreCase;
@@ -261,7 +261,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 
             var httpClient = new HttpClient(new MockHttpMessageHandler(requestMap));
 
-            var dataClient = new FhirApiDataClient(dataSource, httpClient, accessTokenProvider, _nullFhirApiDataClientLogger);
+            var dataClient = new FhirApiDataClient(dataSource, httpClient, mockProvider, _nullFhirApiDataClientLogger);
             return dataClient;
         }
 

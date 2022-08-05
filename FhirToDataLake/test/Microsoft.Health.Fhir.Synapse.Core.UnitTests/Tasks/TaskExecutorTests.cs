@@ -11,12 +11,14 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
+using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
@@ -35,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 {
     public class TaskExecutorTests
     {
-        private string TestBlobEndpoint = "UseDevelopmentStorage=true";
+        private static readonly string TestBlobEndpoint = "UseDevelopmentStorage=true";
 
         [Fact]
         public async Task GivenValidDataClient_WhenExecuteTask_DataShouldBeSavedToBlob()
@@ -134,33 +136,31 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private static IFhirSchemaManager<FhirParquetSchemaNode> GetFhirSchemaManager()
         {
-            var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
-            {
-                SchemaCollectionDirectory = TestUtils.TestSchemaDirectoryPath,
-            });
+            var schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
             return new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
         }
 
         private static ParquetDataProcessor GetParquetDataProcessor()
         {
-            var schemaConfigurationOption = Options.Create(new SchemaConfiguration()
-            {
-                SchemaCollectionDirectory = TestUtils.TestSchemaDirectoryPath,
-            });
+            var schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
             var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
             var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
+            var defaultConverter = new DefaultSchemaConverter(fhirSchemaManager, NullLogger<DefaultSchemaConverter>.Instance);
+            var fhirConverter = new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), schemaConfigurationOption, NullLogger<CustomSchemaConverter>.Instance);
+
             return new ParquetDataProcessor(
-            fhirSchemaManager,
-            arrowConfigurationOptions,
-            NullLogger<ParquetDataProcessor>.Instance);
+                fhirSchemaManager,
+                arrowConfigurationOptions,
+                TestUtils.TestDataSchemaConverterDelegate,
+                NullLogger<ParquetDataProcessor>.Instance);
         }
 
         private IFhirDataWriter GetDataWriter(string containerName)
         {
-            var containerFactory = new AzureBlobContainerClientFactory(new NullLoggerFactory());
+            var containerFactory = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()) ,new NullLoggerFactory());
             var storageConfig = new DataLakeStoreConfiguration
             {
                 StorageUrl = TestBlobEndpoint,
@@ -181,7 +181,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private JobProgressUpdater GetJobUpdater(Job job)
         {
-            var containerFactory = new AzureBlobContainerClientFactory(new NullLoggerFactory());
+            var containerFactory = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLoggerFactory());
             var storageConfig = new DataLakeStoreConfiguration
             {
                 StorageUrl = TestBlobEndpoint,

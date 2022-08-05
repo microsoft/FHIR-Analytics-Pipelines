@@ -188,7 +188,7 @@ namespace Microsoft
 									const auto schema = get_patient_schema();
 									std::shared_ptr<arrow::Buffer> res;
 									const Status status = parquet_instance->ConvertToParquetBuffer(patient_data, strlen(patient_data), schema, res);
-
+									
 									Assert::IsTrue(status.IsOk());
 
 									// check the output stream 

@@ -38,7 +38,23 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
 
         public async Task<List<Dictionary<string, Template>>> GetTemplateCollectionAsync(string schemaImageReference, CancellationToken cancellationToken)
         {
-            ImageInfo imageInfo = ImageInfo.CreateFromImageReference(schemaImageReference);
+            if (string.IsNullOrWhiteSpace(schemaImageReference))
+            {
+                _logger.LogError("Schema image reference is null or empty.");
+                throw new ContainerRegistrySchemaException("Schema image reference is null or empty.");
+            }
+
+            ImageInfo imageInfo;
+            try
+            {
+                imageInfo = ImageInfo.CreateFromImageReference(schemaImageReference);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", schemaImageReference, ex.Message));
+                throw new ContainerRegistrySchemaException(string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", schemaImageReference, ex.Message), ex);
+            }
+
             var accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
 
             try

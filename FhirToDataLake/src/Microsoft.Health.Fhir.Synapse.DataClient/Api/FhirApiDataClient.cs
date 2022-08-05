@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
@@ -34,18 +35,20 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         public FhirApiDataClient(
             IFhirApiDataSource dataSource,
             HttpClient httpClient,
-            IAccessTokenProvider accessTokenProvider,
+            ITokenCredentialProvider tokenCredentialProvider,
             ILogger<FhirApiDataClient> logger)
         {
             EnsureArg.IsNotNull(dataSource, nameof(dataSource));
             EnsureArg.IsNotNullOrEmpty(dataSource.FhirServerUrl, nameof(dataSource.FhirServerUrl));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
-            EnsureArg.IsNotNull(accessTokenProvider, nameof(accessTokenProvider));
+            EnsureArg.IsNotNull(tokenCredentialProvider, nameof(tokenCredentialProvider));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _dataSource = dataSource;
             _httpClient = httpClient;
-            _accessTokenProvider = accessTokenProvider;
+            _accessTokenProvider = new AzureAccessTokenProvider(
+                tokenCredentialProvider.GetCredential(TokenCredentialTypes.External),
+                new Logger<AzureAccessTokenProvider>(new LoggerFactory()));
             _logger = logger;
 
             // Timeout will be handled by Polly policy.

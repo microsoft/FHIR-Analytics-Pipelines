@@ -6,6 +6,7 @@
 using System;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
@@ -13,12 +14,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
     {
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
         private readonly ILoggerFactory _loggerFactory;
+        private readonly ITokenCredentialProvider _credentialProvider;
 
         public AzureBlobContainerClientFactory(
+            ITokenCredentialProvider credentialProvider,
             ILoggerFactory loggerFactory)
         {
+            EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
             EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
 
+            _credentialProvider = credentialProvider;
             _loggerFactory = loggerFactory;
         }
 
@@ -38,6 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
             return new AzureBlobContainerClient(
                 containerUrl,
+                _credentialProvider,
                 _loggerFactory.CreateLogger<AzureBlobContainerClient>());
         }
     }

@@ -10,7 +10,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter
 {
     public static class DataWriterRegistrationExtensions
     {
-        public static IServiceCollection AddAzure(this IServiceCollection services)
+        public static IServiceCollection AddDataWriter(this IServiceCollection services)
         {
             services.AddSingleton<IAzureBlobContainerClientFactory, AzureBlobContainerClientFactory>();
             services.AddSingleton<IDataSink, AzureBlobDataSink>();

@@ -48,12 +48,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         private static readonly Dictionary<string, string> _groupIdToTestDataFile = new Dictionary<string, string>
         {
-            {_sampleGroupId, "sampleGroupBundle.json"},
-            {_nestedGroupId, "nestedGroupBundle.json"},
-            {_invalidMembersGroupId, "invalidGroupMemberBundle.json"},
-            {_notFoundGroupId, "emptyBundle.json"},
-            {_invalidGroup, "invalidGroupBundle.json"},
-            {_invalidBundle, "invalidBundle.json"},
+            { _sampleGroupId, "sampleGroupBundle.json" },
+            { _nestedGroupId, "nestedGroupBundle.json" },
+            { _invalidMembersGroupId, "invalidGroupMemberBundle.json" },
+            { _notFoundGroupId, "emptyBundle.json" },
+            { _invalidGroup, "invalidGroupBundle.json" },
+            { _invalidBundle, "invalidBundle.json" },
         };
 
         public GroupMemberExtractorTests()
@@ -63,7 +63,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             dataClient.SearchAsync(new ResourceIdSearchOptions("Group", _sampleGroupId, null), _noneCancellationToken)
                 .ReturnsForAnyArgs(x =>
                 {
-                    var resourceId = ((ResourceIdSearchOptions) x[0]).ResourceId;
+                    var resourceId = ((ResourceIdSearchOptions)x[0]).ResourceId;
                     var testDataFile = _groupIdToTestDataFile.ContainsKey(resourceId)
                         ? Path.Combine(_testDataFolder, _groupIdToTestDataFile[resourceId])
                         : TestDataConstants.EmptyBundleFile;
@@ -115,8 +115,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             pat4: invalid, duplicated patient while inactive
             pat9: absolute URL pointing to an internal resource
             */
-            var expectedPatientIds = new List<string> {"pat1", "pat3", "pat4", "pat6", "pat9"};
-            var unExpectedPatientIds = new List<string> {"pat2", "pat5", "pat7", "pat8"};
+            var expectedPatientIds = new List<string> { "pat1", "pat3", "pat4", "pat6", "pat9" };
+            var unExpectedPatientIds = new List<string> { "pat2", "pat5", "pat7", "pat8" };
             foreach (var expectedPatientId in expectedPatientIds)
             {
                 Assert.Contains(expectedPatientId, resultPatientIds);
@@ -141,8 +141,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             // the new patient groupPat1 is included
             // the duplicate patient pat1 is included and deduplicated.
             // the duplicate patient pat2 is included.
-            var expectedPatientIds = new List<string> {"pat1", "pat2", "pat3", "pat4", "pat6", "pat9", "groupPat1"};
-            var unExpectedPatientIds = new List<string> {"pat5", "pat7", "pat8"};
+            var expectedPatientIds = new List<string> { "pat1", "pat2", "pat3", "pat4", "pat6", "pat9", "groupPat1" };
+            var unExpectedPatientIds = new List<string> { "pat5", "pat7", "pat8" };
             foreach (var expectedPatientId in expectedPatientIds)
             {
                 Assert.Contains(expectedPatientId, resultPatientIds);
@@ -166,7 +166,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         {
             var dateTimeOffset = new DateTimeOffset(new DateTime(year, 1, 1));
             var resultPatientIds = await _groupMemberExtractor.GetGroupPatientsAsync(
-                _sampleGroupId, 
+                _sampleGroupId,
                 null,
                 dateTimeOffset,
                 _noneCancellationToken);
@@ -177,7 +177,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [Fact]
         public async Task GivenNoFoundGroupId_WhenGetGroupPatients_ExceptionShouldBeThrown()
         {
-            var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>( () => _groupMemberExtractor.GetGroupPatientsAsync(_notFoundGroupId, null, _triggerTime, _noneCancellationToken));
+            var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_notFoundGroupId, null, _triggerTime, _noneCancellationToken));
             Assert.StartsWith($"Group {_notFoundGroupId} is not found.", exception.Message);
         }
 

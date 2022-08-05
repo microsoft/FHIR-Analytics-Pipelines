@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         private static readonly string ResourceTypesPattern = string.Join('|', R4FhirModelInfo.SupportedResources);
         private static readonly string ReferenceCaptureRegexPattern = $@"(?<{ResourceTypeCapture}>{ResourceTypesPattern})\/(?<{ResourceIdCapture}>[A-Za-z0-9\-\.]{{1,64}})(\/_history\/[A-Za-z0-9\-\.]{{1,64}})?";
 
-        private static readonly Regex ReferenceRegex = new(
+        private static readonly Regex ReferenceRegex = new (
             ReferenceCaptureRegexPattern,
             RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 

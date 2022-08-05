@@ -42,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         public const string TypeKey = "_type";
 
         /// <summary>
-        /// Metadata 
+        /// Metadata
         /// </summary>
         public const string MetadataKey = "metadata";
 
