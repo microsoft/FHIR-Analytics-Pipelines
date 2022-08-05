@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
                 }
             }
 
-            _logger.LogInformation("Cancellation requested: ending health checks");
+            _logger.LogInformation("Health check service stopped.");
         }
     }
 }

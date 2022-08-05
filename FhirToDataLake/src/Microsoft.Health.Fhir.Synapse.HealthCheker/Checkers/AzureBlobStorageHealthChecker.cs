@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -42,7 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
             EnsureArg.IsNotNull(healthCheckResult, nameof(healthCheckResult));
 
             // Ensure we can write to the storage account
-            var blobPath = $"{HealthCheckBlobPrefix}/{Guid.NewGuid()}";
+            var blobPath = $"{HealthCheckBlobPrefix}";
 
             byte[] bytes = Encoding.UTF8.GetBytes(HealthCheckBlobPrefix);
             MemoryStream stream = new (bytes);
