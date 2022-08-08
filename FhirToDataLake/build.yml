@@ -31,10 +31,21 @@ steps:
     configuration: '$(buildConfiguration)'
     msbuildArguments: '-p:ApplicationVersion=$(version)'
 
-- script: |
-    "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" init /server "(localdb)\MsSqlLocalDb"
-    "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start
-  displayName: 'Start Azure Storage Emulator'
+- task: NodeTool@0
+  displayName: 'Use Node.js'
+  inputs:
+    versionSpec: '16.*'
+
+- task: PowerShell@2
+  displayName: 'Install and launch Azurite'
+  inputs:
+    targetType: 'inline'
+    script: |
+      npm install -g azurite 
+      mkdir c:/azurite
+      Start-Job -ScriptBlock { azurite --silent --location c:\azurite --debug c:\azurite\debug.log  }
+    pwsh: true
+displayName: 'Start Azure Storage Emulator'
 
 - script: |
     docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
