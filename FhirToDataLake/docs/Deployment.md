@@ -133,4 +133,4 @@ To run the PowerShell Script, perform the following steps:
 
 Go to your Synapse workspace serverless SQL pool. You should see a new database named _fhirdb_. Expand _External Tables_ and _Views_ to see the entities. Your FHIR data is now ready to be queried.
 
-As you add more data to the FHIR server, it will be fetched automatically to the Data Lake and become available for querying.
+As you add more data to the FHIR server, it will be fetched automatically to the Data Lake and become available for querying. 
