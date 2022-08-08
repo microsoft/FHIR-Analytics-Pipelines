@@ -81,6 +81,24 @@
                 "description": "Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. Will export all data of requiredTypes if not specified."
             }
         },
+        "customizedSchema":{
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+            true,
+            false
+            ],
+            "metadata": {
+                "description": "Whether to enable customized schema on this pipeline. If enabled, pipeline can generate customized data based on given schemas."
+            }
+        },
+        "customizedSchemaImageReference":{
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The customized schema image reference on for the image on Container Registry. Refer https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
+            }
+        },
         "packageUrl": {
             "type": "string",
             "defaultValue": "https://fhiranalyticspipeline.blob.core.windows.net/builds/Microsoft.Health.Fhir.Synapse.FunctionApp.zip",
@@ -256,6 +274,14 @@
                         {
                             "name": "filter__typeFilters",
                             "value": "[parameters('typeFilters')]"
+                        },
+                        {
+                            "name": "schema__enableCustomizedSchema",
+                            "value": "[parameters('customizedSchema')]"
+                        },
+                        {
+                            "name": "schema__schemaImageReference",
+                            "value": "[parameters('customizedSchemaImageReference')]"
                         },
                         {
                             "name": "dataLakeStore__storageUrl",
