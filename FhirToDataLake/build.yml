@@ -36,16 +36,11 @@ steps:
   inputs:
     versionSpec: '16.*'
 
-- task: PowerShell@2
-  displayName: 'Install and launch Azurite'
-  inputs:
-    targetType: 'inline'
-    script: |
-      npm install -g azurite 
-      mkdir c:/azurite
-      Start-Job -ScriptBlock { azurite --silent --location c:\azurite --debug c:\azurite\debug.log  }
-    pwsh: true
-  displayName: 'Start Azure Storage Emulator'
+- bash: |
+    sudo npm install -g azurite
+    sudo mkdir azurite
+    sudo azurite --silent --location azurite --debug azurite\debug.log &
+  displayName: 'Install and Run Azurite'
 
 - script: |
     docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
