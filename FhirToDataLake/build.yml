@@ -45,7 +45,7 @@ steps:
       mkdir c:/azurite
       Start-Job -ScriptBlock { azurite --silent --location c:\azurite --debug c:\azurite\debug.log  }
     pwsh: true
-displayName: 'Start Azure Storage Emulator'
+  displayName: 'Start Azure Storage Emulator'
 
 - script: |
     docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
