@@ -60,8 +60,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
             {
                 throw new HealthCheckException("Read/Write content from blob failed.");
             }
-
-            healthCheckResult.Status = HealthCheckStatus.PASS;
         }
     }
 }

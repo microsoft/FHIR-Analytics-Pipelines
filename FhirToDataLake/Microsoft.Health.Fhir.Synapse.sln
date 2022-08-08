@@ -42,6 +42,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synap
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.E2ETests", "test\Microsoft.Health.Fhir.Synapse.E2ETests\Microsoft.Health.Fhir.Synapse.E2ETests.csproj", "{01C19DA0-63E6-43E2-B421-12CC8BD7EB94}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.HealthCheck", "src\Microsoft.Health.Fhir.Synapse.HealthCheker\Microsoft.Health.Fhir.Synapse.HealthCheck.csproj", "{2EB73ADE-AA9A-4859-BF9D-1565D4618141}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests", "test\Microsoft.Health.Fhir.Synapse.Parquet.HealthCheck.UnitTests\Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.csproj", "{8E55B4CC-3C6B-4EAD-AF83-74B9B173CE87}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -112,6 +116,14 @@ Global
 		{01C19DA0-63E6-43E2-B421-12CC8BD7EB94}.Debug|x64.Build.0 = Debug|x64
 		{01C19DA0-63E6-43E2-B421-12CC8BD7EB94}.Release|x64.ActiveCfg = Release|x64
 		{01C19DA0-63E6-43E2-B421-12CC8BD7EB94}.Release|x64.Build.0 = Release|x64
+		{2EB73ADE-AA9A-4859-BF9D-1565D4618141}.Debug|x64.ActiveCfg = Debug|x64
+		{2EB73ADE-AA9A-4859-BF9D-1565D4618141}.Debug|x64.Build.0 = Debug|x64
+		{2EB73ADE-AA9A-4859-BF9D-1565D4618141}.Release|x64.ActiveCfg = Release|x64
+		{2EB73ADE-AA9A-4859-BF9D-1565D4618141}.Release|x64.Build.0 = Release|x64
+		{8E55B4CC-3C6B-4EAD-AF83-74B9B173CE87}.Debug|x64.ActiveCfg = Debug|x64
+		{8E55B4CC-3C6B-4EAD-AF83-74B9B173CE87}.Debug|x64.Build.0 = Debug|x64
+		{8E55B4CC-3C6B-4EAD-AF83-74B9B173CE87}.Release|x64.ActiveCfg = Release|x64
+		{8E55B4CC-3C6B-4EAD-AF83-74B9B173CE87}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -124,6 +136,7 @@ Global
 		{9AA63275-45BE-4019-B5F1-E371A985D045} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 		{8805CF56-8937-4FF9-8CF0-3450258C9DE6} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 		{01C19DA0-63E6-43E2-B421-12CC8BD7EB94} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
+		{8E55B4CC-3C6B-4EAD-AF83-74B9B173CE87} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D0EA8CE0-8DF8-4ADD-B31E-7A3CCEE49523}

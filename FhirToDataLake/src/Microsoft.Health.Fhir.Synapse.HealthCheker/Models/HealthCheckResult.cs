@@ -30,10 +30,5 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Models
         /// The time the Health Check started
         /// </summary>
         public DateTime StartTime { get; set; }
-
-        /// <summary>
-        /// The time the Health Check finished
-        /// </summary>
-        public DateTime EndTime { get; set; }
     }
 }

@@ -33,6 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
             try
             {
                 await PerformHealthCheckImplAsync(healthCheckResult, cancellationToken);
+                healthCheckResult.Status = HealthCheckStatus.PASS;
             }
             catch (Exception e)
             {
@@ -41,7 +42,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
                 healthCheckResult.ErrorMessage = e.Message;
             }
 
-            healthCheckResult.EndTime = DateTime.UtcNow;
             Logger.LogInformation($"Health check {Name} complete. Status {healthCheckResult.Status}");
             return healthCheckResult;
         }

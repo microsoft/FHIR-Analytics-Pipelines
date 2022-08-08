@@ -41,18 +41,16 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
                 {
                     var startTime = DateTime.Now;
                     _logger.LogInformation("Starting to perform health checks");
+
+                    // Delay interval time.
+                    var delayTask = Task.Delay(_checkIntervalInSeconds, cancellationToken);
+
+                    // Perform health check.
                     var healthStatus = new HealthStatus();
                     await _healthCheckEngine.CheckHealthAsync(healthStatus, cancellationToken);
-                    var endTime = DateTime.Now;
-                    var duration = endTime - startTime;
-                    var nextRun = TimeSpan.FromSeconds(Math.Max(0, (_checkIntervalInSeconds - duration).TotalSeconds));
 
-                    var nextRunInMs = (int)nextRun.TotalMilliseconds;
-                    if (nextRunInMs > 0)
-                    {
-                        _logger.LogInformation($"Waiting {nextRunInMs} milliseconds to perform next set of health checks");
-                        await Task.Delay((int)nextRun.TotalMilliseconds, cancellationToken);
-                    }
+                    var endTime = DateTime.Now;
+                    await delayTask;
                 }
                 catch (Exception e)
                 {

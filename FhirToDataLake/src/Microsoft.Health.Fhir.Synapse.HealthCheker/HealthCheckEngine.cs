@@ -41,8 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
         {
             EnsureArg.IsNotNull(healthStatus, nameof(healthStatus));
 
-            var tasks = new List<Task>();
-            var collectedResults = new Dictionary<string, HealthCheckResult>();
+            var tasks = new List<Task<HealthCheckResult>>();
 
             // healthCheckToken will be canceled if health check timeout or cancellationToken is canceled.
             using var healthCheckToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -50,26 +49,13 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
 
             foreach (var healthChecker in _healthCheckers)
             {
-                collectedResults[healthChecker.Name] = new HealthCheckResult(healthChecker.Name);
+                tasks.Add(healthChecker.PerformHealthCheckAsync(healthCheckToken.Token));
             }
 
-            foreach (var healthChecker in _healthCheckers)
-            {
-                tasks.Add(ExecuteHealthCheck(healthChecker, collectedResults, healthCheckToken.Token));
-            }
-
-            await Task.WhenAll(tasks);
-
+            healthStatus.HealthCheckResults = await Task.WhenAll(tasks);
             healthStatus.EndTime = DateTime.UtcNow;
-            healthStatus.HealthCheckResults = collectedResults.Values.ToList();
 
             _logger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}. Time using : {(healthStatus.EndTime - healthStatus.StartTime).TotalSeconds} seconds.");
-        }
-
-        private static async Task ExecuteHealthCheck(IHealthChecker healthChecker, Dictionary<string, HealthCheckResult> results, CancellationToken cancellationToken)
-        {
-            // Perform the actual health check and override the initial result
-            results[healthChecker.Name] = await healthChecker.PerformHealthCheckAsync(cancellationToken);
         }
     }
 }

@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
@@ -27,5 +28,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// </summary>
         [JsonProperty("endTime")]
         public DateTimeOffset? EndTime { get; set; }
+        /// <summary>
+        /// Resource types to process.
+        /// If no resources are present, we will process all resource types.
+        /// </summary>
+        [JsonProperty("resourceTypeFilters")]
+        public IEnumerable<string> ResourceTypeFilters { get; set; }
     }
 }
