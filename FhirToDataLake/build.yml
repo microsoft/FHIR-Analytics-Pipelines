@@ -22,6 +22,12 @@ steps:
     feedsToUse: 'config'
     nugetConfigPath: 'FhirToDataLake/NuGet.Config'
 
+- script: |
+    docker pull mcr.microsoft.com/azure-storage/azurite
+    docker run -d --name azurite-emulator-analytics-ci -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+        mcr.microsoft.com/azure-storage/azurite
+  displayName: 'Start Azurite Emulator'
+
 - task: MSBuild@1
   displayName: 'Build solution'
   inputs:
@@ -90,6 +96,13 @@ steps:
     inlineScript: |
       dotnet test **\bin\**\*E2ETests.dll --verbosity detailed
 
+- task: Docker@2
+  displayName: Stop Azurite Emulator
+  condition: succeededOrFailed()
+  inputs:
+    command: stop
+    container: azurite-emulator-analytics-ci
+    
 - task: Docker@2
   displayName: Stop mock-data-source
   condition: succeededOrFailed()
