@@ -37,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
             }
             catch (Exception e)
             {
-                Logger.LogError($"The HealthCheck [{Name}] did not pass", e);
+                Logger.LogError($"The component {Name} is not healthy.", e);
                 healthCheckResult.Status = HealthCheckStatus.FAIL;
                 healthCheckResult.ErrorMessage = e.Message;
             }
