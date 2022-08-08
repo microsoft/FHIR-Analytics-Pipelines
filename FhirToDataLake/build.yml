@@ -42,11 +42,6 @@ steps:
     sudo azurite --silent --location azurite --debug azurite\debug.log &
   displayName: 'Install and Run Azurite'
 
-- script: |
-    docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
-    docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
-  displayName: Start mock-data-source
-
 - task: AzureKeyVault@2
   inputs:
     azureSubscription: 'ResoluteOpenSource'
@@ -95,13 +90,6 @@ steps:
     scriptLocation: inlineScript
     inlineScript: |
       dotnet test **\bin\**\*E2ETests.dll --verbosity detailed
-
-- task: Docker@2
-  displayName: Stop mock-data-source
-  condition: succeededOrFailed()
-  inputs:
-    command: stop
-    container: mock-data-source
 
 # ref: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-function-app?view=azure-devops#error-publish-using-zip-deploy-option-is-not-supported-for-msbuild-package-type
 - task: MSBuild@1
