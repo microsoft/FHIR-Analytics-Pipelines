@@ -22,12 +22,6 @@ steps:
     feedsToUse: 'config'
     nugetConfigPath: 'FhirToDataLake/NuGet.Config'
 
-- script: |
-    docker pull mcr.microsoft.com/azure-storage/azurite
-    docker run -d --name azurite-emulator-analytics-ci -p 10000:10000 -p 10001:10001 -p 10002:10002 \
-        mcr.microsoft.com/azure-storage/azurite
-  displayName: 'Start Azurite Emulator'
-
 - task: MSBuild@1
   displayName: 'Build solution'
   inputs:
@@ -38,9 +32,10 @@ steps:
     msbuildArguments: '-p:ApplicationVersion=$(version)'
 
 - script: |
-    "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" init /server "(localdb)\MsSqlLocalDb"
-    "%ProgramFiles(x86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start
-  displayName: 'Start Azure Storage Emulator'
+    docker pull mcr.microsoft.com/azure-storage/azurite
+    docker run -d --name azurite-emulator-analytics-ci -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+        mcr.microsoft.com/azure-storage/azurite
+  displayName: 'Start Azurite Emulator'
 
 - script: |
     docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
