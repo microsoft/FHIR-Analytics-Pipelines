@@ -11,6 +11,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
+using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
@@ -21,21 +22,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly Channel<TaskContext> _progressChannel;
         private readonly ILogger<JobProgressUpdater> _logger;
 
-        // Time interval to sync job to store.
-        private const int UploadDataIntervalInSeconds = 30;
-
         public JobProgressUpdater(
             IJobStore jobStore,
             Job job,
             ILogger<JobProgressUpdater> logger)
         {
-            EnsureArg.IsNotNull(jobStore, nameof(jobStore));
-            EnsureArg.IsNotNull(job, nameof(job));
-            EnsureArg.IsNotNull(logger, nameof(logger));
-
-            _jobStore = jobStore;
-            _job = job;
-            _logger = logger;
+            _jobStore = EnsureArg.IsNotNull(jobStore, nameof(jobStore));
+            _job = EnsureArg.IsNotNull(job, nameof(job));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             var channelOptions = new UnboundedChannelOptions
             {
                 SingleReader = true,
@@ -53,21 +47,33 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 if (channelReader.TryRead(out TaskContext context))
                 {
-                    foreach (var schemaType in context.SchemaTypes)
+                    // if a uncompleted context is produced, and before this context is consumed, it is updated to completed.
+                    // there are two context in this channel, since the context is a object, so the value of them are the same, both are completed.
+                    // when the first context is consumed, its data are merged to job and it is removed from the job, so we do nothing for the second context.
+                    if (_job.RunningTasks.ContainsKey(context.Id))
                     {
-                        _job.ProcessedResourceCounts[schemaType] = context.ProcessedCount[schemaType];
-                        _job.SkippedResourceCounts[schemaType] = context.SkippedCount[schemaType];
-                        _job.PartIds[schemaType] = context.PartId[schemaType];
+                        _job.RunningTasks[context.Id] = context;
+
+                        if (context.IsCompleted)
+                        {
+                            _job.TotalResourceCounts = _job.TotalResourceCounts.ConcatDictionaryCount(context.SearchCount);
+                            _job.SkippedResourceCounts = _job.SkippedResourceCounts.ConcatDictionaryCount(context.SkippedCount);
+                            _job.ProcessedResourceCounts = _job.ProcessedResourceCounts.ConcatDictionaryCount(context.ProcessedCount);
+
+                            if (context.FilterScope == FilterScope.Group)
+                            {
+                                foreach (var (patientId, versionId) in context.SearchProgress.PatientVersionId)
+                                {
+
+                                    _job.PatientVersionId[patientId] = versionId;
+                                }
+                            }
+
+                            _job.RunningTasks.Remove(context.Id);
+                        }
                     }
 
-                    _job.ResourceProgresses[context.ResourceType] = context.ContinuationToken;
-                    _job.TotalResourceCounts[context.ResourceType] = context.SearchCount;
-                    if (context.IsCompleted)
-                    {
-                        _job.CompletedResources.Add(context.ResourceType);
-                    }
-
-                    if (uploadTime.AddSeconds(UploadDataIntervalInSeconds) < DateTimeOffset.UtcNow)
+                    if (uploadTime.AddSeconds(JobConfigurationConstants.UploadDataIntervalInSeconds) < DateTimeOffset.UtcNow)
                     {
                         uploadTime = DateTimeOffset.UtcNow;
 

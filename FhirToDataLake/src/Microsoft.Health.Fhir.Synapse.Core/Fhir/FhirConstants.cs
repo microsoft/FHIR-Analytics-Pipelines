@@ -3,14 +3,16 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
+namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 {
-    public static class TestConstants
+    public static class FhirConstants
     {
-        public const string CustomizedTestSchemaDirectory = "../../../TestData/CustomizedSchema";
+        public const string PatientResource = "Patient";
 
-        public const string TestTemplateTarGzPath = "../../../TestData/TemplateTest.tar.gz";
+        public const string GroupResource = "Group";
 
-        public const string DefaultSchemaDirectory = "../../../../../data/schemas";
+        public const string AllResource = "*";
+
+        public const string StructureDefinition = "StructureDefinition";
     }
 }

@@ -53,6 +53,34 @@
                 "description": "The name of the container to store job and data."
             }
         },
+        "filterScope":{
+            "type": "string",
+            "defaultValue": "System",
+            "metadata": {
+                "description": "The export scope, System or Group."
+            }
+        },
+        "groupId":{
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The group id you want to export data for Group scope."
+            }
+        },
+        "requiredTypes":{
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Specify which types of resources will be included. For example, _type=Patient would return only patient resources. Will export all resource types if not specified."
+            }
+        },
+        "typeFilters":{
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. Will export all data of requiredTypes if not specified."
+            }
+        },
         "packageUrl": {
             "type": "string",
             "defaultValue": "https://fhiranalyticspipeline.blob.core.windows.net/builds/Microsoft.Health.Fhir.Synapse.FunctionApp.zip",
@@ -134,7 +162,7 @@
             "tags": "[variables('resourceTags')]",
             "sku": {
                 "Tier": "ElasticPremium",
-                "Name": "EP1"
+                "Name": "EP3"
             },
             "properties": {
                 "name": "[variables('hostingPlanName')]",
@@ -212,6 +240,22 @@
                         {
                             "name": "job__endTime",
                             "value": "[if(empty(parameters('dataEnd')), json('null'), parameters('dataEnd'))]"
+                        },
+                        {
+                            "name": "filter__filterScope",
+                            "value": "[parameters('filterScope')]"
+                        },
+                        {
+                            "name": "filter__groupId",
+                            "value": "[parameters('groupId')]"
+                        },
+                        {
+                            "name": "filter__requiredTypes",
+                            "value": "[parameters('requiredTypes')]"
+                        },
+                        {
+                            "name": "filter__typeFilters",
+                            "value": "[parameters('typeFilters')]"
                         },
                         {
                             "name": "dataLakeStore__storageUrl",

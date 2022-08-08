@@ -3,17 +3,15 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
+namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption
 {
-    public class MockAccessTokenProvider : IAccessTokenProvider
+    public class MetadataOptions : BaseFhirApiOptions
     {
-        public Task<string> GetAccessTokenAsync(string resourceUrl, CancellationToken cancellationToken = default)
+        public override string RelativeUri()
         {
-            return Task.FromResult(TestDataConstants.TestAccessToken);
+            return FhirApiConstants.MetadataKey;
         }
     }
 }

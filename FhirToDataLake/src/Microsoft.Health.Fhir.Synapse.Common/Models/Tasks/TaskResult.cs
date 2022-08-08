@@ -3,51 +3,39 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Newtonsoft.Json;
 using System.Collections.Generic;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
+using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
 {
     public class TaskResult
     {
         public TaskResult(
-            string resourceType,
-            string continuationToken,
-            Dictionary<string, int> partId,
-            int searchCount,
+            bool isCompleted,
+            Dictionary<string, int> searchCount,
             Dictionary<string, int> skippedCount,
             Dictionary<string, int> processedCount,
+            IEnumerable<PatientWrapper> patients,
             string result)
         {
-            ResourceType = resourceType;
-            ContinuationToken = continuationToken;
-            PartId = partId;
+            IsCompleted = isCompleted;
             SearchCount = searchCount;
             SkippedCount = skippedCount;
             ProcessedCount = processedCount;
+            Patients = patients;
             Result = result;
         }
 
         /// <summary>
-        /// Resource type.
+        /// Is this task completed.
         /// </summary>
-        public string ResourceType { get; set; }
-
-        /// <summary>
-        /// Task progress.
-        /// </summary>
-        public string ContinuationToken { get; set; }
-
-        /// <summary>
-        /// Part id for task output files.
-        /// The format is '{Resource}_{JobId}_{PartId}.parquet', e.g. Patient_1ab3edcefsi789ed_0001.parquet.
-        /// </summary>
-        public Dictionary<string, int> PartId { get; set; }
+        public bool IsCompleted { get; set; }
 
         /// <summary>
         /// Search count.
         /// </summary>
-        public int SearchCount { get; set; }
+        public Dictionary<string, int> SearchCount { get; set; }
 
         /// <summary>
         /// Skipped count.
@@ -60,6 +48,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public Dictionary<string, int> ProcessedCount { get; set; }
 
         /// <summary>
+        /// The patients
+        /// </summary>
+        public IEnumerable<PatientWrapper> Patients { get; set; }
+
+        /// <summary>
         /// Text result message.
         /// </summary>
         public string Result { get; set; }
@@ -67,12 +60,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         public static TaskResult CreateFromTaskContext(TaskContext context)
         {
             return new TaskResult(
-                context.ResourceType,
-                context.ContinuationToken,
-                context.PartId,
+                context.IsCompleted,
                 context.SearchCount,
                 context.SkippedCount,
                 context.ProcessedCount,
+                context.Patients,
                 JsonConvert.SerializeObject(context));
         }
     }

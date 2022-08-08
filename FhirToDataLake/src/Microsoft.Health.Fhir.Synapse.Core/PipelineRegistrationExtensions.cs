@@ -4,12 +4,13 @@
 // -------------------------------------------------------------------------------------------------
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
+using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Tasks;
-using Microsoft.Health.Fhir.Synapse.HealthCheker;
-using Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers;
 
 namespace Microsoft.Health.Fhir.Synapse.Core
 {
@@ -24,6 +25,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
             services.AddSingleton<JobManager, JobManager>();
 
+            services.AddSingleton<IJobExecutor, JobExecutor>();
+
             services.AddSingleton<JobExecutor, JobExecutor>();
 
             services.AddSingleton<ITaskExecutor, TaskExecutor>();
@@ -31,14 +34,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core
             services.AddSingleton<IColumnDataProcessor, ParquetDataProcessor>();
 
             services.AddSingleton<IFhirSpecificationProvider, R4FhirSpecificationProvider>();
-
-            services.AddHostedService<HealthCheckBackgroundService>();
-
-            services.AddSingleton<IHealthCheckEngine, HealthCheckEngine>();
-
-            services.AddSingleton<IHealthChecker, AzureBlobStorageHealthChecker>();
-
-            services.AddSingleton<IHealthChecker, FhirServerHealthChecker>();
 
             return services;
         }

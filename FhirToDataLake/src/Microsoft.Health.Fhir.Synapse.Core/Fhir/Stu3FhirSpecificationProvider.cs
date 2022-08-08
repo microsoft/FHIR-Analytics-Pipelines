@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 extern alias FhirStu3;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Stu3FhirModelInfo = FhirStu3::Hl7.Fhir.Model.ModelInfo;
@@ -12,7 +13,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 {
     public class Stu3FhirSpecificationProvider : IFhirSpecificationProvider
     {
-        private readonly IEnumerable<string> _excludeTypes = new List<string> { "StructureDefinition" };
+        private readonly IEnumerable<string> _excludeTypes = new List<string> { FhirConstants.StructureDefinition };
 
         public IEnumerable<string> GetAllResourceTypes()
         {
@@ -22,6 +23,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         public bool IsValidFhirResourceType(string resourceType)
         {
             return Stu3FhirModelInfo.IsKnownResource(resourceType);
+        }
+
+        public IEnumerable<string> GetCompartmentResourceTypes(string compartmentType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<string> GetSearchParametersByResourceType(string resourceType)
+        {
+            throw new NotImplementedException();
         }
     }
 }

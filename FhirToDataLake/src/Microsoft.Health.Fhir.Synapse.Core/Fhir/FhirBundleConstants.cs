@@ -19,9 +19,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 
         public const string ResourceTypeKey = "resourceType";
 
+        public const string OperationOutcomeKey = "OperationOutcome";
+
         public const string MetaKey = "meta";
 
         public const string LastUpdatedKey = "lastUpdated";
+
+        public const string VersionIdKey = "versionId";
 
         public const string LinkKey = "link";
 
@@ -30,5 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         public const string LinkUrlKey = "url";
 
         public const string NextLinkValue = "next";
+
+        public const string IssueKey = "issue";
     }
 }

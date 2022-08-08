@@ -14,6 +14,7 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Files.DataLake.Models;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 using Xunit;
@@ -336,8 +337,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             Assert.False(blobClient.Exists());
 
-            using MemoryStream sourceStream = new MemoryStream();
-            using StreamWriter writer = new StreamWriter(sourceStream);
+            using MemoryStream sourceStream_1 = new MemoryStream();
+            using StreamWriter writer = new StreamWriter(sourceStream_1);
 
             int lineNumber = (1024 * 1024) + 3;
             while (lineNumber-- > 0)
@@ -347,10 +348,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             await writer.FlushAsync();
 
-            sourceStream.Position = 0;
+            sourceStream_1.Position = 0;
 
-            var task_1 = blobProvider.CreateBlobAsync(blobName, sourceStream, CancellationToken.None);
-            var task_2 = blobProvider.CreateBlobAsync(blobName, sourceStream, CancellationToken.None);
+            using MemoryStream sourceStream_2 = new MemoryStream();
+            sourceStream_1.CopyTo(sourceStream_2);
+
+            sourceStream_1.Position = 0;
+            sourceStream_2.Position = 0;
+
+            var task_1 = blobProvider.CreateBlobAsync(blobName, sourceStream_1, CancellationToken.None);
+            var task_2 = blobProvider.CreateBlobAsync(blobName, sourceStream_2, CancellationToken.None);
 
             var isCreateds = await Task.WhenAll(task_1, task_2);
 
@@ -701,7 +708,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
                 return null;
             }
 
-            return new AzureBlobContainerClient(new Uri(new Uri(storageUrl), containerName), new NullLogger<AzureBlobContainerClient>());
+            return new AzureBlobContainerClient(new Uri(new Uri(storageUrl), containerName), new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLogger<AzureBlobContainerClient>());
         }
 
         private BlobContainerClient GetBlobContainerClient(string containerName)

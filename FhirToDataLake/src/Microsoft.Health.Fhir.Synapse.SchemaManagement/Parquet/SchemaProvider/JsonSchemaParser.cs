@@ -15,27 +15,27 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
         /// The input json schema itself "type" should be object.
         /// And the "type" for each property of json schema should be basic types, which means the Json data must be one layer.
         /// </summary>
-        /// <param name="schemaType">The schema type.</param>
+        /// <param name="resourceType">The resource type.</param>
         /// <param name="jsonSchema">The json schema.</param>
         /// <returns>A FhirParquetSchemaNode instance.</returns>
-        public static FhirParquetSchemaNode ParseJSchema(string schemaType, JSchema jsonSchema)
+        public static FhirParquetSchemaNode ParseJSchema(string resourceType, JSchema jsonSchema)
         {
             if (jsonSchema.Type == null || jsonSchema.Type == JSchemaType.Null)
             {
-                throw new GenerateFhirParquetSchemaNodeException(string.Format("The \"{0}\" customized schema have no \"type\" keyword or \"type\" is null.", schemaType));
+                throw new GenerateFhirParquetSchemaNodeException(string.Format("The \"{0}\" customized schema have no \"type\" keyword or \"type\" is null.", resourceType));
             }
 
             if (jsonSchema.Type != JSchemaType.Object)
             {
-                throw new GenerateFhirParquetSchemaNodeException(string.Format("The \"{0}\" customized schema type \"{1}\" should be \"object\".", schemaType, jsonSchema.Type));
+                throw new GenerateFhirParquetSchemaNodeException(string.Format("The \"{0}\" customized schema type \"{1}\" should be \"object\".", resourceType, jsonSchema.Type));
             }
 
-            var fhirPath = new List<string>() { schemaType };
+            var fhirPath = new List<string>() { resourceType };
 
             var customizedSchemaNode = new FhirParquetSchemaNode()
             {
-                Name = schemaType,
-                Type = schemaType,
+                Name = resourceType,
+                Type = resourceType,
                 Depth = 0,
                 NodePaths = new List<string>(fhirPath),
                 SubNodes = new Dictionary<string, FhirParquetSchemaNode>(),
@@ -47,12 +47,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
                 if (property.Value.Type == null || property.Value.Type == JSchemaType.Null)
                 {
-                    throw new GenerateFhirParquetSchemaNodeException(string.Format("Property \"{0}\" for \"{1}\" customized schema have no \"type\" keyword or \"type\" is null.", property.Key, schemaType));
+                    throw new GenerateFhirParquetSchemaNodeException(string.Format("Property \"{0}\" for \"{1}\" customized schema have no \"type\" keyword or \"type\" is null.", property.Key, resourceType));
                 }
 
                 if (!FhirParquetSchemaConstants.BasicJSchemaTypeMap.ContainsKey(property.Value.Type.Value))
                 {
-                    throw new GenerateFhirParquetSchemaNodeException(string.Format("Property \"{0}\" type \"{1}\" for \"{2}\" customized schema is not basic type.", property.Key, property.Value.Type.Value, schemaType));
+                    throw new GenerateFhirParquetSchemaNodeException(string.Format("Property \"{0}\" type \"{1}\" for \"{2}\" customized schema is not basic type.", property.Key, property.Value.Type.Value, resourceType));
                 }
 
                 customizedSchemaNode.SubNodes.Add(
