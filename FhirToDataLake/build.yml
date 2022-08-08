@@ -36,11 +36,15 @@ steps:
   inputs:
     versionSpec: '16.*'
 
-- bash: |
-    sudo npm install -g azurite
-    sudo mkdir azurite
-    sudo azurite --silent --location azurite --debug azurite\debug.log &
-  displayName: 'Install and Run Azurite'
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      npm install -g azurite 
+      mkdir c:/azurite
+      azurite --silent --location c:\azurite --debug c:\azurite\debug.log
+    pwsh: true
+  displayName: 'Install and launch Azurite'
 
 - task: AzureKeyVault@2
   inputs:
