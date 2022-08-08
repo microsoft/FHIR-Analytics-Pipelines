@@ -520,7 +520,7 @@ if ($CustomizedSchemaImage) {
         # a). Download oras application if it not exist.
         Get-OrasExeApp `
             -orasDirectoryPath $OrasDirectoryPath `
-            -orasFileName $OrasAppName `
+            -orasAppPath $OrasAppPath `
             -orasUrl $OrasWinUrl
 
         # b). Pull and parse customized schema from Container Registry.
