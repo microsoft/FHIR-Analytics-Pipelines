@@ -7,9 +7,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Health.Parquet;
 using Xunit;
 
-namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
+namespace Microsoft.Health.Parquet.UnitTests
 {
     public class ParquetConverterTests
     {
@@ -22,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
         public void GivenInvalidSchemaFile_WhenInitializeSchema_ExceptionShouldBeThrown()
         {
             var invalidSchemaMap = new Dictionary<string, string> { { PatientResourceType, "Invalid json" } };
-            var parquetConverter = new ParquetConverter();
+            var parquetConverter = ParquetConverter.CreateWithSchemaSet(invalidSchemaMap);
             var exception = Assert.Throws<ParquetException>(() => parquetConverter.InitializeSchemaSet(invalidSchemaMap));
             Assert.Equal("Parse given schema failed.", exception.Message);
         }
@@ -43,8 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
         public void GivenInvalidPatient_WhenConvertingToJson_ExceptionShouldBeThrown(string patient)
         {
             var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, File.ReadAllText(SchemaFile) } };
-            var parquetConverter = new ParquetConverter();
-            parquetConverter.InitializeSchemaSet(validSchemaMap);
+            var parquetConverter = ParquetConverter.CreateWithSchemaSet(validSchemaMap);
 
             var exception = Assert.Throws<ParquetException>(() => parquetConverter.ConvertJsonToParquet(PatientResourceType, patient));
             Assert.StartsWith("Input json is invalid.", exception.Message);
@@ -54,8 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet.UnitTests
         public void GivenValidPatient_WhenConvertingToJson_ResultShouldBeReturned()
         {
             var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, File.ReadAllText(SchemaFile) } };
-            var parquetConverter = new ParquetConverter();
-            parquetConverter.InitializeSchemaSet(validSchemaMap);
+            var parquetConverter = ParquetConverter.CreateWithSchemaSet(validSchemaMap);
 
             using var stream = parquetConverter.ConvertJsonToParquet(PatientResourceType, File.ReadAllText(InputPatientFile));
             var expectedHash = GetFileHash(ExpectedPatientParquetFile);

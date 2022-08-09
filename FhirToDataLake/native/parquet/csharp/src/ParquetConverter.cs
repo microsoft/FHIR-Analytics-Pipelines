@@ -9,7 +9,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Microsoft.Health.Fhir.Synapse.Parquet
+namespace Microsoft.Health.Parquet
 {
     public class ParquetConverter
     {

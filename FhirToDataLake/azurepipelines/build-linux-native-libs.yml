@@ -7,17 +7,17 @@ steps:
 - task: CMake@1
   displayName: CMake generate configuration
   inputs:
-    workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
+    workingDirectory: FhirToDataLake/native/parquet/cpp
     cmakeArgs: " -B build -S . -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic -DCMAKE_BUILD_TYPE=Release"
 
 - task: CMake@1
   displayName: CMake build
   inputs:
-    workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
+    workingDirectory: FhirToDataLake/native/parquet/cpp
     cmakeArgs: " --build build --config Release"
 
 - script: ctest -V
-  workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native/build
+  workingDirectory: FhirToDataLake/native/parquet/cpp/build
   displayName: Run native tests
 
 # Pack target shared library and all dependencies to artifact.
@@ -25,7 +25,7 @@ steps:
     mkdir -p '$(System.DefaultWorkingDirectory)/native-linux-x64/'
     cp build/src/libParquetNative.so '$(System.DefaultWorkingDirectory)/native-linux-x64/'
     ldd build/src/libParquetNative.so | awk '/vcpkg_installed/ {print $3}' | xargs -I % cp % '$(System.DefaultWorkingDirectory)/native-linux-x64/'
-  workingDirectory: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.Parquet.Native
+  workingDirectory: FhirToDataLake/native/parquet/cpp
   displayName: Copy native libraries
 
 - publish: $(System.DefaultWorkingDirectory)/native-linux-x64
