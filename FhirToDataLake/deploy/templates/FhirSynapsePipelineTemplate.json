@@ -107,9 +107,30 @@
                 "description": "Location for all resources."
             }
         },
+        "deployAppInsights": {
+            "type": "bool",
+            "defaultValue": true,
+            "allowedValues": [
+            true,
+            false
+            ],
+            "metadata": {
+                "description": "Whether to deploy the Application Insights."
+            }
+        },
         "appInsightsLocation": {
             "type": "string",
-            "defaultValue": "[resourceGroup().location]",
+            "defaultValue": "eastus",
+            "allowedValues": [
+                "southeastasia",
+                "northeurope",
+                "westeurope",
+                "eastus",
+                "southcentralus",
+                "westus2",
+                "usgovvirginia",
+                "usgovarizona"
+            ],
             "metadata": {
                 "description": "Location for Application Insights"
             }
@@ -120,7 +141,7 @@
         "functionAppName": "[variables('appName')]",
         "hostingPlanName": "[variables('appName')]",
         "applicationInsightsName": "[concat('AppInsights-', variables('appName'))]",
-        "deployAppInsights": true,
+        "deployAppInsights": "[parameters('deployAppInsights')]",
         "resourceTags": {"FhirAnalyticsPipeline": "FhirToDataLake", "FhirSchemaVersion": "v0.3.0"},
         "storageAccountName": "[concat(substring(replace(variables('appName'), '-', ''), 0, min(11, length(replace(variables('appName'), '-', '')))), uniquestring(resourceGroup().id, variables('appName')))]",
         "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]"
@@ -181,7 +202,8 @@
             "kind": "functionapp",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                "[if(variables('deployAppInsights'),concat('Microsoft.Insights/components/', variables('applicationInsightsName')),resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName')))]"
             ],
             "resources": [
                 {
@@ -223,7 +245,7 @@
                         },
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference(resourceId('microsoft.insights/components', variables('applicationInsightsName')), '2020-02-02-preview').InstrumentationKey]"
+                            "value": "[if(variables('deployAppInsights'),reference(resourceId('microsoft.insights/components', variables('applicationInsightsName')), '2020-02-02-preview').InstrumentationKey, json('null'))]"
                         },
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
