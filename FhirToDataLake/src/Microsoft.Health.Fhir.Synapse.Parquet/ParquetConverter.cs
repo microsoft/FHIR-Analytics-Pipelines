@@ -41,18 +41,6 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet
         [DllImport("ParquetNative")]
         private static extern int ConvertJsonToParquet(IntPtr writer, string key, [MarshalAs(UnmanagedType.LPUTF8Str)]string json, int inputSize, ref IntPtr outBuffer, out int outputSize, StringBuilder errorMessage);
 
-        public void InitializeSchemaSet(Dictionary<string, string> schemaSet)
-        {
-            foreach (var (key, value) in schemaSet)
-            {
-                int status = RegisterParquetSchema(_nativeConverter, key, value);
-                if (status != 0)
-                {
-                    throw new ParquetException(status);
-                }
-            }
-        }
-
         public Stream ConvertJsonToParquet(string schemaType, string inputJson)
         {
             // Output buffer pointer
@@ -76,6 +64,26 @@ namespace Microsoft.Health.Fhir.Synapse.Parquet
             Marshal.Copy(outputPointer, outputBuffer, 0, outputSize);
             ReleaseUnmanagedData(ref outputPointer);
             return new MemoryStream(outputBuffer);
+        }
+
+        public static ParquetConverter CreateWithSchemaSet(Dictionary<string, string> schemaSet)
+        {
+            var parquetConverter = new ParquetConverter();
+            parquetConverter.InitializeSchemaSet(schemaSet);
+
+            return parquetConverter;
+        }
+
+        private void InitializeSchemaSet(Dictionary<string, string> schemaSet)
+        {
+            foreach (var (key, value) in schemaSet)
+            {
+                int status = RegisterParquetSchema(_nativeConverter, key, value);
+                if (status != 0)
+                {
+                    throw new ParquetException(status);
+                }
+            }
         }
     }
 }

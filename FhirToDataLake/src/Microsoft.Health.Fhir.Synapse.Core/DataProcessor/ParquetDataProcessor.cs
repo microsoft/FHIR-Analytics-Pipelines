@@ -18,7 +18,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Parquet;
-
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json;

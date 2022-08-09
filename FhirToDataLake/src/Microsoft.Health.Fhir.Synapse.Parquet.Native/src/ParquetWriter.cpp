@@ -60,7 +60,7 @@ int ParquetWriter::Write(const string& resourceType, const char* inputJson, int 
     parseOptions.unexpected_field_behavior = _parquetOptions.UnexpectedFieldBehavior;
 
     const auto bufferReader = make_shared<arrow::io::BufferReader>(reinterpret_cast<const uint8_t*>(inputJson), static_cast<int64_t>(inputLength));
-        arrow::Result<shared_ptr<arrow::json::TableReader>> tableReaderResult = arrow::json::TableReader::Make(arrow::default_memory_pool(), bufferReader, _readOptions, parseOptions);
+    arrow::Result<shared_ptr<arrow::json::TableReader>> tableReaderResult = arrow::json::TableReader::Make(arrow::default_memory_pool(), bufferReader, _readOptions, parseOptions);
     
     if (!tableReaderResult.ok())
     {
