@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
-using Newtonsoft.Json.Schema;
+using NJsonSchema;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.SchemaProvider
@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
                 NullLogger<AcrCustomizedSchemaProvider>.Instance);
 
             var schemaCollections = await schemaProvider.GetSchemasAsync();
-            var expectedSchemaNode = JsonSchemaParser.ParseJSchema("Patient", JSchema.Parse(File.ReadAllText(TestUtils.TestJsonSchemaFilePath)));
+            var expectedSchemaNode = JsonSchemaParser.ParseJSchema("Patient", JsonSchema.FromJsonAsync(File.ReadAllText(TestUtils.TestJsonSchemaFilePath)).GetAwaiter().GetResult());
 
             Assert.Equal(expectedSchemaNode.Name, schemaCollections["Patient_Customized"].Name);
         }
