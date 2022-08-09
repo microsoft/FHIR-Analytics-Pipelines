@@ -7,12 +7,13 @@ steps:
 - download: current
   artifact: 'native-windows-x64'
 
+# Copy native dependencies and pack nuget
 - script: |
-    mkdir -p src/Microsoft.Health.Fhir.Synapse.Parquet/native/linux-x64
-    mkdir -p src/Microsoft.Health.Fhir.Synapse.Parquet/native/windows-x64
-    cp -r $(Pipeline.Workspace)/native-linux-x64/** src/Microsoft.Health.Fhir.Synapse.Parquet/native/linux-x64
-    cp -r $(Pipeline.Workspace)/native-windows-x64/** src/Microsoft.Health.Fhir.Synapse.Parquet/native/windows-x64
-    dotnet pack src/Microsoft.Health.Fhir.Synapse.Parquet/Microsoft.Health.Fhir.Synapse.Parquet.csproj -p:NuspecFile=BuildParquet.nuspec -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
+    mkdir -p native/parquet/csharp/src/native/linux-x64
+    mkdir -p native/parquet/csharp/src/native/windows-x64
+    cp -r $(Pipeline.Workspace)/native-linux-x64/** native/parquet/csharp/src/native/linux-x64
+    cp -r $(Pipeline.Workspace)/native-windows-x64/** native/parquet/csharp/src/native/windows-x64
+    dotnet pack native/parquet/csharp/src/Microsoft.Health.Parquet.csproj -p:NuspecFile=BuildParquet.nuspec -p:NuspecProperties="version=$(version)" -c Release -o '$(Build.ArtifactStagingDirectory)/nupkgs'
   workingDirectory: FhirToDataLake
   displayName: Nuget pack
 
