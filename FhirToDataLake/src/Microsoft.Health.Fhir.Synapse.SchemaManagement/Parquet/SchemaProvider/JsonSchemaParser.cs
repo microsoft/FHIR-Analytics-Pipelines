@@ -20,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
         /// <returns>A FhirParquetSchemaNode instance.</returns>
         public static FhirParquetSchemaNode ParseJSchema(string resourceType, JsonSchema jsonSchema)
         {
-            if (jsonSchema.Type == JsonObjectType.Null)
+            if (jsonSchema.Type == JsonObjectType.None || jsonSchema.Type == JsonObjectType.Null)
             {
                 throw new GenerateFhirParquetSchemaNodeException(string.Format("The \"{0}\" customized schema have no \"type\" keyword or \"type\" is null.", resourceType));
             }
@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             {
                 fhirPath.Add(property.Key);
 
-                if (property.Value.Type == JsonObjectType.Null)
+                if (property.Value.Type == JsonObjectType.None || property.Value.Type == JsonObjectType.Null)
                 {
                     throw new GenerateFhirParquetSchemaNodeException(string.Format("Property \"{0}\" for \"{1}\" customized schema have no \"type\" keyword or \"type\" is null.", property.Key, resourceType));
                 }
