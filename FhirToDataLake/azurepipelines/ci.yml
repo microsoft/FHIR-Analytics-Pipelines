@@ -20,7 +20,7 @@ steps:
   inputs:
     command: build
     projects: FhirToDataLake/*.sln
-    arguments: '--configuration $(buildConfiguration) --arch $(buildPlatform) -p:Version=$(version)'
+    arguments: '--configuration $(buildConfiguration) -p:Version=$(version)'
 
 - script: |
     docker pull mcr.microsoft.com/azure-storage/azurite
@@ -74,21 +74,14 @@ steps:
     container: azurite-emulator-analytics-ci
 
 # ref: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-function-app?view=azure-devops#error-publish-using-zip-deploy-option-is-not-supported-for-msbuild-package-type
-- task: MSBuild@1
+- task: DotNetCoreCLI@2
   displayName: 'Publish function app'
   inputs:
-    solution: FhirToDataLake/**/*.FunctionApp.csproj
-    msbuildArchitecture: $(BuildPlatform)
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    msbuildArguments: '-p:DeployOnBuild=true -p:DeployDefaultTarget=WebPublish -p:WebPublishMethod=FileSystem -p:DeleteExistingFiles=True -p:publishUrl=$(Build.SourcesDirectory)/bin/publish/functionapp -p:ApplicationVersion=$(version)'
-
-- task: ArchiveFiles@2
-  displayName: 'Archive function app'
-  inputs:
-    rootFolderOrFile: '$(Build.SourcesDirectory)/bin/publish/functionapp'
-    includeRootFolder: false
-    archiveFile: '$(Build.ArtifactStagingDirectory)/FhirToDataLake/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
+    command: publish
+    publishWebProjects: True
+    arguments: '--configuration $(BuildConfiguration) --arch $(buildPlatform)  -p:Version=$(version) --output $(Build.ArtifactStagingDirectory)/FhirToDataLake'
+    zipAfterPublish: True
+    projects: FhirToDataLake/src/Microsoft/Microsoft.Health.Fhir.Synapse.FunctionApp/Microsoft.Health.Fhir.Synapse.FunctionApp.csproj
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact'
