@@ -52,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                     // Perform health check.
                     var healthStatus = new HealthStatus();
                     await _healthCheckEngine.CheckHealthAsync(healthStatus, cancellationToken);
-                    var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatus(healthStatus, cancellationToken)).ToList();
+                    var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
                     await Task.WhenAll(listenerTasks);
                     healthStatus.EndTime = DateTimeOffset.UtcNow;
                     await delayTask;

@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
         public FhirServerHealthChecker(
             IFhirDataClient fhirApiDataClient,
             ILogger<FhirServerHealthChecker> logger)
-            : base(HealthCheckTypes.FhirServiceCanRead, logger)
+            : base(HealthCheckTypes.FhirServiceCanRead, false, logger)
         {
             EnsureArg.IsNotNull(fhirApiDataClient, nameof(fhirApiDataClient));
 

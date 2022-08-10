@@ -18,17 +18,21 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
         protected BaseHealthChecker(
             string healthCheckName,
+            bool isCheckCritical,
             ILogger<BaseHealthChecker> logger)
         {
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             Name = EnsureArg.IsNotNullOrWhiteSpace(healthCheckName, nameof(healthCheckName));
+            IsCheckCritical = isCheckCritical;
         }
 
         public string Name { get; set; }
 
+        public bool IsCheckCritical { get; set; } = true;
+
         public async Task<HealthCheckResult> PerformHealthCheckAsync(CancellationToken cancellationToken = default)
         {
-            var healthCheckResult = new HealthCheckResult(Name);
+            var healthCheckResult = new HealthCheckResult(Name, IsCheckCritical);
 
             try
             {

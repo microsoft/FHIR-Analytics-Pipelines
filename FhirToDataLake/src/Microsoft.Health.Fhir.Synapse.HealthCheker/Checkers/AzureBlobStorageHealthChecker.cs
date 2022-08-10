@@ -27,7 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             IOptions<JobConfiguration> jobConfiguration,
             IOptions<DataLakeStoreConfiguration> storeConfiguration,
             ILogger<AzureBlobStorageHealthChecker> logger)
-            : base(HealthCheckTypes.AzureBlobStorageCanReadWrite, logger)
+            : base(HealthCheckTypes.AzureBlobStorageCanReadWrite, false, logger)
         {
             EnsureArg.IsNotNull(azureBlobContainerClientFactory, nameof(azureBlobContainerClientFactory));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));

@@ -45,8 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         public async Task When_BlobClient_CanReadWriteABlob_HealthCheck_Succeeds()
         {
             byte[] bytes = Encoding.UTF8.GetBytes(AzureBlobStorageHealthChecker.HealthCheckBlobPrefix);
-            MemoryStream stream = new (bytes);
-
+            using MemoryStream stream = new (bytes);
             _blobContainerClient.UpdateBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), default, cancellationToken: default).Returns("test");
             _blobContainerClient.GetBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), cancellationToken: default).Returns(stream);
             _storageAccountHealthChecker = new AzureBlobStorageHealthChecker(
@@ -57,13 +56,14 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
 
             var result = await _storageAccountHealthChecker.PerformHealthCheckAsync(default);
             Assert.Equal(HealthCheckStatus.PASS, result.Status);
+            Assert.False(result.IsFailureCritical);
         }
 
         [Fact]
         public async Task When_BlobClient_ThrowExceptionWhenReadWriteABlob_HealthCheck_Fails()
         {
             byte[] bytes = Encoding.UTF8.GetBytes(AzureBlobStorageHealthChecker.HealthCheckBlobPrefix);
-            MemoryStream stream = new (bytes);
+            using MemoryStream stream = new (bytes);
 
             _blobContainerClient.UpdateBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), default, default).ThrowsAsyncForAnyArgs(new Exception());
             _blobContainerClient.GetBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), default).ThrowsAsyncForAnyArgs(new Exception());
@@ -75,6 +75,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
 
             var result = await _storageAccountHealthChecker.PerformHealthCheckAsync(default);
             Assert.Equal(HealthCheckStatus.FAIL, result.Status);
+            Assert.False(result.IsFailureCritical);
         }
     }
 }

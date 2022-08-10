@@ -43,7 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _taskExecutor = EnsureArg.IsNotNull(taskExecutor, nameof(taskExecutor));
             _jobProgressUpdaterFactory = EnsureArg.IsNotNull(jobProgressUpdaterFactory, nameof(jobProgressUpdaterFactory));
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
-            _logger = EnsureArg.IsNotNull(logger, nameof(logger)); ;
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         public async Task ExecuteAsync(Job job, CancellationToken cancellationToken)

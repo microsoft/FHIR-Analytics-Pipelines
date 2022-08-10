@@ -7,10 +7,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheck
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
 {
-    public interface IHealthCheckListener
+    public class MockHealthCheckListener : IHealthCheckListener
     {
-        Task ProcessHealthStatusAsync(HealthStatus healthStatus, CancellationToken cancellationToken);
+        public bool IsHealthCheckRunning { get; set; } = false;
+
+        public Task ProcessHealthStatusAsync(HealthStatus healthStatus, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(IsHealthCheckRunning = true);
+        }
     }
 }

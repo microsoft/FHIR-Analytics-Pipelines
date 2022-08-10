@@ -15,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
     public class MockTimeoutHealthChecker : BaseHealthChecker
     {
         public MockTimeoutHealthChecker(ILogger<MockTimeoutHealthChecker> logger)
-                : base("MockTimeout", logger)
+                : base("MockTimeout", false, logger)
         {
         }
 
