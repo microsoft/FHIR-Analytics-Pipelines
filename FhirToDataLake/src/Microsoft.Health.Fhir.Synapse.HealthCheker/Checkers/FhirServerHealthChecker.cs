@@ -13,9 +13,9 @@ using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
-using Microsoft.Health.Fhir.Synapse.HealthCheker.Models;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 {
     public class FhirServerHealthChecker : BaseHealthChecker
     {

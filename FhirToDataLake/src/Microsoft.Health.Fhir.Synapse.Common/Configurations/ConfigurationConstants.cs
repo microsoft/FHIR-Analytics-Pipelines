@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 
         public const string SchedulerConfigurationKey = "scheduler";
 
-        public const string HealthCheckConfigurationKey = "healthcheck";
+        public const string HealthCheckConfigurationKey = "healthCheck";
 
         public const char ImageDigestDelimiter = '@';
         public const char ImageTagDelimiter = ':';

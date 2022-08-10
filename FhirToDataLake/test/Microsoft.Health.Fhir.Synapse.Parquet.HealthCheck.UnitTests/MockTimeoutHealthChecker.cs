@@ -7,8 +7,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers;
-using Microsoft.Health.Fhir.Synapse.HealthCheker.Models;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
 {

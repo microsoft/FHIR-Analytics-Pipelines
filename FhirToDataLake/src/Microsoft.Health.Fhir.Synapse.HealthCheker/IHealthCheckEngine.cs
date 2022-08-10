@@ -6,9 +6,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.Fhir.Synapse.HealthCheker.Models;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheker
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 {
     public interface IHealthCheckEngine
     {

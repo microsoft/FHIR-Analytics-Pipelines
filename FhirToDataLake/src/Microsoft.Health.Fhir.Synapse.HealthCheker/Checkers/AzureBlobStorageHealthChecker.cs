@@ -12,10 +12,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
-using Microsoft.Health.Fhir.Synapse.HealthCheker.Exceptions;
-using Microsoft.Health.Fhir.Synapse.HealthCheker.Models;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Exceptions;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 {
     public class AzureBlobStorageHealthChecker : BaseHealthChecker
     {
@@ -44,8 +44,10 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
             var blobPath = $"{HealthCheckBlobPrefix}";
 
             byte[] bytes = Encoding.UTF8.GetBytes(HealthCheckBlobPrefix);
-            MemoryStream stream = new (bytes);
-            await _blobContainerClient.UpdateBlobAsync(blobPath, stream, cancellationToken);
+            using (MemoryStream stream = new (bytes))
+            {
+                await _blobContainerClient.UpdateBlobAsync(blobPath, stream, cancellationToken);
+            }
 
             // Ensure we can read from the storage account
             var healthCheckStream = await _blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);

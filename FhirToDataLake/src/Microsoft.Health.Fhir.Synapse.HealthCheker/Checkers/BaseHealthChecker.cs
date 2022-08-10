@@ -8,21 +8,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.HealthCheker.Models;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 {
     public abstract class BaseHealthChecker : IHealthChecker
     {
+        private readonly ILogger<BaseHealthChecker> _logger;
+
         protected BaseHealthChecker(
             string healthCheckName,
             ILogger<BaseHealthChecker> logger)
         {
-            Logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             Name = EnsureArg.IsNotNullOrWhiteSpace(healthCheckName, nameof(healthCheckName));
         }
-
-        protected ILogger<BaseHealthChecker> Logger { get; }
 
         public string Name { get; set; }
 
@@ -37,12 +37,12 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers
             }
             catch (Exception e)
             {
-                Logger.LogError($"The component {Name} is not healthy.", e);
+                _logger.LogError(e, $"The component {Name} is not healthy.");
                 healthCheckResult.Status = HealthCheckStatus.FAIL;
                 healthCheckResult.ErrorMessage = e.Message;
             }
 
-            Logger.LogInformation($"Health check {Name} complete. Status {healthCheckResult.Status}");
+            _logger.LogInformation($"Health check {Name} complete. Status {healthCheckResult.Status}");
             return healthCheckResult;
         }
 

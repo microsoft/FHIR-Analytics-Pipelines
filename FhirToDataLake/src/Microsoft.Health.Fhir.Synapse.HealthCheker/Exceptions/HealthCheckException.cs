@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Exceptions
 {
     public class HealthCheckException : Exception
     {

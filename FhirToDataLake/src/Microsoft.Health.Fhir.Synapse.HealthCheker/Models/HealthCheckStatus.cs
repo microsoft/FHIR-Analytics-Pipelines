@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Models
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
 {
     public enum HealthCheckStatus
     {

@@ -3,17 +3,14 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 {
-    public class HealthStatus
+    public interface IHealthCheckListener
     {
-        public DateTimeOffset StartTime { get; set; } = DateTimeOffset.Now;
-
-        public DateTimeOffset EndTime { get; set; } = DateTimeOffset.UtcNow;
-
-        public IList<HealthCheckResult> HealthCheckResults { get; set; }
+        Task ProcessHealthStatus(HealthStatus healthStatus, CancellationToken cancellationToken);
     }
 }

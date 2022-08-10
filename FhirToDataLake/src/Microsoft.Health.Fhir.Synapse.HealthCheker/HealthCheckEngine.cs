@@ -12,17 +12,17 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.HealthCheker.Checkers;
-using Microsoft.Health.Fhir.Synapse.HealthCheker.Models;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheker
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 {
     public class HealthCheckEngine : IHealthCheckEngine
     {
         private readonly IEnumerable<IHealthChecker> _healthCheckers;
 
         // Timeout for each health checkers.
-        private readonly TimeSpan _healthCheckTimeout;
+        private readonly TimeSpan _healthCheckTimeoutInSeconds;
         private readonly ILogger<HealthCheckEngine> _logger;
 
         public HealthCheckEngine(
@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
             _healthCheckers = EnsureArg.IsNotNull(healthCheckers, nameof(healthCheckers));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _healthCheckTimeout = TimeSpan.FromSeconds(healthCheckConfiguration.Value.HealthCheckTimeoutInSeconds);
+            _healthCheckTimeoutInSeconds = TimeSpan.FromSeconds(healthCheckConfiguration.Value.HealthCheckTimeoutInSeconds);
         }
 
         public async Task CheckHealthAsync(HealthStatus healthStatus, CancellationToken cancellationToken = default)
@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
 
             // healthCheckToken will be canceled if health check timeout or cancellationToken is canceled.
             using var healthCheckToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            healthCheckToken.CancelAfter(_healthCheckTimeout);
+            healthCheckToken.CancelAfter(_healthCheckTimeoutInSeconds);
 
             foreach (var healthChecker in _healthCheckers)
             {
@@ -53,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
             }
 
             healthStatus.HealthCheckResults = await Task.WhenAll(tasks);
-            healthStatus.EndTime = DateTime.UtcNow;
+            healthStatus.EndTime = DateTimeOffset.UtcNow;
 
             _logger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}. Time using : {(healthStatus.EndTime - healthStatus.StartTime).TotalSeconds} seconds.");
         }

@@ -9,14 +9,14 @@ using System.Text.Json.Serialization;
 using EnsureThat;
 using Newtonsoft.Json.Converters;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Models
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
 {
     public class HealthCheckResult
     {
         public HealthCheckResult(string name)
         {
             Name = EnsureArg.IsNotNull(name, nameof(name));
-            StartTime = DateTime.UtcNow;
+            StartTime = DateTimeOffset.UtcNow;
         }
 
         public string Name { get; }
@@ -29,6 +29,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker.Models
         /// <summary>
         /// The time the Health Check started
         /// </summary>
-        public DateTime StartTime { get; set; }
+        public DateTimeOffset StartTime { get; set; }
     }
 }

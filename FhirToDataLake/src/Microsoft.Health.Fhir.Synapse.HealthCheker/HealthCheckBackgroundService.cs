@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -11,23 +13,26 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.HealthCheker.Models;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheker
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 {
     public class HealthCheckBackgroundService : BackgroundService
     {
-        private static IHealthCheckEngine _healthCheckEngine;
+        private readonly IHealthCheckEngine _healthCheckEngine;
+        private readonly IEnumerable<IHealthCheckListener> _healthCheckListeners;
         private readonly ILogger<HealthCheckBackgroundService> _logger;
-        private TimeSpan _checkIntervalInSeconds = TimeSpan.FromSeconds(30);
+        private TimeSpan _checkIntervalInSeconds;
 
         public HealthCheckBackgroundService(
             IHealthCheckEngine healthCheckEngine,
+            IEnumerable<IHealthCheckListener> healthCheckListeners,
             IOptions<HealthCheckConfiguration> healthCheckConfiguration,
             ILogger<HealthCheckBackgroundService> logger)
         {
             _healthCheckEngine = EnsureArg.IsNotNull(healthCheckEngine, nameof(healthCheckEngine));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _healthCheckListeners = EnsureArg.IsNotNull(healthCheckListeners, nameof(healthCheckListeners));
             EnsureArg.IsNotNull(healthCheckConfiguration, nameof(healthCheckConfiguration));
 
             _checkIntervalInSeconds = TimeSpan.FromSeconds(healthCheckConfiguration.Value.HealthCheckTimeIntervalInSeconds);
@@ -39,7 +44,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
             {
                 try
                 {
-                    var startTime = DateTime.Now;
                     _logger.LogInformation("Starting to perform health checks");
 
                     // Delay interval time.
@@ -48,13 +52,14 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheker
                     // Perform health check.
                     var healthStatus = new HealthStatus();
                     await _healthCheckEngine.CheckHealthAsync(healthStatus, cancellationToken);
-
-                    var endTime = DateTime.Now;
+                    var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatus(healthStatus, cancellationToken)).ToList();
+                    await Task.WhenAll(listenerTasks);
+                    healthStatus.EndTime = DateTimeOffset.UtcNow;
                     await delayTask;
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e.ToString());
+                    _logger.LogError(e, e.ToString());
                     throw;
                 }
             }
