@@ -39,7 +39,7 @@ This solution enables you to query against the entire FHIR data with tools such 
 
     The deployment page should open the following form. 
     
-    ![image](./assets/templateParameters.png)
+    ![image](./assets/templateParameters_default.png)
 
 2. Fill the form based on the table below and click on **Review and Create** to start the deployment.
 
