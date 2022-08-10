@@ -15,14 +15,12 @@ steps:
     feedsToUse: 'config'
     nugetConfigPath: 'FhirToDataLake/NuGet.Config'
 
-- task: MSBuild@1
-  displayName: 'Build solution'
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build solution'
   inputs:
-    solution: FhirToDataLake/*.sln
-    msbuildArchitecture: $(buildPlatform)
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-    msbuildArguments: '-p:ApplicationVersion=$(version)'
+    command: build
+    projects: FhirToDataLake/*.sln
+    arguments: '--configuration $(buildConfiguration) --arch $(buildPlatform) -p:Version=$(version)'
 
 - script: |
     docker pull mcr.microsoft.com/azure-storage/azurite
