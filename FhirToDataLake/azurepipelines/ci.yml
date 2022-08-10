@@ -15,6 +15,14 @@ steps:
     version: 3.1.402
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
+# Install for Azure Function dependencies
+- task: UseDotNet@2
+  displayName: 'Use .NET Core sdk 6.0'
+  inputs:
+    packageType: sdk
+    version: 6.0.302
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
 - task: DotNetCoreCLI@2
   displayName: 'dotnet restore solution'
   inputs:
