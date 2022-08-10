@@ -28,7 +28,7 @@ stages:
 
   - job: BuildFhirToDataLake
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'ubuntu-22.04'
     steps:
     - template: FhirToDataLake/azurepipelines/ci.yml
 
