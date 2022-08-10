@@ -14,7 +14,7 @@ using Microsoft.Health.Fhir.Liquid.Converter.Models.Json;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
-using Newtonsoft.Json.Schema;
+using NJsonSchema;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 {
@@ -43,9 +43,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                 .ToDictionary(x => GetCustomizedSchemaType(x.Type), x => x);
         }
 
-        private async Task<Dictionary<string, JSchema>> GetJsonSchemaCollectionAsync(CancellationToken cancellationToken)
+        private async Task<Dictionary<string, JsonSchema>> GetJsonSchemaCollectionAsync(CancellationToken cancellationToken)
         {
-            var result = new Dictionary<string, JSchema>();
+            var result = new Dictionary<string, JsonSchema>();
 
             if (string.IsNullOrWhiteSpace(_schemaImageReference))
             {

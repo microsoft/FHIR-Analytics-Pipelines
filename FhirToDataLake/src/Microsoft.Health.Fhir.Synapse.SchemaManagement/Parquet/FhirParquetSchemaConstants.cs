@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using Newtonsoft.Json.Schema;
+using NJsonSchema;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 {
@@ -30,12 +30,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         public static readonly HashSet<string> BooleanTypes = new HashSet<string> { "boolean" };
 
         // Basic types refer to Json schema document https://cswr.github.io/JsonSchema/spec/basic_types/
-        public static readonly Dictionary<JSchemaType, string> BasicJSchemaTypeMap = new Dictionary<JSchemaType, string>()
+        public static readonly Dictionary<JsonObjectType, string> BasicJSchemaTypeMap = new Dictionary<JsonObjectType, string>()
         {
-            { JSchemaType.String, "string" },
-            { JSchemaType.Number, "number" },
-            { JSchemaType.Integer, "integer" },
-            { JSchemaType.Boolean, "boolean" },
+            { JsonObjectType.String, "string" },
+            { JsonObjectType.Number, "number" },
+            { JsonObjectType.Integer, "integer" },
+            { JsonObjectType.Boolean, "boolean" },
         };
     }
 }
