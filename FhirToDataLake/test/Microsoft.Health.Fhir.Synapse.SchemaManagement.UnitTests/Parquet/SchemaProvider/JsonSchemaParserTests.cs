@@ -9,7 +9,7 @@ using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
+using NJsonSchema;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.SchemaProvider
@@ -18,18 +18,18 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
     {
         public static IEnumerable<object[]> GetInvalidJsonSchemaContents()
         {
-            yield return new object[] { JSchema.Parse(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithInvalidPropertyType.schema.json"))) };
-            yield return new object[] { JSchema.Parse(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithInvalidType.schema.json"))) };
-            yield return new object[] { JSchema.Parse(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithoutPropertyType.schema.json"))) };
-            yield return new object[] { JSchema.Parse(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithoutType.schema.json"))) };
+            yield return new object[] { JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithInvalidPropertyType.schema.json"))).GetAwaiter().GetResult() };
+            yield return new object[] { JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithInvalidType.schema.json"))).GetAwaiter().GetResult() };
+            yield return new object[] { JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithoutPropertyType.schema.json"))).GetAwaiter().GetResult() };
+            yield return new object[] { JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithoutType.schema.json"))).GetAwaiter().GetResult() };
         }
 
         [Fact]
         public void GivenAJsonSchema_WhenParseJSchema_CorrectResultShouldBeReturned()
         {
-            var testSchema = JSchema.Parse(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "ValidSchema.schema.json")));
+            var testSchema = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "ValidSchema.schema.json"))).GetAwaiter().GetResult();
             var parquetSchemaNode = JsonSchemaParser.ParseJSchema("testType", testSchema);
-            var expectedSchemaNode = JSchema.Parse(File.ReadAllText(Path.Join(TestUtils.ExpectedDataDirectory, "ExpectedValidParquetSchemaNode.json")));
+            var expectedSchemaNode = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.ExpectedDataDirectory, "ExpectedValidParquetSchemaNode.json"))).GetAwaiter().GetResult();
 
             Assert.True(JToken.DeepEquals(
                 JObject.Parse(JsonConvert.SerializeObject(parquetSchemaNode)),
@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
 
         [Theory]
         [MemberData(nameof(GetInvalidJsonSchemaContents))]
-        public void GivenAInvalidJsonSchema_WhenParseJSchema_ExceptionsShouldBeThrown(JSchema jSchema)
+        public void GivenAInvalidJsonSchema_WhenParseJSchema_ExceptionsShouldBeThrown(JsonSchema jSchema)
         {
             var schemaParser = new JsonSchemaParser();
             Assert.Throws<GenerateFhirParquetSchemaNodeException>(() => JsonSchemaParser.ParseJSchema("testType", jSchema));
