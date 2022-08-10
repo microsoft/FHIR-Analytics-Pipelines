@@ -17,9 +17,9 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
+using Microsoft.Health.Parquet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -48,10 +48,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             _defaultSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.DefaultSchemaProviderKey);
             _customSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.CustomSchemaProviderKey);
             _logger = logger;
-            _parquetConverter = new ParquetConverter();
 
             var schemaSet = fhirSchemaManager.GetAllSchemaContent();
-            _parquetConverter.InitializeSchemaSet(schemaSet);
+            _parquetConverter = ParquetConverter.CreateWithSchemaSet(schemaSet);
             _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
         }
 

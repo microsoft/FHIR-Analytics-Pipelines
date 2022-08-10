@@ -23,8 +23,7 @@ namespace Microsoft.Health.Parquet.UnitTests
         public void GivenInvalidSchemaFile_WhenInitializeSchema_ExceptionShouldBeThrown()
         {
             var invalidSchemaMap = new Dictionary<string, string> { { PatientResourceType, "Invalid json" } };
-            var parquetConverter = ParquetConverter.CreateWithSchemaSet(invalidSchemaMap);
-            var exception = Assert.Throws<ParquetException>(() => parquetConverter.InitializeSchemaSet(invalidSchemaMap));
+            var exception = Assert.Throws<ParquetException>(() => ParquetConverter.CreateWithSchemaSet(invalidSchemaMap));
             Assert.Equal("Parse given schema failed.", exception.Message);
         }
 

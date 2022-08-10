@@ -91,7 +91,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
             var jObj2 = JObject.Parse("{\"resourceType\":\"Patient\"}");
             var jObj3 = JObject.Parse("{\"resourceType\":\"operationOutcome\"}");
 
-            var input = new List<JObject>{jObj1, jObj2, jObj3};
+            var input = new List<JObject> { jObj1, jObj2, jObj3 };
             var results = FhirBundleParser.GetOperationOutcomes(input);
             Assert.Empty(results);
         }
