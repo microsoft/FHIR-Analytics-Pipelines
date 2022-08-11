@@ -13,11 +13,11 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
 {
     public class HealthCheckResult
     {
-        public HealthCheckResult(string name, bool isFailureCritical = false)
+        public HealthCheckResult(string name, bool isCritical = false)
         {
             Name = EnsureArg.IsNotNull(name, nameof(name));
             StartTime = DateTimeOffset.UtcNow;
-            IsFailureCritical = isFailureCritical;
+            IsCritical = isCritical;
         }
 
         public string Name { get; }
@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
         /// <summary>
         /// Indicates if the failure is critical.
         /// </summary>
-        public bool IsFailureCritical { get; }
+        public bool IsCritical { get; }
 
         public string ErrorMessage { get; set; }
 

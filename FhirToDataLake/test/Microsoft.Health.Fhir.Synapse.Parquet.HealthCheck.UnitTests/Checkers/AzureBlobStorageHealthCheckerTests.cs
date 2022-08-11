@@ -56,7 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
 
             var result = await _storageAccountHealthChecker.PerformHealthCheckAsync(default);
             Assert.Equal(HealthCheckStatus.PASS, result.Status);
-            Assert.False(result.IsFailureCritical);
+            Assert.False(result.IsCritical);
         }
 
         [Fact]
@@ -75,7 +75,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
 
             var result = await _storageAccountHealthChecker.PerformHealthCheckAsync(default);
             Assert.Equal(HealthCheckStatus.FAIL, result.Status);
-            Assert.False(result.IsFailureCritical);
+            Assert.False(result.IsCritical);
         }
     }
 }

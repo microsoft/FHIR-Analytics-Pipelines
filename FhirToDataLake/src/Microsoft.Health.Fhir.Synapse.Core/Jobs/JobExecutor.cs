@@ -127,7 +127,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 var selectedPatients = job.Patients.Skip(job.NextTaskIndex * JobConfigurationConstants.NumberOfPatientsPerTask)
                                     .Take(JobConfigurationConstants.NumberOfPatientsPerTask).ToList();
                                 taskContext = TaskContext.CreateFromJob(job, filters, selectedPatients);
-
                             }
 
                             break;

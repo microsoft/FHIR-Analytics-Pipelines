@@ -10,7 +10,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
 {
     public class HealthStatus
     {
-        public DateTimeOffset StartTime { get; set; } = DateTimeOffset.Now;
+        public DateTimeOffset StartTime { get; set; } = DateTimeOffset.UtcNow;
 
         public DateTimeOffset EndTime { get; set; } = DateTimeOffset.UtcNow;
 

@@ -54,7 +54,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                     await _healthCheckEngine.CheckHealthAsync(healthStatus, cancellationToken);
                     var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
                     await Task.WhenAll(listenerTasks);
-                    healthStatus.EndTime = DateTimeOffset.UtcNow;
                     await delayTask;
                 }
                 catch (Exception e)
