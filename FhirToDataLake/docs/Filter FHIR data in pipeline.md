@@ -5,12 +5,13 @@ Currently the pipeline supports exporting FHIR data at 2 different scopes:
 1. [System](https://hl7.org/Fhir/uv/bulkdata/export/index.html#endpoint---system-level-export): All resources will be exported.
 2. [Group](https://hl7.org/Fhir/uv/bulkdata/export/index.html#endpoint---group-of-patients): Patients and associated resources for a particular group resource will be exported. 
 
-Furthermore, you can filter data at a more fine-grained level by specifying parameters `type`, `typeFilter`.
+Furthermore, you can filter data at a more fine-grained level by specifying parameters `type`, `typeFilter`. The type and typeFilter parameters work similarly as 
+[FHIR export](https://build.fhir.org/ig/HL7/bulk-data/export.html).
 
 | Parameter | Type | Example | Description |
 | --- | --- | --- | --- |
-| `type` | Comma-separated list of FHIR resource type strings | "Condition,MedicationRequest" | Only resources of the specified resource types(s) will be included in the response. |
-| `typeFilter` | Comma-separated list of FHIR REST API queries | "MedicationRequest?status=active,<br>MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z" | The `typeFilter` parameter should be used together with the `type` parameter to further restrict the results. |
+| `type` | string of comma-delimited FHIR resource types | "Condition,MedicationRequest" | Only resources of the specified resource types(s) will be included in the response. |
+| `typeFilter` | string of comma delimited FHIR REST queries | "MedicationRequest?status=active,<br>MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z" | The `typeFilter` parameter should be used along with the `type` parameter to further restrict the results. |
 
 ## Sample
 
@@ -40,12 +41,17 @@ Here are some additional notes on `type` and `typeFilter`:
    - For system scope, all the FHIR resource types will be returned; 
    - For group scope, all the patient compartment resource types will be returned.
   
-2. If a resource type is listed in `type` while has no `typeFilter`, all resources will be included in the output.
+2. If a resource type is listed in `type` without `typeFilter`, all resources will be included in the output.
 
 3. For resource type with multiple type filters, the data will be processed separately and the results will be merged.
 
-   There might be overlap between the output results and currently de-duplication **is not** supported. You need to carefully configure the `typeFilter` to avoid overlap in output result.
+   There might be overlap between the output results and currently de-duplication **is not supported**. You need to carefully configure the `typeFilter` to avoid overlap in output result.
 
-4. To only specify the parameter `typeFilter` but not `type` is **not allowed.** Error will be thrown during the parameter validation phase.
+4. To only specify the parameter `typeFilter` but not `type` **is not allowed.** Error will be thrown during the parameter validation phase.
 
 5. For group scope, when `Patient` resource is not in the `type`, we will still process all compartment resources but not returning the patient resources.
+
+## Sample deployment template
+
+Below is a sample deployment template after specifying the parameters for filtering. 
+![image](./assets/templateParameters_filtering.png)
