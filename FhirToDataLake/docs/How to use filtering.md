@@ -9,8 +9,8 @@ Furthermore, you can filter data at a more fine-grained level by specifying para
 
 | Parameter | Type | Example | Description |
 | --- | --- | --- | --- |
-| `type` | Comma-delimited list of FHIR resource type strings | "Condition,MedicationRequest" | Only resources of the specified resource types(s) will be included in the response. |
-| `typeFilter` | Comma-separated list of FHIR REST API queries | "MedicationRequest?status=active,<br>MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z" | The `typeFilter` parameter should be used together with the `type` parameter to further restrict the results of the query. |
+| `type` | Comma-separated list of FHIR resource type strings | "Condition,MedicationRequest" | Only resources of the specified resource types(s) will be included in the response. |
+| `typeFilter` | Comma-separated list of FHIR REST API queries | "MedicationRequest?status=active,<br>MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z" | The `typeFilter` parameter should be used together with the `type` parameter to further restrict the results. |
 
 ## Sample
 
