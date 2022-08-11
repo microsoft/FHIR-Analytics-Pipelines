@@ -1,6 +1,6 @@
 # Filter FHIR data in pipeline 
 
-Currently the pipeline supports exporting FHIR data at 2 different scopes:
+Currently the pipeline supports exporting FHIR data at 2 levels of scope:
 
 1. [System](https://hl7.org/Fhir/uv/bulkdata/export/index.html#endpoint---system-level-export): All resources will be exported.
 2. [Group](https://hl7.org/Fhir/uv/bulkdata/export/index.html#endpoint---group-of-patients): Patients and associated resources for a particular group resource will be exported. 
