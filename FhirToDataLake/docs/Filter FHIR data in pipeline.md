@@ -5,7 +5,7 @@ Currently the pipeline supports exporting FHIR data at 2 different scopes:
 1. [System](https://hl7.org/Fhir/uv/bulkdata/export/index.html#endpoint---system-level-export): All resources will be exported.
 2. [Group](https://hl7.org/Fhir/uv/bulkdata/export/index.html#endpoint---group-of-patients): Patients and associated resources for a particular group resource will be exported. 
 
-Furthermore, you can filter data at a more fine-grained level by specifying parameters `type`, `typeFilter`. The type and typeFilter parameters work similarly as _type_ and _typeFilter_ in [FHIR export](https://build.fhir.org/ig/HL7/bulk-data/export.html#query-parameters).
+Furthermore, you can filter data at a more fine-grained level by specifying parameters `type`, `typeFilter`. The type and typeFilter parameters work similarly as _type and _typeFilter in [FHIR export](https://build.fhir.org/ig/HL7/bulk-data/export.html#query-parameters).
 
 | Parameter | Type | Example | Description |
 | --- | --- | --- | --- |
