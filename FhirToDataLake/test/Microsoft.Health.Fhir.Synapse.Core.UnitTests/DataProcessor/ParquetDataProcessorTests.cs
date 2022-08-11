@@ -125,7 +125,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Large_Patient.ndjson"));
 
             // Maximum row number for arrow cpp parser is 100000 for a block, see https://github.com/apache/arrow/blob/42a9b32141c3c5a7178bef6644872d14f3051ce6/cpp/src/arrow/json/parser.h#L51
-            var largeTestData = Enumerable.Repeat(largePatientSingleSet, 100).SelectMany(x => x);
+            var largeTestData = Enumerable.Repeat(largePatientSingleSet, 10).SelectMany(x => x);
 
             var jsonBatchData = new JsonBatchData(largeTestData);
 
