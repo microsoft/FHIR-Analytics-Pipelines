@@ -67,7 +67,7 @@ function New-FhirDatabase
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
     try {
         Invoke-Sqlcmd -ServerInstance $serviceEndpoint -Database "master" -AccessToken $sqlAccessToken `
-            -Query "CREATE DATABASE $($databaseName)" -ErrorAction Stop
+            -Query "CREATE DATABASE $databaseName" -ErrorAction Stop
     }
     catch {
         Write-Host "Create database '$databaseName' on '$serviceEndpoint' failed: $($_.ToString())" 
@@ -83,7 +83,7 @@ function Remove-FhirDatabase
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
     try {
         Invoke-Sqlcmd -ServerInstance $serviceEndpoint -Database "master" -AccessToken $sqlAccessToken `
-            -Query "DROP DATABASE $($databaseName)" -ErrorAction Stop
+            -Query "DROP DATABASE $databaseName" -ErrorAction Stop
     }
     catch {
         Write-Host "Remove database '$databaseName' on '$serviceEndpoint' failed: $($_.ToString())" 
@@ -341,7 +341,7 @@ function Get-CustomizedTableSql {
             'boolean' { 'bit' ; Break }
             'string' { 'NVARCHAR(4000)' ; Break }
             Default {
-                Write-Host "Invalid property type in '$($schemaType).$($property.Name)': $($property.Value['type'])"
+                Write-Host "Invalid property type in '$schemaType.$($property.Name)': $($property.Value['type'])"
                 throw
             }
         }
@@ -349,10 +349,10 @@ function Get-CustomizedTableSql {
         $customizedTableProperties += "    [$($property.Name)] $sqlType,"
     }
     
-    $createCustomizedTableSql = "CREATE EXTERNAL TABLE [fhir].[$($schemaType)] (
+    $createCustomizedTableSql = "CREATE EXTERNAL TABLE [fhir].[$schemaType] (
         $customizedTableProperties
         ) WITH (
-            LOCATION='/$($schemaType)/**',
+            LOCATION='/$schemaType/**',
             DATA_SOURCE = ParquetSource,
             FILE_FORMAT = ParquetFormat
         );"
