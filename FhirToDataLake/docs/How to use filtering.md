@@ -1,9 +1,9 @@
-# How to Use Filtering
+# Filter FHIR data in pipeline 
 
-This feature allows export data from the FHIR server at the following two scopes:
+Currently the pipeline supports exporting FHIR data at 2 different scopes:
 
-1. [System](https://hl7.org/Fhir/uv/bulkdata/export/index.html#endpoint---system-level-export): exports resource data
-2. [Group](https://hl7.org/Fhir/uv/bulkdata/export/index.html#endpoint---group-of-patients): exports all related resources but doesn't export the characteristics of the group.
+1. [System](https://hl7.org/Fhir/uv/bulkdata/export/index.html#endpoint---system-level-export): All resource data will be exported.
+2. [Group](https://hl7.org/Fhir/uv/bulkdata/export/index.html#endpoint---group-of-patients): Patients and associated resources for a particular group resource will be exported. 
 
 Besides, we support `type`, `typeFilter` for finer-grained filtering.
 
