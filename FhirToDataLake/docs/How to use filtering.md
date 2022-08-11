@@ -9,12 +9,12 @@ Furthermore, you can filter data at a more fine-grained level by specifying para
 
 | Parameter | Type | Example | Description |
 | --- | --- | --- | --- |
-| `type` | string of comma-delimited FHIR resource types | "Condition,MedicationRequest" | Only resources of the specified resource types(s) SHALL be included in the response. |
-| `typeFilter` | string of comma-separated list of FHIR REST API queries | "MedicationRequest?status=active,<br>MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z" | `typeFilter` parameter alongside the `type` parameter to further restrict the results of the query. |
+| `type` | Comma-delimited list of FHIR resource type strings | "Condition,MedicationRequest" | Only resources of the specified resource types(s) will be included in the response. |
+| `typeFilter` | Comma-separated list of FHIR REST API queries | "MedicationRequest?status=active,<br>MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z" | The `typeFilter` parameter should be used together with the `type` parameter to further restrict the results of the query. |
 
 ## Sample
 
-The following is an sample configuration, in which the user requests to export patient compartment data in a group with the groupId specified.
+Following is a sample configuration of a user request to export patient compartment data in a group with a specified groupId.
 
 It requests for `MedicationRequest` and `Condition` resources, where the user would further like to restrict `MedicationRequests` to requests that are `active,` or else `completed` after July 1, 2018.
 
@@ -42,10 +42,10 @@ Here are some additional notes on `type` and `typeFilter`:
   
 2. If a resource type is listed in `type` while has no `typeFilter`, all resources will be included in the output.
 
-3. For resource type with multiple type filters, we will process them separately and merge the result.
+3. For resource type with multiple type filters, the data will be processed separately and the results will be merged.
 
-   There might be overlap in the output and here we **don't** want deduplicate between the results here as it's very complex. Customers can carefully configure the `typeFilter` to no overlap in output result.
+   There might be overlap between the output results and currently de-duplication **is not** supported. You need to carefully configure the `typeFilter` to avoid overlap in output result.
 
-4. Specifying resource type in `typeFilter` but not in `type` is **not permitted.** And an error should be thrown in the parameter validation phase.
+4. To only specify the parameter `typeFilter` but not `type` is **not allowed.** Error will be thrown during the parameter validation phase.
 
-5. For group scope, when patient is not in the `type`, we will still process all compartment resources but not returning the patient resources.
+5. For group scope, when `Patient` resource is not in the `type`, we will still process all compartment resources but not returning the patient resources.
