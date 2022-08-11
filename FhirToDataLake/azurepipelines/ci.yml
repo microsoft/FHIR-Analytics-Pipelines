@@ -94,7 +94,7 @@ steps:
   displayName: 'Publish function app'
   inputs:
     command: publish
-    publishWebProjects: True
+    publishWebProjects: False
     arguments: '--configuration $(BuildConfiguration) --arch $(buildPlatform)  -p:Version=$(version) --output $(Build.ArtifactStagingDirectory)/FhirToDataLake'
     zipAfterPublish: True
     projects: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.FunctionApp/Microsoft.Health.Fhir.Synapse.FunctionApp.csproj
