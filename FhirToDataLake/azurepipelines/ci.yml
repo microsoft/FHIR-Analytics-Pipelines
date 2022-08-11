@@ -97,7 +97,7 @@ steps:
     publishWebProjects: True
     arguments: '--configuration $(BuildConfiguration) --arch $(buildPlatform)  -p:Version=$(version) --output $(Build.ArtifactStagingDirectory)/FhirToDataLake'
     zipAfterPublish: True
-    projects: FhirToDataLake/src/Microsoft/Microsoft.Health.Fhir.Synapse.FunctionApp/Microsoft.Health.Fhir.Synapse.FunctionApp.csproj
+    projects: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.FunctionApp/Microsoft.Health.Fhir.Synapse.FunctionApp.csproj
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact'
