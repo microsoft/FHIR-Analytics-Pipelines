@@ -1,4 +1,4 @@
-# Process FHIR extensions 
+# Process FHIR extensions  
 
 ## Generate parquet data for FHIR extensions
 
