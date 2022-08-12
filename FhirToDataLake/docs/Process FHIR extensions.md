@@ -14,8 +14,39 @@ Follow the links for more information about [liquid template](http://dotliquidma
 Example liquid template and JSON schema for “Patient” resource, flatten the “birthplace” extension for analytics.
 
 _Liquid template:_
+```liquid
+{% validate "Schema/Patient.schema.json" -%}
+{
+"resourceType": "{{ msg.resourceType }}",
+"id": "{{ msg.id }}",
+
+{% assign birth_place_extension = msg["extension"] | where: "url", "http://hl7.org/fhir/StructureDefinition/patient-birthPlace" | first -%}
+"birthPlaceExtension.valueAddress.city": "{{ birth_place_extension.valueAddress.city }}",
+"birthPlaceExtension.valueAddress.state": "{{ birth_place_extension.valueAddress.state }}",
+"birthPlaceExtension.valueAddress.country": "{{ birth_place_extension.valueAddress.country }}",
+"birthPlaceExtension.valueAddress.postalCode": "{{ birth_place_extension.valueAddress.postalCode }}",
+}
+{% endvalidate -%}
+
+```
 
 _JSON schema file:_
+
+```javascript
+{
+    "title": "Patient customized schema",
+    "type": "object",
+    "properties": {
+        "resourceType": { type": "string" },
+        "id": { "type": "string" },
+	"birthPlaceExtension.valueAddress.city": { type": "string" },
+	"birthPlaceExtension.valueAddress.state": { "type": "string" },
+	"birthPlaceExtension.valueAddress.country": { "type": "string" },
+	"birthPlaceExtension.valueAddress.postalCode": { "type": "string" }
+    },
+    "required": [ "id" ]
+}
+```
 
 **Note**:
 1.	The JSON schema files must be saved at **Schema** directory in the image.
