@@ -1,148 +1,178 @@
 steps:
-    - powershell: |
-        $buildNumber = ([string]$(Build.BuildNumber)).replace('.', '')
-        $appName = 'test' + $buildNumber.substring($buildNumber.length - 7)
+- powershell: |
+    $buildNumber = ([string]$(Build.BuildNumber)).replace('.', '')
+    $appName = 'test' + $buildNumber.substring($buildNumber.length - 7)
+
+    Write-Host $("Build number: " + $buildNumber)
+    Write-Host $("App name: " + $appName)
     
-        Write-Host $("Build number: " + $buildNumber)
-        Write-Host $("App name: " + $appName)
-        
-        $databaseName = $appName
-        $containerName = 'ci' + $appName
-        Write-Host "##vso[task.setvariable variable=databaseName;]$databaseName"
-        Write-Host "##vso[task.setvariable variable=containerName;]$containerName"
-      displayName: Set up internal variables 
-    
-    - task: DownloadBuildArtifacts@0
-      displayName: Download Artifacts
-      inputs:
-        artifactName: FhirToDataLakeBuild
-        downloadPath: $(Build.ArtifactStagingDirectory)
-    
-    - task: AzureCLI@2
-      displayName: Reset test Azure Function in CI test environment
-      inputs: 
-        azureSubscription: ResoluteOpenSource
-        scriptType: ps
-        scriptLocation: inlineScript
-        inlineScript: |
-          # Stop the function
-          az functionapp stop -n $(azureFunctionName) -g $(resourceGroup)
-          
-          # Deploy the new build code to the function
-          az functionapp deployment source config-zip -n $(azureFunctionName) -g $(resourceGroup) `
-            --src $(Build.ArtifactStagingDirectory)\FhirToDataLakeBuild\Microsoft.Health.Fhir.Synapse.FunctionApp.zip
-          
-          # Change the target container
-          az functionapp config appsettings set -n $(azureFunctionName) -g $(resourceGroup) `
-            --settings "job__containerName=$(containerName)"
-          
-          # Start the function
-          az functionapp start -n $(azureFunctionName) -g $(resourceGroup)
-    
-    - powershell: |
-        $functionStartTime = ([DateTimeOffset](Get-Date)).ToUnixTimeSeconds()
-        Write-Host "##vso[task.setvariable variable=functionStartTime;]$functionStartTime"
-      displayName: Set up function start time
-    
-    - task: DockerInstaller@0
-      displayName: Docker Installer
-      inputs:
-        dockerVersion: 17.09.0-ce
-        releaseType: stable
-    
-    - task: AzurePowerShell@5
-      displayName: Set up Synapse Environment with script
-      inputs:
-        azureSubscription: ResoluteOpenSource
-        azurePowerShellVersion: latestVersion
-        workingDirectory: $(System.DefaultWorkingDirectory)\FhirToDataLake\scripts\
-        ScriptType: inlineScript
-        pwsh: true
-        Inline: |
-          Install-Module -Name Az.Synapse -RequiredVersion 0.7.0 -Force
-          Import-Module Az.Synapse
-    
-          # Retry to avoid the warming up of Synapse SQL pool and other potential issues
-          # see https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-42109-database-engine-error?view=sql-server-ver15
-    
-          $attempts = 1
-          $maxAttempts = 3
-          do
+    $databaseName = $appName
+    $containerName = 'ci' + $appName
+    Write-Host "##vso[task.setvariable variable=databaseName;]$databaseName"
+    Write-Host "##vso[task.setvariable variable=containerName;]$containerName"
+  displayName: Set up internal variables 
+
+- task: DownloadBuildArtifacts@0
+  displayName: Download Artifacts
+  inputs:
+    artifactName: FhirToDataLakeBuild
+    downloadPath: $(Build.ArtifactStagingDirectory)
+
+- task: AzureCLI@2
+  displayName: Reset test Azure Function in CI test environment
+  inputs: 
+    azureSubscription: ResoluteOpenSource
+    scriptType: ps
+    scriptLocation: inlineScript
+    inlineScript: |
+      # Stop the function
+      az functionapp stop -n $(azureFunctionName) -g $(resourceGroup)
+      
+      # Deploy the new build code to the function
+      az functionapp deployment source config-zip -n $(azureFunctionName) -g $(resourceGroup) `
+        --src $(Build.ArtifactStagingDirectory)\FhirToDataLakeBuild\Microsoft.Health.Fhir.Synapse.FunctionApp.zip
+      
+      # Change the target container
+      az functionapp config appsettings set -n $(azureFunctionName) -g $(resourceGroup) `
+        --settings "job__containerName=$(containerName)"
+      
+      # Start the function
+      az functionapp start -n $(azureFunctionName) -g $(resourceGroup)
+
+- powershell: |
+    $functionStartTime = ([DateTimeOffset](Get-Date)).ToUnixTimeSeconds()
+    Write-Host "##vso[task.setvariable variable=functionStartTime;]$functionStartTime"
+  displayName: Set up function start time
+
+- task: DockerInstaller@0
+  displayName: Docker Installer
+  inputs:
+    dockerVersion: 17.09.0-ce
+    releaseType: stable
+
+- task: AzurePowerShell@5
+  displayName: Set up Synapse Environment with script
+  inputs:
+    azureSubscription: ResoluteOpenSource
+    azurePowerShellVersion: latestVersion
+    workingDirectory: $(System.DefaultWorkingDirectory)\FhirToDataLake\scripts\
+    ScriptType: inlineScript
+    pwsh: true
+    Inline: |
+      Install-Module -Name Az.Synapse -RequiredVersion 0.7.0 -Force
+      Import-Module Az.Synapse
+
+      # Retry to avoid the warming up of Synapse SQL pool and other potential issues
+      # see https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-42109-database-engine-error?view=sql-server-ver15
+
+      $attempts = 1
+      $maxAttempts = 3
+      do
+      {
+          try
           {
-              try
-              {
-                  .\Set-SynapseEnvironment.ps1 `
-                    -SynapseWorkspaceName $(synapseWorkspaceName) `
-                    -StorageName $(storageAccountName) `
-                    -Container $(containerName) `
-                    -Database $(databaseName) `
-                    -CustomizedSchemaImage $(customizedSchemaImageReference) `
-                    -SqlScriptCollectionPath $(System.DefaultWorkingDirectory)\FhirToDataLake\scripts\sql\Resources
-                  break;
-              }
-              catch [Exception]
-              {
-                  Write-Host $_.Exception.Message
-              }
-    
-              # exponential backoff delay
-              $attempts++
-              if ($attempts -le $maxAttempts) {
-                  $retryDelaySeconds = [math]::Pow(2, $attempts)
-                  $retryDelaySeconds = $retryDelaySeconds - 1  # Exponential Backoff Max == (2^n)-1
-                  Write-Host("Set up EXTERNAL TABLEs and VIEWs failed. Waiting " + $retryDelaySeconds + " seconds before attempt " + $attempts + " of " + $maxAttempts + ".")
-                  Start-Sleep $retryDelaySeconds 
-              }
-              else {
-                  Write-Error $_.Exception.Message
-              }
-          } while ($attempts -le $maxAttempts)
-    
-    - task: AzurePowerShell@5
-      displayName: Sync and process data from FHIR server
-      inputs: 
-        azureSubscription: ResoluteOpenSource
-        azurePowerShellVersion: latestVersion
-        ScriptType: inlineScript
-        Inline: |
-          # Here delay some time if function runs less than 7 minutes
-          $timeNow = ([DateTimeOffset](Get-Date)).ToUnixTimeSeconds()
-          $intervalSeconds = $timeNow - $(functionStartTime)
-          
-          if ($intervalSeconds -lt 420){
-            $waitSeconds = 420-$intervalSeconds
-            Start-Sleep -s $waitSeconds
+              .\Set-SynapseEnvironment.ps1 `
+                -SynapseWorkspaceName $(synapseWorkspaceName) `
+                -StorageName $(storageAccountName) `
+                -Container $(containerName) `
+                -Database $(databaseName) `
+                -CustomizedSchemaImage $(customizedSchemaImageReference) `
+                -SqlScriptCollectionPath $(System.DefaultWorkingDirectory)\FhirToDataLake\scripts\sql\Resources
+              break;
           }
-          Write-Host 'Stop function at $(Get-Date -Format hh:MM:ss)'
-          Stop-AzFunctionApp -Name $(azureFunctionName) -ResourceGroupName $(resourceGroup) -Force
-    
-    - task: AzureCLI@2
-      displayName: Get fhir service access token
-      inputs: 
-        azureSubscription: ResoluteOpenSource
-        scriptType: ps
-        scriptLocation: inlineScript
-        inlineScript: |
-          $token=$(az account get-access-token --resource=$(fhirServer:serverUrl) --query accessToken --output tsv)
-          Write-Output("##vso[task.setvariable variable=fhirServiceAccessToken;]$token")
-    
-    - powershell: |
-        $validateResourceTypes = 'AllergyIntolerance,CarePlan,CareTeam,Claim,Condition,Device,DiagnosticReport,DocumentReference,Encounter,ExplanationOfBenefit,Group,ImagingStudy,Immunization,Medication,MedicationAdministration,MedicationRequest,Observation,Patient,Procedure,Provenance'
-        Write-Host "##vso[task.setvariable variable=validateResourceTypes;]$validateResourceTypes"
-        Write-Host "Validate $validateResourceTypes"
-      displayName: Set up validate resource types
-    
-    - script: python -m pip install requests pyodbc pandas
-      displayName: Install requirements for validate script
-    
-    - task: PythonScript@0
-      displayName: Validate data on Synapse
-      inputs:
-        scriptSource: filePath
-        scriptPath: '$(Build.SourcesDirectory)\FhirToDataLake\synapse\SynapseValidator.py'
-        arguments: --synapse_workspace $(synapseWorkspaceName) --fhir_server_url $(fhirServer:serverUrl) --database $(databaseName) --schema_directory $(System.DefaultWorkingDirectory)\FhirToDataLake\data\schemas\ --fhir_server_access_token $(fhirServiceAccessToken) --resource_types $(validateResourceTypes) --customized_schema True 
-      env:
-        SQL_USERNAME: $(SqlUsername)
-        SQL_PASSWORD: $(SqlPassword)
-    
+          catch [Exception]
+          {
+              Write-Host $_.Exception.Message
+          }
+
+          # exponential backoff delay
+          $attempts++
+          if ($attempts -le $maxAttempts) {
+              $retryDelaySeconds = [math]::Pow(2, $attempts)
+              $retryDelaySeconds = $retryDelaySeconds - 1  # Exponential Backoff Max == (2^n)-1
+              Write-Host("Set up EXTERNAL TABLEs and VIEWs failed. Waiting " + $retryDelaySeconds + " seconds before attempt " + $attempts + " of " + $maxAttempts + ".")
+              Start-Sleep $retryDelaySeconds 
+          }
+          else {
+              Write-Error $_.Exception.Message
+          }
+      } while ($attempts -le $maxAttempts)
+
+- task: AzurePowerShell@5
+  displayName: Sync and process data from FHIR server
+  inputs: 
+    azureSubscription: ResoluteOpenSource
+    azurePowerShellVersion: latestVersion
+    ScriptType: inlineScript
+    Inline: |
+      # Here delay some time if function runs less than 7 minutes
+      $timeNow = ([DateTimeOffset](Get-Date)).ToUnixTimeSeconds()
+      $intervalSeconds = $timeNow - $(functionStartTime)
+      
+      if ($intervalSeconds -lt 420){
+        $waitSeconds = 420-$intervalSeconds
+        Start-Sleep -s $waitSeconds
+      }
+      Write-Host 'Stop function at $(Get-Date -Format hh:MM:ss)'
+      Stop-AzFunctionApp -Name $(azureFunctionName) -ResourceGroupName $(resourceGroup) -Force
+
+- task: AzureCLI@2
+  displayName: Get fhir service access token
+  inputs: 
+    azureSubscription: ResoluteOpenSource
+    scriptType: ps
+    scriptLocation: inlineScript
+    inlineScript: |
+      $token=$(az account get-access-token --resource=$(fhirServer:serverUrl) --query accessToken --output tsv)
+      Write-Output("##vso[task.setvariable variable=fhirServiceAccessToken;]$token")
+
+- powershell: |
+    $validateResourceTypes = 'AllergyIntolerance,CarePlan,CareTeam,Claim,Condition,Device,DiagnosticReport,DocumentReference,Encounter,ExplanationOfBenefit,Group,ImagingStudy,Immunization,Medication,MedicationAdministration,MedicationRequest,Observation,Patient,Procedure,Provenance'
+    Write-Host "##vso[task.setvariable variable=validateResourceTypes;]$validateResourceTypes"
+    Write-Host "Validate $validateResourceTypes"
+  displayName: Set up validate resource types
+
+- script: python -m pip install requests pyodbc pandas
+  displayName: Install requirements for validate script
+
+- task: PythonScript@0
+  displayName: Validate data on Synapse
+  inputs:
+    scriptSource: filePath
+    scriptPath: '$(Build.SourcesDirectory)\FhirToDataLake\synapse\SynapseValidator.py'
+    arguments: --synapse_workspace $(synapseWorkspaceName) --fhir_server_url $(fhirServer:serverUrl) --database $(databaseName) --schema_directory $(System.DefaultWorkingDirectory)\FhirToDataLake\data\schemas\ --fhir_server_access_token $(fhirServiceAccessToken) --resource_types $(validateResourceTypes) --customized_schema True 
+  env:
+    SQL_USERNAME: $(SqlUsername)
+    SQL_PASSWORD: $(SqlPassword)
+
+
+- task: AzurePowerShell@5
+  displayName: Clean up test container
+  inputs: 
+    azureSubscription: 'ResoluteOpenSource'
+    azurePowerShellVersion: latestVersion
+    ScriptType: inlineScript
+    Inline: |
+      ### Remove test container
+      $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(storageAccountName)).Value[0]
+      $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $storageAccountKey
+      Remove-AzStorageContainer -Name $(containerName) $storageContext
+
+- task: PythonScript@0
+  displayName: Clean up test container
+  inputs:
+    scriptSource: inline
+    script: |
+      import pyodbc
+
+      sql_server_endpoint = $(synapseWorkspaceName) + "-ondemand.sql.azuresynapse.net"
+      connection_string = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' \
+            + sql_server_endpoint + ';DATABASE=' + 'master' + ';UID=' + $(SqlUsername) + ';PWD=' + $(SqlPassword)
+      
+      connection = pyodbc.connect(self.connection_string)
+      sql = "DROT DATABASE " + $(databaseName)
+      cursor = connection.cursor()
+      cursor.execute(sql)
+      connection.close()
+
     
