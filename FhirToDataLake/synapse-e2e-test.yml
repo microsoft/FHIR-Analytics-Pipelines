@@ -123,7 +123,7 @@ steps:
         scriptType: ps
         scriptLocation: inlineScript
         inlineScript: |
-          $token=$(az account get-access-token --resource=$(fhirServer:serverUrl)--query accessToken --output tsv)
+          $token=$(az account get-access-token --resource=$(fhirServer:serverUrl) --query accessToken --output tsv)
           Write-Output("##vso[task.setvariable variable=fhirServiceAccessToken;]$token")
     
     - powershell: |
