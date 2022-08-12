@@ -30,7 +30,7 @@ It requests for `MedicationRequest` and `Condition` resources, where the user wo
 ```
 
 >Note:
-
+>
 >1. The `Condition` resources is included in `type` but omitted from `typeFilter` because the user intends to request all `Condition` resources without any filters.
 >2. There are two filters for `MedicationRequest`, we will process them separately and merge the result.
 
