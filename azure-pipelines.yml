@@ -16,6 +16,9 @@ variables:
   patch: 0
   buildnum: $[counter(format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch']), 1)]
   version: $(major).$(minor).$(patch).$(buildnum)
+  azureFunctionName: testanalyticspipeline
+  synapseWorkspaceName: testcisynapseworkspace
+  storageAccountName: testanalytihv4hqces73r4o
 
 stages:
 - stage: Build
@@ -30,15 +33,20 @@ stages:
     steps:
     - template: FhirToDataLake/build.yml
 
-- stage: Release
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+- stage: e2e
   pool:
     vmImage: 'windows-latest'
+  condition: succeeded()
   jobs:
   - job: SynapseE2ETest
     steps:
     - template: FhirToDataLake/synapse-e2e-test.yml
 
+- stage: Release
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  pool:
+    vmImage: 'windows-latest'
+  jobs:
   - job: PublishFhirToCdm
     dependsOn: SynapseE2ETest
     condition: succeeded()

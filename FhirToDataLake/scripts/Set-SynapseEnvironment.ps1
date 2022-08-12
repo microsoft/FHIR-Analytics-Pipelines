@@ -235,6 +235,18 @@ function New-TableAndViewsForResources
     }
 }
 
+function Run_InternalApplication
+{
+    param([string]$fileName, [string[]]$argumentList)
+    & $fileName $argumentList
+
+    if ($LastExitCode -ne 0) {
+        throw "Failed for executing '$fileName $argumentList'."
+    }
+
+    Write-Host "Finish executing '$fileName $argumentList'." -ForegroundColor Green
+}
+
 function Get-OrasExeApp {
     param ([string]$orasDirectoryPath, [string]$orasAppPath, [string]$orasUrl)
 
@@ -267,21 +279,17 @@ function Get-OrasExeApp {
         '-C'
         $orasDirectoryPath
     )
-    $response = & 'tar' $unpackParameters 2>&1
 
-    if ($LastExitCode -ne 0)
-    {
-        Write-Host $response -ForegroundColor Red
-        throw "Failed to unpack Oras artifact: $response" 
-    }
+    Run_InternalApplication -fileName 'tar' -argumentList $unpackParameters
 
     Copy-Item "$orasDirectoryPath\$orasAppPath" -Destination "."
+    Remove-Item $orasGzFile
     Write-Host " -> Finish download oras application from $orasUrl" -ForegroundColor Green 
 }
 
 function Get-CustomizedSchemaImage {
-    param ([string]$orasAppPath, [string]$schemaImageReference, [string]$CustomizedTemplateDirectory)
-
+    param ([string]$orasAppPath, [string]$schemaImageReference, [string]$customizedTemplateDirectory)
+    
     $registryName = $schemaImageReference.Substring(0, $schemaImageReference.IndexOf('.azurecr.io'))
     Connect-AzContainerRegistry -Name $registryName -ErrorAction stop
 
@@ -290,36 +298,26 @@ function Get-CustomizedSchemaImage {
         'pull'
         $schemaImageReference
     )
-    $response = & $orasAppPath $orasParameters 2>&1
     
-    if ($LastExitCode -ne 0)
-    {
-        Write-Host $response -ForegroundColor Red
-        throw "Failed to pull the customized schema image: $response" 
-    }
+    Run_InternalApplication -fileName ".\$orasAppPath" -argumentList $orasParameters
 
     $compressPackages = Get-ChildItem -Path * -Include '*.tar.gz' -Name
     Write-Host "Successfully pull the customized schema image: $compressPackages" -ForegroundColor Green
 
     # Unpack the image compressed package to customized template directory    
-    if (!(Test-Path $CustomizedTemplateDirectory)){
-        New-Item $CustomizedTemplateDirectory -ItemType Directory
+    if (!(Test-Path $customizedTemplateDirectory)){
+        New-Item $customizedTemplateDirectory -ItemType Directory
     }
 
     foreach ($compressPackage in $compressPackages){
         $unpackParameters = @(
-            '-zxvf'
+            '-xvf'
             $compressPackage
             '-C'
-            $CustomizedTemplateDirectory
+            $customizedTemplateDirectory
         )
-        $response = & 'tar' $unpackParameters 2>&1
 
-        if ($LastExitCode -ne 0)
-        {
-            Write-Host $response -ForegroundColor Red
-            throw "Failed to unpack customized schema image: $response" 
-        }
+        Run_InternalApplication -fileName 'tar' -argumentList $unpackParameters
     }
 }
 
@@ -349,6 +347,7 @@ function Get-CustomizedTableSql {
         $customizedTableProperties += "    [$($property.Name)] $sqlType,"
     }
     
+
     $createCustomizedTableSql = "CREATE EXTERNAL TABLE [fhir].[$schemaType] (
         $customizedTableProperties
         ) WITH (
