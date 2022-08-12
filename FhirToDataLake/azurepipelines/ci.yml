@@ -9,14 +9,6 @@ steps:
 
 # Install for Azure Function dependencies
 - task: UseDotNet@2
-  displayName: 'Install .NET Core sdk 3.1'
-  inputs:
-    packageType: sdk
-    version: 3.1.402
-    installationPath: $(Agent.ToolsDirectory)/dotnet
-
-# Install for Azure Function dependencies
-- task: UseDotNet@2
   displayName: 'Use .NET Core sdk 6.0'
   inputs:
     packageType: sdk
@@ -40,7 +32,7 @@ steps:
 
 - script: |
     docker pull mcr.microsoft.com/azure-storage/azurite
-    docker run -d --name azurite-emulator-analytics-ci -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+    docker run -d --name azurite-emulator-analytics-ci -p 10000-10002:10000-10002 \
         mcr.microsoft.com/azure-storage/azurite
   displayName: 'Start Azurite Emulator'
 
