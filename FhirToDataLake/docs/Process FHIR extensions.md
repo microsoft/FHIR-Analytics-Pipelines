@@ -50,22 +50,24 @@ _JSON schema file:_
 
 **Note**:
 1.	The JSON schema files must be saved at **Schema** directory in the image.
-2.	 ![image](./assets/LiquidDirectory.png)
-4.	The “validate” tag in template is optional, we recommend to use this in your liquid template.
-5.	You can firstly test your templates and schema files, then start to deploy the analytics pipeline, so as to avoid the potential issues.
+	 
+	 ![image](./assets/LiquidDirectory.png)
+	 
+2.	The “validate” tag in template is optional and we recommend using it in your liquid template.
+3.	To avoid potential issues, you can test your templates and schema files before deploying the analytics pipeline.
 
 ### 2.	Push the customized schema to Azure Container Registry
 Refer [here](https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md) to push the prepared schema to Azure Container Registry, later we will use the schema image reference from the Container Registry to deploy the analytics pipeline.
 
 ### 3.	Deploy the Analytics pipeline with customized schema enabled
-Deploy the pipeline with [ARM template](https://github.com/microsoft/FHIR-Analytics-Pipelines/blob/main/FhirToDataLake/deploy/templates/FhirSynapsePipelineTemplate.json), set up the “Customized Schema” as “true”, and “Customized Schema Image Reference” as the reference of your schema image.
+Deploy the pipeline with [ARM template](https://github.com/microsoft/FHIR-Analytics-Pipelines/blob/main/FhirToDataLake/deploy/templates/FhirSynapsePipelineTemplate.json), set the parameter “Customized Schema” as “true”, and “Customized Schema Image Reference” as the reference of image where your schema is stored.
 
  ![image](./assets/DeploymentTemplate.png)
 
 After deploying the pipeline, the Azure Function agent will try to pull the customized schema from the given image reference.
 
 ### 4.	Provide access of the Container Registry to the Azure Function
-Go to the Azure Container Registry instance, add the **principal account** of Azure Function you just created as the **“AcrPull”** of the Container Registry.
+Go to the Azure Container Registry instance, assign **“AcrPull”** role to **principal account** of your created Azure Function.
  
  ![image](./assets/AccessRole.png)
 
@@ -76,13 +78,13 @@ Go to the Azure Container Registry instance, add the **principal account** of Az
 
 Customized data will be generated to “{resource type}_Customized” folder on the Storage.
 
-Example customized patient Parquet data on the Storage.
+_Example customized patient Parquet data on the Storage_
 
  ![image](./assets/ExampleParquetData.png)
 
  ![image](./assets/ExampleParquetData2.png)
 
-## Query customized data on Synapse Serverless SQL pool
+## Query customized data in Synapse Serverless SQL pool
 
 ### 1.	Run the Powershell script to create the tables and views with customized schema image
 
@@ -91,9 +93,9 @@ Browse to the scripts folder under this path (..\FhirToDataLake\scripts).
 Run the following PowerShell script.
 ./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName "Synapse name" -Storage   "Storage name" -CustomizedSchemaImage "Schema image reference"
 
-Example:
+_Example:_
 ./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName quwansynapsews0830  -Storage fhrtosynaps6mocz2elwbwg6  -CustomizedSchemaImage exampleacr.azurecr.io/customizedtemplate:extensiontemplates
 
-### 2.	Query customized data on the Synapse SQL pool
+### 2.	Query customized data in Synapse SQL pool
 
  ![image](./assets/QuerySynapsePool.png)
