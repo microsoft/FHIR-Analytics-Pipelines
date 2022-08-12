@@ -9,6 +9,13 @@ steps:
 
 # Install for Azure Function dependencies
 - task: UseDotNet@2
+  displayName: 'Install .NET Core sdk 3.1'
+  inputs:
+    packageType: sdk
+    version: 3.1.402
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+- task: UseDotNet@2
   displayName: 'Use .NET Core sdk 6.0'
   inputs:
     packageType: sdk
