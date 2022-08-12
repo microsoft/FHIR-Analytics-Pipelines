@@ -145,34 +145,30 @@ steps:
     SQL_USERNAME: $(SqlUsername)
     SQL_PASSWORD: $(SqlPassword)
 
-
 - task: AzurePowerShell@5
-  displayName: Clean up test container
+  displayName: Clean up test container and database
   inputs: 
-    azureSubscription: 'ResoluteOpenSource'
+    azureSubscription: ResoluteOpenSource
     azurePowerShellVersion: latestVersion
     ScriptType: inlineScript
+    pwsh: true
     Inline: |
-      ### Remove test container
       $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(storageAccountName)).Value[0]
       $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $storageAccountKey
-      Remove-AzStorageContainer -Name $(containerName) $storageContext
+      Remove-AzStorageContainer -Name $(containerName) -Context $storageContext -Force
 
-- task: PythonScript@0
-  displayName: Clean up test container
-  inputs:
-    scriptSource: inline
-    script: |
-      import pyodbc
+      Write-Host 'Clear test container'
+      $sqlServerEndpoint = "$(synapseWorkspaceName)-ondemand.sql.azuresynapse.net"
+      $userName = $env:SQL_USERNAME
+      $password = $env:SQL_PASSWORD
 
-      sql_server_endpoint = $(synapseWorkspaceName) + "-ondemand.sql.azuresynapse.net"
-      connection_string = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' \
-            + sql_server_endpoint + ';DATABASE=' + 'master' + ';UID=' + $(SqlUsername) + ';PWD=' + $(SqlPassword)
-      
-      connection = pyodbc.connect(self.connection_string)
-      sql = "DROT DATABASE " + $(databaseName)
-      cursor = connection.cursor()
-      cursor.execute(sql)
-      connection.close()
+      $connectionString = "Server=tcp:testcisynapseworkspace-ondemand.sql.azuresynapse.net,1433;Database=master;User ID=$userName;Password=$password;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+      Invoke-Sqlcmd `
+          -Query "DROP DATABASE $(databaseName)" `
+          -ConnectionString $connectionString
+      Write-Host 'Clear test database'
+  env:
+    SQL_USERNAME: $(SqlUsername)
+    SQL_PASSWORD: $(SqlPassword)
 
     
