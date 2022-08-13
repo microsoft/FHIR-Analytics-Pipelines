@@ -12,7 +12,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 {
-    public static class IServiceCollectionExtensions
+    public static class ServiceCollectionExtensions
     {
         /// <summary>
         /// Validate configuration in service collection.
@@ -61,6 +61,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
             if (string.IsNullOrEmpty(jobConfiguration.ContainerName))
             {
                 throw new ConfigurationErrorException($"Target azure container name can not be empty.");
+            }
+
+            // TODO: add more validation for agent name, table url, queue url
+            if (string.IsNullOrEmpty(jobConfiguration.AgentName))
+            {
+                throw new ConfigurationErrorException($"Agent name can not be empty.");
             }
 
             FilterConfiguration filterConfiguration;
