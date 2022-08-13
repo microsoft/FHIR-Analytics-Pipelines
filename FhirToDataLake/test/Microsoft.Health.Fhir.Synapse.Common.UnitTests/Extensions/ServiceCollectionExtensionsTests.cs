@@ -22,6 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             { "fhirServer:serverUrl", "https://test.fhir.azurehealthcareapis.com" },
             { "dataLakeStore:storageUrl", "https://test.blob.core.windows.net/" },
             { "job:containerName", "fhir" },
+            { "job:agentName", "agentName" },
         };
 
         public static IEnumerable<object[]> GetInvalidServiceConfiguration()

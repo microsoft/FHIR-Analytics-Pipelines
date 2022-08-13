@@ -148,16 +148,22 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                     cancellationToken: cancellationToken)).Value;
 
                 // step 5: try to add reverse index for jobInfo entity
-                var reverseIndexEntity = new JobReverseIndexEntity
+                try
                 {
-                    PartitionKey = AzureStorageKeyProvider.JobReverseIndexPartitionKey(queueType, jobInfoEntity.Id),
-                    RowKey = AzureStorageKeyProvider.JobReverseIndexRowKey(queueType, jobInfoEntity.Id),
-                    JobInfoEntityPartitionKey = jobInfoEntity.PartitionKey,
-                    JobInfoEntityRowKey = jobInfoEntity.RowKey,
-                };
+                    var reverseIndexEntity = new JobReverseIndexEntity
+                    {
+                        PartitionKey = AzureStorageKeyProvider.JobReverseIndexPartitionKey(queueType, jobInfoEntity.Id),
+                        RowKey = AzureStorageKeyProvider.JobReverseIndexRowKey(queueType, jobInfoEntity.Id),
+                        JobInfoEntityPartitionKey = jobInfoEntity.PartitionKey,
+                        JobInfoEntityRowKey = jobInfoEntity.RowKey,
+                    };
 
-                // replace it if exists, create it if does not exist
-                await _azureJobInfoTableClient.UpsertEntityAsync(reverseIndexEntity, cancellationToken: cancellationToken);
+                    await _azureJobInfoTableClient.AddEntityAsync(reverseIndexEntity, cancellationToken: cancellationToken);
+                }
+                catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
+                {
+                    _logger.LogInformation(ex, "The job reverse index entity already exists.");
+                }
 
                 // step 6: if queue message not present in job lock entity, push message to queue.
                 // TODO: add unit test: What if processing job failed, and the message is deleted, while the message id is still in table entity
