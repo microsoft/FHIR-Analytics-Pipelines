@@ -36,13 +36,13 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
             try
             {
-                await PerformHealthCheckImplAsync(healthCheckResult, cancellationToken);
-                healthCheckResult.Status = HealthCheckStatus.PASS;
+                await PerformHealthCheckImplAsync(cancellationToken);
+                healthCheckResult.Status = HealthCheckStatus.HEALTHY;
             }
             catch (Exception e)
             {
                 _logger.LogError(e, $"The component {Name} is not healthy.");
-                healthCheckResult.Status = HealthCheckStatus.FAIL;
+                healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = e.Message;
             }
 
@@ -50,6 +50,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             return healthCheckResult;
         }
 
-        protected abstract Task PerformHealthCheckImplAsync(HealthCheckResult healthCheckResult, CancellationToken cancellationToken);
+        protected abstract Task PerformHealthCheckImplAsync(CancellationToken cancellationToken);
     }
 }

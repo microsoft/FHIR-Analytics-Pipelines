@@ -8,18 +8,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
-using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
 {
     public class MockTimeoutHealthChecker : BaseHealthChecker
     {
         public MockTimeoutHealthChecker(ILogger<MockTimeoutHealthChecker> logger)
-                : base("MockTimeout", false, logger)
+                : base("MockTimeout", true, logger)
         {
         }
 
-        protected override async Task PerformHealthCheckImplAsync(HealthCheckResult healthCheckResult, CancellationToken cancellationToken)
+        protected override async Task PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
             await Task.Delay(TimeSpan.FromMilliseconds(300), cancellationToken);
         }

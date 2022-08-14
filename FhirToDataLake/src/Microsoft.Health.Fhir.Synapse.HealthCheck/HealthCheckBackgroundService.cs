@@ -50,7 +50,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                     var delayTask = Task.Delay(_checkIntervalInSeconds, cancellationToken);
 
                     // Perform health check.
-                    var healthStatus = new HealthStatus();
+                    var healthStatus = new OverallHealthStatus();
                     await _healthCheckEngine.CheckHealthAsync(healthStatus, cancellationToken);
                     var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
                     await Task.WhenAll(listenerTasks);

@@ -37,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
             _healthCheckTimeoutInSeconds = TimeSpan.FromSeconds(healthCheckConfiguration.Value.HealthCheckTimeoutInSeconds);
         }
 
-        public async Task CheckHealthAsync(HealthStatus healthStatus, CancellationToken cancellationToken = default)
+        public async Task CheckHealthAsync(OverallHealthStatus healthStatus, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(healthStatus, nameof(healthStatus));
 
@@ -53,9 +53,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
             }
 
             healthStatus.HealthCheckResults = await Task.WhenAll(tasks);
-            healthStatus.EndTime = DateTimeOffset.UtcNow;
 
-            _logger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}. Time using : {(healthStatus.EndTime - healthStatus.StartTime).TotalSeconds} seconds.");
+            _logger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}.");
         }
     }
 }

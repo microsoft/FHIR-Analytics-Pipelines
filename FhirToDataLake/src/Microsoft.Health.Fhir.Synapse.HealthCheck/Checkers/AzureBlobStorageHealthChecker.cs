@@ -36,10 +36,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             _blobContainerClient = azureBlobContainerClientFactory.Create(storeConfiguration.Value.StorageUrl, jobConfiguration.Value.ContainerName);
         }
 
-        protected override async Task PerformHealthCheckImplAsync(HealthCheckResult healthCheckResult, CancellationToken cancellationToken)
+        protected override async Task PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            EnsureArg.IsNotNull(healthCheckResult, nameof(healthCheckResult));
-
             // Ensure we can write to the storage account
             var blobPath = $"{HealthCheckBlobPrefix}";
 

@@ -3,14 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
-
-namespace Microsoft.Health.Fhir.Synapse.HealthCheck
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
 {
-    public interface IHealthCheckListener
+    public enum HealthCheckStatus
     {
-        Task ProcessHealthStatusAsync(HealthStatus healthStatus, CancellationToken cancellationToken);
+        HEALTHY,
+        UNHEALTHY,
+        UNKNOWN
     }
 }

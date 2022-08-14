@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
                 Arg.Any<CancellationToken>()).ReturnsForAnyArgs(
                 new HealthCheckResult("FhirServer")
                 {
-                    Status = HealthCheckStatus.FAIL,
+                    Status = HealthCheckStatus.UNHEALTHY,
                 });
             _azureBlobStorageHealthChecker = Substitute.For<IHealthChecker>();
             _azureBlobStorageHealthChecker.Name.Returns("AzureBlobStorage");
@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
                 Arg.Any<CancellationToken>()).ReturnsForAnyArgs(
                 new HealthCheckResult("AzureBlobStorage")
                 {
-                    Status = HealthCheckStatus.PASS,
+                    Status = HealthCheckStatus.HEALTHY,
                 });
         }
 
@@ -49,7 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
             var healthCheckConfiduration = new HealthCheckConfiguration();
             var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiduration), new NullLogger<HealthCheckEngine>());
 
-            var healthStatus = new HealthStatus();
+            var healthStatus = new OverallHealthStatus();
             await healthCheckEngine.CheckHealthAsync(healthStatus);
             var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
             Assert.Collection(
@@ -57,13 +57,14 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
                 p =>
                 {
                     Assert.Equal("AzureBlobStorage", p.Name);
-                    Assert.Equal(HealthCheckStatus.PASS, p.Status);
+                    Assert.Equal(HealthCheckStatus.HEALTHY, p.Status);
                 },
                 p =>
                 {
                     Assert.Equal("FhirServer", p.Name);
-                    Assert.Equal(HealthCheckStatus.FAIL, p.Status);
+                    Assert.Equal(HealthCheckStatus.UNHEALTHY, p.Status);
                 });
+            Assert.Equal(HealthCheckStatus.HEALTHY, healthStatus.Status);
         }
 
         [Fact]
@@ -76,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
             var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, mockTimeOutHealthChecker };
             var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiguration), new NullLogger<HealthCheckEngine>());
 
-            var healthStatus = new HealthStatus();
+            var healthStatus = new OverallHealthStatus();
             await healthCheckEngine.CheckHealthAsync(healthStatus);
             var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
             Assert.Collection(
@@ -84,18 +85,19 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
                 p =>
                 {
                     Assert.Equal("AzureBlobStorage", p.Name);
-                    Assert.Equal(HealthCheckStatus.PASS, p.Status);
+                    Assert.Equal(HealthCheckStatus.HEALTHY, p.Status);
                 },
                 p =>
                 {
                     Assert.Equal("FhirServer", p.Name);
-                    Assert.Equal(HealthCheckStatus.FAIL, p.Status);
+                    Assert.Equal(HealthCheckStatus.UNHEALTHY, p.Status);
                 },
                 p =>
                 {
                     Assert.Equal("MockTimeout", p.Name);
-                    Assert.Equal(HealthCheckStatus.FAIL, p.Status);
+                    Assert.Equal(HealthCheckStatus.UNHEALTHY, p.Status);
                 });
+            Assert.Equal(HealthCheckStatus.UNHEALTHY, healthStatus.Status);
         }
     }
 }
