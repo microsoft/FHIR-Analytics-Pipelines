@@ -10,45 +10,23 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
 {
     public class StringExtensionsTests
     {
-        public static IEnumerable<object[]> NullOrEmptyInput =>
-            new List<object[]>
-            {
-                new object[]
-                {
-                    null,
-                    null,
-                },
-                new object[]
-                {
-                    string.Empty,
-                    string.Empty,
-                },
-            };
+        public static IEnumerable<object[]> NullOrEmptyInput()
+        {
+            yield return new object[] { null, null };
+            yield return new object[] { string.Empty, string.Empty };
+        }
 
-        public static IEnumerable<object[]> DifferentInputs =>
-            new List<object[]>
-            {
-                // case sensitive
-                new object[]
-                {
-                    "input string",
-                    "Input string",
-                },
+        public static IEnumerable<object[]> DifferentInputs()
+        {
+            // case sensitive
+            yield return new object[] { "input string", "Input string" };
 
-                // space
-                new object[]
-                {
-                    "input string",
-                    "input string ",
-                },
+            // space
+            yield return new object[] { "input string", "input string " };
 
-                // different string
-                new object[]
-                {
-                    "input string",
-                    "another string",
-                },
-            };
+            // different string
+            yield return new object[] { "input string", "another string" };
+        }
 
         [Theory]
         [MemberData(nameof(NullOrEmptyInput))]

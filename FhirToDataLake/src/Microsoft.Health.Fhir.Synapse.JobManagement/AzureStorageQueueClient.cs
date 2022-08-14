@@ -12,6 +12,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.JobManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage;
@@ -76,6 +77,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             return true;
         }
 
+        // The expected behaviors:
+        // 1. multi agent instances enqueue same jobs concurrently, only one job entity will be created,
+        //    there may be multi messages, while only one will be recorded in job lock entity, and the created jobInfo will be returned for all instances.
+        // 2. re-enqueue job, no matter what the job status is now, will do nothing, and return the existing jobInfo.
+        // 3. if one of the steps fails, will continue to process it when re-enqueue.
         public async Task<IEnumerable<JobInfo>> EnqueueAsync(
             byte queueType,
             string[] definitions,
@@ -86,7 +92,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to enqueue {definitions.Length} jobs.");
 
-            // step 1: get incremental job ids
+            // step 1: get incremental job ids, will try again if fails
             var jobIds = await GetIncrementalJobIds(queueType, definitions.Length, cancellationToken);
 
             // handle for each job
@@ -129,12 +135,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 }
                 catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
                 {
-                    // TODO: need to add unit tests for the following cases
-                    // case 1: multi agent instances enqueue job at the same time
-                    // case 2: enqueue fails due to the below steps, while add entity successfully, when retry to enqueue, the entity exists
-                    // case 3: re-enqueue running processing/orchestrator job
-                    // Note: for cancelled/failed jobs, we don't allow resume it.
-                    _logger.LogWarning(ex,"Failed to add entities, the entities already exist. Will fetch the existing jobs.");
+                    // Note: for cancelled/failed jobs, we don't allow resume it, will return the existing jobInfo.
+                    _logger.LogWarning(ex, "Failed to add entities, the entities already exist. Will fetch the existing jobs.");
                 }
 
                 // step 4: get the existing or newly added jobInfo entity and job lock entity
@@ -166,7 +168,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 }
 
                 // step 6: if queue message not present in job lock entity, push message to queue.
-                // TODO: add unit test: What if processing job failed, and the message is deleted, while the message id is still in table entity
+                // if processing job failed and the message is deleted, then the message id is still in table entity,
+                // we don't resend message for it, and return the existing jobInfo, so will do noting about it.
                 if (string.IsNullOrEmpty(jobLockEntity.JobMessageId))
                 {
                     var response = await _azureJobMessageQueueClient.SendMessageAsync(new JobMessage(jobInfoEntity.PartitionKey, jobInfoEntity.RowKey).ToString(), cancellationToken);
@@ -175,21 +178,20 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                     jobLockEntity.JobMessageId = response.Value.MessageId;
 
                     // step 7: update message id and message pop receipt to job lock entity
-                    await _azureJobInfoTableClient.UpdateEntityAsync(
-                        jobLockEntity,
-                        jobLockEntity.ETag,
-                        cancellationToken: cancellationToken);
-
-                    // TODO: need to update jobInfoEntity
-                    /*
-                    IEnumerable<TableTransactionAction> transactionUpdateActions = new List<TableTransactionAction>
+                    // if enqueue concurrently, it is possible that
+                    // 1. one job sends message and updates entity, another job do nothing
+                    // 2. two jobs both send message, while only one job update entity successfully
+                    try
                     {
-                        new (TableTransactionActionType.UpdateReplace, jobInfoEntity),
-                        new (TableTransactionActionType.UpdateReplace, jobLockEntity),
-                    };
-
-                    _ = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionUpdateActions, cancellationToken);
-                    */
+                        await _azureJobInfoTableClient.UpdateEntityAsync(
+                            jobLockEntity,
+                            jobLockEntity.ETag,
+                            cancellationToken: cancellationToken);
+                    }
+                    catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateEntityPreconditionFailedErrorCode))
+                    {
+                        _logger.LogWarning(ex, "Update job info entity conflicts.");
+                    }
                 }
 
                 jobInfos.Add(jobInfoEntity.ToJobInfo<TJobInfo>());
@@ -205,8 +207,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             _logger.LogInformation("Start to dequeue.");
 
             // step 1: receive message from message queue
+            TimeSpan? visibilityTimeOut =
+                heartbeatTimeoutSec <= 0 ? null : TimeSpan.FromSeconds(heartbeatTimeoutSec);
             var message = await _azureJobMessageQueueClient.ReceiveMessageAsync(
-                TimeSpan.FromSeconds(QueueMessageVisibilityTimeoutInSeconds),
+                visibilityTimeOut,
                 cancellationToken);
 
             if (message.Value == null)
@@ -365,7 +369,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             {
                 _logger.LogError($"Job {jobInfo.Id} precondition failed, version does not match.");
 
-                throw new JobExecutionException($"Job {jobInfo.Id} precondition failed, version does not match.");
+                throw new JobManagementException($"Job {jobInfo.Id} precondition failed, version does not match.");
             }
 
             // step 3: get job lock entity
@@ -384,7 +388,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                     visibilityTimeout: TimeSpan.FromSeconds(QueueMessageVisibilityTimeoutInSeconds),
                     cancellationToken: cancellationToken);
             }
-            catch (RequestFailedException ex) when (string.Equals(ex.ErrorCode, "MessageNotFound", StringComparison.OrdinalIgnoreCase))
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateOrDeleteMessageNotFoundErrorCode))
             {
                 // TODO: log for other cases the message is not found
                 // TODO: need to return here?
@@ -452,7 +456,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             {
                 var errorMessage = responseList.Value.Where(response => response.IsError).Select(response => response.ReasonPhrase).First();
                 _logger.LogError($"Failed to cancel jobs in group {groupId}. Reason: {errorMessage}");
-                throw new JobExecutionException($"Failed to cancel jobs in group {groupId}. Reason: {errorMessage}");
+                throw new JobManagementException($"Failed to cancel jobs in group {groupId}. Reason: {errorMessage}");
             }
 
             _logger.LogInformation($"Cancel jobs in group {groupId} successfully.");
@@ -489,16 +493,16 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to complete job {jobInfo.Id}.");
 
-            // step 1: get job info entity
+            // step 1: get job info entity, check if should cancel
             var partitionKey = AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId);
             var rowKey = AzureStorageKeyProvider.JobInfoRowKey(jobInfo.GroupId, jobInfo.Id);
             var existingJobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(partitionKey, rowKey, cancellationToken: cancellationToken)).Value;
-
-            var jobInfoEntity = jobInfo.ToTableEntity();
+            var shouldCancel = existingJobInfoEntity.Status == (int)JobStatus.Cancelled || existingJobInfoEntity.CancelRequested;
 
             // step 2: update status
-            // TODO: double check the expected behavous
-            if (jobInfoEntity.Status == (int)JobStatus.Completed && (existingJobInfoEntity.Status == (int)JobStatus.Cancelled || existingJobInfoEntity.CancelRequested))
+            // TODO: double check the expected behavior
+            var jobInfoEntity = jobInfo.ToTableEntity();
+            if (jobInfoEntity.Status != (int)JobStatus.Failed && shouldCancel)
             {
                 jobInfoEntity.Status = (int)JobStatus.Cancelled;
             }
@@ -513,7 +517,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 cancellationToken: cancellationToken)).Value;
 
             // step 5: delete message
-            await _azureJobMessageQueueClient.DeleteMessageAsync(jobLockEntity.JobMessageId, jobLockEntity.JobMessagePopReceipt, cancellationToken: cancellationToken);
+            try
+            {
+                await _azureJobMessageQueueClient.DeleteMessageAsync(jobLockEntity.JobMessageId, jobLockEntity.JobMessagePopReceipt, cancellationToken: cancellationToken);
+            }
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateOrDeleteMessageNotFoundErrorCode))
+            {
+                _logger.LogWarning($"Failed to delete message, the message {jobLockEntity.JobMessageId} does not exist.");
+            }
 
             // TODO: need to check message id and message pop receipt is for job entity or for jobInfos
             // TODO: clear message id and message pop receipt for failed/cancel job.
@@ -556,7 +567,15 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                     RowKey = rowKey,
                     NextJobId = 0,
                 };
-                await _azureJobInfoTableClient.AddEntityAsync(initialJobIdEntity, cancellationToken);
+
+                try
+                {
+                    await _azureJobInfoTableClient.AddEntityAsync(initialJobIdEntity, cancellationToken);
+                }
+                catch (RequestFailedException exception) when (IsSpecifiedErrorCode(exception, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
+                {
+                    _logger.LogWarning(exception, "Failed to add job id entity, the entity already exists.");
+                }
 
                 // get the job id entity again
                 entity = (await _azureJobInfoTableClient.GetEntityAsync<JobIdEntity>(partitionKey, rowKey, cancellationToken: cancellationToken)).Value;
