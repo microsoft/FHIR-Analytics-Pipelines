@@ -65,36 +65,36 @@ describe('Test overwrite for publish configurations', function() {
         let arrayOperation = constants.arrayOperations.first;
         let overwrite = false;
         let propertyfilePath = path.join(destination, "PropertiesGroup", "HumanName.json");
-    
-        configurationGenerator.publishResourceConfigurations(destination, resourceCases, null, arrayOperation, true);
-        let statOfPropertyRaw = fs.statSync(propertyfilePath);
+        
+        fs.mkdirSync(destination)
+        fs.mkdirSync(path.join(destination, "PropertiesGroup"))
+        fs.writeFileSync(propertyfilePath, '')
         
         configurationGenerator.publishResourceConfigurations(destination, resourceCases, null, arrayOperation, overwrite);
-        let statOfPropertyNoOverwrite = fs.statSync(propertyfilePath);
+        let content = fs.readFileSync(propertyfilePath);
         utils.deleteFolderRecursive(destination);
-        if (statOfPropertyNoOverwrite.mtimeMs != statOfPropertyRaw.mtimeMs) {
-            throw new Error('Valid overwrite the existed configurations');
+        if (content.length != 0) {
+            throw new Error('Should not overwrite the existed property configurations when overwrite parameter is disable.');
         }
     });
 
-    it(`Overwrite resource configurations when overwrite parameter is disable`, function() {
+    it(`Still overwrite resource configurations when overwrite parameter is disable`, function() {
         let folderName = Math.random().toString(30).substr(2);
         let destination = path.join(__dirname, folderName);
         let arrayOperation = constants.arrayOperations.first;
         let overwrite = false;
         let resourcefilePath = path.join(destination, `${resourceCases[0]}.json`);
-    
-        configurationGenerator.publishResourceConfigurations(destination, resourceCases, null, arrayOperation, true);
-        let statOfResourceRaw = fs.statSync(resourcefilePath);
-        
+
+        fs.mkdirSync(destination)
+        fs.writeFileSync(resourcefilePath, '')
+
         configurationGenerator.publishResourceConfigurations(destination, resourceCases, null, arrayOperation, overwrite);
-        let statOfResourceNoOverwrite = fs.statSync(resourcefilePath);
+        let content = fs.readFileSync(resourcefilePath);
         utils.deleteFolderRecursive(destination);
-        if (statOfResourceNoOverwrite.mtimeMs <= statOfResourceRaw.mtimeMs) {
-            throw new Error('Should always overwrite the existed resource configurations');
+        if (content.length == 0) {
+            throw new Error('Should always overwrite the existed resource configurations.');
         }
     });
-
     
     it(`Overwrite propertiy configurations when overwrite parameter is enable`, function() {
         let folderName = Math.random().toString(30).substr(2);
@@ -103,14 +103,15 @@ describe('Test overwrite for publish configurations', function() {
         let overwrite = true;
         let propertyfilePath = path.join(destination, "PropertiesGroup", "HumanName.json");
     
-        configurationGenerator.publishResourceConfigurations(destination, resourceCases, null, arrayOperation, true);
-        let statOfPropertyRaw = fs.statSync(propertyfilePath);
+        fs.mkdirSync(destination)
+        fs.mkdirSync(path.join(destination, "PropertiesGroup"))
+        fs.writeFileSync(propertyfilePath, '')
 
         configurationGenerator.publishResourceConfigurations(destination, resourceCases, null, arrayOperation, overwrite);
-        let statOfPropertyOverwrite = fs.statSync(propertyfilePath);
+        let content = fs.readFileSync(propertyfilePath);
         utils.deleteFolderRecursive(destination);
-        if (statOfPropertyOverwrite.mtimeMs <= statOfPropertyRaw.mtimeMs) {
-            throw new Error('Should overwrite configurations when overwrite is enable');
+        if (content.length == 0) {
+            throw new Error('Should overwrite configurations when overwrite is enable. ' + folderName);
         }
     });
     return true;
