@@ -64,10 +64,13 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
             }
 
             // TODO: add more validation for agent name, table url, queue url
+            // TODO: enable it when generic task is enabled
+            /*
             if (string.IsNullOrEmpty(jobConfiguration.AgentName))
             {
                 throw new ConfigurationErrorException($"Agent name can not be empty.");
             }
+            */
 
             FilterConfiguration filterConfiguration;
             try
