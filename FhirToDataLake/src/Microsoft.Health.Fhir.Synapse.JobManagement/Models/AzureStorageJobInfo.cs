@@ -9,6 +9,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Models
 {
     public class AzureStorageJobInfo : JobInfo
     {
+        public long HeartbeatTimeoutSec { get; set; }
+
         public virtual string JobIdentifier()
         {
             throw new NotImplementedException();

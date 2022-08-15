@@ -14,9 +14,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
         /// <summary>
         /// Convert job info to table entity
         /// </summary>
+        /// <typeparam name="TJobInfo">the job info type</typeparam>
         /// <param name="jobInfo">the job info.</param>
         /// <returns>JobInfoEntity</returns>
-        public static JobInfoEntity ToTableEntity(this JobInfo jobInfo)
+        public static JobInfoEntity ToTableEntity<TJobInfo>(this TJobInfo jobInfo)
+            where TJobInfo : AzureStorageJobInfo, new()
+
         {
             var jobInfoEntity = new JobInfoEntity
             {
@@ -36,6 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
                 StartDate = jobInfo.StartDate?.SetKind(DateTimeKind.Utc),
                 EndDate = jobInfo.EndDate?.SetKind(DateTimeKind.Utc),
                 HeartbeatDateTime = jobInfo.HeartbeatDateTime.SetKind(DateTimeKind.Utc),
+                HeartbeatTimeoutSec = jobInfo.HeartbeatTimeoutSec,
             };
 
             return jobInfoEntity;
@@ -66,6 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
                 StartDate = ((DateTimeOffset?)entity.StartDate)?.DateTime,
                 EndDate = ((DateTimeOffset?)entity.EndDate)?.DateTime,
                 HeartbeatDateTime = ((DateTimeOffset)entity.HeartbeatDateTime).DateTime,
+                HeartbeatTimeoutSec = entity.HeartbeatTimeoutSec,
             };
 
             return jobInfo;

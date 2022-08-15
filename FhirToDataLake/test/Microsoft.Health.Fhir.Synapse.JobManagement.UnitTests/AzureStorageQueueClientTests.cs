@@ -41,6 +41,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
         GivenRunningJob_WhenEnqueueJobAgain_ThenTheExistingOneShouldBeReturned,
         GivenFinishedJob_WhenEnqueueJobAgain_ThenTheExistingOneShouldBeReturned,
         GivenEnqueueFailed_WhenEnqueueJobAgain_ThenContinueToEnqueue,
+        GivenEmptyQueue_WhenDequeue_ThenNoResultShouldBeReturned,
+        GivenJobsEnqueue_WhenDequeueConcurrently_ThenCorrectResultShouldBeReturned,
+        GivenJobsEnqueue_WhenGetJobsByIds_ThenTheJobsShouldBeReturned,
     }
 
     // TODO: the unit tests are copied from sql queue client, will add more unit tests for azure storage
@@ -474,18 +477,18 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 JobStatus.Cancelled,
                 (await _azureStorageQueueClient.GetJobByIdAsync(queueType, jobs.First().Id, false, CancellationToken.None)).Status);
 
-            // TODO: job1 is cancelled, should return null or return job2 here
-            var jobInfo1 =
-                await _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, 0, CancellationToken.None);
-            Assert.Null(jobInfo1);
-
+            // job1 is cancelled, should return job2 here
             var jobInfo2 =
                 await _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, 0, CancellationToken.None);
+
             var jobInfo3 =
                 await _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, 0, CancellationToken.None);
 
             Assert.False(jobInfo2.CancelRequested);
             Assert.False(jobInfo3.CancelRequested);
+
+            Assert.Null(await _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, 0, CancellationToken.None));
+
         }
 
         [Fact]
@@ -783,16 +786,114 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Null(jobLockEntity.JobMessagePopReceipt);
 
             await CheckJob(jobInfo, jobLockEntity);
-            
+
             // the first message is invalid
             dequeuedJobInfo =
                 await _azureStorageQueueClient.DequeueAsync(jobInfo.QueueType, TestWorkerName, 10, CancellationToken.None);
-            Assert.Null(dequeuedJobInfo);
+            Assert.Equal(jobInfo.Id, dequeuedJobInfo.Id);
 
             // the second message is valid
-            dequeuedJobInfo =
-                await _azureStorageQueueClient.DequeueAsync(jobInfo.QueueType, TestWorkerName, 10, CancellationToken.None);
-            Assert.Equal(jobInfo.Id, dequeuedJobInfo.Id);
+            Assert.Null(
+                await _azureStorageQueueClient.DequeueAsync(jobInfo.QueueType, TestWorkerName, 10, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task GivenEmptyQueue_WhenDequeue_ThenNoResultShouldBeReturned()
+        {
+            await CleanStorage();
+
+            const byte queueType = (byte)TestQueueType.GivenEmptyQueue_WhenDequeue_ThenNoResultShouldBeReturned;
+
+            Assert.Null(
+                await _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, 5, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task GivenJobsEnqueue_WhenDequeueConcurrently_ThenCorrectResultShouldBeReturned()
+        {
+            await CleanStorage();
+
+            const byte queueType = (byte)TestQueueType.GivenJobsEnqueue_WhenDequeueConcurrently_ThenCorrectResultShouldBeReturned;
+
+            var jobInfos = (await _azureStorageQueueClient.EnqueueAsync(
+                queueType,
+                new[] { "job1" },
+                null,
+                false,
+                false,
+                CancellationToken.None)).ToList();
+
+            var tasks = new List<Task<JobInfo>>
+            {
+                _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, 5, CancellationToken.None),
+                _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, 5, CancellationToken.None),
+            };
+
+            var result = await Task.WhenAll(tasks);
+            if (result[0] == null)
+            {
+                Assert.Equal(jobInfos.First().Id, result[1].Id);
+            }
+            else
+            {
+                Assert.Null(result[1]);
+                Assert.Equal(jobInfos.First().Id, result[0].Id);
+            }
+
+            jobInfos = (await _azureStorageQueueClient.EnqueueAsync(
+                queueType,
+                new[] { "job2", "job3" },
+                null,
+                false,
+                false,
+                CancellationToken.None)).ToList();
+
+            tasks = new List<Task<JobInfo>>
+            {
+                _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, 5, CancellationToken.None),
+                _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, 5, CancellationToken.None),
+            };
+
+            result = await Task.WhenAll(tasks);
+            var definitions = new List<string> { result[0].Definition, result[1].Definition };
+
+            Assert.Contains("job2", definitions);
+            Assert.Contains("job3", definitions);
+        }
+
+        [Fact]
+        public async Task GivenFinishedJobs_WhenDequeue_ThenNoResultShouldBeReturned()
+        {
+            await CleanStorage();
+
+        }
+
+        [Fact]
+        public async Task GivenJobsEnqueue_WhenGetJobsByIds_ThenTheJobsShouldBeReturned()
+        {
+            await CleanStorage();
+
+            const byte queueType = (byte)TestQueueType.GivenJobsEnqueue_WhenGetJobsByIds_ThenTheJobsShouldBeReturned;
+
+            // enqueue jobs
+            var jobInfos = (await _azureStorageQueueClient.EnqueueAsync(
+                queueType,
+                new[] { "job1", "job2", "job3" },
+                null,
+                false,
+                false,
+                CancellationToken.None)).ToList();
+            Assert.Equal(3, jobInfos.Count);
+
+            var retrievedJobInfos = (await _azureStorageQueueClient.GetJobsByIdsAsync(
+                queueType,
+                new[] { jobInfos[0].Id, jobInfos[2].Id },
+                false,
+                CancellationToken.None)).ToList();
+
+            Assert.Equal(2, retrievedJobInfos.Count);
+            Assert.Equal(jobInfos[0].Id, retrievedJobInfos[0].Id);
+            Assert.Equal(jobInfos[2].Id, retrievedJobInfos[1].Id);
         }
 
         private async Task CleanStorage()

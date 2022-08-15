@@ -7,7 +7,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage;
-using Microsoft.Health.JobManagement;
 using Xunit;
 using JobStatus = Microsoft.Health.JobManagement.JobStatus;
 
@@ -18,14 +17,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [Fact]
         public void GivenNullJobInfo_WhenToTableEntity_ExceptionShouldBeThrown()
         {
-            JobInfo? jobInfo = null;
+            AzureStorageJobInfo? jobInfo = null;
             Assert.Throws<NullReferenceException>(() => jobInfo.ToTableEntity());
         }
 
         [Fact]
         public void GivenDefaultJobInfo_WhenToTableEntity_CorrectTableEntityShouldBeReturned()
         {
-            var jobInfo = new JobInfo();
+            var jobInfo = new AzureStorageJobInfo();
             var tableEntity = jobInfo.ToTableEntity();
             Assert.NotNull(tableEntity);
             Assert.Null(jobInfo.Status);

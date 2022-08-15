@@ -45,5 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage
         public DateTime? EndDate { get; set; }
 
         public DateTime HeartbeatDateTime { get; set; }
+
+        public long HeartbeatTimeoutSec { get; set; }
     }
 }
