@@ -33,21 +33,12 @@ stages:
     steps:
     - template: FhirToDataLake/build.yml
 
-- stage: e2e
-  pool:
-    vmImage: 'windows-latest'
-  condition: succeeded()
-  jobs:
-  - job: SynapseE2ETest
-    steps:
-    - template: FhirToDataLake/synapse-e2e-test.yml
-
 - stage: Release
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   pool:
     vmImage: 'windows-latest'
   jobs:
-  - job: SynapseE2ETest
+  - job: RunSynapseE2ETest
     steps:
     - template: FhirToDataLake/synapse-e2e-test.yml
 
