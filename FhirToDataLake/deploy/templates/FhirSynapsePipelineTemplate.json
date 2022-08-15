@@ -57,28 +57,28 @@
             "type": "string",
             "defaultValue": "System",
             "metadata": {
-                "description": "The export scope, System or Group."
+                "description": "For data filtering use. The export scope can be System or Group. The default value is System if no filter is applied."
             }
         },
         "groupId":{
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "The group id you want to export data for Group scope."
+                "description": "For data filtering use. If the Filter scope is set as Group, you need to fill the group Id, otherwise leave it blank."
             }
         },
         "requiredTypes":{
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "Specify which types of resources will be included. For example, _type=Patient would return only patient resources. Will export all resource types if not specified."
+                "description": "For data filtering use. Specify which types of resources will be included. For example, type=Patient would return only patient resources. All resource types will be exported if not specified. Leave it blank if no filter is applied."
             }
         },
         "typeFilters":{
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. Will export all data of requiredTypes if not specified."
+                "description": "For data filtering use. Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. All data of requiredTypes will be exported if not specified. Leave it blank if no filter is applied."
             }
         },
         "customizedSchema":{

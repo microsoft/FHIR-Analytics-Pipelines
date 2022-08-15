@@ -22,7 +22,7 @@ steps:
   inputs:
     command: custom
     workingDir: FhirToCdm/Configuration-Generator
-    customCommand: test
+    customCommand: test --runInBand
 
 - task: DotNetCoreCLI@2
   displayName: Run Engine Core Tests

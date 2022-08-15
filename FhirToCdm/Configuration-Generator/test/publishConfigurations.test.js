@@ -74,7 +74,7 @@ describe('Test overwrite for publish configurations', function() {
         let content = fs.readFileSync(propertyfilePath);
         utils.deleteFolderRecursive(destination);
         if (content.length != 0) {
-            throw new Error('Should not overwrite the existed propertiy configurations when overwrite parameter is disable.');
+            throw new Error('Should not overwrite the existed property configurations when overwrite parameter is disable.');
         }
     });
 
