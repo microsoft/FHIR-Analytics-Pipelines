@@ -40,7 +40,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
-            // TODO: create table client with only uri
             if (storage.UseConnectionString)
             {
                 _azureJobInfoTableClient = new TableClient(storage.TableUrl, storage.TableName);
@@ -206,11 +205,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             _logger.LogInformation("Start to dequeue.");
 
             // step 1: receive message from message queue
-            TimeSpan? visibilityTimeOut =
-                heartbeatTimeoutSec <= 0 ? null : TimeSpan.FromSeconds(heartbeatTimeoutSec);
-            var message = await _azureJobMessageQueueClient.ReceiveMessageAsync(
-                visibilityTimeOut,
-                cancellationToken);
+            TimeSpan? visibilityTimeOut = heartbeatTimeoutSec <= 0 ? null : TimeSpan.FromSeconds(heartbeatTimeoutSec);
+            var message = await _azureJobMessageQueueClient.ReceiveMessageAsync(visibilityTimeOut, cancellationToken);
 
             if (message.Value == null)
             {
@@ -228,41 +224,27 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             // step 2: get jobInfo entity to check job status, delete this message if job is already completed/failed/cancelled
             // if status is running and CancelRequest is true, the job will be dequeued, and jobHosting will continue to handle it
-            var jobInfoEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(
-                jobMessage.PartitionKey,
-                jobMessage.RowKey,
-                cancellationToken: cancellationToken);
+            var jobInfoEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(jobMessage.PartitionKey, jobMessage.RowKey, cancellationToken: cancellationToken);
             var jobInfo = jobInfoEntityResponse.Value.ToJobInfo<TJobInfo>();
 
-            if (jobInfo.Status is JobStatus.Completed
-                    or JobStatus.Failed
-                    or JobStatus.Cancelled)
+            if (jobInfo.Status is JobStatus.Completed or JobStatus.Failed or JobStatus.Cancelled)
             {
                 _logger.LogWarning($"Discard queue message {message.Value.MessageId}, the job status is {jobInfo.Status}.");
-                await _azureJobMessageQueueClient.DeleteMessageAsync(
-                    message.Value.MessageId,
-                    message.Value.PopReceipt,
-                    cancellationToken);
+                await _azureJobMessageQueueClient.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt, cancellationToken);
 
                 // dequeue next job
                 return await DequeueAsync(queueType, worker, heartbeatTimeoutSec, cancellationToken);
             }
 
             // step 3: get job lock entity to check message id
-            var jobLockEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
-                jobMessage.PartitionKey,
-                AzureStorageKeyProvider.JobLockRowKey(jobInfo.JobIdentifier()),
-                cancellationToken: cancellationToken);
+            var jobLockEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(jobMessage.PartitionKey, AzureStorageKeyProvider.JobLockRowKey(jobInfo.JobIdentifier()), cancellationToken: cancellationToken);
 
             var jobLockEntity = jobLockEntityResponse.Value;
 
             if (!string.Equals(jobLockEntity.JobMessageId, message.Value.MessageId, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning($"Discard queue message {message.Value.MessageId}, the message id is inconsistent with the one in the table entity.");
-                await _azureJobMessageQueueClient.DeleteMessageAsync(
-                    message.Value.MessageId,
-                    message.Value.PopReceipt,
-                    cancellationToken);
+                await _azureJobMessageQueueClient.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt, cancellationToken);
 
                 // dequeue next job
                 return await DequeueAsync(queueType, worker, heartbeatTimeoutSec, cancellationToken);
@@ -278,11 +260,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // step 5: update jobInfo entity's status to running, also update version and heartbeat
-            // TODO: there may be multi running jobs for this jobInfo, how to handle it
             jobInfo.Status = JobStatus.Running;
 
-            // TODO: where to update the job startDate and endDate
-            // TODO: need to use version here？
+            // jobInfo's version is set when dequeue, if there are multi running jobs for this jobInfo, only the last one will keep alive
             jobInfo.Version = DateTimeOffset.UtcNow.Ticks;
             jobInfo.HeartbeatDateTime = DateTime.UtcNow;
             jobInfo.HeartbeatTimeoutSec = heartbeatTimeoutSec;
@@ -370,9 +350,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             _logger.LogInformation($"Start to keep alive for job {jobInfo.Id}.");
 
             // step 1: get jobInfo entity
-            var partitionKey = AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId);
-            var rowKey = AzureStorageKeyProvider.JobInfoRowKey(jobInfo.GroupId, jobInfo.Id);
-            var jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(partitionKey, rowKey, cancellationToken: cancellationToken)).Value;
+            var jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(
+                AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId),
+                AzureStorageKeyProvider.JobInfoRowKey(jobInfo.GroupId, jobInfo.Id),
+                cancellationToken: cancellationToken)).Value;
 
             // step 2: check version
             // the version is assigned when dequeue,
@@ -381,7 +362,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             {
                 _logger.LogError($"Job {jobInfo.Id} precondition failed, version does not match.");
 
-                throw new JobManagementException($"Job {jobInfo.Id} precondition failed, version does not match.");
+                throw new JobNotExistException($"Job {jobInfo.Id} precondition failed, version does not match.");
             }
 
             // step 3: get job lock entity
@@ -404,16 +385,19 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateOrDeleteMessageNotFoundErrorCode))
             {
-                // TODO: log for other cases the message is not found
-                // TODO: need to return here?
                 if (jobInfo.Status is JobStatus.Completed or JobStatus.Failed or JobStatus.Cancelled)
                 {
                     _logger.LogInformation($"Job {jobInfo.Id} has been completed. Keep alive failed");
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to keep alive, the job message is not found.");
                 }
             }
 
             // step 5: sync result to jobInfo entity
             // TODO: unit test: what if update message successfully while update table entity failed.
+            // if update message successfully while update table entity failed
             jobInfoEntity.HeartbeatDateTime = DateTime.UtcNow;
             jobInfoEntity.Result = jobInfo.Result;
 
@@ -460,6 +444,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // step 3: transaction update the cancelled jobs.
             var transactionActions = jobInfoEntities.Select(entity =>
                 new TableTransactionAction(TableTransactionActionType.UpdateReplace, entity, entity.ETag));
+
             var responseList = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionActions, cancellationToken);
             var batchFailed = responseList.Value.Any(response => response.IsError);
 
@@ -482,14 +467,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             var reverseIndexEntity = await GetJobReverseIndexEntityByIdAsync(queueType, jobId, cancellationToken);
 
             // step 2: get jobInfo entity
-            var response = await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(reverseIndexEntity.JobInfoEntityPartitionKey, reverseIndexEntity.JobInfoEntityRowKey, cancellationToken: cancellationToken);
-            var jobInfoEntity = response.Value;
+            var jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(reverseIndexEntity.JobInfoEntityPartitionKey, reverseIndexEntity.JobInfoEntityRowKey, cancellationToken: cancellationToken)).Value;
 
             // step 3: cancel job
             CancelJobInternal(jobInfoEntity);
 
             // step 4: update job info entity to table.
-            // TODO: cancel job anyway, so Etag is all?
             await _azureJobInfoTableClient.UpdateEntityAsync(jobInfoEntity, jobInfoEntity.ETag, cancellationToken: cancellationToken);
 
             _logger.LogInformation($"Cancel job {jobId} successfully.");
@@ -499,20 +482,17 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to complete job {jobInfo.Id}.");
 
-            // step 1: get job info entity, check if should cancel
-            var partitionKey = AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId);
-            var rowKey = AzureStorageKeyProvider.JobInfoRowKey(jobInfo.GroupId, jobInfo.Id);
-            var existingJobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(partitionKey, rowKey, cancellationToken: cancellationToken)).Value;
-            var cancelRequested = jobInfo.CancelRequested || existingJobInfoEntity.CancelRequested;
+            // step 1: check if should cancel
+            var shouldCancel = (await GetJobByIdAsync(jobInfo.QueueType, jobInfo.Id, false, cancellationToken)).CancelRequested;
 
             // step 2: update status
             // Reference: https://github.com/microsoft/fhir-server/blob/e1117009b6db995672cc4d31457cb3e6f32e19a3/src/Microsoft.Health.Fhir.SqlServer/Features/Schema/Sql/Sprocs/PutJobStatus.sql#L16
-            var jobInfoEntity = ((TJobInfo)jobInfo).ToTableEntity<TJobInfo>();
+            var jobInfoEntity = ((TJobInfo)jobInfo).ToTableEntity();
             if (jobInfoEntity.Status == (int)JobStatus.Failed)
             {
                 jobInfoEntity.Status = (int) JobStatus.Failed;
             }
-            else if (cancelRequested)
+            else if (shouldCancel)
             {
                 jobInfoEntity.Status = (int)JobStatus.Cancelled;
             }
@@ -522,7 +502,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // step 3: update job info entity to table
-            await _azureJobInfoTableClient.UpdateEntityAsync(jobInfoEntity, existingJobInfoEntity.ETag, cancellationToken: cancellationToken);
+            await _azureJobInfoTableClient.UpdateEntityAsync(jobInfoEntity, ETag.All, cancellationToken: cancellationToken);
 
             // step 4: get job lock entity to get job message id and job pop receipt
             var jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
@@ -531,6 +511,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 cancellationToken: cancellationToken)).Value;
 
             // step 5: delete message
+            // if table entity is updated successfully while delete message fails, then the message is visible and dequeue again,
+            // and the message will be deleted since the table entity's status is completed/failed/cancelled
             try
             {
                 await _azureJobMessageQueueClient.DeleteMessageAsync(jobLockEntity.JobMessageId, jobLockEntity.JobMessagePopReceipt, cancellationToken: cancellationToken);
@@ -540,10 +522,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 _logger.LogWarning($"Failed to delete message, the message {jobLockEntity.JobMessageId} does not exist.");
             }
 
-            // TODO: need to check message id and message pop receipt is for job entity or for jobInfos
-            // TODO: clear message id and message pop receipt for failed/cancel job.
-
-            // TODO: how about job is cancelled, and request cancel
             // step 6: cancel jobs if requested
             if (requestCancellationOnFailure && jobInfo.Status == JobStatus.Failed)
             {
@@ -632,10 +610,21 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         private static string FilterJobInfosByGroupId(byte queueType, long groupId) =>
             $"PartitionKey eq '{AzureStorageKeyProvider.JobInfoPartitionKey(queueType, groupId)}' and RowKey ge '{groupId:D20}' and RowKey lt '{groupId + 1:D20}'";
 
-        private static IEnumerable<string>? SelectPropertiesExceptDefinition() => Type.GetType("JobInfoEntity")?.GetProperties().Select(p => p.Name).Except(new List<string> { "Definition" });
+        private static IEnumerable<string> SelectPropertiesExceptDefinition()
+        {
+            var type = Type.GetType("Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage.JobInfoEntity");
+            if (type == null)
+            {
+                throw new JobManagementException("Failed to get JobInfoEntity properties, the type is null.");
+            }
 
-        // when cancel a job, always set the cancelRequest to true, and set its status to cancelled only when it's created,
-        // for other cases, shouldCancel will be returned when keep alive, and jobHosting will cancel this job and set job to completed
+            return type.GetProperties().Select(p => p.Name).Except(new List<string> { "Definition" });
+        }
+
+        /// <summary>
+        /// when cancel a job, always set the cancelRequest to true, and set its status to cancelled only when it's created,
+        /// for other cases, shouldCancel will be returned when keep alive, and jobHosting will cancel this job and set job to completed
+        /// </summary>
         private static void CancelJobInternal(JobInfoEntity jobInfoEntity)
         {
             // set jobInfo entity's cancel request to true.

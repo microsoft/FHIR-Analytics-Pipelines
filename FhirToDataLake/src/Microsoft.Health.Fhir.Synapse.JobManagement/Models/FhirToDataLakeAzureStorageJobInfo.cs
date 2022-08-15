@@ -9,6 +9,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Models
 {
     public class FhirToDataLakeAzureStorageJobInfo : AzureStorageJobInfo
     {
+        // TODO: update the job startDate and endDate in job execution
         public override string JobIdentifier()
         {
             return Definition.ComputeHash();
