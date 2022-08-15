@@ -26,8 +26,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage
 
         public long GroupId { get; set; }
 
+        // The maximum size of a single entity is 1MB, should be careful that the size of definition
         public string Definition { get; set; }
 
+        // The maximum size of a single entity is 1MB, should be careful that the size of result
         public string Result { get; set; }
 
         public long? Data { get; set; }

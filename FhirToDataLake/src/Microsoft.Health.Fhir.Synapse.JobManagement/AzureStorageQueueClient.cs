@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Diagnostics;
 using Azure;
 using Azure.Data.Tables;
 using Azure.Identity;
@@ -29,6 +30,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         private readonly QueueClient _azureJobMessageQueueClient;
 
         private readonly ILogger<AzureStorageQueueClient<TJobInfo>> _logger;
+
+        private readonly int _maximumSizeOfAnEntityInBytes = 1024 * 1024;
 
         public AzureStorageQueueClient(
             IStorage storage,
@@ -97,6 +100,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             var jobInfos = new List<TJobInfo>();
             for (var i = 0; i < definitions.Length; i++)
             {
+                Trace.Assert(definitions[i].Length * sizeof(char) < _maximumSizeOfAnEntityInBytes);
+
                 // step 2: create jobInfo entity and job lock entity
                 var newJobInfo = new TJobInfo
                 {
@@ -396,9 +401,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // step 5: sync result to jobInfo entity
-            // TODO: unit test: what if update message successfully while update table entity failed.
-            // if update message successfully while update table entity failed
+            // if update message successfully while update table entity failed, then the message pop receipt is invalid,
+            // keeping alive always fails to update message, so the message will be visible and dequeue again
+            // when re-dequeue, the message pop receipt is updated to table entity,
+            // and the previous job will throw JobNotExistException as the version doesn't match, and jobHosting cancels the previous job.
             jobInfoEntity.HeartbeatDateTime = DateTime.UtcNow;
+
+            Trace.Assert(jobInfo.Result.Length * sizeof(char) < _maximumSizeOfAnEntityInBytes);
+
             jobInfoEntity.Result = jobInfo.Result;
 
             // step 6: update message pop receipt to job lock entity
@@ -482,15 +492,26 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to complete job {jobInfo.Id}.");
 
-            // step 1: check if should cancel
-            var shouldCancel = (await GetJobByIdAsync(jobInfo.QueueType, jobInfo.Id, false, cancellationToken)).CancelRequested;
+            Trace.Assert(jobInfo.Result.Length * sizeof(char) < _maximumSizeOfAnEntityInBytes);
 
-            // step 2: update status
+            // step 1: check version
+            var retrievedJobInfo = await GetJobByIdAsync(jobInfo.QueueType, jobInfo.Id, false, cancellationToken);
+
+            if (retrievedJobInfo.Version != jobInfo.Version)
+            {
+                _logger.LogError($"Job {jobInfo.Id} precondition failed, version does not match.");
+                throw new JobNotExistException($"Job {jobInfo.Id} precondition failed, version does not match.");
+            }
+
+            // step 2: get shouldCancel
+            var shouldCancel = retrievedJobInfo.CancelRequested;
+
+            // step 3: update status
             // Reference: https://github.com/microsoft/fhir-server/blob/e1117009b6db995672cc4d31457cb3e6f32e19a3/src/Microsoft.Health.Fhir.SqlServer/Features/Schema/Sql/Sprocs/PutJobStatus.sql#L16
             var jobInfoEntity = ((TJobInfo)jobInfo).ToTableEntity();
             if (jobInfoEntity.Status == (int)JobStatus.Failed)
             {
-                jobInfoEntity.Status = (int) JobStatus.Failed;
+                jobInfoEntity.Status = (int)JobStatus.Failed;
             }
             else if (shouldCancel)
             {
@@ -501,16 +522,16 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 jobInfoEntity.Status = (int) JobStatus.Completed;
             }
 
-            // step 3: update job info entity to table
+            // step 4: update job info entity to table
             await _azureJobInfoTableClient.UpdateEntityAsync(jobInfoEntity, ETag.All, cancellationToken: cancellationToken);
 
-            // step 4: get job lock entity to get job message id and job pop receipt
+            // step 5: get job lock entity to get job message id and job pop receipt
             var jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
                 jobInfoEntity.PartitionKey,
                 AzureStorageKeyProvider.JobLockRowKey(((TJobInfo)jobInfo).JobIdentifier()),
                 cancellationToken: cancellationToken)).Value;
 
-            // step 5: delete message
+            // step 6: delete message
             // if table entity is updated successfully while delete message fails, then the message is visible and dequeue again,
             // and the message will be deleted since the table entity's status is completed/failed/cancelled
             try
@@ -522,7 +543,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 _logger.LogWarning($"Failed to delete message, the message {jobLockEntity.JobMessageId} does not exist.");
             }
 
-            // step 6: cancel jobs if requested
+            // step 7: cancel jobs if requested
             if (requestCancellationOnFailure && jobInfo.Status == JobStatus.Failed)
             {
                 await CancelJobByGroupIdAsync(jobInfo.QueueType, jobInfo.GroupId, cancellationToken);

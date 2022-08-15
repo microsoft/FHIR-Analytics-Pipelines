@@ -50,10 +50,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
         GivenJobsEnqueue_WhenGetJobsByIds_ThenTheJobsShouldBeReturned,
         GivenGroupJobs_WhenGetJobByGroupId_ThenTheCorrectJobsShouldBeReturned,
         GivenJobsWithDifferentStatus_WhenCancelJobById_ThenTheStatusShouldBeSetCorrectly,
-        GivenJobsWithDifferentStatus_WhenCancelJobByGroupId_ThenTheStatusShouldBeSetCorrectly
+        GivenJobsWithDifferentStatus_WhenCancelJobByGroupId_ThenTheStatusShouldBeSetCorrectly,
+        GivenRunningJob_WhenKeepAliveFailed_ThenTheJobShouldBeDequeuedAgain,
     }
 
-    // TODO: the unit tests are copied from sql queue client, will add more unit tests for azure storage
     [Trait("Category", "JobManagementTests")]
     public class AzureStorageQueueClientTests
     {
@@ -146,8 +146,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             const byte queueType = (byte)TestQueueType
                 .GivenNewJobsWithSameQueueType_WhenEnqueueWithForceOneActiveJobGroup_ThenSecondJobShouldNotBeEnqueued;
 
-            // TODO: this field ForceOneActiveJobGroup isn't used need to add it?
-            var jobInfos = await _azureStorageQueueClient.EnqueueAsync(queueType, new string[] { "job1" }, null, true, false, CancellationToken.None);
+            await _azureStorageQueueClient.EnqueueAsync(queueType, new string[] { "job1" }, null, true, false, CancellationToken.None);
+
+            // TODO: this field ForceOneActiveJobGroup isn't implemented
             // await Assert.ThrowsAsync<JobConflictException>(async () => await _azureStorageQueueClient.EnqueueAsync(queueType, new string[] { "job2" }, null, true, false, CancellationToken.None));
         }
 
@@ -985,20 +986,20 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             const byte queueType = (byte)TestQueueType.GivenGroupJobs_WhenGetJobByGroupId_ThenTheCorrectJobsShouldBeReturned;
 
             // enqueue jobs
-            var jobInfos = (await _azureStorageQueueClient.EnqueueAsync(
+            await _azureStorageQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1", "job2", "job3" },
                 1,
                 false,
                 false,
-                CancellationToken.None)).ToList();
-            jobInfos = (await _azureStorageQueueClient.EnqueueAsync(
+                CancellationToken.None);
+            await _azureStorageQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job4", "job5" },
                 2,
                 false,
                 false,
-                CancellationToken.None)).ToList();
+                CancellationToken.None);
 
             var retrievedJobInfos =
                 (await _azureStorageQueueClient.GetJobByGroupIdAsync(queueType, 2, true, CancellationToken.None))
@@ -1074,7 +1075,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 false,
                 CancellationToken.None)).ToList();
 
-            var jobInfo1 = await _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            await _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             var jobInfo2 = await _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             var jobInfo3 = await _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             jobInfo2.Status = JobStatus.Failed;
@@ -1100,6 +1101,72 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             // job4 is created, its status will be changed to cancelled
             Assert.Equal(JobStatus.Cancelled, retrievedJobInfos[3].Status);
+        }
+
+        [Fact]
+        public async Task GivenRunningJob_WhenKeepAliveFailed_ThenTheJobShouldBeDequeuedAgain()
+        {
+            await CleanStorage();
+            const byte queueType =
+                (byte)TestQueueType.GivenRunningJob_WhenKeepAliveFailed_ThenTheJobShouldBeDequeuedAgain;
+
+            // enqueue jobs
+            _ = (await _azureStorageQueueClient.EnqueueAsync(
+                queueType,
+                new[] { "job1" },
+                1,
+                false,
+                false,
+                CancellationToken.None)).ToList();
+
+            var jobInfo1 = await _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+
+            var jobInfoEntity = ((FhirToDataLakeAzureStorageJobInfo)jobInfo1).ToTableEntity();
+
+            var jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
+                jobInfoEntity.PartitionKey,
+                AzureStorageKeyProvider.JobLockRowKey(((FhirToDataLakeAzureStorageJobInfo)jobInfo1).JobIdentifier()),
+                cancellationToken: CancellationToken.None)).Value;
+
+            // the message is updated, while table entity isn't update
+            await _azureJobMessageQueueClient.UpdateMessageAsync(
+                jobLockEntity.JobMessageId,
+                jobLockEntity.JobMessagePopReceipt,
+                visibilityTimeout: TimeSpan.FromSeconds(jobInfoEntity.HeartbeatTimeoutSec),
+                cancellationToken: CancellationToken.None);
+
+            // keep alive should throw exception
+            var exception = await Assert.ThrowsAsync<RequestFailedException>(async () => await _azureStorageQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
+            Assert.Equal("PopReceiptMismatch", exception.ErrorCode);
+
+            // the message is still invisible
+            Assert.Null(await _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
+
+            await Task.Delay(TimeSpan.FromSeconds(HeartbeatTimeoutSec));
+
+            // keep alive should still throw exception
+            exception = await Assert.ThrowsAsync<RequestFailedException>(async () => await _azureStorageQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
+            Assert.Equal("PopReceiptMismatch", exception.ErrorCode);
+
+            // re-dequeue
+            var jobInfo2 = await _azureStorageQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            Assert.NotNull(jobInfo2);
+            Assert.Equal(jobInfo1.Id, jobInfo2.Id);
+
+            // keep alive should throw JobNotExistException for jobInfo1 as the version doesn't match
+            await Assert.ThrowsAsync<JobNotExistException>(async () => await _azureStorageQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
+
+            // keep alive successfully for jobInfo2
+            var shouldCancel = await _azureStorageQueueClient.KeepAliveJobAsync(jobInfo2, CancellationToken.None);
+            Assert.False(shouldCancel);
+
+            // complete jobInfo1 should throw JobNotExistException
+            jobInfo1.Status = JobStatus.Completed;
+            await Assert.ThrowsAsync<JobNotExistException>(async () => await _azureStorageQueueClient.CompleteJobAsync(jobInfo1, true, CancellationToken.None));
+
+            // complete jobInfo2 successfully
+            jobInfo2.Status = JobStatus.Completed;
+            await _azureStorageQueueClient.CompleteJobAsync(jobInfo2, false, CancellationToken.None);
         }
 
         private async Task CleanStorage()
