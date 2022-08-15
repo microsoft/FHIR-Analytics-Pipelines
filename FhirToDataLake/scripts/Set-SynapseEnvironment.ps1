@@ -235,7 +235,7 @@ function New-TableAndViewsForResources
     }
 }
 
-function Run_InternalApplication
+function Execute_File
 {
     param([string]$fileName, [string[]]$argumentList)
     & $fileName $argumentList
@@ -280,7 +280,7 @@ function Get-OrasExeApp {
         $orasDirectoryPath
     )
 
-    Run_InternalApplication -fileName 'tar' -argumentList $unpackParameters
+    Execute_File -fileName 'tar' -argumentList $unpackParameters
 
     Copy-Item "$orasDirectoryPath\$orasAppPath" -Destination "."
     Remove-Item $orasGzFile
@@ -299,7 +299,7 @@ function Get-CustomizedSchemaImage {
         $schemaImageReference
     )
     
-    Run_InternalApplication -fileName ".\$orasAppPath" -argumentList $orasParameters
+    Execute_File -fileName ".\$orasAppPath" -argumentList $orasParameters
 
     $compressPackages = Get-ChildItem -Path * -Include '*.tar.gz' -Name
     Write-Host "Successfully pull the customized schema image: $compressPackages" -ForegroundColor Green
@@ -317,7 +317,7 @@ function Get-CustomizedSchemaImage {
             $customizedTemplateDirectory
         )
 
-        Run_InternalApplication -fileName 'tar' -argumentList $unpackParameters
+        Execute_File -fileName 'tar' -argumentList $unpackParameters
     }
 }
 
@@ -346,7 +346,6 @@ function Get-CustomizedTableSql {
 
         $customizedTableProperties += "    [$($property.Name)] $sqlType,"
     }
-    
 
     $createCustomizedTableSql = "CREATE EXTERNAL TABLE [fhir].[$schemaType] (
         $customizedTableProperties
