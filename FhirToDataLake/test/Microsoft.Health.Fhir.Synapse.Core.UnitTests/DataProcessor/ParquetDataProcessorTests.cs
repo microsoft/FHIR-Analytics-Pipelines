@@ -123,7 +123,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         public async Task GivenAValidMultipleLargeInputData_WhenProcess_CorrectResultShouldBeReturned()
         {
             var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Large_Patient.ndjson"));
-            var largeTestData = Enumerable.Repeat(largePatientSingleSet, 100).SelectMany(x => x);
+            var largeTestData = Enumerable.Repeat(largePatientSingleSet, 50).SelectMany(x => x);
 
             var jsonBatchData = new JsonBatchData(largeTestData);
 
