@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
-using Microsoft.Health.Fhir.Synapse.HealthCheck.Exceptions;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
