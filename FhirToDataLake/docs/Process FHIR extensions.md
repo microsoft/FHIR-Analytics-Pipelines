@@ -50,18 +50,18 @@ _JSON schema file:_
 ```
 
 **Note**:
-1.	The JSON schema files must be saved at **Schema** directory in the image.
+1. The JSON schema files must be saved at **Schema** directory in the image.
 	 
 	 ![image](./assets/LiquidDirectory.png)
 
-1.  The JSON schema files need to have suffix **".schema.json"**.
+2. The JSON schema files need to have suffix **".schema.json"**.
 
-2.  The liquid templates and JSON schema files name should be aligned with resource type name. 
+3. The liquid templates and JSON schema files name should be aligned with resource type name. 
    
     E.g. "```Patient.schema.json```" and "```Patient.liquid```" be used to process the "Patient" resource.
 
-4.	The "validate" tag in template is optional and we recommend using it in your liquid template.
-5.	We internally leverage the [FHIR-Converter](https://github.com/microsoft/FHIR-Converter) to convert the raw FHIR data. You can test your templates and schema files with it before deploying the analytics pipeline.
+4. The "validate" tag in template is optional and we recommend using it in your liquid template.
+5. We internally leverage the [FHIR-Converter](https://github.com/microsoft/FHIR-Converter) to convert the raw FHIR data. You can test your templates and schema files with it before deploying the analytics pipeline.
 
 ### 2.	Push the customized schema to Azure Container Registry
 Refer [here](https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md) to push the prepared schema to Azure Container Registry, later we will use the schema image reference from the Container Registry to deploy the analytics pipeline.
