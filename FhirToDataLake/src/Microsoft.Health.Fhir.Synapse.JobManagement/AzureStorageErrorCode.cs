@@ -7,6 +7,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 {
     public static class AzureStorageErrorCode
     {
+        // reference:
+        // https://docs.microsoft.com/en-us/rest/api/storageservices/common-rest-api-error-codes
+        // https://docs.microsoft.com/en-us/rest/api/storageservices/queue-service-error-codes
+        // https://docs.microsoft.com/en-us/rest/api/storageservices/table-service-error-codes
         public const string GetEntityNotFoundErrorCode = "ResourceNotFound";
         public const string UpdateEntityPreconditionFailedErrorCode = "UpdateConditionNotSatisfied";
         public const string AddEntityAlreadyExistsErrorCode = "EntityAlreadyExists";

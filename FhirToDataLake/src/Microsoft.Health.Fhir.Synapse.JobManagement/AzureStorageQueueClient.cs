@@ -100,7 +100,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             var jobInfos = new List<TJobInfo>();
             for (var i = 0; i < definitions.Length; i++)
             {
-                Trace.Assert(definitions[i].Length * sizeof(char) < _maximumSizeOfAnEntityInBytes);
+                Trace.Assert(
+                    definitions[i].Length * sizeof(char) < _maximumSizeOfAnEntityInBytes,
+                    "The maximum size of a single table entity is 1MB, the size of definition is larger than 1MB.");
 
                 // step 2: create jobInfo entity and job lock entity
                 var newJobInfo = new TJobInfo
@@ -175,7 +177,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 // we don't resend message for it, and return the existing jobInfo, so will do noting about it.
                 if (string.IsNullOrEmpty(jobLockEntity.JobMessageId))
                 {
-                    var response = await _azureJobMessageQueueClient.SendMessageAsync(new JobMessage(jobInfoEntity.PartitionKey, jobInfoEntity.RowKey).ToString(), cancellationToken);
+                    var response = await _azureJobMessageQueueClient.SendMessageAsync(
+                        new JobMessage(jobInfoEntity.PartitionKey, jobInfoEntity.RowKey).ToString(),
+                        cancellationToken);
 
                     jobLockEntity.JobMessagePopReceipt = response.Value.PopReceipt;
                     jobLockEntity.JobMessageId = response.Value.MessageId;
@@ -229,7 +233,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             // step 2: get jobInfo entity to check job status, delete this message if job is already completed/failed/cancelled
             // if status is running and CancelRequest is true, the job will be dequeued, and jobHosting will continue to handle it
-            var jobInfoEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(jobMessage.PartitionKey, jobMessage.RowKey, cancellationToken: cancellationToken);
+            var jobInfoEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(
+                jobMessage.PartitionKey,
+                jobMessage.RowKey,
+                cancellationToken: cancellationToken);
             var jobInfo = jobInfoEntityResponse.Value.ToJobInfo<TJobInfo>();
 
             if (jobInfo.Status is JobStatus.Completed or JobStatus.Failed or JobStatus.Cancelled)
@@ -242,7 +249,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // step 3: get job lock entity to check message id
-            var jobLockEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(jobMessage.PartitionKey, AzureStorageKeyProvider.JobLockRowKey(jobInfo.JobIdentifier()), cancellationToken: cancellationToken);
+            var jobLockEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
+                jobMessage.PartitionKey,
+                AzureStorageKeyProvider.JobLockRowKey(jobInfo.JobIdentifier()),
+                cancellationToken: cancellationToken);
 
             var jobLockEntity = jobLockEntityResponse.Value;
 
@@ -407,7 +417,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // and the previous job will throw JobNotExistException as the version doesn't match, and jobHosting cancels the previous job.
             jobInfoEntity.HeartbeatDateTime = DateTime.UtcNow;
 
-            Trace.Assert(jobInfo.Result.Length * sizeof(char) < _maximumSizeOfAnEntityInBytes);
+            Trace.Assert(
+                jobInfo.Result.Length * sizeof(char) < _maximumSizeOfAnEntityInBytes,
+                "The maximum size of a single table entity is 1MB, the size of result is larger than 1MB.");
 
             jobInfoEntity.Result = jobInfo.Result;
 
@@ -492,7 +504,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to complete job {jobInfo.Id}.");
 
-            Trace.Assert(jobInfo.Result.Length * sizeof(char) < _maximumSizeOfAnEntityInBytes);
+            Trace.Assert(
+                jobInfo.Result.Length * sizeof(char) < _maximumSizeOfAnEntityInBytes,
+                "The maximum size of a single table entity is 1MB, the size of result is larger than 1MB.");
 
             // step 1: check version
             var retrievedJobInfo = await GetJobByIdAsync(jobInfo.QueueType, jobInfo.Id, false, cancellationToken);
