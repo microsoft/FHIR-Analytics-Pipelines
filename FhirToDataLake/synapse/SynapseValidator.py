@@ -13,6 +13,9 @@ from datetime import datetime
 parser = argparse.ArgumentParser()
 parser.add_argument("--synapse_workspace", required=True, help="Name of Synapse workspace.")
 parser.add_argument("--fhir_server_url", required=True, help="Fhir server url.")
+parser.add_argument("--fhir_server_access_token", help="Fhir server bearer access token.")
+parser.add_argument("--resource_types", help="Valiate resource types.")
+parser.add_argument("--customized_schema", help="Whether enable customized schema feature.")
 parser.add_argument("--schema_directory", required=True, help="Schema directory path.")
 parser.add_argument("--database", default='fhirdb', help="Name of SQL database.")
 parser.add_argument("--sql_username", help="SQL username.")
@@ -23,6 +26,9 @@ sql_server_endpoint = args.synapse_workspace + "-ondemand.sql.azuresynapse.net"
 database = args.database
 schema_directory = args.schema_directory
 fhir_server_base_url = args.fhir_server_url
+fhir_server_access_token = args.fhir_server_access_token
+validate_resource_types = args.resource_types
+customized_schema = args.customized_schema
 sql_username = args.sql_username
 sql_password = args.sql_password
 
@@ -38,8 +44,10 @@ class FhirApiDataClient:
     headers = {'Accept': 'application/fhir+json', "Prefer": "respond-async"}
     start_datetime = "1970-01-01T00:00:00-00:00"
 
-    def __init__(self, fhir_server_base_url):
+    def __init__(self, fhir_server_base_url, access_token=None):
         self.fhir_server_base_url = fhir_server_base_url
+        if access_token:
+            self.headers['Authorization'] = 'Bearer {0}'.format(access_token)
 
     def get_all_entries(self, resource_type):
         query_base_url = self.fhir_server_base_url + f"/{resource_type}?_lastUpdated=ge{FhirApiDataClient.start_datetime}&_lastUpdated=lt{datetime.today().strftime('%Y-%m-%dT%H:%M:%S-00:00')}&_sort=_lastUpdated&_count=1000"
@@ -134,21 +142,25 @@ class SqlServerClient:
 class DataClient:
     resource_type_key = "resource_type"
     expected_data_key = "expected"
-    queried_data_key = "queried"
+    queried_default_data_key = "queried_default"
+    queried_custom_data_key = "queried_custom"
     column_dict_key = "column_dict"
 
-    def __init__(self, sql_client, fhir_api_client, column_dicts):
+    def __init__(self, sql_client, fhir_api_client, column_dicts, customized_schema=False):
         self.sql_client = sql_client
         self.fhir_api_client = fhir_api_client
         self.column_dicts = column_dicts
+        self.customized_schema = customized_schema
 
     def fetch(self, resource_type):
         result = {
             DataClient.resource_type_key: resource_type,
-            DataClient.queried_data_key: self.sql_client.get_data(resource_type),
+            DataClient.queried_default_data_key: self.sql_client.get_data(resource_type),
             DataClient.expected_data_key: self.fhir_api_client.get_all_entries(resource_type),
             DataClient.column_dict_key: self.column_dicts[resource_type]
         }
+        if self.customized_schema:
+            result[DataClient.queried_custom_data_key] = self.sql_client.get_data('{0}_Customized'.format(resource_type))
         return result
 
 
@@ -161,12 +173,18 @@ if __name__ == "__main__":
     print('-> Fhir server url: ', fhir_server_base_url)
 
     schema_manager = SchemaManager(schema_directory)
-    resource_types = schema_manager.get_all_resource_types()
+    if validate_resource_types:
+        resource_types = validate_resource_types.split(',')
+    else:
+        resource_types = schema_manager.get_all_resource_types()
 
-    fhir_api_client = FhirApiDataClient(fhir_server_base_url)
+    if fhir_server_access_token:
+        fhir_api_client = FhirApiDataClient(fhir_server_base_url, fhir_server_access_token)
+    else:
+        fhir_api_client = FhirApiDataClient(fhir_server_base_url)
     sql_client = SqlServerClient(sql_server_endpoint, database, sql_username, sql_password)
 
-    dataClient = DataClient(sql_client, fhir_api_client, schema_manager.generate_external_table_column_dicts())
+    dataClient = DataClient(sql_client, fhir_api_client, schema_manager.generate_external_table_column_dicts(), customized_schema)
 
     start_time = time.time()
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
@@ -175,20 +193,29 @@ if __name__ == "__main__":
             result = future.result()
             resource_type_name = result[DataClient.resource_type_key]
             expected_entries = result[DataClient.expected_data_key]
-            queried_df = result[DataClient.queried_data_key]
+            queried_default_df = result[DataClient.queried_default_data_key]
             column_dict = result[DataClient.column_dict_key]
-            print(f"Get {queried_df.shape[0]} resources from \"{resource_type_name}\" on Synapse, columns number is {queried_df.shape[1]}")
+            print(f"Get {queried_default_df.shape[0]} resources from \"{resource_type_name}\" on Synapse, columns number is {queried_default_df.shape[1]}")
 
-            if len(expected_entries) != queried_df.shape[0]:
+            if len(expected_entries) != queried_default_df.shape[0]:
                 raise Exception(f"The resource number of \"{resource_type_name}\" is incorrect."
                                 f"Expected resource number is {len(expected_entries)}, "
-                                f"while resources been queried on Synapse is {queried_df.shape[0]}.")
+                                f"while resources been queried on Synapse is {queried_default_df.shape[0]}.")
 
-            if len(column_dict) != queried_df.shape[1]:
+            if len(column_dict) != queried_default_df.shape[1]:
                 expected_columns = set(column_dict.keys())
-                queried_columns = set(queried_df.columns.tolist())
+                queried_columns = set(queried_default_df.columns.tolist())
                 raise Exception(f"The columns number of \"{resource_type_name}\" is incorrect."
                                 f"Expected column number is {len(column_dict)}, "
-                                f"while column number been queried on Synapse is {queried_df.shape[1]}.")
+                                f"while column number been queried on Synapse is {queried_default_df.shape[1]}.")
+            
+            if customized_schema:
+                queried_custom_df = result[DataClient.queried_custom_data_key]
+                print(f"Get {queried_custom_df.shape[0]} customized resources from \"{'{0}_Customized'.format(resource_type_name)}\" on Synapse, columns number is {queried_custom_df.shape[1]}")
+
+                if len(expected_entries) != queried_custom_df.shape[0]:
+                    raise Exception(f"The resource number of \"{'{0}_Customized'.format(resource_type_name)}\" is incorrect."
+                                    f"Expected resource number is {len(expected_entries)}, "
+                                    f"while resources been queried on Synapse is {queried_custom_df.shape[0]}.")
 
     print(f"Validating {len(resource_types)} resource types, completes in {str(time.time() - start_time)} seconds.")
