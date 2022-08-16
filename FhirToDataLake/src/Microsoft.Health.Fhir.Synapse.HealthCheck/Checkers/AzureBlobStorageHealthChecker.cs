@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -36,30 +37,50 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             _blobContainerClient = azureBlobContainerClientFactory.Create(storeConfiguration.Value.StorageUrl, jobConfiguration.Value.ContainerName);
         }
 
-        protected override async Task PerformHealthCheckImplAsync(CancellationToken cancellationToken)
+        protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            // Ensure we can write to the storage account
+            var healthCheckResult = new HealthCheckResult(HealthCheckTypes.AzureBlobStorageCanReadWrite, false);
             var blobPath = $"{HealthCheckBlobPrefix}";
 
-            byte[] bytes = Encoding.UTF8.GetBytes(HealthCheckBlobPrefix);
-            using (MemoryStream stream = new (bytes))
+            try
             {
+                // Ensure we can write to the storage account
+                byte[] bytes = Encoding.UTF8.GetBytes(HealthCheckBlobPrefix);
+                using MemoryStream stream = new (bytes);
                 await _blobContainerClient.UpdateBlobAsync(blobPath, stream, cancellationToken);
             }
-
-            // Ensure we can read from the storage account
-            var healthCheckStream = await _blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);
-            string healthCheckContent;
-            healthCheckStream.Position = 0;
-            using (StreamReader reader = new (healthCheckStream, Encoding.UTF8))
+            catch (Exception e)
             {
+                healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
+                healthCheckResult.ErrorMessage = "Write content to blob failed." + e.Message;
+                return healthCheckResult;
+            }
+
+            try
+            {
+                // Ensure we can read from the storage account
+                var healthCheckStream = await _blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);
+                string healthCheckContent;
+                healthCheckStream.Position = 0;
+                using StreamReader reader = new (healthCheckStream, Encoding.UTF8);
                 healthCheckContent = reader.ReadToEnd();
+
+                if (!Equals(healthCheckContent, HealthCheckBlobPrefix))
+                {
+                    healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
+                    healthCheckResult.ErrorMessage = "Read/Write content from blob failed.";
+                    return healthCheckResult;
+                }
+            }
+            catch (Exception e)
+            {
+                healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
+                healthCheckResult.ErrorMessage = "Read content from blob failed." + e.Message;
+                return healthCheckResult;
             }
 
-            if (!Equals(healthCheckContent, HealthCheckBlobPrefix))
-            {
-                throw new HealthCheckException("Read/Write content from blob failed.");
-            }
+            healthCheckResult.Status = HealthCheckStatus.HEALTHY;
+            return healthCheckResult;
         }
     }
 }

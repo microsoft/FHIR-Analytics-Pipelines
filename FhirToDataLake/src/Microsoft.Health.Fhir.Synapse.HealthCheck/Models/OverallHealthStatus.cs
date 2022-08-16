@@ -19,7 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
         {
             get
             {
-                return HealthCheckResults.Select(x => x.Status == HealthCheckStatus.UNHEALTHY && x.IsCritical == true).Any() ? HealthCheckStatus.UNHEALTHY : HealthCheckStatus.HEALTHY;
+                return HealthCheckResults.Where(x => x.Status == HealthCheckStatus.UNHEALTHY && x.IsCritical == true).Any() ? HealthCheckStatus.UNHEALTHY : HealthCheckStatus.HEALTHY;
             }
         }
     }

@@ -52,13 +52,15 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                     // Perform health check.
                     var healthStatus = new OverallHealthStatus();
                     await _healthCheckEngine.CheckHealthAsync(healthStatus, cancellationToken);
+
+                    // Todo: Send notification to mediator and remove listeners here.
                     var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
                     await Task.WhenAll(listenerTasks);
                     await delayTask;
                 }
-                catch (Exception e)
+                catch (OperationCanceledException e)
                 {
-                    _logger.LogError(e, e.ToString());
+                    _logger.LogError(e, e.Message);
                     throw;
                 }
             }
