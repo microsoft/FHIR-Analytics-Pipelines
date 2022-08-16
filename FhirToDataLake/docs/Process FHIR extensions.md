@@ -5,13 +5,14 @@
 ## Generate parquet data for FHIR extensions
 
 ### 1.	Prepare the customized schema templates
-For each resource types, e.g. Patient, Observation, you need to prepare a **liquid template** and a related **JSON schema** file.
+For each resource types, e.g. Patient, Observation, you need to prepare a **liquid template** and a related **JSON schema** file. 
+
 - The liquid template will be used to convert the raw FHIR JSON data into target structure.
 - The JSON schema will be used to generate the Parquet schema and create table definitions.
 
 Follow the links for more information about [liquid template](http://dotliquidmarkup.org/) and [JSON schema](https://json-schema.org/learn/getting-started-step-by-step).
 
-Example liquid template and JSON schema for “Patient” resource, flatten the “birthplace” extension for analytics.
+Below are the example liquid template and JSON schema for "Patient" resource, flatten the [Patient birthPlace](https://build.fhir.org/extension-patient-birthplace.html) extension for analytics.
 
 _Liquid template:_
 ```liquid
@@ -52,9 +53,15 @@ _JSON schema file:_
 1.	The JSON schema files must be saved at **Schema** directory in the image.
 	 
 	 ![image](./assets/LiquidDirectory.png)
-	 
-2.	The “validate” tag in template is optional and we recommend using it in your liquid template.
-3.	To avoid potential issues, you can test your templates and schema files before deploying the analytics pipeline.
+
+1.  The JSON schema files need to have suffix **".schema.json"**.
+
+2.  The liquid templates and JSON schema files name should be aligned with resource type name. 
+   
+    E.g. "```Patient.schema.json```" and "```Patient.liquid```" be used to process the "Patient" resource.
+
+4.	The "validate" tag in template is optional and we recommend using it in your liquid template.
+5.	We internally leverage the [FHIR-Converter](https://github.com/microsoft/FHIR-Converter) to convert the raw FHIR data. You can test your templates and schema files with it before deploying the analytics pipeline.
 
 ### 2.	Push the customized schema to Azure Container Registry
 Refer [here](https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md) to push the prepared schema to Azure Container Registry, later we will use the schema image reference from the Container Registry to deploy the analytics pipeline.
@@ -91,10 +98,14 @@ _Example customized patient Parquet data on the Storage_
 Browse to the scripts folder under this path (..\FhirToDataLake\scripts).
 
 Run the following PowerShell script.
-./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName "Synapse name" -Storage   "Storage name" -CustomizedSchemaImage "Schema image reference"
+
+```
+./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName "Synapse name" -Storage "Storage name" -CustomizedSchemaImage "Schema image reference"
+```
 
 _Example:_
-./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName quwansynapsews0830  -Storage fhrtosynaps6mocz2elwbwg6  -CustomizedSchemaImage exampleacr.azurecr.io/customizedtemplate:extensiontemplates
+
+```./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName examplesynapse -Storage examplestorage -CustomizedSchemaImage exampleacr.azurecr.io/customizedtemplate:extensiontemplates```
 
 ### 2.	Query customized data in Synapse SQL pool
 
