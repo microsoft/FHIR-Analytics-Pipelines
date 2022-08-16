@@ -61,7 +61,7 @@ This solution enables you to query against the entire FHIR data with tools such 
 
 3. Ensure to make note of the names of the _Storage Account_ and the _Azure Function App_ created during the deployment.
 
-4. Refer [here](./Process%20FHIR%20extensions.md) for more information about **customized schema**.
+4. Refer [here](./Process%20FHIR%20extensions.md) for more information about using **customized schema** to handle [FHIR Extension](https://www.hl7.org/fhir/extensibility.html).
 
 ### 2. Provide Access of the FHIR server to the Azure Function
 
