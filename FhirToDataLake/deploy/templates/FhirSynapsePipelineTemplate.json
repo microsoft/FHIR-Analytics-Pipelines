@@ -57,28 +57,46 @@
             "type": "string",
             "defaultValue": "System",
             "metadata": {
-                "description": "The export scope, System or Group."
+                "description": "For data filtering use. The export scope can be System or Group. The default value is System if no filter is applied."
             }
         },
         "groupId":{
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "The group id you want to export data for Group scope."
+                "description": "For data filtering use. If the Filter scope is set as Group, you need to fill the group Id, otherwise leave it blank."
             }
         },
         "requiredTypes":{
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "Specify which types of resources will be included. For example, _type=Patient would return only patient resources. Will export all resource types if not specified."
+                "description": "For data filtering use. Specify which types of resources will be included. For example, type=Patient would return only patient resources. All resource types will be exported if not specified. Leave it blank if no filter is applied."
             }
         },
         "typeFilters":{
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. Will export all data of requiredTypes if not specified."
+                "description": "For data filtering use. Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. All data of requiredTypes will be exported if not specified. Leave it blank if no filter is applied."
+            }
+        },
+        "customizedSchema":{
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+            true,
+            false
+            ],
+            "metadata": {
+                "description": "Whether to enable customized schema on this pipeline. If enabled, pipeline can generate customized data based on given schemas."
+            }
+        },
+        "customizedSchemaImageReference":{
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The customized schema image reference on for the image on Container Registry. Refer https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
             }
         },
         "packageUrl": {
@@ -107,9 +125,30 @@
                 "description": "Location for all resources."
             }
         },
+        "deployAppInsights": {
+            "type": "bool",
+            "defaultValue": true,
+            "allowedValues": [
+            true,
+            false
+            ],
+            "metadata": {
+                "description": "Whether to deploy the Application Insights."
+            }
+        },
         "appInsightsLocation": {
             "type": "string",
-            "defaultValue": "[resourceGroup().location]",
+            "defaultValue": "eastus",
+            "allowedValues": [
+                "southeastasia",
+                "northeurope",
+                "westeurope",
+                "eastus",
+                "southcentralus",
+                "westus2",
+                "usgovvirginia",
+                "usgovarizona"
+            ],
             "metadata": {
                 "description": "Location for Application Insights"
             }
@@ -120,7 +159,7 @@
         "functionAppName": "[variables('appName')]",
         "hostingPlanName": "[variables('appName')]",
         "applicationInsightsName": "[concat('AppInsights-', variables('appName'))]",
-        "deployAppInsights": true,
+        "deployAppInsights": "[parameters('deployAppInsights')]",
         "resourceTags": {"FhirAnalyticsPipeline": "FhirToDataLake", "FhirSchemaVersion": "v0.3.0"},
         "storageAccountName": "[concat(substring(replace(variables('appName'), '-', ''), 0, min(11, length(replace(variables('appName'), '-', '')))), uniquestring(resourceGroup().id, variables('appName')))]",
         "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]"
@@ -181,7 +220,8 @@
             "kind": "functionapp",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                "[if(variables('deployAppInsights'),concat('Microsoft.Insights/components/', variables('applicationInsightsName')),resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName')))]"
             ],
             "resources": [
                 {
@@ -223,7 +263,7 @@
                         },
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference(resourceId('microsoft.insights/components', variables('applicationInsightsName')), '2020-02-02-preview').InstrumentationKey]"
+                            "value": "[if(variables('deployAppInsights'),reference(resourceId('microsoft.insights/components', variables('applicationInsightsName')), '2020-02-02-preview').InstrumentationKey, json('null'))]"
                         },
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
@@ -256,6 +296,14 @@
                         {
                             "name": "filter__typeFilters",
                             "value": "[parameters('typeFilters')]"
+                        },
+                        {
+                            "name": "schema__enableCustomizedSchema",
+                            "value": "[parameters('customizedSchema')]"
+                        },
+                        {
+                            "name": "schema__schemaImageReference",
+                            "value": "[parameters('customizedSchemaImageReference')]"
                         },
                         {
                             "name": "dataLakeStore__storageUrl",
