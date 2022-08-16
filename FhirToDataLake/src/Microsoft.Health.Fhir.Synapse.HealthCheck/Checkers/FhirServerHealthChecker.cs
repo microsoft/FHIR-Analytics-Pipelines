@@ -43,10 +43,23 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             _searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
         }
 
-        protected override async Task PerformHealthCheckImplAsync(CancellationToken cancellationToken)
+        protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            // Ensure we can search from FHIR server.
-            await _fhirApiDataClient.SearchAsync(_searchOptions, cancellationToken);
+            var healthCheckResult = new HealthCheckResult(HealthCheckTypes.FhirServiceCanRead, false);
+
+            try
+            {
+                // Ensure we can search from FHIR server.
+                await _fhirApiDataClient.SearchAsync(_searchOptions, cancellationToken);
+            }
+            catch(Exception ex)
+            {
+                healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
+                healthCheckResult.ErrorMessage = "Read from FHIR server failed." + e.Message;
+            }
+
+            healthCheckResult.Status = HealthCheckStatus.HEALTHY;
+            return healthCheckResult;
         }
     }
 }

@@ -56,7 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                     await Task.WhenAll(listenerTasks);
                     await delayTask;
                 }
-                catch (Exception e)
+                catch (OperationCanceledException e)
                 {
                     _logger.LogError(e, e.ToString());
                     throw;

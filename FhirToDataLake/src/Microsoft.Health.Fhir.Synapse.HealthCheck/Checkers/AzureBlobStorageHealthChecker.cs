@@ -36,30 +36,50 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             _blobContainerClient = azureBlobContainerClientFactory.Create(storeConfiguration.Value.StorageUrl, jobConfiguration.Value.ContainerName);
         }
 
-        protected override async Task PerformHealthCheckImplAsync(CancellationToken cancellationToken)
+        protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            // Ensure we can write to the storage account
-            var blobPath = $"{HealthCheckBlobPrefix}";
+            var healthCheckResult = new HealthCheckResult(HealthCheckTypes.AzureBlobStorageCanReadWrite, false);
 
-            byte[] bytes = Encoding.UTF8.GetBytes(HealthCheckBlobPrefix);
-            using (MemoryStream stream = new (bytes))
+            try
             {
+                // Ensure we can write to the storage account
+                var blobPath = $"{HealthCheckBlobPrefix}";
+
+                byte[] bytes = Encoding.UTF8.GetBytes(HealthCheckBlobPrefix);
+                using MemoryStream stream = new(bytes);
                 await _blobContainerClient.UpdateBlobAsync(blobPath, stream, cancellationToken);
             }
-
-            // Ensure we can read from the storage account
-            var healthCheckStream = await _blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);
-            string healthCheckContent;
-            healthCheckStream.Position = 0;
-            using (StreamReader reader = new (healthCheckStream, Encoding.UTF8))
+            catch(Exception e)
             {
+                healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
+                healthCheckResult.ErrorMessage = "Write content to blob failed." + e.Message;
+            }
+
+            try
+            {
+                // Ensure we can read from the storage account
+                var healthCheckStream = await _blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);
+                string healthCheckContent;
+                healthCheckStream.Position = 0;
+                using StreamReader reader = new(healthCheckStream, Encoding.UTF8);
                 healthCheckContent = reader.ReadToEnd();
             }
+            catch (Exception e)
+            {
+                healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
+                healthCheckResult.ErrorMessage = "Read content from blob failed." + e.Message;
+            }
+
+            
 
             if (!Equals(healthCheckContent, HealthCheckBlobPrefix))
             {
-                throw new HealthCheckException("Read/Write content from blob failed.");
+                healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
+                healthCheckResult.ErrorMessage = "Read/Write content from blob failed.";
             }
+
+            healthCheckResult.Status = HealthCheckStatus.HEALTHY;
+            return healthCheckResult;
         }
     }
 }
