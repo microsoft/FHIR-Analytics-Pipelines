@@ -67,7 +67,7 @@ This solution enables you to query against the entire FHIR data with tools such 
 
 4. Refer [here](./Process%20FHIR%20extensions.md) for more information about using **customized schema** to handle [FHIR Extension](https://www.hl7.org/fhir/extensibility.html).
 
-5. Refer [here](./How%20to%20use%20filtering.md) for more information about filtering.
+5. Refer [here](./Filter%20FHIR%20data%20in%20pipeline.md) for more information about filtering.
 
 ### 2. Provide Access of the FHIR server to the Azure Function
 
