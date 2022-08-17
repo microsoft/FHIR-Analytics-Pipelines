@@ -13,7 +13,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 {
@@ -65,7 +64,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"Health check meets unhandled exception. {e.Message}");
+                    _logger.LogError(e, $"Unhandled exception occured. {e.Message}");
                 }
             }
 

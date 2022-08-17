@@ -44,13 +44,16 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
                     Status = HealthCheckStatus.UNHEALTHY,
                     ErrorMessage = $"Unhandled exception : {e.Message}.",
                 };
-                _logger.LogError($"Health check component {Name} meets unhandled exception. {e.Message}");
+                _logger.LogError($"Unhandled exception occured in health check component {Name}. {e.Message}");
             }
 
-            _logger.LogInformation($"Health check {Name} complete. Status {healthCheckResult.Status}");
             if (healthCheckResult.Status is HealthCheckStatus.UNHEALTHY)
             {
-                _logger.LogInformation($"Failed reason: {healthCheckResult.ErrorMessage}");
+                _logger.LogInformation($"Health check component {Name} is unhealthy. Failed reason: {healthCheckResult.ErrorMessage}");
+            }
+            else
+            {
+                _logger.LogInformation($"Health check component {Name} is healthy");
             }
 
             return healthCheckResult;
