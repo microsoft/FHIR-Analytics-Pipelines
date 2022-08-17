@@ -156,17 +156,24 @@ steps:
       $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(storageAccountName)).Value[0]
       $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $storageAccountKey
       Remove-AzStorageContainer -Name $(containerName) -Context $storageContext -Force
+      Write-Host "##[section]Clear test container"
 
-      Write-Host 'Clear test container'
       $sqlServerEndpoint = "$(synapseWorkspaceName)-ondemand.sql.azuresynapse.net"
       $userName = $env:SQL_USERNAME
       $password = $env:SQL_PASSWORD
-
+      
       $connectionString = "Server=tcp:testcisynapseworkspace-ondemand.sql.azuresynapse.net,1433;Database=master;User ID=$userName;Password=$password;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
-      Invoke-Sqlcmd `
-          -Query "DROP DATABASE $(databaseName)" `
-          -ConnectionString $connectionString
-      Write-Host 'Clear test database'
+      try {
+        Invoke-Sqlcmd `
+            -Query "DROP DATABASE $(databaseName)" `
+            -ConnectionString $connectionString `
+            -ErrorAction Stop
+      }
+      catch {
+        Write-Host "##[warning]Clear test database failed, you may need to manually clear the database $(databaseName): $($_.Exception.Message)"
+        exit
+      }
+      Write-Host "##[section]Clear test database"
   env:
     SQL_USERNAME: $(SqlUsername)
     SQL_PASSWORD: $(SqlPassword)
