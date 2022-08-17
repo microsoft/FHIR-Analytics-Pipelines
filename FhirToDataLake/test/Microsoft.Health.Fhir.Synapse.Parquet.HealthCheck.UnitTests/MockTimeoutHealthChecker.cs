@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
 {
@@ -18,9 +19,20 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
         {
         }
 
-        protected override async Task PerformHealthCheckImplAsync(CancellationToken cancellationToken)
+        protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            await Task.Delay(TimeSpan.FromMilliseconds(300), cancellationToken);
+            var result = new HealthCheckResult("MockTimeout", true);
+            try
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(1500), cancellationToken);
+                result.Status = HealthCheckStatus.HEALTHY;
+            }
+            catch
+            {
+                result.Status = HealthCheckStatus.UNHEALTHY;
+            }
+
+            return result;
         }
     }
 }

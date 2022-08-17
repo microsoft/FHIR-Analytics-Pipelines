@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
@@ -12,6 +11,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 {
     public interface IHealthCheckEngine
     {
-        Task CheckHealthAsync(OverallHealthStatus healthStatus, CancellationToken cancellationToken = default);
+        Task<OverallHealthStatus> CheckHealthAsync(CancellationToken cancellationToken = default);
     }
 }

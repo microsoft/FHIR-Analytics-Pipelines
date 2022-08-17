@@ -49,8 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
             var healthCheckConfiduration = new HealthCheckConfiguration();
             var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiduration), new NullLogger<HealthCheckEngine>());
 
-            var healthStatus = new OverallHealthStatus();
-            await healthCheckEngine.CheckHealthAsync(healthStatus);
+            var healthStatus = await healthCheckEngine.CheckHealthAsync(default);
             var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
             Assert.Collection(
                 sortedHealthCheckResults,
@@ -71,14 +70,13 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
         public async Task When_HealthCheck_ExceedsHealthCheckTimeLimit_HealthCheck_MarkedAsFailed()
         {
             var healthCheckConfiguration = new HealthCheckConfiguration();
-            healthCheckConfiguration.HealthCheckTimeoutInSeconds = 0.1;
+            healthCheckConfiguration.HealthCheckTimeoutInSeconds = 1;
 
             var mockTimeOutHealthChecker = new MockTimeoutHealthChecker(new NullLogger<MockTimeoutHealthChecker>());
             var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, mockTimeOutHealthChecker };
             var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiguration), new NullLogger<HealthCheckEngine>());
 
-            var healthStatus = new OverallHealthStatus();
-            await healthCheckEngine.CheckHealthAsync(healthStatus);
+            var healthStatus = await healthCheckEngine.CheckHealthAsync(default);
             var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
             Assert.Collection(
                 sortedHealthCheckResults,

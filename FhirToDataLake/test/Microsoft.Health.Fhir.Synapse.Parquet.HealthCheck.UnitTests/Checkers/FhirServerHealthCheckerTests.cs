@@ -27,7 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 new NullLogger<FhirServerHealthChecker>());
 
             var result = await fhirServerHealthChecker.PerformHealthCheckAsync(default);
-            Assert.Equal(HealthCheckStatus.PASS, result.Status);
+            Assert.Equal(HealthCheckStatus.HEALTHY, result.Status);
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 new NullLogger<FhirServerHealthChecker>());
 
             var result = await fhirServerHealthChecker.PerformHealthCheckAsync(default);
-            Assert.Equal(HealthCheckStatus.FAIL, result.Status);
+            Assert.Equal(HealthCheckStatus.UNHEALTHY, result.Status);
         }
     }
 }

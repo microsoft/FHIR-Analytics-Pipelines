@@ -7,8 +7,14 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
 {
     public enum HealthCheckStatus
     {
+        /// <summary>
+        /// Health status
+        /// </summary>
         HEALTHY,
+
+        /// <summary>
+        /// Unhealthy status
+        /// </summary>
         UNHEALTHY,
-        UNKNOWN
     }
 }

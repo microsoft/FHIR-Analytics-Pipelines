@@ -137,7 +137,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 healthCheckConfiguration.HealthCheckTimeoutInSeconds <= 0 ||
                 healthCheckConfiguration.HealthCheckTimeIntervalInSeconds < healthCheckConfiguration.HealthCheckTimeoutInSeconds)
             {
-                throw new ConfigurationErrorException("Invalid health check configuration. Health check time interval should greater than health check timeout and both of them should greater than zero.");
+                throw new ConfigurationErrorException("Invalid health check configuration. Health check time interval should be greater than health check timeout and both of them should greater than zero.");
             }
         }
 

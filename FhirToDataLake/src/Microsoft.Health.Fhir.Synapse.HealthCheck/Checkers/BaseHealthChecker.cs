@@ -32,26 +32,27 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
         public async Task<HealthCheckResult> PerformHealthCheckAsync(CancellationToken cancellationToken = default)
         {
-            var healthCheckResult;
-            var startTime = DateTimeOffset.UtcNow;
+            HealthCheckResult healthCheckResult;
             try
             {
                 healthCheckResult = await PerformHealthCheckImplAsync(cancellationToken);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Unhandled exception : The component {Name} is not healthy.");
-                healthCheckResult = new HealthCheckResult()
+                healthCheckResult = new HealthCheckResult(Name, IsCritical)
                 {
-                    Name = Name,
                     Status = HealthCheckStatus.UNHEALTHY,
-                    IsCritical = IsCritical,
-                    ErrorMessage = e.Message,
-                    StartTime = startTime
+                    ErrorMessage = $"Unhandled exception : {e.Message}.",
                 };
+                _logger.LogError($"Health check component {Name} meets unhandled exception. {e.Message}");
             }
 
             _logger.LogInformation($"Health check {Name} complete. Status {healthCheckResult.Status}");
+            if (healthCheckResult.Status is HealthCheckStatus.UNHEALTHY)
+            {
+                _logger.LogInformation($"Failed reason: {healthCheckResult.ErrorMessage}");
+            }
+
             return healthCheckResult;
         }
 

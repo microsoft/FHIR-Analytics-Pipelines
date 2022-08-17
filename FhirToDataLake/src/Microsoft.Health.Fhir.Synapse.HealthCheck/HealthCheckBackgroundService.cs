@@ -50,16 +50,22 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                     var delayTask = Task.Delay(_checkIntervalInSeconds, cancellationToken);
 
                     // Perform health check.
-                    var healthStatus = new OverallHealthStatus();
-                    await _healthCheckEngine.CheckHealthAsync(healthStatus, cancellationToken);
+                    var healthStatus = await _healthCheckEngine.CheckHealthAsync(cancellationToken);
+
+                    // Todo: Send notification to mediator and remove listeners here.
                     var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
                     await Task.WhenAll(listenerTasks);
                     await delayTask;
                 }
                 catch (OperationCanceledException e)
                 {
-                    _logger.LogError(e, e.ToString());
+                    // not expected to trigger this exception.
+                    _logger.LogError(e, $"Health check service is cancelled. {e.Message}");
                     throw;
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, $"Health check meets unhandled exception. {e.Message}");
                 }
             }
 

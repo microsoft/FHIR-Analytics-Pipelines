@@ -37,10 +37,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
             _healthCheckTimeoutInSeconds = TimeSpan.FromSeconds(healthCheckConfiguration.Value.HealthCheckTimeoutInSeconds);
         }
 
-        public async Task CheckHealthAsync(OverallHealthStatus healthStatus, CancellationToken cancellationToken = default)
+        public async Task<OverallHealthStatus> CheckHealthAsync(CancellationToken cancellationToken = default)
         {
-            EnsureArg.IsNotNull(healthStatus, nameof(healthStatus));
-
+            var healthStatus = new OverallHealthStatus();
             var tasks = new List<Task<HealthCheckResult>>();
 
             // healthCheckToken will be canceled if health check timeout or cancellationToken is canceled.
@@ -55,6 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
             healthStatus.HealthCheckResults = await Task.WhenAll(tasks);
 
             _logger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}.");
+            return healthStatus;
         }
     }
 }

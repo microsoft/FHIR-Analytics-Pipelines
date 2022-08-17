@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
-using System;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
 {

@@ -44,7 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         [Fact]
         public async Task When_BlobClient_CanReadWriteABlob_HealthCheck_Succeeds()
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(AzureBlobStorageHealthChecker.HealthCheckBlobPrefix);
+            byte[] bytes = Encoding.UTF8.GetBytes(AzureBlobStorageHealthChecker.HealthCheckUploadedContent);
             using MemoryStream stream = new (bytes);
             _blobContainerClient.UpdateBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), default, cancellationToken: default).Returns("test");
             _blobContainerClient.GetBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), cancellationToken: default).Returns(stream);
@@ -55,16 +55,13 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 new NullLogger<AzureBlobStorageHealthChecker>());
 
             var result = await _storageAccountHealthChecker.PerformHealthCheckAsync(default);
-            Assert.Equal(HealthCheckStatus.PASS, result.Status);
+            Assert.Equal(HealthCheckStatus.HEALTHY, result.Status);
             Assert.False(result.IsCritical);
         }
 
         [Fact]
         public async Task When_BlobClient_ThrowExceptionWhenReadWriteABlob_HealthCheck_Fails()
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(AzureBlobStorageHealthChecker.HealthCheckBlobPrefix);
-            using MemoryStream stream = new (bytes);
-
             _blobContainerClient.UpdateBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), default, default).ThrowsAsyncForAnyArgs(new Exception());
             _blobContainerClient.GetBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), default).ThrowsAsyncForAnyArgs(new Exception());
             _storageAccountHealthChecker = new AzureBlobStorageHealthChecker(
@@ -74,7 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 new NullLogger<AzureBlobStorageHealthChecker>());
 
             var result = await _storageAccountHealthChecker.PerformHealthCheckAsync(default);
-            Assert.Equal(HealthCheckStatus.FAIL, result.Status);
+            Assert.Equal(HealthCheckStatus.UNHEALTHY, result.Status);
             Assert.False(result.IsCritical);
         }
     }

@@ -1,8 +1,7 @@
-﻿// --------------------------------------------------------------------------
-// <copyright file="HealthCheckResult.cs" company="Microsoft Corporation">
+﻿// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------
+// Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// -------------------------------------------------------------------------------------------------
 
 using System;
 using System.Text.Json.Serialization;
@@ -23,7 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
         public string Name { get; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public HealthCheckStatus Status { get; set; } = HealthCheckStatus.UNKNOWN;
+        public HealthCheckStatus Status { get; set; } = HealthCheckStatus.HEALTHY;
 
         /// <summary>
         /// Indicates if the failure is critical.
