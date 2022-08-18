@@ -30,9 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         // TODO: a tableClient provider component?
         private readonly TableClient _metaDataTableClient;
-
         private readonly byte _queueType;
-
         private readonly ILogger<SchedulerService> _logger;
         private readonly Guid _instanceGuid;
 
@@ -84,7 +82,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             var stopRunning = false;
 
-            // TODO: exception handling for azure table/queue exceptions
             while (!stopRunning && !cancellationToken.IsCancellationRequested)
             {
                 var delayTask = Task.Delay(TimeSpan.FromSeconds(PullingIntervalInSeconds), CancellationToken.None);
@@ -97,8 +94,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     {
                         using var renewLeaseCancellationToken = new CancellationTokenSource();
                         var renewLeaseTask = RenewLeaseAsync(renewLeaseCancellationToken.Token);
-
-                        stopRunning = await TryPullAndProcessTriggerEntity(cancellationToken);
+                        try
+                        {
+                            stopRunning = await TryPullAndProcessTriggerEntity(cancellationToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to pull and update trigger.");
+                        }
 
                         renewLeaseCancellationToken.Cancel();
                         await renewLeaseTask;
@@ -256,147 +259,139 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return DateTime.SpecifyKind(endTime.DateTime, DateTimeKind.Utc);
         }
 
-        // should make sure this function will no throw exception
         private async Task<bool> TryPullAndProcessTriggerEntity(CancellationToken cancellationToken)
         {
-            try
+
+            // try next time if the queue client isn't initialized.
+            if (!_queueClient.IsInitialized())
             {
-                // try next time if the queue client isn't initialized.
-                if (!_queueClient.IsInitialized())
+                _logger.LogWarning("Try to acquire lease failed, the queue client isn't initialized.");
+                return true;
+            }
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(PullingIntervalInSeconds), CancellationToken.None);
+
+                var currentTriggerEntity = await GetCurrentTriggerEntity(cancellationToken) ??
+                                           await CreateInitialTriggerEntity(cancellationToken);
+
+                // if current trigger entity is still null after initializing, just skip processing it this time and try again next time.
+                // this case should not happen.
+                if (currentTriggerEntity != null)
                 {
-                    _logger.LogWarning("Try to acquire lease failed, the queue client isn't initialized.");
-                    return true;
-                }
-
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    var intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(PullingIntervalInSeconds), CancellationToken.None);
-
-                    var currentTriggerEntity = await GetCurrentTriggerEntity(cancellationToken) ??
-                                               await CreateInitialTriggerEntity(cancellationToken);
-
-                    // if current trigger entity is still null after initializing, just skip processing it this time and try again next time.
-                    // this case should not happen.
-                    if (currentTriggerEntity != null)
+                    switch (currentTriggerEntity.TriggerStatus)
                     {
-                        switch (currentTriggerEntity.TriggerStatus)
-                        {
-                            case TriggerStatus.New:
+                        case TriggerStatus.New:
+                            {
+                                // enqueue a orchestrator job for this trigger
+                                var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
                                 {
-                                    // enqueue a orchestrator job for this trigger
-                                    var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
-                                    {
-                                        JobType = JobType.Orchestrator,
-                                        DataStartTime = currentTriggerEntity.TriggerStartTime,
-                                        DataEndTime = currentTriggerEntity.TriggerEndTime,
-                                    };
+                                    JobType = JobType.Orchestrator,
+                                    DataStartTime = currentTriggerEntity.TriggerStartTime,
+                                    DataEndTime = currentTriggerEntity.TriggerEndTime,
+                                };
 
-                                    // TODO: need to handle the case: multi same orchestrator jobs are enqueue by different agent instances
-                                    var jobInfoList = await _queueClient.EnqueueAsync(
-                                        _queueType,
-                                        new[] { JsonConvert.SerializeObject(orchestratorDefinition) },
-                                        currentTriggerEntity.TriggerSequenceId,
-                                        false,
-                                        false,
-                                        cancellationToken);
+                                // TODO: need to handle the case: multi same orchestrator jobs are enqueue by different agent instances
+                                var jobInfoList = await _queueClient.EnqueueAsync(
+                                    _queueType,
+                                    new[] { JsonConvert.SerializeObject(orchestratorDefinition) },
+                                    currentTriggerEntity.TriggerSequenceId,
+                                    false,
+                                    false,
+                                    cancellationToken);
 
-                                    currentTriggerEntity.OrchestratorJobId = jobInfoList.First().Id;
-                                    currentTriggerEntity.TriggerStatus = TriggerStatus.Running;
+                                currentTriggerEntity.OrchestratorJobId = jobInfoList.First().Id;
+                                currentTriggerEntity.TriggerStatus = TriggerStatus.Running;
+                                await _metaDataTableClient.UpdateEntityAsync(
+                                    currentTriggerEntity,
+                                    currentTriggerEntity.ETag,
+                                    cancellationToken: cancellationToken);
+
+                                _logger.LogInformation(
+                                    $"Enqueue orchestrator job for trigger index {currentTriggerEntity.TriggerSequenceId}, the orchestrator job id is {currentTriggerEntity.OrchestratorJobId}.");
+                                break;
+                            }
+
+                        case TriggerStatus.Running:
+                            {
+                                var orchestratorJobId = currentTriggerEntity.OrchestratorJobId;
+                                var orchestratorJob = await _queueClient.GetJobByIdAsync(
+                                    _queueType,
+                                    orchestratorJobId,
+                                    false,
+                                    cancellationToken);
+
+                                var needUpdateTriggerEntity = true;
+
+                                // TODO: how to handle job status is Archived
+                                switch (orchestratorJob.Status)
+                                {
+                                    // TODO: There should not throw exceptions in job executor
+                                    case JobStatus.Completed:
+                                        currentTriggerEntity.TriggerStatus = TriggerStatus.Completed;
+                                        _logger.LogInformation("Current trigger is completed.");
+                                        break;
+                                    case JobStatus.Failed:
+                                        currentTriggerEntity.TriggerStatus = TriggerStatus.Failed;
+                                        _logger.LogError("The orchestrator job is failed.");
+                                        break;
+                                    case JobStatus.Cancelled:
+                                        currentTriggerEntity.TriggerStatus = TriggerStatus.Cancelled;
+                                        _logger.LogError("The orchestrator job is cancelled.");
+                                        break;
+                                    default:
+                                        needUpdateTriggerEntity = false;
+                                        break;
+                                }
+
+                                if (needUpdateTriggerEntity)
+                                {
+                                    await _metaDataTableClient.UpdateEntityAsync(
+                                        currentTriggerEntity,
+                                        currentTriggerEntity.ETag,
+                                        cancellationToken: cancellationToken);
+                                }
+
+                                break;
+                            }
+
+                        case TriggerStatus.Completed:
+                            {
+                                var nextTriggerTime =
+                                    _crontabSchedule.GetNextOccurrence(currentTriggerEntity.TriggerEndTime);
+
+                                // next trigger time was the past time, assign the fields of next trigger to the currentTriggerEntity
+                                if (nextTriggerTime < DateTime.UtcNow)
+                                {
+                                    currentTriggerEntity.TriggerSequenceId += 1;
+                                    currentTriggerEntity.TriggerStatus = TriggerStatus.New;
+
+                                    currentTriggerEntity.TriggerStartTime = currentTriggerEntity.TriggerEndTime;
+                                    currentTriggerEntity.TriggerEndTime = GetTriggerEndTime(nextTriggerTime);
+
                                     await _metaDataTableClient.UpdateEntityAsync(
                                         currentTriggerEntity,
                                         currentTriggerEntity.ETag,
                                         cancellationToken: cancellationToken);
 
                                     _logger.LogInformation(
-                                        $"Enqueue orchestrator job for trigger index {currentTriggerEntity.TriggerSequenceId}, the orchestrator job id is {currentTriggerEntity.OrchestratorJobId}.");
-                                    break;
+                                        $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table.");
                                 }
 
-                            case TriggerStatus.Running:
-                                {
-                                    var orchestratorJobId = currentTriggerEntity.OrchestratorJobId;
-                                    var orchestratorJob = await _queueClient.GetJobByIdAsync(
-                                        _queueType,
-                                        orchestratorJobId,
-                                        false,
-                                        cancellationToken);
+                                break;
+                            }
 
-                                    var needUpdateTriggerEntity = true;
+                        case TriggerStatus.Failed:
 
-                                    // TODO: how to handle job status is Archived
-                                    switch (orchestratorJob.Status)
-                                    {
-                                        // TODO: There should not throw exceptions in job executor
-                                        case JobStatus.Completed:
-                                            currentTriggerEntity.TriggerStatus = TriggerStatus.Completed;
-                                            _logger.LogInformation("Current trigger is completed.");
-                                            break;
-                                        case JobStatus.Failed:
-                                            currentTriggerEntity.TriggerStatus = TriggerStatus.Failed;
-                                            _logger.LogError("The orchestrator job is failed.");
-                                            break;
-                                        case JobStatus.Cancelled:
-                                            currentTriggerEntity.TriggerStatus = TriggerStatus.Cancelled;
-                                            _logger.LogError("The orchestrator job is cancelled.");
-                                            break;
-                                        default:
-                                            needUpdateTriggerEntity = false;
-                                            break;
-                                    }
-
-                                    if (needUpdateTriggerEntity)
-                                    {
-                                        await _metaDataTableClient.UpdateEntityAsync(
-                                            currentTriggerEntity,
-                                            currentTriggerEntity.ETag,
-                                            cancellationToken: cancellationToken);
-                                    }
-
-                                    break;
-                                }
-
-                            case TriggerStatus.Completed:
-                                {
-                                    var nextTriggerTime =
-                                        _crontabSchedule.GetNextOccurrence(currentTriggerEntity.TriggerEndTime);
-
-                                    // next trigger time was the past time, assign the fields of next trigger to the currentTriggerEntity
-                                    if (nextTriggerTime < DateTime.UtcNow)
-                                    {
-                                        currentTriggerEntity.TriggerSequenceId += 1;
-                                        currentTriggerEntity.TriggerStatus = TriggerStatus.New;
-
-                                        currentTriggerEntity.TriggerStartTime = currentTriggerEntity.TriggerEndTime;
-                                        currentTriggerEntity.TriggerEndTime = GetTriggerEndTime(nextTriggerTime);
-
-                                        await _metaDataTableClient.UpdateEntityAsync(
-                                            currentTriggerEntity,
-                                            currentTriggerEntity.ETag,
-                                            cancellationToken: cancellationToken);
-
-                                        _logger.LogInformation(
-                                            $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table.");
-                                    }
-
-                                    break;
-                                }
-
-                            case TriggerStatus.Failed:
-
-                            case TriggerStatus.Cancelled:
-                                // if the current trigger is cancelled/failed, stop scheduler.
-                                _logger.LogWarning("Trigger Status is cancelled or failed.");
-                                return true;
-                        }
+                        case TriggerStatus.Cancelled:
+                            // if the current trigger is cancelled/failed, stop scheduler.
+                            _logger.LogWarning("Trigger Status is cancelled or failed.");
+                            return true;
                     }
-
-                    await intervalDelayTask;
                 }
 
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to pull and update trigger.");
+                await intervalDelayTask;
             }
 
             return false;
