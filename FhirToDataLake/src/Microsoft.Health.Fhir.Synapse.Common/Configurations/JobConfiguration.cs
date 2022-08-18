@@ -30,6 +30,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public string QueueUrl { get; set; }
 
         /// <summary>
+        /// Scheduler crontab expression.
+        /// </summary>
+        [JsonProperty("schedulerCronExpression")]
+        public string SchedulerCronExpression { get; set; }
+
+        /// <summary>
         /// Agent name
         /// </summary>
         // TODO: agent name is used as part of table name and queue name, need to validate agent name to contains only alphanumeric characters, and not begin with a numeric character.

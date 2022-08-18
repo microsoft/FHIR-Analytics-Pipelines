@@ -26,5 +26,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// The data size of cache in bytes, will commit the cache to storage it the data size is larger than this value.
         /// </summary>
         public const int DataSizeInBytesPerCommit = 10 * 1024 * 1024;
+
+        /// <summary>
+        /// The pulling interval time in seconds
+        /// </summary>
+        public const int DefaultPullingIntervalInSeconds = 20;
+
+        /// <summary>
+        /// The heartbeat timeout value in seconds
+        /// </summary>
+        public const int DefaultHeartbeatTimeoutInSeconds = 180;
+
+        /// <summary>
+        /// The heartbeat interval time in seconds
+        /// </summary>
+        public const int DefaultHeartbeatIntervalInSeconds = 60;
     }
 }
