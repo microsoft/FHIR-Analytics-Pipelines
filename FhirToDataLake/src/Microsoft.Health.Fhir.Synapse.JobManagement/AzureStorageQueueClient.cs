@@ -31,7 +31,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         private readonly ILogger<AzureStorageQueueClient<TJobInfo>> _logger;
 
-        private readonly int _maximumSizeOfAnEntityInBytes = 1024 * 1024;
+        /// <summary>
+        /// The maximum size of a single entity, including all property values is 1 MiB,
+        /// see https://docs.microsoft.com/en-us/azure/storage/tables/scalability-targets#scale-targets-for-table-storage.
+        /// The definition and result are serialized string of objects,
+        /// we should be careful that should not contain large fields when define the definition and result class.
+        /// Add an assert here to make sure the size of definition and result aren't larger than 1MiB.
+        /// </summary>
+        private const int MaximumSizeOfAnEntityInBytes = 1024 * 1024;
 
         public AzureStorageQueueClient(
             IStorage storage,
@@ -101,7 +108,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             for (var i = 0; i < definitions.Length; i++)
             {
                 Trace.Assert(
-                    definitions[i].Length * sizeof(char) < _maximumSizeOfAnEntityInBytes,
+                    definitions[i].Length * sizeof(char) < MaximumSizeOfAnEntityInBytes,
                     "The maximum size of a single table entity is 1MB, the size of definition is larger than 1MB.");
 
                 // step 2: create jobInfo entity and job lock entity
@@ -175,7 +182,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 // step 6: if queue message not present in job lock entity, push message to queue.
                 // if processing job failed and the message is deleted, then the message id is still in table entity,
                 // we don't resend message for it, and return the existing jobInfo, so will do noting about it.
-                if (string.IsNullOrEmpty(jobLockEntity.JobMessageId))
+                if (string.IsNullOrWhiteSpace(jobLockEntity.JobMessageId))
                 {
                     var response = await _azureJobMessageQueueClient.SendMessageAsync(
                         new JobMessage(jobInfoEntity.PartitionKey, jobInfoEntity.RowKey).ToString(),
@@ -418,7 +425,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             jobInfoEntity.HeartbeatDateTime = DateTime.UtcNow;
 
             Trace.Assert(
-                jobInfo.Result.Length * sizeof(char) < _maximumSizeOfAnEntityInBytes,
+                jobInfo.Result.Length * sizeof(char) < MaximumSizeOfAnEntityInBytes,
                 "The maximum size of a single table entity is 1MB, the size of result is larger than 1MB.");
 
             jobInfoEntity.Result = jobInfo.Result;
@@ -505,7 +512,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             _logger.LogInformation($"Start to complete job {jobInfo.Id}.");
 
             Trace.Assert(
-                jobInfo.Result.Length * sizeof(char) < _maximumSizeOfAnEntityInBytes,
+                jobInfo.Result.Length * sizeof(char) < MaximumSizeOfAnEntityInBytes,
                 "The maximum size of a single table entity is 1MB, the size of result is larger than 1MB.");
 
             // step 1: check version

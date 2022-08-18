@@ -32,7 +32,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// <summary>
         /// Agent name
         /// </summary>
-        // TODO: agent name is used as part of table name and queue name, need to validate agent name to contains only alphanumeric characters, and not begin with a numeric character.
+        // TODO: agent name is used as part of table name and queue name, need to validate agent name to contain only alphanumeric characters, and not begin with a numeric character.
         // Reference: https://docs.microsoft.com/en-us/rest/api/storageservices/understanding-the-table-service-data-model#table-names
         // https://docs.microsoft.com/en-us/rest/api/storageservices/naming-queues-and-metadata#queue-names
         [JsonProperty("agentName")]
