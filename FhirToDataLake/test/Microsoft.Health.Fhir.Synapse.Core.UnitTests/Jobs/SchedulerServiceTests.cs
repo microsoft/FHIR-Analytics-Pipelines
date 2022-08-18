@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -15,13 +16,17 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
+using Newtonsoft.Json;
 using Xunit;
+using Xunit.Abstractions;
 using JobStatus = Microsoft.Health.JobManagement.JobStatus;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
     public class SchedulerServiceTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
         private readonly NullLogger<SchedulerService> _nullSchedulerServiceLogger =
             NullLogger<SchedulerService>.Instance;
 
@@ -33,8 +38,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private readonly IOptions<JobConfiguration> _jobConfigOption;
         private readonly TableClient _metaDataTableClient;
 
-        public SchedulerServiceTests()
+        public SchedulerServiceTests(ITestOutputHelper testOutputHelper)
         {
+            _testOutputHelper = testOutputHelper;
             var jobConfig = new JobConfiguration
             {
                 QueueType = QueueType.FhirToDataLake,
@@ -111,8 +117,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal("ResourceNotFound", exception.ErrorCode);
 
             using var tokenSource = new CancellationTokenSource();
-            tokenSource.CancelAfter(TimeSpan.FromSeconds(5));
-
             await schedulerService.RunAsync(tokenSource.Token);
 
             // the trigger lease entity should exist
@@ -142,7 +146,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             using var tokenSource = new CancellationTokenSource();
             var task = schedulerService.RunAsync(tokenSource.Token);
 
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
 
             // should enqueue orchestrator job
             var currentTriggerEntity = await GetCurrentTriggerEntity();
@@ -162,7 +166,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 0,
                 CancellationToken.None);
 
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
 
             currentTriggerEntity = await GetCurrentTriggerEntity();
             Assert.NotNull(currentTriggerEntity);
@@ -174,7 +178,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             jobInfo.Status = JobStatus.Completed;
             await queueClient.CompleteJobAsync(jobInfo, false, CancellationToken.None);
 
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            // current trigger entity is running
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
             currentTriggerEntity = await GetCurrentTriggerEntity();
             Assert.NotNull(currentTriggerEntity);
             Assert.Equal(2, currentTriggerEntity.OrchestratorJobId);
@@ -187,26 +192,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 await queueClient.GetJobByIdAsync((byte)QueueType.FhirToDataLake, 2, true, CancellationToken.None);
             Assert.Equal(JobStatus.Created, jobInfo.Status);
 
-            // the job is dequeued, and the trigger status is still running.
-            var jobInfo2 = await queueClient.DequeueAsync(
-                (byte)QueueType.FhirToDataLake,
-                TestWorkerName,
-                0,
-                CancellationToken.None);
-
-            // job is failed
-            jobInfo2.Status = JobStatus.Failed;
-            await queueClient.CompleteJobAsync(jobInfo2, false, CancellationToken.None);
-
-            // the scheduler service should stop
+            tokenSource.Cancel();
             await task;
-
-            currentTriggerEntity = await GetCurrentTriggerEntity();
-            Assert.NotNull(currentTriggerEntity);
-
-            // current trigger entity is failed
-            Assert.Equal(jobInfo2.Id, currentTriggerEntity.OrchestratorJobId);
-            Assert.Equal(TriggerStatus.Failed, currentTriggerEntity.TriggerStatus);
         }
 
         [Fact]
@@ -223,7 +210,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             using var tokenSource = new CancellationTokenSource();
             var task = schedulerService.RunAsync(tokenSource.Token);
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
             var triggerLeaseEntity = await GetTriggerLeaseEntity();
             Assert.NotNull(triggerLeaseEntity);
 
@@ -264,7 +251,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // service 1 is running
             using var tokenSource1 = new CancellationTokenSource();
             var task1 = schedulerService1.RunAsync(tokenSource1.Token);
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
 
             // service 1 acquire lease
             var triggerLeaseEntity = await GetTriggerLeaseEntity();
@@ -274,7 +261,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // service 2 is running
             using var tokenSource2 = new CancellationTokenSource();
             var task2 = schedulerService2.RunAsync(tokenSource2.Token);
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
 
             // scheduler service 2 can't acquire lease
             triggerLeaseEntity = await GetTriggerLeaseEntity();
@@ -310,9 +297,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // service is running
             using var tokenSource1 = new CancellationTokenSource();
-            tokenSource1.CancelAfter(TimeSpan.FromSeconds(5));
+            tokenSource1.CancelAfter(TimeSpan.FromSeconds(1));
             var task1 = schedulerService.RunAsync(tokenSource1.Token);
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
 
             // the job is dequeued
             var jobInfo = await queueClient.DequeueAsync(
@@ -337,7 +324,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             using var tokenSource2 = new CancellationTokenSource();
             var task2 = schedulerService.RunAsync(tokenSource2.Token);
 
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
 
             // resume trigger
             currentTriggerEntity = await GetCurrentTriggerEntity();
@@ -355,6 +342,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             jobInfo.Status = JobStatus.Completed;
             await queueClient.CompleteJobAsync(jobInfo, false, CancellationToken.None);
 
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+
             currentTriggerEntity = await GetCurrentTriggerEntity();
             Assert.NotNull(currentTriggerEntity);
             Assert.Equal(2, currentTriggerEntity.TriggerSequenceId);
@@ -367,9 +356,185 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenFailedTrigger_WhenReRunAsync_ThenTheTriggerShouldNotBeResumed()
         {
+            await _metaDataTableClient.DeleteAsync();
+
+            var queueClient = new MockQueueClient();
+
+            var schedulerService = new SchedulerService(queueClient, _jobConfigOption, _nullSchedulerServiceLogger)
+            {
+                PullingIntervalInSeconds = 0,
+                HeartbeatIntervalInSeconds = 1,
+                HeartbeatTimeoutInSeconds = 2,
+            };
+
+            // service is running
+            using var tokenSource1 = new CancellationTokenSource();
+            var task1 = schedulerService.RunAsync(tokenSource1.Token);
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+
+            // the job is dequeued
+            var jobInfo = await queueClient.DequeueAsync(
+                (byte)QueueType.FhirToDataLake,
+                TestWorkerName,
+                0,
+                CancellationToken.None);
+
+            // job is completed, the trigger status should be set to next trigger
+            jobInfo.Status = JobStatus.Failed;
+            await queueClient.CompleteJobAsync(jobInfo, false, CancellationToken.None);
+
+            // the scheduler service should stop
+            await task1;
+
+            var currentTriggerEntity = await GetCurrentTriggerEntity();
+            Assert.NotNull(currentTriggerEntity);
+
+            // current trigger entity is failed
+            Assert.Equal(jobInfo.Id, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(TriggerStatus.Failed, currentTriggerEntity.TriggerStatus); 
+            var triggerLeaseEntity = await GetTriggerLeaseEntity();
+
+            var task2 = schedulerService.RunAsync(tokenSource1.Token);
+
+            await task2;
+
+            // the currentTriggerEntity should not be updated
+            var currentTriggerEntity2 = await GetCurrentTriggerEntity();
+            Assert.NotNull(currentTriggerEntity2);
+
+            // current trigger entity is failed
+            Assert.Equal(jobInfo.Id, currentTriggerEntity2.OrchestratorJobId);
+            Assert.Equal(TriggerStatus.Failed, currentTriggerEntity2.TriggerStatus);
+            Assert.Equal(currentTriggerEntity.Timestamp, currentTriggerEntity2.Timestamp);
+
+            // lease should be renewed
+            var triggerLeaseEntity2 = await GetTriggerLeaseEntity();
+            Assert.Equal(triggerLeaseEntity.WorkingInstanceGuid, triggerLeaseEntity2.WorkingInstanceGuid);
+            Assert.True(triggerLeaseEntity2.HeartbeatDateTime > triggerLeaseEntity.HeartbeatDateTime);
         }
 
-        // TODO cancelled trigger
+        [Fact]
+        public async Task GivenEnqueueFailure_WhenRunAsync_ThenTheTriggerShouldBeRetried()
+        {
+            await _metaDataTableClient.DeleteAsync();
+
+            var brokenQueueClient = new MockQueueClient();
+
+            void FaultAction() => throw new RequestFailedException("fake request failed exception");
+
+            brokenQueueClient.EnqueueFaultAction = FaultAction;
+
+            var schedulerService1 = new SchedulerService(brokenQueueClient, _jobConfigOption, _nullSchedulerServiceLogger)
+            {
+                PullingIntervalInSeconds = 0,
+                HeartbeatIntervalInSeconds = 1,
+                HeartbeatTimeoutInSeconds = 2,
+            };
+
+            // service is running
+            using var tokenSource1 = new CancellationTokenSource();
+            var task1 = schedulerService1.RunAsync(tokenSource1.Token);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+
+            // the current trigger status is new.
+            var currentTriggerEntity = await GetCurrentTriggerEntity();
+
+            Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.New, currentTriggerEntity.TriggerStatus);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
+
+            tokenSource1.Cancel();
+            await task1;
+
+            var queueClient = new MockQueueClient();
+            var schedulerService2 = new SchedulerService(queueClient, _jobConfigOption, _nullSchedulerServiceLogger)
+            {
+                PullingIntervalInSeconds = 0,
+                HeartbeatIntervalInSeconds = 1,
+                HeartbeatTimeoutInSeconds = 2,
+            };
+
+            using var tokenSource2 = new CancellationTokenSource();
+            var task2 = schedulerService2.RunAsync(tokenSource2.Token);
+
+            // wait for service 2 acquires lease
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
+            // the current trigger status is running.
+            currentTriggerEntity = await GetCurrentTriggerEntity();
+
+            Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
+            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+
+            tokenSource2.Cancel();
+            await task2;
+        }
+
+        [Fact]
+        public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned()
+        {
+            await _metaDataTableClient.DeleteAsync();
+
+            var queueClient = new MockQueueClient();
+
+            var initialTriggerEntity = new CurrentTriggerEntity
+            {
+                PartitionKey = JobKeyProvider.TriggerPartitionKey((byte)QueueType.FhirToDataLake),
+                RowKey = JobKeyProvider.TriggerPartitionKey((byte)QueueType.FhirToDataLake),
+                TriggerStartTime = null,
+                TriggerEndTime = DateTime.UtcNow,
+                TriggerStatus = TriggerStatus.New,
+                TriggerSequenceId = 0,
+            };
+
+            await _metaDataTableClient.CreateIfNotExistsAsync();
+
+            // add the initial trigger entity to table
+            await _metaDataTableClient.AddEntityAsync(initialTriggerEntity, CancellationToken.None);
+
+            // enqueue manually
+            var orchestratorDefinition1 = new FhirToDataLakeOrchestratorJobInputData
+            {
+                JobType = JobType.Orchestrator,
+                DataStartTime = initialTriggerEntity.TriggerStartTime,
+                DataEndTime = initialTriggerEntity.TriggerEndTime,
+            };
+
+            var jobInfoList = (await queueClient.EnqueueAsync(
+                (byte)QueueType.FhirToDataLake,
+                new[] { JsonConvert.SerializeObject(orchestratorDefinition1) },
+                0,
+                false,
+                false,
+                CancellationToken.None)).ToList();
+
+            var schedulerService = new SchedulerService(queueClient, _jobConfigOption, _nullSchedulerServiceLogger)
+            {
+                PullingIntervalInSeconds = 0,
+                HeartbeatIntervalInSeconds = 1,
+                HeartbeatTimeoutInSeconds = 2,
+            };
+
+            // service is running
+            using var tokenSource = new CancellationTokenSource();
+            var task = schedulerService.RunAsync(tokenSource.Token);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+
+            var currentTriggerEntity = await GetCurrentTriggerEntity();
+            Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
+            Assert.Equal(jobInfoList.First().Id, currentTriggerEntity.OrchestratorJobId);
+
+            var jobInfo = await queueClient.GetJobByIdAsync((byte)QueueType.FhirToDataLake, currentTriggerEntity.OrchestratorJobId, true, CancellationToken.None);
+
+            Assert.Equal(jobInfoList.First().HeartbeatDateTime, jobInfo.HeartbeatDateTime);
+
+            tokenSource.Cancel();
+            await task;
+        }
 
         private async Task<CurrentTriggerEntity> GetCurrentTriggerEntity() =>
             (await _metaDataTableClient.GetEntityAsync<CurrentTriggerEntity>(

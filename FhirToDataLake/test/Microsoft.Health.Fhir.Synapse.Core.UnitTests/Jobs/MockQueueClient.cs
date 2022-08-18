@@ -18,6 +18,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private List<JobInfo> jobInfos = new List<JobInfo>();
         private long _largestId = 1;
 
+        public Action EnqueueFaultAction { get; set; }
+
         public Action DequeueFaultAction { get; set; }
 
         public Action HeartbeatFaultAction { get; set; }
@@ -96,6 +98,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         public Task<IEnumerable<JobInfo>> EnqueueAsync(byte queueType, string[] definitions, long? groupId, bool forceOneActiveJobGroup, bool isCompleted, CancellationToken cancellationToken)
         {
+            EnqueueFaultAction?.Invoke();
+
             List<JobInfo> result = new List<JobInfo>();
 
             long gId = groupId ?? _largestId++;

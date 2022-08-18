@@ -207,7 +207,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception ex)
             {
-                // TODO: double check it can catch RequestFailedException and ArgumentNullException
                 // any exceptions while getting entity will log a error and try next time
                 _logger.LogError($"Failed to get current trigger entity from table, exception: {ex.Message}");
                 throw;
@@ -228,8 +227,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 PartitionKey = JobKeyProvider.TriggerPartitionKey(_queueType),
                 RowKey = JobKeyProvider.TriggerPartitionKey(_queueType),
                 TriggerStartTime = null,
-
-                // TODO: the trigger end time may be different for different instances?
                 TriggerEndTime = GetTriggerEndTime(DateTimeOffset.UtcNow),
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 0,
@@ -261,7 +258,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async Task<bool> TryPullAndProcessTriggerEntity(CancellationToken cancellationToken)
         {
-
             // try next time if the queue client isn't initialized.
             if (!_queueClient.IsInitialized())
             {
@@ -292,7 +288,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                     DataEndTime = currentTriggerEntity.TriggerEndTime,
                                 };
 
-                                // TODO: need to handle the case: multi same orchestrator jobs are enqueue by different agent instances
                                 var jobInfoList = await _queueClient.EnqueueAsync(
                                     _queueType,
                                     new[] { JsonConvert.SerializeObject(orchestratorDefinition) },
@@ -327,7 +322,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 // TODO: how to handle job status is Archived
                                 switch (orchestratorJob.Status)
                                 {
-                                    // TODO: There should not throw exceptions in job executor
                                     case JobStatus.Completed:
                                         currentTriggerEntity.TriggerStatus = TriggerStatus.Completed;
                                         _logger.LogInformation("Current trigger is completed.");
