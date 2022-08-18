@@ -75,10 +75,5 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
 
             return jobInfo;
         }
-
-        public static DateTime SetKind(this DateTime dateTime, DateTimeKind dateTimeKind)
-        {
-            return DateTime.SpecifyKind(dateTime, dateTimeKind);
-        }
     }
 }

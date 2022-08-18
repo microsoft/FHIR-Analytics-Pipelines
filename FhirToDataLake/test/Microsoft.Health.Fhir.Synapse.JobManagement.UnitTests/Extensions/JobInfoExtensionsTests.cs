@@ -15,14 +15,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
     public class JobInfoExtensionsTests
     {
         [Fact]
-        public void GivenNullJobInfo_WhenToTableEntity_ExceptionShouldBeThrown()
+        public void GivenNullJobInfo_WhenToTableEntity_ThenTheExceptionShouldBeThrown()
         {
             AzureStorageJobInfo? jobInfo = null;
             Assert.Throws<NullReferenceException>(() => jobInfo.ToTableEntity());
         }
 
         [Fact]
-        public void GivenDefaultJobInfo_WhenToTableEntity_CorrectTableEntityShouldBeReturned()
+        public void GivenDefaultJobInfo_WhenToTableEntity_ThenTheCorrectTableEntityShouldBeReturned()
         {
             var jobInfo = new AzureStorageJobInfo();
             var tableEntity = jobInfo.ToTableEntity();
@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         }
 
         [Fact]
-        public void GivenAzureStorageJobInfo_WhenToTableEntity_CorrectTableEntityShouldBeReturned()
+        public void GivenAzureStorageJobInfo_WhenToTableEntity_ThenTheCorrectTableEntityShouldBeReturned()
         {
             var jobInfo = new AzureStorageJobInfo();
             var tableEntity = jobInfo.ToTableEntity();
@@ -46,7 +46,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         }
 
         [Fact]
-        public void GivenValidJobInfo_WhenToTableEntity_CorrectTableEntityShouldBeReturned()
+        public void GivenValidJobInfo_WhenToTableEntity_ThenTheCorrectTableEntityShouldBeReturned()
         {
             var jobInfo = new FhirToDataLakeAzureStorageJobInfo
             {
@@ -74,14 +74,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         }
 
         [Fact]
-        public void GivenNullTableEntity_WhenToJobInfo_ExceptionShouldBeThrown()
+        public void GivenNullTableEntity_WhenToJobInfo_ThenTheExceptionShouldBeThrown()
         {
             JobInfoEntity? jobInfoEntity = null;
             Assert.Throws<NullReferenceException>(() => jobInfoEntity.ToJobInfo<FhirToDataLakeAzureStorageJobInfo>());
         }
 
         [Fact]
-        public void GivenDefaultTableEntity_WhenToJobInfo_CorrectResultShouldBeReturned()
+        public void GivenDefaultTableEntity_WhenToJobInfo_ThenTheCorrectResultShouldBeReturned()
         {
             var jobInfoEntity = new JobInfoEntity
             {
@@ -98,7 +98,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         }
 
         [Fact]
-        public void GivenValidTableEntity_WhenToJobInfo_CorrectResultShouldBeReturned()
+        public void GivenValidTableEntity_WhenToJobInfo_ThenTheCorrectResultShouldBeReturned()
         {
             var jobInfoEntity = new JobInfoEntity
             {

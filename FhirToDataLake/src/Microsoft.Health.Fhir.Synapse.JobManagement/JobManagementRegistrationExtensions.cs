@@ -16,7 +16,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             services.AddSingleton<IStorage, AzureStorage>();
 
-            services.AddSingleton<IQueueClient, AzureStorageQueueClient<FhirToDataLakeAzureStorageJobInfo>>();
+            services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>();
 
             return services;
         }

@@ -30,14 +30,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
 
         [Theory]
         [MemberData(nameof(NullOrEmptyInput))]
-        public void GivenNullOrEmptyString_WhenComputeHash_TheInputShouldBeReturn(string inputStr, string expectedHash)
+        public void GivenNullOrEmptyString_WhenComputeHash_ThenTheInputShouldBeReturn(string inputStr, string expectedHash)
         {
             var hash = inputStr.ComputeHash();
             Assert.Equal(expectedHash, hash);
         }
 
         [Fact]
-        public void GivenValidString_WhenComputeHash_TheHashStringShouldBeReturn()
+        public void GivenValidString_WhenComputeHash_ThenTheHashStringShouldBeReturn()
         {
             var inputStr = "input string";
             var hash = inputStr.ComputeHash();
@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         }
 
         [Fact]
-        public void GivenTwoSameStrings_WhenComputeHash_TheHashStringsShouldBeTheSame()
+        public void GivenTwoSameStrings_WhenComputeHash_ThenTheHashStringsShouldBeTheSame()
         {
             var inputStr1 = "same input string";
             var hash1 = inputStr1.ComputeHash();
@@ -57,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
 
         [Theory]
         [MemberData(nameof(DifferentInputs))]
-        public void GivenDifferentStrings_WhenComputeHash_TheHashStringsShouldBeDifferent(string inputStr1, string inputStr2)
+        public void GivenDifferentStrings_WhenComputeHash_ThenTheHashStringsShouldBeDifferent(string inputStr1, string inputStr2)
         {
             var hash1 = inputStr1.ComputeHash();
             var hash2 = inputStr2.ComputeHash();

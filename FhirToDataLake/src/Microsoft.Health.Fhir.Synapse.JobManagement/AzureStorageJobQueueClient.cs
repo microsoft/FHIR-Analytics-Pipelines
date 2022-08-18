@@ -22,14 +22,14 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.JobManagement
 {
-    public class AzureStorageQueueClient<TJobInfo> : IQueueClient
+    public class AzureStorageJobQueueClient<TJobInfo> : IQueueClient
         where TJobInfo : AzureStorageJobInfo, new()
     {
         private readonly TableClient _azureJobInfoTableClient;
 
         private readonly QueueClient _azureJobMessageQueueClient;
 
-        private readonly ILogger<AzureStorageQueueClient<TJobInfo>> _logger;
+        private readonly ILogger<AzureStorageJobQueueClient<TJobInfo>> _logger;
 
         /// <summary>
         /// The maximum size of a single entity, including all property values is 1 MiB,
@@ -40,16 +40,15 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         /// </summary>
         private const int MaximumSizeOfAnEntityInBytes = 1024 * 1024;
 
-        public AzureStorageQueueClient(
+        public AzureStorageJobQueueClient(
             IStorage storage,
-            IOptions<JobConfiguration> jobConfiguration,
-            ILogger<AzureStorageQueueClient<TJobInfo>> logger)
+            ILogger<AzureStorageJobQueueClient<TJobInfo>> logger)
         {
-            EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             EnsureArg.IsNotNull(storage, nameof(storage));
 
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
+            // TODO: ConnectionString is only used for local test
             if (storage.UseConnectionString)
             {
                 _azureJobInfoTableClient = new TableClient(storage.TableUrl, storage.TableName);
@@ -221,20 +220,20 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             _logger.LogInformation("Start to dequeue.");
 
             // step 1: receive message from message queue
-            TimeSpan? visibilityTimeOut = heartbeatTimeoutSec <= 0 ? null : TimeSpan.FromSeconds(heartbeatTimeoutSec);
-            var message = await _azureJobMessageQueueClient.ReceiveMessageAsync(visibilityTimeOut, cancellationToken);
+            TimeSpan? visibilityTimeout = heartbeatTimeoutSec <= 0 ? null : TimeSpan.FromSeconds(heartbeatTimeoutSec);
+            var message = (await _azureJobMessageQueueClient.ReceiveMessageAsync(visibilityTimeout, cancellationToken)).Value;
 
-            if (message.Value == null)
+            if (message == null)
             {
-                _logger.LogWarning("Failed to receive message from queue, the queue message is null.");
+                _logger.LogInformation("The queue is empty.");
                 return null;
             }
 
-            var jobMessage = JsonConvert.DeserializeObject<JobMessage>(message.Value.Body.ToString());
+            var jobMessage = JobMessage.Parse(message.Body.ToString());
 
             if (jobMessage == null)
             {
-                _logger.LogWarning("Failed to deserialize message, the deserialized job message is null.");
+                _logger.LogWarning("Failed to deserialize message.");
                 return null;
             }
 
@@ -248,8 +247,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             if (jobInfo.Status is JobStatus.Completed or JobStatus.Failed or JobStatus.Cancelled)
             {
-                _logger.LogWarning($"Discard queue message {message.Value.MessageId}, the job status is {jobInfo.Status}.");
-                await _azureJobMessageQueueClient.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt, cancellationToken);
+                _logger.LogWarning($"Discard queue message {message.MessageId}, the job status is {jobInfo.Status}.");
+                await _azureJobMessageQueueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);
 
                 // dequeue next job
                 return await DequeueAsync(queueType, worker, heartbeatTimeoutSec, cancellationToken);
@@ -263,10 +262,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             var jobLockEntity = jobLockEntityResponse.Value;
 
-            if (!string.Equals(jobLockEntity.JobMessageId, message.Value.MessageId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(jobLockEntity.JobMessageId, message.MessageId, StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogWarning($"Discard queue message {message.Value.MessageId}, the message id is inconsistent with the one in the table entity.");
-                await _azureJobMessageQueueClient.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt, cancellationToken);
+                _logger.LogWarning($"Discard queue message {message.MessageId}, the message id is inconsistent with the one in the table entity.");
+                await _azureJobMessageQueueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);
 
                 // dequeue next job
                 return await DequeueAsync(queueType, worker, heartbeatTimeoutSec, cancellationToken);
@@ -291,7 +290,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             var jobInfoEntity = jobInfo.ToTableEntity();
 
             // step 6: update message pop receipt to job lock entity
-            jobLockEntity.JobMessagePopReceipt = message.Value.PopReceipt;
+            jobLockEntity.JobMessagePopReceipt = message.PopReceipt;
 
             // step 7: transaction update jobInfo entity and job lock entity
             IEnumerable<TableTransactionAction> transactionUpdateActions = new List<TableTransactionAction>
@@ -654,7 +653,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         private static IEnumerable<string> SelectPropertiesExceptDefinition()
         {
-            var type = Type.GetType("Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage.JobInfoEntity");
+            var type = Type.GetType(typeof(JobInfoEntity).FullName);
             if (type == null)
             {
                 throw new JobManagementException("Failed to get JobInfoEntity properties, the type is null.");

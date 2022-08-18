@@ -20,10 +20,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
             // Otherwise the relative part will be omitted when creating new search Uris. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
-            TableUrl = !config.Value.TableUrl.EndsWith("/") ? $"{config.Value.TableUrl}/" : config.Value.TableUrl;
+            TableUrl = config.Value.TableUrl.EndsWith("/") ? config.Value.TableUrl : $"{config.Value.TableUrl}/";
             TableName = AzureStorageKeyProvider.JobInfoTableName(config.Value.AgentName);
 
-            QueueUrl = !config.Value.QueueUrl.EndsWith("/") ? $"{config.Value.QueueUrl}/" : config.Value.QueueUrl;
+            QueueUrl = config.Value.QueueUrl.EndsWith("/") ? config.Value.QueueUrl : $"{config.Value.QueueUrl}/";
             QueueName = AzureStorageKeyProvider.JobMessageQueueName(config.Value.AgentName);
 
             UseConnectionString = false;
