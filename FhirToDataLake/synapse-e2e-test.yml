@@ -196,7 +196,6 @@ steps:
         else
         {
           Write-Host "##[warning]Clear test database $(databaseName) failed for $maxAttempts attempts, you may need to manually clear the database."
-          exit
         }
       } while ($attempts -le $maxAttempts)
   env:
