@@ -161,19 +161,44 @@ steps:
       $sqlServerEndpoint = "$(synapseWorkspaceName)-ondemand.sql.azuresynapse.net"
       $userName = $env:SQL_USERNAME
       $password = $env:SQL_PASSWORD
-      
       $connectionString = "Server=tcp:testcisynapseworkspace-ondemand.sql.azuresynapse.net,1433;Database=master;User ID=$userName;Password=$password;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
-      try {
-        Invoke-Sqlcmd `
+      
+      # Retry to avoid the warming up of Synapse SQL pool and other potential issues
+      $attempts = 1
+      $maxAttempts = 3
+      do
+      {
+        try
+        {
+          Invoke-Sqlcmd `
             -Query "DROP DATABASE $(databaseName)" `
             -ConnectionString $connectionString `
             -ErrorAction Stop
-      }
-      catch {
-        Write-Host "##[warning]Clear test database failed, you may need to manually clear the database $(databaseName): $($_.Exception.Message)"
-        exit
-      }
-      Write-Host "##[section]Clear test database"
+      
+          Write-Host "##[section]Clear test database"
+          break;
+        }
+        catch [Exception]
+        {
+          Write-Host "##[warning] $($_.Exception.Message)"
+        }
+
+        # exponential backoff delay
+        $attempts++
+        if ($attempts -le $maxAttempts)
+        {
+          $retryDelaySeconds = [math]::Pow(2, $attempts)
+          $retryDelaySeconds = $retryDelaySeconds - 1  # Exponential Backoff Max == (2^n)-1
+          Write-Host "##[warning]Clear test database $(databaseName) failed, waiting $retryDelaySeconds seconds before attempt $attempts of $maxAttempts."
+      
+          Start-Sleep $retryDelaySeconds 
+        }
+        else
+        {
+          Write-Host "##[warning]Clear test database $(databaseName) failed for $maxAttempts attempts, you may need to manually clear the database."
+          exit
+        }
+      } while ($attempts -le $maxAttempts)
   env:
     SQL_USERNAME: $(SqlUsername)
     SQL_PASSWORD: $(SqlPassword)
