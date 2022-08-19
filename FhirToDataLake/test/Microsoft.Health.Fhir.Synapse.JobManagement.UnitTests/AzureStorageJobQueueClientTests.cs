@@ -972,8 +972,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 CancellationToken.None)).ToList();
 
             Assert.Equal(2, retrievedJobInfos.Count);
-            Assert.Equal(jobInfos[0].Id, retrievedJobInfos[0].Id);
-            Assert.Equal(jobInfos[2].Id, retrievedJobInfos[1].Id);
+            var ids = new List<long> { retrievedJobInfos[0].Id, retrievedJobInfos[1].Id };
+            Assert.Contains(jobInfos[0].Id, ids);
+            Assert.Contains(jobInfos[2].Id, ids);
         }
 
         [Fact]
@@ -1035,9 +1036,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             jobInfo3.Status = JobStatus.Completed;
             await _azureStorageJobQueueClient.CompleteJobAsync(jobInfo3, false, CancellationToken.None);
 
-            await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobInfo1.Id, CancellationToken.None);
-            await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobInfo2.Id, CancellationToken.None);
-            await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobInfo3.Id, CancellationToken.None);
+            await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobInfos[0].Id, CancellationToken.None);
+            await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobInfos[1].Id, CancellationToken.None);
+            await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobInfos[2].Id, CancellationToken.None);
             await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobInfos[3].Id, CancellationToken.None);
 
             var retrievedJobInfos = (await _azureStorageJobQueueClient.GetJobsByIdsAsync(queueType, jobInfos.Select(j => j.Id).ToArray(), false, CancellationToken.None)).ToList();
@@ -1045,16 +1046,16 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Empty(retrievedJobInfos.Where(j => !j.CancelRequested));
 
             // job1 is running
-            Assert.Equal(JobStatus.Running, retrievedJobInfos[0].Status);
+            Assert.Equal(JobStatus.Running, retrievedJobInfos.First(job => job.Id == jobInfos[0].Id).Status);
 
             // job2 is failed
-            Assert.Equal(JobStatus.Failed, retrievedJobInfos[1].Status);
+            Assert.Equal(JobStatus.Failed, retrievedJobInfos.First(job => job.Id == jobInfos[1].Id).Status);
 
             // job3 is completed
-            Assert.Equal(JobStatus.Completed, retrievedJobInfos[2].Status);
+            Assert.Equal(JobStatus.Completed, retrievedJobInfos.First(job => job.Id == jobInfos[2].Id).Status);
 
             // job4 is created, its status will be changed to cancelled
-            Assert.Equal(JobStatus.Cancelled, retrievedJobInfos[3].Status);
+            Assert.Equal(JobStatus.Cancelled, retrievedJobInfos.First(job => job.Id == jobInfos[3].Id).Status);
         }
 
         [Fact]
@@ -1089,16 +1090,16 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Empty(retrievedJobInfos.Where(j => !j.CancelRequested));
 
             // job1 is running
-            Assert.Equal(JobStatus.Running, retrievedJobInfos[0].Status);
+            Assert.Equal(JobStatus.Running, retrievedJobInfos.First(job => job.Id == jobInfos[0].Id).Status);
 
             // job2 is failed
-            Assert.Equal(JobStatus.Failed, retrievedJobInfos[1].Status);
+            Assert.Equal(JobStatus.Failed, retrievedJobInfos.First(job => job.Id == jobInfos[1].Id).Status);
 
             // job3 is completed
-            Assert.Equal(JobStatus.Completed, retrievedJobInfos[2].Status);
+            Assert.Equal(JobStatus.Completed, retrievedJobInfos.First(job => job.Id == jobInfos[2].Id).Status);
 
             // job4 is created, its status will be changed to cancelled
-            Assert.Equal(JobStatus.Cancelled, retrievedJobInfos[3].Status);
+            Assert.Equal(JobStatus.Cancelled, retrievedJobInfos.First(job => job.Id == jobInfos[3].Id).Status);
         }
 
         [Fact]

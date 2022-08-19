@@ -5,7 +5,7 @@
 
 using EnsureThat;
 
-namespace Microsoft.Health.Fhir.Synapse.JobManagement
+namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 {
     public class AzuriteEmulatorStorage : IStorage
     {
