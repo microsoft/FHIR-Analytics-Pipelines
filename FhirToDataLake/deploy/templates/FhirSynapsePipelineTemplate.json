@@ -101,7 +101,7 @@
         },
         "packageUrl": {
             "type": "string",
-            "defaultValue": "https://fhiranalyticspipeline.blob.core.windows.net/builds/Microsoft.Health.Fhir.Synapse.FunctionApp.zip",
+            "defaultValue": "https://fhiranalyticspipeline.blob.core.windows.net/builds/Microsoft.Health.Fhir.Synapse.FunctionApp.linux.zip",
             "metadata": {
                 "description": "The fhir-to-synapse pipeline package url."
             }
@@ -195,7 +195,7 @@
         },
         {
             "type": "Microsoft.Web/serverfarms",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-02-01",
             "name": "[variables('hostingPlanName')]",
             "location": "[parameters('location')]",
             "tags": "[variables('resourceTags')]",
@@ -205,19 +205,21 @@
             },
             "properties": {
                 "name": "[variables('hostingPlanName')]",
-                "computeMode": "Dynamic"
+                "reserved": true,
+                "maximumElasticWorkerCount": 20,
+                "zoneRedundant": false
             }
         },
         {
             "type": "Microsoft.Web/sites",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-02-01",
             "name": "[variables('functionAppName')]",
             "location": "[parameters('location')]",
             "tags": "[variables('resourceTags')]",
             "identity": {
                 "type": "SystemAssigned"
             },
-            "kind": "functionapp",
+            "kind": "functionapp,linux",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
@@ -225,11 +227,11 @@
             ],
             "resources": [
                 {
-                    "apiVersion": "2020-12-01",
-                    "name": "MSDeploy",
-                    "type": "Extensions",
+                    "apiVersion": "2021-02-01",
+                    "name": "zipdeploy",
+                    "type": "extensions",
                     "dependsOn": [
-                        "[concat('Microsoft.Web/Sites/',variables('functionAppName'))]"
+                        "[concat('Microsoft.Web/sites/',variables('functionAppName'))]"
                     ],
                     "properties": {
                         "packageUri": "[parameters('packageUrl')]"
@@ -237,8 +239,10 @@
                 }
             ],
             "properties": {
+                "reserved": true,
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
                 "siteConfig": {
+                    "linuxFxVersion": "DOTNET|6.0",
                     "use32BitWorkerProcess": false,
                     "appSettings": [
                         {
@@ -255,7 +259,7 @@
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "~2"
+                            "value": "~4"
                         },
                         {
                             "name": "WEBSITE_NODE_DEFAULT_VERSION",
@@ -267,7 +271,11 @@
                         },
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
-                            "value": "dotnet-isolated"
+                            "value": "dotnet"
+                        },
+                        {
+                        "name": "WEBSITE_RUN_FROM_PACKAGE",
+                        "value": "1"
                         },
                         {
                             "name": "job__containerName",
