@@ -3,11 +3,15 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
@@ -15,6 +19,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
     public class FhirParquetSchemaManager : IFhirSchemaManager<FhirParquetSchemaNode>
     {
         private readonly Dictionary<string, List<string>> _schemaTypesMap;
+
+        private readonly Dictionary<string, string> _schemaData = new Dictionary<string, string>();
+
         private readonly Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
         private readonly ILogger<FhirParquetSchemaManager> _logger;
 
@@ -81,6 +88,11 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             }
 
             return _resourceSchemaNodesMap[schemaType];
+        }
+
+        public Dictionary<string, string> GetAllSchemaContent()
+        {
+            return _resourceSchemaNodesMap.ToDictionary(pair => pair.Key, pair => Newtonsoft.Json.JsonConvert.SerializeObject(pair.Value));
         }
 
         public Dictionary<string, FhirParquetSchemaNode> GetAllSchemas()

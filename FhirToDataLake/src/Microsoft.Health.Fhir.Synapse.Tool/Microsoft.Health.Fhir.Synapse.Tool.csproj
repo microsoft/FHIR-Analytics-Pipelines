@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Health.Parquet" Version="$(ParquetNativeLibVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,13 +27,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Message Text="PostBuild" Importance="high" />
-    <Exec Command="xcopy /y /d  &quot;..\..\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(TargetDir)&quot;" />
-  </Target>
-  <Target Name="CopyBeforePublish" BeforeTargets="Publish">
-    <Message Text="Inside BeforePublish" Importance="high" />
-    <Exec Command="xcopy /y /d  &quot;..\..\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(PublishDir)&quot;" />
-  </Target>
 </Project>
