@@ -3,22 +3,20 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using Azure;
 using Azure.Data.Tables;
-using Azure.Identity;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage;
 using Microsoft.Health.JobManagement;
-using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.JobManagement
 {
@@ -40,9 +38,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         /// </summary>
         private const int MaximumSizeOfAnEntityInBytes = 1024 * 1024;
 
+        private const int DefaultVisibilityTimeoutInSeconds = 30;
+
         public AzureStorageJobQueueClient(
             IStorage storage,
-            ILogger<AzureStorageJobQueueClient<TJobInfo>> logger)
+            ILogger<AzureStorageJobQueueClient<TJobInfo>> logger,
+            ITokenCredentialProvider? tokenCredentialProvider = null)
         {
             EnsureArg.IsNotNull(storage, nameof(storage));
 
@@ -56,13 +57,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             else
             {
+                EnsureArg.IsNotNull(tokenCredentialProvider, nameof(tokenCredentialProvider));
                 _azureJobInfoTableClient = new TableClient(
                     new Uri(storage.TableUrl),
                     storage.TableName,
-                    new DefaultAzureCredential());
+                    tokenCredentialProvider.GetCredential(TokenCredentialTypes.Internal));
                 _azureJobMessageQueueClient = new QueueClient(
                     new Uri($"{storage.QueueUrl}{storage.QueueName}"),
-                    new DefaultAzureCredential());
+                    tokenCredentialProvider.GetCredential(TokenCredentialTypes.Internal));
             }
         }
 
@@ -220,7 +222,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             _logger.LogInformation("Start to dequeue.");
 
             // step 1: receive message from message queue
-            TimeSpan? visibilityTimeout = heartbeatTimeoutSec <= 0 ? null : TimeSpan.FromSeconds(heartbeatTimeoutSec);
+            var visibilityTimeout =
+                TimeSpan.FromSeconds(heartbeatTimeoutSec <= 0
+                    ? DefaultVisibilityTimeoutInSeconds
+                    : heartbeatTimeoutSec);
             var message = (await _azureJobMessageQueueClient.ReceiveMessageAsync(visibilityTimeout, cancellationToken)).Value;
 
             if (message == null)
@@ -333,12 +338,17 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to get jobs {string.Join(",", jobIds)}.");
 
-            var result = new List<JobInfo>();
-            foreach (var id in jobIds)
+            ParallelOptions parallelOptions = new ()
             {
-                // get each job by id
+                MaxDegreeOfParallelism = 5,
+            };
+
+            var result = new ConcurrentBag<JobInfo>();
+
+            await Parallel.ForEachAsync(jobIds, parallelOptions, async (id, _) =>
+            {
                 result.Add(await GetJobByIdAsync(queueType, id, returnDefinition, cancellationToken));
-            }
+            });
 
             _logger.LogInformation($"Get jobs {string.Join(",", jobIds)} successfully.");
             return result;
@@ -370,6 +380,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to keep alive for job {jobInfo.Id}.");
 
+            Trace.Assert(
+                jobInfo.Result.Length * sizeof(char) < MaximumSizeOfAnEntityInBytes,
+                "The maximum size of a single table entity is 1MB, the size of result is larger than 1MB.");
+
             // step 1: get jobInfo entity
             var jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(
                 AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId),
@@ -396,24 +410,31 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             Response<UpdateReceipt>? response = null;
             try
             {
-                var visibilityTimeOut =
-                    jobInfoEntity.HeartbeatTimeoutSec <= 0 ? default : TimeSpan.FromSeconds(jobInfoEntity.HeartbeatTimeoutSec);
+
+                var visibilityTimeout = TimeSpan.FromSeconds(jobInfoEntity.HeartbeatTimeoutSec <= 0
+                    ? DefaultVisibilityTimeoutInSeconds
+                    : jobInfoEntity.HeartbeatTimeoutSec);
                 response = await _azureJobMessageQueueClient.UpdateMessageAsync(
                     jobLockEntity.JobMessageId,
                     jobLockEntity.JobMessagePopReceipt,
-                    visibilityTimeout: visibilityTimeOut,
+                    visibilityTimeout: visibilityTimeout,
                     cancellationToken: cancellationToken);
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateOrDeleteMessageNotFoundErrorCode))
             {
+                string message;
                 if (jobInfo.Status is JobStatus.Completed or JobStatus.Failed or JobStatus.Cancelled)
                 {
-                    _logger.LogInformation($"Job {jobInfo.Id} has been completed. Keep alive failed");
+                    message = $"Job {jobInfo.Id} has been completed. Keep alive failed";
+                    _logger.LogInformation(message);
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to keep alive, the job message is not found.");
+                    message = $"Failed to keep alive for job {jobInfo.Id}, the job message is not found.";
+                    _logger.LogWarning(message);
                 }
+
+                throw new JobNotExistException(message, ex);
             }
 
             // step 5: sync result to jobInfo entity
@@ -422,10 +443,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // when re-dequeue, the message pop receipt is updated to table entity,
             // and the previous job will throw JobNotExistException as the version doesn't match, and jobHosting cancels the previous job.
             jobInfoEntity.HeartbeatDateTime = DateTime.UtcNow;
-
-            Trace.Assert(
-                jobInfo.Result.Length * sizeof(char) < MaximumSizeOfAnEntityInBytes,
-                "The maximum size of a single table entity is 1MB, the size of result is larger than 1MB.");
 
             jobInfoEntity.Result = jobInfo.Result;
 
