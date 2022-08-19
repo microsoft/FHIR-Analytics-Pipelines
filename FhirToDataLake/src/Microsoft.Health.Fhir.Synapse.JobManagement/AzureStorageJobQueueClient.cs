@@ -11,7 +11,6 @@ using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
@@ -23,8 +22,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
     public class AzureStorageJobQueueClient<TJobInfo> : IQueueClient
         where TJobInfo : AzureStorageJobInfo, new()
     {
+        private readonly IAzureStorageClient _azureStorageClient;
         private readonly TableClient _azureJobInfoTableClient;
-
         private readonly QueueClient _azureJobMessageQueueClient;
 
         private readonly ILogger<AzureStorageJobQueueClient<TJobInfo>> _logger;
@@ -41,48 +40,23 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         private const int DefaultVisibilityTimeoutInSeconds = 30;
 
         public AzureStorageJobQueueClient(
+            IAzureStorageClientFactory azureStorageClientFactory,
             IStorage storage,
-            ILogger<AzureStorageJobQueueClient<TJobInfo>> logger,
-            ITokenCredentialProvider? tokenCredentialProvider = null)
+            ILogger<AzureStorageJobQueueClient<TJobInfo>> logger)
         {
+            EnsureArg.IsNotNull(azureStorageClientFactory, nameof(azureStorageClientFactory));
             EnsureArg.IsNotNull(storage, nameof(storage));
 
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
-            // TODO: ConnectionString is only used for local test
-            if (storage.UseConnectionString)
-            {
-                _azureJobInfoTableClient = new TableClient(storage.TableUrl, storage.TableName);
-                _azureJobMessageQueueClient = new QueueClient(storage.QueueUrl, storage.QueueName);
-            }
-            else
-            {
-                EnsureArg.IsNotNull(tokenCredentialProvider, nameof(tokenCredentialProvider));
-                _azureJobInfoTableClient = new TableClient(
-                    new Uri(storage.TableUrl),
-                    storage.TableName,
-                    tokenCredentialProvider.GetCredential(TokenCredentialTypes.Internal));
-                _azureJobMessageQueueClient = new QueueClient(
-                    new Uri($"{storage.QueueUrl}{storage.QueueName}"),
-                    tokenCredentialProvider.GetCredential(TokenCredentialTypes.Internal));
-            }
+            _azureStorageClient = azureStorageClientFactory.Create(storage);
+            _azureJobInfoTableClient = _azureStorageClient.AzureJobInfoTableClient;
+            _azureJobMessageQueueClient = _azureStorageClient.AzureJobMessageQueueClient;
         }
 
         public bool IsInitialized()
         {
-            try
-            {
-                _azureJobInfoTableClient.CreateIfNotExists();
-                _azureJobMessageQueueClient.CreateIfNotExists();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to initialize azure storage client.");
-                return false;
-            }
-
-            _logger.LogInformation("Initialize azure storage client successfully.");
-            return true;
+            return _azureStorageClient.IsInitialized();
         }
 
         // The expected behaviors:

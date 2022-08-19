@@ -7,8 +7,7 @@ using Azure;
 using Azure.Data.Tables;
 using Azure.Storage.Queues;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage;
@@ -71,10 +70,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
         public AzureStorageJobQueueClientTests()
         {
             var azuriteEmulatorStorage = new AzuriteEmulatorStorage(TestAgentName);
-            var jobConfig = new JobConfiguration
-            {
-                QueueType = QueueType.FhirToDataLake,
-            };
 
             _azureJobInfoTableClient =
                 new TableClient(azuriteEmulatorStorage.TableUrl, azuriteEmulatorStorage.TableName);
@@ -85,7 +80,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             _azureJobInfoTableClient.Delete();
             _azureJobMessageQueueClient.DeleteIfExists();
 
+            var azureStorageClientFactory = new AzureStorageClientFactory(
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
+                new NullLoggerFactory());
+
             _azureStorageJobQueueClient = new AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>(
+                azureStorageClientFactory,
                 azuriteEmulatorStorage,
                 _nullAzureStorageJobQueueClientLogger);
 
