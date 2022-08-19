@@ -311,7 +311,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var jobStore = CreateInMemoryJobStore(blobClient);
             var filterInfo = new FilterInfo(FilterScope.Group, "groupId", _testStartTime, _testResourceTypeFilters, null);
             var patients = new List<PatientWrapper>
-                { new PatientWrapper("patientId1", 1), new PatientWrapper("patientId2", 0)};
+                { new PatientWrapper("patientId1", 1), new PatientWrapper("patientId2", 0) };
 
             var activeJob = Job.Create(
                 TestContainerName,
@@ -351,7 +351,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var jobStore = CreateInMemoryJobStore(blobClient);
             var filterInfo = new FilterInfo(FilterScope.Group, "groupId", _testStartTime, _testResourceTypeFilters, null);
             var patients = new List<PatientWrapper>
-                { new PatientWrapper("patientId1", 1), new PatientWrapper("patientId2", 0)};
+                { new PatientWrapper("patientId1", 1), new PatientWrapper("patientId2", 0) };
 
             var activeJob = Job.Create(
                 TestContainerName,
