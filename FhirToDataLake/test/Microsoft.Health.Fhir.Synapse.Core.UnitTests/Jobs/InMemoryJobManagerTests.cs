@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -38,6 +39,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             new List<TypeFilter> { new ("Patient", null), new ("Observation", null) };
 
         private static readonly FilterInfo _filterInfo = new FilterInfo(FilterScope.System, null, DateTimeOffset.MinValue, _testResourceTypeFilters, null);
+
+        private IMediator _mediator = Substitute.For<IMediator>();
 
         [Fact]
         public async Task GivenABrokenJobStore_WhenExecute_ExceptionShouldBeThrown()
@@ -373,7 +376,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 typeFilterParser,
                 Options.Create<JobConfiguration>(jobConfig),
                 Options.Create<FilterConfiguration>(filterConfiguration),
-                new NullLogger<JobManager>());
+                new NullLogger<JobManager>(),
+                _mediator);
 
             await Assert.ThrowsAsync<Exception>(() => jobManager.RunAsync());
 
@@ -453,7 +457,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 typeFilterParser,
                 Options.Create<JobConfiguration>(jobConfiguration),
                 Options.Create<FilterConfiguration>(filterConfiguration),
-                new NullLogger<JobManager>());
+                new NullLogger<JobManager>(),
+                _mediator);
         }
     }
 }

@@ -119,6 +119,26 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                     throw new ConfigurationErrorException($"Found the schema image reference but customized schema is disable.");
                 }
             }
+
+            HealthCheckConfiguration healthCheckConfiguration;
+            try
+            {
+                healthCheckConfiguration = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<HealthCheckConfiguration>>()
+                    .Value;
+            }
+            catch (Exception ex)
+            {
+                throw new ConfigurationErrorException("Failed to parse health check configuration", ex);
+            }
+
+            if (healthCheckConfiguration.HealthCheckTimeIntervalInSeconds <= 0 ||
+                healthCheckConfiguration.HealthCheckTimeoutInSeconds <= 0 ||
+                healthCheckConfiguration.HealthCheckTimeIntervalInSeconds < healthCheckConfiguration.HealthCheckTimeoutInSeconds)
+            {
+                throw new ConfigurationErrorException("Invalid health check configuration. Health check time interval should be greater than health check timeout and both of them should greater than zero.");
+            }
         }
 
         /// <summary>

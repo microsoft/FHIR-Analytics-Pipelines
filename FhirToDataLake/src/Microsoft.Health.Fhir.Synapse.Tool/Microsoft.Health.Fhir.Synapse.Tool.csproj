@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Health.Parquet" Version="$(ParquetNativeLibVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +21,7 @@
     <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Core\Microsoft.Health.Fhir.Synapse.Core.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.DataClient\Microsoft.Health.Fhir.Synapse.DataClient.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.DataWriter\Microsoft.Health.Fhir.Synapse.DataWriter.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.HealthCheck\Microsoft.Health.Fhir.Synapse.HealthCheck.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.SchemaManagement\Microsoft.Health.Fhir.Synapse.SchemaManagement.csproj" />
   </ItemGroup>
 
@@ -28,13 +30,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Message Text="PostBuild" Importance="high" />
-    <Exec Command="xcopy /y /d  &quot;..\..\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(TargetDir)&quot;" />
-  </Target>
-  <Target Name="CopyBeforePublish" BeforeTargets="Publish">
-    <Message Text="Inside BeforePublish" Importance="high" />
-    <Exec Command="xcopy /y /d  &quot;..\..\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(PublishDir)&quot;" />
-  </Target>
 </Project>

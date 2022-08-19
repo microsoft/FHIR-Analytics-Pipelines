@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+    <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <OutputType>Exe</OutputType>
     <Platforms>x64</Platforms>
   </PropertyGroup>
@@ -12,12 +12,14 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.0.1" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.0.3" OutputItemType="Analyzer" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Health.Parquet" Version="$(ParquetNativeLibVersion)" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Common\Microsoft.Health.Fhir.Synapse.Common.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Core\Microsoft.Health.Fhir.Synapse.Core.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.DataClient\Microsoft.Health.Fhir.Synapse.DataClient.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.DataWriter\Microsoft.Health.Fhir.Synapse.DataWriter.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.HealthCheck\Microsoft.Health.Fhir.Synapse.HealthCheck.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.SchemaManagement\Microsoft.Health.Fhir.Synapse.SchemaManagement.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -32,15 +34,4 @@
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Message Text="PostBuild" Importance="high" />
-    <Exec Command="xcopy /y /d  &quot;..\..\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(TargetDir)&quot;" />
-    <Exec Command="xcopy /y /d /E &quot;..\..\data\*.*&quot; &quot;$(TargetDir)&quot;" />
-  </Target>
-  <Target Name="CopyBeforePublish" BeforeTargets="Publish">
-    <Message Text="Inside BeforePublish" Importance="high" />
-    <Exec Command="xcopy /y /d  &quot;..\..\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(PublishDir)&quot;" />
-    <Exec Command="xcopy /y /d /E &quot;..\..\data\*.*&quot; &quot;$(PublishDir)&quot;" />
-  </Target>
 </Project>
