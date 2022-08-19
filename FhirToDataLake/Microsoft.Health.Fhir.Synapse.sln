@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31410.357
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32802.462
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.FunctionApp", "src\Microsoft.Health.Fhir.Synapse.FunctionApp\Microsoft.Health.Fhir.Synapse.FunctionApp.csproj", "{B7086648-308E-4421-820B-3ECA81F7EA81}"
 EndProject
@@ -35,6 +35,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.E2ETests", "test\Microsoft.Health.Fhir.Synapse.E2ETests\Microsoft.Health.Fhir.Synapse.E2ETests.csproj", "{01C19DA0-63E6-43E2-B421-12CC8BD7EB94}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.Common.UnitTests", "test\Microsoft.Health.Fhir.Synapse.Common.UnitTests\Microsoft.Health.Fhir.Synapse.Common.UnitTests.csproj", "{A46BBBEA-22C5-413C-81BF-5C29770A69EF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests", "test\Microsoft.Health.Fhir.Synapse.Parquet.HealthCheck.UnitTests\Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.csproj", "{8E55B4CC-3C6B-4EAD-AF83-74B9B173CE87}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Fhir.Synapse.HealthCheck", "src\Microsoft.Health.Fhir.Synapse.HealthCheck\Microsoft.Health.Fhir.Synapse.HealthCheck.csproj", "{CC52E888-05DC-4A28-972C-4F791731D7E5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -94,6 +98,14 @@ Global
 		{A46BBBEA-22C5-413C-81BF-5C29770A69EF}.Debug|x64.Build.0 = Debug|x64
 		{A46BBBEA-22C5-413C-81BF-5C29770A69EF}.Release|x64.ActiveCfg = Release|x64
 		{A46BBBEA-22C5-413C-81BF-5C29770A69EF}.Release|x64.Build.0 = Release|x64
+		{8E55B4CC-3C6B-4EAD-AF83-74B9B173CE87}.Debug|x64.ActiveCfg = Debug|x64
+		{8E55B4CC-3C6B-4EAD-AF83-74B9B173CE87}.Debug|x64.Build.0 = Debug|x64
+		{8E55B4CC-3C6B-4EAD-AF83-74B9B173CE87}.Release|x64.ActiveCfg = Release|x64
+		{8E55B4CC-3C6B-4EAD-AF83-74B9B173CE87}.Release|x64.Build.0 = Release|x64
+		{CC52E888-05DC-4A28-972C-4F791731D7E5}.Debug|x64.ActiveCfg = Debug|x64
+		{CC52E888-05DC-4A28-972C-4F791731D7E5}.Debug|x64.Build.0 = Debug|x64
+		{CC52E888-05DC-4A28-972C-4F791731D7E5}.Release|x64.ActiveCfg = Release|x64
+		{CC52E888-05DC-4A28-972C-4F791731D7E5}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -105,6 +117,7 @@ Global
 		{8805CF56-8937-4FF9-8CF0-3450258C9DE6} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 		{01C19DA0-63E6-43E2-B421-12CC8BD7EB94} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 		{A46BBBEA-22C5-413C-81BF-5C29770A69EF} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
+		{8E55B4CC-3C6B-4EAD-AF83-74B9B173CE87} = {2332B8EA-B8B5-46E5-B7A3-E270C8E451D8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D0EA8CE0-8DF8-4ADD-B31E-7A3CCEE49523}
