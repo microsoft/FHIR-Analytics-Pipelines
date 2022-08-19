@@ -12,6 +12,8 @@ using Microsoft.Health.Fhir.Synapse.Core;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
+using static Hl7.Fhir.Model.VerificationResult;
+using MediatR;
 
 namespace Microsoft.Health.Fhir.Synapse.Tool
 {
@@ -33,6 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
                         .AddDataSource()
                         .AddDataWriter()
                         .AddSchema()
-                        .AddHostedService<SynapseLinkService>());
+                .AddHostedService<SynapseLinkService>()
+                        .AddMediatR(typeof(Program)));
     }
 }

@@ -14,6 +14,8 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
+using Microsoft.Health.Fhir.Synapse.Core.Notification;
+using MediatR;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
@@ -25,6 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly JobConfiguration _jobConfiguration;
         private readonly FilterConfiguration _filterConfiguration;
         private readonly ILogger<JobManager> _logger;
+        private readonly IMediator _mediator;
 
         public JobManager(
             IJobStore jobStore,
@@ -32,7 +35,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             ITypeFilterParser typeFilterParser,
             IOptions<JobConfiguration> jobConfiguration,
             IOptions<FilterConfiguration> filterConfiguration,
-            ILogger<JobManager> logger)
+            ILogger<JobManager> logger,
+            IMediator mediator)
         {
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             EnsureArg.IsNotNull(filterConfiguration, nameof(filterConfiguration));
@@ -44,6 +48,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _jobExecutor = EnsureArg.IsNotNull(jobExecutor, nameof(jobExecutor));
             _typeFilterParser = EnsureArg.IsNotNull(typeFilterParser, nameof(typeFilterParser));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
         }
 
         /// <summary>
@@ -80,12 +85,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     await _jobExecutor.ExecuteAsync(job, cancellationToken);
                     job.Status = JobStatus.Succeeded;
                     await _jobStore.CompleteJobAsync(job, cancellationToken);
+                    await _mediator.Publish(new SuccessfulJobNotification(job), CancellationToken.None);
+                    await _mediator.Publish(new FilterNotification(job), CancellationToken.None);
                 }
                 catch (Exception exception)
                 {
                     job.Status = JobStatus.Failed;
                     job.FailedReason = exception.ToString();
                     await _jobStore.CompleteJobAsync(job, cancellationToken);
+                    await _mediator.Publish(new FailedJobNotification(job), CancellationToken.None);
 
                     _logger.LogError(exception, "Process job '{jobId}' failed.", job.Id);
                     throw;
