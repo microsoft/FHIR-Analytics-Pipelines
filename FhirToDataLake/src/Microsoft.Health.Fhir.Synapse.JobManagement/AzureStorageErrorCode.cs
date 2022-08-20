@@ -14,6 +14,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         public const string GetEntityNotFoundErrorCode = "ResourceNotFound";
         public const string UpdateEntityPreconditionFailedErrorCode = "UpdateConditionNotSatisfied";
         public const string AddEntityAlreadyExistsErrorCode = "EntityAlreadyExists";
+        public const string RequestBodyTooLargeErrorCode = "RequestBodyTooLarge";
         public const string UpdateOrDeleteMessageNotFoundErrorCode = "MessageNotFound";
     }
 }

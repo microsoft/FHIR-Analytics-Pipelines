@@ -19,6 +19,10 @@ using Microsoft.Health.JobManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.JobManagement
 {
+    // The maximum size of a single entity, including all property values is 1 MiB,
+    // see https://docs.microsoft.com/en-us/azure/storage/tables/scalability-targets#scale-targets-for-table-storage.
+    // The definition and result are serialized string of objects,
+    // we should be careful that should not contain large fields when define the definition and result class.
     public class AzureStorageJobQueueClient<TJobInfo> : IQueueClient
         where TJobInfo : AzureStorageJobInfo, new()
     {
@@ -27,15 +31,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         private readonly QueueClient _azureJobMessageQueueClient;
 
         private readonly ILogger<AzureStorageJobQueueClient<TJobInfo>> _logger;
-
-        /// <summary>
-        /// The maximum size of a single entity, including all property values is 1 MiB,
-        /// see https://docs.microsoft.com/en-us/azure/storage/tables/scalability-targets#scale-targets-for-table-storage.
-        /// The definition and result are serialized string of objects,
-        /// we should be careful that should not contain large fields when define the definition and result class.
-        /// Add an assert here to make sure the size of definition and result aren't larger than 1MiB.
-        /// </summary>
-        private const int MaximumSizeOfAnEntityInBytes = 1024 * 1024;
 
         private const int DefaultVisibilityTimeoutInSeconds = 30;
 
@@ -77,12 +72,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to enqueue {definitions.Length} jobs.");
 
-            /*
-            Trace.Assert(
-                definitions[i].Length * sizeof(char) < MaximumSizeOfAnEntityInBytes,
-                "The maximum size of a single table entity is 1MB, the size of definition is larger than 1MB.");
-            */
-
             // step 1: get incremental job ids, will try again if fails
             var jobIds = await GetIncrementalJobIds(queueType, definitions.Length, cancellationToken);
 
@@ -115,13 +104,15 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 .Concat(jobLockEntities.Select(entity => new TableTransactionAction(TableTransactionActionType.Add, entity)));
             try
             {
-                 await _azureJobInfoTableClient.SubmitTransactionAsync(transactionActions, cancellationToken);
+                await _azureJobInfoTableClient.SubmitTransactionAsync(transactionActions, cancellationToken);
             }
-            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex,
+                                                        AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
             {
                 // Note: for cancelled/failed jobs, we don't allow resume it, will return the existing jobInfo.
                 var jobLockEntityQueryResult = _azureJobInfoTableClient.QueryAsync<JobLockEntity>(
-                    filter: TransactionGetByRowkeys(jobLockEntities.First().PartitionKey, jobLockEntities.Select(entity => entity.RowKey).ToList()),
+                    filter: TransactionGetByRowkeys(jobLockEntities.First().PartitionKey,
+                        jobLockEntities.Select(entity => entity.RowKey).ToList()),
                     cancellationToken: cancellationToken);
 
                 // step 4: get the existing jobInfo entities and job lock entities
@@ -138,7 +129,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 }
 
                 var jobInfoQueryResult = _azureJobInfoTableClient.QueryAsync<JobInfoEntity>(
-                    filter: TransactionGetByRowkeys(jobLockEntities.First().PartitionKey, jobLockEntities.Select(entity => entity.JobInfoEntityRowKey).ToList()),
+                    filter: TransactionGetByRowkeys(jobLockEntities.First().PartitionKey,
+                        jobLockEntities.Select(entity => entity.JobInfoEntityRowKey).ToList()),
                     cancellationToken: cancellationToken);
 
                 jobInfoEntities.Clear();
@@ -147,7 +139,13 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                     jobInfoEntities.AddRange(pageResult.Values);
                 }
 
-                _logger.LogInformation(ex, "Failed to add entities, the entities already exist. Fetched the existing jobs.");
+                _logger.LogInformation(ex,
+                    "Failed to add entities, the entities already exist. Fetched the existing jobs.");
+            }
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.RequestBodyTooLargeErrorCode))
+            {
+                _logger.LogError(ex, "The maximum size of a single table entity is 1MB, the size of definition is larger than 1MB.");
+                throw;
             }
 
             // step 5: try to add reverse index for jobInfo entity
@@ -392,10 +390,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to keep alive for job {jobInfo.Id}.");
 
-            Trace.Assert(
-                jobInfo.Result.Length * sizeof(char) < MaximumSizeOfAnEntityInBytes,
-                "The maximum size of a single table entity is 1MB, the size of result is larger than 1MB.");
-
             // step 1: get jobInfo entity
             var jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(
                 AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId),
@@ -467,8 +461,15 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 new (TableTransactionActionType.UpdateReplace, jobInfoEntity, jobInfoEntity.ETag),
                 new (TableTransactionActionType.UpdateReplace, jobLockEntity, jobLockEntity.ETag),
             };
-
-            _ = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionUpdateActions, cancellationToken);
+            try
+            {
+                _ = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionUpdateActions, cancellationToken);
+            }
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.RequestBodyTooLargeErrorCode))
+            {
+                _logger.LogError(ex, "The maximum size of a single table entity is 1MB, the size of result is larger than 1MB.");
+                throw;
+            }
 
             // step 8: check if cancel requested
             var shouldCancel = (await GetJobByIdAsync(jobInfo.QueueType, jobInfo.Id, false, cancellationToken)).CancelRequested;
@@ -539,10 +540,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to complete job {jobInfo.Id}.");
 
-            Trace.Assert(
-                jobInfo.Result.Length * sizeof(char) < MaximumSizeOfAnEntityInBytes,
-                "The maximum size of a single table entity is 1MB, the size of result is larger than 1MB.");
-
             // step 1: check version
             var retrievedJobInfo = await GetJobByIdAsync(jobInfo.QueueType, jobInfo.Id, false, cancellationToken);
 
@@ -572,7 +569,15 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // step 4: update job info entity to table
-            await _azureJobInfoTableClient.UpdateEntityAsync(jobInfoEntity, ETag.All, cancellationToken: cancellationToken);
+            try
+            {
+                await _azureJobInfoTableClient.UpdateEntityAsync(jobInfoEntity, ETag.All, cancellationToken: cancellationToken);
+            }
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.RequestBodyTooLargeErrorCode))
+            {
+                _logger.LogError(ex, "The maximum size of a single table entity is 1MB, the size of result is larger than 1MB.");
+                throw;
+            }
 
             // step 5: get job lock entity to get job message id and job pop receipt
             var jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
