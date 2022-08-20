@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Azure.Data.Tables;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage;
 using Microsoft.Health.JobManagement;
@@ -16,30 +17,30 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
         /// </summary>
         /// <typeparam name="TJobInfo">the job info type</typeparam>
         /// <param name="jobInfo">the job info.</param>
-        /// <returns>JobInfoEntity</returns>
-        public static JobInfoEntity ToTableEntity<TJobInfo>(this TJobInfo jobInfo)
+        /// <returns>JobInfo Entity</returns>
+        public static TableEntity ToTableEntity<TJobInfo>(this TJobInfo jobInfo)
             where TJobInfo : AzureStorageJobInfo, new()
 
         {
-            var jobInfoEntity = new JobInfoEntity
+            var partitionKey = AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId);
+            var rowKey = AzureStorageKeyProvider.JobInfoRowKey(jobInfo.GroupId, jobInfo.Id);
+            var jobInfoEntity = new TableEntity(partitionKey, rowKey)
             {
-                PartitionKey = AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId),
-                RowKey = AzureStorageKeyProvider.JobInfoRowKey(jobInfo.GroupId, jobInfo.Id),
-                Id = jobInfo.Id,
-                QueueType = jobInfo.QueueType,
-                Status = (int)(jobInfo.Status ?? JobStatus.Created),
-                GroupId = jobInfo.GroupId,
-                Definition = jobInfo.Definition,
-                Result = jobInfo.Result,
-                Data = jobInfo.Data,
-                CancelRequested = jobInfo.CancelRequested,
-                Version = jobInfo.Version,
-                Priority = jobInfo.Priority,
-                CreateDate = jobInfo.CreateDate.SetKind(DateTimeKind.Utc),
-                StartDate = jobInfo.StartDate?.SetKind(DateTimeKind.Utc),
-                EndDate = jobInfo.EndDate?.SetKind(DateTimeKind.Utc),
-                HeartbeatDateTime = jobInfo.HeartbeatDateTime.SetKind(DateTimeKind.Utc),
-                HeartbeatTimeoutSec = jobInfo.HeartbeatTimeoutSec,
+                {JobInfoEntityProperties.Id, jobInfo.Id},
+                {JobInfoEntityProperties.QueueType, (int) jobInfo.QueueType},
+                {JobInfoEntityProperties.Status, (int) (jobInfo.Status ?? JobStatus.Created)},
+                {JobInfoEntityProperties.GroupId, jobInfo.GroupId},
+                {JobInfoEntityProperties.Definition, jobInfo.Definition},
+                {JobInfoEntityProperties.Result, jobInfo.Result},
+                {JobInfoEntityProperties.Data, jobInfo.Data},
+                {JobInfoEntityProperties.CancelRequested, jobInfo.CancelRequested},
+                {JobInfoEntityProperties.Version, jobInfo.Version},
+                {JobInfoEntityProperties.Priority, jobInfo.Priority},
+                {JobInfoEntityProperties.CreateDate, jobInfo.CreateDate.SetKind(DateTimeKind.Utc)},
+                {JobInfoEntityProperties.StartDate, jobInfo.StartDate?.SetKind(DateTimeKind.Utc)},
+                {JobInfoEntityProperties.EndDate, jobInfo.EndDate?.SetKind(DateTimeKind.Utc)},
+                {JobInfoEntityProperties.HeartbeatDateTime, jobInfo.HeartbeatDateTime.SetKind(DateTimeKind.Utc)},
+                {JobInfoEntityProperties.HeartbeatTimeoutSec, jobInfo.HeartbeatTimeoutSec},
             };
 
             return jobInfoEntity;
@@ -51,26 +52,26 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
         /// <typeparam name="TJobInfo">the job info type</typeparam>
         /// <param name="entity">the table entity</param>
         /// <returns>JobInfo</returns>
-        public static TJobInfo ToJobInfo<TJobInfo>(this JobInfoEntity entity)
+        public static TJobInfo ToJobInfo<TJobInfo>(this TableEntity entity)
             where TJobInfo : AzureStorageJobInfo, new()
         {
             var jobInfo = new TJobInfo
             {
-                Id = entity.Id,
-                QueueType = Convert.ToByte(entity.QueueType),
-                Status = (JobStatus)Convert.ToByte(entity.Status),
-                GroupId = entity.GroupId,
-                Definition = entity.Definition,
-                Result = entity.Result,
-                Data = entity.Data,
-                CancelRequested = entity.CancelRequested,
-                Version = entity.Version,
-                Priority = entity.Priority,
-                CreateDate = ((DateTimeOffset)entity.CreateDate).DateTime,
-                StartDate = ((DateTimeOffset?)entity.StartDate)?.DateTime,
-                EndDate = ((DateTimeOffset?)entity.EndDate)?.DateTime,
-                HeartbeatDateTime = ((DateTimeOffset)entity.HeartbeatDateTime).DateTime,
-                HeartbeatTimeoutSec = entity.HeartbeatTimeoutSec,
+                Id = (long)entity[JobInfoEntityProperties.Id],
+                QueueType = Convert.ToByte(entity[JobInfoEntityProperties.QueueType]),
+                Status = (JobStatus)Convert.ToByte(entity[JobInfoEntityProperties.Status]),
+                GroupId = (long)entity[JobInfoEntityProperties.GroupId],
+                Definition = (string)entity[JobInfoEntityProperties.Definition],
+                Result = (string)entity[JobInfoEntityProperties.Result],
+                Data = (long?)entity[JobInfoEntityProperties.Data],
+                CancelRequested = (bool)entity[JobInfoEntityProperties.CancelRequested],
+                Version = (long)entity[JobInfoEntityProperties.Version],
+                Priority = (long)entity[JobInfoEntityProperties.Priority],
+                CreateDate = ((DateTimeOffset)entity[JobInfoEntityProperties.CreateDate]).DateTime,
+                StartDate = ((DateTimeOffset?)entity[JobInfoEntityProperties.StartDate])?.DateTime,
+                EndDate = ((DateTimeOffset?)entity[JobInfoEntityProperties.EndDate])?.DateTime,
+                HeartbeatDateTime = ((DateTimeOffset)entity[JobInfoEntityProperties.HeartbeatDateTime]).DateTime,
+                HeartbeatTimeoutSec = (long)entity[JobInfoEntityProperties.HeartbeatTimeoutSec],
             };
 
             return jobInfo;

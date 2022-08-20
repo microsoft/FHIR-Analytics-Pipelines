@@ -91,15 +91,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 .ToList();
 
             var jobInfoEntities = jobInfos.Select(jobInfo => jobInfo.ToTableEntity()).ToList();
-            var jobLockEntities = jobInfoEntities.Select((jobInfoEntity, i) => new JobLockEntity
+            var jobLockEntities = jobInfoEntities.Select((jobInfoEntity, i) =>
+                new TableEntity(jobInfoEntity.PartitionKey, AzureStorageKeyProvider.JobLockRowKey(jobInfos[i].JobIdentifier()))
                 {
-                    PartitionKey = jobInfoEntity.PartitionKey,
-                    RowKey = AzureStorageKeyProvider.JobLockRowKey(jobInfos[i].JobIdentifier()),
-                    JobInfoEntityRowKey = jobInfoEntity.RowKey,
+                    { JobLockEntityProperties.JobInfoEntityRowKey, jobInfoEntity.RowKey },
                 }).ToList();
 
             // step 3: insert jobInfo entity and job lock entity in one transaction.
-            IEnumerable<TableTransactionAction> transactionActions = jobInfoEntities
+            var transactionActions = jobInfoEntities
                 .Select(entity => new TableTransactionAction(TableTransactionActionType.Add, entity))
                 .Concat(jobLockEntities.Select(entity => new TableTransactionAction(TableTransactionActionType.Add, entity)));
             try
@@ -110,33 +109,19 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                                                         AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
             {
                 // Note: for cancelled/failed jobs, we don't allow resume it, will return the existing jobInfo.
-                var jobLockEntityQueryResult = _azureJobInfoTableClient.QueryAsync<JobLockEntity>(
-                    filter: TransactionGetByRowkeys(jobLockEntities.First().PartitionKey,
-                        jobLockEntities.Select(entity => entity.RowKey).ToList()),
+                var jobLockEntityQueryResult = _azureJobInfoTableClient.QueryAsync<TableEntity>(
+                    filter: TransactionGetByRowkeys(
+                        jobLockEntities.First().PartitionKey,
+                        jobLockEntities.Select(entity => entity.RowKey).Concat(jobLockEntities.Select(entity => entity[JobLockEntityProperties.JobInfoEntityRowKey] as string)).ToList()),
                     cancellationToken: cancellationToken);
 
                 // step 4: get the existing jobInfo entities and job lock entities
                 jobLockEntities.Clear();
+                jobInfoEntities.Clear();
                 await foreach (var pageResult in jobLockEntityQueryResult.AsPages().WithCancellation(cancellationToken))
                 {
-                    jobLockEntities.AddRange(pageResult.Values);
-                }
-
-                if (jobLockEntities.Count != jobInfos.Count)
-                {
-                    _logger.LogError(ex, "Failed to add entities, some of the jobs already exist.");
-                    throw;
-                }
-
-                var jobInfoQueryResult = _azureJobInfoTableClient.QueryAsync<JobInfoEntity>(
-                    filter: TransactionGetByRowkeys(jobLockEntities.First().PartitionKey,
-                        jobLockEntities.Select(entity => entity.JobInfoEntityRowKey).ToList()),
-                    cancellationToken: cancellationToken);
-
-                jobInfoEntities.Clear();
-                await foreach (var pageResult in jobInfoQueryResult.AsPages().WithCancellation(cancellationToken))
-                {
-                    jobInfoEntities.AddRange(pageResult.Values);
+                    jobInfoEntities.AddRange(pageResult.Values.Where(entity => entity[JobInfoEntityProperties.Id] != null));
+                    jobLockEntities.AddRange(pageResult.Values.Where(entity => entity[JobInfoEntityProperties.Id] != null));
                 }
 
                 _logger.LogInformation(ex,
@@ -154,8 +139,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 transactionActions = jobInfoEntities.Select(jobInfoEntity =>
                     new TableTransactionAction(TableTransactionActionType.Add, new JobReverseIndexEntity
                     {
-                        PartitionKey = AzureStorageKeyProvider.JobReverseIndexPartitionKey(queueType, jobInfoEntity.Id),
-                        RowKey = AzureStorageKeyProvider.JobReverseIndexRowKey(queueType, jobInfoEntity.Id),
+                        PartitionKey = AzureStorageKeyProvider.JobReverseIndexPartitionKey(queueType, (long)jobInfoEntity[JobInfoEntityProperties.Id]),
+                        RowKey = AzureStorageKeyProvider.JobReverseIndexRowKey(queueType, (long)jobInfoEntity[JobInfoEntityProperties.Id]),
                         JobInfoEntityPartitionKey = jobInfoEntity.PartitionKey,
                         JobInfoEntityRowKey = jobInfoEntity.RowKey,
                     }));
@@ -170,7 +155,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // for new added job lock entities, need to get them to get etag.
             if (jobLockEntities.Any(jobLockEntity => string.IsNullOrEmpty(jobLockEntity.ETag.ToString())))
             {
-                var jobLockEntityQueryResult = _azureJobInfoTableClient.QueryAsync<JobLockEntity>(
+                var jobLockEntityQueryResult = _azureJobInfoTableClient.QueryAsync<TableEntity>(
                     filter: TransactionGetByRowkeys(jobLockEntities.First().PartitionKey, jobLockEntities.Select(entity => entity.RowKey).ToList()),
                     cancellationToken: cancellationToken);
 
@@ -185,16 +170,16 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // step 6: if queue message not present in job lock entity, push message to queue.
             // if processing job failed and the message is deleted, then the message id is still in table entity,
             // we don't resend message for it, and return the existing jobInfo, so will do noting about it
-            if (jobLockEntities.Any(jobLockEntity => string.IsNullOrWhiteSpace(jobLockEntity.JobMessageId)))
+            if (jobLockEntities.Any(jobLockEntity => string.IsNullOrWhiteSpace((string?)jobLockEntity[JobLockEntityProperties.JobMessageId])))
             {
-                foreach (var jobLockEntity in jobLockEntities.Where(jobLockEntity => string.IsNullOrWhiteSpace(jobLockEntity.JobMessageId)))
+                foreach (var jobLockEntity in jobLockEntities.Where(jobLockEntity => string.IsNullOrWhiteSpace((string?)jobLockEntity[JobLockEntityProperties.JobMessageId])))
                 {
                     var response = await _azureJobMessageQueueClient.SendMessageAsync(
-                        new JobMessage(jobLockEntity.PartitionKey, jobLockEntity.JobInfoEntityRowKey).ToString(),
+                        new JobMessage(jobLockEntity.PartitionKey, jobLockEntity[JobLockEntityProperties.JobInfoEntityRowKey] as string).ToString(),
                         cancellationToken);
 
-                    jobLockEntity.JobMessagePopReceipt = response.Value.PopReceipt;
-                    jobLockEntity.JobMessageId = response.Value.MessageId;
+                    jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt] = response.Value.PopReceipt;
+                    jobLockEntity[JobLockEntityProperties.JobMessageId] = response.Value.MessageId;
                 }
 
                 // step 7: update message id and message pop receipt to job lock entity
@@ -248,7 +233,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             // step 2: get jobInfo entity to check job status, delete this message if job is already completed/failed/cancelled
             // if status is running and CancelRequest is true, the job will be dequeued, and jobHosting will continue to handle it
-            var jobInfoEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(
+            var jobInfoEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(
                 jobMessage.PartitionKey,
                 jobMessage.RowKey,
                 cancellationToken: cancellationToken);
@@ -263,14 +248,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // step 3: get job lock entity to check message id
-            var jobLockEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
+            var jobLockEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(
                 jobMessage.PartitionKey,
                 AzureStorageKeyProvider.JobLockRowKey(jobInfo.JobIdentifier()),
                 cancellationToken: cancellationToken);
 
             var jobLockEntity = jobLockEntityResponse.Value;
 
-            if (!string.Equals(jobLockEntity.JobMessageId, message.MessageId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals((string?)jobLockEntity[JobLockEntityProperties.JobMessageId], message.MessageId, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning($"Discard queue message {message.MessageId}, the message id is inconsistent with the one in the table entity.");
                 await _azureJobMessageQueueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);
@@ -297,7 +282,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             var jobInfoEntity = jobInfo.ToTableEntity();
 
             // step 6: update message pop receipt to job lock entity
-            jobLockEntity.JobMessagePopReceipt = message.PopReceipt;
+            jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt] = message.PopReceipt;
 
             // step 7: transaction update jobInfo entity and job lock entity
             IEnumerable<TableTransactionAction> transactionUpdateActions = new List<TableTransactionAction>
@@ -322,7 +307,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // step 2: get job info entity
             var selectedProperties = returnDefinition ? null : SelectPropertiesExceptDefinition();
 
-            var jobInfoEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(
+            var jobInfoEntityResponse = await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(
                 jobReverseIndexEntity.JobInfoEntityPartitionKey,
                 jobReverseIndexEntity.JobInfoEntityRowKey,
                 selectedProperties,
@@ -373,7 +358,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // job lock entity has the same partition key, so we need to query the row key here
             var selectedProperties = returnDefinition ? null : SelectPropertiesExceptDefinition();
 
-            var queryResult = _azureJobInfoTableClient.QueryAsync<JobInfoEntity>(
+            var queryResult = _azureJobInfoTableClient.QueryAsync<TableEntity>(
                 filter: FilterJobInfosByGroupId(queueType, groupId),
                 select: selectedProperties,
                 cancellationToken: cancellationToken);
@@ -391,7 +376,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             _logger.LogInformation($"Start to keep alive for job {jobInfo.Id}.");
 
             // step 1: get jobInfo entity
-            var jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(
+            var jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(
                 AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId),
                 AzureStorageKeyProvider.JobInfoRowKey(jobInfo.GroupId, jobInfo.Id),
                 cancellationToken: cancellationToken)).Value;
@@ -399,7 +384,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // step 2: check version
             // the version is assigned when dequeue,
             // if the version does not match, means there are more than one running jobs for it, only the last one keep alive
-            if (jobInfoEntity.Version != jobInfo.Version)
+            if ((long)jobInfoEntity[JobInfoEntityProperties.Version] != jobInfo.Version)
             {
                 _logger.LogError($"Job {jobInfo.Id} precondition failed, version does not match.");
 
@@ -407,7 +392,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // step 3: get job lock entity
-            var jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
+            var jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(
                 jobInfoEntity.PartitionKey,
                 AzureStorageKeyProvider.JobLockRowKey(((TJobInfo)jobInfo).JobIdentifier()),
                 cancellationToken: cancellationToken)).Value;
@@ -417,12 +402,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             try
             {
 
-                var visibilityTimeout = TimeSpan.FromSeconds(jobInfoEntity.HeartbeatTimeoutSec <= 0
+                var visibilityTimeout = TimeSpan.FromSeconds((long)jobInfoEntity[JobInfoEntityProperties.HeartbeatTimeoutSec] <= 0
                     ? DefaultVisibilityTimeoutInSeconds
-                    : jobInfoEntity.HeartbeatTimeoutSec);
+                    : (long)jobInfoEntity[JobInfoEntityProperties.HeartbeatTimeoutSec]);
                 response = await _azureJobMessageQueueClient.UpdateMessageAsync(
-                    jobLockEntity.JobMessageId,
-                    jobLockEntity.JobMessagePopReceipt,
+                    jobLockEntity[JobLockEntityProperties.JobMessageId] as string,
+                    jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt] as string,
                     visibilityTimeout: visibilityTimeout,
                     cancellationToken: cancellationToken);
             }
@@ -448,12 +433,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // keeping alive always fails to update message, so the message will be visible and dequeue again
             // when re-dequeue, the message pop receipt is updated to table entity,
             // and the previous job will throw JobNotExistException as the version doesn't match, and jobHosting cancels the previous job.
-            jobInfoEntity.HeartbeatDateTime = DateTime.UtcNow;
+            jobInfoEntity[JobInfoEntityProperties.HeartbeatDateTime] = DateTime.UtcNow;
 
-            jobInfoEntity.Result = jobInfo.Result;
+            jobInfoEntity[JobInfoEntityProperties.Result] = jobInfo.Result;
 
             // step 6: update message pop receipt to job lock entity
-            jobLockEntity.JobMessagePopReceipt = response?.Value.PopReceipt;
+            jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt] = response?.Value.PopReceipt;
 
             // step 7: transaction update jobInfo entity and job lock entity
             IEnumerable<TableTransactionAction> transactionUpdateActions = new List<TableTransactionAction>
@@ -483,10 +468,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to cancel jobs in group {groupId}.");
 
-            var jobInfoEntities = new List<JobInfoEntity>();
+            var jobInfoEntities = new List<TableEntity>();
 
             // step 1: query all job ids in a group, using range query for row key to ignore lock/index entities in same partition
-            var queryResult = _azureJobInfoTableClient.QueryAsync<JobInfoEntity>(
+            var queryResult = _azureJobInfoTableClient.QueryAsync<TableEntity>(
                 filter: FilterJobInfosByGroupId(queueType, groupId),
                 cancellationToken: cancellationToken);
             await foreach (var pageResult in queryResult.AsPages().WithCancellation(cancellationToken))
@@ -525,7 +510,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             var reverseIndexEntity = await GetJobReverseIndexEntityByIdAsync(queueType, jobId, cancellationToken);
 
             // step 2: get jobInfo entity
-            var jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(reverseIndexEntity.JobInfoEntityPartitionKey, reverseIndexEntity.JobInfoEntityRowKey, cancellationToken: cancellationToken)).Value;
+            var jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(reverseIndexEntity.JobInfoEntityPartitionKey, reverseIndexEntity.JobInfoEntityRowKey, cancellationToken: cancellationToken)).Value;
 
             // step 3: cancel job
             CancelJobInternal(jobInfoEntity);
@@ -580,7 +565,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // step 5: get job lock entity to get job message id and job pop receipt
-            var jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
+            var jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(
                 jobInfoEntity.PartitionKey,
                 AzureStorageKeyProvider.JobLockRowKey(((TJobInfo)jobInfo).JobIdentifier()),
                 cancellationToken: cancellationToken)).Value;
@@ -590,11 +575,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // and the message will be deleted since the table entity's status is completed/failed/cancelled
             try
             {
-                await _azureJobMessageQueueClient.DeleteMessageAsync(jobLockEntity.JobMessageId, jobLockEntity.JobMessagePopReceipt, cancellationToken: cancellationToken);
+                await _azureJobMessageQueueClient.DeleteMessageAsync(jobLockEntity[JobLockEntityProperties.JobMessageId] as string, jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt] as string, cancellationToken: cancellationToken);
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateOrDeleteMessageNotFoundErrorCode))
             {
-                _logger.LogWarning($"Failed to delete message, the message {jobLockEntity.JobMessageId} does not exist.");
+                _logger.LogWarning($"Failed to delete message, the message {jobLockEntity[JobLockEntityProperties.JobMessageId]} does not exist.");
             }
 
             // step 7: cancel jobs if requested
@@ -685,7 +670,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         private static string FilterJobInfosByGroupId(byte queueType, long groupId) =>
             $"PartitionKey eq '{AzureStorageKeyProvider.JobInfoPartitionKey(queueType, groupId)}' and RowKey ge '{groupId:D20}' and RowKey lt '{groupId + 1:D20}'";
 
-        private static string TransactionGetByRowkeys(string pk, List<string> rowKeys) =>
+        private static string TransactionGetByRowkeys(string pk, List<string?> rowKeys) =>
         $"PartitionKey eq '{pk}' and ({string.Join(" or ", rowKeys.Select(rowKey => $"RowKey eq '{rowKey}'"))})";
 
         private static IEnumerable<string> SelectPropertiesExceptDefinition()
