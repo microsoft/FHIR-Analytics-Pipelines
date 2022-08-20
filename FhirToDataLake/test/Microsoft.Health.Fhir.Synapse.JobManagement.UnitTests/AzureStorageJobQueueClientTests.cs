@@ -748,8 +748,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Single(jobInfos);
             Assert.Equal(jobInfo.Id, jobInfos.First().Id);
 
-            Assert.Null(jobLockEntity.JobMessageId);
-            Assert.Null(jobLockEntity.JobMessagePopReceipt);
+            Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessageId]);
+            Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt]);
 
             await CheckJob(jobInfo, jobLockEntity);
             var dequeuedJobInfo =
@@ -772,8 +772,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Single(jobInfos);
             Assert.Equal(jobInfo.Id, jobInfos.First().Id);
 
-            Assert.Null(jobLockEntity.JobMessageId);
-            Assert.Null(jobLockEntity.JobMessagePopReceipt);
+            Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessageId]);
+            Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt]);
 
             await CheckJob(jobInfo, jobLockEntity);
             dequeuedJobInfo =
@@ -796,8 +796,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Single(jobInfos);
             Assert.Equal(jobInfo.Id, jobInfos.First().Id);
 
-            Assert.Null(jobLockEntity.JobMessageId);
-            Assert.Null(jobLockEntity.JobMessagePopReceipt);
+            Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessageId]);
+            Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt]);
 
             await CheckJob(jobInfo, jobLockEntity);
 
@@ -1047,7 +1047,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             Assert.Equal(2, retrievedJobInfos.Count);
             var definitions = new List<string>
-                {retrievedJobInfos.First().Definition, retrievedJobInfos.Last().Definition};
+                { retrievedJobInfos.First().Definition, retrievedJobInfos.Last().Definition };
             Assert.Contains("job4", definitions);
             Assert.Contains("job5", definitions);
         }
@@ -1163,16 +1163,16 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             var jobInfoEntity = ((FhirToDataLakeAzureStorageJobInfo)jobInfo1).ToTableEntity();
 
-            var jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
+            var jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(
                 jobInfoEntity.PartitionKey,
                 AzureStorageKeyProvider.JobLockRowKey(((FhirToDataLakeAzureStorageJobInfo)jobInfo1).JobIdentifier()),
                 cancellationToken: CancellationToken.None)).Value;
 
             // the message is updated, while table entity isn't update
             await _azureJobMessageQueueClient.UpdateMessageAsync(
-                jobLockEntity.JobMessageId,
-                jobLockEntity.JobMessagePopReceipt,
-                visibilityTimeout: TimeSpan.FromSeconds(jobInfoEntity.HeartbeatTimeoutSec),
+                jobLockEntity[JobLockEntityProperties.JobMessageId].ToString(),
+                jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt].ToString(),
+                visibilityTimeout: TimeSpan.FromSeconds((long)jobInfoEntity[JobInfoEntityProperties.HeartbeatTimeoutSec]),
                 cancellationToken: CancellationToken.None);
 
             // keep alive should throw exception
@@ -1214,7 +1214,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             await _azureJobMessageQueueClient.ClearMessagesAsync();
         }
 
-        private async Task<Tuple<JobInfo, JobLockEntity>> EnqueueStepBySteps(long jobId, byte queueType, int steps)
+        private async Task<Tuple<JobInfo, TableEntity>> EnqueueStepBySteps(long jobId, byte queueType, int steps)
         {
             var jobInfo = new FhirToDataLakeAzureStorageJobInfo()
             {
@@ -1229,11 +1229,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 HeartbeatDateTime = DateTime.UtcNow,
             };
             var jobInfoEntity = jobInfo.ToTableEntity();
-            var jobLockEntity = new JobLockEntity
+            var jobLockEntity = new TableEntity(jobInfoEntity.PartitionKey, AzureStorageKeyProvider.JobLockRowKey(jobInfo.JobIdentifier()))
             {
-                PartitionKey = jobInfoEntity.PartitionKey,
-                RowKey = AzureStorageKeyProvider.JobLockRowKey(jobInfo.JobIdentifier()),
-                JobInfoEntityRowKey = jobInfoEntity.RowKey,
+                { JobLockEntityProperties.JobInfoEntityRowKey, jobInfoEntity.RowKey },
             };
 
             IEnumerable<TableTransactionAction> transactionAddActions = new List<TableTransactionAction>
@@ -1246,13 +1244,13 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             if (steps == 1)
             {
-                return new Tuple<JobInfo, JobLockEntity>(jobInfo, jobLockEntity);
+                return new Tuple<JobInfo, TableEntity>(jobInfo, jobLockEntity);
             }
 
             var reverseIndexEntity2 = new JobReverseIndexEntity
             {
-                PartitionKey = AzureStorageKeyProvider.JobReverseIndexPartitionKey(queueType, jobInfoEntity.Id),
-                RowKey = AzureStorageKeyProvider.JobReverseIndexRowKey(queueType, jobInfoEntity.Id),
+                PartitionKey = AzureStorageKeyProvider.JobReverseIndexPartitionKey(queueType, (long)jobInfoEntity[JobInfoEntityProperties.Id]),
+                RowKey = AzureStorageKeyProvider.JobReverseIndexRowKey(queueType, (long)jobInfoEntity[JobInfoEntityProperties.Id]),
                 JobInfoEntityPartitionKey = jobInfoEntity.PartitionKey,
                 JobInfoEntityRowKey = jobInfoEntity.RowKey,
             };
@@ -1261,14 +1259,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             if (steps == 2)
             {
-                return new Tuple<JobInfo, JobLockEntity>(jobInfo, jobLockEntity);
+                return new Tuple<JobInfo, TableEntity>(jobInfo, jobLockEntity);
             }
 
             await _azureJobMessageQueueClient.SendMessageAsync(new JobMessage(jobInfoEntity.PartitionKey, jobInfoEntity.RowKey).ToString(), CancellationToken.None);
-            return new Tuple<JobInfo, JobLockEntity>(jobInfo, jobLockEntity);
+            return new Tuple<JobInfo, TableEntity>(jobInfo, jobLockEntity);
         }
 
-        private async Task CheckJob(JobInfo jobInfo, JobLockEntity? jobLockEntity = null)
+        private async Task CheckJob(JobInfo jobInfo, TableEntity? jobLockEntity = null)
         {
             var retrievedJobInfo =
                 await _azureStorageJobQueueClient.GetJobByIdAsync(
@@ -1306,7 +1304,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             {
                 Assert.Equal(jobLockEntity.PartitionKey, retrievedJobLockEntity.PartitionKey);
                 Assert.Equal(jobLockEntity.RowKey, retrievedJobLockEntity.RowKey);
-                Assert.Equal(jobLockEntity.JobInfoEntityRowKey, retrievedJobLockEntity.JobInfoEntityRowKey);
+                Assert.Equal(jobLockEntity[JobLockEntityProperties.JobInfoEntityRowKey].ToString(), retrievedJobLockEntity.JobInfoEntityRowKey);
             }
         }
     }

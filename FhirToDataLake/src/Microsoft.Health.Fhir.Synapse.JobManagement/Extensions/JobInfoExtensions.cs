@@ -20,27 +20,26 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
         /// <returns>JobInfo Entity</returns>
         public static TableEntity ToTableEntity<TJobInfo>(this TJobInfo jobInfo)
             where TJobInfo : AzureStorageJobInfo, new()
-
         {
             var partitionKey = AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId);
             var rowKey = AzureStorageKeyProvider.JobInfoRowKey(jobInfo.GroupId, jobInfo.Id);
             var jobInfoEntity = new TableEntity(partitionKey, rowKey)
             {
-                {JobInfoEntityProperties.Id, jobInfo.Id},
-                {JobInfoEntityProperties.QueueType, (int) jobInfo.QueueType},
-                {JobInfoEntityProperties.Status, (int) (jobInfo.Status ?? JobStatus.Created)},
-                {JobInfoEntityProperties.GroupId, jobInfo.GroupId},
-                {JobInfoEntityProperties.Definition, jobInfo.Definition},
-                {JobInfoEntityProperties.Result, jobInfo.Result},
-                {JobInfoEntityProperties.Data, jobInfo.Data},
-                {JobInfoEntityProperties.CancelRequested, jobInfo.CancelRequested},
-                {JobInfoEntityProperties.Version, jobInfo.Version},
-                {JobInfoEntityProperties.Priority, jobInfo.Priority},
-                {JobInfoEntityProperties.CreateDate, jobInfo.CreateDate.SetKind(DateTimeKind.Utc)},
-                {JobInfoEntityProperties.StartDate, jobInfo.StartDate?.SetKind(DateTimeKind.Utc)},
-                {JobInfoEntityProperties.EndDate, jobInfo.EndDate?.SetKind(DateTimeKind.Utc)},
-                {JobInfoEntityProperties.HeartbeatDateTime, jobInfo.HeartbeatDateTime.SetKind(DateTimeKind.Utc)},
-                {JobInfoEntityProperties.HeartbeatTimeoutSec, jobInfo.HeartbeatTimeoutSec},
+                { JobInfoEntityProperties.Id, jobInfo.Id },
+                { JobInfoEntityProperties.QueueType, (int)jobInfo.QueueType },
+                { JobInfoEntityProperties.Status, (int)(jobInfo.Status ?? JobStatus.Created) },
+                { JobInfoEntityProperties.GroupId, jobInfo.GroupId },
+                { JobInfoEntityProperties.Definition, jobInfo.Definition },
+                { JobInfoEntityProperties.Result, jobInfo.Result },
+                { JobInfoEntityProperties.Data, jobInfo.Data },
+                { JobInfoEntityProperties.CancelRequested, jobInfo.CancelRequested },
+                { JobInfoEntityProperties.Version, jobInfo.Version },
+                { JobInfoEntityProperties.Priority, jobInfo.Priority },
+                { JobInfoEntityProperties.CreateDate, (DateTimeOffset)jobInfo.CreateDate.SetKind(DateTimeKind.Utc) },
+                { JobInfoEntityProperties.StartDate, (DateTimeOffset?)jobInfo.StartDate?.SetKind(DateTimeKind.Utc) },
+                { JobInfoEntityProperties.EndDate, (DateTimeOffset?)jobInfo.EndDate?.SetKind(DateTimeKind.Utc) },
+                { JobInfoEntityProperties.HeartbeatDateTime, (DateTimeOffset)jobInfo.HeartbeatDateTime.SetKind(DateTimeKind.Utc) },
+                { JobInfoEntityProperties.HeartbeatTimeoutSec, jobInfo.HeartbeatTimeoutSec },
             };
 
             return jobInfoEntity;
