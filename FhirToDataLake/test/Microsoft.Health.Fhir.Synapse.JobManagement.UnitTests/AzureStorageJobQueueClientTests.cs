@@ -36,6 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
         GivenGroupJobs_WhenCancelJobsById_ThenOnlySingleJobShouldBeCancelled,
         GivenGroupJobs_WhenOneJobFailedAndRequestCancellation_ThenAllJobsShouldBeCancelled,
         GivenJobsWithSameDefinition_WhenEnqueueConcurrently_ThenOnlyOneJobShouldBeEnqueued,
+        GivenJobsWithSameDefinition_WhenEnqueueInABatch_ThenTheExceptionShouldBeThrown,
         GivenCreatedJob_WhenEnqueueJobAgain_ThenTheExistingOneShouldBeReturned,
         GivenRunningJob_WhenEnqueueJobAgain_ThenTheExistingOneShouldBeReturned,
         GivenFinishedJob_WhenEnqueueJobAgain_ThenTheExistingOneShouldBeReturned,
@@ -537,13 +538,31 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
         }
 
         [Fact]
+        public async Task GivenJobsWithSameDefinition_WhenEnqueueInABatch_ThenTheExceptionShouldBeThrown()
+        {
+            await CleanStorage();
+
+            const byte queueType = (byte)TestQueueType.GivenJobsWithSameDefinition_WhenEnqueueInABatch_ThenTheExceptionShouldBeThrown;
+
+            var exception = await Assert.ThrowsAsync<TableTransactionFailedException>(async () =>
+                await _azureStorageJobQueueClient.EnqueueAsync(
+                queueType,
+                new[] { "job1", "job1" },
+                null,
+                false,
+                false,
+                CancellationToken.None));
+            Assert.Equal("EntityAlreadyExists", exception.ErrorCode);
+        }
+
+        [Fact]
         public async Task GivenCreatedJob_WhenEnqueueJobAgain_ThenTheExistingOneShouldBeReturned()
         {
             await CleanStorage();
 
             const byte queueType = (byte)TestQueueType.GivenCreatedJob_WhenEnqueueJobAgain_ThenTheExistingOneShouldBeReturned;
 
-            var definitions = new[] { "job1", "job1" };
+            var definitions = new[] { "job1", "job2" };
             var jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 definitions,
@@ -554,7 +573,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             // check job info
             Assert.Equal(2, jobInfos.Count);
-            Assert.Equal(jobInfos.Last().Id, jobInfos.First().Id);
 
             var jobInfo =
                 await _azureStorageJobQueueClient.GetJobByIdAsync(
@@ -662,17 +680,18 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobInfo3.Id, CancellationToken.None);
 
             // Enqueue again, should return the existing one
-            jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
+            var jobids = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1", "job2", "job3" },
                 null,
                 false,
                 false,
-                CancellationToken.None)).ToList();
+                CancellationToken.None)).Select(jobInfo => jobInfo.Id).ToList();
 
-            Assert.Equal(jobInfo1.Id, jobInfos[0].Id);
-            Assert.Equal(jobInfo2.Id, jobInfos[1].Id);
-            Assert.Equal(jobInfo3.Id, jobInfos[2].Id);
+            Assert.Equal(3, jobids.Count);
+            Assert.Contains(jobInfo1.Id, jobids);
+            Assert.Contains(jobInfo2.Id, jobids);
+            Assert.Contains(jobInfo3.Id, jobids);
 
             var newJobInfo1 =
                 await _azureStorageJobQueueClient.GetJobByIdAsync(queueType, jobInfo1.Id, false, CancellationToken.None);
@@ -1046,16 +1065,16 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Empty(retrievedJobInfos.Where(j => !j.CancelRequested));
 
             // job1 is running
-            Assert.Equal(JobStatus.Running, retrievedJobInfos.First(job => job.Id == jobInfos[0].Id).Status);
+            Assert.Equal(JobStatus.Running, retrievedJobInfos.First(job => job.Id == jobInfo1.Id).Status);
 
             // job2 is failed
-            Assert.Equal(JobStatus.Failed, retrievedJobInfos.First(job => job.Id == jobInfos[1].Id).Status);
+            Assert.Equal(JobStatus.Failed, retrievedJobInfos.First(job => job.Id == jobInfo2.Id).Status);
 
             // job3 is completed
-            Assert.Equal(JobStatus.Completed, retrievedJobInfos.First(job => job.Id == jobInfos[2].Id).Status);
+            Assert.Equal(JobStatus.Completed, retrievedJobInfos.First(job => job.Id == jobInfo3.Id).Status);
 
             // job4 is created, its status will be changed to cancelled
-            Assert.Equal(JobStatus.Cancelled, retrievedJobInfos.First(job => job.Id == jobInfos[3].Id).Status);
+            Assert.Equal(JobStatus.Cancelled, retrievedJobInfos.First(job => job.Id == jobInfos.First(jobInfo => jobInfo.Id != jobInfo1.Id && jobInfo.Id != jobInfo2.Id && jobInfo.Id != jobInfo3.Id).Id).Status);
         }
 
         [Fact]
@@ -1074,7 +1093,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 false,
                 CancellationToken.None)).ToList();
 
-            await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            var jobInfo1 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             var jobInfo2 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             var jobInfo3 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             jobInfo2.Status = JobStatus.Failed;
@@ -1090,16 +1109,16 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Empty(retrievedJobInfos.Where(j => !j.CancelRequested));
 
             // job1 is running
-            Assert.Equal(JobStatus.Running, retrievedJobInfos.First(job => job.Id == jobInfos[0].Id).Status);
+            Assert.Equal(JobStatus.Running, retrievedJobInfos.First(job => job.Id == jobInfo1.Id).Status);
 
             // job2 is failed
-            Assert.Equal(JobStatus.Failed, retrievedJobInfos.First(job => job.Id == jobInfos[1].Id).Status);
+            Assert.Equal(JobStatus.Failed, retrievedJobInfos.First(job => job.Id == jobInfo2.Id).Status);
 
             // job3 is completed
-            Assert.Equal(JobStatus.Completed, retrievedJobInfos.First(job => job.Id == jobInfos[2].Id).Status);
+            Assert.Equal(JobStatus.Completed, retrievedJobInfos.First(job => job.Id == jobInfo3.Id).Status);
 
             // job4 is created, its status will be changed to cancelled
-            Assert.Equal(JobStatus.Cancelled, retrievedJobInfos.First(job => job.Id == jobInfos[3].Id).Status);
+            Assert.Equal(JobStatus.Cancelled, retrievedJobInfos.First(job => job.Id == jobInfos.First(jobInfo => jobInfo.Id != jobInfo1.Id && jobInfo.Id != jobInfo2.Id && jobInfo.Id != jobInfo3.Id).Id).Status);
         }
 
         [Fact]

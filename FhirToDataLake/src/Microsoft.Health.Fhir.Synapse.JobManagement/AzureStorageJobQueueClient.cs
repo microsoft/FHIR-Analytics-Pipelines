@@ -39,6 +39,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         private const int DefaultVisibilityTimeoutInSeconds = 30;
 
+        private const short MaxThreadsCountForGettingJob = 5;
+
         public AzureStorageJobQueueClient(
             IAzureStorageClientFactory azureStorageClientFactory,
             IStorage storage,
@@ -75,120 +77,150 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to enqueue {definitions.Length} jobs.");
 
+            /*
+            Trace.Assert(
+                definitions[i].Length * sizeof(char) < MaximumSizeOfAnEntityInBytes,
+                "The maximum size of a single table entity is 1MB, the size of definition is larger than 1MB.");
+            */
+
             // step 1: get incremental job ids, will try again if fails
             var jobIds = await GetIncrementalJobIds(queueType, definitions.Length, cancellationToken);
 
-            // handle for each job
-            var jobInfos = new List<TJobInfo>();
-            for (var i = 0; i < definitions.Length; i++)
-            {
-                Trace.Assert(
-                    definitions[i].Length * sizeof(char) < MaximumSizeOfAnEntityInBytes,
-                    "The maximum size of a single table entity is 1MB, the size of definition is larger than 1MB.");
-
-                // step 2: create jobInfo entity and job lock entity
-                var newJobInfo = new TJobInfo
+            // step 2: generate job info entities and job lock entities batch
+            var jobInfos = definitions.Select((definition, i) => new TJobInfo
                 {
                     Id = jobIds[i],
                     QueueType = queueType,
                     Status = JobStatus.Created,
                     GroupId = groupId ?? 0,
-                    Definition = definitions[i],
+                    Definition = definition,
                     Result = string.Empty,
                     CancelRequested = false,
                     CreateDate = DateTime.UtcNow,
                     HeartbeatDateTime = DateTime.UtcNow,
-                };
+                })
+                .ToList();
 
-                var jobInfoEntity = newJobInfo.ToTableEntity();
-
-                var jobLockEntity = new JobLockEntity
+            var jobInfoEntities = jobInfos.Select(jobInfo => jobInfo.ToTableEntity()).ToList();
+            var jobLockEntities = jobInfoEntities.Select((jobInfoEntity, i) => new JobLockEntity
                 {
                     PartitionKey = jobInfoEntity.PartitionKey,
-                    RowKey = AzureStorageKeyProvider.JobLockRowKey(newJobInfo.JobIdentifier()),
+                    RowKey = AzureStorageKeyProvider.JobLockRowKey(jobInfos[i].JobIdentifier()),
                     JobInfoEntityRowKey = jobInfoEntity.RowKey,
-                };
+                }).ToList();
 
-                // step 3: insert jobInfo entity and job lock entity in one transaction.
-                IEnumerable<TableTransactionAction> transactionAddActions = new List<TableTransactionAction>
-                {
-                    new (TableTransactionActionType.Add, jobInfoEntity),
-                    new (TableTransactionActionType.Add, jobLockEntity),
-                };
+            // step 3: insert jobInfo entity and job lock entity in one transaction.
+            IEnumerable<TableTransactionAction> transactionActions = jobInfoEntities
+                .Select(entity => new TableTransactionAction(TableTransactionActionType.Add, entity))
+                .Concat(jobLockEntities.Select(entity => new TableTransactionAction(TableTransactionActionType.Add, entity)));
+            try
+            {
+                 await _azureJobInfoTableClient.SubmitTransactionAsync(transactionActions, cancellationToken);
+            }
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
+            {
+                // Note: for cancelled/failed jobs, we don't allow resume it, will return the existing jobInfo.
+                var jobLockEntityQueryResult = _azureJobInfoTableClient.QueryAsync<JobLockEntity>(
+                    filter: TransactionGetByRowkeys(jobLockEntities.First().PartitionKey, jobLockEntities.Select(entity => entity.RowKey).ToList()),
+                    cancellationToken: cancellationToken);
 
-                try
+                // step 4: get the existing jobInfo entities and job lock entities
+                jobLockEntities.Clear();
+                await foreach (var pageResult in jobLockEntityQueryResult.AsPages().WithCancellation(cancellationToken))
                 {
-                    _ = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionAddActions, cancellationToken);
+                    jobLockEntities.AddRange(pageResult.Values);
                 }
-                catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
+
+                if (jobLockEntities.Count != jobInfos.Count)
                 {
-                    // Note: for cancelled/failed jobs, we don't allow resume it, will return the existing jobInfo.
-                    _logger.LogWarning(ex, "Failed to add entities, the entities already exist. Will fetch the existing jobs.");
+                    _logger.LogError(ex, "Failed to add entities, some of the jobs already exist.");
+                    throw;
                 }
 
-                // step 4: get the existing or newly added jobInfo entity and job lock entity
-                jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
-                    jobLockEntity.PartitionKey,
-                    jobLockEntity.RowKey,
-                    cancellationToken: cancellationToken)).Value;
-                jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(
-                    jobLockEntity.PartitionKey,
-                    jobLockEntity.JobInfoEntityRowKey,
-                    cancellationToken: cancellationToken)).Value;
+                var jobInfoQueryResult = _azureJobInfoTableClient.QueryAsync<JobInfoEntity>(
+                    filter: TransactionGetByRowkeys(jobLockEntities.First().PartitionKey, jobLockEntities.Select(entity => entity.JobInfoEntityRowKey).ToList()),
+                    cancellationToken: cancellationToken);
 
-                // step 5: try to add reverse index for jobInfo entity
-                try
+                jobInfoEntities.Clear();
+                await foreach (var pageResult in jobInfoQueryResult.AsPages().WithCancellation(cancellationToken))
                 {
-                    var reverseIndexEntity = new JobReverseIndexEntity
+                    jobInfoEntities.AddRange(pageResult.Values);
+                }
+
+                _logger.LogInformation(ex, "Failed to add entities, the entities already exist. Fetched the existing jobs.");
+            }
+
+            // step 5: try to add reverse index for jobInfo entity
+            try
+            {
+                transactionActions = jobInfoEntities.Select(jobInfoEntity =>
+                    new TableTransactionAction(TableTransactionActionType.Add, new JobReverseIndexEntity
                     {
                         PartitionKey = AzureStorageKeyProvider.JobReverseIndexPartitionKey(queueType, jobInfoEntity.Id),
                         RowKey = AzureStorageKeyProvider.JobReverseIndexRowKey(queueType, jobInfoEntity.Id),
                         JobInfoEntityPartitionKey = jobInfoEntity.PartitionKey,
                         JobInfoEntityRowKey = jobInfoEntity.RowKey,
-                    };
+                    }));
 
-                    await _azureJobInfoTableClient.AddEntityAsync(reverseIndexEntity, cancellationToken: cancellationToken);
-                }
-                catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
+                _ = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionActions, cancellationToken);
+            }
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
+            {
+                _logger.LogInformation(ex, "The job reverse index entities already exist.");
+            }
+
+            // for new added job lock entities, need to get them to get etag.
+            if (jobLockEntities.Any(jobLockEntity => string.IsNullOrEmpty(jobLockEntity.ETag.ToString())))
+            {
+                var jobLockEntityQueryResult = _azureJobInfoTableClient.QueryAsync<JobLockEntity>(
+                    filter: TransactionGetByRowkeys(jobLockEntities.First().PartitionKey, jobLockEntities.Select(entity => entity.RowKey).ToList()),
+                    cancellationToken: cancellationToken);
+
+                // step 4: get the existing jobInfo entities and job lock entities
+                jobLockEntities.Clear();
+                await foreach (var pageResult in jobLockEntityQueryResult.AsPages().WithCancellation(cancellationToken))
                 {
-                    _logger.LogInformation(ex, "The job reverse index entity already exists.");
+                    jobLockEntities.AddRange(pageResult.Values);
                 }
+            }
 
-                // step 6: if queue message not present in job lock entity, push message to queue.
-                // if processing job failed and the message is deleted, then the message id is still in table entity,
-                // we don't resend message for it, and return the existing jobInfo, so will do noting about it.
-                if (string.IsNullOrWhiteSpace(jobLockEntity.JobMessageId))
+            // step 6: if queue message not present in job lock entity, push message to queue.
+            // if processing job failed and the message is deleted, then the message id is still in table entity,
+            // we don't resend message for it, and return the existing jobInfo, so will do noting about it
+            if (jobLockEntities.Any(jobLockEntity => string.IsNullOrWhiteSpace(jobLockEntity.JobMessageId)))
+            {
+                foreach (var jobLockEntity in jobLockEntities.Where(jobLockEntity => string.IsNullOrWhiteSpace(jobLockEntity.JobMessageId)))
                 {
                     var response = await _azureJobMessageQueueClient.SendMessageAsync(
-                        new JobMessage(jobInfoEntity.PartitionKey, jobInfoEntity.RowKey).ToString(),
+                        new JobMessage(jobLockEntity.PartitionKey, jobLockEntity.JobInfoEntityRowKey).ToString(),
                         cancellationToken);
 
                     jobLockEntity.JobMessagePopReceipt = response.Value.PopReceipt;
                     jobLockEntity.JobMessageId = response.Value.MessageId;
-
-                    // step 7: update message id and message pop receipt to job lock entity
-                    // if enqueue concurrently, it is possible that
-                    // 1. one job sends message and updates entity, another job do nothing
-                    // 2. two jobs both send message, while only one job update entity successfully
-                    try
-                    {
-                        await _azureJobInfoTableClient.UpdateEntityAsync(
-                            jobLockEntity,
-                            jobLockEntity.ETag,
-                            cancellationToken: cancellationToken);
-                    }
-                    catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateEntityPreconditionFailedErrorCode))
-                    {
-                        _logger.LogWarning(ex, "Update job info entity conflicts.");
-                    }
                 }
 
-                jobInfos.Add(jobInfoEntity.ToJobInfo<TJobInfo>());
+                // step 7: update message id and message pop receipt to job lock entity
+                // if enqueue concurrently, it is possible that
+                // 1. one job sends message and updates entity, another job do nothing
+                // 2. two jobs both send message, while only one job update entity successfully
+                try
+                {
+                    var transactionUpdateActions = jobLockEntities.Select(jobLockEntity =>
+                        new TableTransactionAction(TableTransactionActionType.UpdateReplace, jobLockEntity, jobLockEntity.ETag));
+
+                    _ = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionUpdateActions, cancellationToken);
+                }
+                catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateEntityPreconditionFailedErrorCode))
+                {
+                    _logger.LogWarning(ex, "Update job info entity conflicts.");
+                }
             }
+
+            jobInfos = jobInfoEntities.Select(entity => entity.ToJobInfo<TJobInfo>()).ToList();
 
             _logger.LogInformation($"Enqueue jobs '{string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())}' successfully.");
 
-            return jobInfos;
+            return jobInfoEntities.Select(entity => entity.ToJobInfo<TJobInfo>());
         }
 
         public async Task<JobInfo> DequeueAsync(byte queueType, string worker, int heartbeatTimeoutSec, CancellationToken cancellationToken)
@@ -312,17 +344,25 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to get jobs {string.Join(",", jobIds)}.");
 
-            ParallelOptions parallelOptions = new ()
-            {
-                MaxDegreeOfParallelism = 5,
-            };
-
             var result = new ConcurrentBag<JobInfo>();
 
-            await Parallel.ForEachAsync(jobIds, parallelOptions, async (id, _) =>
+            // https://docs.microsoft.com/en-us/dotnet/api/system.threading.semaphoreslim?view=net-6.0
+            using var throttler = new SemaphoreSlim(MaxThreadsCountForGettingJob, MaxThreadsCountForGettingJob);
+
+            var tasks = jobIds.Select(async id =>
             {
-                result.Add(await GetJobByIdAsync(queueType, id, returnDefinition, cancellationToken));
+                await throttler.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    result.Add(await GetJobByIdAsync(queueType, id, returnDefinition, cancellationToken));
+                }
+                finally
+                {
+                    throttler.Release();
+                }
             });
+
+            await Task.WhenAll(tasks);
 
             _logger.LogInformation($"Get jobs {string.Join(",", jobIds)} successfully.");
             return result;
@@ -641,6 +681,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         private static string FilterJobInfosByGroupId(byte queueType, long groupId) =>
             $"PartitionKey eq '{AzureStorageKeyProvider.JobInfoPartitionKey(queueType, groupId)}' and RowKey ge '{groupId:D20}' and RowKey lt '{groupId + 1:D20}'";
+
+        private static string TransactionGetByRowkeys(string pk, List<string> rowKeys) =>
+        $"PartitionKey eq '{pk}' and ({string.Join(" or ", rowKeys.Select(rowKey => $"RowKey eq '{rowKey}'"))})";
 
         private static IEnumerable<string> SelectPropertiesExceptDefinition()
         {

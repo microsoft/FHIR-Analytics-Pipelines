@@ -48,14 +48,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// <summary>
         /// Start time of the job.
         /// </summary>
-        // TODO: will be removed, disable start time
+        // TODO: don't expose to PaaS, default value is null
         [JsonProperty("startTime")]
         public DateTimeOffset StartTime { get; set; } = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
         /// <summary>
         /// End time of the job.
         /// </summary>
-        // TODO: will be removed, disable end time, the agent is a long running service
+        // TODO: don't expose to PaaS
         [JsonProperty("endTime")]
         public DateTimeOffset? EndTime { get; set; }
     }
