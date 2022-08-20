@@ -261,8 +261,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 _logger.LogWarning($"Discard queue message {message.MessageId}, the job status is {jobInfo.Status}.");
                 await _azureJobMessageQueueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);
 
-                // dequeue next job
-                return await DequeueAsync(queueType, worker, heartbeatTimeoutSec, cancellationToken);
+                throw new JobManagementException($"Discard queue message {message.MessageId}, the job status is {jobInfo.Status}.");
             }
 
             // step 3: get job lock entity to check message id
@@ -278,8 +277,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 _logger.LogWarning($"Discard queue message {message.MessageId}, the message id is inconsistent with the one in the table entity.");
                 await _azureJobMessageQueueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);
 
-                // dequeue next job
-                return await DequeueAsync(queueType, worker, heartbeatTimeoutSec, cancellationToken);
+                throw new JobManagementException(
+                    $"Discard queue message {message.MessageId}, the message id is inconsistent with the one in the table entity.");
             }
 
             // step 4: skip it if the job is running and still active
@@ -287,8 +286,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             {
                 _logger.LogWarning($"Job {jobInfo.Id} is still active.");
 
-                // dequeue next job
-                return await DequeueAsync(queueType, worker, heartbeatTimeoutSec, cancellationToken);
+                throw new JobManagementException($"Job {jobInfo.Id} is still active.");
             }
 
             // step 5: update jobInfo entity's status to running, also update version and heartbeat

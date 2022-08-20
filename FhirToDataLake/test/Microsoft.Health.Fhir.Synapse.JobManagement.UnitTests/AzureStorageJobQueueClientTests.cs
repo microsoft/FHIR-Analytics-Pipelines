@@ -8,6 +8,7 @@ using Azure.Data.Tables;
 using Azure.Storage.Queues;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
+using Microsoft.Health.Fhir.Synapse.JobManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage;
@@ -457,12 +458,23 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 false,
                 CancellationToken.None)).ToList();
 
-            await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobs.First().Id, CancellationToken.None);
+            // get the job id of first message
+            var firstMessage = JobMessage.Parse((await _azureJobMessageQueueClient.PeekMessageAsync(CancellationToken.None)).Value.Body.ToString());
+            var jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(
+                firstMessage.PartitionKey,
+                firstMessage.RowKey,
+                cancellationToken: CancellationToken.None)).Value;
+
+            await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobInfoEntity.Id, CancellationToken.None);
             Assert.Equal(
                 JobStatus.Cancelled,
-                (await _azureStorageJobQueueClient.GetJobByIdAsync(queueType, jobs.First().Id, false, CancellationToken.None)).Status);
+                (await _azureStorageJobQueueClient.GetJobByIdAsync(queueType, jobInfoEntity.Id, false, CancellationToken.None)).Status);
 
-            // job1 is cancelled, should return job2 here
+            // job1 is cancelled
+            var exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
+                await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
+            Assert.EndsWith("the job status is Cancelled.", exception.Message);
+
             var jobInfo2 =
                 await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
 
@@ -473,7 +485,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.False(jobInfo3.CancelRequested);
 
             Assert.Null(await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
-
         }
 
         [Fact]
@@ -791,13 +802,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             await CheckJob(jobInfo, jobLockEntity);
 
             // the first message is invalid
+            var exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
+                await _azureStorageJobQueueClient.DequeueAsync(jobInfo.QueueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
+            Assert.EndsWith("the message id is inconsistent with the one in the table entity.", exception.Message);
+
+            // the second message is valid
             dequeuedJobInfo =
                 await _azureStorageJobQueueClient.DequeueAsync(jobInfo.QueueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             Assert.Equal(jobInfo.Id, dequeuedJobInfo.Id);
-
-            // the second message is valid
-            Assert.Null(
-                await _azureStorageJobQueueClient.DequeueAsync(jobInfo.QueueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
         }
 
         [Fact]
@@ -902,8 +914,18 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             await _azureJobInfoTableClient.UpdateEntityAsync(jobInfoEntity, ETag.All, cancellationToken: CancellationToken.None);
 
             await Task.Delay(TimeSpan.FromSeconds(HeartbeatTimeoutSec));
-            Assert.Null(
-                await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
+
+            var exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
+                await _azureStorageJobQueueClient.DequeueAsync(jobInfo.QueueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
+            Assert.EndsWith("the job status is Completed.", exception.Message);
+
+            exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
+                await _azureStorageJobQueueClient.DequeueAsync(jobInfo.QueueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
+            Assert.EndsWith("the job status is Failed.", exception.Message);
+
+            exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
+                await _azureStorageJobQueueClient.DequeueAsync(jobInfo.QueueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
+            Assert.EndsWith("the job status is Cancelled.", exception.Message);
         }
 
         [Fact]
