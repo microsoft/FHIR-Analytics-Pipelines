@@ -1,0 +1,22 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "arrow-parquet-native",
+    "version": "0.0.1",
+    "dependencies": [
+      "jsoncpp",
+      "thrift",
+      "utf8proc",
+      "xsimd",
+      "zlib",
+      "zstd",
+      "lz4",
+      "snappy",
+      "re2",
+      {
+        "name": "arrow",
+        "features": [
+          "parquet"
+        ]
+      }
+    ]
+  }

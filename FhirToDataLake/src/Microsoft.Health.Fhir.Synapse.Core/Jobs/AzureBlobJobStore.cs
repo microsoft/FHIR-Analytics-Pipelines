@@ -366,8 +366,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch
             {
-                _logger.LogError("Failed to renew job lease.");
-                throw;
+                if (_renewLockTimer.Enabled)
+                {
+                    _logger.LogError("Failed to renew job lease.");
+                    throw;
+                }
+
+                _logger.LogInformation("Refresh timer already stopped.");
+                return;
             }
         }
 
