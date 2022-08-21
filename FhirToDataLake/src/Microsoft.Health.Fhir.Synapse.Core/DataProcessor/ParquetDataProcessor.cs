@@ -17,9 +17,9 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.Parquet.CLR;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
+using Microsoft.Health.Parquet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
     {
         private readonly ArrowConfiguration _arrowConfiguration;
         private readonly ILogger<ParquetDataProcessor> _logger;
-        private readonly ParquetConverterWrapper _parquetConverterWrapper;
+        private readonly ParquetConverter _parquetConverter;
         private readonly IDataSchemaConverter _defaultSchemaConverter;
         private readonly IDataSchemaConverter _customSchemaConverter;
 
@@ -49,17 +49,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             _customSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.CustomSchemaProviderKey);
             _logger = logger;
 
-            try
-            {
-                _parquetConverterWrapper = new ParquetConverterWrapper(fhirSchemaManager.GetAllSchemas(), arrowConfiguration.Value);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Create ParquetConverterWrapper failed.");
-                throw new ParquetDataProcessorException("Create ParquetConverterWrapper failed. " + ex.Message, ex);
-            }
-
-            _logger.LogInformation($"ParquetDataProcessor initialized successfully with ArrowConfiguration: {JsonConvert.SerializeObject(arrowConfiguration.Value)}.");
+            var schemaSet = fhirSchemaManager.GetAllSchemaContent();
+            _parquetConverter = ParquetConverter.CreateWithSchemaSet(schemaSet);
+            _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
         }
 
         public Task<StreamBatchData> ProcessAsync(
@@ -82,8 +74,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
                 processedData = _customSchemaConverter.Convert(inputData, processParameters.ResourceType, cancellationToken);
             }
 
-            var inputStream = TransformJsonDataToStream(processParameters.SchemaType, processedData.Values);
-            if (inputStream == null)
+            var inputContent = string.Join(
+                Environment.NewLine,
+                processedData.Values.Select(jsonObject => jsonObject.ToString(Formatting.None))
+                         .Where(result => CheckBlockSize(processParameters.SchemaType, result)));
+            if (string.IsNullOrEmpty(inputContent))
             {
                 // Return null if no data has been converted.
                 return Task.FromResult<StreamBatchData>(null);
@@ -92,7 +87,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             // Convert JSON data to parquet stream.
             try
             {
-                var resultStream = _parquetConverterWrapper.ConvertToParquetStream(processParameters.SchemaType, inputStream);
+                var resultStream = _parquetConverter.ConvertJsonToParquet(processParameters.SchemaType, inputContent);
                 return Task.FromResult(
                     new StreamBatchData(
                         resultStream,

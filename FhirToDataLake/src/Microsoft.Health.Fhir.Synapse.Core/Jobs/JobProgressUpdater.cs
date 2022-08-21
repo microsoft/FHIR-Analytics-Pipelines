@@ -64,7 +64,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             {
                                 foreach (var (patientId, versionId) in context.SearchProgress.PatientVersionId)
                                 {
-
                                     _job.PatientVersionId[patientId] = versionId;
                                 }
                             }

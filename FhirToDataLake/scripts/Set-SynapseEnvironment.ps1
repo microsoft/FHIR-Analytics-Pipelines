@@ -57,7 +57,7 @@ $OrasWinUrl = "https://github.com/deislabs/oras/releases/download/v0.12.0/oras_0
 # TODO: Align Tags here and ARM template, maybe save schemas in Storage/ACR and run remotely.
 $Tags = @{
     "FhirAnalyticsPipeline" = "FhirToDataLake"
-    "FhirSchemaVersion" = "v0.3.0"
+    "FhirSchemaVersion" = "v0.4.0"
 }
 
 function New-FhirDatabase

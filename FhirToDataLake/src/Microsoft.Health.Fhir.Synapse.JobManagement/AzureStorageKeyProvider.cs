@@ -8,10 +8,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
     public static class AzureStorageKeyProvider
     {
         // The table name must conform to rules: https://docs.microsoft.com/en-us/rest/api/storageservices/understanding-the-table-service-data-model#table-names
-        public static string JobInfoTableName(string agentName) => $"{agentName}JobInfo";
+        public static string JobInfoTableName(string agentName) => $"{agentName.ToLower()}jobinfotable";
 
         // The queue name must conform to rules: https://docs.microsoft.com/en-us/rest/api/storageservices/naming-queues-and-metadata#queue-names
-        public static string JobMessageQueueName(string agentName) => $"{agentName.ToLower()}-jobqueue";
+        public static string JobMessageQueueName(string agentName) => $"{agentName.ToLower()}jobinfoqueue";
 
         public static string JobInfoPartitionKey(byte queueType, long groupId) => $"{queueType:D3}_{groupId:D20}";
 
