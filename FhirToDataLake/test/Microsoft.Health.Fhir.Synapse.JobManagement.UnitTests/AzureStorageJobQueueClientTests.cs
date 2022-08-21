@@ -1047,7 +1047,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             Assert.Equal(2, retrievedJobInfos.Count);
             var definitions = new List<string>
-                {retrievedJobInfos.First().Definition, retrievedJobInfos.Last().Definition};
+                { retrievedJobInfos.First().Definition, retrievedJobInfos.Last().Definition };
             Assert.Contains("job4", definitions);
             Assert.Contains("job5", definitions);
         }

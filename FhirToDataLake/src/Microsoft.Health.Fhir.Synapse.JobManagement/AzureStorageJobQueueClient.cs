@@ -106,12 +106,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             {
                 await _azureJobInfoTableClient.SubmitTransactionAsync(transactionActions, cancellationToken);
             }
-            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex,
-                                                        AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
             {
                 // Note: for cancelled/failed jobs, we don't allow resume it, will return the existing jobInfo.
                 var jobLockEntityQueryResult = _azureJobInfoTableClient.QueryAsync<JobLockEntity>(
-                    filter: TransactionGetByRowkeys(jobLockEntities.First().PartitionKey,
+                    filter: TransactionGetByRowkeys(
+                        jobLockEntities.First().PartitionKey,
                         jobLockEntities.Select(entity => entity.RowKey).ToList()),
                     cancellationToken: cancellationToken);
 
@@ -129,7 +129,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 }
 
                 var jobInfoQueryResult = _azureJobInfoTableClient.QueryAsync<JobInfoEntity>(
-                    filter: TransactionGetByRowkeys(jobLockEntities.First().PartitionKey,
+                    filter: TransactionGetByRowkeys(
+                        jobLockEntities.First().PartitionKey,
                         jobLockEntities.Select(entity => entity.JobInfoEntityRowKey).ToList()),
                     cancellationToken: cancellationToken);
 
@@ -139,8 +140,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                     jobInfoEntities.AddRange(pageResult.Values);
                 }
 
-                _logger.LogInformation(ex,
-                    "Failed to add entities, the entities already exist. Fetched the existing jobs.");
+                _logger.LogInformation(ex, "Failed to add entities, the entities already exist. Fetched the existing jobs.");
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.RequestBodyTooLargeErrorCode))
             {
@@ -416,7 +416,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             Response<UpdateReceipt>? response = null;
             try
             {
-
                 var visibilityTimeout = TimeSpan.FromSeconds(jobInfoEntity.HeartbeatTimeoutSec <= 0
                     ? DefaultVisibilityTimeoutInSeconds
                     : jobInfoEntity.HeartbeatTimeoutSec);
@@ -565,7 +564,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             else
             {
-                jobInfoEntity.Status = (int) JobStatus.Completed;
+                jobInfoEntity.Status = (int)JobStatus.Completed;
             }
 
             // step 4: update job info entity to table
