@@ -15,9 +15,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
         /// <summary>
         /// Convert job info to table entity
         /// </summary>
-        /// <typeparam name="TJobInfo">the job info type</typeparam>
-        /// <param name="jobInfo">the job info.</param>
-        /// <returns>JobInfo Entity</returns>
+        /// <typeparam name="TJobInfo">The job info type</typeparam>
+        /// <param name="jobInfo">The job info.</param>
+        /// <returns>Table entity of job info</returns>
         public static TableEntity ToTableEntity<TJobInfo>(this TJobInfo jobInfo)
             where TJobInfo : AzureStorageJobInfo, new()
         {
@@ -48,8 +48,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
         /// <summary>
         /// Convert table entity to job info
         /// </summary>
-        /// <typeparam name="TJobInfo">the job info type</typeparam>
-        /// <param name="entity">the table entity</param>
+        /// <typeparam name="TJobInfo">The job info type</typeparam>
+        /// <param name="entity">The table entity</param>
         /// <returns>JobInfo</returns>
         public static TJobInfo ToJobInfo<TJobInfo>(this TableEntity entity)
             where TJobInfo : AzureStorageJobInfo, new()

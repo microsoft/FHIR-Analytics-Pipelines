@@ -1170,8 +1170,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             // the message is updated, while table entity isn't update
             await _azureJobMessageQueueClient.UpdateMessageAsync(
-                jobLockEntity[JobLockEntityProperties.JobMessageId].ToString(),
-                jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt].ToString(),
+                jobLockEntity.GetString(JobLockEntityProperties.JobMessageId),
+                jobLockEntity.GetString(JobLockEntityProperties.JobMessagePopReceipt),
                 visibilityTimeout: TimeSpan.FromSeconds((long)jobInfoEntity[JobInfoEntityProperties.HeartbeatTimeoutSec]),
                 cancellationToken: CancellationToken.None);
 
@@ -1262,7 +1262,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 return new Tuple<JobInfo, TableEntity>(jobInfo, jobLockEntity);
             }
 
-            await _azureJobMessageQueueClient.SendMessageAsync(new JobMessage(jobInfoEntity.PartitionKey, jobInfoEntity.RowKey).ToString(), CancellationToken.None);
+            await _azureJobMessageQueueClient.SendMessageAsync(new JobMessage(jobInfoEntity.PartitionKey, jobInfoEntity.RowKey, jobLockEntity.RowKey).ToString(), CancellationToken.None);
             return new Tuple<JobInfo, TableEntity>(jobInfo, jobLockEntity);
         }
 
@@ -1304,7 +1304,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             {
                 Assert.Equal(jobLockEntity.PartitionKey, retrievedJobLockEntity.PartitionKey);
                 Assert.Equal(jobLockEntity.RowKey, retrievedJobLockEntity.RowKey);
-                Assert.Equal(jobLockEntity[JobLockEntityProperties.JobInfoEntityRowKey].ToString(), retrievedJobLockEntity.JobInfoEntityRowKey);
+                Assert.Equal(jobLockEntity.GetString(JobLockEntityProperties.JobInfoEntityRowKey), retrievedJobLockEntity.JobInfoEntityRowKey);
             }
         }
     }
