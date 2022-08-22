@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Azure.Data.Tables;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
@@ -24,13 +25,13 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [Fact]
         public void GivenDefaultJobInfo_WhenToTableEntity_ThenTheCorrectTableEntityShouldBeReturned()
         {
-            var jobInfo = new AzureStorageJobInfo();
+            var jobInfo = new FhirToDataLakeAzureStorageJobInfo();
             var tableEntity = jobInfo.ToTableEntity();
             Assert.NotNull(tableEntity);
             Assert.Null(jobInfo.Status);
-            Assert.Equal((int)JobStatus.Created, tableEntity.Status);
-            Assert.Null(tableEntity.Definition);
-            Assert.Null(tableEntity.Result);
+            Assert.Equal((int)JobStatus.Created, (int)tableEntity[JobInfoEntityProperties.Status]);
+            Assert.Null(tableEntity[JobInfoEntityProperties.Definition]);
+            Assert.Null(tableEntity[JobInfoEntityProperties.Result]);
         }
 
         [Fact]
@@ -40,9 +41,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
             var tableEntity = jobInfo.ToTableEntity();
             Assert.NotNull(tableEntity);
             Assert.Null(jobInfo.Status);
-            Assert.Equal((int)JobStatus.Created, tableEntity.Status);
-            Assert.Null(tableEntity.Definition);
-            Assert.Null(tableEntity.Result);
+            Assert.Equal((int)JobStatus.Created, (int)tableEntity[JobInfoEntityProperties.Status]);
+            Assert.Null(tableEntity[JobInfoEntityProperties.Definition]);
+            Assert.Null(tableEntity[JobInfoEntityProperties.Result]);
         }
 
         [Fact]
@@ -62,70 +63,63 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
             };
             var tableEntity = jobInfo.ToTableEntity();
             Assert.NotNull(tableEntity);
-            Assert.Equal(jobInfo.Id, tableEntity.Id);
-            Assert.Equal(jobInfo.QueueType, tableEntity.QueueType);
-            Assert.Equal((int)jobInfo.Status, tableEntity.Status);
-            Assert.Equal(jobInfo.GroupId, tableEntity.GroupId);
-            Assert.Equal(jobInfo.Definition, tableEntity.Definition);
-            Assert.Equal(jobInfo.Result, tableEntity.Result);
-            Assert.Equal(jobInfo.CancelRequested, tableEntity.CancelRequested);
-            Assert.Equal(jobInfo.CreateDate, tableEntity.CreateDate);
-            Assert.Equal(jobInfo.HeartbeatDateTime, tableEntity.HeartbeatDateTime);
+            Assert.Equal(jobInfo.Id, (long)tableEntity[JobInfoEntityProperties.Id]);
+            Assert.Equal(jobInfo.QueueType, (int)tableEntity[JobInfoEntityProperties.QueueType]);
+            Assert.Equal((int)jobInfo.Status, (int)tableEntity[JobInfoEntityProperties.Status]);
+            Assert.Equal(jobInfo.GroupId, (long)tableEntity[JobInfoEntityProperties.GroupId]);
+            Assert.Equal(jobInfo.Definition, tableEntity[JobInfoEntityProperties.Definition].ToString());
+            Assert.Equal(jobInfo.Result, tableEntity[JobInfoEntityProperties.Result].ToString());
+            Assert.Null(tableEntity[JobInfoEntityProperties.Data]);
+            Assert.Equal(jobInfo.CancelRequested, (bool)tableEntity[JobInfoEntityProperties.CancelRequested]);
+            Assert.Equal(0, (long)tableEntity[JobInfoEntityProperties.Version]);
+            Assert.Equal(0, (long)tableEntity[JobInfoEntityProperties.Priority]);
+            Assert.Equal(jobInfo.CreateDate, (DateTimeOffset)tableEntity[JobInfoEntityProperties.CreateDate]);
+            Assert.Null(tableEntity[JobInfoEntityProperties.StartDate]);
+            Assert.Null(tableEntity[JobInfoEntityProperties.EndDate]);
+            Assert.Equal(jobInfo.HeartbeatDateTime, (DateTimeOffset)tableEntity[JobInfoEntityProperties.HeartbeatDateTime]);
+            Assert.Equal(0, (long)tableEntity[JobInfoEntityProperties.HeartbeatTimeoutSec]);
         }
 
         [Fact]
         public void GivenNullTableEntity_WhenToJobInfo_ThenTheExceptionShouldBeThrown()
         {
-            JobInfoEntity? jobInfoEntity = null;
+            TableEntity? jobInfoEntity = null;
             Assert.Throws<NullReferenceException>(() => jobInfoEntity.ToJobInfo<FhirToDataLakeAzureStorageJobInfo>());
-        }
-
-        [Fact]
-        public void GivenDefaultTableEntity_WhenToJobInfo_ThenTheCorrectResultShouldBeReturned()
-        {
-            var jobInfoEntity = new JobInfoEntity
-            {
-                PartitionKey = "partitionKey",
-                RowKey = "rowKey",
-                CreateDate = DateTime.UtcNow,
-                HeartbeatDateTime = DateTime.UtcNow,
-            };
-            var jobInfo = jobInfoEntity.ToJobInfo<FhirToDataLakeAzureStorageJobInfo>();
-            Assert.NotNull(jobInfo);
-            Assert.Equal(JobStatus.Created, jobInfo.Status);
-            Assert.Null(jobInfo.Definition);
-            Assert.Null(jobInfo.Result);
         }
 
         [Fact]
         public void GivenValidTableEntity_WhenToJobInfo_ThenTheCorrectResultShouldBeReturned()
         {
-            var jobInfoEntity = new JobInfoEntity
+            var jobInfoEntity = new TableEntity("partitionKey", "rowKey")
             {
-                PartitionKey = "partitionKey",
-                RowKey = "rowKey",
-                Id = 1,
-                QueueType = (int)QueueType.FhirToDataLake,
-                Status = (int)JobStatus.Created,
-                GroupId = 0,
-                Definition = "input data string",
-                Result = string.Empty,
-                CancelRequested = false,
-                CreateDate = DateTime.UtcNow,
-                HeartbeatDateTime = DateTime.UtcNow,
+                { JobInfoEntityProperties.Id, 1L },
+                { JobInfoEntityProperties.QueueType, (int)QueueType.FhirToDataLake },
+                { JobInfoEntityProperties.Status, (int)JobStatus.Created },
+                { JobInfoEntityProperties.GroupId, 0L },
+                { JobInfoEntityProperties.Definition, "input data string" },
+                { JobInfoEntityProperties.Result, string.Empty },
+                { JobInfoEntityProperties.CancelRequested, false },
+                { JobInfoEntityProperties.Version, 0L },
+                { JobInfoEntityProperties.Priority, 0L },
+                { JobInfoEntityProperties.CreateDate, DateTimeOffset.Now },
+                { JobInfoEntityProperties.HeartbeatDateTime, DateTimeOffset.Now },
+                { JobInfoEntityProperties.HeartbeatTimeoutSec, 0L },
             };
             var jobInfo = jobInfoEntity.ToJobInfo<FhirToDataLakeAzureStorageJobInfo>();
             Assert.NotNull(jobInfo);
-            Assert.Equal(jobInfoEntity.Id, jobInfo.Id);
-            Assert.Equal(jobInfoEntity.QueueType, jobInfo.QueueType);
-            Assert.NotNull(jobInfo.Status);
-            Assert.Equal(jobInfoEntity.Status, (int)jobInfo.Status);
-            Assert.Equal(jobInfoEntity.GroupId, jobInfo.GroupId);
-            Assert.Equal(jobInfoEntity.Definition, jobInfo.Definition);
-            Assert.Equal(jobInfoEntity.Result, jobInfo.Result);
-            Assert.Equal(jobInfoEntity.CancelRequested, jobInfo.CancelRequested);
-            Assert.Equal(jobInfoEntity.CreateDate, jobInfo.CreateDate);
-            Assert.Equal(jobInfoEntity.HeartbeatDateTime, jobInfo.HeartbeatDateTime);
+            Assert.Equal((long)jobInfoEntity[JobInfoEntityProperties.Id], jobInfo.Id);
+            Assert.Equal((int)jobInfoEntity[JobInfoEntityProperties.QueueType], jobInfo.QueueType);
+            Assert.Equal(JobStatus.Created, jobInfo.Status);
+            Assert.Equal((long)jobInfoEntity[JobInfoEntityProperties.GroupId], jobInfo.GroupId);
+            Assert.Equal(jobInfoEntity[JobInfoEntityProperties.Definition].ToString(), jobInfo.Definition);
+            Assert.Equal(jobInfoEntity[JobInfoEntityProperties.Result].ToString(), jobInfo.Result);
+            Assert.Null(jobInfo.Data);
+            Assert.Equal((bool)jobInfoEntity[JobInfoEntityProperties.CancelRequested], jobInfo.CancelRequested);
+            Assert.Equal((DateTimeOffset)jobInfoEntity[JobInfoEntityProperties.CreateDate], jobInfo.CreateDate);
+            Assert.Null(jobInfo.StartDate);
+            Assert.Null(jobInfo.EndDate);
+            Assert.Equal((DateTimeOffset)jobInfoEntity[JobInfoEntityProperties.HeartbeatDateTime], jobInfo.HeartbeatDateTime);
+            Assert.Equal((long)jobInfoEntity[JobInfoEntityProperties.HeartbeatTimeoutSec], jobInfo.HeartbeatTimeoutSec);
         }
     }
 }

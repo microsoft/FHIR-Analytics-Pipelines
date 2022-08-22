@@ -14,8 +14,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         // TODO: need to add it when generic task is enabled
         public static IServiceCollection AddJobManagement(this IServiceCollection services)
         {
-            services.AddSingleton<IStorage, AzureStorage>();
-            services.AddSingleton<IAzureStorageClientFactory,AzureStorageClientFactory>();
+            services.AddSingleton<IAzureStorageClientFactory, AzureStorageClientFactory>();
             services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>();
 
             return services;
