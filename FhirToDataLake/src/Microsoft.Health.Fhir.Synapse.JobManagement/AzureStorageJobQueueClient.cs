@@ -86,9 +86,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             if (definitions.Length > MaxJobsCountForEnqueuingAtOneTime)
             {
-                _logger.LogError($"The count of jobs to be enqueued is too large, should not be larger than {MaxJobsCountForEnqueuingAtOneTime}.");
+                _logger.LogError($"The count of jobs to be enqueued is larger than the maximum allowed length {MaxJobsCountForEnqueuingAtOneTime}.");
                 throw new JobManagementException(
-                    $"The count of jobs to be enqueued is too large, should not be larger than {MaxJobsCountForEnqueuingAtOneTime}.");
+                    $"The count of jobs to be enqueued is larger than the maximum allowed length {MaxJobsCountForEnqueuingAtOneTime}.");
             }
 
             // step 1: get incremental job ids, will try again if fails
