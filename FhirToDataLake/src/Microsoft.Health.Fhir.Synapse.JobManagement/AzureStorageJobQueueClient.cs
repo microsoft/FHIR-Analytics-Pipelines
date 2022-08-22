@@ -25,7 +25,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
     public class AzureStorageJobQueueClient<TJobInfo> : IQueueClient
         where TJobInfo : AzureStorageJobInfo, new()
     {
-        private readonly IAzureStorageClient _azureStorageClient;
         private readonly TableClient _azureJobInfoTableClient;
         private readonly QueueClient _azureJobMessageQueueClient;
 
@@ -35,24 +34,37 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         private const short MaxThreadsCountForGettingJob = 5;
 
+        // A transaction can include at most 100 entities, so limit the jobs count to 50
+        // https://docs.microsoft.com/en-us/azure/storage/tables/scalability-targets#scale-targets-for-table-storage
+        private const int MaxJobsCountForEnqueuingAtOneTime = 50;
+
         public AzureStorageJobQueueClient(
             IAzureStorageClientFactory azureStorageClientFactory,
-            IStorage storage,
             ILogger<AzureStorageJobQueueClient<TJobInfo>> logger)
         {
             EnsureArg.IsNotNull(azureStorageClientFactory, nameof(azureStorageClientFactory));
-            EnsureArg.IsNotNull(storage, nameof(storage));
 
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _azureStorageClient = azureStorageClientFactory.Create(storage);
-            _azureJobInfoTableClient = _azureStorageClient.AzureJobInfoTableClient;
-            _azureJobMessageQueueClient = _azureStorageClient.AzureJobMessageQueueClient;
+            _azureJobInfoTableClient = azureStorageClientFactory.CreateTableClient();
+            _azureJobMessageQueueClient = azureStorageClientFactory.CreateQueueClient();
         }
 
         public bool IsInitialized()
         {
-            return _azureStorageClient.IsInitialized();
+            try
+            {
+                _azureJobInfoTableClient.CreateIfNotExists();
+                _azureJobMessageQueueClient.CreateIfNotExists();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to initialize azure storage client.");
+                return false;
+            }
+
+            _logger.LogInformation("Initialize azure storage client successfully.");
+            return true;
         }
 
         // The expected behaviors:
@@ -71,6 +83,13 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Start to enqueue {definitions.Length} jobs.");
+
+            if (definitions.Length > MaxJobsCountForEnqueuingAtOneTime)
+            {
+                _logger.LogError($"The count of jobs to be enqueued is too large, should not be larger than {MaxJobsCountForEnqueuingAtOneTime}.");
+                throw new JobManagementException(
+                    $"The count of jobs to be enqueued is too large, should not be larger than {MaxJobsCountForEnqueuingAtOneTime}.");
+            }
 
             // step 1: get incremental job ids, will try again if fails
             var jobIds = await GetIncrementalJobIds(queueType, definitions.Length, cancellationToken);
@@ -117,12 +136,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 await foreach (var pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
                 {
                     retrievedJobLockEntities.AddRange(pageResult.Values);
-                }
-
-                if (retrievedJobLockEntities.Count != jobInfos.Count)
-                {
-                    _logger.LogError(ex, "Failed to add entities, some of the jobs already exist.");
-                    throw;
                 }
 
                 jobLockEntities = retrievedJobLockEntities;
@@ -261,7 +274,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // step 4: check message id
-            if (!jobLockEntity.ContainsKey(JobLockEntityProperties.JobMessageId) || !string.Equals(jobLockEntity.GetString(JobLockEntityProperties.JobMessageId), message.MessageId, StringComparison.OrdinalIgnoreCase))
+            if (!jobLockEntity.ContainsKey(JobLockEntityProperties.JobMessageId))
+            {
+                // the message is enqueued and dequeued immediately before the update the message info to table entity, skip processing it this time.
+                _logger.LogWarning($"The message id in job lock entity is null, skip processing this message this time.");
+                return null;
+            }
+
+            if (!string.Equals(jobLockEntity.GetString(JobLockEntityProperties.JobMessageId), message.MessageId, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning($"Discard queue message {message.MessageId}, the message id is inconsistent with the one in the table entity.");
                 await _azureJobMessageQueueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);

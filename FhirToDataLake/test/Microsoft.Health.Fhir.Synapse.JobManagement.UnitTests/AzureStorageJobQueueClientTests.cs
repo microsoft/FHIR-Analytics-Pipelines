@@ -42,10 +42,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
         GivenRunningJob_WhenEnqueueJobAgain_ThenTheExistingOneShouldBeReturned,
         GivenFinishedJob_WhenEnqueueJobAgain_ThenTheExistingOneShouldBeReturned,
         GivenEnqueueFailed_WhenEnqueueJobAgain_ThenContinueToEnqueue,
+        GivenJobsLargerThanTransactionLimitation_WhenEnqueue_ThenTheExceptionShouldBeThrown,
         GivenEmptyQueue_WhenDequeue_ThenNoResultShouldBeReturned,
         GivenJobsEnqueue_WhenDequeueConcurrently_ThenCorrectResultShouldBeReturned,
         GivenFinishedJobs_WhenDequeue_ThenNoResultShouldBeReturned,
         GivenJobCancelRequested_WhenDequeue_ThenTheJobShouldBeReturned,
+        GivenNullMessageInTable_WhenDequeue_ThenTheMessageWillBeSkipped,
         GivenJobsEnqueue_WhenGetJobWithReturnDefinitionFalse_ThenTheDefinitionShouldNotBeReturned,
         GivenJobsEnqueue_WhenGetJobsByIds_ThenTheJobsShouldBeReturned,
         GivenGroupJobs_WhenGetJobByGroupId_ThenTheCorrectJobsShouldBeReturned,
@@ -61,6 +63,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             _nullAzureStorageJobQueueClientLogger =
                 NullLogger<AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>.Instance;
 
+        private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
         private const string TestAgentName = "testAgentName";
         private const string TestWorkerName = "test-worker";
         private const int HeartbeatTimeoutSec = 1;
@@ -71,24 +74,25 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
         public AzureStorageJobQueueClientTests()
         {
-            var azuriteEmulatorStorage = new AzuriteEmulatorStorage(TestAgentName);
+            var tableName = AzureStorageKeyProvider.JobInfoTableName(TestAgentName);
+            var queueName = AzureStorageKeyProvider.JobMessageQueueName(TestAgentName);
 
             _azureJobInfoTableClient =
-                new TableClient(azuriteEmulatorStorage.TableUrl, azuriteEmulatorStorage.TableName);
+                new TableClient(StorageEmulatorConnectionString, tableName);
             _azureJobMessageQueueClient =
-                new QueueClient(azuriteEmulatorStorage.QueueUrl, azuriteEmulatorStorage.QueueName);
+                new QueueClient(StorageEmulatorConnectionString, queueName);
 
             // Delete table and queue if exists
             _azureJobInfoTableClient.Delete();
             _azureJobMessageQueueClient.DeleteIfExists();
 
             var azureStorageClientFactory = new AzureStorageClientFactory(
-                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
-                new NullLoggerFactory());
+                tableName,
+                queueName,
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
             _azureStorageJobQueueClient = new AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>(
                 azureStorageClientFactory,
-                azuriteEmulatorStorage,
                 _nullAzureStorageJobQueueClientLogger);
 
             _azureStorageJobQueueClient.IsInitialized();
@@ -814,6 +818,30 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
         }
 
         [Fact]
+        public async Task GivenJobsLargerThanTransactionLimitation_WhenEnqueue_ThenTheExceptionShouldBeThrown()
+        {
+            await CleanStorage();
+
+            const byte queueType = (byte)TestQueueType.GivenJobsLargerThanTransactionLimitation_WhenEnqueue_ThenTheExceptionShouldBeThrown;
+
+            const int jobCnt = 51;
+            var definitions = new List<string>();
+            for (var i = 0; i < jobCnt; i++)
+            {
+                definitions.Add($"job{i}");
+            }
+
+            await Assert.ThrowsAsync<JobManagementException>(async () =>
+                await _azureStorageJobQueueClient.EnqueueAsync(
+                    queueType,
+                    definitions.ToArray(),
+                    null,
+                    false,
+                    false,
+                    CancellationToken.None));
+        }
+
+        [Fact]
         public async Task GivenEmptyQueue_WhenDequeue_ThenNoResultShouldBeReturned()
         {
             await CleanStorage();
@@ -962,6 +990,18 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Equal(jobInfos.First().Id, jobInfo.Id);
             Assert.Equal(JobStatus.Running, jobInfo.Status);
             Assert.True(jobInfo.CancelRequested);
+        }
+
+        [Fact]
+        public async Task GivenNullMessageInTable_WhenDequeue_ThenTheMessageWillBeSkipped()
+        {
+            await CleanStorage();
+            const byte queueType = (byte)TestQueueType.GivenNullMessageInTable_WhenDequeue_ThenTheMessageWillBeSkipped;
+
+            _ = await EnqueueStepBySteps(1, queueType, 3);
+
+            var jobInfo = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            Assert.Null(jobInfo);
         }
 
         [Fact]

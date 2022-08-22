@@ -3,10 +3,15 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Azure.Data.Tables;
+using Azure.Storage.Queues;
+
 namespace Microsoft.Health.Fhir.Synapse.JobManagement
 {
     public interface IAzureStorageClientFactory
     {
-        public IAzureStorageClient Create(IStorage storage);
+        public TableClient CreateTableClient();
+
+        public QueueClient CreateQueueClient();
     }
 }
