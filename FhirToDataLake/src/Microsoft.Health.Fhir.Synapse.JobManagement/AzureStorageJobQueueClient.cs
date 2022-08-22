@@ -138,6 +138,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                     retrievedJobLockEntities.AddRange(pageResult.Values);
                 }
 
+                if (!retrievedJobLockEntities.Any())
+                {
+                    _logger.LogError(ex, "There are duplicated jobs to be enqueued.");
+                    throw;
+                }
+
                 jobLockEntities = retrievedJobLockEntities;
 
                 // get job info entity by specifying the row key stored in job lock entity
