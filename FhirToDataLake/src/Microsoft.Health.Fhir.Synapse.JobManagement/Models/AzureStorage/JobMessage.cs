@@ -11,10 +11,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage
     [DataContract]
     public class JobMessage
     {
-        public JobMessage(string partitionKey, string rowKey)
+        public JobMessage(string partitionKey, string rowKey, string lockRowKey)
         {
             PartitionKey = partitionKey;
             RowKey = rowKey;
+            LockRowKey = lockRowKey;
         }
 
         [JsonProperty("pk")]
@@ -22,6 +23,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage
 
         [JsonProperty("rk")]
         public string RowKey { get; set; }
+
+        [JsonProperty("lockrk")]
+        public string LockRowKey { get; set; }
 
         public override string ToString()
         {

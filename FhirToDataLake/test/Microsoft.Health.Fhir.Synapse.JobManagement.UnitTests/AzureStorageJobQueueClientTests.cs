@@ -460,15 +460,16 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             // get the job id of first message
             var firstMessage = JobMessage.Parse((await _azureJobMessageQueueClient.PeekMessageAsync(CancellationToken.None)).Value.Body.ToString());
-            var jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(
-                firstMessage.PartitionKey,
-                firstMessage.RowKey,
+            Assert.NotNull(firstMessage);
+            var jobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(
+                firstMessage?.PartitionKey,
+                firstMessage?.RowKey,
                 cancellationToken: CancellationToken.None)).Value;
 
-            await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobInfoEntity.Id, CancellationToken.None);
+            await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, (long)jobInfoEntity[JobInfoEntityProperties.Id], CancellationToken.None);
             Assert.Equal(
                 JobStatus.Cancelled,
-                (await _azureStorageJobQueueClient.GetJobByIdAsync(queueType, jobInfoEntity.Id, false, CancellationToken.None)).Status);
+                (await _azureStorageJobQueueClient.GetJobByIdAsync(queueType, (long)jobInfoEntity[JobInfoEntityProperties.Id], false, CancellationToken.None)).Status);
 
             // job1 is cancelled
             var exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
@@ -748,8 +749,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Single(jobInfos);
             Assert.Equal(jobInfo.Id, jobInfos.First().Id);
 
-            Assert.Null(jobLockEntity.JobMessageId);
-            Assert.Null(jobLockEntity.JobMessagePopReceipt);
+            Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessageId]);
+            Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt]);
 
             await CheckJob(jobInfo, jobLockEntity);
             var dequeuedJobInfo =
@@ -772,8 +773,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Single(jobInfos);
             Assert.Equal(jobInfo.Id, jobInfos.First().Id);
 
-            Assert.Null(jobLockEntity.JobMessageId);
-            Assert.Null(jobLockEntity.JobMessagePopReceipt);
+            Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessageId]);
+            Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt]);
 
             await CheckJob(jobInfo, jobLockEntity);
             dequeuedJobInfo =
@@ -796,8 +797,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Single(jobInfos);
             Assert.Equal(jobInfo.Id, jobInfos.First().Id);
 
-            Assert.Null(jobLockEntity.JobMessageId);
-            Assert.Null(jobLockEntity.JobMessagePopReceipt);
+            Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessageId]);
+            Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt]);
 
             await CheckJob(jobInfo, jobLockEntity);
 
@@ -1163,16 +1164,16 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             var jobInfoEntity = ((FhirToDataLakeAzureStorageJobInfo)jobInfo1).ToTableEntity();
 
-            var jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
+            var jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(
                 jobInfoEntity.PartitionKey,
                 AzureStorageKeyProvider.JobLockRowKey(((FhirToDataLakeAzureStorageJobInfo)jobInfo1).JobIdentifier()),
                 cancellationToken: CancellationToken.None)).Value;
 
             // the message is updated, while table entity isn't update
             await _azureJobMessageQueueClient.UpdateMessageAsync(
-                jobLockEntity.JobMessageId,
-                jobLockEntity.JobMessagePopReceipt,
-                visibilityTimeout: TimeSpan.FromSeconds(jobInfoEntity.HeartbeatTimeoutSec),
+                jobLockEntity.GetString(JobLockEntityProperties.JobMessageId),
+                jobLockEntity.GetString(JobLockEntityProperties.JobMessagePopReceipt),
+                visibilityTimeout: TimeSpan.FromSeconds((long)jobInfoEntity[JobInfoEntityProperties.HeartbeatTimeoutSec]),
                 cancellationToken: CancellationToken.None);
 
             // keep alive should throw exception
@@ -1214,7 +1215,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             await _azureJobMessageQueueClient.ClearMessagesAsync();
         }
 
-        private async Task<Tuple<JobInfo, JobLockEntity>> EnqueueStepBySteps(long jobId, byte queueType, int steps)
+        private async Task<Tuple<JobInfo, TableEntity>> EnqueueStepBySteps(long jobId, byte queueType, int steps)
         {
             var jobInfo = new FhirToDataLakeAzureStorageJobInfo()
             {
@@ -1229,11 +1230,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 HeartbeatDateTime = DateTime.UtcNow,
             };
             var jobInfoEntity = jobInfo.ToTableEntity();
-            var jobLockEntity = new JobLockEntity
+            var jobLockEntity = new TableEntity(jobInfoEntity.PartitionKey, AzureStorageKeyProvider.JobLockRowKey(jobInfo.JobIdentifier()))
             {
-                PartitionKey = jobInfoEntity.PartitionKey,
-                RowKey = AzureStorageKeyProvider.JobLockRowKey(jobInfo.JobIdentifier()),
-                JobInfoEntityRowKey = jobInfoEntity.RowKey,
+                { JobLockEntityProperties.JobInfoEntityRowKey, jobInfoEntity.RowKey },
             };
 
             IEnumerable<TableTransactionAction> transactionAddActions = new List<TableTransactionAction>
@@ -1246,13 +1245,13 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             if (steps == 1)
             {
-                return new Tuple<JobInfo, JobLockEntity>(jobInfo, jobLockEntity);
+                return new Tuple<JobInfo, TableEntity>(jobInfo, jobLockEntity);
             }
 
             var reverseIndexEntity2 = new JobReverseIndexEntity
             {
-                PartitionKey = AzureStorageKeyProvider.JobReverseIndexPartitionKey(queueType, jobInfoEntity.Id),
-                RowKey = AzureStorageKeyProvider.JobReverseIndexRowKey(queueType, jobInfoEntity.Id),
+                PartitionKey = AzureStorageKeyProvider.JobReverseIndexPartitionKey(queueType, (long)jobInfoEntity[JobInfoEntityProperties.Id]),
+                RowKey = AzureStorageKeyProvider.JobReverseIndexRowKey(queueType, (long)jobInfoEntity[JobInfoEntityProperties.Id]),
                 JobInfoEntityPartitionKey = jobInfoEntity.PartitionKey,
                 JobInfoEntityRowKey = jobInfoEntity.RowKey,
             };
@@ -1261,14 +1260,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             if (steps == 2)
             {
-                return new Tuple<JobInfo, JobLockEntity>(jobInfo, jobLockEntity);
+                return new Tuple<JobInfo, TableEntity>(jobInfo, jobLockEntity);
             }
 
-            await _azureJobMessageQueueClient.SendMessageAsync(new JobMessage(jobInfoEntity.PartitionKey, jobInfoEntity.RowKey).ToString(), CancellationToken.None);
-            return new Tuple<JobInfo, JobLockEntity>(jobInfo, jobLockEntity);
+            await _azureJobMessageQueueClient.SendMessageAsync(new JobMessage(jobInfoEntity.PartitionKey, jobInfoEntity.RowKey, jobLockEntity.RowKey).ToString(), CancellationToken.None);
+            return new Tuple<JobInfo, TableEntity>(jobInfo, jobLockEntity);
         }
 
-        private async Task CheckJob(JobInfo jobInfo, JobLockEntity? jobLockEntity = null)
+        private async Task CheckJob(JobInfo jobInfo, TableEntity? jobLockEntity = null)
         {
             var retrievedJobInfo =
                 await _azureStorageJobQueueClient.GetJobByIdAsync(
@@ -1287,26 +1286,26 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.NotNull(reverseIndexEntity);
 
             // job info entity should exist
-            var retrievedJobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobInfoEntity>(reverseIndexEntity.JobInfoEntityPartitionKey, reverseIndexEntity.JobInfoEntityRowKey)).Value;
+            var retrievedJobInfoEntity = (await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(reverseIndexEntity.JobInfoEntityPartitionKey, reverseIndexEntity.JobInfoEntityRowKey)).Value;
             Assert.NotNull(retrievedJobInfoEntity);
 
             // job lock entity should exist
             var jobLockEntityRowKey =
                 AzureStorageKeyProvider.JobLockRowKey(((FhirToDataLakeAzureStorageJobInfo)retrievedJobInfo).JobIdentifier());
             var retrievedJobLockEntity =
-                (await _azureJobInfoTableClient.GetEntityAsync<JobLockEntity>(
+                (await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(
                     retrievedJobInfoEntity.PartitionKey,
                     jobLockEntityRowKey)).Value;
             Assert.NotNull(retrievedJobLockEntity);
-            Assert.Equal(retrievedJobInfoEntity.RowKey, retrievedJobLockEntity.JobInfoEntityRowKey);
-            Assert.NotNull(retrievedJobLockEntity.JobMessageId);
-            Assert.NotNull(retrievedJobLockEntity.JobMessagePopReceipt);
+            Assert.Equal(retrievedJobInfoEntity.RowKey, retrievedJobLockEntity.GetString(JobLockEntityProperties.JobInfoEntityRowKey));
+            Assert.NotNull(retrievedJobLockEntity.GetString(JobLockEntityProperties.JobMessageId));
+            Assert.NotNull(retrievedJobLockEntity.GetString(JobLockEntityProperties.JobMessagePopReceipt));
 
             if (jobLockEntity != null)
             {
                 Assert.Equal(jobLockEntity.PartitionKey, retrievedJobLockEntity.PartitionKey);
                 Assert.Equal(jobLockEntity.RowKey, retrievedJobLockEntity.RowKey);
-                Assert.Equal(jobLockEntity.JobInfoEntityRowKey, retrievedJobLockEntity.JobInfoEntityRowKey);
+                Assert.Equal(jobLockEntity.GetString(JobLockEntityProperties.JobInfoEntityRowKey), retrievedJobLockEntity.GetString(JobLockEntityProperties.JobInfoEntityRowKey));
             }
         }
     }
