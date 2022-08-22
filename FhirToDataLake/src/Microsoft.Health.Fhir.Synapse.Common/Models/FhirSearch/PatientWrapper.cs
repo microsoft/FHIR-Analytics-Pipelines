@@ -14,7 +14,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
     {
         public PatientWrapper(
             string patientId,
-            int versionId = 0)
+            long versionId = 0)
         {
             PatientId = patientId;
             VersionId = versionId;
@@ -30,6 +30,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
         /// Version ID
         /// </summary>
         [JsonProperty("versionId")]
-        public int VersionId { get; set; }
+        public long VersionId { get; set; }
     }
 }

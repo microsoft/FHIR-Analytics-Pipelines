@@ -24,8 +24,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class SchedulerService : ISchedulerService
     {
-        private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
-
         private readonly IQueueClient _queueClient;
 
         // TODO: a tableClient provider component?
@@ -39,35 +37,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public SchedulerService(
             IQueueClient queueClient,
+            IAzureTableClientFactory azureTableClientFactory,
             IOptions<JobConfiguration> jobConfiguration,
             ILogger<SchedulerService> logger)
         {
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
-            _queueType = (byte)jobConfiguration.Value.QueueType;
-
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            EnsureArg.IsNotNull(azureTableClientFactory, nameof(azureTableClientFactory));
 
+            _queueType = (byte)jobConfiguration.Value.QueueType;
             _crontabSchedule = CrontabSchedule.Parse(jobConfiguration.Value.SchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
-
-            _instanceGuid = Guid.NewGuid();
-
-            // Create client for local emulator.
-            if (string.Equals(jobConfiguration.Value.TableUrl, StorageEmulatorConnectionString, StringComparison.OrdinalIgnoreCase))
-            {
-                _metaDataTableClient = new TableClient(
-                    jobConfiguration.Value.TableUrl,
-                    JobKeyProvider.MetadataTableName(jobConfiguration.Value.AgentName));
-            }
-            else
-            {
-                _metaDataTableClient = new TableClient(
-                    new Uri(jobConfiguration.Value.TableUrl),
-                    JobKeyProvider.MetadataTableName(jobConfiguration.Value.AgentName),
-                    new DefaultAzureCredential());
-            }
-
+            _metaDataTableClient = azureTableClientFactory.Create();
             _metaDataTableClient.CreateIfNotExists();
+            _instanceGuid = Guid.NewGuid();
         }
 
         public int PullingIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultPullingIntervalInSeconds;

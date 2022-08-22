@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
+
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     // TODO: rename
@@ -18,5 +20,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public static string LeasePartitionKey(byte queueType) => $"{queueType:D3}_lock";
 
         public static string LeaseRowKey(byte queueType) => $"{queueType:D3}_lock";
+
+        public static string CompartmentPartitionKey(byte queueType) => $"compartmentinfo_{queueType:D3}";
+
+        public static string CompartmentRowKey(string patientId) => $"{patientId.ComputeHash()}";
     }
 }
