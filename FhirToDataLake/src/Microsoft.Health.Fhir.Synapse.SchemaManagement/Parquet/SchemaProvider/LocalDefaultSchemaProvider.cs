@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Newtonsoft.Json;
 
@@ -18,6 +19,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 {
     public class LocalDefaultSchemaProvider : IParquetSchemaProvider
     {
+        private const string SchemaR4EmbeddedPrefix = "Schemas.R4";
+        private const string SchemaR5EmbeddedPrefix = "Schemas.R5";
+
         private readonly ILogger<LocalDefaultSchemaProvider> _logger;
 
         public LocalDefaultSchemaProvider(ILogger<LocalDefaultSchemaProvider> logger)
@@ -25,9 +29,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             _logger = logger;
         }
 
-        public Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default)
+        public Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(FhirVersion fhirVersion, CancellationToken cancellationToken = default)
         {
-            Dictionary<string, string> embeddedSchemas = LoadEmbeddedSchema();
+            Dictionary<string, string> embeddedSchemas = LoadEmbeddedSchema(fhirVersion);
             Dictionary<string, FhirParquetSchemaNode> defaultSchemaNodesMap;
             try
             {
@@ -46,15 +50,17 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             return Task.FromResult(defaultSchemaNodesMap);
         }
 
-        private Dictionary<string, string> LoadEmbeddedSchema()
+        private Dictionary<string, string> LoadEmbeddedSchema(FhirVersion fhirVersion)
         {
             Dictionary<string, string> embeddedSchema = new Dictionary<string, string>();
+
             var executingAssembly = Assembly.GetExecutingAssembly();
-            string folderName = string.Format("{0}.Schemas.R4", executingAssembly.GetName().Name);
+            string folderName = GetEmbeddedSchemaFolder(executingAssembly, fhirVersion);
             var resourceNames = executingAssembly
                 .GetManifestResourceNames()
                 .Where(r => r.StartsWith(folderName) && r.EndsWith(".json"))
                 .ToArray();
+
             foreach (var name in resourceNames)
             {
                 using (Stream stream = executingAssembly.GetManifestResourceStream(name))
@@ -65,6 +71,18 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             }
 
             return embeddedSchema;
+        }
+
+        private string GetEmbeddedSchemaFolder(Assembly assembly, FhirVersion fhirVersion)
+        {
+            return fhirVersion switch
+            {
+                FhirVersion.R4 => string.Format("{0}.{1}", assembly.GetName().Name, SchemaR4EmbeddedPrefix),
+                FhirVersion.R5 => string.Format("{0}.{1}", assembly.GetName().Name, SchemaR5EmbeddedPrefix),
+
+                // Will not happened because we have validated schema version when initialization.
+                _ => throw new GenerateFhirParquetSchemaNodeException($"Fhir Schema Version {fhirVersion} is not supported.")
+            };
         }
     }
 }
