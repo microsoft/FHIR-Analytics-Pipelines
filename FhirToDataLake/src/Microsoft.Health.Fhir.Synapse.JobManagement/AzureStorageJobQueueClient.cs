@@ -36,7 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         // A transaction can include at most 100 entities, so limit the jobs count to 50
         // https://docs.microsoft.com/en-us/azure/storage/tables/scalability-targets#scale-targets-for-table-storage
-        private const int MaxJobsCountForEnqueuingAtOneTime = 50;
+        private const int MaxJobsCountForEnqueuingInABatch = 50;
 
         public AzureStorageJobQueueClient(
             IAzureStorageClientFactory azureStorageClientFactory,
@@ -84,11 +84,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to enqueue {definitions.Length} jobs.");
 
-            if (definitions.Length > MaxJobsCountForEnqueuingAtOneTime)
+            if (definitions.Length > MaxJobsCountForEnqueuingInABatch)
             {
-                _logger.LogError($"The count of jobs to be enqueued is larger than the maximum allowed length {MaxJobsCountForEnqueuingAtOneTime}.");
+                _logger.LogError($"The count of jobs to be enqueued is larger than the maximum allowed length {MaxJobsCountForEnqueuingInABatch}.");
                 throw new JobManagementException(
-                    $"The count of jobs to be enqueued is larger than the maximum allowed length {MaxJobsCountForEnqueuingAtOneTime}.");
+                    $"The count of jobs to be enqueued is larger than the maximum allowed length {MaxJobsCountForEnqueuingInABatch}.");
             }
 
             // step 1: get incremental job ids, will try again if fails
