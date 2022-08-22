@@ -8,10 +8,13 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-	<PackageReference Include="Hl7.Fhir.R4" Version="3.5.0">
+    <PackageReference Include="Hl7.Fhir.R5" Version="4.2.1">
+        <Aliases>FhirR5</Aliases>
+    </PackageReference>
+	<PackageReference Include="Hl7.Fhir.R4" Version="4.2.1">
 		<Aliases>FhirR4</Aliases>
 	</PackageReference>
-	<PackageReference Include="Hl7.Fhir.STU3" Version="3.5.0">
+	<PackageReference Include="Hl7.Fhir.STU3" Version="4.2.1">
 		<Aliases>FhirStu3</Aliases>
 	</PackageReference>
     <PackageReference Include="Microsoft.Health.Parquet" Version="$(ParquetNativeLibVersion)" />
@@ -31,6 +34,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Fhir\Data\R4\search-parameters.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fhir\Data\R5\compartmentdefinition-patient.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fhir\Data\R5\search-parameters.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

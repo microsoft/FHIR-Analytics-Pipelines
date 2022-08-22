@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Liquid.Converter.Models.Json;
-using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
@@ -35,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             _schemaImageReference = schemaConfiguration.Value.SchemaImageReference;
         }
 
-        public async Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(FhirVersion fhirVersion, CancellationToken cancellationToken = default)
+        public async Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default)
         {
             var jsonSchemaCollection = await GetJsonSchemaCollectionAsync(cancellationToken);
 

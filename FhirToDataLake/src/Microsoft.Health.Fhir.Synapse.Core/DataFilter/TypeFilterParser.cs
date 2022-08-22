@@ -6,12 +6,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DotLiquid.Util;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
@@ -22,10 +26,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         private readonly IFhirSpecificationProvider _fhirSpecificationProvider;
 
         public TypeFilterParser(
-            IFhirSpecificationProvider fhirSpecificationProvider,
+            IOptions<FhirServerConfiguration> fhirServerConfiguration,
+            FhirSpecificationProviderDelegate fhirSpecificationDelegate,
             ILogger<TypeFilterParser> logger)
         {
-            _fhirSpecificationProvider = EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
+            EnsureArg.IsNotNull(fhirServerConfiguration, nameof(fhirServerConfiguration));
+            EnsureArg.IsNotNull(fhirSpecificationDelegate, nameof(fhirSpecificationDelegate));
+
+            _fhirSpecificationProvider = fhirSpecificationDelegate(fhirServerConfiguration.Value.Version);
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 

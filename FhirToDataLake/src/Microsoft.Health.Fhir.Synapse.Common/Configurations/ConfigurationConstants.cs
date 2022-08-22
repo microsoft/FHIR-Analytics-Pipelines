@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
@@ -31,5 +32,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 
         // Reference docker's image name format: https://docs.docker.com/engine/reference/commandline/tag/#extended-description
         public static readonly Regex ImageNameRegex = new Regex(@"^[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*(\/[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*)*$");
+
+        // Currently the pipeline support FHIR R4 and R5 schemas.
+        public static readonly List<FhirVersion> SupportedFhirVersions = new List<FhirVersion> { FhirVersion.R4, FhirVersion.R5 };
     }
 }
