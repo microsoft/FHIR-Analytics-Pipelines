@@ -25,6 +25,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             int nextTaskIndex = 0,
             Dictionary<string, TaskContext> runningTasks = null,
             Dictionary<string, int> totalResourceCounts = null,
+            Dictionary<string, int> outputResourceCounts = null,
+            Dictionary<string, long> outputResourceDataSize = null,
             Dictionary<string, int> processedResourceCounts = null,
             Dictionary<string, int> skippedResourceCounts = null,
             Dictionary<string, int> patientVersionId = null,
@@ -53,6 +55,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             // statistical fields
             TotalResourceCounts = totalResourceCounts ?? new Dictionary<string, int>();
             ProcessedResourceCounts = processedResourceCounts ?? new Dictionary<string, int>();
+            OutputResourceCounts = outputResourceCounts ?? new Dictionary<string, int>();
+            OutputResourceDataSize = outputResourceDataSize ?? new Dictionary<string, long>();
             SkippedResourceCounts = skippedResourceCounts ?? new Dictionary<string, int>();
             PatientVersionId = patientVersionId ?? new Dictionary<string, int>();
         }
@@ -68,6 +72,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// </summary>
         [JsonProperty("createdTime")]
         public DateTimeOffset CreatedTime { get; }
+
+        /// <summary>
+        /// Started timestamp of job.
+        /// </summary>
+        [JsonProperty("startedTime")]
+        public DateTimeOffset? StartedTime { get; set; }
 
         /// <summary>
         /// Completed timestamp of job.
@@ -125,6 +135,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         public string FailedReason { get; set; }
 
         /// <summary>
+        /// Failure exception for this job.
+        /// </summary>
+        [JsonProperty("failedException")]
+        public Exception FailedException { get; set; }
+
+        /// <summary>
         /// The next task index
         /// </summary>
         [JsonProperty("nextTaskIndex")]
@@ -141,6 +157,18 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// </summary>
         [JsonProperty("totalResourceCounts")]
         public Dictionary<string, int> TotalResourceCounts { get; set; }
+
+        /// <summary>
+        /// Output resource count (from data source) for each resource types.
+        /// </summary>
+        [JsonProperty("outputResourceCounts")]
+        public Dictionary<string, int> OutputResourceCounts { get; set; }
+
+        /// <summary>
+        /// Output resource data size for each resource types.
+        /// </summary>
+        [JsonProperty("outputResourceDataSize")]
+        public Dictionary<string, long> OutputResourceDataSize { get; set; }
 
         /// <summary>
         /// Processed resource count for each schema type.
@@ -169,6 +197,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             int nextTaskIndex = 0,
             Dictionary<string, TaskContext> runningTasks = null,
             Dictionary<string, int> totalResourceCounts = null,
+            Dictionary<string, int> outputResourceCounts = null,
+            Dictionary<string, long> outputResourceDataSize = null,
             Dictionary<string, int> processedResourceCounts = null,
             Dictionary<string, int> skippedResourceCounts = null,
             Dictionary<string, int> patientVersionId = null,
@@ -186,6 +216,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
                 nextTaskIndex,
                 runningTasks,
                 totalResourceCounts,
+                outputResourceCounts,
+                outputResourceDataSize,
                 processedResourceCounts,
                 skippedResourceCounts,
                 patientVersionId,

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using MediatR;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
+using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Notification
 {
@@ -16,12 +17,16 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Notification
         {
             Id = job.Id;
             CreatedTime = job.CreatedTime;
-            CompletedTime = job.CompletedTime;
+            StartedTime = (DateTimeOffset)job.StartedTime;
+            CompletedTime = (DateTimeOffset)job.CompletedTime;
             ContainerName = job.ContainerName;
             DataPeriod = job.DataPeriod;
             TotalResourceCounts = job.TotalResourceCounts;
+            OutputResourceCounts = job.OutputResourceCounts;
+            OutputResourceDataSize = job.OutputResourceDataSize;
             ProcessedResourceCounts = job.ProcessedResourceCounts;
             SkippedResourceCounts = job.SkippedResourceCounts;
+            DataLatency = CompletedTime - DataPeriod.End;
         }
 
         /// <summary>
@@ -35,9 +40,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Notification
         public DateTimeOffset CreatedTime { get; }
 
         /// <summary>
+        /// Started timestamp of job.
+        /// </summary>
+        public DateTimeOffset StartedTime { get; }
+
+        /// <summary>
         /// Completed timestamp of job.
         /// </summary>
-        public DateTimeOffset? CompletedTime { get; set; }
+        public DateTimeOffset CompletedTime { get; set; }
 
         /// <summary>
         /// Container name.
@@ -51,9 +61,24 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Notification
         public DataPeriod DataPeriod { get; }
 
         /// <summary>
+        /// Latency for data output pipepline.
+        /// </summary>
+        public TimeSpan DataLatency { get; }
+
+        /// <summary>
         /// Total resource count (from data source) for each resource types.
         /// </summary>
         public Dictionary<string, int> TotalResourceCounts { get; set; }
+
+        /// <summary>
+        /// Output resource count (from data source) for each resource types.
+        /// </summary>
+        public Dictionary<string, int> OutputResourceCounts { get; set; }
+
+        /// <summary>
+        /// Output resource data size for each resource types.
+        /// </summary>
+        public Dictionary<string, long> OutputResourceDataSize { get; set; }
 
         /// <summary>
         /// Processed resource count for each schema type.

@@ -28,6 +28,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             Dictionary<string, int> searchCount = null,
             Dictionary<string, int> processedCount = null,
             Dictionary<string, int> skippedCount = null,
+            Dictionary<string, int> outputCount = null,
+            Dictionary<string, long> outputDataSize = null,
             bool isCompleted = false)
         {
             // immutable fields
@@ -49,6 +51,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
             SearchCount = searchCount ?? new Dictionary<string, int>();
             ProcessedCount = processedCount ?? new Dictionary<string, int>();
             SkippedCount = skippedCount ?? new Dictionary<string, int>();
+            OutputCount = outputCount ?? new Dictionary<string, int>();
+            OutputDataSize = outputDataSize ?? new Dictionary<string, long>();
         }
 
         /// <summary>
@@ -119,6 +123,18 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// </summary>
         [JsonProperty("searchCount")]
         public Dictionary<string, int> SearchCount { get; set; }
+
+        /// <summary>
+        /// Output count for each resource type.
+        /// </summary>
+        [JsonProperty("outputCount")]
+        public Dictionary<string, int> OutputCount { get; set; }
+
+        /// <summary>
+        /// Output data size for each resource type.
+        /// </summary>
+        [JsonProperty("outputDataSize")]
+        public Dictionary<string, long> OutputDataSize { get; set; }
 
         /// <summary>
         /// Skipped count for each schema type.

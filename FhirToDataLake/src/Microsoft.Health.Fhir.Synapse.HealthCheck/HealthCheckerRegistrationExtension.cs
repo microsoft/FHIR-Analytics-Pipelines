@@ -20,6 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
             services.AddSingleton<IHealthChecker, AzureBlobStorageHealthChecker>();
 
             services.AddSingleton<IHealthChecker, FhirServerHealthChecker>();
+
             return services;
         }
     }

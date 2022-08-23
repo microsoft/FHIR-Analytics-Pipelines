@@ -59,6 +59,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             _job.TotalResourceCounts = _job.TotalResourceCounts.ConcatDictionaryCount(context.SearchCount);
                             _job.SkippedResourceCounts = _job.SkippedResourceCounts.ConcatDictionaryCount(context.SkippedCount);
                             _job.ProcessedResourceCounts = _job.ProcessedResourceCounts.ConcatDictionaryCount(context.ProcessedCount);
+                            _job.OutputResourceCounts = _job.OutputResourceCounts.ConcatDictionaryCount(context.OutputCount);
+                            _job.OutputResourceDataSize = _job.OutputResourceDataSize.ConcatDictionaryCount(context.OutputDataSize);
 
                             if (context.FilterScope == FilterScope.Group)
                             {

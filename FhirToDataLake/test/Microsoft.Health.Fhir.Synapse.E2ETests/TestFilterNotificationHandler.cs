@@ -5,12 +5,17 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.Fhir.Synapse.Common.Models.HealthCheck;
+using MediatR;
+using Microsoft.Health.Fhir.Synapse.Common.Notification;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheck
+namespace Microsoft.Health.Fhir.Synapse.E2ETests
 {
-    public interface IHealthCheckListener
+    public class TestFilterNotificationHandler : INotificationHandler<FilterNotification>
     {
-        Task ProcessHealthStatusAsync(OverallHealthStatus healthStatus, CancellationToken cancellationToken);
+        public Task Handle(FilterNotification notification, CancellationToken cancellationToken)
+        {
+            E2ETests.IsFilterNotificationTriggered = true;
+            return Task.CompletedTask;
+        }
     }
 }

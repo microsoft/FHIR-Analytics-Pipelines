@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,6 +20,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
+using Microsoft.Health.Fhir.Synapse.Common.Notification;
 using Microsoft.Health.Fhir.Synapse.Core;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient;
@@ -39,6 +41,12 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private const string TestConfigurationPath = "appsettings.test.json";
 
         private const string _expectedDataFolder = "TestData/Expected";
+
+        public static bool IsSuccessfulJobNotificationTriggered { get; set; } = false;
+
+        public static bool IsFailedJobNotificationTriggered { get; set; } = false;
+
+        public static bool IsFilterNotificationTriggered { get; set; } = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="E2ETests"/> class.
@@ -126,6 +134,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
             try
             {
+                IsSuccessfulJobNotificationTriggered = false;
+                IsFailedJobNotificationTriggered = false;
+                IsFilterNotificationTriggered = false;
+
                 // Run e2e
                 var host = CreateHostBuilder(configuration).Build();
                 await host.RunAsync();
@@ -139,6 +151,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 // Check result files
                 Assert.Equal(8, await GetResultFileCount(blobContainerClient, "result/Observation/2022/07/01"));
                 Assert.Equal(1, await GetResultFileCount(blobContainerClient, "result/Patient/2022/07/01"));
+                Assert.True(IsSuccessfulJobNotificationTriggered);
+                Assert.False(IsFailedJobNotificationTriggered);
+                Assert.True(IsFilterNotificationTriggered);
             }
             finally
             {
@@ -173,6 +188,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
             try
             {
+                IsSuccessfulJobNotificationTriggered = false;
+                IsFailedJobNotificationTriggered = false;
+                IsFilterNotificationTriggered = false;
+
                 // Run e2e
                 var host = CreateHostBuilder(configuration).Build();
                 await host.RunAsync();
@@ -190,6 +209,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
                 Assert.Empty(schedulerMetadata.FailedJobs);
                 Assert.Single(schedulerMetadata.ProcessedPatients);
+                Assert.True(IsSuccessfulJobNotificationTriggered);
+                Assert.False(IsFailedJobNotificationTriggered);
+                Assert.True(IsFilterNotificationTriggered);
             }
             finally
             {
@@ -223,6 +245,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
             try
             {
+                IsSuccessfulJobNotificationTriggered = false;
+                IsFailedJobNotificationTriggered = false;
+                IsFilterNotificationTriggered = false;
+
                 // Run e2e
                 var host = CreateHostBuilder(configuration).Build();
                 await host.RunAsync();
@@ -242,6 +268,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
                 Assert.Empty(schedulerMetadata.FailedJobs);
                 Assert.Equal(80, schedulerMetadata.ProcessedPatients.Count());
+                Assert.True(IsSuccessfulJobNotificationTriggered);
+                Assert.False(IsFailedJobNotificationTriggered);
+                Assert.True(IsFilterNotificationTriggered);
             }
             finally
             {
@@ -278,6 +307,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
             try
             {
+                IsSuccessfulJobNotificationTriggered = false;
+                IsFailedJobNotificationTriggered = false;
+                IsFilterNotificationTriggered = false;
+
                 // trigger first time, only the resources imported before end time are synced.
                 var host_1 = CreateHostBuilder(configuration).Build();
                 await host_1.RunAsync();
@@ -337,6 +370,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
                 // the total resource count of these two job should equal to all the resources count
                 Assert.True(DictionaryEquals(allResourceJob.TotalResourceCounts, totalResourceCount));
+                Assert.True(IsSuccessfulJobNotificationTriggered);
+                Assert.False(IsFailedJobNotificationTriggered);
+                Assert.True(IsFilterNotificationTriggered);
             }
             finally
             {
@@ -454,6 +490,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                         .AddDataSource()
                         .AddDataWriter()
                         .AddSchema()
+                        .AddMediatR(System.Reflection.Assembly.GetExecutingAssembly())
                         .AddHostedService<SynapseLinkService>());
     }
 }

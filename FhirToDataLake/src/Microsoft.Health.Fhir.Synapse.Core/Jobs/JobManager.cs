@@ -82,9 +82,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 try
                 {
                     job.Status = JobStatus.Running;
+                    job.StartedTime = DateTimeOffset.UtcNow;
                     await _jobExecutor.ExecuteAsync(job, cancellationToken);
                     job.Status = JobStatus.Succeeded;
                     await _jobStore.CompleteJobAsync(job, cancellationToken);
+
                     await _mediator.Publish(new SuccessfulJobNotification(job), CancellationToken.None);
                     await _mediator.Publish(new FilterNotification(job), CancellationToken.None);
                 }
@@ -92,6 +94,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     job.Status = JobStatus.Failed;
                     job.FailedReason = exception.ToString();
+                    job.FailedException = exception;
+
                     await _jobStore.CompleteJobAsync(job, cancellationToken);
                     await _mediator.Publish(new FailedJobNotification(job), CancellationToken.None);
 
@@ -118,6 +122,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     failedJob.NextTaskIndex,
                     failedJob.RunningTasks,
                     failedJob.TotalResourceCounts,
+                    failedJob.OutputResourceCounts,
+                    failedJob.OutputResourceDataSize,
                     failedJob.ProcessedResourceCounts,
                     failedJob.SkippedResourceCounts,
                     failedJob.PatientVersionId,

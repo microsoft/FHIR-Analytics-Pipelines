@@ -446,6 +446,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
 
                 foreach (var (resourceType, resources) in cacheResult.Resources)
                 {
+                    long outputDataSize = 0;
                     var inputData = new JsonBatchData(resources);
 
                     var schemaTypes = _fhirSchemaManager.GetSchemaTypes(resourceType);
@@ -458,6 +459,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
 
                         if (parquetStream?.Value?.Length > 0)
                         {
+                            outputDataSize += parquetStream.Value.Length;
+
                             if (!taskContext.OutputFileIndexMap.ContainsKey(schemaType))
                             {
                                 taskContext.OutputFileIndexMap[schemaType] = 0;
@@ -488,6 +491,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
                                 skippedCount);
                         }
 
+                        taskContext.OutputCount =
+                            taskContext.OutputCount.AddToDictionary(resourceType, parquetStream.BatchSize);
                         taskContext.SkippedCount =
                             taskContext.SkippedCount.AddToDictionary(schemaType, skippedCount);
                         taskContext.ProcessedCount =
@@ -496,6 +501,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Tasks
 
                     taskContext.SearchCount =
                         taskContext.SearchCount.AddToDictionary(resourceType, resources.Count);
+                    taskContext.OutputDataSize =
+                        taskContext.OutputDataSize.AddToDictionary(resourceType, outputDataSize);
                 }
 
                 // update task context based on cache

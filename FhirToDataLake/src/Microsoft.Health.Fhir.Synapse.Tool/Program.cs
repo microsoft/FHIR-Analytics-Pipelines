@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Fhir.Synapse.Common;
@@ -13,8 +14,6 @@ using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.HealthCheck;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
-using static Hl7.Fhir.Model.VerificationResult;
-using MediatR;
 
 namespace Microsoft.Health.Fhir.Synapse.Tool
 {
@@ -37,7 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
                         .AddDataWriter()
                         .AddSchema()
                         .AddHealthCheckService()
-                        .AddHostedService<SynapseLinkService>()
-                        .AddMediatR(typeof(Program)));
+                        .AddMediatR(typeof(Program).Assembly)
+                        .AddHostedService<SynapseLinkService>());
     }
 }

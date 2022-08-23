@@ -17,10 +17,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Notification
         {
             Id = job.Id;
             CreatedTime = job.CreatedTime;
+            StartedTime = (DateTimeOffset)job.StartedTime;
             CompletedTime = job.CompletedTime;
             ContainerName = job.ContainerName;
             DataPeriod = job.DataPeriod;
             FailedReason = job.FailedReason;
+            FailedException = job.FailedException;
             TotalResourceCounts = job.TotalResourceCounts;
             ProcessedResourceCounts = job.ProcessedResourceCounts;
             SkippedResourceCounts = job.SkippedResourceCounts;
@@ -35,6 +37,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Notification
         /// Created timestamp of job.
         /// </summary>
         public DateTimeOffset CreatedTime { get; }
+
+        /// <summary>
+        /// Started timestamp of job.
+        /// </summary>
+        public DateTimeOffset StartedTime { get; }
 
         /// <summary>
         /// Completed timestamp of job.
@@ -56,6 +63,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Notification
         /// Failure reason for this job.
         /// </summary>
         public string FailedReason { get; set; }
+
+        /// <summary>
+        /// Failure exception for this job.
+        /// </summary>
+        public Exception FailedException { get; set; }
 
         /// <summary>
         /// Total resource count (from data source) for each resource types.
