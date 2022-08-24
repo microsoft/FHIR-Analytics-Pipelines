@@ -32,6 +32,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey).Bind(options));
             services.Configure<HealthCheckConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.HealthCheckConfigurationKey).Bind(options));
+            services.Configure<StorageConfiguration>(options =>
+                configuration.GetSection(ConfigurationConstants.StorageConfigurationKey).Bind(options));
 
             // Validates the input configs.
             services.ValidateConfiguration();

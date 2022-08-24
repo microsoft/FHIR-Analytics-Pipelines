@@ -160,7 +160,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private IFhirDataWriter GetDataWriter(string containerName)
         {
-            var containerFactory = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()) ,new NullLoggerFactory());
+            var containerFactory = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), default, new NullLoggerFactory());
             var storageConfig = new DataLakeStoreConfiguration
             {
                 StorageUrl = TestBlobEndpoint,
@@ -181,7 +181,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private JobProgressUpdater GetJobUpdater(Job job)
         {
-            var containerFactory = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLoggerFactory());
+            var containerFactory = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), default, new NullLoggerFactory());
             var storageConfig = new DataLakeStoreConfiguration
             {
                 StorageUrl = TestBlobEndpoint,
