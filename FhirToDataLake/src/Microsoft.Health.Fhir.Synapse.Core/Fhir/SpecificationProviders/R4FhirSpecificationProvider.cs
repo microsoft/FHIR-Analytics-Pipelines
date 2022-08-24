@@ -15,43 +15,22 @@ using FhirR4::Hl7.Fhir.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using R4FhirModelInfo = FhirR4::Hl7.Fhir.Model.ModelInfo;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 {
     // TODO: Maybe we can get all FHIR specification directly through 'metadata' API. Thus we can remove the hard dependency with FHIR libs (which targets specific version)
-    public class R4FhirSpecificationProvider : IFhirSpecificationProvider
+    public class R4FhirSpecificationProvider : BaseFhirSpecificationProvider
     {
-        private readonly IFhirDataClient _dataClient;
-        private readonly ILogger<R4FhirSpecificationProvider> _logger;
-
-        private readonly IEnumerable<string> _excludeTypes = new List<string> { FhirConstants.StructureDefinition };
-
         /// <summary>
         /// Download from http://hl7.org/fhir/R4/compartmentdefinition-patient.json
         /// </summary>
-        private readonly IEnumerable<string> _compartmentFiles = new List<string> { "Fhir/Data/R4/compartmentdefinition-patient.json" };
+        protected override IEnumerable<string> CompartmentFiles { get; } = new List<string> { "Fhir/Data/R4/compartmentdefinition-patient.json" };
 
         /// <summary>
         /// Download from http://hl7.org/fhir/R4/search-parameters.json, which is defined in http://hl7.org/fhir/R4/searchparameter-registry.html
         /// </summary>
-        private readonly string _searchParameterFile = "Fhir/Data/R4/search-parameters.json";
-
-        /// <summary>
-        /// The resource types of each compartment type, extracted from _compartmentFiles
-        /// </summary>
-        private readonly Dictionary<string, HashSet<string>> _compartmentResourceTypesLookup;
-
-        /// <summary>
-        /// The FHIR server supported search parameters for each resource type, extracted from FHIR server metadata.
-        /// </summary>
-        private readonly Dictionary<string, HashSet<string>> _resourceTypeSearchParametersLookup;
-
-        /// <summary>
-        /// {resourceType}_{searchParameter} to search parameter id defined by
-        /// </summary>
-        private readonly Dictionary<string, string> _searchParameterIdLookup;
+        protected override string SearchParameterFile { get; } = "Fhir/Data/R4/search-parameters.json";
 
         /// <summary>
         /// search parameter id to search parameter definition, extracted from _searchParameterFile
@@ -59,139 +38,68 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         // TODO: it is not used now. enable it if we would like do more search parameter validation in pipeline
         private readonly Dictionary<string, SearchParameter> _searchParameterDefinitionLookup;
 
-        public R4FhirSpecificationProvider(
-            IFhirDataClient dataClient,
-            ILogger<R4FhirSpecificationProvider> logger)
+        public R4FhirSpecificationProvider(IFhirDataClient dataClient, ILogger<R4FhirSpecificationProvider> logger)
+            : base(dataClient, logger)
         {
-            _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
-            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
-
-            _compartmentResourceTypesLookup = BuildCompartmentResourceTypesLookup();
-
             // _searchParameterDefinitionLookup = BuildSearchParameterDefinitionLookup();
-            (_resourceTypeSearchParametersLookup, _searchParameterIdLookup) = BuildSearchParametersLookup();
         }
 
-        public IEnumerable<string> GetAllResourceTypes()
+        public override IEnumerable<string> GetAllResourceTypes()
         {
-            return R4FhirModelInfo.SupportedResources.Except(_excludeTypes);
+            return R4FhirModelInfo.SupportedResources.Except(ExcludeTypes);
         }
 
-        public bool IsValidFhirResourceType(string resourceType)
+        public override bool IsValidFhirResourceType(string resourceType)
         {
             return R4FhirModelInfo.IsKnownResource(resourceType);
         }
 
-        public IEnumerable<string> GetCompartmentResourceTypes(string compartmentType)
-        {
-            if (!IsValidCompartmentType(compartmentType))
-            {
-                _logger.LogError($"The compartment type {compartmentType} isn't a valid compartment type.");
-                throw new FhirSpecificationProviderException($"The compartment type {compartmentType} isn't a valid compartment type.");
-            }
-
-            if (!_compartmentResourceTypesLookup.ContainsKey(compartmentType))
-            {
-                _logger.LogError($"The compartment type {compartmentType} isn't supported now.");
-                throw new FhirSpecificationProviderException($"The compartment type {compartmentType} isn't supported now.");
-            }
-
-            return _compartmentResourceTypesLookup[compartmentType];
-        }
-
-        public IEnumerable<string> GetSearchParametersByResourceType(string resourceType)
-        {
-            if (!IsValidFhirResourceType(resourceType))
-            {
-                _logger.LogError($"The input {resourceType} isn't a valid resource type.");
-                throw new FhirSpecificationProviderException($"The input {resourceType} isn't a valid resource type.");
-            }
-
-            if (!_resourceTypeSearchParametersLookup.ContainsKey(resourceType))
-            {
-                _logger.LogWarning($"There isn't any search parameter defined for resource type {resourceType}.");
-                return new HashSet<string>();
-            }
-
-            return _resourceTypeSearchParametersLookup[resourceType];
-        }
-
-        private bool IsValidCompartmentType(string compartmentType)
+        protected override bool IsValidCompartmentType(string compartmentType)
         {
             return compartmentType != null && Enum.IsDefined(typeof(CompartmentType), compartmentType);
         }
 
-        private Dictionary<string, HashSet<string>> BuildCompartmentResourceTypesLookup()
+        protected override Dictionary<string, HashSet<string>> BuildCompartmentResourceTypesLookupFromCompartmentContext(string compartmentContext, string compartmentFile)
         {
             var parser = new FhirJsonParser();
             var compartmentResourceTypesLookup = new Dictionary<string, HashSet<string>>();
 
-            foreach (var compartmentFile in _compartmentFiles)
+            CompartmentDefinition compartment;
+
+            try
             {
-                string compartmentContext;
-                try
-                {
-                    compartmentContext = File.ReadAllText(compartmentFile);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.");
-                    throw new FhirSpecificationProviderException($"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.", ex);
-                }
+                compartment = parser.Parse<CompartmentDefinition>(compartmentContext);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError($"Failed to parse compartment definition from file {compartmentFile}. Reason: {exception.Message}");
+                throw new FhirSpecificationProviderException($"Failed to parse compartment definition from file {compartmentFile}.", exception);
+            }
 
-                CompartmentDefinition compartment;
-
-                try
+            var compartmentType = compartment.Code?.ToString();
+            if (IsValidCompartmentType(compartmentType))
+            {
+                var resourceTypes = compartment.Resource?.Where(x => x.Param.Any()).Select(x => x.Code?.ToString()).ToHashSet();
+                if (resourceTypes == null)
                 {
-                    compartment = parser.Parse<CompartmentDefinition>(compartmentContext);
-                }
-                catch (Exception exception)
-                {
-                    _logger.LogError($"Failed to parse compartment definition from file {compartmentFile}. Reason: {exception.Message}");
-                    throw new FhirSpecificationProviderException($"Failed to parse compartment definition from file {compartmentFile}.", exception);
-                }
-
-                var compartmentType = compartment.Code?.ToString();
-                if (IsValidCompartmentType(compartmentType))
-                {
-                    var resourceTypes = compartment.Resource?.Where(x => x.Param.Any()).Select(x => x.Code?.ToString()).ToHashSet();
-                    if (resourceTypes == null)
-                    {
-                        _logger.LogWarning($"There is not any resource type defined for compartment type {compartmentType} in file {compartmentFile}");
-                    }
-                    else
-                    {
-                        compartmentResourceTypesLookup.Add(compartmentType, resourceTypes);
-                        _logger.LogInformation($"There are {resourceTypes.Count} resources type pertained to compartment type {compartmentType}.");
-                    }
+                    _logger.LogWarning($"There is not any resource type defined for compartment type {compartmentType} in file {compartmentFile}");
                 }
                 else
                 {
-                    _logger.LogWarning($"The compartment type {compartmentType} in file {compartmentFile} isn't a valid compartment type.");
+                    compartmentResourceTypesLookup.Add(compartmentType, resourceTypes);
+                    _logger.LogInformation($"There are {resourceTypes.Count} resources type pertained to compartment type {compartmentType}.");
                 }
+            }
+            else
+            {
+                _logger.LogWarning($"The compartment type {compartmentType} in file {compartmentFile} isn't a valid compartment type.");
             }
 
             return compartmentResourceTypesLookup;
         }
 
-        /// <summary>
-        /// Retrieve Fhir server metadata and build _resourceTypeSearchParametersLookup based on it.
-        /// </summary>
-        private Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>> BuildSearchParametersLookup()
+        protected override Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>> BuildSearchParametersLookupFromMetadata(string metaData)
         {
-            var metadataOptions = new MetadataOptions();
-
-            string metaData;
-            try
-            {
-                metaData = _dataClient.Search(metadataOptions);
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError($"Failed to request Fhir server metadata. Reason: {exception.Message}.");
-                throw new FhirSpecificationProviderException($"Failed to request Fhir server metadata.", exception);
-            }
-
             var parser = new FhirJsonParser();
 
             CapabilityStatement capabilityStatement;
@@ -250,19 +158,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         /// <returns>search parameter url to searchParameter object dictionary</returns>
         private Dictionary<string, SearchParameter> BuildSearchParameterDefinitionLookup()
         {
-            var parser = new FhirJsonParser();
-
             string bundleContext;
             try
             {
-                bundleContext = File.ReadAllText(_searchParameterFile);
+                bundleContext = File.ReadAllText(SearchParameterFile);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Read search parameter file \"{_searchParameterFile}\" failed. Reason: {ex.Message}.");
-                throw new FhirSpecificationProviderException($"Read search parameter file \"{_searchParameterFile}\" failed. Reason: {ex.Message}.", ex);
+                _logger.LogError($"Read search parameter file \"{SearchParameterFile}\" failed. Reason: {ex.Message}.");
+                throw new FhirSpecificationProviderException($"Read search parameter file \"{SearchParameterFile}\" failed. Reason: {ex.Message}.", ex);
             }
 
+            var parser = new FhirJsonParser();
             Bundle bundle;
             try
             {
@@ -270,15 +177,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             catch (Exception exception)
             {
-                _logger.LogError($"Failed to parse parameter bundle from file {_searchParameterFile}. Reason: {exception.Message}.");
-                throw new FhirSpecificationProviderException($"Failed to parse parameter bundle from file {_searchParameterFile}.", exception);
+                _logger.LogError($"Failed to parse parameter bundle from file {SearchParameterFile}. Reason: {exception.Message}.");
+                throw new FhirSpecificationProviderException($"Failed to parse parameter bundle from file {SearchParameterFile}.", exception);
             }
 
             var searchParameterDefinition = new Dictionary<string, SearchParameter>();
             if (bundle.Entry == null)
             {
-                _logger.LogError($"Failed to build SearchParameterDefinitionLookup from file {_searchParameterFile}, the bundle entry is null.");
-                throw new FhirSpecificationProviderException($"Failed to build SearchParameterDefinitionLookup from file {_searchParameterFile}, the bundle entry is null.");
+                _logger.LogError($"Failed to build SearchParameterDefinitionLookup from file {SearchParameterFile}, the bundle entry is null.");
+                throw new FhirSpecificationProviderException($"Failed to build SearchParameterDefinitionLookup from file {SearchParameterFile}, the bundle entry is null.");
             }
 
             foreach (var searchParameter in bundle.Entry.Select(entryComponent => (SearchParameter)entryComponent.Resource))
@@ -298,8 +205,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 if (searchParameterDefinition.ContainsKey(searchParameter.Url))
                 {
                     _logger.LogError(
-                        $"Failed to build SearchParameterDefinitionLookup from file {_searchParameterFile}, there are more than one search parameter definition for {searchParameter.Id} (url: {searchParameter.Url}).");
-                    throw new FhirSpecificationProviderException($"Failed to build SearchParameterDefinitionLookup from file {_searchParameterFile}, there are more than one search parameter definition for {searchParameter.Id} (url: {searchParameter.Url}).");
+                        $"Failed to build SearchParameterDefinitionLookup from file {SearchParameterFile}, there are more than one search parameter definition for {searchParameter.Id} (url: {searchParameter.Url}).");
+                    throw new FhirSpecificationProviderException($"Failed to build SearchParameterDefinitionLookup from file {SearchParameterFile}, there are more than one search parameter definition for {searchParameter.Id} (url: {searchParameter.Url}).");
                 }
 
                 searchParameterDefinition[searchParameter.Url] = searchParameter;
@@ -309,7 +216,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
             return searchParameterDefinition;
         }
-
-        private string SearchParameterKey(string resourceType, string searchParameter) => $"{resourceType}_{searchParameter}";
     }
 }

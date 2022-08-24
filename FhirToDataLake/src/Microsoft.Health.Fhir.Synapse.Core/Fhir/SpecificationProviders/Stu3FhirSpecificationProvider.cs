@@ -11,26 +11,48 @@ using Stu3FhirModelInfo = FhirStu3::Hl7.Fhir.Model.ModelInfo;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 {
-    public class Stu3FhirSpecificationProvider : IFhirSpecificationProvider
+    public class Stu3FhirSpecificationProvider : BaseFhirSpecificationProvider
     {
-        private readonly IEnumerable<string> _excludeTypes = new List<string> { FhirConstants.StructureDefinition };
-
-        public IEnumerable<string> GetAllResourceTypes()
+        public Stu3FhirSpecificationProvider()
+            : base(null, null)
         {
-            return Stu3FhirModelInfo.SupportedResources.Except(_excludeTypes);
         }
 
-        public bool IsValidFhirResourceType(string resourceType)
+        protected override IEnumerable<string> CompartmentFiles { get; } = null;
+
+        protected override string SearchParameterFile { get; } = null;
+
+        public override IEnumerable<string> GetAllResourceTypes()
+        {
+            return Stu3FhirModelInfo.SupportedResources.Except(ExcludeTypes);
+        }
+
+        public override bool IsValidFhirResourceType(string resourceType)
         {
             return Stu3FhirModelInfo.IsKnownResource(resourceType);
         }
 
-        public IEnumerable<string> GetCompartmentResourceTypes(string compartmentType)
+        public override IEnumerable<string> GetCompartmentResourceTypes(string compartmentType)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<string> GetSearchParametersByResourceType(string resourceType)
+        public override IEnumerable<string> GetSearchParametersByResourceType(string resourceType)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>> BuildSearchParametersLookupFromMetadata(string metaData)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Dictionary<string, HashSet<string>> BuildCompartmentResourceTypesLookupFromCompartmentContext(string compartmentContext, string compartmentFile)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override bool IsValidCompartmentType(string compartmentType)
         {
             throw new NotImplementedException();
         }

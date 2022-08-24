@@ -6,6 +6,8 @@
 using System;
 using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
@@ -30,22 +32,27 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         public TypeFilterParserTests()
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var fhirServerConfigurationOption = Options.Create(new FhirServerConfiguration()
+            {
+                Version = Common.FhirVersion.R4,
+            });
 
-            var metadataOptions = new MetadataOptions();
-            dataClient.Search(metadataOptions)
-                .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile));
-
-            var fhirSpecificationProvider = new R4FhirSpecificationProvider(dataClient, _nullR4FhirSpecificationProviderLogger);
-
-            _typeFilterParser = new TypeFilterParser(fhirSpecificationProvider, _nullTypeFilterLogger);
+            _typeFilterParser = new TypeFilterParser(fhirServerConfigurationOption, TestUtils.TestFhirSpecificationProviderDelegate, _nullTypeFilterLogger);
         }
 
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
+            var fhirServerConfigurationOption = Options.Create(new FhirServerConfiguration()
+            {
+                Version = Common.FhirVersion.R4,
+            });
+
             Assert.Throws<ArgumentNullException>(
-                () => new TypeFilterParser(null, _nullTypeFilterLogger));
+                () => new TypeFilterParser(null, TestUtils.TestFhirSpecificationProviderDelegate, _nullTypeFilterLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new TypeFilterParser(fhirServerConfigurationOption, null, _nullTypeFilterLogger));
         }
 
         [Theory]

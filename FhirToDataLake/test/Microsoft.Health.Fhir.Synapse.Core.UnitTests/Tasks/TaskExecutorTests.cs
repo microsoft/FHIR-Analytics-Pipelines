@@ -131,7 +131,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private static IParquetSchemaProvider ParquetSchemaProviderDelegate(string name)
         {
-            return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
+            return new LocalDefaultSchemaProvider(
+                Options.Create(new FhirServerConfiguration()),
+                NullLogger<LocalDefaultSchemaProvider>.Instance);
         }
 
         private static IFhirSchemaManager<FhirParquetSchemaNode> GetFhirSchemaManager()
@@ -160,7 +162,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private IFhirDataWriter GetDataWriter(string containerName)
         {
-            var containerFactory = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()) ,new NullLoggerFactory());
+            var containerFactory = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLoggerFactory());
             var storageConfig = new DataLakeStoreConfiguration
             {
                 StorageUrl = TestBlobEndpoint,

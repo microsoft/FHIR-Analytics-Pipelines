@@ -9,8 +9,13 @@ using System.Linq;
 using DotLiquid;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
+using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
+using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
@@ -68,7 +73,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         {
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
             {
-                return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
+                return new LocalDefaultSchemaProvider(
+                    Options.Create(new FhirServerConfiguration()),
+                    NullLogger<LocalDefaultSchemaProvider>.Instance);
             }
             else
             {
@@ -98,6 +105,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
                     GetMockAcrTemplateProvider(),
                     Options.Create(TestCustomSchemaConfiguration),
                     NullLogger<CustomSchemaConverter>.Instance);
+            }
+        }
+
+        public static IFhirSpecificationProvider TestFhirSpecificationProviderDelegate(FhirVersion fhirVersion)
+        {
+            var dataClient = Substitute.For<IFhirDataClient>();
+
+            var metadataOptions = new MetadataOptions();
+            dataClient.Search(metadataOptions)
+                .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile));
+
+            if (fhirVersion == FhirVersion.R4)
+            {
+                return new R4FhirSpecificationProvider(dataClient, NullLogger<R4FhirSpecificationProvider>.Instance);
+            }
+            else
+            {
+                return new R4FhirSpecificationProvider(dataClient, NullLogger<R4FhirSpecificationProvider>.Instance);
             }
         }
     }

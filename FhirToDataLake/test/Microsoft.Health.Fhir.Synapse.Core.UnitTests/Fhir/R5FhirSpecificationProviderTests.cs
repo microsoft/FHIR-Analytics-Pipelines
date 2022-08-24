@@ -18,34 +18,34 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
 {
-    public class R4FhirSpecificationProviderTests
+    public class R5FhirSpecificationProviderTests
     {
-        private IFhirSpecificationProvider _r4FhirSpecificationProvider;
+        private IFhirSpecificationProvider _r5FhirSpecificationProvider;
 
-        private readonly NullLogger<R4FhirSpecificationProvider> _nullR4FhirSpecificationProviderLogger =
-            NullLogger<R4FhirSpecificationProvider>.Instance;
+        private readonly NullLogger<R5FhirSpecificationProvider> _nullR5FhirSpecificationProviderLogger =
+            NullLogger<R5FhirSpecificationProvider>.Instance;
 
-        public R4FhirSpecificationProviderTests()
+        public R5FhirSpecificationProviderTests()
         {
             var dataClient = Substitute.For<IFhirDataClient>();
 
             var metadataOptions = new MetadataOptions();
             dataClient.Search(metadataOptions)
-                .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile));
+                .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.R5MetadataFile));
 
-            _r4FhirSpecificationProvider = new R4FhirSpecificationProvider(dataClient, _nullR4FhirSpecificationProviderLogger);
+            _r5FhirSpecificationProvider = new R5FhirSpecificationProvider(dataClient, _nullR5FhirSpecificationProviderLogger);
         }
 
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new R4FhirSpecificationProvider(null, _nullR4FhirSpecificationProviderLogger));
+                () => new R5FhirSpecificationProvider(null, _nullR5FhirSpecificationProviderLogger));
 
             var dataClient = Substitute.For<IFhirDataClient>();
 
             Assert.Throws<ArgumentNullException>(
-                () => new R4FhirSpecificationProvider(dataClient, null));
+                () => new R5FhirSpecificationProvider(dataClient, null));
         }
 
         [Fact]
@@ -54,7 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
             var dataClient = Substitute.For<IFhirDataClient>();
             dataClient.SearchAsync(default, default).ThrowsForAnyArgs(new FhirSearchException("mockException"));
             Assert.Throws<FhirSpecificationProviderException>(
-                () => new R4FhirSpecificationProvider(dataClient, _nullR4FhirSpecificationProviderLogger));
+                () => new R5FhirSpecificationProvider(dataClient, _nullR5FhirSpecificationProviderLogger));
         }
 
         [Theory]
@@ -68,22 +68,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
             dataClient.SearchAsync(default, default).ReturnsForAnyArgs(metadataContent);
 
             Assert.Throws<FhirSpecificationProviderException>(
-                () => new R4FhirSpecificationProvider(dataClient, _nullR4FhirSpecificationProviderLogger));
+                () => new R5FhirSpecificationProvider(dataClient, _nullR5FhirSpecificationProviderLogger));
         }
 
         [Fact]
         public void WhenGetAllResourceTypes_TheResourcesTypeShouldBeReturned()
         {
-            var types = _r4FhirSpecificationProvider.GetAllResourceTypes().ToList();
-            Assert.Equal(145, types.Count);
+            var types = _r5FhirSpecificationProvider.GetAllResourceTypes().ToList();
+            Assert.Equal(151, types.Count);
         }
 
         [Theory]
         [InlineData("Patient")]
-        [InlineData("Account")]
+        [InlineData("InventoryReport")]
+        [InlineData("EvidenceReport")]
         public void GivenValidResourceType_WhenCheckIsFhirResourceType_TrueShouldBeReturned(string type)
         {
-            var isValid = _r4FhirSpecificationProvider.IsValidFhirResourceType(type);
+            var isValid = _r5FhirSpecificationProvider.IsValidFhirResourceType(type);
             Assert.True(isValid);
         }
 
@@ -97,15 +98,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [InlineData("Patient ")]
         public void GivenInvalidResourceType_WhenCheckIsFhirResourceType_FalseShouldBeReturned(string type)
         {
-            var isValid = _r4FhirSpecificationProvider.IsValidFhirResourceType(type);
+            var isValid = _r5FhirSpecificationProvider.IsValidFhirResourceType(type);
             Assert.False(isValid);
         }
 
         [Fact]
         public void GivenValidCompartmentType_WhenGetCompartmentResourceTypes_ResourceTypesShouldBeReturned()
         {
-            var types = _r4FhirSpecificationProvider.GetCompartmentResourceTypes("Patient");
-            Assert.Equal(66, types.Count());
+            var types = _r5FhirSpecificationProvider.GetCompartmentResourceTypes("Patient");
+            Assert.Equal(68, types.Count());
         }
 
         [Theory]
@@ -120,17 +121,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [InlineData("Patient ")]
         public void GivenInvalidCompartmentType_WhenGetCompartmentResourceTypes_ExceptionShouldBeThrown(string type)
         {
-            Assert.Throws<FhirSpecificationProviderException>(() => _r4FhirSpecificationProvider.GetCompartmentResourceTypes(type));
+            Assert.Throws<FhirSpecificationProviderException>(() => _r5FhirSpecificationProvider.GetCompartmentResourceTypes(type));
         }
 
         [Theory]
         [InlineData("Patient", 29)]
-        [InlineData("Account", 14)]
+        [InlineData("InventoryReport", 6)]
+        [InlineData("EvidenceReport", 15)]
         public void GivenValidResourceType_WhenGetSearchParametersByResourceType_SearchParametersShouldBeReturned(
             string type,
             int cnt)
         {
-            var parameters = _r4FhirSpecificationProvider.GetSearchParametersByResourceType(type).ToList();
+            var parameters = _r5FhirSpecificationProvider.GetSearchParametersByResourceType(type).ToList();
             Assert.NotEmpty(parameters);
             Assert.Equal(cnt, parameters.Count);
             Assert.Contains("_id", parameters);
@@ -145,7 +147,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [InlineData("Patient ")]
         public void GivenInvalidResourceType_WhenGetSearchParametersByResourceType_ExceptionShouldBeThrown(string type)
         {
-            Assert.Throws<FhirSpecificationProviderException>(() => _r4FhirSpecificationProvider.GetSearchParametersByResourceType(type));
+            Assert.Throws<FhirSpecificationProviderException>(() => _r5FhirSpecificationProvider.GetSearchParametersByResourceType(type));
         }
     }
 }

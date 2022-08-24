@@ -83,7 +83,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             return embeddedSchema;
         }
 
-
         private static string GetEmbeddedSchemaFolder(Assembly assembly, FhirVersion fhirVersion)
         {
             return fhirVersion switch
