@@ -12,10 +12,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
-using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
-using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
-using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
@@ -27,9 +23,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         private readonly NullLogger<TypeFilterParser> _nullTypeFilterLogger =
             NullLogger<TypeFilterParser>.Instance;
 
-        private readonly NullLogger<R4FhirSpecificationProvider> _nullR4FhirSpecificationProviderLogger =
-            NullLogger<R4FhirSpecificationProvider>.Instance;
-
         public TypeFilterParserTests()
         {
             var fhirServerConfigurationOption = Options.Create(new FhirServerConfiguration()
@@ -37,7 +30,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 Version = Common.FhirVersion.R4,
             });
 
-            _typeFilterParser = new TypeFilterParser(fhirServerConfigurationOption, TestUtils.TestFhirSpecificationProviderDelegate, _nullTypeFilterLogger);
+            _typeFilterParser = new TypeFilterParser(
+                fhirServerConfigurationOption,
+                TestUtils.TestFhirSpecificationProviderDelegate,
+                _nullTypeFilterLogger);
         }
 
         [Fact]
