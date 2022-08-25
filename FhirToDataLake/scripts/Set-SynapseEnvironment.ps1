@@ -18,6 +18,9 @@
 .PARAMETER ResultPath
     Default: result
     Path to the parquet FHIR data.
+.PARAMETER FhirVersion
+    Default: R4
+    The fhir version of Parquet data on the storage.
 .PARAMETER SqlScriptCollectionPath
     Default: sql/Resources
     Path to the sql scripts directory to create EXTERNAL TABLEs and VIEWs.
@@ -40,11 +43,18 @@ Param(
     [string]$StorageName,
     [string]$Container = "fhir",
     [string]$ResultPath = "result",
-    [string]$SqlScriptCollectionPath = "sql/Resources",
+    [string]$FhirVersion = "R4",
+    [string]$SqlScriptCollectionPath = "sql",
     [string]$MasterKey = "FhirSynapseLink0!",
     [int]$Concurrent = 30,
     [string]$CustomizedSchemaImage
 )
+
+# TODO: Align Tags here and ARM template, maybe save schemas in Storage/ACR and run remotely.
+$Tags = @{
+    "FhirAnalyticsPipeline" = "FhirToDataLake"
+    "FhirSchemaVersion" = "v0.4.0"
+}
 
 $JobName = "FhirSynapseJob"
 $PlaceHolderName = ".readme.txt"
@@ -54,10 +64,19 @@ $OrasDirectoryPath = "Oras"
 $OrasAppPath = "oras.exe"
 $OrasWinUrl = "https://github.com/deislabs/oras/releases/download/v0.12.0/oras_0.12.0_windows_amd64.tar.gz"
 
-# TODO: Align Tags here and ARM template, maybe save schemas in Storage/ACR and run remotely.
-$Tags = @{
-    "FhirAnalyticsPipeline" = "FhirToDataLake"
-    "FhirSchemaVersion" = "v0.4.0"
+
+$FhirVersion = $FhirVersion.ToUpper()
+if ($FhirVersion -eq "R4")
+{
+    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r4" "Resources"
+}
+elseif ($FhirVersion -eq "R5")
+{
+    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r5" "Resources"
+}
+else
+{
+    throw " -> The FHIR version '$FhirVersion' is not supported."
 }
 
 function New-FhirDatabase
@@ -70,7 +89,7 @@ function New-FhirDatabase
             -Query "CREATE DATABASE $databaseName" -ErrorAction Stop
     }
     catch {
-        Write-Host "Create database '$databaseName' on '$serviceEndpoint' failed: $($_.ToString())" 
+        Write-Host " -> Create database '$databaseName' on '$serviceEndpoint' failed: $($_.ToString())" 
         throw
     }
 }
@@ -86,7 +105,7 @@ function Remove-FhirDatabase
             -Query "DROP DATABASE $databaseName" -ErrorAction Stop
     }
     catch {
-        Write-Host "Remove database '$databaseName' on '$serviceEndpoint' failed: $($_.ToString())" 
+        Write-Host " -> Remove database '$databaseName' on '$serviceEndpoint' failed: $($_.ToString())" 
         throw
     }
 }
@@ -124,7 +143,7 @@ function Set-InitializeEnvironment
             -Query $initializeEnvironmentSql -ErrorAction Stop
     }
     catch {
-        Write-Host "Initialize environment on '$databaseName' of '$serviceEndpoint' failed: $($_.ToString())" 
+        Write-Host " -> Initialize environment on '$databaseName' of '$serviceEndpoint' failed: $($_.ToString())" 
         throw
     }
 }
@@ -206,7 +225,7 @@ function New-TableAndViewsForResources
             if ($finishedJob.State -eq 'Failed') {
                 Write-Host " -> $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
                 Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
-                throw "Creating Table and Views job failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+                throw " -> Creating Table and Views job failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
             }
         }
         $filePath = $file.FullName
@@ -230,7 +249,7 @@ function New-TableAndViewsForResources
         if ($finishedJob.State -eq 'Failed') {
             Write-Host " -> $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
             Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
-            throw "Creating Table and Views job failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+            throw " -> Creating Table and Views job failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
         }
     }
 }
@@ -241,10 +260,10 @@ function Execute_File
     & $fileName $argumentList
 
     if ($LastExitCode -ne 0) {
-        throw "Failed for executing '$fileName $argumentList'."
+        throw " -> Failed for executing '$fileName $argumentList'."
     }
 
-    Write-Host "Finish executing '$fileName $argumentList'." -ForegroundColor Green
+    Write-Host " -> Finish executing '$fileName $argumentList'." -ForegroundColor Green
 }
 
 function Get-OrasExeApp {
@@ -263,7 +282,7 @@ function Get-OrasExeApp {
         Invoke-WebRequest $orasUrl -OutFile $orasGzFile -ErrorAction Stop
     }
     catch {
-        Write-Host "Download oras application from $orasUrl failed: $($_.ToString())" -BackgroundColor Red
+        Write-Host " -> Download oras application from $orasUrl failed: $($_.ToString())" -BackgroundColor Red
         throw
     }
 
@@ -302,7 +321,7 @@ function Get-CustomizedSchemaImage {
     Execute_File -fileName ".\$orasAppPath" -argumentList $orasParameters
 
     $compressPackages = Get-ChildItem -Path * -Include '*.tar.gz' -Name
-    Write-Host "Successfully pull the customized schema image: $compressPackages" -ForegroundColor Green
+    Write-Host " -> Successfully pull the customized schema image: $compressPackages" -ForegroundColor Green
 
     # Unpack the image compressed package to customized template directory    
     if (!(Test-Path $customizedTemplateDirectory)){
@@ -339,7 +358,7 @@ function Get-CustomizedTableSql {
             'boolean' { 'bit' ; Break }
             'string' { 'NVARCHAR(4000)' ; Break }
             Default {
-                Write-Host "Invalid property type in '$schemaType.$($property.Name)': $($property.Value['type'])"
+                Write-Host " -> Invalid property type in '$schemaType.$($property.Name)': $($property.Value['type'])"
                 throw
             }
         }
@@ -376,7 +395,7 @@ function New-CustomizedTables
             if ($finishedJob.State -eq 'Failed') {
                 Write-Host " -> $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
                 Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
-                throw "Create customized Table failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+                throw " -> Create customized Table failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
             }
         }
 
@@ -405,7 +424,7 @@ function New-CustomizedTables
         if ($finishedJob.State -eq 'Failed') {
             Write-Host " -> $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
             Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
-            throw "Create customized Table failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+            throw " -> Create customized Table failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
         }
     }
 }
@@ -422,7 +441,7 @@ try {
     $synapse = Get-AzSynapseWorkspace -Name $SynapseWorkspaceName -ErrorAction Stop
 }
 catch {
-    Write-Host "Get Synapse instance '$synapseWorkspaceName' failed: $($_.ToString())."
+    Write-Host " -> Get Synapse instance '$synapseWorkspaceName' failed: $($_.ToString())."
     throw
 }
 
@@ -437,13 +456,13 @@ try {
         -Query "SELECT DB_ID('$Database')" -ErrorAction Stop
 }
 catch {
-    Write-Host "Failed to connect to '$synapseSqlServerEndpoint': $($_.ToString())."
+    Write-Host " -> Failed to connect to '$synapseSqlServerEndpoint': $($_.ToString())."
     throw
 }
 # Throw exception if database already exists.
 if ([string]$dbId.Column1)
 {
-    throw "Database '$Database' already exist, please use another database name or drop it."
+    throw " -> Database '$Database' already exist, please use another database name or drop it."
 }
 
 # Create tag on Synapse
@@ -459,7 +478,7 @@ try {
         -containerName $Container
 }
 catch {
-    Write-Host "Create container '$Container' on '$StorageName' failed: $($_.ToString())."
+    Write-Host " -> Create container '$Container' on '$StorageName' failed: $($_.ToString())."
     throw
 }
 
@@ -474,7 +493,7 @@ try{
 }
 catch
 {
-    Write-Host "Create place holder blobs for default schema data failed: $($_.ToString())."
+    Write-Host " -> Create place holder blobs for default schema data failed: $($_.ToString())."
     throw
 }
 
@@ -513,7 +532,7 @@ catch{
 # 3. Create Tables for customized schema data.
 ###
 if ($CustomizedSchemaImage) {
-    Write-Host "Create Tables for customized schema data, use schema image from $($CustomizedSchemaImage)." -ForegroundColor Green 
+    Write-Host " -> Create Tables for customized schema data, use schema image from $($CustomizedSchemaImage)." -ForegroundColor Green 
     try {
         # a). Download oras application if it not exist.
         Get-OrasExeApp `
