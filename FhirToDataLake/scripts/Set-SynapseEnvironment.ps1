@@ -89,7 +89,7 @@ function New-FhirDatabase
             -Query "CREATE DATABASE $databaseName" -ErrorAction Stop
     }
     catch {
-        Write-Host " -> Create database '$databaseName' on '$serviceEndpoint' failed: $($_.ToString())" 
+        Write-Host "Create database '$databaseName' on '$serviceEndpoint' failed: $($_.ToString())" 
         throw
     }
 }
@@ -105,7 +105,7 @@ function Remove-FhirDatabase
             -Query "DROP DATABASE $databaseName" -ErrorAction Stop
     }
     catch {
-        Write-Host " -> Remove database '$databaseName' on '$serviceEndpoint' failed: $($_.ToString())" 
+        Write-Host "Remove database '$databaseName' on '$serviceEndpoint' failed: $($_.ToString())" 
         throw
     }
 }
@@ -143,7 +143,7 @@ function Set-InitializeEnvironment
             -Query $initializeEnvironmentSql -ErrorAction Stop
     }
     catch {
-        Write-Host " -> Initialize environment on '$databaseName' of '$serviceEndpoint' failed: $($_.ToString())" 
+        Write-Host "Initialize environment on '$databaseName' of '$serviceEndpoint' failed: $($_.ToString())" 
         throw
     }
 }
@@ -154,10 +154,10 @@ function New-ContainerIfNotExists
 
     $storageContext = New-AzStorageContext -StorageAccountName $storageName -UseConnectedAccount
     if(Get-AzStorageContainer -Name $containerName -Context $storageContext -ErrorAction SilentlyContinue)  {
-        Write-Host " -> Container '$containerName' already exists." -ForegroundColor Green 
+        Write-Host "Container '$containerName' already exists." -ForegroundColor Green 
     }
     else{
-        Write-Host " -> Create container '$containerName'." -ForegroundColor Green 
+        Write-Host "Create container '$containerName'." -ForegroundColor Green 
         New-AzStorageContainer -Name $containerName -Context $storageContext -ErrorAction Stop
     }
 }
@@ -175,9 +175,9 @@ function New-PlaceHolderBlobs
             Remove-Job -Job $finishedJob
 
             if ($finishedJob.State -eq 'Failed') {
-                Write-Host " -> $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
+                Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
                 Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
-                throw " -> Uploading readme files to storage failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+                throw "Uploading readme files to storage failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
             }
         }
 
@@ -200,9 +200,9 @@ function New-PlaceHolderBlobs
         Remove-Job -Job $finishedJob
 
         if ($finishedJob.State -eq 'Failed') {
-            Write-Host " -> $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
+            Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
             Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
-            throw " -> Uploading readme files to storage failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+            throw "Uploading readme files to storage failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
         }
     }
 }
@@ -214,7 +214,7 @@ function New-TableAndViewsForResources
     $files = Get-ChildItem $SqlScriptCollectionPath -Filter "*.sql"
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
 
-    Write-Host " -> Start creating default TABLEs and VIEWs on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
+    Write-Host "Start creating default TABLEs and VIEWs on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
     
     foreach ($file in $files) {
         $jobs = @(Get-Job -Name $JobName -ErrorAction Ignore)
@@ -223,9 +223,9 @@ function New-TableAndViewsForResources
             Remove-Job -Job $finishedJob
 
             if ($finishedJob.State -eq 'Failed') {
-                Write-Host " -> $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
+                Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
                 Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
-                throw " -> Creating Table and Views job failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+                throw "Creating Table and Views job failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
             }
         }
         $filePath = $file.FullName
@@ -247,9 +247,9 @@ function New-TableAndViewsForResources
         Remove-Job -Job $finishedJob
 
         if ($finishedJob.State -eq 'Failed') {
-            Write-Host " -> $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
+            Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
             Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
-            throw " -> Creating Table and Views job failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+            throw "Creating Table and Views job failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
         }
     }
 }
@@ -260,10 +260,10 @@ function Execute_File
     & $fileName $argumentList
 
     if ($LastExitCode -ne 0) {
-        throw " -> Failed for executing '$fileName $argumentList'."
+        throw "Failed for executing '$fileName $argumentList'."
     }
 
-    Write-Host " -> Finish executing '$fileName $argumentList'." -ForegroundColor Green
+    Write-Host "Finish executing '$fileName $argumentList'." -ForegroundColor Green
 }
 
 function Get-OrasExeApp {
@@ -273,16 +273,16 @@ function Get-OrasExeApp {
     # Check if oras.exe have already been downloaded
     if ((test-Path -Path $orasAppPath))
     {
-        Write-Host " -> Oras application have already exist" -ForegroundColor Green 
+        Write-Host "Oras application have already exist" -ForegroundColor Green 
         return
     }
 
-    Write-Host " -> Start download oras application from $orasUrl" -ForegroundColor Green 
+    Write-Host "Start download oras application from $orasUrl" -ForegroundColor Green 
     try {
         Invoke-WebRequest $orasUrl -OutFile $orasGzFile -ErrorAction Stop
     }
     catch {
-        Write-Host " -> Download oras application from $orasUrl failed: $($_.ToString())" -BackgroundColor Red
+        Write-Host "Download oras application from $orasUrl failed: $($_.ToString())" -BackgroundColor Red
         throw
     }
 
@@ -303,7 +303,7 @@ function Get-OrasExeApp {
 
     Copy-Item "$orasDirectoryPath\$orasAppPath" -Destination "."
     Remove-Item $orasGzFile
-    Write-Host " -> Finish download oras application from $orasUrl" -ForegroundColor Green 
+    Write-Host "Finish download oras application from $orasUrl" -ForegroundColor Green 
 }
 
 function Get-CustomizedSchemaImage {
@@ -321,7 +321,7 @@ function Get-CustomizedSchemaImage {
     Execute_File -fileName ".\$orasAppPath" -argumentList $orasParameters
 
     $compressPackages = Get-ChildItem -Path * -Include '*.tar.gz' -Name
-    Write-Host " -> Successfully pull the customized schema image: $compressPackages" -ForegroundColor Green
+    Write-Host "Successfully pull the customized schema image: $compressPackages" -ForegroundColor Green
 
     # Unpack the image compressed package to customized template directory    
     if (!(Test-Path $customizedTemplateDirectory)){
@@ -358,7 +358,7 @@ function Get-CustomizedTableSql {
             'boolean' { 'bit' ; Break }
             'string' { 'NVARCHAR(4000)' ; Break }
             Default {
-                Write-Host " -> Invalid property type in '$schemaType.$($property.Name)': $($property.Value['type'])"
+                Write-Host "Invalid property type in '$schemaType.$($property.Name)': $($property.Value['type'])"
                 throw
             }
         }
@@ -384,7 +384,7 @@ function New-CustomizedTables
     $schemaFiles = Get-ChildItem -Path $(Join-Path -Path $customizedSchemaDirectory -ChildPath *) -Include '*.schema.json' -Name
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
 
-    Write-Host " -> Start creating customized Tables on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
+    Write-Host "Start creating customized Tables on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
     
     foreach ($schemaFile in $schemaFiles){
         $jobs = @(Get-Job -Name $JobName -ErrorAction Ignore)
@@ -393,9 +393,9 @@ function New-CustomizedTables
             Remove-Job -Job $finishedJob
 
             if ($finishedJob.State -eq 'Failed') {
-                Write-Host " -> $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
+                Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
                 Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
-                throw " -> Create customized Table failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+                throw "Create customized Table failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
             }
         }
 
@@ -406,7 +406,7 @@ function New-CustomizedTables
     
         $sql = Get-CustomizedTableSql -schemaType $schemaType -jsonSchemaObject $testObject -ErrorAction stop
 
-        Write-Host " -> Create customized table from schema file: $schemaFile" -ForegroundColor Green 
+        Write-Host "Create customized table from schema file: $schemaFile" -ForegroundColor Green 
         Start-Job -Name $JobName -ScriptBlock{
             Invoke-Sqlcmd `
                 -ServerInstance $args[0] `
@@ -422,9 +422,9 @@ function New-CustomizedTables
         Remove-Job -Job $finishedJob
 
         if ($finishedJob.State -eq 'Failed') {
-            Write-Host " -> $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
+            Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
             Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
-            throw " -> Create customized Table failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+            throw "Create customized Table failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
         }
     }
 }
@@ -441,7 +441,7 @@ try {
     $synapse = Get-AzSynapseWorkspace -Name $SynapseWorkspaceName -ErrorAction Stop
 }
 catch {
-    Write-Host " -> Get Synapse instance '$synapseWorkspaceName' failed: $($_.ToString())."
+    Write-Host "Get Synapse instance '$synapseWorkspaceName' failed: $($_.ToString())."
     throw
 }
 
@@ -456,18 +456,18 @@ try {
         -Query "SELECT DB_ID('$Database')" -ErrorAction Stop
 }
 catch {
-    Write-Host " -> Failed to connect to '$synapseSqlServerEndpoint': $($_.ToString())."
+    Write-Host "Failed to connect to '$synapseSqlServerEndpoint': $($_.ToString())."
     throw
 }
 # Throw exception if database already exists.
 if ([string]$dbId.Column1)
 {
-    throw " -> Database '$Database' already exist, please use another database name or drop it."
+    throw "Database '$Database' already exist, please use another database name or drop it."
 }
 
 # Create tag on Synapse
 Update-AzTag -ResourceId $synapse.Id -Tag $Tags -Operation "Merge" | Out-Null 
-Write-Host " -> Created Tags on Synapse '$synapseWorkspaceName'." -ForegroundColor Green 
+Write-Host "Created Tags on Synapse '$synapseWorkspaceName'." -ForegroundColor Green 
 
 ###
 # 1.Create container on Storage if not exists.
@@ -478,7 +478,7 @@ try {
         -containerName $Container
 }
 catch {
-    Write-Host " -> Create container '$Container' on '$StorageName' failed: $($_.ToString())."
+    Write-Host "Create container '$Container' on '$StorageName' failed: $($_.ToString())."
     throw
 }
 
@@ -493,7 +493,7 @@ try{
 }
 catch
 {
-    Write-Host " -> Create place holder blobs for default schema data failed: $($_.ToString())."
+    Write-Host "Create place holder blobs for default schema data failed: $($_.ToString())."
     throw
 }
 
@@ -523,7 +523,7 @@ try{
         -container $Container
 }
 catch{
-    Write-Host " -> Create TABLEs and VIEWs for default schema data failed, will try to drop database '$Database'." -ForegroundColor Red
+    Write-Host "Create TABLEs and VIEWs for default schema data failed, will try to drop database '$Database'." -ForegroundColor Red
     Remove-FhirDatabase -serviceEndpoint $synapseSqlServerEndpoint -databaseName $Database
     throw
 }
@@ -532,7 +532,7 @@ catch{
 # 3. Create Tables for customized schema data.
 ###
 if ($CustomizedSchemaImage) {
-    Write-Host " -> Create Tables for customized schema data, use schema image from $($CustomizedSchemaImage)." -ForegroundColor Green 
+    Write-Host "Create Tables for customized schema data, use schema image from $($CustomizedSchemaImage)." -ForegroundColor Green 
     try {
         # a). Download oras application if it not exist.
         Get-OrasExeApp `
@@ -561,7 +561,7 @@ if ($CustomizedSchemaImage) {
             -customizedSchemaDirectory $customizedSchemaDirectory
     }
     catch{
-        Write-Host " -> Create TABLEs for customized schema data failed, will try to drop database '$Database'." -ForegroundColor Red
+        Write-Host "Create TABLEs for customized schema data failed, will try to drop database '$Database'." -ForegroundColor Red
         Remove-FhirDatabase -serviceEndpoint $synapseSqlServerEndpoint -databaseName $Database
         throw
     }
@@ -570,6 +570,6 @@ if ($CustomizedSchemaImage) {
 $stopwatch.Stop()
 $time = $stopwatch.Elapsed.TotalSeconds
 
-Write-Host " -> Create Synapse environment finished with $time seconds." -ForegroundColor Green 
+Write-Host "Create Synapse environment finished with $time seconds." -ForegroundColor Green 
 
 [System.Data.SqlClient.SqlConnection]::ClearAllPools() 
