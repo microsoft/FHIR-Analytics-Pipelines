@@ -7,6 +7,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
     public interface IMetricsLogger
     {
-        void LogMetrics(Metrics metrics, double metricsValue);
+        void LogMetrics(Metrics metrics, long metricsValue);
     }
 }

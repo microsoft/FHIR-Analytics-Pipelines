@@ -7,9 +7,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
-    public class ResourceLatencyMetrics : ExternalMetrics
+    public class ResourceLatencyMetric : ExternalMetrics
     {
-        public ResourceLatencyMetrics()
+        public ResourceLatencyMetric()
             : base("ResourceLatency", MetricsCategories.Latency, new Dictionary<string, object>
             {
                 { DimensionNames.Name, "ResourceLatency" },

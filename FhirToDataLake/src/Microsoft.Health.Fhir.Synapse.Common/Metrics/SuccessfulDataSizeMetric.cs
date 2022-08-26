@@ -7,13 +7,13 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
-    public class TotalErrorMetrics : ExternalMetrics
+    public class SuccessfulDataSizeMetric : ExternalMetrics
     {
-        public TotalErrorMetrics()
-            : base("TotalError", MetricsCategories.Errors, new Dictionary<string, object>
+        public SuccessfulDataSizeMetric()
+            : base("SuccessfulDataSize", MetricsCategories.Availability, new Dictionary<string, object>
             {
-                { DimensionNames.Name, "TotalError" },
-                { DimensionNames.Category, MetricsCategories.Errors },
+                { DimensionNames.Name, "SuccessfulDataSize" },
+                { DimensionNames.Category, MetricsCategories.Availability },
                 { DimensionNames.IsInternal, false },
             })
         {

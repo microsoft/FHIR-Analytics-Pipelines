@@ -12,5 +12,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         public static string Category => nameof(DimensionNames.Category);
 
         public static string IsInternal => nameof(DimensionNames.IsInternal);
+
     }
 }

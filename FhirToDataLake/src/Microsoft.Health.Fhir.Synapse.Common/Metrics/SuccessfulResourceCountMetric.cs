@@ -7,9 +7,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
-    public class SuccessfulResourceCountMetrics : ExternalMetrics
+    public class SuccessfulResourceCountMetric : ExternalMetrics
     {
-        public SuccessfulResourceCountMetrics()
+        public SuccessfulResourceCountMetric()
             : base("SuccessfulResourceCount", MetricsCategories.Availability, new Dictionary<string, object>
             {
                 { DimensionNames.Name, "SuccessfulResourceCount" },
