@@ -39,7 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             {
                 // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
                 // Otherwise the relative part will be omitted when creating new Uri with queue name. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
-                _queueUrl = config.Value.QueueUrl.EndsWith("/") ? config.Value.QueueUrl : $"{config.Value.QueueUrl}/";
+            _queueUrl = config.Value.QueueUrl.EndsWith("/") ? config.Value.QueueUrl : $"{config.Value.QueueUrl}/";
             }
             else
             {

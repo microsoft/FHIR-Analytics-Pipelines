@@ -53,14 +53,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// <summary>
         /// Start time of the job.
         /// </summary>
-        // TODO: don't expose to PaaS, default value is null
         [JsonProperty("startTime")]
         public DateTimeOffset? StartTime { get; set; }
 
         /// <summary>
         /// End time of the job.
         /// </summary>
-        // TODO: don't expose to PaaS
         [JsonProperty("endTime")]
         public DateTimeOffset? EndTime { get; set; }
     }
