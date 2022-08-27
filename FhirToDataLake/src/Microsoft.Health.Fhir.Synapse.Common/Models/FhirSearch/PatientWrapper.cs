@@ -17,7 +17,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
             long versionId = 0)
         {
             PatientHash = patientHash;
-            VersionId = versionId;
         }
 
         /// <summary>

@@ -231,6 +231,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.GroupId}");
 
+                _result.CompleteTime = DateTimeOffset.UtcNow;
+
+                progress.Report(JsonConvert.SerializeObject(_result));
+
                 return JsonConvert.SerializeObject(_result);
             }
             catch (OperationCanceledException canceledEx)

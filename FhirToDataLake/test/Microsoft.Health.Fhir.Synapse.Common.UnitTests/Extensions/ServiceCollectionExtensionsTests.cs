@@ -87,6 +87,27 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             yield return new object[] { "testacr.azurecr.io/templateset:V1" };
         }
 
+        public static IEnumerable<object[]> GetInValidAgentName()
+        {
+            yield return new object[] { "1beginweithnumberic" };
+            yield return new object[] { "agent_name" };
+            yield return new object[] { "agent name" };
+            yield return new object[] { "" };
+            yield return new object[] { "685c4e36859149cdb88e9a1b75485d7b" };
+            yield return new object[] { " " };
+        }
+
+        public static IEnumerable<object[]> GetValidAgentName()
+        {
+            yield return new object[] { "agentname" };
+            yield return new object[] { "agentName" };
+            yield return new object[] { "agentName1" };
+            yield return new object[] { "a12345" };
+            yield return new object[] { "AGENT" };
+            yield return new object[] { "a1g2e3n4t5" };
+            yield return new object[] { "agent685c4e36859149cdb88e9a1b75485d7b" };
+        }
+
         [Theory]
         [MemberData(nameof(GetInvalidServiceConfiguration))]
         public void GivenInvalidServiceCollectionConfiguration_WhenValidate_ExceptionShouldBeThrown(string configKey, string configValue)
@@ -126,6 +147,21 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             };
 
             Assert.Throws<ConfigurationErrorException>(() => ServiceCollectionExtensions.ValidateFilterConfiguration(config));
+        }
+
+        [Theory]
+        [MemberData(nameof(GetInValidAgentName))]
+        public void GivenInvalidAgentName_WhenValidate_ExceptionShouldBeThrown(string agentName)
+        {
+            Assert.Throws<ConfigurationErrorException>(() => ServiceCollectionExtensions.ValidateAgentName(agentName));
+        }
+
+        [Theory]
+        [MemberData(nameof(GetValidAgentName))]
+        public void GivenValidAgentName_WhenValidate_NoExceptionShouldBeThrown(string agentName)
+        {
+            var exception = Record.Exception(() => ServiceCollectionExtensions.ValidateAgentName(agentName));
+            Assert.Null(exception);
         }
 
         [Theory]

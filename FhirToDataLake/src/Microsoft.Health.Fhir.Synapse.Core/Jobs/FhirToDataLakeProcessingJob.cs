@@ -14,7 +14,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
@@ -103,10 +102,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             try
             {
                 // clear result at first
-                _result = new FhirToDataLakeProcessingJobResult
-                {
-                    ProcessingStartTime = DateTime.Now,
-                };
+                _result = new FhirToDataLakeProcessingJobResult();
 
                 progress.Report(JsonConvert.SerializeObject(_result));
 

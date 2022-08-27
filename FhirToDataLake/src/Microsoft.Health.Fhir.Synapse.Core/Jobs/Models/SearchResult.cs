@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
+namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
 {
     public class SearchResult
     {

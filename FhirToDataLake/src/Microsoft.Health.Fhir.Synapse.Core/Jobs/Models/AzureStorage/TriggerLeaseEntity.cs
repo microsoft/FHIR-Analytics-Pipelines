@@ -24,6 +24,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage
         /// </summary>
         public Guid WorkingInstanceGuid { get; set; }
 
+        /// <summary>
+        /// The heart beat of working instance
+        /// </summary>
         public DateTimeOffset HeartbeatDateTime { get; set; }
     }
 }

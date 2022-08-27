@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -58,6 +59,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException("Failed to parse job configuration", ex);
             }
 
+            ValidateAgentName(jobConfiguration.AgentName);
+
+            if (!Enum.IsDefined(typeof(QueueType), jobConfiguration.QueueType))
+            {
+                throw new ConfigurationErrorException(
+                    $"Queue type '{jobConfiguration.QueueType}' is not supported.");
+            }
+
             if (string.IsNullOrEmpty(jobConfiguration.TableUrl))
             {
                 throw new ConfigurationErrorException($"Table Url can not be empty.");
@@ -68,25 +77,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException($"Queue Url can not be empty.");
             }
 
+            if (string.IsNullOrEmpty(jobConfiguration.SchedulerCronExpression))
+            {
+                throw new ConfigurationErrorException($"Scheduler crontab expression can not be empty.");
+            }
+
             if (string.IsNullOrEmpty(jobConfiguration.ContainerName))
             {
                 throw new ConfigurationErrorException($"Target azure container name can not be empty.");
-            }
-
-            if (string.IsNullOrEmpty(jobConfiguration.AgentName))
-            {
-                throw new ConfigurationErrorException($"Agent name can not be empty.");
-            }
-
-            if (!Enum.IsDefined(typeof(QueueType), jobConfiguration.QueueType))
-            {
-                throw new ConfigurationErrorException(
-                    $"Queue type '{jobConfiguration.QueueType}' is not supported.");
-            }
-
-            if (string.IsNullOrEmpty(jobConfiguration.SchedulerCronExpression))
-            {
-                throw new ConfigurationErrorException($"scheduler crontab expression can not be empty.");
             }
 
             FilterConfiguration filterConfiguration;
@@ -164,6 +162,28 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 healthCheckConfiguration.HealthCheckTimeIntervalInSeconds < healthCheckConfiguration.HealthCheckTimeoutInSeconds)
             {
                 throw new ConfigurationErrorException("Invalid health check configuration. Health check time interval should be greater than health check timeout and both of them should greater than zero.");
+            }
+        }
+
+        // agent name is used as part of table name and queue name, need to validate agent name to contain only alphanumeric characters, and not begin with a numeric character.
+        // Reference: https://docs.microsoft.com/en-us/rest/api/storageservices/understanding-the-table-service-data-model#table-names
+        // https://docs.microsoft.com/en-us/rest/api/storageservices/naming-queues-and-metadata#queue-names
+        public static void ValidateAgentName(string agentName)
+        {
+
+            if (string.IsNullOrEmpty(agentName))
+            {
+                throw new ConfigurationErrorException($"Agent name can not be empty.");
+            }
+
+            if (!agentName.All(char.IsLetterOrDigit))
+            {
+                throw new ConfigurationErrorException($"Agent name may contain only alphanumeric characters.");
+            }
+
+            if (!char.IsLetter(agentName.First()))
+            {
+                throw new ConfigurationErrorException($"Agent name should begin with an alphabet character.");
             }
         }
 
