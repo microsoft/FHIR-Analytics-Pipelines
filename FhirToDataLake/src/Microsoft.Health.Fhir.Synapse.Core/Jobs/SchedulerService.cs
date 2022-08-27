@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
-using Azure.Identity;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -26,11 +25,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly IQueueClient _queueClient;
 
-        // TODO: a tableClient provider component?
         private readonly TableClient _metaDataTableClient;
         private readonly byte _queueType;
         private readonly ILogger<SchedulerService> _logger;
         private readonly Guid _instanceGuid;
+        private readonly JobConfiguration? _jobConfiguration;
 
         // See https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression
         private readonly CrontabSchedule _crontabSchedule;
@@ -46,6 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             EnsureArg.IsNotNull(azureTableClientFactory, nameof(azureTableClientFactory));
 
+            _jobConfiguration = jobConfiguration.Value;
             _queueType = (byte)jobConfiguration.Value.QueueType;
             _crontabSchedule = CrontabSchedule.Parse(jobConfiguration.Value.SchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
             _metaDataTableClient = azureTableClientFactory.Create();
@@ -55,9 +55,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public int PullingIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultPullingIntervalInSeconds;
 
-        public int HeartbeatTimeoutInSeconds { get; set; } = JobConfigurationConstants.DefaultHeartbeatTimeoutInSeconds;
+        public int SchedulerServiceLeaseExpirationInSeconds { get; set; } = JobConfigurationConstants.DefaultSchedulerServiceLeaseExpirationInSeconds;
 
-        public int HeartbeatIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultHeartbeatIntervalInSeconds;
+        public int SchedulerServiceLeaseRefreshIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultSchedulerServiceLeaseRefreshIntervalInSeconds;
 
         public async Task RunAsync(CancellationToken cancellationToken)
         {
@@ -89,13 +89,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         renewLeaseCancellationToken.Cancel();
                         await renewLeaseTask;
                     }
+
+                    await delayTask;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogWarning($"There is an exception thrown while processing current trigger, will retry later. Exception {ex.Message};");
                 }
-
-                await delayTask;
             }
 
             _logger.LogInformation("Scheduler stops running.");
@@ -110,8 +110,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     // try to get trigger lease entity
                     triggerLeaseEntity = (await _metaDataTableClient.GetEntityAsync<TriggerLeaseEntity>(
-                        JobKeyProvider.LeasePartitionKey(_queueType),
-                        JobKeyProvider.LeaseRowKey(_queueType),
+                        TableKeyProvider.LeasePartitionKey(_queueType),
+                        TableKeyProvider.LeaseRowKey(_queueType),
                         cancellationToken: cancellationToken)).Value;
                 }
                 catch (RequestFailedException ex) when (ex.ErrorCode == "ResourceNotFound")
@@ -120,19 +120,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     var initialTriggerLeaseEntity = new TriggerLeaseEntity()
                     {
-                        PartitionKey = JobKeyProvider.LeasePartitionKey(_queueType),
-                        RowKey = JobKeyProvider.LeaseRowKey(_queueType),
+                        PartitionKey = TableKeyProvider.LeasePartitionKey(_queueType),
+                        RowKey = TableKeyProvider.LeaseRowKey(_queueType),
                         WorkingInstanceGuid = _instanceGuid,
-                        HeartbeatDateTime = DateTime.UtcNow,
+                        HeartbeatDateTime = DateTimeOffset.UtcNow,
                     };
 
                     // add the initial trigger entity to table
                     await _metaDataTableClient.AddEntityAsync(initialTriggerLeaseEntity, cancellationToken);
 
                     // try to get trigger lease entity after insert
+                    // TODO: don't need update entity for this case
                     triggerLeaseEntity = (await _metaDataTableClient.GetEntityAsync<TriggerLeaseEntity>(
-                        JobKeyProvider.LeasePartitionKey(_queueType),
-                        JobKeyProvider.LeaseRowKey(_queueType),
+                        TableKeyProvider.LeasePartitionKey(_queueType),
+                        TableKeyProvider.LeaseRowKey(_queueType),
                         cancellationToken: cancellationToken)).Value;
                 }
 
@@ -143,14 +144,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
 
                 if (triggerLeaseEntity.WorkingInstanceGuid != _instanceGuid &&
-                    triggerLeaseEntity.HeartbeatDateTime.AddSeconds(HeartbeatTimeoutInSeconds) > DateTimeOffset.UtcNow)
+                    triggerLeaseEntity.HeartbeatDateTime.AddSeconds(SchedulerServiceLeaseExpirationInSeconds) > DateTimeOffset.UtcNow)
                 {
                     _logger.LogInformation("Try to acquire lease failed, another worker is using it.");
                     return false;
                 }
 
                 triggerLeaseEntity.WorkingInstanceGuid = _instanceGuid;
-                triggerLeaseEntity.HeartbeatDateTime = DateTime.UtcNow;
+                triggerLeaseEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
 
                 await _metaDataTableClient.UpdateEntityAsync(
                     triggerLeaseEntity,
@@ -166,77 +167,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _logger.LogInformation("Acquire lease successfully.");
             return true;
-        }
-
-        /// <summary>
-        /// Get current trigger entity from azure table
-        /// </summary>
-        /// <param name="cancellationToken">cancellation token</param>
-        /// <returns>Current trigger entity, return null if does not exist.</returns>
-        private async Task<CurrentTriggerEntity> GetCurrentTriggerEntity(CancellationToken cancellationToken)
-        {
-            CurrentTriggerEntity entity = null;
-            try
-            {
-                var response = await _metaDataTableClient.GetEntityAsync<CurrentTriggerEntity>(
-                    JobKeyProvider.TriggerPartitionKey(_queueType),
-                    JobKeyProvider.TriggerRowKey(_queueType),
-                    cancellationToken: cancellationToken);
-                entity = response.Value;
-            }
-            catch (RequestFailedException ex) when (ex.ErrorCode == "ResourceNotFound")
-            {
-                _logger.LogWarning("The current trigger doesn't exist, will create a new one.");
-            }
-            catch (Exception ex)
-            {
-                // any exceptions while getting entity will log a error and try next time
-                _logger.LogError($"Failed to get current trigger entity from table, exception: {ex.Message}");
-                throw;
-            }
-
-            return entity;
-        }
-
-        /// <summary>
-        /// Create initial trigger entity
-        /// </summary>
-        /// <param name="cancellationToken">cancellation token</param>
-        /// <returns>The created trigger entity</returns>
-        private async Task<CurrentTriggerEntity> CreateInitialTriggerEntity(CancellationToken cancellationToken)
-        {
-            var initialTriggerEntity = new CurrentTriggerEntity
-            {
-                PartitionKey = JobKeyProvider.TriggerPartitionKey(_queueType),
-                RowKey = JobKeyProvider.TriggerPartitionKey(_queueType),
-                TriggerStartTime = null,
-                TriggerEndTime = GetTriggerEndTime(DateTimeOffset.UtcNow),
-                TriggerStatus = TriggerStatus.New,
-                TriggerSequenceId = 0,
-            };
-
-            try
-            {
-                // add the initial trigger entity to table
-                await _metaDataTableClient.AddEntityAsync(initialTriggerEntity, cancellationToken);
-            }
-            catch (RequestFailedException ex)
-            {
-                _logger.LogError($"Failed to add trigger entity to table, exception: {ex.Message}");
-                throw;
-            }
-
-            return await GetCurrentTriggerEntity(cancellationToken);
-        }
-
-        // FHIR data use processing time as lastUpdated timestamp, there might be some latency when saving to data store.
-        // Here we add a JobQueryLatencyInMinutes latency to avoid data missing due to latency in creation.
-        private static DateTime GetTriggerEndTime(DateTimeOffset occurrenceTime)
-        {
-            // Add latency here to allow latency in saving resources to database.
-            var endTime = occurrenceTime.AddMinutes(-1 * AzureBlobJobConstants.JobQueryLatencyInMinutes);
-
-            return DateTime.SpecifyKind(endTime.DateTime, DateTimeKind.Utc);
         }
 
         private async Task<bool> TryPullAndProcessTriggerEntity(CancellationToken cancellationToken)
@@ -267,6 +197,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
                                 {
                                     JobType = JobType.Orchestrator,
+                                    TriggerSequenceId = currentTriggerEntity.TriggerSequenceId,
+                                    Since = _jobConfiguration?.StartTime,
                                     DataStartTime = currentTriggerEntity.TriggerStartTime,
                                     DataEndTime = currentTriggerEntity.TriggerEndTime,
                                 };
@@ -335,17 +267,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                         case TriggerStatus.Completed:
                             {
-                                var nextTriggerTime =
-                                    _crontabSchedule.GetNextOccurrence(currentTriggerEntity.TriggerEndTime);
+                                var nextTriggerDateTimeTime =
+                                    _crontabSchedule.GetNextOccurrence(currentTriggerEntity.TriggerEndTime.DateTime);
+
+                                var nextTriggerTime = DateTime.SpecifyKind(nextTriggerDateTimeTime, DateTimeKind.Utc);
 
                                 // next trigger time was the past time, assign the fields of next trigger to the currentTriggerEntity
-                                if (nextTriggerTime < DateTime.UtcNow)
+                                if (nextTriggerTime.AddMinutes(JobConfigurationConstants.JobQueryLatencyInMinutes) < DateTimeOffset.UtcNow)
                                 {
                                     currentTriggerEntity.TriggerSequenceId += 1;
                                     currentTriggerEntity.TriggerStatus = TriggerStatus.New;
 
-                                    currentTriggerEntity.TriggerStartTime = currentTriggerEntity.TriggerEndTime;
+                                    currentTriggerEntity.TriggerStartTime = GetTriggerStartTime(currentTriggerEntity.TriggerEndTime);
                                     currentTriggerEntity.TriggerEndTime = GetTriggerEndTime(nextTriggerTime);
+                                    if (currentTriggerEntity.TriggerStartTime > currentTriggerEntity.TriggerEndTime)
+                                    {
+                                        _logger.LogInformation($"The job has been scheduled to end.");
+                                        return true;
+                                    }
 
                                     await _metaDataTableClient.UpdateEntityAsync(
                                         currentTriggerEntity,
@@ -374,20 +313,103 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return false;
         }
 
+        /// <summary>
+        /// Get current trigger entity from azure table
+        /// </summary>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>Current trigger entity, return null if does not exist.</returns>
+        private async Task<CurrentTriggerEntity> GetCurrentTriggerEntity(CancellationToken cancellationToken)
+        {
+            CurrentTriggerEntity entity = null;
+            try
+            {
+                var response = await _metaDataTableClient.GetEntityAsync<CurrentTriggerEntity>(
+                    TableKeyProvider.TriggerPartitionKey(_queueType),
+                    TableKeyProvider.TriggerRowKey(_queueType),
+                    cancellationToken: cancellationToken);
+                entity = response.Value;
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == "ResourceNotFound")
+            {
+                _logger.LogWarning("The current trigger doesn't exist, will create a new one.");
+            }
+            catch (Exception ex)
+            {
+                // any exceptions while getting entity will log a error and try next time
+                _logger.LogError($"Failed to get current trigger entity from table, exception: {ex.Message}");
+                throw;
+            }
+
+            return entity;
+        }
+
+        /// <summary>
+        /// Create initial trigger entity
+        /// </summary>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>The created trigger entity</returns>
+        private async Task<CurrentTriggerEntity> CreateInitialTriggerEntity(CancellationToken cancellationToken)
+        {
+            var initialTriggerEntity = new CurrentTriggerEntity
+            {
+                PartitionKey = TableKeyProvider.TriggerPartitionKey(_queueType),
+                RowKey = TableKeyProvider.TriggerPartitionKey(_queueType),
+                TriggerStartTime = GetTriggerStartTime(null),
+                TriggerEndTime = GetTriggerEndTime(null),
+                TriggerStatus = TriggerStatus.New,
+                TriggerSequenceId = 0,
+            };
+
+            try
+            {
+                // add the initial trigger entity to table
+                await _metaDataTableClient.AddEntityAsync(initialTriggerEntity, cancellationToken);
+            }
+            catch (RequestFailedException ex)
+            {
+                _logger.LogError($"Failed to add trigger entity to table, exception: {ex.Message}");
+                throw;
+            }
+
+            return await GetCurrentTriggerEntity(cancellationToken);
+        }
+
+        private DateTimeOffset? GetTriggerStartTime(DateTimeOffset? lastTriggerEndTime)
+        {
+            return lastTriggerEndTime ?? _jobConfiguration?.StartTime;
+        }
+
+        // Job end time could be null (which means runs forever) or a timestamp in the future like 2120/01/01.
+        // In this case, we will create a job to run with end time earlier that current timestamp.
+        // Also, FHIR data use processing time as lastUpdated timestamp, there might be some latency when saving to data store.
+        // Here we add a JobEndTimeLatencyInMinutes latency to avoid data missing due to latency in creation.
+        private DateTimeOffset GetTriggerEndTime(DateTimeOffset? occurrenceTime)
+        {
+            // Add latency here to allow latency in saving resources to database.
+            var endTime = occurrenceTime ?? DateTimeOffset.UtcNow.AddMinutes(-1 * JobConfigurationConstants.JobQueryLatencyInMinutes);
+
+            if (_jobConfiguration?.EndTime != null && endTime > _jobConfiguration.EndTime)
+            {
+                endTime = (DateTimeOffset)_jobConfiguration.EndTime;
+            }
+
+            return endTime;
+        }
+
         private async Task RenewLeaseAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Start to renew lease for working instance {_instanceGuid}.");
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                var intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(HeartbeatIntervalInSeconds), CancellationToken.None);
+                var intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServiceLeaseRefreshIntervalInSeconds), CancellationToken.None);
 
                 try
                 {
                     // try to get trigger lease entity
                     var triggerLeaseEntity = (await _metaDataTableClient.GetEntityAsync<TriggerLeaseEntity>(
-                        JobKeyProvider.LeasePartitionKey(_queueType),
-                        JobKeyProvider.LeaseRowKey(_queueType),
+                        TableKeyProvider.LeasePartitionKey(_queueType),
+                        TableKeyProvider.LeaseRowKey(_queueType),
                         cancellationToken: cancellationToken)).Value;
 
                     if (triggerLeaseEntity == null || triggerLeaseEntity.WorkingInstanceGuid != _instanceGuid)
@@ -396,7 +418,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     }
                     else
                     {
-                        triggerLeaseEntity.HeartbeatDateTime = DateTime.UtcNow;
+                        triggerLeaseEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
 
                         await _metaDataTableClient.UpdateEntityAsync(
                             triggerLeaseEntity,
@@ -409,7 +431,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     _logger.LogError(ex, $"Failed to renew lease for working instance {_instanceGuid}.");
                 }
 
-                await intervalDelayTask;
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    await intervalDelayTask;
+                }
             }
 
             _logger.LogInformation($"Stop to renew lease for working instance {_instanceGuid}.");

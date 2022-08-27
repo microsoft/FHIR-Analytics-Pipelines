@@ -23,6 +23,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             { "dataLakeStore:storageUrl", "https://test.blob.core.windows.net/" },
             { "job:containerName", "fhir" },
             { "job:agentName", "agentName" },
+            { "job:queueUrl", "UseDevelopmentStorage=true" },
+            { "job:tableUrl", "UseDevelopmentStorage=true" },
+            { "job:schedulerCronExpression", "5 * * * * *" },
+            { "job:queueType", "FhirToDataLake" },
+
         };
 
         public static IEnumerable<object[]> GetInvalidServiceConfiguration()

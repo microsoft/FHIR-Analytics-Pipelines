@@ -14,8 +14,6 @@ using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
-using Microsoft.Health.Fhir.Synapse.JobManagement;
-using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.JobManagement;
@@ -30,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly JobSchedulerConfiguration _schedulerConfiguration;
         private readonly FilterConfiguration _filterConfiguration;
-        private readonly AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo> _queueClient;
+        private readonly IQueueClient _queueClient;
         private readonly IFhirDataClient _dataClient;
         private readonly IFhirDataWriter _dataWriter;
         private readonly ITypeFilterParser _typeFilterParser;
@@ -41,7 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly ILoggerFactory _loggerFactory;
 
         public AzureStorageJobFactory(
-            AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient,
+            IQueueClient queueClient,
             IFhirDataClient dataClient,
             IFhirDataWriter dataWriter,
             ITypeFilterParser typeFilterParser,
@@ -128,12 +126,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             if (inputData is { JobType: JobType.Processing })
             {
                 return new FhirToDataLakeProcessingJob(
-                    jobInfo,
+                    jobInfo.Id,
                     inputData,
                     _dataClient,
                     _dataWriter,
                     _parquetDataProcessor,
                     _fhirSchemaManager,
+                    _typeFilterParser,
+                    _groupMemberExtractor,
+                    _filterConfiguration,
                     _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>());
             }
 

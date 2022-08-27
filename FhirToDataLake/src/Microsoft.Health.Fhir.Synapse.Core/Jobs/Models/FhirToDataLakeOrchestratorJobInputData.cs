@@ -11,6 +11,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
     {
         public JobType JobType { get; set; }
 
+        public long TriggerSequenceId { get; set; }
+
+        public DateTimeOffset? Since { get; set; }
+
         public DateTimeOffset? DataStartTime { get; set; }
 
         public DateTimeOffset DataEndTime { get; set; }

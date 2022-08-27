@@ -17,17 +17,31 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter
         /// </summary>
         /// <param name="data">The data to be written.</param>
         /// <param name="jobId">The job id.</param>
-        /// <param name="taskIndex">The task index.</param>
         /// <param name="partId">The part id.</param>
         /// <param name="dateTime">The dateTime.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>the storage url.</returns>
+        /// <returns>The storage url.</returns>
         public Task<string> WriteAsync(
             StreamBatchData data,
-            string jobId,
-            int taskIndex,
+            long jobId,
             int partId,
             DateTimeOffset dateTime,
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Commit job data to result folder.
+        /// </summary>
+        /// <param name="jobId">The job id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Completed job.</returns>
+        public Task CommitJobDataAsync(long jobId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Try to clean the staging job data
+        /// </summary>
+        /// <param name="jobId">The job id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Return true if the job data is cleaned, otherwise return false.</returns>
+        public Task<bool> TryCleanJobDataAsync(long jobId, CancellationToken cancellationToken = default);
     }
 }

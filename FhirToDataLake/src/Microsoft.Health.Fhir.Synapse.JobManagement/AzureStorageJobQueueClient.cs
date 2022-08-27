@@ -377,6 +377,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             await Task.WhenAll(tasks);
 
+            throttler.Dispose();
+
             _logger.LogInformation($"Get jobs {string.Join(",", jobIds)} successfully.");
             return result;
         }

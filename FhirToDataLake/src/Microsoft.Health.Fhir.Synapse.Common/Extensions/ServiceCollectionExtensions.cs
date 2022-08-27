@@ -58,19 +58,36 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException("Failed to parse job configuration", ex);
             }
 
+            if (string.IsNullOrEmpty(jobConfiguration.TableUrl))
+            {
+                throw new ConfigurationErrorException($"Table Url can not be empty.");
+            }
+
+            if (string.IsNullOrEmpty(jobConfiguration.QueueUrl))
+            {
+                throw new ConfigurationErrorException($"Queue Url can not be empty.");
+            }
+
             if (string.IsNullOrEmpty(jobConfiguration.ContainerName))
             {
                 throw new ConfigurationErrorException($"Target azure container name can not be empty.");
             }
 
-            // TODO: add more validation for agent name, table url, queue url
-            // TODO: enable it when generic task is enabled
-            /*
             if (string.IsNullOrEmpty(jobConfiguration.AgentName))
             {
                 throw new ConfigurationErrorException($"Agent name can not be empty.");
             }
-            */
+
+            if (!Enum.IsDefined(typeof(QueueType), jobConfiguration.QueueType))
+            {
+                throw new ConfigurationErrorException(
+                    $"Queue type '{jobConfiguration.QueueType}' is not supported.");
+            }
+
+            if (string.IsNullOrEmpty(jobConfiguration.SchedulerCronExpression))
+            {
+                throw new ConfigurationErrorException($"scheduler crontab expression can not be empty.");
+            }
 
             FilterConfiguration filterConfiguration;
             try

@@ -16,8 +16,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
         /// Extract last update day information from resource.
         /// </summary>
         /// <param name="resource">input resource.</param>
-        /// <returns>lastupdate timestamp of the bundle.</returns>
+        /// <returns>The last update timestamp of the bundle.</returns>
         public static DateTime? GetLastUpdatedDay(this JObject resource)
+        {
+            var lastUpdateDatetime = GetLastUpdated(resource);
+            if (lastUpdateDatetime == null)
+            {
+                return null;
+            }
+
+            var lastUpdated = (DateTimeOffset) lastUpdateDatetime;
+            return new DateTime(lastUpdated.Year, lastUpdated.Month, lastUpdated.Day);
+        }
+
+        /// <summary>
+        /// Extract last update information from resource.
+        /// </summary>
+        /// <param name="resource">input resource.</param>
+        /// <returns>The last updated timestamp of the bundle.</returns>
+        public static DateTimeOffset? GetLastUpdated(this JObject resource)
         {
             var result = (resource.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<string>(FhirBundleConstants.LastUpdatedKey);
             if (result == null)
@@ -27,8 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
 
             try
             {
-                var lastUpdateDatetime = DateTimeOffset.Parse(result.ToString());
-                return new DateTime(lastUpdateDatetime.Year, lastUpdateDatetime.Month, lastUpdateDatetime.Day);
+                return DateTimeOffset.Parse(result);
             }
             catch (Exception exception)
             {

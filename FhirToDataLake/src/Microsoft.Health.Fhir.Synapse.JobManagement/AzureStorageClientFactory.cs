@@ -32,12 +32,20 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             EnsureArg.IsNotNullOrWhiteSpace(config.Value.QueueUrl, nameof(config.Value.QueueUrl));
             EnsureArg.IsNotNullOrWhiteSpace(config.Value.AgentName, nameof(config.Value.AgentName));
 
-            // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
-            // Otherwise the relative part will be omitted when creating new search Uris. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
-            _tableUrl = config.Value.TableUrl.EndsWith("/") ? config.Value.TableUrl : $"{config.Value.TableUrl}/";
+            _tableUrl = config.Value.TableUrl;
             _tableName = AzureStorageKeyProvider.JobInfoTableName(config.Value.AgentName);
 
-            _queueUrl = config.Value.QueueUrl.EndsWith("/") ? config.Value.QueueUrl : $"{config.Value.QueueUrl}/";
+            if (config.Value.QueueUrl != StorageEmulatorConnectionString)
+            {
+                // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
+                // Otherwise the relative part will be omitted when creating new Uri with queue name. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
+                _queueUrl = config.Value.QueueUrl.EndsWith("/") ? config.Value.QueueUrl : $"{config.Value.QueueUrl}/";
+            }
+            else
+            {
+                _queueUrl = config.Value.QueueUrl;
+            }
+
             _queueName = AzureStorageKeyProvider.JobMessageQueueName(config.Value.AgentName);
 
             EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));

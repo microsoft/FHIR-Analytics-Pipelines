@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
+namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
 {
     /// <summary>
     /// Cache the resources retrieved from Fhir server and search progress in memory,
@@ -18,15 +18,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// <summary>
         /// Initializes a new instance of the <see cref="CacheResult"/> class based on the provided resources and searchProgress.
         /// </summary>
-        /// <param name="searchProgress">the search progress.</param>
         /// <param name="cacheSize">the cached data size.</param>
         /// <param name="resources">the resources.</param>
         public CacheResult(
-            SearchProgress searchProgress = null,
             int cacheSize = 0,
             Dictionary<string, List<JObject>> resources = null)
         {
-            SearchProgress = searchProgress ?? new SearchProgress();
             CacheSize = cacheSize;
             Resources = resources ?? new Dictionary<string, List<JObject>>();
         }
@@ -40,12 +37,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Tasks
         /// The data size of cached resources in bytes.
         /// </summary>
         public int CacheSize { get; set; }
-
-        /// <summary>
-        /// The search progress, which is consistent with the cached resources.
-        /// It will be committed to taskContext when commits cache resources to blob storage.
-        /// </summary>
-        public SearchProgress SearchProgress { get; set; }
 
         /// <summary>
         /// Get the resource count in cache.

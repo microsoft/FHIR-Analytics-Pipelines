@@ -47,7 +47,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// <summary>
         /// Container name for this job.
         /// </summary>
-        // TODO: will be removed when generic task is enabled
         [JsonProperty("containerName")]
         public string ContainerName { get; set; }
 
@@ -56,7 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// </summary>
         // TODO: don't expose to PaaS, default value is null
         [JsonProperty("startTime")]
-        public DateTimeOffset StartTime { get; set; } = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        public DateTimeOffset? StartTime { get; set; }
 
         /// <summary>
         /// End time of the job.

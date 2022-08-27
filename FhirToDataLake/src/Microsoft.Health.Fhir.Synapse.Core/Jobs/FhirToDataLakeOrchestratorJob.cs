@@ -16,14 +16,16 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
+using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
-using Microsoft.Health.Fhir.Synapse.JobManagement;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
-using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -33,24 +35,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class FhirToDataLakeOrchestratorJob : IJob
     {
+        private readonly JobInfo _jobInfo;
         private readonly FhirToDataLakeOrchestratorJobInputData _inputData;
-        private readonly FhirToDataLakeOrchestratorJobResult _result;
         private readonly IFhirDataClient _dataClient;
         private readonly IFhirDataWriter _dataWriter;
-        private readonly AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo> _queueClient;
+        private readonly IQueueClient _queueClient;
         private readonly ITypeFilterParser _typeFilterParser;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly TableClient _metaDataTableClient;
-
         private readonly JobSchedulerConfiguration _schedulerConfiguration;
         private readonly FilterConfiguration _filterConfiguration;
+        private readonly ILogger<FhirToDataLakeOrchestratorJob> _logger;
 
-        private const int _incrementalOrchestrationIntervalInSeconds = 60;
-        private const int _initialOrchestrationIntervalInSeconds = 1800;
+        private const int IncrementalOrchestrationIntervalInSeconds = 60;
+        private const int InitialOrchestrationIntervalInSeconds = 1800;
 
-        private readonly JobInfo _jobInfo;
-
-        private ILogger<FhirToDataLakeOrchestratorJob> _logger;
+        private FhirToDataLakeOrchestratorJobResult _result;
 
         public FhirToDataLakeOrchestratorJob(
             JobInfo jobInfo,
@@ -58,7 +58,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             FhirToDataLakeOrchestratorJobResult result,
             IFhirDataClient dataClient,
             IFhirDataWriter dataWriter,
-            AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient,
+            IQueueClient queueClient,
             ITypeFilterParser typeFilterParser,
             IGroupMemberExtractor groupMemberExtractor,
             TableClient metaDataTableClient,
@@ -75,66 +75,65 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _typeFilterParser = EnsureArg.IsNotNull(typeFilterParser, nameof(typeFilterParser));
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             _metaDataTableClient = EnsureArg.IsNotNull(metaDataTableClient, nameof(metaDataTableClient));
+            _metaDataTableClient.CreateIfNotExists();
             _schedulerConfiguration = EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
             _filterConfiguration = EnsureArg.IsNotNull(filterConfiguration, nameof(filterConfiguration));
 
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
+        public int CheckFrequencyInSeconds { get; set; } = JobConfigurationConstants.DefaultCheckFrequencyInSeconds;
+
+        public int NumberOfPatientsPerProcessingJob { get; set; } =
+            JobConfigurationConstants.DefaultNumberOfPatientsPerProcessingJob;
+
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Start executing FhirToDataLake orchestrator job {_jobInfo.GroupId}");
 
-            _jobInfo.StartDate = DateTime.UtcNow;
-
             try
             {
-                var typeFilters = _typeFilterParser.CreateTypeFilters(
-                _filterConfiguration.FilterScope,
-                _filterConfiguration.RequiredTypes,
-                _filterConfiguration.TypeFilters).ToList();
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException();
+                }
 
-                // extract patient ids from group
+                var toBeProcessedPatients = new List<PatientWrapper>();
                 if (_filterConfiguration.FilterScope == FilterScope.Group)
                 {
+                    // extract patient ids from group
                     _logger.LogInformation("Start extracting patients from group '{groupId}'.", _filterConfiguration.GroupId);
 
                     // For now, the queryParameters is always null.
                     // This parameter will be used when we enable filter groups in the future.
-                    var patientIds = await _groupMemberExtractor.GetGroupPatientsAsync(
+                    // TODO: need to make sure the patient are the same in orchestrator job and processing job
+                    var patients = (await _groupMemberExtractor.GetGroupPatientsAsync(
                         _filterConfiguration.GroupId,
                         null,
                         _inputData.DataEndTime,
-                        cancellationToken);
+                        cancellationToken)).Select(patientId => patientId.ComputeHash()).ToHashSet();
 
-                    var processedPatientVersions = await GetPatientVersions(patientIds, cancellationToken);
+                    var processedPatientVersions = await GetPatientVersions(patients, cancellationToken);
 
                     // set the version id for processed patient
                     // the processed patients is empty at the beginning , and will be updated when completing a successful job.
-                    var toBeProcessedPatients = patientIds.Select(patientId =>
+                    toBeProcessedPatients = patients.Select(patientHash =>
                         new PatientWrapper(
-                            patientId,
-                            processedPatientVersions.ContainsKey(patientId) ? processedPatientVersions[patientId] : 0)).ToList();
+                            patientHash,
+                            processedPatientVersions.ContainsKey(patientHash) ? processedPatientVersions[patientHash] : 0)).ToList();
 
                     _logger.LogInformation(
                         "Extract {patientCount} patients from group '{groupId}', including {newPatientCount} new patients.",
-                        patientIds.Count,
+                        patients.Count,
                         _filterConfiguration.GroupId,
                         toBeProcessedPatients.Where(p => p.VersionId == 0).ToList().Count);
                 }
 
-                TimeSpan interval = TimeSpan.FromSeconds(_incrementalOrchestrationIntervalInSeconds);
-                /*
-                if (_inputData.DataStartTime == null | _inputData.DataStartTime.AddMinutes(60) < _inputData.DataEndTime)
-                {
-                    interval = TimeSpan.FromSeconds(_initialOrchestrationIntervalInSeconds);
-                }
-                */
                 while (true)
                 {
                     while (_result.RunningJobIds.Count > _schedulerConfiguration.MaxConcurrencyCount)
                     {
-                        await WaitFirstJobComplete(progress, cancellationToken);
+                        await WaitRunningJobComplete(progress, cancellationToken);
                     }
 
                     FhirToDataLakeProcessingJobInputData input = null;
@@ -142,17 +141,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     switch (_filterConfiguration.FilterScope)
                     {
                         case FilterScope.System:
-                            if (_result.CreatedJobTimestamp < _inputData.DataEndTime)
+                            var interval = TimeSpan.FromSeconds(IncrementalOrchestrationIntervalInSeconds);
+
+                            if (_inputData.DataStartTime == null || ((DateTimeOffset)_inputData.DataStartTime).AddMinutes(60) < _inputData.DataEndTime)
+                            {
+                                interval = TimeSpan.FromSeconds(InitialOrchestrationIntervalInSeconds);
+                            }
+
+                            if (_result.NextJobTimestamp == null || _result.NextJobTimestamp < _inputData.DataEndTime)
                             {
                                 var nextResourceTimestamp =
-                                    await GetNextTimestamp(_result.CreatedJobTimestamp, _inputData.DataEndTime);
-                                if (nextResourceTimestamp == default)
+                                    await GetNextTimestamp(_result.NextJobTimestamp ?? _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
+                                if (nextResourceTimestamp == null)
                                 {
-                                    _result.CreatedJobTimestamp = _inputData.DataEndTime;
+                                    _result.NextJobTimestamp = _inputData.DataEndTime;
                                     break;
                                 }
 
-                                DateTimeOffset nextJobEnd = nextResourceTimestamp + interval;
+                                var nextJobEnd = (DateTimeOffset)nextResourceTimestamp + interval;
                                 if (nextJobEnd > _inputData.DataEndTime)
                                 {
                                     nextJobEnd = _inputData.DataEndTime;
@@ -161,44 +167,40 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 input = new FhirToDataLakeProcessingJobInputData
                                 {
                                     JobType = JobType.Processing,
-                                    ProcessingJobSequenceId = _result.NextTaskIndex,
+                                    ProcessingJobSequenceId = _result.CreatedJobCount,
+                                    TriggerSequenceId = _inputData.TriggerSequenceId,
                                     Since = _inputData.Since,
                                     DataStartTime = nextResourceTimestamp,
                                     DataEndTime = nextJobEnd,
-                                    FilterScope = _inputData.FilterConfiguration.FilterScope,
-                                    TypeFilters = typeFilters,
-                                    InputMetadata = new BaseProcessingInputMetadata(),
                                 };
-                                _result.CreatedJobTimestamp = nextJobEnd;
+                                _result.NextJobTimestamp = nextJobEnd;
                             }
 
                             break;
                         case FilterScope.Group:
-                            if (_result.NextTaskIndex * JobConfigurationConstants.NumberOfPatientsPerTask <
-                                _result.ToBeProcessedPatients.Count)
+                            if (_result.NextPatientIndex <
+                                toBeProcessedPatients.Count)
                             {
-                                var selectedPatients = _result.ToBeProcessedPatients.Skip((int)_result.NextTaskIndex *
-                                        JobConfigurationConstants.NumberOfPatientsPerTask)
-                                    .Take(JobConfigurationConstants.NumberOfPatientsPerTask).ToList();
+                                var selectedPatients = toBeProcessedPatients.Skip(_result.NextPatientIndex)
+                                    .Take(NumberOfPatientsPerProcessingJob).ToList();
                                 input = new FhirToDataLakeProcessingJobInputData
                                 {
                                     JobType = JobType.Processing,
-                                    ProcessingJobSequenceId = _result.NextTaskIndex,
+                                    ProcessingJobSequenceId = _result.CreatedJobCount,
+                                    TriggerSequenceId = _inputData.TriggerSequenceId,
                                     Since = _inputData.Since,
                                     DataStartTime = _inputData.DataStartTime,
                                     DataEndTime = _inputData.DataEndTime,
-                                    FilterScope = _inputData.FilterConfiguration.FilterScope,
-                                    TypeFilters = typeFilters,
-                                    InputMetadata = new CompartmentProcessingInputMetadata { ToBeProcessedPatients = selectedPatients, },
+                                    ToBeProcessedPatients = selectedPatients,
                                 };
-                                _result.NextTaskIndex++;
+                                _result.NextPatientIndex += selectedPatients.Count;
                             }
 
                             break;
                         default:
                             // this case should not happen
                             throw new ArgumentOutOfRangeException(
-                                $"The filterScope {_inputData.FilterConfiguration.FilterScope} isn't supported now.");
+                                $"The filterScope {_filterConfiguration.FilterScope} isn't supported now.");
                     }
 
                     if (input == null)
@@ -206,153 +208,212 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         break;
                     }
 
-                    string[] jobDefinitions = new string[] { JsonConvert.SerializeObject(input) };
-                    var jobInfos = await _queueClient.EnqueueAsync(_jobInfo.QueueType, jobDefinitions, _jobInfo.GroupId,
-                        false, false, cancellationToken);
+                    var jobDefinitions = new[] { JsonConvert.SerializeObject(input) };
+                    var jobInfos = await _queueClient.EnqueueAsync(
+                        _jobInfo.QueueType,
+                        jobDefinitions,
+                        _jobInfo.GroupId,
+                        false,
+                        false,
+                        cancellationToken);
                     var newJobId = jobInfos.First().Id;
-
+                    _result.CreatedJobCount++;
                     _result.RunningJobIds.Add(newJobId);
+
+                    // TODO: what if enqueue successfully while fails to report result
                     progress.Report(JsonConvert.SerializeObject(_result));
                 }
 
                 while (_result.RunningJobIds.Count > 0)
                 {
-                    await WaitFirstJobComplete(progress, cancellationToken);
+                    await WaitRunningJobComplete(progress, cancellationToken);
                 }
+
+                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.GroupId}");
+
+                return JsonConvert.SerializeObject(_result);
             }
-            catch (Exception e)
+            catch (OperationCanceledException canceledEx)
             {
-                Console.WriteLine(e);
+                // TODO: how about OperationCanceledException
+                _logger.LogInformation(canceledEx, "Job is canceled.");
                 throw;
             }
-
-            _jobInfo.EndDate = DateTime.UtcNow;
-            return JsonConvert.SerializeObject(_result);
+            catch (RetriableJobException retriableJobEx)
+            {
+                // always throw RetriableJobException
+                _logger.LogInformation(retriableJobEx, "Error in orchestrator job.");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ex, "Error in orchestrator job.");
+                throw new RetriableJobException("Error in orchestrator job.", ex);
+            }
         }
 
-        private async Task<DateTimeOffset> GetNextTimestamp(DateTimeOffset start, DateTimeOffset end)
+        // TODO: it is necessary to get next timestamp for non initial job?
+        private async Task<DateTimeOffset?> GetNextTimestamp(DateTimeOffset? start, DateTimeOffset end, CancellationToken cancellationToken)
         {
-            var searchParameters =
-                new FhirSearchParameters(_inputData.ResourceTypes, start, _inputData.DataEndTime, null);
-            var fhirBundleResult = await _dataClient.SearchAsync(searchParameters);
-            JObject fhirBundleObject;
+            var typeFilters = _typeFilterParser.CreateTypeFilters(
+                _filterConfiguration.FilterScope,
+                _filterConfiguration.RequiredTypes,
+                _filterConfiguration.TypeFilters).ToList();
+
+            var parameters = new List<KeyValuePair<string, string>>
+            {
+                new (FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
+            };
+
+            if (start != null)
+            {
+                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{((DateTimeOffset)start).ToInstantString()}"));
+            }
+
+            var searchOptions = new BaseSearchOptions(null, parameters);
+
+            var sharedQueryParameters = new List<KeyValuePair<string, string>>(searchOptions.QueryParameters);
+
+            DateTimeOffset? nexTimeOffset = null;
+            foreach (var typeFilter in typeFilters)
+            {
+                searchOptions.ResourceType = typeFilter.ResourceType;
+                searchOptions.QueryParameters = new List<KeyValuePair<string, string>>(sharedQueryParameters);
+                foreach (var parameter in typeFilter.Parameters)
+                {
+                    searchOptions.QueryParameters.Add(parameter);
+                }
+
+                var fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
+
+                // Parse bundle result.
+                JObject fhirBundleObject;
+                try
+                {
+                    fhirBundleObject = JObject.Parse(fhirBundleResult);
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError(exception, "Failed to parse fhir search result.");
+                    throw new FhirDataParseExeption("Failed to parse fhir search result", exception);
+                }
+
+                var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject).ToList();
+
+                if (fhirResources.Any() && fhirResources.First().GetLastUpdated() != null)
+                {
+                    if (nexTimeOffset == null || fhirResources.First().GetLastUpdated() < nexTimeOffset)
+                    {
+                        nexTimeOffset = fhirResources.First().GetLastUpdated();
+                    }
+                }
+            }
+
+            return nexTimeOffset;
+        }
+
+        private async Task WaitRunningJobComplete(IProgress<string> progress, CancellationToken cancellationToken)
+        {
+            var completedJobIds = new HashSet<long>();
+            var runningJobs = new List<JobInfo>();
             try
             {
-                fhirBundleObject = JObject.Parse(fhirBundleResult);
+                runningJobs.AddRange(await _queueClient.GetJobsByIdsAsync(_jobInfo.QueueType, _result.RunningJobIds.ToArray(), false, cancellationToken));
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                throw new FhirDataParseExeption($"Failed to parse fhir search result", exception);
-            }
-
-            var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject);
-            if (!fhirResources.Any())
-            {
-                return default;
+                _logger.LogError(ex, "Failed to get running jobs.");
+                throw new RetriableJobException(ex.Message, ex);
             }
 
-            return fhirResources.First()?.GetLastUpdated() ?? default;
-        }
-
-        private async Task WaitFirstJobComplete(IProgress<string> progress, CancellationToken cancellationToken)
-        {
-            if (!_result.RunningJobIds.Any())
+            foreach (var latestJobInfo in runningJobs)
             {
-                return;
-            }
-
-            var firstJobId = _result.RunningJobIds.Min();
-            var latestJob =
-                await _queueClient.GetJobByIdAsync(_jobInfo.QueueType, firstJobId, false, cancellationToken);
-            if (latestJob.Status != JobStatus.Created && latestJob.Status != JobStatus.Running)
-            {
-                // Handle cancel/failed
-                if (latestJob.Status == JobStatus.Completed)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    await CommitJobData(firstJobId, cancellationToken);
-                    if (latestJob.Result != null)
-                    {
-                        var processingJobResult =
-                            JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(latestJob.Result);
-                        _result.TotalResourceCounts =
-                            _result.TotalResourceCounts.ConcatDictionaryCount(processingJobResult.SearchCount);
-                        _result.ProcessedResourceCounts =
-                            _result.ProcessedResourceCounts.ConcatDictionaryCount(processingJobResult.ProcessedCount);
-                        _result.SkippedResourceCounts =
-                            _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
+                    throw new OperationCanceledException();
+                }
 
-                        if (_inputData.FilterConfiguration.FilterScope == FilterScope.Group)
+                if (latestJobInfo.Status != JobStatus.Created && latestJobInfo.Status != JobStatus.Running)
+                {
+                    if (latestJobInfo.Status == JobStatus.Completed)
+                    {
+                        await CommitJobData(latestJobInfo.Id, cancellationToken);
+                        if (latestJobInfo.Result != null)
                         {
-                            foreach (var (patientId, versionId) in ((CompartmentResultMetadata)processingJobResult.ResultMetadata).ProcessedPatientVersions)
+                            var processingJobResult =
+                                JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(latestJobInfo.Result);
+                            _result.TotalResourceCounts =
+                                _result.TotalResourceCounts.ConcatDictionaryCount(processingJobResult.SearchCount);
+                            _result.ProcessedResourceCounts =
+                                _result.ProcessedResourceCounts.ConcatDictionaryCount(processingJobResult.ProcessedCount);
+                            _result.SkippedResourceCounts =
+                                _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
+
+                            if (_filterConfiguration.FilterScope == FilterScope.Group)
                             {
-                                ((CompartmentResultMetadata)_result.ResultMetadata).ProcessedPatientVersions[patientId] = versionId;
+                                var transactionActions = processingJobResult.ProcessedPatientVersion
+                                    .Select(patientVersion => new TableTransactionAction(TableTransactionActionType.UpsertReplace, new CompartmentInfoEntity
+                                    {
+                                        PartitionKey = TableKeyProvider.CompartmentPartitionKey(_jobInfo.QueueType),
+                                        RowKey = patientVersion.Key,
+                                        VersionId = patientVersion.Value,
+                                    })).ToList();
+
+                                if (transactionActions.Any())
+                                {
+                                    await _metaDataTableClient.SubmitTransactionAsync(transactionActions, cancellationToken);
+                                }
                             }
                         }
                     }
-                }
-                else if (latestJob.Status == JobStatus.Failed)
-                {
-                    // TODO: 
-                }
-                else if (latestJob.Status == JobStatus.Cancelled)
-                {
-                    throw new OperationCanceledException("Import operation cancelled by customer.");
-                }
+                    else if (latestJobInfo.Status == JobStatus.Failed)
+                    {
+                        _logger.LogError("The processing job is failed.");
+                        throw new RetriableJobException("The processing job is failed.");
+                    }
+                    else if (latestJobInfo.Status == JobStatus.Cancelled)
+                    {
+                        throw new OperationCanceledException("Operation cancelled by customer.");
+                    }
 
+                    completedJobIds.Add(latestJobInfo.Id);
+                }
+            }
 
-                _result.RunningJobIds.Remove(firstJobId);
+            if (completedJobIds.Count > 0)
+            {
+                _result.RunningJobIds.ExceptWith(completedJobIds);
                 progress.Report(JsonConvert.SerializeObject(_result));
             }
             else
             {
-                await Task.Delay(TimeSpan.FromSeconds(10));
+                await Task.Delay(TimeSpan.FromSeconds(CheckFrequencyInSeconds), cancellationToken);
             }
         }
 
         private async Task CommitJobData(long jobId, CancellationToken cancellationToken)
         {
+            // TODO: job Id or job sequence index?
             await _dataWriter.CommitJobDataAsync(jobId, cancellationToken);
         }
 
-        private async Task<long> CreateNewProcessingJob(DateTimeOffset subDataStart, DateTimeOffset subDataEnd,
-            CancellationToken cancellationToken)
-        {
-            FhirToDataLakeProcessingJobInputData input = new FhirToDataLakeProcessingJobInputData
-            {
-
-                DataStartTime = subDataStart,
-                DataEndTime = subDataEnd,
-                ContainerName = _inputData.ContainerName,
-                ResourceTypes = _inputData.ResourceTypes,
-                JobType = JobType.Processing,
-                InputMetadata = CreateProcessingInputMetadata(),
-
-            };
-
-            string[] jobDefinitions = new string[] {JsonConvert.SerializeObject(input)};
-            var jobInfos = await _queueClient.EnqueueAsync(_jobInfo.QueueType, jobDefinitions, _jobInfo.GroupId, false,
-                false, cancellationToken);
-            return jobInfos.First().Id;
-        }
-
         private async Task<Dictionary<string, long>> GetPatientVersions(
-            IEnumerable<string> patientIds,
+            IEnumerable<string> patientHashs,
             CancellationToken cancellationToken)
         {
-            var pk = JobKeyProvider.CompartmentPartitionKey(_jobInfo.QueueType);
-            var patientHashToId = patientIds.ToDictionary(patientId => patientId.ComputeHash(), patientId => patientId);
+            var pk = TableKeyProvider.CompartmentPartitionKey(_jobInfo.QueueType);
 
             var jobEntityQueryResult = _metaDataTableClient.QueryAsync<CompartmentInfoEntity>(
-                filter: TransactionGetByKeys(pk, patientHashToId.Values.ToList()),
+                filter: TransactionGetByKeys(pk, patientHashs.ToList()),
                 cancellationToken: cancellationToken);
 
             var patientVersions = new Dictionary<string, long>();
-
+            var result = _metaDataTableClient.CreateIfNotExists();
             await foreach (var pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
             {
                 foreach (var entity in pageResult.Values)
                 {
-                    patientVersions[patientHashToId[entity.RowKey]] = entity.VersionId;
+                    patientVersions[entity.RowKey] = entity.VersionId;
                 }
             }
 
@@ -361,10 +422,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private static string TransactionGetByKeys(string pk, List<string> rowKeys) =>
             $"PartitionKey eq '{pk}' and ({string.Join(" or ", rowKeys.Select(rowKey => $"RowKey eq '{rowKey}'"))})";
-
-        private BaseProcessingInputMetadata CreateProcessingInputMetadata() =>
-            _inputData.FilterConfiguration.FilterScope == FilterScope.System
-                ? new BaseProcessingInputMetadata()
-                : new CompartmentProcessingInputMetadata();
     }
 }

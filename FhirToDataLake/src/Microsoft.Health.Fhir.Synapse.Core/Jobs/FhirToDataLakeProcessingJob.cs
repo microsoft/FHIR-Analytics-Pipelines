@@ -10,10 +10,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
+using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
@@ -25,6 +27,7 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
+using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.JobManagement;
@@ -35,52 +38,52 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class FhirToDataLakeProcessingJob : IJob
     {
-        private JobInfo _jobInfo;
         private readonly FhirToDataLakeProcessingJobInputData _inputData;
-        private FhirToDataLakeProcessingJobResult _result;
-
         private readonly IFhirDataClient _dataClient;
         private readonly IFhirDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly ITypeFilterParser _typeFilterParser;
+        private readonly IGroupMemberExtractor _groupMemberExtractor;
+        private readonly FilterConfiguration _filterConfiguration;
         private readonly ILogger<FhirToDataLakeProcessingJob> _logger;
 
+        private readonly long _jobId;
+
+        private FhirToDataLakeProcessingJobResult _result;
+        private List<TypeFilter> _typeFilters;
         private CacheResult _cacheResult;
 
         /// <summary>
         /// Output file index map for all resources/schemas.
         /// The value of each schemaType will be appended to output files.
-        /// The format is '{SchemaType}_{TaskIndex:d10}_{index:d10}.parquet', e.g. Patient_0000000001_0000000001.parquet.
+        /// The format is '{SchemaType}_{index:d10}.parquet', e.g. Patient_0000000001.parquet.
         /// </summary>
         private Dictionary<string, int> _outputFileIndexMap;
 
         public FhirToDataLakeProcessingJob(
-            JobInfo jobInfo,
+            long jobId,
             FhirToDataLakeProcessingJobInputData inputData,
             IFhirDataClient dataClient,
             IFhirDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
+            ITypeFilterParser typeFilterParser,
+            IGroupMemberExtractor groupMemberExtractor,
+            FilterConfiguration filterConfiguration,
             ILogger<FhirToDataLakeProcessingJob> logger)
         {
-            _jobInfo = EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
+            _jobId = jobId;
             _inputData = EnsureArg.IsNotNull(inputData, nameof(inputData));
 
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
             _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            _typeFilterParser = EnsureArg.IsNotNull(typeFilterParser, nameof(typeFilterParser));
+            _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
+            _filterConfiguration = EnsureArg.IsNotNull(filterConfiguration, nameof(filterConfiguration));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
-
-            // TODO: need to clear result in jobinfo
-            // TODO: delete stage folder
-            // TODO: clean result in jobEntity
-            // the processing job status is never set to failed or cancelled.
-            _result = new FhirToDataLakeProcessingJobResult();
-            _jobInfo.Result = string.Empty;
-
-            _cacheResult = new CacheResult();
-            _outputFileIndexMap = new Dictionary<string, int>();
         }
 
         // the main progress:
@@ -94,69 +97,92 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         // 6. call "_jobStore.UpdateJobAsync()" to save the job context to storage in "JobProgressUpdater.Consume()" at regular intervals or when completing producing task context 
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                _logger.LogInformation($"Job is cancelled.");
-                throw new OperationCanceledException();
-            }
-
-            _result.ProcessingStartTime = DateTime.Now;
-
+            // TODO: the processing job status is never set to failed or cancelled.
             _logger.LogInformation($"Start executing processing job {_inputData.ProcessingJobSequenceId}.");
+
             try
             {
-                switch (_inputData.FilterScope)
+                // clear result at first
+                _result = new FhirToDataLakeProcessingJobResult
+                {
+                    ProcessingStartTime = DateTime.Now,
+                };
+
+                progress.Report(JsonConvert.SerializeObject(_result));
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _logger.LogInformation("Job is cancelled.");
+                    throw new OperationCanceledException();
+                }
+
+                // clean resources before process start
+                await CleanResourceAsync(cancellationToken);
+
+                _cacheResult = new CacheResult();
+                _outputFileIndexMap = new Dictionary<string, int>();
+
+                _typeFilters = _typeFilterParser.CreateTypeFilters(
+                    _filterConfiguration.FilterScope,
+                    _filterConfiguration.RequiredTypes,
+                    _filterConfiguration.TypeFilters).ToList();
+
+                switch (_filterConfiguration.FilterScope)
                 {
                     case FilterScope.Group:
                     {
-                        var isPatientResourcesRequired = IsPatientResourcesRequired(_inputData.TypeFilters);
+                        var isPatientResourcesRequired = IsPatientResourcesRequired(_typeFilters);
 
-                        foreach (var patientInfo in ((CompartmentProcessingInputMetadata) _inputData.InputMetadata)
-                                 .ToBeProcessedPatients)
+                        // TODO: how to ensure the group is the same?
+                        var allPatientIds = await _groupMemberExtractor.GetGroupPatientsAsync(
+                            _filterConfiguration.GroupId,
+                            null,
+                            _inputData.DataEndTime,
+                            cancellationToken);
+
+                        var patientHashToId = allPatientIds.ToDictionary(
+                            patientId => patientId.ComputeHash(),
+                            patientId => patientId);
+                        foreach (var patientInfo in _inputData.ToBeProcessedPatients)
                         {
                             var lastPatientVersionId = patientInfo.VersionId;
+                            var patientId = patientHashToId[patientInfo.PatientHash];
 
                             // the patient resource isn't included in compartment search,
                             // so we need additional request to get the patient resource
+                            var patientResource = await GetPatientResource(patientId, cancellationToken);
 
-                            // the patient resource is not retrieved yet,
-                            if (!((CompartmentResultMetadata) _result.ResultMetadata).ProcessedPatientVersions
-                                .ContainsKey(patientInfo.PatientId))
+                            // the patient does not exist, skip processing this patient
+                            if (patientResource == null)
                             {
-                                var patientResource = await GetPatientResource(patientInfo, cancellationToken);
-
-                                // the patient does not exist, skip processing this patient
-                                if (patientResource == null)
-                                {
-                                    continue;
-                                }
-
-                                var currentPatientVersionId = FhirBundleParser.ExtractVersionId(patientResource);
-
-                                if (currentPatientVersionId == 0)
-                                {
-                                    _logger.LogError(
-                                        $"Failed to extract version id for patient {patientInfo.PatientId}.");
-                                    throw new FhirSearchException(
-                                        $"Failed to extract version id for patient {patientInfo.PatientId}.");
-                                }
-
-                                // New patient or the patient is updated.
-                                if (lastPatientVersionId != currentPatientVersionId)
-                                {
-                                    // save the patient resource to cache if the patient resource type is required in the result
-                                    if (isPatientResourcesRequired)
-                                    {
-                                        AddFhirResourcesToCache(new List<JObject> {patientResource});
-                                    }
-                                }
-
-                                // add this patient's version id in cacheResult,
-                                // the version id will be synced to taskContext when the cache result is committed, and be recorded in job/schedule metadata further
-                                ((CompartmentResultMetadata) _result.ResultMetadata).ProcessedPatientVersions[
-                                    patientInfo.PatientId] = currentPatientVersionId;
-                                _logger.LogInformation($"Get patient resource {patientInfo.PatientId} successfully.");
+                                continue;
                             }
+
+                            var currentPatientVersionId = FhirBundleParser.ExtractVersionId(patientResource);
+
+                            if (currentPatientVersionId == 0)
+                            {
+                                _logger.LogError(
+                                    $"Failed to extract version id for patient {patientId}.");
+                                throw new FhirSearchException(
+                                    $"Failed to extract version id for patient {patientId}.");
+                            }
+
+                            // New patient or the patient is updated.
+                            if (lastPatientVersionId != currentPatientVersionId)
+                            {
+                                // save the patient resource to cache if the patient resource type is required in the result
+                                if (isPatientResourcesRequired)
+                                {
+                                    AddFhirResourcesToCache(new List<JObject> { patientResource });
+                                }
+                            }
+
+                            // add this patient's version id in cacheResult,
+                            // the version id will be synced to taskContext when the cache result is committed, and be recorded in job/schedule metadata further
+                            _result.ProcessedPatientVersion[
+                                patientInfo.PatientHash] = currentPatientVersionId;
+                            _logger.LogInformation($"Get patient resource {patientId} successfully.");
 
                             // the version id is 0 for newly patient
                             // for new patient, we will retrieve all its compartments resources from {since}
@@ -166,22 +192,28 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 : _inputData.DataStartTime;
                             var parameters = new List<KeyValuePair<string, string>>
                             {
-                                new(FhirApiConstants.LastUpdatedKey, $"ge{startDateTime.ToInstantString()}"),
-                                new(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
+                                new (FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
                             };
+
+                            if (startDateTime != null)
+                            {
+                                parameters.Add(new KeyValuePair<string, string>(
+                                    FhirApiConstants.LastUpdatedKey,
+                                    $"ge{((DateTimeOffset)startDateTime).ToInstantString()}"));
+                            }
 
                             // create initial compartment search option for this patient,
                             // the resource type and customized parameters of each filter will be set later.
                             var searchOption = new CompartmentSearchOptions(
                                 FhirConstants.PatientResource,
-                                patientInfo.PatientId,
+                                patientId,
                                 null,
                                 parameters);
 
                             // retrieve this patient's compartment resources for all the filters
                             await ProcessFiltersAsync(progress, searchOption, cancellationToken);
 
-                            _logger.LogInformation($"Process patient resource {patientInfo.PatientId} successfully.");
+                            _logger.LogInformation($"Process patient resource {patientId} successfully.");
                         }
 
                         break;
@@ -193,9 +225,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         // the resource type and customized parameters of each filter will be set later.
                         var parameters = new List<KeyValuePair<string, string>>
                         {
-                            new(FhirApiConstants.LastUpdatedKey, $"ge{_inputData.DataStartTime.ToInstantString()}"),
-                            new(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
+                            new (FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
                         };
+
+                        if (_inputData.DataStartTime != null)
+                        {
+                            parameters.Add(new KeyValuePair<string, string>(
+                                FhirApiConstants.LastUpdatedKey,
+                                $"ge{((DateTimeOffset) _inputData.DataStartTime).ToInstantString()}"));
+                        }
+
                         var searchOption = new BaseSearchOptions(null, parameters);
 
                         // retrieve resources for all the type filters.
@@ -205,34 +244,42 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     default:
                         throw new ArgumentOutOfRangeException(
-                            $"The FilterScope {_inputData.FilterScope} isn't supported now.");
+                            $"The FilterScope {_filterConfiguration.FilterScope} isn't supported now.");
                 }
+
+                // force to commit result when all the resources of this job are processed.
+                await TryCommitResultAsync(progress, true, cancellationToken);
+
+                _result.ProcessingCompleteTime = DateTime.UtcNow;
+
+                progress.Report(JsonConvert.SerializeObject(_result));
+
+                _logger.LogInformation($"Finished processing job '{_inputData.ProcessingJobSequenceId}'.");
+
+                return JsonConvert.SerializeObject(_result);
             }
-            catch (RetriableJobException e)
+            catch (OperationCanceledException canceledEx)
             {
-                // TODO: try to delete stage folder
+                // TODO: how about OperationCanceledException
+                _logger.LogInformation(canceledEx, "Data processing task is canceled.");
+
+                await CleanResourceAsync(CancellationToken.None);
+                throw;
+            }
+            catch (RetriableJobException retriableJobEx)
+            {
+                // always throw RetriableJobException
+                _logger.LogInformation(retriableJobEx, "Error in data processing job.");
+                await CleanResourceAsync(CancellationToken.None);
                 throw;
             }
             catch (Exception ex)
             {
-                // TODO: try to delete stage folder
-                throw new JobExecutionException(ex.Message);
+                _logger.LogInformation(ex, "Error in data processing job.");
+                await CleanResourceAsync(CancellationToken.None);
+
+                throw new RetriableJobException("Error in data processing job.",ex);
             }
-
-            // force to commit result when all the resources of this task are processed.
-            await TryCommitResultAsync(progress, true, cancellationToken);
-
-            _result.ProcessingCompleteTime = DateTime.UtcNow;
-
-            progress.Report(JsonConvert.SerializeObject(_result));
-
-            _logger.LogInformation($"Finished processing job '{_inputData.ProcessingJobSequenceId}'.");
-
-            return JsonConvert.SerializeObject(_result);
-
-            // TODO:
-            // 1. job completed
-            // 2. throw retirableJobExcep
         }
 
         /// <summary>
@@ -278,11 +325,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return false;
         }
 
-        private async Task<JObject> GetPatientResource(PatientWrapper patientInfo, CancellationToken cancellationToken)
+        private async Task<JObject> GetPatientResource(string patientId, CancellationToken cancellationToken)
         {
             var patientSearchOption = new ResourceIdSearchOptions(
                 FhirConstants.PatientResource,
-                patientInfo.PatientId,
+                patientId,
                 null);
 
             var searchResult = await ExecuteSearchAsync(patientSearchOption, cancellationToken);
@@ -290,7 +337,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             // if the patient does not exist, log a warning, and do nothing about it.
             if (searchResult.FhirResources == null || !searchResult.FhirResources.Any())
             {
-                _logger.LogWarning($"The patient {patientInfo.PatientId} dose not exist in fhir server, ignore it.");
+                _logger.LogWarning($"The patient {patientId} dose not exist in fhir server, ignore it.");
                 return null;
             }
 
@@ -298,8 +345,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (patientResource["resourceType"]?.ToString() != FhirConstants.PatientResource)
             {
-                _logger.LogError($"Failed to get patient {patientInfo.PatientId}.");
-                throw new FhirSearchException($"Failed to get patient {patientInfo.PatientId}.");
+                _logger.LogError($"Failed to get patient {patientId}.");
+                throw new FhirSearchException($"Failed to get patient {patientId}.");
             }
 
             return patientResource;
@@ -315,7 +362,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             var sharedQueryParameters = new List<KeyValuePair<string, string>>(searchOptions.QueryParameters);
 
-            foreach (var typeFilter in _inputData.TypeFilters)
+            foreach (var typeFilter in _typeFilters)
             {
                 searchOptions.ResourceType = typeFilter.ResourceType;
                 searchOptions.QueryParameters = new List<KeyValuePair<string, string>>(sharedQueryParameters);
@@ -330,7 +377,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         /// <summary>
         /// Get fhir resources with the searchOption specified.
-        /// the continuation token is updated for taskContext after each request, marked as IsCompleted if there is no continuation token anymore.
         /// If there is any operationOutcomes, will throw an exception
         /// </summary>
         private async Task SearchWithFilterAsync(
@@ -354,7 +400,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     var replacedContinuationToken = false;
 
                     // if continuation token parameter exists, update it
-                    for (int index = 0; index < searchOptions.QueryParameters.Count; index++)
+                    for (var index = 0; index < searchOptions.QueryParameters.Count; index++)
                     {
                         if (searchOptions.QueryParameters[index].Key != FhirApiConstants.ContinuationKey)
                         {
@@ -475,7 +521,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     foreach (var schemaType in schemaTypes)
                     {
                         // Convert grouped data to parquet stream
-                        var processParameters = new ProcessParameters(schemaType);
+                        var processParameters = new ProcessParameters(schemaType, resourceType);
                         var parquetStream = await _parquetDataProcessor.ProcessAsync(batchData, processParameters, cancellationToken);
                         var skippedCount = batchData.Values.Count() - parquetStream.BatchSize;
 
@@ -487,7 +533,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             }
 
                             // Upload to blob and log result
-                            var blobUrl = await _dataWriter.WriteAsync(parquetStream, $"{_inputData.TriggerSequenceId:d10}", (int)_inputData.ProcessingJobSequenceId, _outputFileIndexMap[schemaType], _inputData.DataEndTime, cancellationToken);
+                            var blobUrl = await _dataWriter.WriteAsync(parquetStream, _jobId, _outputFileIndexMap[schemaType], _inputData.DataEndTime, cancellationToken);
                             _outputFileIndexMap[schemaType] += 1;
 
                             _logger.LogInformation(
@@ -517,13 +563,27 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _result.SearchCount.AddToDictionary(resourceType, resources.Count);
                 }
 
-                // clear cache
-                _cacheResult.ClearCache();
                 progress.Report(JsonConvert.SerializeObject(_result));
 
+                // clear cache
+                _cacheResult.ClearCache();
                 _logger.LogInformation($"Commit cache resources successfully for processing job {_inputData.ProcessingJobSequenceId}.");
             }
         }
 
+        /// <summary>
+        /// Try best to clean failure data.
+        /// </summary>
+        private async Task CleanResourceAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _dataWriter.TryCleanJobDataAsync(_jobId, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ex, "Failed to clean resource.");
+            }
+        }
     }
 }

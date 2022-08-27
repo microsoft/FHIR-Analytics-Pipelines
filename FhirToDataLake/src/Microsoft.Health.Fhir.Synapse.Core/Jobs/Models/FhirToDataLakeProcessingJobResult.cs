@@ -14,24 +14,29 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         public DateTimeOffset ProcessingStartTime { get; set; }
 
         public DateTimeOffset ProcessingCompleteTime { get; set; }
+
         /// <summary>
         /// Search count for each resource type.
         /// </summary>
         [JsonProperty("searchCount")]
-        public Dictionary<string, int> SearchCount { get; set; }
+        public Dictionary<string, int> SearchCount { get; set; } = new Dictionary<string, int>();
 
         /// <summary>
         /// Skipped count for each schema type.
         /// </summary>
         [JsonProperty("skippedCount")]
-        public Dictionary<string, int> SkippedCount { get; set; }
+        public Dictionary<string, int> SkippedCount { get; set; } = new Dictionary<string, int>();
 
         /// <summary>
         /// Processed count for each schema type.
         /// </summary>
         [JsonProperty("processedCount")]
-        public Dictionary<string, int> ProcessedCount { get; set; }
+        public Dictionary<string, int> ProcessedCount { get; set; } = new Dictionary<string, int>();
 
-        public Dictionary<string, int> ProcessedPatientVersion { get; set; }
+        /// <summary>
+        /// The version id for each new/updated patient.
+        /// </summary>
+        [JsonProperty("patientVersionId")]
+        public Dictionary<string, long> ProcessedPatientVersion { get; set; } = new Dictionary<string, long>();
     }
 }

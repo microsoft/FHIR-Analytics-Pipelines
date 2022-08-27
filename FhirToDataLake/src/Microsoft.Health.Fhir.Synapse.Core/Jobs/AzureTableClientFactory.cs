@@ -29,10 +29,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             EnsureArg.IsNotNullOrWhiteSpace(config.Value.TableUrl, nameof(config.Value.TableUrl));
             EnsureArg.IsNotNullOrWhiteSpace(config.Value.AgentName, nameof(config.Value.AgentName));
 
-            // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
-            // Otherwise the relative part will be omitted when creating new search Uris. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
-            _tableUrl = config.Value.TableUrl.EndsWith("/") ? config.Value.TableUrl : $"{config.Value.TableUrl}/";
-            _tableName = JobKeyProvider.MetadataTableName(config.Value.AgentName);
+            _tableUrl = config.Value.TableUrl;
+            _tableName = TableKeyProvider.MetadataTableName(config.Value.AgentName);
 
             EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
             _tokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.Internal);
@@ -48,7 +46,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _tableUrl = StorageEmulatorConnectionString;
             _tableName = tableName;
             _tokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.Internal);
-
         }
 
         public TableClient Create()

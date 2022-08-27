@@ -32,12 +32,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage
         /// <summary>
         /// The start time of current trigger
         /// </summary>
-        public DateTime? TriggerStartTime { get; set; }
+        public DateTimeOffset? TriggerStartTime { get; set; }
 
         /// <summary>
         /// The end time of current trigger
         /// </summary>
-        public DateTime TriggerEndTime { get; set; }
+        public DateTimeOffset TriggerEndTime { get; set; }
 
         /// <summary>
         /// The corresponding orchestrator job id of current trigger

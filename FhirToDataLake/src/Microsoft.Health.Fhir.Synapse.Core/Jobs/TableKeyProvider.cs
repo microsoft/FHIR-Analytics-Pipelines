@@ -7,11 +7,10 @@ using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
-    // TODO: rename
-    public static class JobKeyProvider
+    public static class TableKeyProvider
     {
         // The table name must conform to rules: https://docs.microsoft.com/en-us/rest/api/storageservices/understanding-the-table-service-data-model#table-names
-        public static string MetadataTableName(string agentName) => $"{agentName}MetadataTable";
+        public static string MetadataTableName(string agentName) => $"{agentName.ToLower()}metadatatable";
 
         public static string TriggerPartitionKey(byte queueType) => $"{queueType:D3}_trigger";
 

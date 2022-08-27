@@ -7,10 +7,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public static class JobConfigurationConstants
     {
+
         /// <summary>
-        /// The number of patients in each task, used in group filter scope.
+        /// For each triggered job, we will query all FHIR data in a certain time period.
+        /// But when the end time of a period is very close to utcNow,
+        /// we have a risk to lose data that have not been saved to FHIR DB.
+        /// So we set a latency to query FHIR data.
         /// </summary>
-        public const int NumberOfPatientsPerTask = 100;
+        public const int JobQueryLatencyInMinutes = 2;
+
+        /// <summary>
+        /// The number of patients in each processing job, used in group filter scope.
+        /// </summary>
+        public const int DefaultNumberOfPatientsPerProcessingJob = 100;
+
+        /// <summary>
+        /// The time interval in seconds to check processing job status in orchestrator job.
+        /// </summary>
+        public const int DefaultCheckFrequencyInSeconds = 10;
 
         /// <summary>
         /// Time interval to sync job to store.
@@ -32,14 +46,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         public const int DefaultPullingIntervalInSeconds = 20;
 
-        /// <summary>
-        /// The heartbeat timeout value in seconds
-        /// </summary>
-        public const int DefaultHeartbeatTimeoutInSeconds = 180;
 
         /// <summary>
-        /// The heartbeat interval time in seconds
+        /// Expiration time span for job lock.
         /// </summary>
-        public const int DefaultHeartbeatIntervalInSeconds = 60;
+        public const int DefaultSchedulerServiceLeaseExpirationInSeconds = 180;
+
+        /// <summary>
+        /// Time interval to refresh scheduler service lock lease.
+        /// </summary>
+        public const int DefaultSchedulerServiceLeaseRefreshIntervalInSeconds = 60;
     }
 }

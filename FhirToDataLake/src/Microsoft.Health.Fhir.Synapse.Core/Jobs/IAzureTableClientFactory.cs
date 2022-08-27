@@ -9,6 +9,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public interface IAzureTableClientFactory
     {
+        /// <summary>
+        /// Create metadata table client
+        /// </summary>
+        /// <returns>TableClient</returns>
         public TableClient Create();
     }
 }
