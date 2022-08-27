@@ -137,7 +137,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             cancellationToken);
 
                         var patientHashToId = allPatientIds.ToDictionary(
-                            patientId => patientId.ComputeHash(),
+                            TableKeyProvider.CompartmentRowKey,
                             patientId => patientId);
                         foreach (var patientInfo in _inputData.ToBeProcessedPatients)
                         {

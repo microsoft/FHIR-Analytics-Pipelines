@@ -111,7 +111,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _filterConfiguration.GroupId,
                         null,
                         _inputData.DataEndTime,
-                        cancellationToken)).Select(patientId => patientId.ComputeHash()).ToHashSet();
+                        cancellationToken)).Select(TableKeyProvider.CompartmentRowKey).ToHashSet();
 
                     var processedPatientVersions = await GetPatientVersions(patients, cancellationToken);
 

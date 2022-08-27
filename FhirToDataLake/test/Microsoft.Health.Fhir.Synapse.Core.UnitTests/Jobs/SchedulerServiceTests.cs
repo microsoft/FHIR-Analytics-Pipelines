@@ -125,7 +125,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 var schedulerService = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption,
                     _nullSchedulerServiceLogger)
                 {
-                    PullingIntervalInSeconds = 0,
+                    SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
                 };
 
@@ -165,7 +165,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 var schedulerService = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
-                    PullingIntervalInSeconds = 0,
+                    SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
                 };
 
@@ -237,7 +237,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 var schedulerService = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
-                    PullingIntervalInSeconds = 0,
+                    SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
                 };
 
@@ -275,14 +275,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 var schedulerService1 = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
-                    PullingIntervalInSeconds = 0,
+                    SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
                     SchedulerServiceLeaseExpirationInSeconds = 2,
                 };
 
                 var schedulerService2 = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
-                    PullingIntervalInSeconds = 0,
+                    SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
                     SchedulerServiceLeaseExpirationInSeconds = 2,
                 };
@@ -335,7 +335,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 var schedulerService = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
-                    PullingIntervalInSeconds = 0,
+                    SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
                     SchedulerServiceLeaseExpirationInSeconds = 2,
                 };
@@ -424,7 +424,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 var schedulerService = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
-                    PullingIntervalInSeconds = 0,
+                    SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
                     SchedulerServiceLeaseExpirationInSeconds = 2,
                 };
@@ -494,7 +494,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 var schedulerService1 = new SchedulerService(brokenQueueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
-                    PullingIntervalInSeconds = 0,
+                    SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
                     SchedulerServiceLeaseExpirationInSeconds = 2,
                 };
@@ -518,7 +518,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 var queueClient = new MockQueueClient();
                 var schedulerService2 = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
-                    PullingIntervalInSeconds = 0,
+                    SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
                     SchedulerServiceLeaseExpirationInSeconds = 2,
                 };
@@ -586,7 +586,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 var schedulerService = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
-                    PullingIntervalInSeconds = 0,
+                    SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
                     SchedulerServiceLeaseExpirationInSeconds = 2,
                 };

@@ -96,7 +96,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var previousPatientInfo = new CompartmentInfoEntity
             {
                 PartitionKey = TableKeyProvider.CompartmentPartitionKey((byte) QueueType.FhirToDataLake),
-                RowKey = patients[0].ComputeHash(),
+                RowKey = TableKeyProvider.CompartmentRowKey(patients[0]),
                 VersionId = 3,
             };
             await metaDataTableClient.AddEntityAsync<CompartmentInfoEntity>(previousPatientInfo);
@@ -107,7 +107,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             foreach (var patientId in patients)
             {
-                var entity = await metaDataTableClient.GetEntityAsync<CompartmentInfoEntity>(TableKeyProvider.CompartmentPartitionKey((byte)QueueType.FhirToDataLake), patientId.ComputeHash());
+                var entity = await metaDataTableClient.GetEntityAsync<CompartmentInfoEntity>(TableKeyProvider.CompartmentPartitionKey((byte)QueueType.FhirToDataLake), TableKeyProvider.CompartmentRowKey(patientId));
                 Assert.Equal(patientId == patients[0] ? 4 : 1, entity.Value.VersionId);
             }
 

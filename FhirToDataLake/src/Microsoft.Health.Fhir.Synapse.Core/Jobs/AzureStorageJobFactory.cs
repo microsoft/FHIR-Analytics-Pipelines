@@ -37,6 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly TableClient _metaDataTableClient;
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger<AzureStorageJobFactory> _logger;
 
         public AzureStorageJobFactory(
             IQueueClient queueClient,
@@ -71,6 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _filterConfiguration = filterConfiguration.Value;
 
             _loggerFactory = EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
+            _logger = _loggerFactory.CreateLogger<AzureStorageJobFactory>();
         }
 
         public IJob Create(JobInfo jobInfo)
@@ -89,32 +91,42 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
             }
 
-            throw new NotSupportedException($"Unknown job definition. ID: {jobInfo?.Id ?? -1}");
+            // job hosting don't catch any exception thrown during creating job,
+            // return null for failure case, and job hosting will skip it.
+            _logger.LogError($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
+            return null;
         }
 
         private IJob CreateOrchestratorTask(JobInfo jobInfo)
         {
-            // TODO: what if deserialize exception
-            var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
-            if (inputData is { JobType: JobType.Orchestrator })
+            try
             {
-                var currentResult = string.IsNullOrEmpty(jobInfo.Result)
-                    ? new FhirToDataLakeOrchestratorJobResult()
-                    : JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
+                var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
+                if (inputData is { JobType: JobType.Orchestrator })
+                {
+                    var currentResult = string.IsNullOrEmpty(jobInfo.Result)
+                        ? new FhirToDataLakeOrchestratorJobResult()
+                        : JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
 
-                return new FhirToDataLakeOrchestratorJob(
-                    jobInfo,
-                    inputData,
-                    currentResult,
-                    _dataClient,
-                    _dataWriter,
-                    _queueClient,
-                    _typeFilterParser,
-                    _groupMemberExtractor,
-                    _metaDataTableClient,
-                    _schedulerConfiguration,
-                    _filterConfiguration,
-                    _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>());
+                    return new FhirToDataLakeOrchestratorJob(
+                        jobInfo,
+                        inputData,
+                        currentResult,
+                        _dataClient,
+                        _dataWriter,
+                        _queueClient,
+                        _typeFilterParser,
+                        _groupMemberExtractor,
+                        _metaDataTableClient,
+                        _schedulerConfiguration,
+                        _filterConfiguration,
+                        _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>());
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to create orchestrator job.");
+                return null;
             }
 
             return null;
@@ -122,20 +134,28 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private IJob CreateProcessingTask(JobInfo jobInfo)
         {
-            var inputData = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(jobInfo.Definition);
-            if (inputData is { JobType: JobType.Processing })
+            try
             {
-                return new FhirToDataLakeProcessingJob(
-                    jobInfo.Id,
-                    inputData,
-                    _dataClient,
-                    _dataWriter,
-                    _parquetDataProcessor,
-                    _fhirSchemaManager,
-                    _typeFilterParser,
-                    _groupMemberExtractor,
-                    _filterConfiguration,
-                    _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>());
+                var inputData = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(jobInfo.Definition);
+                if (inputData is { JobType: JobType.Processing })
+                {
+                    return new FhirToDataLakeProcessingJob(
+                        jobInfo.Id,
+                        inputData,
+                        _dataClient,
+                        _dataWriter,
+                        _parquetDataProcessor,
+                        _fhirSchemaManager,
+                        _typeFilterParser,
+                        _groupMemberExtractor,
+                        _filterConfiguration,
+                        _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>());
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to create processing job.");
+                return null;
             }
 
             return null;

@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly byte _queueType;
         private readonly ILogger<SchedulerService> _logger;
         private readonly Guid _instanceGuid;
-        private readonly JobConfiguration? _jobConfiguration;
+        private readonly JobConfiguration _jobConfiguration;
 
         // See https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression
         private readonly CrontabSchedule _crontabSchedule;
@@ -40,10 +40,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IOptions<JobConfiguration> jobConfiguration,
             ILogger<SchedulerService> logger)
         {
-            EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
-            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             EnsureArg.IsNotNull(azureTableClientFactory, nameof(azureTableClientFactory));
+            EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _jobConfiguration = jobConfiguration.Value;
             _queueType = (byte)jobConfiguration.Value.QueueType;
@@ -53,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _instanceGuid = Guid.NewGuid();
         }
 
-        public int PullingIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultPullingIntervalInSeconds;
+        public int SchedulerServicePullingIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultSchedulerServicePullingIntervalInSeconds;
 
         public int SchedulerServiceLeaseExpirationInSeconds { get; set; } = JobConfigurationConstants.DefaultSchedulerServiceLeaseExpirationInSeconds;
 
@@ -67,7 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             while (!stopRunning && !cancellationToken.IsCancellationRequested)
             {
-                var delayTask = Task.Delay(TimeSpan.FromSeconds(PullingIntervalInSeconds), CancellationToken.None);
+                var delayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), CancellationToken.None);
 
                 try
                 {
@@ -180,7 +180,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                var intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(PullingIntervalInSeconds), CancellationToken.None);
+                var intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), CancellationToken.None);
 
                 var currentTriggerEntity = await GetCurrentTriggerEntity(cancellationToken) ??
                                            await CreateInitialTriggerEntity(cancellationToken);

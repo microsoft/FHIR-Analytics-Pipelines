@@ -7,7 +7,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public static class JobConfigurationConstants
     {
-
         /// <summary>
         /// For each triggered job, we will query all FHIR data in a certain time period.
         /// But when the end time of a period is very close to utcNow,
@@ -27,11 +26,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public const int DefaultCheckFrequencyInSeconds = 10;
 
         /// <summary>
-        /// Time interval to sync job to store.
-        /// </summary>
-        public const int UploadDataIntervalInSeconds = 30;
-
-        /// <summary>
         /// The cache resources number, will commit the cache to storage if there are more resources than this value in cache.
         /// </summary>
         public const int NumberOfResourcesPerCommit = 10000;
@@ -42,13 +36,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public const int DataSizeInBytesPerCommit = 10 * 1024 * 1024;
 
         /// <summary>
-        /// The pulling interval time in seconds
+        /// The pulling interval time in seconds for scheduler service
         /// </summary>
-        public const int DefaultPullingIntervalInSeconds = 20;
-
+        public const int DefaultSchedulerServicePullingIntervalInSeconds = 20;
 
         /// <summary>
-        /// Expiration time span for job lock.
+        /// Expiration time span for scheduler service lock.
         /// </summary>
         public const int DefaultSchedulerServiceLeaseExpirationInSeconds = 180;
 
