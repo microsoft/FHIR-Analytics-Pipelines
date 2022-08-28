@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
+using Microsoft.Health.Fhir.Synapse.JobManagement;
 using Microsoft.Health.JobManagement;
 using NCrontab;
 using Newtonsoft.Json;
@@ -79,6 +80,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         var renewLeaseTask = RenewLeaseAsync(renewLeaseCancellationToken.Token);
                         try
                         {
+                            // we don't catch exceptions in this function, if the request is cancelled, it could return false or throw exception
+                            // we should stop renew lease for both cases.
                             stopRunning = await TryPullAndProcessTriggerEntity(cancellationToken);
                         }
                         catch (Exception ex)
@@ -106,6 +109,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             try
             {
                 TriggerLeaseEntity triggerLeaseEntity;
+                var needRenewLease = true;
                 try
                 {
                     // try to get trigger lease entity
@@ -114,7 +118,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         TableKeyProvider.LeaseRowKey(_queueType),
                         cancellationToken: cancellationToken)).Value;
                 }
-                catch (RequestFailedException ex) when (ex.ErrorCode == "ResourceNotFound")
+                catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
                 {
                     _logger.LogWarning("The current trigger lease doesn't exist, will create a new one.");
 
@@ -130,11 +134,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     await _metaDataTableClient.AddEntityAsync(initialTriggerLeaseEntity, cancellationToken);
 
                     // try to get trigger lease entity after insert
-                    // TODO: don't need update entity for this case
                     triggerLeaseEntity = (await _metaDataTableClient.GetEntityAsync<TriggerLeaseEntity>(
                         TableKeyProvider.LeasePartitionKey(_queueType),
                         TableKeyProvider.LeaseRowKey(_queueType),
                         cancellationToken: cancellationToken)).Value;
+                    needRenewLease = false;
                 }
 
                 if (triggerLeaseEntity == null)
@@ -150,13 +154,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     return false;
                 }
 
-                triggerLeaseEntity.WorkingInstanceGuid = _instanceGuid;
-                triggerLeaseEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
+                if (needRenewLease)
+                {
+                    triggerLeaseEntity.WorkingInstanceGuid = _instanceGuid;
+                    triggerLeaseEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
 
-                await _metaDataTableClient.UpdateEntityAsync(
-                    triggerLeaseEntity,
-                    triggerLeaseEntity.ETag,
-                    cancellationToken: cancellationToken);
+                    await _metaDataTableClient.UpdateEntityAsync(
+                        triggerLeaseEntity,
+                        triggerLeaseEntity.ETag,
+                        cancellationToken: cancellationToken);
+                }
             }
             catch (Exception ex)
             {
@@ -234,7 +241,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                                 var needUpdateTriggerEntity = true;
 
-                                // TODO: how to handle job status is Archived
+                                // job status "Archived" is useless,
+                                // shouldn't set job status to archived, if do, need to update the handle logic here
                                 switch (orchestratorJob.Status)
                                 {
                                     case JobStatus.Completed:
@@ -282,7 +290,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                     currentTriggerEntity.TriggerEndTime = GetTriggerEndTime(nextTriggerTime);
                                     if (currentTriggerEntity.TriggerStartTime > currentTriggerEntity.TriggerEndTime)
                                     {
-                                        _logger.LogInformation($"The job has been scheduled to end.");
+                                        _logger.LogInformation("The job has been scheduled to end.");
                                         return true;
                                     }
 
@@ -301,7 +309,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         case TriggerStatus.Failed:
 
                         case TriggerStatus.Cancelled:
-                            // if the current trigger is cancelled/failed, stop scheduler.
+                            // if the current trigger is cancelled/failed, stop scheduler, this case should not happen
                             _logger.LogWarning("Trigger Status is cancelled or failed.");
                             return true;
                     }
@@ -329,7 +337,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     cancellationToken: cancellationToken);
                 entity = response.Value;
             }
-            catch (RequestFailedException ex) when (ex.ErrorCode == "ResourceNotFound")
+            catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
             {
                 _logger.LogWarning("The current trigger doesn't exist, will create a new one.");
             }

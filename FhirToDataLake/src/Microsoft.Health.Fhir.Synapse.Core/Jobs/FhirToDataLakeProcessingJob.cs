@@ -26,7 +26,6 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
-using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.JobManagement;
@@ -85,18 +84,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
-        // the main progress:
-        // 1. The retrieved fhir resources and its search progress are in memory cache temporarily;
-        // 2. the cached resources will be committed to blob through "TryCommitResultAsync()" function when the number of cached resources reaches the specified value or the task is finished,
-        //    the fields of task context (statistical fields and searchProgress) are updated concurrently;
-        // 3. when the task is completed, set the task status to completed
-        // 4. once the task context is updated either from step 2 or step 3, calls "JobProgressUpdater.Produce()" to sync task context to job
-        // 5. "JobProgressUpdater.Consume" will handle the updated task context,
-        //    when the task is completed, add statistical fields and patient version id to job and remove it from runningTasks;
-        // 6. call "_jobStore.UpdateJobAsync()" to save the job context to storage in "JobProgressUpdater.Consume()" at regular intervals or when completing producing task context 
+        // the processing job status is never set to failed or cancelled.
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            // TODO: the processing job status is never set to failed or cancelled.
             _logger.LogInformation($"Start executing processing job {_inputData.ProcessingJobSequenceId}.");
 
             try
@@ -142,6 +132,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         foreach (var patientInfo in _inputData.ToBeProcessedPatients)
                         {
                             var lastPatientVersionId = patientInfo.VersionId;
+
+                            if (!patientHashToId.ContainsKey(patientInfo.PatientHash))
+                            {
+                                _logger.LogError($"Can't find patient in group for patient hash {patientInfo.PatientHash}, the group is modified.");
+                                continue;
+                            }
+
                             var patientId = patientHashToId[patientInfo.PatientHash];
 
                             // the patient resource isn't included in compartment search,
@@ -174,10 +171,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 }
                             }
 
-                            // add this patient's version id in cacheResult,
-                            // the version id will be synced to taskContext when the cache result is committed, and be recorded in job/schedule metadata further
-                            _result.ProcessedPatientVersion[
-                                patientInfo.PatientHash] = currentPatientVersionId;
+                            // add this patient's version id in result
+                            _result.ProcessedPatientVersion[patientInfo.PatientHash] = currentPatientVersionId;
                             _logger.LogInformation($"Get patient resource {patientId} successfully.");
 
                             // the version id is 0 for newly patient

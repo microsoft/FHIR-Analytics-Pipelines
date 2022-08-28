@@ -62,16 +62,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         // We first get all pathItems from staging folder.
         // The result contains all subfolders and blobs like:
-        //      "staging/jobid" directory
-        //      "staging/jobid/schemaType" directory
-        //      "staging/jobid/schemaType/year" directory
-        //      "staging/jobid/schemaType/year/month" directory
-        //      "staging/jobid/schemaType/year/month/day1" directory
-        //      "staging/jobid/schemaType/year/month/day1/schemaType_0000000001.parquet" blob
-        //      "staging/jobid/schemaType/year/month/day1/schemaType_0000000002.parquet" blob
-        //      "staging/jobid/schemaType/year/month/day2" directory
-        //      "staging/jobid/schemaType/year/month/day2/schemaType_0000000001.parquet" blob
-        //      "staging/jobid/schemaType/year/month/day2/schemaType_0000000002.parquet" blob
+        //      "staging/jobId" directory
+        //      "staging/jobId/schemaType" directory
+        //      "staging/jobId/schemaType/year" directory
+        //      "staging/jobId/schemaType/year/month" directory
+        //      "staging/jobId/schemaType/year/month/day1" directory
+        //      "staging/jobId/schemaType/year/month/day1/schemaType_0000000001.parquet" blob
+        //      "staging/jobId/schemaType/year/month/day1/schemaType_0000000002.parquet" blob
+        //      "staging/jobId/schemaType/year/month/day2" directory
+        //      "staging/jobId/schemaType/year/month/day2/schemaType_0000000001.parquet" blob
+        //      "staging/jobId/schemaType/year/month/day2/schemaType_0000000002.parquet" blob
         // For directories, we need to find all leaf directory and map to the target directory in result folder.
         // Then rename the source directory to target directory.
         public async Task CommitJobDataAsync(long jobId, CancellationToken cancellationToken = default)

@@ -26,7 +26,6 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
-using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using NSubstitute;

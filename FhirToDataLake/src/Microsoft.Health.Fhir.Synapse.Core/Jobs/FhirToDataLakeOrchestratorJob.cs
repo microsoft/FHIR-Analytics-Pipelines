@@ -25,7 +25,6 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
-using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -46,9 +45,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly JobSchedulerConfiguration _schedulerConfiguration;
         private readonly FilterConfiguration _filterConfiguration;
         private readonly ILogger<FhirToDataLakeOrchestratorJob> _logger;
-
-        private const int IncrementalOrchestrationIntervalInSeconds = 60;
-        private const int InitialOrchestrationIntervalInSeconds = 1800;
 
         private FhirToDataLakeOrchestratorJobResult _result;
 
@@ -82,10 +78,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
+        public int InitialOrchestrationIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultInitialOrchestrationIntervalInSeconds;
+
+        public int IncrementalOrchestrationIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultIncrementalOrchestrationIntervalInSeconds;
+
         public int CheckFrequencyInSeconds { get; set; } = JobConfigurationConstants.DefaultCheckFrequencyInSeconds;
 
-        public int NumberOfPatientsPerProcessingJob { get; set; } =
-            JobConfigurationConstants.DefaultNumberOfPatientsPerProcessingJob;
+        public int NumberOfPatientsPerProcessingJob { get; set; } = JobConfigurationConstants.DefaultNumberOfPatientsPerProcessingJob;
 
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
@@ -98,33 +97,33 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     throw new OperationCanceledException();
                 }
 
+                // for group scope, extract patient list from group at first
                 var toBeProcessedPatients = new List<PatientWrapper>();
                 if (_filterConfiguration.FilterScope == FilterScope.Group)
                 {
                     // extract patient ids from group
-                    _logger.LogInformation("Start extracting patients from group '{groupId}'.", _filterConfiguration.GroupId);
+                    _logger.LogInformation($"Start extracting patients from group '{_filterConfiguration.GroupId}'.");
 
                     // For now, the queryParameters is always null.
                     // This parameter will be used when we enable filter groups in the future.
-                    // TODO: need to make sure the patient are the same in orchestrator job and processing job
-                    var patients = (await _groupMemberExtractor.GetGroupPatientsAsync(
+                    var patientsHash = (await _groupMemberExtractor.GetGroupPatientsAsync(
                         _filterConfiguration.GroupId,
                         null,
                         _inputData.DataEndTime,
                         cancellationToken)).Select(TableKeyProvider.CompartmentRowKey).ToHashSet();
 
-                    var processedPatientVersions = await GetPatientVersions(patients, cancellationToken);
+                    var processedPatientVersions = await GetPatientVersions(patientsHash, cancellationToken);
 
                     // set the version id for processed patient
                     // the processed patients is empty at the beginning , and will be updated when completing a successful job.
-                    toBeProcessedPatients = patients.Select(patientHash =>
+                    toBeProcessedPatients = patientsHash.Select(patientHash =>
                         new PatientWrapper(
                             patientHash,
                             processedPatientVersions.ContainsKey(patientHash) ? processedPatientVersions[patientHash] : 0)).ToList();
 
                     _logger.LogInformation(
                         "Extract {patientCount} patients from group '{groupId}', including {newPatientCount} new patients.",
-                        patients.Count,
+                        patientsHash.Count,
                         _filterConfiguration.GroupId,
                         toBeProcessedPatients.Where(p => p.VersionId == 0).ToList().Count);
                 }
@@ -178,8 +177,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                             break;
                         case FilterScope.Group:
-                            if (_result.NextPatientIndex <
-                                toBeProcessedPatients.Count)
+                            if (_result.NextPatientIndex < toBeProcessedPatients.Count)
                             {
                                 var selectedPatients = toBeProcessedPatients.Skip(_result.NextPatientIndex)
                                     .Take(NumberOfPatientsPerProcessingJob).ToList();
@@ -220,7 +218,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     _result.CreatedJobCount++;
                     _result.RunningJobIds.Add(newJobId);
 
-                    // TODO: what if enqueue successfully while fails to report result
+                    // if enqueue successfully while fails to report result, will re-enqueue and return the existing jobInfo
+                    // TODO: add unit test for it
                     progress.Report(JsonConvert.SerializeObject(_result));
                 }
 
@@ -229,11 +228,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     await WaitRunningJobComplete(progress, cancellationToken);
                 }
 
-                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.GroupId}");
-
                 _result.CompleteTime = DateTimeOffset.UtcNow;
 
                 progress.Report(JsonConvert.SerializeObject(_result));
+
+                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.GroupId}");
 
                 return JsonConvert.SerializeObject(_result);
             }
@@ -256,7 +255,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
-        // TODO: it is necessary to get next timestamp for non initial job?
+        // get the lastUpdated timestamp of next resource for next processing job
         private async Task<DateTimeOffset?> GetNextTimestamp(DateTimeOffset? start, DateTimeOffset end, CancellationToken cancellationToken)
         {
             var typeFilters = _typeFilterParser.CreateTypeFilters(
@@ -402,17 +401,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         }
 
         private async Task<Dictionary<string, long>> GetPatientVersions(
-            IEnumerable<string> patientHashs,
+            IEnumerable<string> patientsHash,
             CancellationToken cancellationToken)
         {
             var pk = TableKeyProvider.CompartmentPartitionKey(_jobInfo.QueueType);
 
             var jobEntityQueryResult = _metaDataTableClient.QueryAsync<CompartmentInfoEntity>(
-                filter: TransactionGetByKeys(pk, patientHashs.ToList()),
+                filter: TransactionGetByKeys(pk, patientsHash.ToList()),
                 cancellationToken: cancellationToken);
 
             var patientVersions = new Dictionary<string, long>();
-            var result = _metaDataTableClient.CreateIfNotExists();
             await foreach (var pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
             {
                 foreach (var entity in pageResult.Values)

@@ -7,6 +7,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public static class JobConfigurationConstants
     {
+        // scheduler service configurations
+
         /// <summary>
         /// For each triggered job, we will query all FHIR data in a certain time period.
         /// But when the end time of a period is very close to utcNow,
@@ -14,26 +16,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// So we set a latency to query FHIR data.
         /// </summary>
         public const int JobQueryLatencyInMinutes = 2;
-
-        /// <summary>
-        /// The number of patients in each processing job, used in group filter scope.
-        /// </summary>
-        public const int DefaultNumberOfPatientsPerProcessingJob = 100;
-
-        /// <summary>
-        /// The time interval in seconds to check processing job status in orchestrator job.
-        /// </summary>
-        public const int DefaultCheckFrequencyInSeconds = 10;
-
-        /// <summary>
-        /// The cache resources number, will commit the cache to storage if there are more resources than this value in cache.
-        /// </summary>
-        public const int NumberOfResourcesPerCommit = 10000;
-
-        /// <summary>
-        /// The data size of cache in bytes, will commit the cache to storage it the data size is larger than this value.
-        /// </summary>
-        public const int DataSizeInBytesPerCommit = 10 * 1024 * 1024;
 
         /// <summary>
         /// The pulling interval time in seconds for scheduler service
@@ -49,5 +31,39 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// Time interval to refresh scheduler service lock lease.
         /// </summary>
         public const int DefaultSchedulerServiceLeaseRefreshIntervalInSeconds = 60;
+
+        // orchestrator job configurations
+
+        /// <summary>
+        /// The time interval in seconds of each processing job for initial orchestrator job, used in system filter scope.
+        /// </summary>
+        public const int DefaultInitialOrchestrationIntervalInSeconds = 1800;
+
+        /// <summary>
+        /// The time interval in seconds of each processing job for incremental orchestrator job, used in system filter scope.
+        /// </summary>
+        public const int DefaultIncrementalOrchestrationIntervalInSeconds = 60;
+
+        /// <summary>
+        /// The number of patients in each processing job, used in group filter scope.
+        /// </summary>
+        public const int DefaultNumberOfPatientsPerProcessingJob = 100;
+
+        /// <summary>
+        /// The time interval in seconds to check processing job status in orchestrator job.
+        /// </summary>
+        public const int DefaultCheckFrequencyInSeconds = 10;
+
+        // processing job configurations
+
+        /// <summary>
+        /// The cache resources number, will commit the cache to storage if there are more resources than this value in cache.
+        /// </summary>
+        public const int NumberOfResourcesPerCommit = 10000;
+
+        /// <summary>
+        /// The data size of cache in bytes, will commit the cache to storage it the data size is larger than this value.
+        /// </summary>
+        public const int DataSizeInBytesPerCommit = 10 * 1024 * 1024;
     }
 }
