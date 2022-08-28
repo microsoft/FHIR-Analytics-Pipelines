@@ -342,7 +342,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 // service is running
                 using var tokenSource1 = new CancellationTokenSource();
-                tokenSource1.CancelAfter(TimeSpan.FromSeconds(3));
+                tokenSource1.CancelAfter(TimeSpan.FromSeconds(5));
                 var task1 = schedulerService.RunAsync(tokenSource1.Token);
 
                 await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
@@ -351,7 +351,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 var currentTriggerEntity = await GetCurrentTriggerEntity();
                 Assert.NotNull(currentTriggerEntity);
 
-                Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
                 Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
                 Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
                 Assert.Null(currentTriggerEntity.TriggerStartTime);
@@ -398,7 +397,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 jobInfo.Status = JobStatus.Completed;
                 await queueClient.CompleteJobAsync(jobInfo, false, CancellationToken.None);
 
-                await Task.Delay(TimeSpan.FromMilliseconds(500));
+                await Task.Delay(TimeSpan.FromSeconds(5));
 
                 currentTriggerEntity = await GetCurrentTriggerEntity();
                 Assert.NotNull(currentTriggerEntity);
