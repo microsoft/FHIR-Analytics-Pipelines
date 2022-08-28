@@ -14,9 +14,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
     {
         public PatientWrapper(
             string patientHash,
-            long versionId = 0)
+            long versionId)
         {
             PatientHash = patientHash;
+            VersionId = versionId;
         }
 
         /// <summary>
