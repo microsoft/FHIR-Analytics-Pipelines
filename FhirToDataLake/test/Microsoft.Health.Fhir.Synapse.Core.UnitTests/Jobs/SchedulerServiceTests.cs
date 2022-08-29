@@ -342,7 +342,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 // service is running
                 using var tokenSource1 = new CancellationTokenSource();
-                tokenSource1.CancelAfter(TimeSpan.FromSeconds(5));
+                tokenSource1.CancelAfter(TimeSpan.FromSeconds(10));
                 var task1 = schedulerService.RunAsync(tokenSource1.Token);
 
                 await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
