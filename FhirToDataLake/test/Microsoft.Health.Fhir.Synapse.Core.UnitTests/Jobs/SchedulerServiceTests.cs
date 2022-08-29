@@ -342,21 +342,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 // service is running
                 using var tokenSource1 = new CancellationTokenSource();
-                tokenSource1.CancelAfter(TimeSpan.FromSeconds(10));
                 var task1 = schedulerService.RunAsync(tokenSource1.Token);
 
-                await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
-
                 // should enqueue orchestrator job
-                var currentTriggerEntity = await GetCurrentTriggerEntity();
-                Assert.NotNull(currentTriggerEntity);
+                CurrentTriggerEntity currentTriggerEntity = null;
+                while (currentTriggerEntity == null)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
+
+                    currentTriggerEntity = await GetCurrentTriggerEntity();
+                }
 
                 Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
                 Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
                 Assert.Null(currentTriggerEntity.TriggerStartTime);
 
                 // the job is dequeued
-                await Task.Delay(TimeSpan.FromSeconds(1));
+                await Task.Delay(TimeSpan.FromSeconds(2));
                 var jobInfo = await queueClient.DequeueAsync(
                     (byte)QueueType.FhirToDataLake,
                     TestWorkerName,
@@ -367,6 +369,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 jobInfo.Status = JobStatus.Completed;
                 await queueClient.CompleteJobAsync(jobInfo, false, CancellationToken.None);
 
+                await Task.Delay(TimeSpan.FromSeconds(10));
+
+                tokenSource1.Cancel();
                 await task1;
 
                 // task1 stops, the trigger status is running, trigger sequence id is 1.
