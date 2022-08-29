@@ -7,14 +7,15 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
-    public class SuccessfulDataSizeMetric : ExternalMetrics
+    public class SuccessfulDataSizeMetric : DiagnosticMetrics
     {
         public SuccessfulDataSizeMetric()
             : base("SuccessfulDataSize", MetricsCategories.Availability, new Dictionary<string, object>
             {
                 { DimensionNames.Name, "SuccessfulDataSize" },
                 { DimensionNames.Category, MetricsCategories.Availability },
-                { DimensionNames.IsInternal, false },
+                { DimensionNames.IsDiagnostic, false },
+                { DimensionNames.Operation, Operations.CompleteJob },
             })
         {
         }

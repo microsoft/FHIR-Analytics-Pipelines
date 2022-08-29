@@ -17,7 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
             _logger = logger;
         }
 
-        public void LogMetrics(Metrics metrics, long metricsValue)
+        public void LogMetrics(Metrics metrics, double metricsValue)
         {
             _logger.LogInformation(
                 $"Log Metrics \r\n " +

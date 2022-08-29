@@ -7,15 +7,17 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
-    public class SuccessfulResourceCountMetric : DiagnosticMetrics
+    public class TotalErrorsMetric : DiagnosticMetrics
     {
-        public SuccessfulResourceCountMetric(string operation = null)
-            : base("SuccessfulResourceCount", MetricsCategories.Availability, new Dictionary<string, object>
+        public TotalErrorsMetric(string errorType, string reason, string operation)
+            : base("TotalError", MetricsCategories.Errors, new Dictionary<string, object>
             {
-                { DimensionNames.Name, "SuccessfulResourceCount" },
-                { DimensionNames.Category, MetricsCategories.Availability },
+                { DimensionNames.Name, "TotalError" },
+                { DimensionNames.Category, MetricsCategories.Errors },
                 { DimensionNames.IsDiagnostic, false },
-                { DimensionNames.Operation, Operations.CompleteJob },
+                { DimensionNames.ErrorType, errorType },
+                { DimensionNames.Reason, reason },
+                { DimensionNames.Operation, operation },
             })
         {
         }

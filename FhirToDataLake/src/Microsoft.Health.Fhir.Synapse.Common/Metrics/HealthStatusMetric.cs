@@ -7,10 +7,16 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
-    public class ExternalMetrics : Metrics
+    public class HealthStatusMetric : DiagnosticMetrics
     {
-        protected ExternalMetrics(string name, MetricsCategories category, IDictionary<string, object> dimensions)
-            : base(name, category, dimensions)
+        public HealthStatusMetric()
+            : base("HealthStatus", MetricsCategories.Health, new Dictionary<string, object>
+            {
+                { DimensionNames.Name, "HealthStatus" },
+                { DimensionNames.Category, MetricsCategories.Health },
+                { DimensionNames.IsDiagnostic, false },
+                { DimensionNames.Operation, Operations.HealthCheck },
+            })
         {
         }
     }

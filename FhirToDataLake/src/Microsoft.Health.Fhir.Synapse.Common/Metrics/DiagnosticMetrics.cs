@@ -7,15 +7,10 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
-    public class TotalErrorMetric : ExternalMetrics
+    public class DiagnosticMetrics : Metrics
     {
-        public TotalErrorMetric()
-            : base("TotalError", MetricsCategories.Errors, new Dictionary<string, object>
-            {
-                { DimensionNames.Name, "TotalError" },
-                { DimensionNames.Category, MetricsCategories.Errors },
-                { DimensionNames.IsInternal, false },
-            })
+        protected DiagnosticMetrics(string name, MetricsCategories category, IDictionary<string, object> dimensions)
+            : base(name, category, dimensions)
         {
         }
     }

@@ -7,10 +7,16 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
-    public abstract class InternalMetrics : Metrics
+    public class ProcessLatencyMetric : DiagnosticMetrics
     {
-        protected InternalMetrics(string name, MetricsCategories category, IDictionary<string, object> dimensions)
-            : base(name, category, dimensions)
+        public ProcessLatencyMetric()
+            : base("ResourceLatency", MetricsCategories.Latency, new Dictionary<string, object>
+            {
+                { DimensionNames.Name, "ResourceLatency" },
+                { DimensionNames.Category, MetricsCategories.Latency },
+                { DimensionNames.IsDiagnostic, false },
+                { DimensionNames.Operation, Operations.CompleteJob }
+            })
         {
         }
     }
