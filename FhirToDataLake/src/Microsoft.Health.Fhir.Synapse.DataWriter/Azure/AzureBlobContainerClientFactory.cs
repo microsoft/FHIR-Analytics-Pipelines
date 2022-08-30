@@ -30,10 +30,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
             _credentialProvider = credentialProvider;
             _loggerFactory = loggerFactory;
-            _storageConfiguration = (StorageConfiguration)storageConfiguration;
+            _storageConfiguration = storageConfiguration.Value;
         }
 
-        public IAzureBlobContainerClient Create(string storeUrl, string containerName, TokenCredentialTypes type = TokenCredentialTypes.Internal)
+        public IAzureBlobContainerClient Create(string storeUrl, string containerName, TokenCredentialTypes type = TokenCredentialTypes.External)
         {
             EnsureArg.IsNotNull(storeUrl, nameof(storeUrl));
             EnsureArg.IsNotNull(containerName, nameof(containerName));

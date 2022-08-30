@@ -38,6 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
     public class TaskExecutorTests
     {
         private static readonly string TestBlobEndpoint = "UseDevelopmentStorage=true";
+        private static readonly StorageConfiguration _storageConfiguration = new ();
 
         [Fact]
         public async Task GivenValidDataClient_WhenExecuteTask_DataShouldBeSavedToBlob()
@@ -160,7 +161,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private IFhirDataWriter GetDataWriter(string containerName)
         {
-            var containerFactory = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), default, new NullLoggerFactory());
+            var containerFactory = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), new NullLoggerFactory());
             var storageConfig = new DataLakeStoreConfiguration
             {
                 StorageUrl = TestBlobEndpoint,
@@ -181,7 +182,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
 
         private JobProgressUpdater GetJobUpdater(Job job)
         {
-            var containerFactory = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), default, new NullLoggerFactory());
+            var containerFactory = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), new NullLoggerFactory());
             var storageConfig = new DataLakeStoreConfiguration
             {
                 StorageUrl = TestBlobEndpoint,
