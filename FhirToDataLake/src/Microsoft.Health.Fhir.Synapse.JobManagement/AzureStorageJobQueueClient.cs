@@ -124,6 +124,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             {
                 await _azureJobInfoTableClient.SubmitTransactionAsync(transactionActions, cancellationToken);
             }
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.InvalidDuplicateRowErrorCode))
+            {
+                _logger.LogError(ex, "There are duplicated jobs to be enqueued.");
+                throw;
+            }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
             {
                 // step 4: get the existing job lock entities and jobInfo entities
@@ -136,12 +141,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 await foreach (var pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
                 {
                     retrievedJobLockEntities.AddRange(pageResult.Values);
-                }
-
-                if (!retrievedJobLockEntities.Any())
-                {
-                    _logger.LogError(ex, "There are duplicated jobs to be enqueued.");
-                    throw;
                 }
 
                 jobLockEntities = retrievedJobLockEntities;

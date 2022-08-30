@@ -66,7 +66,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
         private const string TestAgentName = "testAgentName";
         private const string TestWorkerName = "test-worker";
-        private const int HeartbeatTimeoutSec = 1;
+        private const int HeartbeatTimeoutSec = 2;
 
         private readonly AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo> _azureStorageJobQueueClient;
         private readonly TableClient _azureJobInfoTableClient;
@@ -568,7 +568,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 false,
                 false,
                 CancellationToken.None));
-            Assert.Equal("EntityAlreadyExists", exception.ErrorCode);
+            Assert.Equal("InvalidDuplicateRow", exception.ErrorCode);
         }
 
         [Fact]
@@ -1217,8 +1217,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 cancellationToken: CancellationToken.None);
 
             // keep alive should throw exception
-            var exception = await Assert.ThrowsAsync<RequestFailedException>(async () => await _azureStorageJobQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
-            Assert.Equal("PopReceiptMismatch", exception.ErrorCode);
+            var exception = await Assert.ThrowsAsync<JobNotExistException>(async () => await _azureStorageJobQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
 
             // the message is still invisible
             Assert.Null(await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
@@ -1226,8 +1225,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             await Task.Delay(TimeSpan.FromSeconds(HeartbeatTimeoutSec));
 
             // keep alive should still throw exception
-            exception = await Assert.ThrowsAsync<RequestFailedException>(async () => await _azureStorageJobQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
-            Assert.Equal("PopReceiptMismatch", exception.ErrorCode);
+            exception = await Assert.ThrowsAsync<JobNotExistException>(async () => await _azureStorageJobQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
 
             // re-dequeue
             var jobInfo2 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);

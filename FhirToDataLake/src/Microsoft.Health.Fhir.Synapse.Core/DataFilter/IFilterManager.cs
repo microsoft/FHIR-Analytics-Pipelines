@@ -3,17 +3,18 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Azure.Data.Tables;
+using System.Collections.Generic;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
+using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 
-namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
+namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
-    public interface IAzureTableClientFactory
+    public interface IFilterManager
     {
-        /// <summary>
-        /// Create metadata table client
-        /// </summary>
-        /// <param name="tableName">table name</param>
-        /// <returns>TableClient</returns>
-        public TableClient Create(string tableName = null);
+        public FilterScope FilterScope();
+
+        public string GroupId();
+
+        public List<TypeFilter> GetTypeFilters();
     }
 }

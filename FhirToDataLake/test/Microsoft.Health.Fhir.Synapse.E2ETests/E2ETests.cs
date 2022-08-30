@@ -15,7 +15,9 @@ using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -51,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private const byte QueueTypeByte = (byte)QueueType.FhirToDataLake;
 
         private BlobContainerClient _blobContainerClient;
-        private TableClient _metaDataTableClient;
+        private IMetadataStore _metadataStore;
         private AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo> _queueClient;
         private AzureStorageClientFactory _queueClientFactory;
 
@@ -149,7 +151,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                     await Task.Delay(TimeSpan.FromSeconds(10), CancellationToken.None);
                     try
                     {
-                        triggerEntity = await GetCurrentTriggerEntity(_metaDataTableClient);
+                        triggerEntity = await _metadataStore.GetCurrentTriggerEntityAsync(QueueTypeByte, CancellationToken.None);
                         if (triggerEntity.TriggerStatus == TriggerStatus.Completed &&
                             triggerEntity.TriggerEndTime >= endTime)
                         {
@@ -218,7 +220,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                     await Task.Delay(TimeSpan.FromSeconds(10), CancellationToken.None);
                     try
                     {
-                        triggerEntity = await GetCurrentTriggerEntity(_metaDataTableClient);
+                        triggerEntity = await _metadataStore.GetCurrentTriggerEntityAsync(QueueTypeByte, CancellationToken.None);
                         if (triggerEntity.TriggerStatus == TriggerStatus.Completed &&
                             triggerEntity.TriggerEndTime >= endTime)
                         {
@@ -248,16 +250,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 // Check result files
                 Assert.Equal(20, await GetResultFileCount(_blobContainerClient, "result"));
 
-                var patientVersionQueryResult = _metaDataTableClient.QueryAsync<CompartmentInfoEntity>(filter: $"PartitionKey eq '{TableKeyProvider.CompartmentPartitionKey(QueueTypeByte)}'");
-
-                var patientVersions = new Dictionary<string, long>();
-                await foreach (var pageResult in patientVersionQueryResult.AsPages().WithCancellation(CancellationToken.None))
-                {
-                    foreach (var entity in pageResult.Values)
-                    {
-                        patientVersions[entity.RowKey] = entity.VersionId;
-                    }
-                }
+                var patientVersions =
+                    await _metadataStore.GetPatientVersionsAsync(QueueTypeByte, CancellationToken.None);
 
                 Assert.Single(patientVersions);
             }
@@ -317,16 +311,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 Assert.Equal(1, await GetResultFileCount(_blobContainerClient, "result/MedicationRequest/2022/07/01"));
 
                 // Check patient version
-                var patientVersionQueryResult = _metaDataTableClient.QueryAsync<CompartmentInfoEntity>(filter: $"PartitionKey eq '{TableKeyProvider.CompartmentPartitionKey(QueueTypeByte)}'");
-
-                var patientVersions = new Dictionary<string, long>();
-                await foreach (var pageResult in patientVersionQueryResult.AsPages().WithCancellation(CancellationToken.None))
-                {
-                    foreach (var entity in pageResult.Values)
-                    {
-                        patientVersions[entity.RowKey] = entity.VersionId;
-                    }
-                }
+                var patientVersions =
+                    await _metadataStore.GetPatientVersionsAsync(QueueTypeByte, CancellationToken.None);
 
                 Assert.Equal(80, patientVersions.Count);
                 foreach (var kv in patientVersions)
@@ -424,16 +410,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 Assert.Equal(2, await GetResultFileCount(_blobContainerClient, "result/MedicationRequest"));
 
                 // check patient version
-                var patientVersionQueryResult = _metaDataTableClient.QueryAsync<CompartmentInfoEntity>(filter: $"PartitionKey eq '{TableKeyProvider.CompartmentPartitionKey(QueueTypeByte)}'");
-
-                var patientVersions = new Dictionary<string, long>();
-                await foreach (var pageResult in patientVersionQueryResult.AsPages().WithCancellation(CancellationToken.None))
-                {
-                    foreach (var entity in pageResult.Values)
-                    {
-                        patientVersions[entity.RowKey] = entity.VersionId;
-                    }
-                }
+                var patientVersions =
+                    await _metadataStore.GetPatientVersionsAsync(QueueTypeByte, CancellationToken.None);
 
                 Assert.Equal(80, patientVersions.Count);
                 foreach (var kv in patientVersions)
@@ -453,15 +431,17 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             var uniqueName = Guid.NewGuid().ToString("N");
             var agentName = $"agent{uniqueName}";
             _blobContainerClient = _blobServiceClient.GetBlobContainerClient(uniqueName);
+            var jobConfig = Options.Create(new JobConfiguration
+            {
+                AgentName = agentName,
+            });
 
             // Make sure the container is deleted before running the tests
             Assert.False(await _blobContainerClient.ExistsAsync());
             var azureTableClientFactory = new AzureTableClientFactory(
-                TableKeyProvider.MetadataTableName(agentName),
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
-            _metaDataTableClient = azureTableClientFactory.Create();
-            await _metaDataTableClient.CreateIfNotExistsAsync();
+            _metadataStore = new AzureTableMetadataStore(azureTableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
 
             _queueClientFactory = new AzureStorageClientFactory(
                 AzureStorageKeyProvider.JobInfoTableName(agentName),
@@ -484,7 +464,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 await Task.Delay(TimeSpan.FromSeconds(10), CancellationToken.None);
                 try
                 {
-                    var triggerEntity = await GetCurrentTriggerEntity(_metaDataTableClient);
+                    var triggerEntity = await _metadataStore.GetCurrentTriggerEntityAsync(QueueTypeByte, CancellationToken.None);
                     if (triggerEntity.TriggerStatus == TriggerStatus.Completed &&
                         triggerEntity.TriggerEndTime >= configurationEndTime)
                     {
@@ -501,7 +481,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private async Task CleanStorage()
         {
             await _blobContainerClient.DeleteIfExistsAsync();
-            await _metaDataTableClient.DeleteAsync();
+            _metadataStore.Dispose();
             var jobInfoTableClient = _queueClientFactory.CreateTableClient();
             var jobInfoQueueClient = _queueClientFactory.CreateQueueClient();
             await jobInfoQueueClient.DeleteIfExistsAsync();
@@ -593,10 +573,5 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                         .AddSchema()
                         .AddHostedService<SynapseLinkService>());
 
-        private async Task<CurrentTriggerEntity> GetCurrentTriggerEntity(TableClient metaDataTableClient) =>
-            (await metaDataTableClient.GetEntityAsync<CurrentTriggerEntity>(
-                TableKeyProvider.TriggerPartitionKey(QueueTypeByte),
-                TableKeyProvider.TriggerRowKey(QueueTypeByte),
-                cancellationToken: CancellationToken.None)).Value;
     }
 }

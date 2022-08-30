@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Data.Tables;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -19,7 +18,6 @@ using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
-using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
@@ -39,11 +37,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IFhirDataClient _dataClient;
         private readonly IFhirDataWriter _dataWriter;
         private readonly IQueueClient _queueClient;
-        private readonly ITypeFilterParser _typeFilterParser;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
-        private readonly TableClient _metaDataTableClient;
+        private readonly IMetadataStore _metadataStore;
         private readonly JobSchedulerConfiguration _schedulerConfiguration;
-        private readonly FilterConfiguration _filterConfiguration;
+        private readonly IFilterManager _filterManager;
         private readonly ILogger<FhirToDataLakeOrchestratorJob> _logger;
 
         private FhirToDataLakeOrchestratorJobResult _result;
@@ -55,11 +52,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFhirDataClient dataClient,
             IFhirDataWriter dataWriter,
             IQueueClient queueClient,
-            ITypeFilterParser typeFilterParser,
             IGroupMemberExtractor groupMemberExtractor,
-            TableClient metaDataTableClient,
+            IFilterManager filterManager,
+            IMetadataStore metadataStore,
             JobSchedulerConfiguration schedulerConfiguration,
-            FilterConfiguration filterConfiguration,
             ILogger<FhirToDataLakeOrchestratorJob> logger)
         {
             _jobInfo = EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
@@ -68,12 +64,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
-            _typeFilterParser = EnsureArg.IsNotNull(typeFilterParser, nameof(typeFilterParser));
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
-            _metaDataTableClient = EnsureArg.IsNotNull(metaDataTableClient, nameof(metaDataTableClient));
-            _metaDataTableClient.CreateIfNotExists();
+            _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
+            _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _schedulerConfiguration = EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
-            _filterConfiguration = EnsureArg.IsNotNull(filterConfiguration, nameof(filterConfiguration));
 
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
@@ -99,20 +93,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // for group scope, extract patient list from group at first
                 var toBeProcessedPatients = new List<PatientWrapper>();
-                if (_filterConfiguration.FilterScope == FilterScope.Group)
+                if (_filterManager.FilterScope() == FilterScope.Group)
                 {
                     // extract patient ids from group
-                    _logger.LogInformation($"Start extracting patients from group '{_filterConfiguration.GroupId}'.");
+                    _logger.LogInformation($"Start extracting patients from group '{_filterManager.GroupId()}'.");
 
                     // For now, the queryParameters is always null.
                     // This parameter will be used when we enable filter groups in the future.
                     var patientsHash = (await _groupMemberExtractor.GetGroupPatientsAsync(
-                        _filterConfiguration.GroupId,
+                        _filterManager.GroupId(),
                         null,
                         _inputData.DataEndTime,
                         cancellationToken)).Select(TableKeyProvider.CompartmentRowKey).ToHashSet();
 
-                    var processedPatientVersions = await GetPatientVersions(patientsHash, cancellationToken);
+                    var processedPatientVersions = await _metadataStore.GetPatientVersionsAsync(_jobInfo.QueueType, patientsHash.ToList(), cancellationToken);
 
                     // set the version id for processed patient
                     // the processed patients is empty at the beginning , and will be updated when completing a successful job.
@@ -124,7 +118,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     _logger.LogInformation(
                         "Extract {patientCount} patients from group '{groupId}', including {newPatientCount} new patients.",
                         patientsHash.Count,
-                        _filterConfiguration.GroupId,
+                        _filterManager.GroupId(),
                         toBeProcessedPatients.Where(p => p.VersionId == 0).ToList().Count);
                 }
 
@@ -137,7 +131,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     FhirToDataLakeProcessingJobInputData input = null;
 
-                    switch (_filterConfiguration.FilterScope)
+                    switch (_filterManager.FilterScope())
                     {
                         case FilterScope.System:
                             var interval = TimeSpan.FromSeconds(IncrementalOrchestrationIntervalInSeconds);
@@ -198,7 +192,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         default:
                             // this case should not happen
                             throw new ArgumentOutOfRangeException(
-                                $"The filterScope {_filterConfiguration.FilterScope} isn't supported now.");
+                                $"The filterScope {_filterManager.FilterScope()} isn't supported now.");
                     }
 
                     if (input == null)
@@ -258,10 +252,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         // get the lastUpdated timestamp of next resource for next processing job
         private async Task<DateTimeOffset?> GetNextTimestamp(DateTimeOffset? start, DateTimeOffset end, CancellationToken cancellationToken)
         {
-            var typeFilters = _typeFilterParser.CreateTypeFilters(
-                _filterConfiguration.FilterScope,
-                _filterConfiguration.RequiredTypes,
-                _filterConfiguration.TypeFilters).ToList();
+            var typeFilters = _filterManager.GetTypeFilters();
 
             var parameters = new List<KeyValuePair<string, string>>
             {
@@ -352,20 +343,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             _result.SkippedResourceCounts =
                                 _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
 
-                            if (_filterConfiguration.FilterScope == FilterScope.Group)
+                            if (_filterManager.FilterScope() == FilterScope.Group)
                             {
-                                var transactionActions = processingJobResult.ProcessedPatientVersion
-                                    .Select(patientVersion => new TableTransactionAction(TableTransactionActionType.UpsertReplace, new CompartmentInfoEntity
-                                    {
-                                        PartitionKey = TableKeyProvider.CompartmentPartitionKey(_jobInfo.QueueType),
-                                        RowKey = patientVersion.Key,
-                                        VersionId = patientVersion.Value,
-                                    })).ToList();
-
-                                if (transactionActions.Any())
-                                {
-                                    await _metaDataTableClient.SubmitTransactionAsync(transactionActions, cancellationToken);
-                                }
+                                await _metadataStore.UpdatePatientVersionsAsync(_jobInfo.QueueType,
+                                    processingJobResult.ProcessedPatientVersion, cancellationToken);
                             }
                         }
                     }
@@ -399,30 +380,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             // TODO: job Id or job sequence index?
             await _dataWriter.CommitJobDataAsync(jobId, cancellationToken);
         }
-
-        private async Task<Dictionary<string, long>> GetPatientVersions(
-            IEnumerable<string> patientsHash,
-            CancellationToken cancellationToken)
-        {
-            var pk = TableKeyProvider.CompartmentPartitionKey(_jobInfo.QueueType);
-
-            var jobEntityQueryResult = _metaDataTableClient.QueryAsync<CompartmentInfoEntity>(
-                filter: TransactionGetByKeys(pk, patientsHash.ToList()),
-                cancellationToken: cancellationToken);
-
-            var patientVersions = new Dictionary<string, long>();
-            await foreach (var pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
-            {
-                foreach (var entity in pageResult.Values)
-                {
-                    patientVersions[entity.RowKey] = entity.VersionId;
-                }
-            }
-
-            return patientVersions;
-        }
-
-        private static string TransactionGetByKeys(string pk, List<string> rowKeys) =>
-            $"PartitionKey eq '{pk}' and ({string.Join(" or ", rowKeys.Select(rowKey => $"RowKey eq '{rowKey}'"))})";
     }
 }

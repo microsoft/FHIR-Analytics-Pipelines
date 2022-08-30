@@ -127,9 +127,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetDataWriter(containerName, blobClient),
                 GetParquetDataProcessor(),
                 GetFhirSchemaManager(),
-                GetTypeFilterParser(),
                 GetGroupMemberExtractor(),
-                filterConfiguration ??= new FilterConfiguration(),
+                GetFilterManager(filterConfiguration),
                 new NullLogger<FhirToDataLakeProcessingJob>());
         }
 
@@ -190,12 +189,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
         }
 
-        private static ITypeFilterParser GetTypeFilterParser()
+        private static IFilterManager GetFilterManager(FilterConfiguration filterConfiguration)
         {
-            var typeFilterParser = Substitute.For<ITypeFilterParser>();
-            typeFilterParser.CreateTypeFilters(Arg.Any<FilterScope>(), Arg.Any<string>(), Arg.Any<string>()).Returns(TestResourceTypeFilters);
-
-            return typeFilterParser;
+            filterConfiguration ??= new FilterConfiguration();
+            var filterManager = Substitute.For<IFilterManager>();
+            filterManager.GetTypeFilters().Returns(TestResourceTypeFilters);
+            filterManager.FilterScope().Returns(filterConfiguration.FilterScope);
+            filterManager.GroupId().Returns(filterConfiguration.GroupId);
+            return filterManager;
         }
 
         private static IGroupMemberExtractor GetGroupMemberExtractor()

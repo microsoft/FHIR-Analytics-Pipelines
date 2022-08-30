@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Data.Tables;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
@@ -35,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private readonly IOptions<JobConfiguration> _jobConfigOption;
         private IAzureTableClientFactory _azureTableClientFactory;
-        private TableClient _metaDataTableClient;
+        private IMetadataStore _metadataStore;
 
         public SchedulerServiceTests()
         {
@@ -48,122 +47,50 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             _jobConfigOption = Options.Create(jobConfig);
+
         }
 
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new SchedulerService(null, _azureTableClientFactory, Options.Create(new JobConfiguration()), _nullSchedulerServiceLogger));
+                () => new SchedulerService(null, _metadataStore, Options.Create(new JobConfiguration()), _nullSchedulerServiceLogger));
         }
 
         [Fact]
         public void GivenInvalidConfiguration_WhenInitialize_ExceptionShouldBeThrown()
         {
+            var uniqueName = Guid.NewGuid().ToString("N");
+            var agentName = $"agent{uniqueName}";
+
             var jobConfig = new JobConfiguration
             {
                 QueueType = QueueType.FhirToDataLake,
                 TableUrl = StorageEmulatorConnectionString,
                 SchedulerCronExpression = "invalid cron expression",
-                AgentName = TestAgentName,
+                AgentName = agentName,
             };
-
-            var uniqueName = Guid.NewGuid().ToString("N");
-            var agentName = $"agent{uniqueName}";
 
             // Make sure the container is deleted before running the tests
             _azureTableClientFactory = new AzureTableClientFactory(
-                TableKeyProvider.MetadataTableName(agentName),
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
             var queueClient = new MockQueueClient();
 
             Assert.Throws<NCrontab.CrontabException>(
-                () => new SchedulerService(queueClient, _azureTableClientFactory, Options.Create(jobConfig), _nullSchedulerServiceLogger));
-        }
-
-        [Fact]
-        public async Task GivenValidParameters_WhenInitialize_ThenTheSchedulerServiceShouldBeCreated()
-        {
-            try
-            {
-                var uniqueName = Guid.NewGuid().ToString("N");
-                var agentName = $"agent{uniqueName}";
-
-                // Make sure the container is deleted before running the tests
-                _azureTableClientFactory = new AzureTableClientFactory(
-                    TableKeyProvider.MetadataTableName(agentName),
-                    new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
-
-                _metaDataTableClient = _azureTableClientFactory.Create();
-
-                var queueClient = new MockQueueClient();
-
-                _ = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption,
-                    _nullSchedulerServiceLogger);
-
-                // the table is already created, so will return null.
-                Assert.Null(await _metaDataTableClient.CreateIfNotExistsAsync());
-            }
-            finally
-            {
-                await CleanStorage();
-            }
-        }
-
-        [Fact]
-        public async Task GivenQueueClientNotInitialized_WhenRunAsync_ThenTheTriggerShouldNotBeEnqueued()
-        {
-            await InitializeUniqueStorage();
-
-            try
-            {
-                var queueClient = new MockQueueClient
-                {
-                    Initialized = false,
-                };
-                var schedulerService = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption,
-                    _nullSchedulerServiceLogger)
-                {
-                    SchedulerServicePullingIntervalInSeconds = 0,
-                    SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
-                };
-
-                // the trigger lease entity should not exist
-                var exception =
-                    await Assert.ThrowsAsync<RequestFailedException>(async () => await GetTriggerLeaseEntity());
-
-                Assert.Equal("ResourceNotFound", exception.ErrorCode);
-
-                using var tokenSource = new CancellationTokenSource();
-                await schedulerService.RunAsync(tokenSource.Token);
-
-                // the trigger lease entity should exist
-                var triggerLeaseEntity = await GetTriggerLeaseEntity();
-                Assert.NotNull(triggerLeaseEntity);
-
-                // the trigger entity should not exist
-                exception = await Assert.ThrowsAsync<RequestFailedException>(
-                    async () => await GetCurrentTriggerEntity());
-
-                Assert.Equal("ResourceNotFound", exception.ErrorCode);
-            }
-            finally
-            {
-                await CleanStorage();
-            }
+                () => new SchedulerService(queueClient, _metadataStore, Options.Create(jobConfig), _nullSchedulerServiceLogger));
         }
 
         [Fact]
         public async Task GivenValidTrigger_WhenRunAsync_ThenTheTriggerShouldBeProcessed()
         {
-            await InitializeUniqueStorage();
+            InitializeUniqueStorage();
 
             try
             {
                 var queueClient = new MockQueueClient();
 
-                var schedulerService = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -223,19 +150,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                await CleanStorage();
+                CleanStorage();
             }
         }
 
         [Fact]
         public async Task GivenLongRunningSchedulerService_WhenRunAsync_ThenTheLeaseShouldBeRenewed()
         {
-            await InitializeUniqueStorage();
+            InitializeUniqueStorage();
             try
             {
                 var queueClient = new MockQueueClient();
 
-                var schedulerService = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -261,26 +188,26 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                await CleanStorage();
+                CleanStorage();
             }
         }
 
         [Fact]
         public async Task GivenCrashSchedulerService_WhenRunAsync_ThenTheLeaseShouldBeAcquiredByOtherSchedulerService()
         {
-            await InitializeUniqueStorage();
+            InitializeUniqueStorage();
             try
             {
                 var queueClient = new MockQueueClient();
 
-                var schedulerService1 = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService1 = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
                     SchedulerServiceLeaseExpirationInSeconds = 2,
                 };
 
-                var schedulerService2 = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService2 = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -321,19 +248,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                await CleanStorage();
+                CleanStorage();
             }
         }
 
         [Fact]
         public async Task GivenRunningTrigger_WhenReRunAsync_ThenTheTriggerShouldBePickedUp()
         {
-            await InitializeUniqueStorage();
+            InitializeUniqueStorage();
             try
             {
                 var queueClient = new MockQueueClient();
 
-                var schedulerService = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -414,19 +341,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                await CleanStorage();
+                CleanStorage();
             }
         }
 
         [Fact]
         public async Task GivenFailedTrigger_WhenReRunAsync_ThenTheTriggerShouldNotBeResumed()
         {
-            await InitializeUniqueStorage();
+            InitializeUniqueStorage();
             try
             {
                 var queueClient = new MockQueueClient();
 
-                var schedulerService = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -480,14 +407,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                await CleanStorage();
+                CleanStorage();
             }
         }
 
         [Fact]
         public async Task GivenEnqueueFailure_WhenRunAsync_ThenTheTriggerShouldBeRetried()
         {
-            await InitializeUniqueStorage();
+            InitializeUniqueStorage();
             try
             {
                 var brokenQueueClient = new MockQueueClient();
@@ -496,7 +423,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 brokenQueueClient.EnqueueFaultAction = FaultAction;
 
-                var schedulerService1 = new SchedulerService(brokenQueueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService1 = new SchedulerService(brokenQueueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -520,7 +447,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 await task1;
 
                 var queueClient = new MockQueueClient();
-                var schedulerService2 = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService2 = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -545,14 +472,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                await CleanStorage();
+                CleanStorage();
             }
         }
 
         [Fact]
         public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned()
         {
-            await InitializeUniqueStorage();
+            InitializeUniqueStorage();
             try
             {
                 var queueClient = new MockQueueClient();
@@ -567,10 +494,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     TriggerSequenceId = 0,
                 };
 
-                await _metaDataTableClient.CreateIfNotExistsAsync();
-
                 // add the initial trigger entity to table
-                await _metaDataTableClient.AddEntityAsync(initialTriggerEntity, CancellationToken.None);
+                await _metadataStore.AddEntityAsync(initialTriggerEntity, CancellationToken.None);
 
                 // enqueue manually
                 var orchestratorDefinition1 = new FhirToDataLakeOrchestratorJobInputData
@@ -588,7 +513,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     false,
                     CancellationToken.None)).ToList();
 
-                var schedulerService = new SchedulerService(queueClient, _azureTableClientFactory, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -615,39 +540,36 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                await CleanStorage();
+                CleanStorage();
             }
         }
 
-        private async Task InitializeUniqueStorage()
+        private void InitializeUniqueStorage()
         {
             var uniqueName = Guid.NewGuid().ToString("N");
             var agentName = $"agent{uniqueName}";
 
+            var jobConfig = Options.Create(new JobConfiguration
+            {
+                AgentName = agentName,
+            });
+
             // Make sure the container is deleted before running the tests
             _azureTableClientFactory = new AzureTableClientFactory(
-                TableKeyProvider.MetadataTableName(agentName),
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
-            _metaDataTableClient = _azureTableClientFactory.Create();
-            await _metaDataTableClient.CreateIfNotExistsAsync();
+            _metadataStore = new AzureTableMetadataStore(_azureTableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
         }
 
-        private async Task CleanStorage()
+        private void CleanStorage()
         {
-            await _metaDataTableClient.DeleteAsync();
+            _metadataStore.Dispose();
         }
 
         private async Task<CurrentTriggerEntity> GetCurrentTriggerEntity() =>
-            (await _metaDataTableClient.GetEntityAsync<CurrentTriggerEntity>(
-                TableKeyProvider.TriggerPartitionKey((byte)QueueType.FhirToDataLake),
-                TableKeyProvider.TriggerRowKey((byte)QueueType.FhirToDataLake),
-                cancellationToken: CancellationToken.None)).Value;
+            await _metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
 
         private async Task<TriggerLeaseEntity> GetTriggerLeaseEntity() =>
-            (await _metaDataTableClient.GetEntityAsync<TriggerLeaseEntity>(
-                TableKeyProvider.LeasePartitionKey((byte)QueueType.FhirToDataLake),
-                TableKeyProvider.LeaseRowKey((byte)QueueType.FhirToDataLake),
-                cancellationToken: CancellationToken.None)).Value;
+            await _metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
     }
 }

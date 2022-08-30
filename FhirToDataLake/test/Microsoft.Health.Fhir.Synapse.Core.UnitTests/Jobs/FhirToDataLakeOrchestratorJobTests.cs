@@ -81,36 +81,39 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenAGroupScopeNewOrchestratorJob_WhenExecute_ThenJobShouldBeCompleted()
         {
-            var metaDataTableClient = GetMetaDataTableClient();
-            await metaDataTableClient.DeleteAsync();
-            await metaDataTableClient.CreateAsync();
+            var metadataStore = GetMetaDataStore();
 
-            const int patientCnt = 20;
-            var patients = new List<string>();
-            for (var i = 0; i < patientCnt; i++)
+            try
             {
-                patients.Add($"patientId{i}");
+                const int patientCnt = 20;
+                var patients = new List<string>();
+                for (var i = 0; i < patientCnt; i++)
+                {
+                    patients.Add($"patientId{i}");
+                }
+
+                var previousPatientInfo = new CompartmentInfoEntity
+                {
+                    PartitionKey = TableKeyProvider.CompartmentPartitionKey((byte)QueueType.FhirToDataLake),
+                    RowKey = TableKeyProvider.CompartmentRowKey(patients[0]),
+                    VersionId = 3,
+                };
+                await metadataStore.AddEntityAsync(previousPatientInfo);
+                var result = await VerifyCommonOrchestratorJobAsync(patientCnt, 4, filterScope: FilterScope.Group, metadataStore: metadataStore);
+
+                // verify patient version for group scope
+                Assert.Equal(patientCnt, result.NextPatientIndex);
+
+                foreach (var patientId in patients)
+                {
+                    var entity = await metadataStore.GetCompartmentInfoEntityAsync((byte)QueueType.FhirToDataLake, patientId);
+                    Assert.Equal(patientId == patients[0] ? 4 : 1, entity.VersionId);
+                }
             }
-
-            var previousPatientInfo = new CompartmentInfoEntity
+            finally
             {
-                PartitionKey = TableKeyProvider.CompartmentPartitionKey((byte) QueueType.FhirToDataLake),
-                RowKey = TableKeyProvider.CompartmentRowKey(patients[0]),
-                VersionId = 3,
-            };
-            await metaDataTableClient.AddEntityAsync<CompartmentInfoEntity>(previousPatientInfo);
-            var result = await VerifyCommonOrchestratorJobAsync(patientCnt, 4, filterScope: FilterScope.Group, metaDataTableClient: metaDataTableClient);
-
-            // verify patient version for group scope
-            Assert.Equal(patientCnt, result.NextPatientIndex);
-
-            foreach (var patientId in patients)
-            {
-                var entity = await metaDataTableClient.GetEntityAsync<CompartmentInfoEntity>(TableKeyProvider.CompartmentPartitionKey((byte)QueueType.FhirToDataLake), TableKeyProvider.CompartmentRowKey(patientId));
-                Assert.Equal(patientId == patients[0] ? 4 : 1, entity.Value.VersionId);
+                metadataStore.Dispose();
             }
-
-            await metaDataTableClient.DeleteAsync(CancellationToken.None);
         }
 
         [Fact]
@@ -145,11 +148,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetBrokenFhirDataClient(),
                 GetDataWriter(containerName, blobClient),
                 queueClient,
-                GetTypeFilterParser(),
                 GetGroupMemberExtractor(0),
-                GetMetaDataTableClient(),
+                GetFilterManager(new FilterConfiguration()),
+                GetMetaDataStore(),
                 new JobSchedulerConfiguration(),
-                new FilterConfiguration(),
                 new NullLogger<FhirToDataLakeOrchestratorJob>());
 
             var retriableJobException = await Assert.ThrowsAsync<RetriableJobException>(async () =>
@@ -164,7 +166,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             int resumeFrom = -1,
             int completedCount = 0,
             FilterScope filterScope = FilterScope.System,
-            TableClient metaDataTableClient = null)
+            IMetadataStore metadataStore = null)
         {
             string progressResult = null;
             var progress = new Progress<string>((r) =>
@@ -264,11 +266,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetMockFhirDataClient(inputFileCount, resumeFrom),
                 GetDataWriter(containerName, blobClient),
                 queueClient,
-                GetTypeFilterParser(),
                 groupMemberExtractor,
-                metaDataTableClient ?? GetMetaDataTableClient(),
+                GetFilterManager(filterConfiguration),
+                metadataStore ?? GetMetaDataStore(),
                 schedulerConfig,
-                filterConfiguration,
                 new NullLogger<FhirToDataLakeOrchestratorJob>())
             {
                 NumberOfPatientsPerProcessingJob = 1,
@@ -395,13 +396,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return results;
         }
 
-        private static TableClient GetMetaDataTableClient()
+        private static IMetadataStore GetMetaDataStore()
         {
+            var jobConfig = Options.Create(new JobConfiguration
+            {
+                AgentName = "testagentname",
+            });
             var tableClientFactory = new AzureTableClientFactory(
-                TableKeyProvider.MetadataTableName("testagentname"),
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
-            return tableClientFactory.Create();
+            return new AzureTableMetadataStore(tableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
         }
 
         private static IFhirDataWriter GetDataWriter(string containerName, IAzureBlobContainerClient blobClient)
@@ -422,12 +426,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return new AzureBlobDataWriter(mockFactory, dataSink, new NullLogger<AzureBlobDataWriter>());
         }
 
-        private static ITypeFilterParser GetTypeFilterParser()
+        private static IFilterManager GetFilterManager(FilterConfiguration filterConfiguration)
         {
-            var typeFilterParser = Substitute.For<ITypeFilterParser>();
-            typeFilterParser.CreateTypeFilters(Arg.Any<FilterScope>(), Arg.Any<string>(), Arg.Any<string>()).Returns(TestResourceTypeFilters);
-
-            return typeFilterParser;
+            var filterManager = Substitute.For<IFilterManager>();
+            filterManager.GetTypeFilters().Returns(TestResourceTypeFilters);
+            filterManager.FilterScope().Returns(filterConfiguration.FilterScope);
+            filterManager.GroupId().Returns(filterConfiguration.GroupId);
+            return filterManager;
         }
 
         private static IGroupMemberExtractor GetGroupMemberExtractor(int count)

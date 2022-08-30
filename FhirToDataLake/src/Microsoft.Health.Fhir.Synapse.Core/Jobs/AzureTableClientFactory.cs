@@ -19,7 +19,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly TokenCredential _tokenCredential;
 
         private readonly string _tableUrl;
-        private readonly string _tableName;
 
         public AzureTableClientFactory(
             IOptions<JobConfiguration> config,
@@ -27,40 +26,37 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             EnsureArg.IsNotNull(config, nameof(config));
             EnsureArg.IsNotNullOrWhiteSpace(config.Value.TableUrl, nameof(config.Value.TableUrl));
-            EnsureArg.IsNotNullOrWhiteSpace(config.Value.AgentName, nameof(config.Value.AgentName));
 
             _tableUrl = config.Value.TableUrl;
-            _tableName = TableKeyProvider.MetadataTableName(config.Value.AgentName);
 
             EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
             _tokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.Internal);
         }
 
         public AzureTableClientFactory(
-            string tableName,
             ITokenCredentialProvider credentialProvider)
         {
-            EnsureArg.IsNotNullOrWhiteSpace(tableName, nameof(tableName));
             EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
 
             _tableUrl = StorageEmulatorConnectionString;
-            _tableName = tableName;
             _tokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.Internal);
         }
 
-        public TableClient Create()
+        public TableClient Create(string tableName)
         {
+            EnsureArg.IsNotNullOrWhiteSpace(tableName, nameof(tableName));
+
             // Create client for local emulator.
             if (string.Equals(_tableUrl, StorageEmulatorConnectionString, StringComparison.OrdinalIgnoreCase))
             {
-                return new TableClient(_tableUrl, _tableName);
+                return new TableClient(_tableUrl, tableName);
             }
 
             var tableUri = new Uri(_tableUrl);
 
             return new TableClient(
                 tableUri,
-                _tableName,
+                tableName,
                 _tokenCredential);
         }
     }

@@ -41,9 +41,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IFhirDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
-        private readonly ITypeFilterParser _typeFilterParser;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
-        private readonly FilterConfiguration _filterConfiguration;
+        private readonly IFilterManager _filterManager;
         private readonly ILogger<FhirToDataLakeProcessingJob> _logger;
 
         private readonly long _jobId;
@@ -66,9 +65,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFhirDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
-            ITypeFilterParser typeFilterParser,
             IGroupMemberExtractor groupMemberExtractor,
-            FilterConfiguration filterConfiguration,
+            IFilterManager filterManager,
             ILogger<FhirToDataLakeProcessingJob> logger)
         {
             _jobId = jobId;
@@ -78,9 +76,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
             _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
-            _typeFilterParser = EnsureArg.IsNotNull(typeFilterParser, nameof(typeFilterParser));
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
-            _filterConfiguration = EnsureArg.IsNotNull(filterConfiguration, nameof(filterConfiguration));
+            _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
@@ -108,12 +105,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _cacheResult = new CacheResult();
                 _outputFileIndexMap = new Dictionary<string, int>();
 
-                _typeFilters = _typeFilterParser.CreateTypeFilters(
-                    _filterConfiguration.FilterScope,
-                    _filterConfiguration.RequiredTypes,
-                    _filterConfiguration.TypeFilters).ToList();
+                _typeFilters = _filterManager.GetTypeFilters();
 
-                switch (_filterConfiguration.FilterScope)
+                switch (_filterManager.FilterScope())
                 {
                     case FilterScope.Group:
                     {
@@ -121,7 +115,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                         // TODO: how to ensure the group is the same?
                         var allPatientIds = await _groupMemberExtractor.GetGroupPatientsAsync(
-                            _filterConfiguration.GroupId,
+                            _filterManager.GroupId(),
                             null,
                             _inputData.DataEndTime,
                             cancellationToken);
@@ -235,7 +229,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     default:
                         throw new ArgumentOutOfRangeException(
-                            $"The FilterScope {_filterConfiguration.FilterScope} isn't supported now.");
+                            $"The FilterScope {_filterManager.FilterScope()} isn't supported now.");
                 }
 
                 // force to commit result when all the resources of this job are processed.

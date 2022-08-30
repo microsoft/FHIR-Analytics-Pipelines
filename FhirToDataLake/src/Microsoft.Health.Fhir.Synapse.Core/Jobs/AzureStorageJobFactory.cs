@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using Azure.Data.Tables;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -27,15 +26,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class AzureStorageJobFactory : IJobFactory
     {
         private readonly JobSchedulerConfiguration _schedulerConfiguration;
-        private readonly FilterConfiguration _filterConfiguration;
         private readonly IQueueClient _queueClient;
         private readonly IFhirDataClient _dataClient;
         private readonly IFhirDataWriter _dataWriter;
-        private readonly ITypeFilterParser _typeFilterParser;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly IColumnDataProcessor _parquetDataProcessor;
-        private readonly TableClient _metaDataTableClient;
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly IFilterManager _filterManager;
+        private readonly IMetadataStore _metadataStore;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<AzureStorageJobFactory> _logger;
 
@@ -43,33 +41,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IQueueClient queueClient,
             IFhirDataClient dataClient,
             IFhirDataWriter dataWriter,
-            ITypeFilterParser typeFilterParser,
             IGroupMemberExtractor groupMemberExtractor,
             IColumnDataProcessor parquetDataProcessor,
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
-            IAzureTableClientFactory azureTableClientFactory,
+            IFilterManager filterManager,
+            IMetadataStore metadataStore,
             IOptions<JobSchedulerConfiguration> schedulerConfiguration,
-            IOptions<FilterConfiguration> filterConfiguration,
             ILoggerFactory loggerFactory)
         {
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
-            _typeFilterParser = EnsureArg.IsNotNull(typeFilterParser, nameof(typeFilterParser));
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
             _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
-
-            EnsureArg.IsNotNull(azureTableClientFactory, nameof(azureTableClientFactory));
-
-            _metaDataTableClient = azureTableClientFactory.Create();
-            _metaDataTableClient.CreateIfNotExists();
+            _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
+            _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
 
             EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
             _schedulerConfiguration = schedulerConfiguration.Value;
-
-            EnsureArg.IsNotNull(filterConfiguration, nameof(filterConfiguration));
-            _filterConfiguration = filterConfiguration.Value;
 
             _loggerFactory = EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
             _logger = _loggerFactory.CreateLogger<AzureStorageJobFactory>();
@@ -115,11 +105,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _dataClient,
                         _dataWriter,
                         _queueClient,
-                        _typeFilterParser,
                         _groupMemberExtractor,
-                        _metaDataTableClient,
+                        _filterManager,
+                        _metadataStore,
                         _schedulerConfiguration,
-                        _filterConfiguration,
                         _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>());
                 }
             }
@@ -146,9 +135,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _dataWriter,
                         _parquetDataProcessor,
                         _fhirSchemaManager,
-                        _typeFilterParser,
                         _groupMemberExtractor,
-                        _filterConfiguration,
+                        _filterManager,
                         _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>());
                 }
             }
