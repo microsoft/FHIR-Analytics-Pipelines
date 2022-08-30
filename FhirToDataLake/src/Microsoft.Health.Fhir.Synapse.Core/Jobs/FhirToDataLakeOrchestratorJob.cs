@@ -129,71 +129,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         await WaitRunningJobComplete(progress, cancellationToken);
                     }
 
-                    FhirToDataLakeProcessingJobInputData input = null;
-
-                    switch (_filterManager.FilterScope())
-                    {
-                        case FilterScope.System:
-                            var interval = TimeSpan.FromSeconds(IncrementalOrchestrationIntervalInSeconds);
-
-                            if (_inputData.DataStartTime == null || ((DateTimeOffset)_inputData.DataStartTime).AddMinutes(60) < _inputData.DataEndTime)
-                            {
-                                interval = TimeSpan.FromSeconds(InitialOrchestrationIntervalInSeconds);
-                            }
-
-                            if (_result.NextJobTimestamp == null || _result.NextJobTimestamp < _inputData.DataEndTime)
-                            {
-                                var nextResourceTimestamp =
-                                    await GetNextTimestamp(_result.NextJobTimestamp ?? _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
-                                if (nextResourceTimestamp == null)
-                                {
-                                    _result.NextJobTimestamp = _inputData.DataEndTime;
-                                    break;
-                                }
-
-                                var nextJobEnd = (DateTimeOffset)nextResourceTimestamp + interval;
-                                if (nextJobEnd > _inputData.DataEndTime)
-                                {
-                                    nextJobEnd = _inputData.DataEndTime;
-                                }
-
-                                input = new FhirToDataLakeProcessingJobInputData
-                                {
-                                    JobType = JobType.Processing,
-                                    ProcessingJobSequenceId = _result.CreatedJobCount,
-                                    TriggerSequenceId = _inputData.TriggerSequenceId,
-                                    Since = _inputData.Since,
-                                    DataStartTime = nextResourceTimestamp,
-                                    DataEndTime = nextJobEnd,
-                                };
-                                _result.NextJobTimestamp = nextJobEnd;
-                            }
-
-                            break;
-                        case FilterScope.Group:
-                            if (_result.NextPatientIndex < toBeProcessedPatients.Count)
-                            {
-                                var selectedPatients = toBeProcessedPatients.Skip(_result.NextPatientIndex)
-                                    .Take(NumberOfPatientsPerProcessingJob).ToList();
-                                input = new FhirToDataLakeProcessingJobInputData
-                                {
-                                    JobType = JobType.Processing,
-                                    ProcessingJobSequenceId = _result.CreatedJobCount,
-                                    TriggerSequenceId = _inputData.TriggerSequenceId,
-                                    Since = _inputData.Since,
-                                    DataStartTime = _inputData.DataStartTime,
-                                    DataEndTime = _inputData.DataEndTime,
-                                    ToBeProcessedPatients = selectedPatients,
-                                };
-                                _result.NextPatientIndex += selectedPatients.Count;
-                            }
-
-                            break;
-                        default:
-                            // this case should not happen
-                            throw new ArgumentOutOfRangeException(
-                                $"The filterScope {_filterManager.FilterScope()} isn't supported now.");
-                    }
+                    var input = await GetNextInputData(toBeProcessedPatients, cancellationToken);
 
                     if (input == null)
                     {
@@ -247,6 +183,76 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogInformation(ex, "Error in orchestrator job.");
                 throw new RetriableJobException("Error in orchestrator job.", ex);
             }
+        }
+
+        private async Task<FhirToDataLakeProcessingJobInputData> GetNextInputData(List<PatientWrapper> toBeProcessedPatients, CancellationToken cancellationToken)
+        {
+            FhirToDataLakeProcessingJobInputData input = null;
+            switch (_filterManager.FilterScope())
+            {
+                case FilterScope.System:
+                    var interval = TimeSpan.FromSeconds(IncrementalOrchestrationIntervalInSeconds);
+
+                    if (_inputData.DataStartTime == null || ((DateTimeOffset)_inputData.DataStartTime).AddMinutes(60) < _inputData.DataEndTime)
+                    {
+                        interval = TimeSpan.FromSeconds(InitialOrchestrationIntervalInSeconds);
+                    }
+
+                    if (_result.NextJobTimestamp == null || _result.NextJobTimestamp < _inputData.DataEndTime)
+                    {
+                        var nextResourceTimestamp =
+                            await GetNextTimestamp(_result.NextJobTimestamp ?? _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
+                        if (nextResourceTimestamp == null)
+                        {
+                            _result.NextJobTimestamp = _inputData.DataEndTime;
+                            break;
+                        }
+
+                        var nextJobEnd = (DateTimeOffset)nextResourceTimestamp + interval;
+                        if (nextJobEnd > _inputData.DataEndTime)
+                        {
+                            nextJobEnd = _inputData.DataEndTime;
+                        }
+
+                        input = new FhirToDataLakeProcessingJobInputData
+                        {
+                            JobType = JobType.Processing,
+                            ProcessingJobSequenceId = _result.CreatedJobCount,
+                            TriggerSequenceId = _inputData.TriggerSequenceId,
+                            Since = _inputData.Since,
+                            DataStartTime = nextResourceTimestamp,
+                            DataEndTime = nextJobEnd,
+                        };
+                        _result.NextJobTimestamp = nextJobEnd;
+                    }
+
+                    break;
+                case FilterScope.Group:
+                    if (_result.NextPatientIndex < toBeProcessedPatients.Count)
+                    {
+                        var selectedPatients = toBeProcessedPatients.Skip(_result.NextPatientIndex)
+                            .Take(NumberOfPatientsPerProcessingJob).ToList();
+                        input = new FhirToDataLakeProcessingJobInputData
+                        {
+                            JobType = JobType.Processing,
+                            ProcessingJobSequenceId = _result.CreatedJobCount,
+                            TriggerSequenceId = _inputData.TriggerSequenceId,
+                            Since = _inputData.Since,
+                            DataStartTime = _inputData.DataStartTime,
+                            DataEndTime = _inputData.DataEndTime,
+                            ToBeProcessedPatients = selectedPatients,
+                        };
+                        _result.NextPatientIndex += selectedPatients.Count;
+                    }
+
+                    break;
+                default:
+                    // this case should not happen
+                    throw new ArgumentOutOfRangeException(
+                        $"The filterScope {_filterManager.FilterScope()} isn't supported now.");
+            }
+
+            return input;
         }
 
         // get the lastUpdated timestamp of next resource for next processing job
