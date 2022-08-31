@@ -57,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 
                     // Todo: Send notification to mediator and remove listeners here.
                     var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
-                    _metricsLogger.LogHealthStatusMetric(healthStatus.Status == Models.HealthCheckStatus.HEALTHY ? 1 : 0);
+                    _metricsLogger.LogHealthStatusMetric(healthStatus.Status == Models.HealthCheckStatus.HEALTHY ? 0 : 1);
                     await Task.WhenAll(listenerTasks);
                     await delayTask;
                 }

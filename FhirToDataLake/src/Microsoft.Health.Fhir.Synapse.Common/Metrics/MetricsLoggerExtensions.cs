@@ -33,12 +33,5 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         {
             metricsLogger.LogMetrics(new HealthStatusMetric(), value);
         }
-
-        public static IServiceCollection AddMetricsLogger(this IServiceCollection services)
-        {
-            services.AddSingleton<IMetricsLogger, MetricsLogger>();
-
-            return services;
-        }
     }
 }
