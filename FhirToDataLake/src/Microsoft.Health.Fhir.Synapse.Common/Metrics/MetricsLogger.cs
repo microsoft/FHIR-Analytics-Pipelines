@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         {
             _logger.LogInformation(
                 $"Log Metrics \r\n " +
-                $"{metrics.Name} : Value \r\n " +
+                $"{metrics.Name} : {metricsValue} \r\n " +
                 $"Dimensions: \r\n" +
                 $"{string.Join("\r\n", metrics.Dimensions.Select(x => string.Join(":", x.Key, x.Value.ToString())))}");
         }

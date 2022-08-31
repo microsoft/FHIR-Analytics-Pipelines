@@ -14,7 +14,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
             {
                 { DimensionNames.Name, "TotalError" },
                 { DimensionNames.Category, MetricsCategories.Errors },
-                { DimensionNames.IsDiagnostic, false },
+                { DimensionNames.IsDiagnostic, true },
                 { DimensionNames.ErrorType, errorType },
                 { DimensionNames.Reason, reason },
                 { DimensionNames.Operation, operation },
