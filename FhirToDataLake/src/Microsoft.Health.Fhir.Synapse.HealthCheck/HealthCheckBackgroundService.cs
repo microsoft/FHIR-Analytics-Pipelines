@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 {
@@ -21,16 +22,19 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
         private readonly IHealthCheckEngine _healthCheckEngine;
         private readonly IEnumerable<IHealthCheckListener> _healthCheckListeners;
         private readonly ILogger<HealthCheckBackgroundService> _logger;
+        private readonly IMetricsLogger _metricsLogger;
         private TimeSpan _checkIntervalInSeconds;
 
         public HealthCheckBackgroundService(
             IHealthCheckEngine healthCheckEngine,
             IEnumerable<IHealthCheckListener> healthCheckListeners,
             IOptions<HealthCheckConfiguration> healthCheckConfiguration,
-            ILogger<HealthCheckBackgroundService> logger)
+            ILogger<HealthCheckBackgroundService> logger,
+            IMetricsLogger metricsLogger)
         {
             _healthCheckEngine = EnsureArg.IsNotNull(healthCheckEngine, nameof(healthCheckEngine));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
             _healthCheckListeners = EnsureArg.IsNotNull(healthCheckListeners, nameof(healthCheckListeners));
             EnsureArg.IsNotNull(healthCheckConfiguration, nameof(healthCheckConfiguration));
 
@@ -53,6 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 
                     // Todo: Send notification to mediator and remove listeners here.
                     var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
+                    _metricsLogger.LogHealthStatusMetric(healthStatus.Status == Models.HealthCheckStatus.HEALTHY ? 1 : 0);
                     await Task.WhenAll(listenerTasks);
                     await delayTask;
                 }
