@@ -5,6 +5,7 @@
 
 using System;
 using System.Linq;
+using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -36,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException("Failed to parse fhir server configuration", ex);
             }
 
-            if (string.IsNullOrEmpty(fhirServerConfiguration.ServerUrl))
+            if (string.IsNullOrWhiteSpace(fhirServerConfiguration.ServerUrl))
             {
                 throw new ConfigurationErrorException($"Fhir server url can not be empty.");
             }
@@ -61,28 +62,24 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 
             ValidateAgentName(jobConfiguration.AgentName);
 
-            if (!Enum.IsDefined(typeof(QueueType), jobConfiguration.QueueType))
-            {
-                throw new ConfigurationErrorException(
-                    $"Queue type '{jobConfiguration.QueueType}' is not supported.");
-            }
+            EnsureArg.EnumIsDefined(jobConfiguration.QueueType, nameof(jobConfiguration.QueueType));
 
-            if (string.IsNullOrEmpty(jobConfiguration.TableUrl))
+            if (string.IsNullOrWhiteSpace(jobConfiguration.TableUrl))
             {
                 throw new ConfigurationErrorException($"Table Url can not be empty.");
             }
 
-            if (string.IsNullOrEmpty(jobConfiguration.QueueUrl))
+            if (string.IsNullOrWhiteSpace(jobConfiguration.QueueUrl))
             {
                 throw new ConfigurationErrorException($"Queue Url can not be empty.");
             }
 
-            if (string.IsNullOrEmpty(jobConfiguration.SchedulerCronExpression))
+            if (string.IsNullOrWhiteSpace(jobConfiguration.SchedulerCronExpression))
             {
                 throw new ConfigurationErrorException($"Scheduler crontab expression can not be empty.");
             }
 
-            if (string.IsNullOrEmpty(jobConfiguration.ContainerName))
+            if (string.IsNullOrWhiteSpace(jobConfiguration.ContainerName))
             {
                 throw new ConfigurationErrorException($"Target azure container name can not be empty.");
             }
@@ -107,7 +104,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 .GetRequiredService<IOptions<DataLakeStoreConfiguration>>()
                 .Value;
 
-            if (string.IsNullOrEmpty(storeConfiguration.StorageUrl))
+            if (string.IsNullOrWhiteSpace(storeConfiguration.StorageUrl))
             {
                 throw new ConfigurationErrorException($"Target azure storage url can not be empty.");
             }
@@ -171,19 +168,25 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
         public static void ValidateAgentName(string agentName)
         {
 
-            if (string.IsNullOrEmpty(agentName))
+            if (string.IsNullOrWhiteSpace(agentName))
             {
-                throw new ConfigurationErrorException($"Agent name can not be empty.");
+                throw new ConfigurationErrorException("Agent name can not be empty.");
             }
 
             if (!agentName.All(char.IsLetterOrDigit))
             {
-                throw new ConfigurationErrorException($"Agent name may contain only alphanumeric characters.");
+                throw new ConfigurationErrorException("Agent name may contain only alphanumeric characters.");
             }
 
             if (!char.IsLetter(agentName.First()))
             {
-                throw new ConfigurationErrorException($"Agent name should begin with an alphabet character.");
+                throw new ConfigurationErrorException("Agent name should begin with an alphabet character.");
+            }
+
+            // the table/queue name must be from 3 to 63 characters long, we add suffix to the agent name as table/queue name: {agentName}metadatatable, {agentName}jobinfotable, {agentName}jobinfoqueue
+            if (agentName.Length >= 50)
+            {
+                throw new ConfigurationErrorException("Agent name should less than 50 characters long.");
             }
         }
 

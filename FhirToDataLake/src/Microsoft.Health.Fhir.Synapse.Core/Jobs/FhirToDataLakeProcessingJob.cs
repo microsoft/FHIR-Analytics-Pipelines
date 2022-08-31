@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
@@ -413,7 +412,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 continuationToken = searchResult.ContinuationToken;
 
-                if (string.IsNullOrEmpty(continuationToken))
+                if (string.IsNullOrWhiteSpace(continuationToken))
                 {
                     isCurrentSearchCompleted = true;
                 }
@@ -465,7 +464,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             foreach (var resource in fhirResources)
             {
                 var resourceType = resource["resourceType"]?.ToString();
-                if (string.IsNullOrEmpty(resourceType))
+                if (string.IsNullOrWhiteSpace(resourceType))
                 {
                     _logger.LogError($"Failed to parse fhir search resource {resource}");
                     throw new FhirDataParseExeption($"Failed to parse fhir search resource {resource}");

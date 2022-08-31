@@ -81,9 +81,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
             }
 
-            // job hosting don't catch any exception thrown during creating job,
+            // job hosting didn't catch any exception thrown during creating job,
             // return null for failure case, and job hosting will skip it.
-            _logger.LogError($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
+            _logger.LogWarning($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
             return null;
         }
 
@@ -94,7 +94,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
-                    var currentResult = string.IsNullOrEmpty(jobInfo.Result)
+                    var currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
                         ? new FhirToDataLakeOrchestratorJobResult()
                         : JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
 

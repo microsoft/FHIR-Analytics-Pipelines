@@ -143,6 +143,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                     retrievedJobLockEntities.AddRange(pageResult.Values);
                 }
 
+                if (!retrievedJobLockEntities.Any())
+                {
+                    _logger.LogError(ex, "There are duplicated jobs to be enqueued.");
+                    throw;
+                }
+
                 jobLockEntities = retrievedJobLockEntities;
 
                 // get job info entity by specifying the row key stored in job lock entity
@@ -185,7 +191,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // for new added job lock entities, their etag are empty, need to get them to get etag.
-            if (jobLockEntities.Any(jobLockEntity => string.IsNullOrEmpty(jobLockEntity.ETag.ToString())))
+            if (jobLockEntities.Any(jobLockEntity => string.IsNullOrWhiteSpace(jobLockEntity.ETag.ToString())))
             {
                 var jobLockEntityQueryResult = _azureJobInfoTableClient.QueryAsync<TableEntity>(
                     filter: TransactionGetByKeys(jobLockEntities.First().PartitionKey, jobLockEntities.Select(entity => entity.RowKey).ToList()),
@@ -359,7 +365,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             var result = new ConcurrentBag<JobInfo>();
 
             // https://docs.microsoft.com/en-us/dotnet/api/system.threading.semaphoreslim?view=net-6.0
-            var throttler = new SemaphoreSlim(MaxThreadsCountForGettingJob, MaxThreadsCountForGettingJob);
+            using var throttler = new SemaphoreSlim(MaxThreadsCountForGettingJob, MaxThreadsCountForGettingJob);
 
             var tasks = jobIds.Select(async id =>
             {
@@ -375,8 +381,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             });
 
             await Task.WhenAll(tasks);
-
-            throttler.Dispose();
 
             _logger.LogInformation($"Get jobs {string.Join(",", jobIds)} successfully.");
             return result;

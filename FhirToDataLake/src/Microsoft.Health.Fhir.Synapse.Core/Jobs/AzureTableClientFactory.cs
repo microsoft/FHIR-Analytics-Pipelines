@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using Azure.Core;
 using Azure.Data.Tables;
 using EnsureThat;
 using Microsoft.Extensions.Options;
@@ -16,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class AzureTableClientFactory : IAzureTableClientFactory
     {
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
-        private readonly TokenCredential _tokenCredential;
+        private readonly ITokenCredentialProvider _credentialProvider;
 
         private readonly string _tableUrl;
 
@@ -29,8 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _tableUrl = config.Value.TableUrl;
 
-            EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
-            _tokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.Internal);
+            _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
         }
 
         public AzureTableClientFactory(
@@ -39,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
 
             _tableUrl = StorageEmulatorConnectionString;
-            _tokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.Internal);
+            _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
         }
 
         public TableClient Create(string tableName)
@@ -53,11 +51,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
 
             var tableUri = new Uri(_tableUrl);
+            var tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             return new TableClient(
                 tableUri,
                 tableName,
-                _tokenCredential);
+                tokenCredential);
         }
     }
 }

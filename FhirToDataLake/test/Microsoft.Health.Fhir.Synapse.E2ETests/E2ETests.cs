@@ -9,13 +9,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Data.Tables;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
@@ -67,7 +65,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             _testOutputHelper = testOutputHelper;
             Environment.SetEnvironmentVariable("dataLakeStore:storageUrl", "https://fhiranalyticspipeline.blob.core.windows.net");
             var storageUri = Environment.GetEnvironmentVariable("dataLakeStore:storageUrl");
-            if (!string.IsNullOrEmpty(storageUri))
+            if (!string.IsNullOrWhiteSpace(storageUri))
             {
                 _testOutputHelper.WriteLine($"Using custom data lake storage uri {storageUri}");
                 _blobServiceClient = new BlobServiceClient(new Uri(storageUri), new DefaultAzureCredential());

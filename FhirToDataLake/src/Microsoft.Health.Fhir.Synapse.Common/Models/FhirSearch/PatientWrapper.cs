@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using EnsureThat;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
@@ -16,7 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
             string patientHash,
             long versionId)
         {
-            PatientHash = patientHash;
+            PatientHash = EnsureArg.IsNotNullOrWhiteSpace(patientHash, nameof(patientHash));
             VersionId = versionId;
         }
 

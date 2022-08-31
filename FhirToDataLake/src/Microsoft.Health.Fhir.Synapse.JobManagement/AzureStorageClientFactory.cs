@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Azure.Core;
 using Azure.Data.Tables;
 using Azure.Storage.Queues;
 using EnsureThat;
@@ -16,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
     public class AzureStorageClientFactory : IAzureStorageClientFactory
     {
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
-        private readonly TokenCredential _tokenCredential;
+        private readonly ITokenCredentialProvider _credentialProvider;
 
         private readonly string _tableUrl;
         private readonly string _tableName;
@@ -48,8 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             _queueName = AzureStorageKeyProvider.JobMessageQueueName(config.Value.AgentName);
 
-            EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
-            _tokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.Internal);
+            _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
         }
 
         public AzureStorageClientFactory(
@@ -59,14 +57,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             EnsureArg.IsNotNullOrWhiteSpace(tableName, nameof(tableName));
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
-            EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
+            _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
 
             _tableUrl = StorageEmulatorConnectionString;
             _tableName = tableName;
             _queueUrl = StorageEmulatorConnectionString;
             _queueName = queueName;
-            _tokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.Internal);
-
         }
 
         public TableClient CreateTableClient()
@@ -78,11 +74,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             var tableUri = new Uri(_tableUrl);
+            var tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             return new TableClient(
                 tableUri,
                 _tableName,
-                _tokenCredential);
+                tokenCredential);
         }
 
         public QueueClient CreateQueueClient()
@@ -94,10 +91,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             var queueUri = new Uri($"{_queueUrl}{_queueName}");
+            var tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             return new QueueClient(
                 queueUri,
-                _tokenCredential);
+                tokenCredential);
         }
     }
 }
