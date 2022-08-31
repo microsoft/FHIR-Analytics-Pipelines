@@ -95,31 +95,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var toBeProcessedPatients = new List<PatientWrapper>();
                 if (_filterManager.FilterScope() == FilterScope.Group)
                 {
-                    // extract patient ids from group
-                    _logger.LogInformation($"Start extracting patients from group '{_filterManager.GroupId()}'.");
-
-                    // For now, the queryParameters is always null.
-                    // This parameter will be used when we enable filter groups in the future.
-                    var patientsHash = (await _groupMemberExtractor.GetGroupPatientsAsync(
-                        _filterManager.GroupId(),
-                        null,
-                        _inputData.DataEndTime,
-                        cancellationToken)).Select(TableKeyProvider.CompartmentRowKey).ToHashSet();
-
-                    var processedPatientVersions = await _metadataStore.GetPatientVersionsAsync(_jobInfo.QueueType, patientsHash.ToList(), cancellationToken);
-
-                    // set the version id for processed patient
-                    // the processed patients is empty at the beginning , and will be updated when completing a successful job.
-                    toBeProcessedPatients = patientsHash.Select(patientHash =>
-                        new PatientWrapper(
-                            patientHash,
-                            processedPatientVersions.ContainsKey(patientHash) ? processedPatientVersions[patientHash] : 0)).ToList();
-
-                    _logger.LogInformation(
-                        "Extract {patientCount} patients from group '{groupId}', including {newPatientCount} new patients.",
-                        patientsHash.Count,
-                        _filterManager.GroupId(),
-                        toBeProcessedPatients.Where(p => p.VersionId == 0).ToList().Count);
+                    toBeProcessedPatients = await GetToBeProcessedPatientsAsync(cancellationToken);
                 }
 
                 while (true)
@@ -129,7 +105,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         await WaitRunningJobComplete(progress, cancellationToken);
                     }
 
-                    var input = await GetNextInputData(toBeProcessedPatients, cancellationToken);
+                    var input = _filterManager.FilterScope() switch
+                    {
+                        FilterScope.System => await GetNextInputDataForSystem(cancellationToken),
+                        FilterScope.Group => GetNextInputDataForGroup(toBeProcessedPatients, cancellationToken),
+                        _ => throw new ArgumentOutOfRangeException(
+                            $"The filterScope {_filterManager.FilterScope()} isn't supported now.")
+                    };
 
                     if (input == null)
                     {
@@ -185,74 +167,102 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
-        private async Task<FhirToDataLakeProcessingJobInputData> GetNextInputData(List<PatientWrapper> toBeProcessedPatients, CancellationToken cancellationToken)
+        private async Task<FhirToDataLakeProcessingJobInputData> GetNextInputDataForSystem(CancellationToken cancellationToken)
         {
             FhirToDataLakeProcessingJobInputData input = null;
-            switch (_filterManager.FilterScope())
+
+            var interval = TimeSpan.FromSeconds(IncrementalOrchestrationIntervalInSeconds);
+
+            if (_inputData.DataStartTime == null || ((DateTimeOffset)_inputData.DataStartTime).AddMinutes(60) < _inputData.DataEndTime)
             {
-                case FilterScope.System:
-                    var interval = TimeSpan.FromSeconds(IncrementalOrchestrationIntervalInSeconds);
+                interval = TimeSpan.FromSeconds(InitialOrchestrationIntervalInSeconds);
+            }
 
-                    if (_inputData.DataStartTime == null || ((DateTimeOffset)_inputData.DataStartTime).AddMinutes(60) < _inputData.DataEndTime)
-                    {
-                        interval = TimeSpan.FromSeconds(InitialOrchestrationIntervalInSeconds);
-                    }
+            if (_result.NextJobTimestamp == null || _result.NextJobTimestamp < _inputData.DataEndTime)
+            {
+                var nextResourceTimestamp =
+                    await GetNextTimestamp(_result.NextJobTimestamp ?? _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
+                if (nextResourceTimestamp == null)
+                {
+                    _result.NextJobTimestamp = _inputData.DataEndTime;
+                    return null;
+                }
 
-                    if (_result.NextJobTimestamp == null || _result.NextJobTimestamp < _inputData.DataEndTime)
-                    {
-                        var nextResourceTimestamp =
-                            await GetNextTimestamp(_result.NextJobTimestamp ?? _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
-                        if (nextResourceTimestamp == null)
-                        {
-                            _result.NextJobTimestamp = _inputData.DataEndTime;
-                            break;
-                        }
+                var nextJobEnd = (DateTimeOffset)nextResourceTimestamp + interval;
+                if (nextJobEnd > _inputData.DataEndTime)
+                {
+                    nextJobEnd = _inputData.DataEndTime;
+                }
 
-                        var nextJobEnd = (DateTimeOffset)nextResourceTimestamp + interval;
-                        if (nextJobEnd > _inputData.DataEndTime)
-                        {
-                            nextJobEnd = _inputData.DataEndTime;
-                        }
-
-                        input = new FhirToDataLakeProcessingJobInputData
-                        {
-                            JobType = JobType.Processing,
-                            ProcessingJobSequenceId = _result.CreatedJobCount,
-                            TriggerSequenceId = _inputData.TriggerSequenceId,
-                            Since = _inputData.Since,
-                            DataStartTime = nextResourceTimestamp,
-                            DataEndTime = nextJobEnd,
-                        };
-                        _result.NextJobTimestamp = nextJobEnd;
-                    }
-
-                    break;
-                case FilterScope.Group:
-                    if (_result.NextPatientIndex < toBeProcessedPatients.Count)
-                    {
-                        var selectedPatients = toBeProcessedPatients.Skip(_result.NextPatientIndex)
-                            .Take(NumberOfPatientsPerProcessingJob).ToList();
-                        input = new FhirToDataLakeProcessingJobInputData
-                        {
-                            JobType = JobType.Processing,
-                            ProcessingJobSequenceId = _result.CreatedJobCount,
-                            TriggerSequenceId = _inputData.TriggerSequenceId,
-                            Since = _inputData.Since,
-                            DataStartTime = _inputData.DataStartTime,
-                            DataEndTime = _inputData.DataEndTime,
-                            ToBeProcessedPatients = selectedPatients,
-                        };
-                        _result.NextPatientIndex += selectedPatients.Count;
-                    }
-
-                    break;
-                default:
-                    // this case should not happen
-                    throw new ArgumentOutOfRangeException(
-                        $"The filterScope {_filterManager.FilterScope()} isn't supported now.");
+                input = new FhirToDataLakeProcessingJobInputData
+                {
+                    JobType = JobType.Processing,
+                    ProcessingJobSequenceId = _result.CreatedJobCount,
+                    TriggerSequenceId = _inputData.TriggerSequenceId,
+                    Since = _inputData.Since,
+                    DataStartTime = nextResourceTimestamp,
+                    DataEndTime = nextJobEnd,
+                };
+                _result.NextJobTimestamp = nextJobEnd;
             }
 
             return input;
+        }
+
+        private FhirToDataLakeProcessingJobInputData GetNextInputDataForGroup(
+            List<PatientWrapper> toBeProcessedPatients,
+            CancellationToken cancellationToken)
+        {
+            FhirToDataLakeProcessingJobInputData input = null;
+            if (_result.NextPatientIndex < toBeProcessedPatients.Count)
+            {
+                var selectedPatients = toBeProcessedPatients.Skip(_result.NextPatientIndex)
+                    .Take(NumberOfPatientsPerProcessingJob).ToList();
+                input = new FhirToDataLakeProcessingJobInputData
+                {
+                    JobType = JobType.Processing,
+                    ProcessingJobSequenceId = _result.CreatedJobCount,
+                    TriggerSequenceId = _inputData.TriggerSequenceId,
+                    Since = _inputData.Since,
+                    DataStartTime = _inputData.DataStartTime,
+                    DataEndTime = _inputData.DataEndTime,
+                    ToBeProcessedPatients = selectedPatients,
+                };
+                _result.NextPatientIndex += selectedPatients.Count;
+            }
+
+            return input;
+        }
+
+        private async Task<List<PatientWrapper>> GetToBeProcessedPatientsAsync(CancellationToken cancellationToken)
+        {
+            // extract patient ids from group
+            _logger.LogInformation($"Start extracting patients from group '{_filterManager.GroupId()}'.");
+
+            // For now, the queryParameters is always null.
+            // This parameter will be used when we enable filter groups in the future.
+            var patientsHash = (await _groupMemberExtractor.GetGroupPatientsAsync(
+                _filterManager.GroupId(),
+                null,
+                _inputData.DataEndTime,
+                cancellationToken)).Select(TableKeyProvider.CompartmentRowKey).ToHashSet();
+
+            var processedPatientVersions = await _metadataStore.GetPatientVersionsAsync(_jobInfo.QueueType, patientsHash.ToList(), cancellationToken);
+
+            // set the version id for processed patient
+            // the processed patients is empty at the beginning , and will be updated when completing a successful job.
+            var toBeProcessedPatients = patientsHash.Select(patientHash =>
+                new PatientWrapper(
+                    patientHash,
+                    processedPatientVersions.ContainsKey(patientHash) ? processedPatientVersions[patientHash] : 0)).ToList();
+
+            _logger.LogInformation(
+                "Extract {patientCount} patients from group '{groupId}', including {newPatientCount} new patients.",
+                patientsHash.Count,
+                _filterManager.GroupId(),
+                toBeProcessedPatients.Where(p => p.VersionId == 0).ToList().Count);
+
+            return toBeProcessedPatients;
         }
 
         // get the lastUpdated timestamp of next resource for next processing job

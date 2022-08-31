@@ -1216,7 +1216,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 cancellationToken: CancellationToken.None);
 
             // keep alive should throw exception
-            var exception = await Assert.ThrowsAsync<Exception>(async () => await _azureStorageJobQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
+            var exception = await Assert.ThrowsAsync<RequestFailedException>(async () => await _azureStorageJobQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
+            Assert.Equal("PopReceiptMismatch", exception.ErrorCode);
 
             // the message is still invisible
             Assert.Null(await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
@@ -1224,7 +1225,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             await Task.Delay(TimeSpan.FromSeconds(HeartbeatTimeoutSec));
 
             // keep alive should still throw exception
-            exception = await Assert.ThrowsAsync<Exception>(async () => await _azureStorageJobQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
+            exception = await Assert.ThrowsAsync<RequestFailedException>(async () => await _azureStorageJobQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
+            Assert.Equal("PopReceiptMismatch", exception.ErrorCode);
 
             // re-dequeue
             var jobInfo2 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
