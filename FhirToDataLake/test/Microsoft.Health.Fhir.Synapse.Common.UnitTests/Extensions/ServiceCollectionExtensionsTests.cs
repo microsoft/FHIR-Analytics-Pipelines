@@ -27,7 +27,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             { "job:tableUrl", "UseDevelopmentStorage=true" },
             { "job:schedulerCronExpression", "5 * * * * *" },
             { "job:queueType", "FhirToDataLake" },
-
         };
 
         public static IEnumerable<object[]> GetInvalidServiceConfiguration()
@@ -92,7 +91,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             yield return new object[] { "1beginweithnumberic" };
             yield return new object[] { "agent_name" };
             yield return new object[] { "agent name" };
-            yield return new object[] { "" };
+            yield return new object[] { string.Empty };
             yield return new object[] { "685c4e36859149cdb88e9a1b75485d7b" };
             yield return new object[] { " " };
         }

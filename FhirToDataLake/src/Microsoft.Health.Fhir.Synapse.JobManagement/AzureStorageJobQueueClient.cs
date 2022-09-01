@@ -269,8 +269,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // step 2: get jobInfo entity and job lock entity
-            var (jobInfoEntity, jobLockEntity) = await AcquireJobEntityByRowKeysAsync(jobMessage.PartitionKey,
-                new List<string> {jobMessage.RowKey, jobMessage.LockRowKey}, cancellationToken);
+            var (jobInfoEntity, jobLockEntity) = await AcquireJobEntityByRowKeysAsync(jobMessage.PartitionKey, new List<string> {jobMessage.RowKey, jobMessage.LockRowKey}, cancellationToken);
             var jobInfo = jobInfoEntity.ToJobInfo<TJobInfo>();
 
             // step 3: check job status
@@ -579,7 +578,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             else
             {
-                jobInfoEntity[JobInfoEntityProperties.Status] = (int) JobStatus.Completed;
+                jobInfoEntity[JobInfoEntityProperties.Status] = (int)JobStatus.Completed;
             }
 
             // step 5: update job info entity to table

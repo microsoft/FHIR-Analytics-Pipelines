@@ -111,7 +111,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                metadataStore.Dispose();
+                await metadataStore.DeleteMetadataTableAsync();
+
             }
         }
 

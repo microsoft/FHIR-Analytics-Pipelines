@@ -150,7 +150,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                CleanStorage();
+                await CleanStorage();
             }
         }
 
@@ -188,7 +188,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                CleanStorage();
+                await CleanStorage();
             }
         }
 
@@ -248,7 +248,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                CleanStorage();
+                await CleanStorage();
             }
         }
 
@@ -341,7 +341,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                CleanStorage();
+                await CleanStorage();
             }
         }
 
@@ -407,7 +407,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                CleanStorage();
+                await CleanStorage();
             }
         }
 
@@ -472,7 +472,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                CleanStorage();
+                await CleanStorage();
             }
         }
 
@@ -540,7 +540,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
             finally
             {
-                CleanStorage();
+                await CleanStorage();
             }
         }
 
@@ -561,9 +561,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             _metadataStore = new AzureTableMetadataStore(_azureTableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
         }
 
-        private void CleanStorage()
+        private async Task CleanStorage()
         {
-            _metadataStore.Dispose();
+            await _metadataStore.DeleteMetadataTableAsync();
         }
 
         private async Task<CurrentTriggerEntity> GetCurrentTriggerEntity() =>
