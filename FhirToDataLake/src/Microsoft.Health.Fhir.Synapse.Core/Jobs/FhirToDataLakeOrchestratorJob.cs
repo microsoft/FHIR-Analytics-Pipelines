@@ -116,9 +116,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         false,
                         cancellationToken);
                     var newJobId = jobInfos.First().Id;
-                    _result.NextJobTimestamp = input.DataEndTime;
-                    _result.NextPatientIndex += input.ToBeProcessedPatients.Count;
-                    _result.CreatedJobCount++;
                     _result.RunningJobIds.Add(newJobId);
 
                     // if enqueue successfully while fails to report result, will re-enqueue and return the existing jobInfo
@@ -166,14 +163,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 interval = TimeSpan.FromSeconds(InitialOrchestrationIntervalInSeconds);
             }
 
-            var nextJobTimestamp = _result.NextJobTimestamp;
-            var createdJobCnt = _result.CreatedJobCount;
-            while (nextJobTimestamp == null || nextJobTimestamp < _inputData.DataEndTime)
+            while (_result.NextJobTimestamp == null || _result.NextJobTimestamp < _inputData.DataEndTime)
             {
                 var nextResourceTimestamp =
-                    await GetNextTimestamp(nextJobTimestamp ?? _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
+                    await GetNextTimestamp(_result.NextJobTimestamp ?? _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
                 if (nextResourceTimestamp == null)
                 {
+                    _result.NextJobTimestamp = _inputData.DataEndTime;
                     break;
                 }
 
@@ -186,14 +182,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var input = new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
-                    ProcessingJobSequenceId = createdJobCnt,
+                    ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,
                     DataStartTime = nextResourceTimestamp,
                     DataEndTime = nextJobEnd,
                 };
-                nextJobTimestamp = nextJobEnd;
-                createdJobCnt++;
+                _result.NextJobTimestamp = nextJobEnd;
+                _result.CreatedJobCount++;
                 yield return input;
             }
         }
@@ -202,25 +198,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             // for group scope, extract patient list from group at first
             var toBeProcessedPatients = await GetToBeProcessedPatientsAsync(cancellationToken);
-            var nextPatientIndex = _result.NextPatientIndex;
-            var createdJobCnt = _result.CreatedJobCount;
 
-            while (nextPatientIndex < toBeProcessedPatients.Count)
+            while (_result.NextPatientIndex < toBeProcessedPatients.Count)
             {
-                var selectedPatients = toBeProcessedPatients.Skip(nextPatientIndex)
+                var selectedPatients = toBeProcessedPatients.Skip(_result.NextPatientIndex)
                     .Take(NumberOfPatientsPerProcessingJob).ToList();
                 var input = new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
-                    ProcessingJobSequenceId = createdJobCnt,
+                    ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,
                     DataStartTime = _inputData.DataStartTime,
                     DataEndTime = _inputData.DataEndTime,
                     ToBeProcessedPatients = selectedPatients,
                 };
-                nextPatientIndex += selectedPatients.Count;
-                createdJobCnt++;
+                _result.NextPatientIndex += selectedPatients.Count;
+                _result.CreatedJobCount++;
                 yield return input;
             }
         }

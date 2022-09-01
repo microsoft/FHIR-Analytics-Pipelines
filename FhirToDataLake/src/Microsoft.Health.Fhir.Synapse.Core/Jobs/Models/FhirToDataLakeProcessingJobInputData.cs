@@ -44,6 +44,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// <summary>
         /// The patients to be processed, patient id hash and processed patient version are provided for each patient, used for Group scope
         /// </summary>
-        public List<PatientWrapper> ToBeProcessedPatients { get; set; } = new List<PatientWrapper>();
+        public List<PatientWrapper> ToBeProcessedPatients { get; set; }
     }
 }
