@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -91,31 +92,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     throw new OperationCanceledException();
                 }
 
-                // for group scope, extract patient list from group at first
-                var toBeProcessedPatients = new List<PatientWrapper>();
-                if (_filterManager.FilterScope() == FilterScope.Group)
+                var inputs = _filterManager.FilterScope() switch
                 {
-                    toBeProcessedPatients = await GetToBeProcessedPatientsAsync(cancellationToken);
-                }
+                    FilterScope.System => GetInputsAsyncForSystem(cancellationToken),
+                    FilterScope.Group => GetInputsAsyncForGroup(cancellationToken),
+                    _ => throw new ArgumentOutOfRangeException(
+                        $"The filterScope {_filterManager.FilterScope()} isn't supported now.")
+                };
 
-                while (true)
+                await foreach (var input in inputs.WithCancellation(cancellationToken))
                 {
                     while (_result.RunningJobIds.Count > _schedulerConfiguration.MaxConcurrencyCount)
                     {
                         await WaitRunningJobComplete(progress, cancellationToken);
-                    }
-
-                    var input = _filterManager.FilterScope() switch
-                    {
-                        FilterScope.System => await GetNextInputDataForSystem(cancellationToken),
-                        FilterScope.Group => GetNextInputDataForGroup(toBeProcessedPatients, cancellationToken),
-                        _ => throw new ArgumentOutOfRangeException(
-                            $"The filterScope {_filterManager.FilterScope()} isn't supported now.")
-                    };
-
-                    if (input == null)
-                    {
-                        break;
                     }
 
                     var jobDefinitions = new[] { JsonConvert.SerializeObject(input) };
@@ -127,6 +116,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         false,
                         cancellationToken);
                     var newJobId = jobInfos.First().Id;
+                    _result.NextJobTimestamp = input.DataEndTime;
+                    _result.NextPatientIndex += input.ToBeProcessedPatients.Count;
                     _result.CreatedJobCount++;
                     _result.RunningJobIds.Add(newJobId);
 
@@ -166,10 +157,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
-        private async Task<FhirToDataLakeProcessingJobInputData> GetNextInputDataForSystem(CancellationToken cancellationToken)
+        private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            FhirToDataLakeProcessingJobInputData input = null;
-
             var interval = TimeSpan.FromSeconds(IncrementalOrchestrationIntervalInSeconds);
 
             if (_inputData.DataStartTime == null || ((DateTimeOffset)_inputData.DataStartTime).AddMinutes(60) < _inputData.DataEndTime)
@@ -177,14 +166,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 interval = TimeSpan.FromSeconds(InitialOrchestrationIntervalInSeconds);
             }
 
-            if (_result.NextJobTimestamp == null || _result.NextJobTimestamp < _inputData.DataEndTime)
+            var nextJobTimestamp = _result.NextJobTimestamp;
+            var createdJobCnt = _result.CreatedJobCount;
+            while (nextJobTimestamp == null || nextJobTimestamp < _inputData.DataEndTime)
             {
                 var nextResourceTimestamp =
-                    await GetNextTimestamp(_result.NextJobTimestamp ?? _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
+                    await GetNextTimestamp(nextJobTimestamp ?? _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
                 if (nextResourceTimestamp == null)
                 {
-                    _result.NextJobTimestamp = _inputData.DataEndTime;
-                    return null;
+                    break;
                 }
 
                 var nextJobEnd = (DateTimeOffset)nextResourceTimestamp + interval;
@@ -193,44 +183,46 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     nextJobEnd = _inputData.DataEndTime;
                 }
 
-                input = new FhirToDataLakeProcessingJobInputData
+                var input = new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
-                    ProcessingJobSequenceId = _result.CreatedJobCount,
+                    ProcessingJobSequenceId = createdJobCnt,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,
                     DataStartTime = nextResourceTimestamp,
                     DataEndTime = nextJobEnd,
                 };
-                _result.NextJobTimestamp = nextJobEnd;
+                nextJobTimestamp = nextJobEnd;
+                createdJobCnt++;
+                yield return input;
             }
-
-            return input;
         }
 
-        private FhirToDataLakeProcessingJobInputData GetNextInputDataForGroup(
-            List<PatientWrapper> toBeProcessedPatients,
-            CancellationToken cancellationToken)
+        private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForGroup([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            FhirToDataLakeProcessingJobInputData input = null;
-            if (_result.NextPatientIndex < toBeProcessedPatients.Count)
+            // for group scope, extract patient list from group at first
+            var toBeProcessedPatients = await GetToBeProcessedPatientsAsync(cancellationToken);
+            var nextPatientIndex = _result.NextPatientIndex;
+            var createdJobCnt = _result.CreatedJobCount;
+
+            while (nextPatientIndex < toBeProcessedPatients.Count)
             {
-                var selectedPatients = toBeProcessedPatients.Skip(_result.NextPatientIndex)
+                var selectedPatients = toBeProcessedPatients.Skip(nextPatientIndex)
                     .Take(NumberOfPatientsPerProcessingJob).ToList();
-                input = new FhirToDataLakeProcessingJobInputData
+                var input = new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
-                    ProcessingJobSequenceId = _result.CreatedJobCount,
+                    ProcessingJobSequenceId = createdJobCnt,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,
                     DataStartTime = _inputData.DataStartTime,
                     DataEndTime = _inputData.DataEndTime,
                     ToBeProcessedPatients = selectedPatients,
                 };
-                _result.NextPatientIndex += selectedPatients.Count;
+                nextPatientIndex += selectedPatients.Count;
+                createdJobCnt++;
+                yield return input;
             }
-
-            return input;
         }
 
         private async Task<List<PatientWrapper>> GetToBeProcessedPatientsAsync(CancellationToken cancellationToken)

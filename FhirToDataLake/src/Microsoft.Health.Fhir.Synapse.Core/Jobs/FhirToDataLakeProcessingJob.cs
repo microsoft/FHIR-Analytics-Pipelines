@@ -110,119 +110,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     case FilterScope.Group:
                     {
-                        var isPatientResourcesRequired = IsPatientResourcesRequired(_typeFilters);
-
-                        // TODO: how to ensure the group is the same?
-                        var allPatientIds = await _groupMemberExtractor.GetGroupPatientsAsync(
-                            _filterManager.GroupId(),
-                            null,
-                            _inputData.DataEndTime,
-                            cancellationToken);
-
-                        var patientHashToId = allPatientIds.ToDictionary(
-                            TableKeyProvider.CompartmentRowKey,
-                            patientId => patientId);
-                        foreach (var patientInfo in _inputData.ToBeProcessedPatients)
-                        {
-                            var lastPatientVersionId = patientInfo.VersionId;
-
-                            if (!patientHashToId.ContainsKey(patientInfo.PatientHash))
-                            {
-                                _logger.LogError($"Can't find patient in group for patient hash {patientInfo.PatientHash}, the group is modified.");
-                                continue;
-                            }
-
-                            var patientId = patientHashToId[patientInfo.PatientHash];
-
-                            // the patient resource isn't included in compartment search,
-                            // so we need additional request to get the patient resource
-                            var patientResource = await GetPatientResource(patientId, cancellationToken);
-
-                            // the patient does not exist, skip processing this patient
-                            if (patientResource == null)
-                            {
-                                continue;
-                            }
-
-                            var currentPatientVersionId = FhirBundleParser.ExtractVersionId(patientResource);
-
-                            if (currentPatientVersionId == 0)
-                            {
-                                _logger.LogError(
-                                    $"Failed to extract version id for patient {patientId}.");
-                                throw new FhirSearchException(
-                                    $"Failed to extract version id for patient {patientId}.");
-                            }
-
-                            // New patient or the patient is updated.
-                            if (lastPatientVersionId != currentPatientVersionId)
-                            {
-                                // save the patient resource to cache if the patient resource type is required in the result
-                                if (isPatientResourcesRequired)
-                                {
-                                    AddFhirResourcesToCache(new List<JObject> { patientResource });
-                                }
-                            }
-
-                            // add this patient's version id in result
-                            _result.ProcessedPatientVersion[patientInfo.PatientHash] = currentPatientVersionId;
-                            _logger.LogInformation($"Get patient resource {patientId} successfully.");
-
-                            // the version id is 0 for newly patient
-                            // for new patient, we will retrieve all its compartments resources from {since}
-                            // for processed patient, we will only retrieve the updated compartment resources from last scheduled time
-                            var startDateTime = lastPatientVersionId == 0
-                                ? _inputData.Since
-                                : _inputData.DataStartTime;
-                            var parameters = new List<KeyValuePair<string, string>>
-                            {
-                                new (FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
-                            };
-
-                            if (startDateTime != null)
-                            {
-                                parameters.Add(new KeyValuePair<string, string>(
-                                    FhirApiConstants.LastUpdatedKey,
-                                    $"ge{((DateTimeOffset)startDateTime).ToInstantString()}"));
-                            }
-
-                            // create initial compartment search option for this patient,
-                            // the resource type and customized parameters of each filter will be set later.
-                            var searchOption = new CompartmentSearchOptions(
-                                FhirConstants.PatientResource,
-                                patientId,
-                                null,
-                                parameters);
-
-                            // retrieve this patient's compartment resources for all the filters
-                            await ProcessFiltersAsync(progress, searchOption, cancellationToken);
-
-                            _logger.LogInformation($"Process patient resource {patientId} successfully.");
-                        }
-
+                        await GroupExecuteAsyncInternal(progress, cancellationToken);
                         break;
                     }
 
                     case FilterScope.System:
                     {
-                        // create initial base search option for this task,
-                        // the resource type and customized parameters of each filter will be set later.
-                        var parameters = new List<KeyValuePair<string, string>>
-                        {
-                            new (FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
-                        };
-
-                        if (_inputData.DataStartTime != null)
-                        {
-                            parameters.Add(new KeyValuePair<string, string>(
-                                FhirApiConstants.LastUpdatedKey,
-                                $"ge{((DateTimeOffset) _inputData.DataStartTime).ToInstantString()}"));
-                        }
-
-                        var searchOption = new BaseSearchOptions(null, parameters);
-
-                        // retrieve resources for all the type filters.
-                        await ProcessFiltersAsync(progress, searchOption, cancellationToken);
+                        await SystemExecuteAsyncInternal(progress, cancellationToken);
                         break;
                     }
 
@@ -263,6 +157,121 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Error in data processing job.",ex);
+            }
+        }
+
+        private async Task SystemExecuteAsyncInternal(IProgress<string> progress, CancellationToken cancellationToken)
+        {
+            // create initial base search option for this task,
+            // the resource type and customized parameters of each filter will be set later.
+            var parameters = new List<KeyValuePair<string, string>>
+            {
+                new (FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
+            };
+
+            if (_inputData.DataStartTime != null)
+            {
+                parameters.Add(new KeyValuePair<string, string>(
+                    FhirApiConstants.LastUpdatedKey,
+                    $"ge{((DateTimeOffset)_inputData.DataStartTime).ToInstantString()}"));
+            }
+
+            var searchOption = new BaseSearchOptions(null, parameters);
+
+            // retrieve resources for all the type filters.
+            await ProcessFiltersAsync(progress, searchOption, cancellationToken);
+        }
+
+        private async Task GroupExecuteAsyncInternal(IProgress<string> progress, CancellationToken cancellationToken)
+        {
+            var isPatientResourcesRequired = IsPatientResourcesRequired(_typeFilters);
+
+            // TODO: how to ensure the group is the same?
+            var allPatientIds = await _groupMemberExtractor.GetGroupPatientsAsync(
+                _filterManager.GroupId(),
+                null,
+                _inputData.DataEndTime,
+                cancellationToken);
+
+            var patientHashToId = allPatientIds.ToDictionary(
+                TableKeyProvider.CompartmentRowKey,
+                patientId => patientId);
+            foreach (var patientInfo in _inputData.ToBeProcessedPatients)
+            {
+                var lastPatientVersionId = patientInfo.VersionId;
+
+                if (!patientHashToId.ContainsKey(patientInfo.PatientHash))
+                {
+                    _logger.LogError($"Can't find patient in group for patient hash {patientInfo.PatientHash}, the group is modified.");
+                    continue;
+                }
+
+                var patientId = patientHashToId[patientInfo.PatientHash];
+
+                // the patient resource isn't included in compartment search,
+                // so we need additional request to get the patient resource
+                var patientResource = await GetPatientResource(patientId, cancellationToken);
+
+                // the patient does not exist, skip processing this patient
+                if (patientResource == null)
+                {
+                    continue;
+                }
+
+                var currentPatientVersionId = FhirBundleParser.ExtractVersionId(patientResource);
+
+                if (currentPatientVersionId == 0)
+                {
+                    _logger.LogError(
+                        $"Failed to extract version id for patient {patientId}.");
+                    throw new FhirSearchException(
+                        $"Failed to extract version id for patient {patientId}.");
+                }
+
+                // New patient or the patient is updated.
+                if (lastPatientVersionId != currentPatientVersionId)
+                {
+                    // save the patient resource to cache if the patient resource type is required in the result
+                    if (isPatientResourcesRequired)
+                    {
+                        AddFhirResourcesToCache(new List<JObject> { patientResource });
+                    }
+                }
+
+                // add this patient's version id in result
+                _result.ProcessedPatientVersion[patientInfo.PatientHash] = currentPatientVersionId;
+                _logger.LogInformation($"Get patient resource {patientId} successfully.");
+
+                // the version id is 0 for newly patient
+                // for new patient, we will retrieve all its compartments resources from {since}
+                // for processed patient, we will only retrieve the updated compartment resources from last scheduled time
+                var startDateTime = lastPatientVersionId == 0
+                    ? _inputData.Since
+                    : _inputData.DataStartTime;
+                var parameters = new List<KeyValuePair<string, string>>
+                            {
+                                new (FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
+                            };
+
+                if (startDateTime != null)
+                {
+                    parameters.Add(new KeyValuePair<string, string>(
+                        FhirApiConstants.LastUpdatedKey,
+                        $"ge{((DateTimeOffset)startDateTime).ToInstantString()}"));
+                }
+
+                // create initial compartment search option for this patient,
+                // the resource type and customized parameters of each filter will be set later.
+                var searchOption = new CompartmentSearchOptions(
+                    FhirConstants.PatientResource,
+                    patientId,
+                    null,
+                    parameters);
+
+                // retrieve this patient's compartment resources for all the filters
+                await ProcessFiltersAsync(progress, searchOption, cancellationToken);
+
+                _logger.LogInformation($"Process patient resource {patientId} successfully.");
             }
         }
 
