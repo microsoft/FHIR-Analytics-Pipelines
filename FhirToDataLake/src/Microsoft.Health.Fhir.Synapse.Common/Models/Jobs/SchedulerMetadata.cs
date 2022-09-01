@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
 {
@@ -34,5 +35,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// </summary>
         [JsonProperty("failedJobs")]
         public IEnumerable<Job> FailedJobs { get; set; } = new List<Job>();
+
+        /// <summary>
+        /// Fhir version.
+        /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonProperty("fhirVersion")]
+        public FhirVersion FhirVersion { get; set; } = FhirVersion.R4;
     }
 }

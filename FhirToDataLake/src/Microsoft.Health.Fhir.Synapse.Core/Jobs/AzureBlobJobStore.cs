@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
@@ -28,6 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class AzureBlobJobStore : IJobStore
     {
         private readonly IAzureBlobContainerClient _blobContainerClient;
+        private readonly FhirVersion _fhirVersion;
         private readonly ILogger<AzureBlobJobStore> _logger;
 
         // When job starts, the process will acquire the lease for expiration
@@ -53,13 +55,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IAzureBlobContainerClientFactory blobContainerFactory,
             IOptions<JobConfiguration> jobConfiguration,
             IOptions<DataLakeStoreConfiguration> storeConfiguration,
+            IOptions<FhirServerConfiguration> fhirServerConfiguration,
             ILogger<AzureBlobJobStore> logger)
         {
             EnsureArg.IsNotNull(blobContainerFactory, nameof(blobContainerFactory));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             EnsureArg.IsNotNull(storeConfiguration, nameof(storeConfiguration));
+            EnsureArg.IsNotNull(fhirServerConfiguration, nameof(fhirServerConfiguration));
 
             _blobContainerClient = blobContainerFactory.Create(storeConfiguration.Value.StorageUrl, jobConfiguration.Value.ContainerName);
+            _fhirVersion = fhirServerConfiguration.Value.Version;
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _renewLockTimer = new Timer(TimeSpan.FromSeconds(AzureBlobJobConstants.JobLeaseRefreshIntervalInSeconds).TotalMilliseconds);
@@ -222,6 +227,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     schedulerSetting = new SchedulerMetadata
                     {
                         LastScheduledTimestamp = job.DataPeriod.End,
+                        FhirVersion = _fhirVersion,
                     };
                 }
 
