@@ -192,11 +192,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Tasks
             {
                 ContainerName = job.ContainerName,
             };
+            var fhirServerConfiguration = new FhirServerConfiguration();
 
             var jobStore = new AzureBlobJobStore(
                 containerFactory,
                 Options.Create(jobConfig),
                 Options.Create(storageConfig),
+                Options.Create(fhirServerConfiguration),
                 new NullLogger<AzureBlobJobStore>());
 
             return new JobProgressUpdater(jobStore, job, new NullLogger<JobProgressUpdater>());

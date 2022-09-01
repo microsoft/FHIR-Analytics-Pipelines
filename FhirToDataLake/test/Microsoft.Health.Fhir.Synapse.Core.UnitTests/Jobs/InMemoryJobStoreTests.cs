@@ -513,17 +513,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 ContainerName = TestContainerName,
             };
-
             var storeConfiguration = new DataLakeStoreConfiguration
             {
                 StorageUrl = "http://test.blob.core.windows.net",
             };
+            var fhirServerConfiguration = new FhirServerConfiguration();
             var mockFactory = Substitute.For<IAzureBlobContainerClientFactory>();
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
             return new AzureBlobJobStore(
                 mockFactory,
                 Options.Create(jobConfiguration),
                 Options.Create(storeConfiguration),
+                Options.Create(fhirServerConfiguration),
                 new NullLogger<AzureBlobJobStore>());
         }
     }

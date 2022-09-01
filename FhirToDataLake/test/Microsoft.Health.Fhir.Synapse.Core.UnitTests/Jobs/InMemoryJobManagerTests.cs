@@ -393,12 +393,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 StorageUrl = "http://test.blob.core.windows.net",
             };
+            var fhirServerConfiguration = new FhirServerConfiguration();
             var mockFactory = Substitute.For<IAzureBlobContainerClientFactory>();
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
             return new AzureBlobJobStore(
                 mockFactory,
                 Options.Create(config),
                 Options.Create(storeConfiguration),
+                Options.Create(fhirServerConfiguration),
                 new NullLogger<AzureBlobJobStore>());
         }
 
