@@ -100,7 +100,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var pk = TableKeyProvider.CompartmentPartitionKey(queueType);
             var patientVersions = new Dictionary<string, long>();
 
-            for (var i = 0; i < patientsHash.Count(); i += MaxCountOfQueryEntities)
+            for (var i = 0; i < patientsHash.Count; i += MaxCountOfQueryEntities)
             {
                 var selectedPatients = patientsHash.Skip(i).Take(MaxCountOfQueryEntities).ToList();
                 var jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
