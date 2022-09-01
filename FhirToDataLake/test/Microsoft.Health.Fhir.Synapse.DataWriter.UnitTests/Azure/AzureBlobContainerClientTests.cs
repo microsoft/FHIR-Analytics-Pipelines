@@ -478,13 +478,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             var blobUrl_1 = await blobProvider.CreateBlobAsync(blobName, new MemoryStream(Encoding.ASCII.GetBytes(blobContent)), CancellationToken.None);
             Assert.True(await blobClient.ExistsAsync());
 
-            var lease = await blobProvider.AcquireLeaseAsync(blobName, null, TimeSpan.FromSeconds(30), default);
+            var lease = await blobProvider.AcquireLeaseAsync(blobName, null, TimeSpan.FromSeconds(30));
             Assert.NotNull(lease);
 
-            var lease2 = await blobProvider.AcquireLeaseAsync(blobName, null, TimeSpan.FromSeconds(30), default);
+            var lease2 = await blobProvider.AcquireLeaseAsync(blobName, null, TimeSpan.FromSeconds(30));
             Assert.Null(lease2);
 
-            var lease3 = await blobProvider.AcquireLeaseAsync(blobName, lease, TimeSpan.FromSeconds(30), default);
+            var lease3 = await blobProvider.AcquireLeaseAsync(blobName, lease, TimeSpan.FromSeconds(30));
             Assert.Equal(lease, lease3);
 
             await blobContainerClient.DeleteAsync();
@@ -497,7 +497,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
-            var lease = await blobProvider.AcquireLeaseAsync(blobName, null, TimeSpan.FromSeconds(30), default);
+            var lease = await blobProvider.AcquireLeaseAsync(blobName, null, TimeSpan.FromSeconds(30));
 
             Assert.Null(lease);
 
@@ -512,7 +512,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
-            var result = await blobProvider.ReleaseLeaseAsync(blobName, null, default);
+            var result = await blobProvider.ReleaseLeaseAsync(blobName, null);
 
             Assert.False(result);
 
@@ -528,7 +528,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
-            await Assert.ThrowsAsync<AzureBlobOperationFailedException>(() => blobProvider.RenewLeaseAsync(blobName, null, default));
+            await Assert.ThrowsAsync<AzureBlobOperationFailedException>(() => blobProvider.RenewLeaseAsync(blobName, null));
 
             var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             await blobContainerClient.DeleteIfExistsAsync();

@@ -40,12 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static readonly DateTimeOffset TestEndTime = new DateTimeOffset(2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0));
 
         private static readonly List<TypeFilter> TestResourceTypeFilters =
-            new () { new TypeFilter("Patient", null)};
-
-        public FhirToDataLakeOrchestratorJobTests()
-        {
-
-        }
+            new () { new TypeFilter("Patient", null) };
 
         [Fact]
         public async Task GivenASystemScopeNewOrchestratorJob_WhenProcessingInputFilesMoreThanConcurrentCount_ThenJobShouldBeCompleted()
@@ -213,7 +208,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                             DataEndTime = TestStartTime.AddDays(i + 1),
                         };
 
-                        var jobInfo = (await queueClient.EnqueueAsync(0, new string[] { JsonConvert.SerializeObject(processingInput) }, 1, false, false, CancellationToken.None)).First();
+                        var jobInfo = (await queueClient.EnqueueAsync(0, new[] { JsonConvert.SerializeObject(processingInput) }, 1, false, false, CancellationToken.None)).First();
 
                         var processingResult = new FhirToDataLakeProcessingJobResult
                         {
@@ -366,7 +361,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static IFhirDataClient GetBrokenFhirDataClient()
         {
             var dataClient = Substitute.For<IFhirDataClient>();
-            dataClient.SearchAsync(default, default)
+            dataClient.SearchAsync(default)
                 .ReturnsForAnyArgs(Task.FromException<string>(new FhirSearchException("fake fhir search exception.")));
             return dataClient;
         }
@@ -379,7 +374,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var nextBundles = GetSearchBundles(count);
             var emptyBundle = TestDataProvider.GetBundleFromFile(TestDataConstants.EmptyBundleFile);
             nextBundles.Add(emptyBundle);
-            dataClient.SearchAsync(default, default).ReturnsForAnyArgs(nextBundles[resumedFrom + 1], nextBundles.Skip(resumedFrom + 2).ToArray());
+            dataClient.SearchAsync(default).ReturnsForAnyArgs(nextBundles[resumedFrom + 1], nextBundles.Skip(resumedFrom + 2).ToArray());
             return dataClient;
         }
 

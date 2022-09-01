@@ -138,7 +138,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Get bundle from next link
             var nextBundle = TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile2);
-            dataClient.SearchAsync(default, default).ReturnsForAnyArgs(firstBundle, nextBundle);
+            dataClient.SearchAsync(default).ReturnsForAnyArgs(firstBundle, nextBundle);
             return dataClient;
         }
 

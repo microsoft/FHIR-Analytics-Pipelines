@@ -21,12 +21,12 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         public async Task When_FhirDataClient_CanSearch_HealthCheck_Succeeds()
         {
             var fhirDataClient = Substitute.For<IFhirDataClient>();
-            fhirDataClient.SearchAsync(default, default).Returns(Task.FromResult("result"));
+            fhirDataClient.SearchAsync(default).Returns(Task.FromResult("result"));
             var fhirServerHealthChecker = new FhirServerHealthChecker(
                 fhirDataClient,
                 new NullLogger<FhirServerHealthChecker>());
 
-            var result = await fhirServerHealthChecker.PerformHealthCheckAsync(default);
+            var result = await fhirServerHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.HEALTHY, result.Status);
         }
 
@@ -34,12 +34,12 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         public async Task When_BlobClient_ThrowExceptionWhenReadWriteABlob_HealthCheck_Fails()
         {
             var fhirDataClient = Substitute.For<IFhirDataClient>();
-            fhirDataClient.SearchAsync(default, default).ThrowsAsyncForAnyArgs(new Exception());
+            fhirDataClient.SearchAsync(default).ThrowsAsyncForAnyArgs(new Exception());
             var fhirServerHealthChecker = new FhirServerHealthChecker(
                 fhirDataClient,
                 new NullLogger<FhirServerHealthChecker>());
 
-            var result = await fhirServerHealthChecker.PerformHealthCheckAsync(default);
+            var result = await fhirServerHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.UNHEALTHY, result.Status);
         }
     }
