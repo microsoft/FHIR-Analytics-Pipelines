@@ -131,7 +131,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     _result.RunningJobIds.Add(newJobId);
 
                     // if enqueue successfully while fails to report result, will re-enqueue and return the existing jobInfo
-                    // TODO: add unit test for it
                     progress.Report(JsonConvert.SerializeObject(_result));
                 }
 

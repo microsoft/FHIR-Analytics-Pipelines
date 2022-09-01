@@ -39,11 +39,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static readonly List<TypeFilter> TestResourceTypeFilters =
             new () { new TypeFilter("Patient", null) };
 
-        public FhirToDataLakeProcessingJobTests()
-        {
-
-        }
-
         [Fact]
         public async Task GivenValidDataClient_WhenExecute_ThenTheDataShouldBeSavedToBlob()
         {

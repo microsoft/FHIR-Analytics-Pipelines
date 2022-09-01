@@ -20,8 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
         public static DateTimeOffset? GetLastUpdated(this JObject resource)
         {
             var result =
-                (resource.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<string>(FhirBundleConstants
-                    .LastUpdatedKey);
+                (resource.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<string>(FhirBundleConstants.LastUpdatedKey);
             if (result == null)
             {
                 throw new FhirDataParseExeption("Failed to find lastUpdated value in resource.");
