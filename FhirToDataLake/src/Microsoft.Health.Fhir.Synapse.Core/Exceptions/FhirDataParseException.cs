@@ -7,14 +7,14 @@ using System;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
-    public class FhirDataParseExeption : Exception
+    public class FhirDataParseException : Exception
     {
-        public FhirDataParseExeption(string message)
+        public FhirDataParseException(string message)
             : base(message)
         {
         }
 
-        public FhirDataParseExeption(string message, Exception inner)
+        public FhirDataParseException(string message, Exception inner)
             : base(message, inner)
         {
         }

@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         {
             var testJObject = GetTestJObject(NoMetaSamplePatientFileName);
 
-            Assert.Throws<FhirDataParseExeption>(() => testJObject.GetLastUpdated());
+            Assert.Throws<FhirDataParseException>(() => testJObject.GetLastUpdated());
         }
 
         private JObject GetTestJObject(string fileName)

@@ -447,8 +447,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception exception)
             {
+                // TODO: need to add diagnostic log here
                 _logger.LogError(exception, "Failed to parse fhir search result.");
-                throw new FhirDataParseExeption($"Failed to parse fhir search result", exception);
+                throw new FhirDataParseException($"Failed to parse fhir search result", exception);
             }
 
             var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject);
@@ -476,7 +477,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 if (string.IsNullOrWhiteSpace(resourceType))
                 {
                     _logger.LogError($"Failed to parse fhir search resource {resource}");
-                    throw new FhirDataParseExeption($"Failed to parse fhir search resource {resource}");
+                    throw new FhirDataParseException($"Failed to parse fhir search resource {resource}");
                 }
 
                 if (!_cacheResult.Resources.ContainsKey(resourceType))

@@ -114,7 +114,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to create orchestrator job.");
+                _logger.LogWarning(e, "Failed to create orchestrator job.");
                 return null;
             }
 
@@ -142,7 +142,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to create processing job.");
+                _logger.LogWarning(e, "Failed to create processing job.");
                 return null;
             }
 

@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
                 (resource.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<string>(FhirBundleConstants.LastUpdatedKey);
             if (result == null)
             {
-                throw new FhirDataParseExeption("Failed to find lastUpdated value in resource.");
+                throw new FhirDataParseException("Failed to find lastUpdated value in resource.");
             }
 
             try
@@ -32,7 +32,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
             }
             catch (Exception exception)
             {
-                throw new FhirDataParseExeption("Failed to parse lastUpdated value from resource.", exception);
+                throw new FhirDataParseException("Failed to parse lastUpdated value from resource.", exception);
             }
         }
     }
