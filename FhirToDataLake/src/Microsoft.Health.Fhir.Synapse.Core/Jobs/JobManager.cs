@@ -17,13 +17,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class JobManager
     {
         private readonly JobHosting _jobHosting;
-        private readonly SchedulerService _scheduler;
+        private readonly ISchedulerService _scheduler;
         private readonly JobConfiguration _jobConfiguration;
         private readonly ILogger<JobManager> _logger;
 
         public JobManager(
             JobHosting jobHosting,
-            SchedulerService schedulerService,
+            ISchedulerService schedulerService,
             IOptions<JobConfiguration> jobConfiguration,
             ILogger<JobManager> logger)
         {

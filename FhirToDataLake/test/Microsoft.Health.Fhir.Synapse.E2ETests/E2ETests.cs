@@ -63,7 +63,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         public E2ETests(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
-            Environment.SetEnvironmentVariable("dataLakeStore:storageUrl", "https://fhiranalyticspipeline.blob.core.windows.net");
             var storageUri = Environment.GetEnvironmentVariable("dataLakeStore:storageUrl");
             if (!string.IsNullOrWhiteSpace(storageUri))
             {
@@ -218,7 +217,13 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                     await Task.Delay(TimeSpan.FromSeconds(10), CancellationToken.None);
                     try
                     {
-                        triggerEntity = await _metadataStore.GetCurrentTriggerEntityAsync(QueueTypeByte, CancellationToken.None);
+                        triggerEntity =
+                            await _metadataStore.GetCurrentTriggerEntityAsync(QueueTypeByte, CancellationToken.None);
+                        if (triggerEntity == null)
+                        {
+                            continue;
+                        }
+
                         if (triggerEntity.TriggerStatus == TriggerStatus.Completed &&
                             triggerEntity.TriggerEndTime >= endTime)
                         {
@@ -242,7 +247,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 var orchestratorJobId = triggerEntity.OrchestratorJobId;
 
                 // Check job status
-                var jobInfo = await _queueClient.GetJobByIdAsync(QueueTypeByte, orchestratorJobId, true, CancellationToken.None);
+                var jobInfo =
+                    await _queueClient.GetJobByIdAsync(QueueTypeByte, orchestratorJobId, true, CancellationToken.None);
                 CheckJobStatus(jobInfo, "GroupScope_OnePatient_All.json");
 
                 // Check result files

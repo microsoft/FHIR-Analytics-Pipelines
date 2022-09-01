@@ -248,7 +248,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogInformation(canceledEx, "Data processing task is canceled.");
 
                 await CleanResourceAsync(CancellationToken.None);
-                throw;
+                throw new RetriableJobException("Data processing task is canceled.", canceledEx);
             }
             catch (RetriableJobException retriableJobEx)
             {

@@ -20,15 +20,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core
         public static IServiceCollection AddJobScheduler(
             this IServiceCollection services)
         {
-            services.AddSingleton<JobHosting>();
+            services.AddSingleton<JobHosting, JobHosting>();
 
             services.AddSingleton<IJobFactory, AzureStorageJobFactory>();
 
             services.AddSingleton<IAzureTableClientFactory, AzureTableClientFactory>();
 
-            services.AddSingleton<JobManager>();
+            services.AddSingleton<JobManager, JobManager>();
 
-            services.AddSingleton<SchedulerService>();
+            services.AddSingleton<ISchedulerService, SchedulerService>();
+
+            services.AddSingleton<IMetadataStore, AzureTableMetadataStore>();
 
             services.AddSingleton<IColumnDataProcessor, ParquetDataProcessor>();
 

@@ -365,22 +365,23 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             var result = new ConcurrentBag<JobInfo>();
 
             // https://docs.microsoft.com/en-us/dotnet/api/system.threading.semaphoreslim?view=net-6.0
-            using var throttler = new SemaphoreSlim(MaxThreadsCountForGettingJob, MaxThreadsCountForGettingJob);
-
-            var tasks = jobIds.Select(async id =>
+            using (var throttler = new SemaphoreSlim(MaxThreadsCountForGettingJob, MaxThreadsCountForGettingJob))
             {
-                await throttler.WaitAsync(cancellationToken).ConfigureAwait(false);
-                try
+                var tasks = jobIds.Select(async id =>
                 {
-                    result.Add(await GetJobByIdAsync(queueType, id, returnDefinition, cancellationToken));
-                }
-                finally
-                {
-                    throttler.Release();
-                }
-            });
+                    await throttler.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        result.Add(await GetJobByIdAsync(queueType, id, returnDefinition, cancellationToken));
+                    }
+                    finally
+                    {
+                        throttler.Release();
+                    }
+                });
 
-            await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks);
+            }
 
             _logger.LogInformation($"Get jobs {string.Join(",", jobIds)} successfully.");
             return result;

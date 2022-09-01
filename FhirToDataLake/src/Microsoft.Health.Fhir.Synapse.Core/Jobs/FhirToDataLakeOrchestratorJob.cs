@@ -152,7 +152,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // TODO: how about OperationCanceledException
                 _logger.LogInformation(canceledEx, "Job is canceled.");
-                throw;
+                throw new RetriableJobException("Job is cancelled.", canceledEx);
             }
             catch (RetriableJobException retriableJobEx)
             {
