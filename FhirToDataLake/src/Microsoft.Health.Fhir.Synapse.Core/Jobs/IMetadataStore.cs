@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
-    public interface IMetadataStore: IDisposable
+    public interface IMetadataStore
     {
         public Task<Response> AddEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default);
 
@@ -41,5 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             CancellationToken cancellationToken = default);
 
         public Task UpdatePatientVersionsAsync(byte queueType, Dictionary<string, long> patientVersions,  CancellationToken cancellationToken = default);
+
+        public Task DeleteMetadataTableAsync();
     }
 }

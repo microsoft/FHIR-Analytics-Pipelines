@@ -158,9 +158,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
-        public void Dispose()
+        public async Task DeleteMetadataTableAsync()
         {
-            _metadataTableClient.DeleteAsync().GetAwaiter().GetResult();
+            await _metadataTableClient.DeleteAsync();
         }
 
         private static string TransactionGetByKeys(string pk, List<string> rowKeys) =>

@@ -485,7 +485,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private async Task CleanStorage()
         {
             await _blobContainerClient.DeleteIfExistsAsync();
-            _metadataStore.Dispose();
+            await _metadataStore.DeleteMetadataTableAsync();
             var jobInfoTableClient = _queueClientFactory.CreateTableClient();
             var jobInfoQueueClient = _queueClientFactory.CreateQueueClient();
             await jobInfoQueueClient.DeleteIfExistsAsync();
