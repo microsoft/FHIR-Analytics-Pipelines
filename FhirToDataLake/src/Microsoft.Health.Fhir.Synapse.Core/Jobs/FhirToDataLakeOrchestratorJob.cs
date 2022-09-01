@@ -116,6 +116,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         false,
                         cancellationToken);
                     var newJobId = jobInfos.First().Id;
+                    _result.CreatedJobCount++;
                     _result.RunningJobIds.Add(newJobId);
 
                     // if enqueue successfully while fails to report result, will re-enqueue and return the existing jobInfo
@@ -189,7 +190,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     DataEndTime = nextJobEnd,
                 };
                 _result.NextJobTimestamp = nextJobEnd;
-                _result.CreatedJobCount++;
                 yield return input;
             }
         }
@@ -214,7 +214,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     ToBeProcessedPatients = selectedPatients,
                 };
                 _result.NextPatientIndex += selectedPatients.Count;
-                _result.CreatedJobCount++;
                 yield return input;
             }
         }
