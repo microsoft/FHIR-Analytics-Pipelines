@@ -74,7 +74,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     TableKeyProvider.TriggerPartitionKey(queueType),
                     TableKeyProvider.TriggerRowKey(queueType),
                     cancellationToken: cancellationToken);
-                entity = response.Value;
+                if (response.GetRawResponse().Status == 200)
+                {
+                    entity = response.Value;
+                }
+                else
+                {
+                    _logger.LogError($"Failed to get current trigger entity from table, status {response.GetRawResponse().Status}");
+                }
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
             {

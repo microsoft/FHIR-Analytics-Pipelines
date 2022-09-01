@@ -16,6 +16,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
+using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using Xunit;
 using JobStatus = Microsoft.Health.JobManagement.JobStatus;
@@ -275,7 +276,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 CurrentTriggerEntity currentTriggerEntity = null;
                 while (currentTriggerEntity == null)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
+                    await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
 
                     currentTriggerEntity = await GetCurrentTriggerEntity();
                 }
@@ -363,14 +364,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 // service is running
                 using var tokenSource1 = new CancellationTokenSource();
                 var task1 = schedulerService.RunAsync(tokenSource1.Token);
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
 
                 // the job is dequeued
-                var jobInfo = await queueClient.DequeueAsync(
-                    (byte)QueueType.FhirToDataLake,
-                    TestWorkerName,
-                    0,
-                    CancellationToken.None);
+                JobInfo jobInfo = null;
+                while (jobInfo == null)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
+
+                    jobInfo = await queueClient.DequeueAsync(
+                        (byte)QueueType.FhirToDataLake,
+                        TestWorkerName,
+                        0,
+                        CancellationToken.None);
+                }
 
                 // job is completed, the trigger status should be set to next trigger
                 jobInfo.Status = JobStatus.Failed;
