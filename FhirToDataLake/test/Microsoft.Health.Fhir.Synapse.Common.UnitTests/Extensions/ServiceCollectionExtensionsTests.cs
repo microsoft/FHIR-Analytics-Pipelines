@@ -15,13 +15,14 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
 {
-    public class IServiceCollectionExtensionsTests
+    public class ServiceCollectionExtensionsTests
     {
         private static readonly Dictionary<string, string> TestValidConfiguration = new Dictionary<string, string>
         {
             { "fhirServer:serverUrl", "https://test.fhir.azurehealthcareapis.com" },
             { "dataLakeStore:storageUrl", "https://test.blob.core.windows.net/" },
             { "job:containerName", "fhir" },
+            { "job:agentName", "agentName" },
         };
 
         public static IEnumerable<object[]> GetInvalidServiceConfiguration()
@@ -119,21 +120,21 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
                 GroupId = string.Empty,
             };
 
-            Assert.Throws<ConfigurationErrorException>(() => IServiceCollectionExtensions.ValidateFilterConfiguration(config));
+            Assert.Throws<ConfigurationErrorException>(() => ServiceCollectionExtensions.ValidateFilterConfiguration(config));
         }
 
         [Theory]
         [MemberData(nameof(GetInvalidImageReference))]
         public void GivenInvalidImageReference_WhenValidate_ExceptionShouldBeThrown(string imageReference)
         {
-            Assert.Throws<ConfigurationErrorException>(() => IServiceCollectionExtensions.ValidateImageReference(imageReference));
+            Assert.Throws<ConfigurationErrorException>(() => ServiceCollectionExtensions.ValidateImageReference(imageReference));
         }
 
         [Theory]
         [MemberData(nameof(GetValidImageReference))]
         public void GivenValidImageReference_WhenValidate_NoExceptionShouldBeThrown(string imageReference)
         {
-            var exception = Record.Exception(() => IServiceCollectionExtensions.ValidateImageReference(imageReference));
+            var exception = Record.Exception(() => ServiceCollectionExtensions.ValidateImageReference(imageReference));
             Assert.Null(exception);
         }
 
