@@ -136,13 +136,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 return JsonConvert.SerializeObject(_result);
             }
-            catch (OperationCanceledException canceledEx)
+            catch (TaskCanceledException taskCanceledEx)
             {
-                // TODO: how about OperationCanceledException
-                _logger.LogInformation(canceledEx, "Data processing task is canceled.");
-
-                await CleanResourceAsync(CancellationToken.None);
-                throw new RetriableJobException("Data processing task is canceled.", canceledEx);
+                _logger.LogInformation(taskCanceledEx, "Data processing task is canceled.");
+                throw new RetriableJobException("Data processing task is canceled.", taskCanceledEx);
+            }
+            catch (OperationCanceledException operationCanceledEx)
+            {
+                _logger.LogInformation(operationCanceledEx, "Data processing task is canceled.");
+                throw new RetriableJobException("Data processing task is canceled.", operationCanceledEx);
             }
             catch (RetriableJobException retriableJobEx)
             {

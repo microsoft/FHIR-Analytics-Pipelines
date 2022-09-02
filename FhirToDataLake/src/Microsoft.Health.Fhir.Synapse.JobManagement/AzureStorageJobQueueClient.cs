@@ -38,6 +38,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         // https://docs.microsoft.com/en-us/azure/storage/tables/scalability-targets#scale-targets-for-table-storage
         private const int MaxJobsCountForEnqueuingInABatch = 50;
 
+        private bool _isInitialized;
+
         public AzureStorageJobQueueClient(
             IAzureStorageClientFactory azureStorageClientFactory,
             ILogger<AzureStorageJobQueueClient<TJobInfo>> logger)
@@ -48,23 +50,19 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             _azureJobInfoTableClient = azureStorageClientFactory.CreateTableClient();
             _azureJobMessageQueueClient = azureStorageClientFactory.CreateQueueClient();
+            _isInitialized = false;
         }
 
         public bool IsInitialized()
         {
-            try
+            if (_isInitialized)
             {
-                _azureJobInfoTableClient.CreateIfNotExists();
-                _azureJobMessageQueueClient.CreateIfNotExists();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to initialize azure storage client.");
-                return false;
+                return _isInitialized;
             }
 
-            _logger.LogInformation("Initialize azure storage client successfully.");
-            return true;
+            // try to initialize if it is not initialized yet.
+            TryInitialize();
+            return _isInitialized;
         }
 
         // The expected behaviors:
@@ -613,6 +611,25 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             _logger.LogInformation($"Complete job {jobInfo.Id} successfully.");
         }
 
+        private void TryInitialize()
+        {
+            try
+            {
+                _azureJobInfoTableClient.CreateIfNotExists();
+                _azureJobMessageQueueClient.CreateIfNotExists();
+                _isInitialized = true;
+                _logger.LogInformation("Initialize azure storage client successfully.");
+            }
+            catch (RequestFailedException ex) when (IsAuthenticationError(ex))
+            {
+                _logger.LogInformation(ex, "Failed to initialize azure storage client due to authentication issue.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to initialize azure storage client.");
+            }
+        }
+
         /// <summary>
         /// Get incremental job ids
         /// </summary>
@@ -725,6 +742,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         private static bool IsSpecifiedErrorCode(RequestFailedException exception, string expectedErrorCode) =>
             string.Equals(exception.ErrorCode, expectedErrorCode, StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsAuthenticationError(RequestFailedException exception) =>
+            string.Equals(exception.ErrorCode, AzureStorageErrorCode.NoAuthenticationInformationErrorCode, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(exception.ErrorCode, AzureStorageErrorCode.InvalidAuthenticationInfoErrorCode, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(exception.ErrorCode, AzureStorageErrorCode.AuthenticationFailedErrorCode, StringComparison.OrdinalIgnoreCase);
 
         private static string FilterJobInfosByGroupId(byte queueType, long groupId) =>
             $"PartitionKey eq '{AzureStorageKeyProvider.JobInfoPartitionKey(queueType, groupId)}' and RowKey ge '{groupId:D20}' and RowKey lt '{groupId + 1:D20}'";

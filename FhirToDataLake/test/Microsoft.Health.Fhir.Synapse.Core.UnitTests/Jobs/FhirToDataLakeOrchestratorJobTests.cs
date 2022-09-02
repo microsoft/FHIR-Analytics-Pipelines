@@ -400,7 +400,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var tableClientFactory = new AzureTableClientFactory(
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
-            return new AzureTableMetadataStore(tableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
+            IMetadataStore metadataStore = new AzureTableMetadataStore(tableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
+            Assert.True(metadataStore.IsInitialized());
+            return metadataStore;
         }
 
         private static IFhirDataWriter GetDataWriter(string containerName, IAzureBlobContainerClient blobClient)

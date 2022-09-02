@@ -565,6 +565,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
             _metadataStore = new AzureTableMetadataStore(_azureTableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
+            Assert.True(_metadataStore.IsInitialized());
         }
 
         private async Task CleanStorage()

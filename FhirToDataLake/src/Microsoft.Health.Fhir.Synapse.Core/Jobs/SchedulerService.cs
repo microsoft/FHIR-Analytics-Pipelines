@@ -61,34 +61,42 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public async Task RunAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Scheduler starts running.");
-
+            using CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            CancellationToken ServiceCancellationToken = cancellationTokenSource.Token;
             var stopRunning = false;
 
-            while (!stopRunning && !cancellationToken.IsCancellationRequested)
+            while (!stopRunning && !ServiceCancellationToken.IsCancellationRequested)
             {
                 var delayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), CancellationToken.None);
 
                 try
                 {
-                    var leaseAcquired = await TryAcquireLeaseAsync(cancellationToken);
-
-                    if (leaseAcquired)
+                    // try next time if the queue client isn't initialized.
+                    if (!_queueClient.IsInitialized() || !_metadataStore.IsInitialized())
                     {
-                        using var renewLeaseCancellationToken = new CancellationTokenSource();
-                        var renewLeaseTask = RenewLeaseAsync(renewLeaseCancellationToken.Token);
-                        try
-                        {
-                            // we don't catch exceptions in this function, if the request is cancelled, it could return false or throw exception
-                            // we should stop renew lease for both cases.
-                            stopRunning = await TryPullAndProcessTriggerEntity(cancellationToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Failed to pull and update trigger.");
-                        }
+                        _logger.LogInformation("The storage isn't initialized.");
+                    }
+                    else
+                    {
+                        var leaseAcquired = await TryAcquireLeaseAsync(ServiceCancellationToken);
 
-                        renewLeaseCancellationToken.Cancel();
-                        await renewLeaseTask;
+                        if (leaseAcquired)
+                        {
+                            try
+                            {
+                                var renewLeaseTask = RenewLeaseAsync(ServiceCancellationToken);
+
+                                // we don't catch exceptions in this function, if the request is cancelled, it could return false or throw exception
+                                // we should stop renew lease for both cases.
+                                var processTriggerTask = TryPullAndProcessTriggerEntity(cancellationTokenSource);
+                                await Task.WhenAll(renewLeaseTask, processTriggerTask);
+                                stopRunning = processTriggerTask.Result;
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Failed to pull and update trigger.");
+                            }
+                        }
                     }
 
                     await delayTask;
@@ -170,15 +178,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _logger.LogInformation("Create initial trigger lease entity successfully.");
         }
 
-        private async Task<bool> TryPullAndProcessTriggerEntity(CancellationToken cancellationToken)
+        private async Task<bool> TryPullAndProcessTriggerEntity(CancellationTokenSource cancellationTokenSource)
         {
-            // try next time if the queue client isn't initialized.
-            if (!_queueClient.IsInitialized())
-            {
-                _logger.LogWarning("Try to acquire lease failed, the queue client isn't initialized.");
-                return true;
-            }
-
+            var cancellationToken = cancellationTokenSource.Token;
             while (!cancellationToken.IsCancellationRequested)
             {
                 var intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), CancellationToken.None);
@@ -193,109 +195,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     switch (currentTriggerEntity.TriggerStatus)
                     {
                         case TriggerStatus.New:
-                            {
-                                // enqueue a orchestrator job for this trigger
-                                var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
-                                {
-                                    JobType = JobType.Orchestrator,
-                                    TriggerSequenceId = currentTriggerEntity.TriggerSequenceId,
-                                    Since = _jobConfiguration?.StartTime,
-                                    DataStartTime = currentTriggerEntity.TriggerStartTime,
-                                    DataEndTime = currentTriggerEntity.TriggerEndTime,
-                                };
-
-                                var jobInfoList = await _queueClient.EnqueueAsync(
-                                    _queueType,
-                                    new[] { JsonConvert.SerializeObject(orchestratorDefinition) },
-                                    currentTriggerEntity.TriggerSequenceId,
-                                    false,
-                                    false,
-                                    cancellationToken);
-
-                                currentTriggerEntity.OrchestratorJobId = jobInfoList.First().Id;
-                                currentTriggerEntity.TriggerStatus = TriggerStatus.Running;
-                                await _metadataStore.UpdateEntityAsync(currentTriggerEntity, cancellationToken);
-
-                                _logger.LogInformation(
-                                    $"Enqueue orchestrator job for trigger index {currentTriggerEntity.TriggerSequenceId}, the orchestrator job id is {currentTriggerEntity.OrchestratorJobId}.");
-                                break;
-                            }
-
+                            await EnqueueOrchestratorJobAsync(currentTriggerEntity, cancellationToken);
+                            break;
                         case TriggerStatus.Running:
-                            {
-                                var orchestratorJobId = currentTriggerEntity.OrchestratorJobId;
-                                var orchestratorJob = await _queueClient.GetJobByIdAsync(
-                                    _queueType,
-                                    orchestratorJobId,
-                                    false,
-                                    cancellationToken);
-
-                                var needUpdateTriggerEntity = true;
-
-                                // job status "Archived" is useless,
-                                // shouldn't set job status to archived, if do, need to update the handle logic here
-                                switch (orchestratorJob.Status)
-                                {
-                                    case JobStatus.Completed:
-                                        currentTriggerEntity.TriggerStatus = TriggerStatus.Completed;
-                                        _logger.LogInformation("Current trigger is completed.");
-                                        break;
-                                    case JobStatus.Failed:
-                                        currentTriggerEntity.TriggerStatus = TriggerStatus.Failed;
-                                        _logger.LogError("The orchestrator job is failed.");
-                                        break;
-                                    case JobStatus.Cancelled:
-                                        currentTriggerEntity.TriggerStatus = TriggerStatus.Cancelled;
-                                        _logger.LogError("The orchestrator job is cancelled.");
-                                        break;
-                                    default:
-                                        needUpdateTriggerEntity = false;
-                                        break;
-                                }
-
-                                if (needUpdateTriggerEntity)
-                                {
-                                    await _metadataStore.UpdateEntityAsync(currentTriggerEntity, cancellationToken);
-                                }
-
-                                break;
-                            }
-
+                            await CheckAndUpdateOrchestratorJobStatusAsync(currentTriggerEntity, cancellationToken);
+                            break;
                         case TriggerStatus.Completed:
-                            {
-                                var nextTriggerDateTimeTime =
-                                    _crontabSchedule.GetNextOccurrence(currentTriggerEntity.TriggerEndTime.DateTime);
-
-                                var nextTriggerTime = DateTime.SpecifyKind(nextTriggerDateTimeTime, DateTimeKind.Utc);
-
-                                // next trigger time was the past time, assign the fields of next trigger to the currentTriggerEntity
-                                if (nextTriggerTime.AddMinutes(JobConfigurationConstants.JobQueryLatencyInMinutes) < DateTimeOffset.UtcNow)
-                                {
-                                    currentTriggerEntity.TriggerSequenceId += 1;
-                                    currentTriggerEntity.TriggerStatus = TriggerStatus.New;
-
-                                    currentTriggerEntity.TriggerStartTime = GetTriggerStartTime(currentTriggerEntity.TriggerEndTime);
-                                    currentTriggerEntity.TriggerEndTime = GetTriggerEndTime(nextTriggerTime);
-                                    if (currentTriggerEntity.TriggerStartTime > currentTriggerEntity.TriggerEndTime)
-                                    {
-                                        _logger.LogInformation("The job has been scheduled to end.");
-                                        return true;
-                                    }
-
-                                    await _metadataStore.UpdateEntityAsync(currentTriggerEntity, cancellationToken);
-
-                                    _logger.LogInformation(
-                                        $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table.");
-                                }
-
-                                break;
-                            }
-
+                            await CreateNextTriggerAsync(currentTriggerEntity, cancellationToken);
+                            break;
                         case TriggerStatus.Failed:
-
                         case TriggerStatus.Cancelled:
                             // if the current trigger is cancelled/failed, stop scheduler, this case should not happen
                             _logger.LogWarning("Trigger Status is cancelled or failed.");
+                            cancellationTokenSource.Cancel();
                             return true;
                     }
                 }
@@ -304,6 +216,100 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
 
             return false;
+        }
+
+        private async Task EnqueueOrchestratorJobAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
+        {
+            // enqueue a orchestrator job for this trigger
+            var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
+            {
+                JobType = JobType.Orchestrator,
+                TriggerSequenceId = currentTriggerEntity.TriggerSequenceId,
+                Since = _jobConfiguration?.StartTime,
+                DataStartTime = currentTriggerEntity.TriggerStartTime,
+                DataEndTime = currentTriggerEntity.TriggerEndTime,
+            };
+
+            var jobInfoList = await _queueClient.EnqueueAsync(
+                _queueType,
+                new[] { JsonConvert.SerializeObject(orchestratorDefinition) },
+                currentTriggerEntity.TriggerSequenceId,
+                false,
+                false,
+                cancellationToken);
+
+            currentTriggerEntity.OrchestratorJobId = jobInfoList.First().Id;
+            currentTriggerEntity.TriggerStatus = TriggerStatus.Running;
+            await _metadataStore.UpdateEntityAsync(currentTriggerEntity, cancellationToken);
+
+            _logger.LogInformation(
+                $"Enqueue orchestrator job for trigger index {currentTriggerEntity.TriggerSequenceId}, the orchestrator job id is {currentTriggerEntity.OrchestratorJobId}.");
+        }
+
+        private async Task CheckAndUpdateOrchestratorJobStatusAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
+        {
+            var orchestratorJobId = currentTriggerEntity.OrchestratorJobId;
+            var orchestratorJob = await _queueClient.GetJobByIdAsync(
+                _queueType,
+                orchestratorJobId,
+                false,
+                cancellationToken);
+
+            var needUpdateTriggerEntity = true;
+
+            // job status "Archived" is useless,
+            // shouldn't set job status to archived, if do, need to update the handle logic here
+            switch (orchestratorJob.Status)
+            {
+                case JobStatus.Completed:
+                    currentTriggerEntity.TriggerStatus = TriggerStatus.Completed;
+                    _logger.LogInformation("Current trigger is completed.");
+                    break;
+                case JobStatus.Failed:
+                    currentTriggerEntity.TriggerStatus = TriggerStatus.Failed;
+                    _logger.LogError("The orchestrator job is failed.");
+                    break;
+                case JobStatus.Cancelled:
+                    currentTriggerEntity.TriggerStatus = TriggerStatus.Cancelled;
+                    _logger.LogError("The orchestrator job is cancelled.");
+                    break;
+                default:
+                    needUpdateTriggerEntity = false;
+                    break;
+            }
+
+            if (needUpdateTriggerEntity)
+            {
+                await _metadataStore.UpdateEntityAsync(currentTriggerEntity, cancellationToken);
+            }
+        }
+
+        private async Task CreateNextTriggerAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
+        {
+            var nextTriggerDateTimeTime =
+                _crontabSchedule.GetNextOccurrence(currentTriggerEntity.TriggerEndTime.DateTime);
+
+            var nextTriggerTime = DateTime.SpecifyKind(nextTriggerDateTimeTime, DateTimeKind.Utc);
+
+            // next trigger time was the past time, assign the fields of next trigger to the currentTriggerEntity
+            if (nextTriggerTime.AddMinutes(JobConfigurationConstants.JobQueryLatencyInMinutes) < DateTimeOffset.UtcNow)
+            {
+                currentTriggerEntity.TriggerSequenceId += 1;
+                currentTriggerEntity.TriggerStatus = TriggerStatus.New;
+
+                currentTriggerEntity.TriggerStartTime = GetTriggerStartTime(currentTriggerEntity.TriggerEndTime);
+                currentTriggerEntity.TriggerEndTime = GetTriggerEndTime(nextTriggerTime);
+                if (currentTriggerEntity.TriggerStartTime > currentTriggerEntity.TriggerEndTime)
+                {
+                    _logger.LogInformation("The job has been scheduled to end.");
+                    return;
+                }
+
+                await _metadataStore.UpdateEntityAsync(currentTriggerEntity, cancellationToken);
+
+                _logger.LogInformation(
+                    $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table.");
+            }
         }
 
         /// <summary>

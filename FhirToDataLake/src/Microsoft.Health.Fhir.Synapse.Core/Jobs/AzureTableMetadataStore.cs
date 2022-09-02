@@ -30,6 +30,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         // https://docs.microsoft.com/en-us/rest/api/storageservices/table-service-error-codes
         private const int MaxCountOfTransactionEntities = 100;
 
+        private bool _isInitialized;
+
         public AzureTableMetadataStore(
             IAzureTableClientFactory azureTableClientFactory,
             IOptions<JobConfiguration> config,
@@ -42,6 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _metadataTableClient = azureTableClientFactory.Create(TableKeyProvider.MetadataTableName(config.Value.AgentName));
             _metadataTableClient.CreateIfNotExists();
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _isInitialized = false;
         }
 
         public async Task<TriggerLeaseEntity> GetTriggerLeaseEntityAsync(byte queueType, CancellationToken cancellationToken = default)
@@ -50,6 +53,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 TableKeyProvider.LeasePartitionKey(queueType),
                 TableKeyProvider.LeaseRowKey(queueType),
                 cancellationToken: cancellationToken)).Value;
+        }
+
+        public bool IsInitialized()
+        {
+            if (_isInitialized)
+            {
+                return _isInitialized;
+            }
+
+            // try to initialize if it is not initialized yet.
+            TryInitialize();
+            return _isInitialized;
         }
 
         public async Task<Response> AddEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default)
@@ -169,6 +184,30 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             await _metadataTableClient.DeleteAsync();
         }
+
+        private void TryInitialize()
+        {
+            try
+            {
+                _metadataTableClient.CreateIfNotExists();
+                _isInitialized = true;
+                _logger.LogInformation("Initialize metadata store successfully.");
+            }
+            catch (RequestFailedException ex) when (IsAuthenticationError(ex))
+            {
+                _logger.LogInformation(ex, "Failed to initialize metadata store due to authentication issue.");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to initialize metadata store.");
+            }
+        }
+
+        private static bool IsAuthenticationError(RequestFailedException exception) =>
+            string.Equals(exception.ErrorCode, AzureStorageErrorCode.NoAuthenticationInformationErrorCode, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(exception.ErrorCode, AzureStorageErrorCode.InvalidAuthenticationInfoErrorCode, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(exception.ErrorCode, AzureStorageErrorCode.AuthenticationFailedErrorCode, StringComparison.OrdinalIgnoreCase);
 
         private static string TransactionGetByKeys(string pk, List<string> rowKeys) =>
             $"PartitionKey eq '{pk}' and ({string.Join(" or ", rowKeys.Select(rowKey => $"RowKey eq '{rowKey}'"))})";

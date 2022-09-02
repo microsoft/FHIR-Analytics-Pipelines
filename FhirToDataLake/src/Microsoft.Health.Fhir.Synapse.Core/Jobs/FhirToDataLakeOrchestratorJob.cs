@@ -136,11 +136,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 return JsonConvert.SerializeObject(_result);
             }
-            catch (OperationCanceledException canceledEx)
+            catch (TaskCanceledException taskCanceledEx)
             {
-                // TODO: how about OperationCanceledException
-                _logger.LogInformation(canceledEx, "Job is canceled.");
-                throw new RetriableJobException("Job is cancelled.", canceledEx);
+                _logger.LogInformation(taskCanceledEx, "Job is canceled.");
+                throw new RetriableJobException("Job is cancelled.", taskCanceledEx);
+            }
+            catch (OperationCanceledException operationCanceledEx)
+            {
+                _logger.LogInformation(operationCanceledEx, "Job is canceled.");
+                throw new RetriableJobException("Job is cancelled.", operationCanceledEx);
             }
             catch (RetriableJobException retriableJobEx)
             {

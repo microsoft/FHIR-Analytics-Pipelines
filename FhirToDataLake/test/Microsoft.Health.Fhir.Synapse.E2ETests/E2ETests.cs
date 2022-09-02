@@ -446,7 +446,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
             _metadataStore = new AzureTableMetadataStore(azureTableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
-
+            Assert.True(_metadataStore.IsInitialized());
             _queueClientFactory = new AzureStorageClientFactory(
                 AzureStorageKeyProvider.JobInfoTableName(agentName),
                 AzureStorageKeyProvider.JobMessageQueueName(agentName),

@@ -14,6 +14,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public interface IMetadataStore
     {
+        public bool IsInitialized();
+
         public Task<Response> AddEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default);
 
         public Task<Response> UpdateEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default);

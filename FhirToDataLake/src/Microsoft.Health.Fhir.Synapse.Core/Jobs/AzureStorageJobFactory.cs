@@ -69,21 +69,27 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
 
-            var taskFactoryFuncs =
-                new Func<JobInfo, IJob>[] { CreateProcessingTask, CreateOrchestratorTask };
-
-            foreach (var factoryFunc in taskFactoryFuncs)
+            if (_metadataStore.IsInitialized())
             {
-                var job = factoryFunc(jobInfo);
-                if (job != null)
+                var taskFactoryFuncs =
+                    new Func<JobInfo, IJob>[] { CreateProcessingTask, CreateOrchestratorTask };
+
+                foreach (var factoryFunc in taskFactoryFuncs)
                 {
-                    return job;
+                    var job = factoryFunc(jobInfo);
+                    if (job != null)
+                    {
+                        return job;
+                    }
                 }
+
+                // job hosting didn't catch any exception thrown during creating job,
+                // return null for failure case, and job hosting will skip it.
+                _logger.LogWarning($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
+                return null;
             }
 
-            // job hosting didn't catch any exception thrown during creating job,
-            // return null for failure case, and job hosting will skip it.
-            _logger.LogWarning($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
+            _logger.LogInformation("Metadata store isn't initialized yet.");
             return null;
         }
 

@@ -379,7 +379,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var azureTableClientFactory = new AzureTableClientFactory(
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
-            return new AzureTableMetadataStore(azureTableClientFactory, jobConfig, _nullAzureTableMetadataStoreLogger);
+            var metadataStore = new AzureTableMetadataStore(azureTableClientFactory, jobConfig, _nullAzureTableMetadataStoreLogger);
+            Assert.True(metadataStore.IsInitialized());
+            return metadataStore;
         }
     }
 }
