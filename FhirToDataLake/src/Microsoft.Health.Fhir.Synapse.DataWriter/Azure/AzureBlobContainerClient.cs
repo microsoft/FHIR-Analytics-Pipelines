@@ -279,7 +279,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
                 // Create target parent directory if not exists.
                 var targetParentDirectory = Path.GetDirectoryName(targetDirectory);
-                if (!string.IsNullOrEmpty(targetParentDirectory))
+                if (!string.IsNullOrWhiteSpace(targetParentDirectory))
                 {
                     var targetParentDirectoryClient = _dataLakeFileSystemClient.GetDirectoryClient(targetParentDirectory);
                     await targetParentDirectoryClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);

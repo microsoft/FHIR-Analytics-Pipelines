@@ -17,11 +17,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         private const string NoMetaSamplePatientFileName = "TestData/NoMetaPatientSample.json";
 
         [Fact]
-        public void GivenAJObject_WhenGetLastUpdatedDay_CorrectResultShouldReturn()
+        public void GivenAJObject_WhenGetLastUpdated_CorrectResultShouldReturn()
         {
             var testJObject = GetTestJObject(SamplePatientFileName);
 
-            var date = testJObject.GetLastUpdatedDay();
+            var date = testJObject.GetLastUpdated();
+            Assert.NotNull(date);
 
             Assert.Equal(2012, date.Value.Year);
             Assert.Equal(6, date.Value.Month);
@@ -29,11 +30,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         }
 
         [Fact]
-        public void GivenAJObjectWithoutLastUpdatedDay_WhenGetLastUpdatedDay_ExceptionShouldBeThrown()
+        public void GivenAJObjectWithoutLastUpdated_WhenGetLastUpdated_ExceptionShouldBeThrown()
         {
             var testJObject = GetTestJObject(NoMetaSamplePatientFileName);
 
-            Assert.Throws<FhirDataParseExeption>(() => testJObject.GetLastUpdatedDay());
+            Assert.Throws<FhirDataParseException>(() => testJObject.GetLastUpdated());
         }
 
         private JObject GetTestJObject(string fileName)

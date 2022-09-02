@@ -39,7 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            var healthCheckResult = new HealthCheckResult(HealthCheckTypes.AzureBlobStorageCanReadWrite, false);
+            var healthCheckResult = new HealthCheckResult(HealthCheckTypes.AzureBlobStorageCanReadWrite);
             var blobPath = HealthCheckBlobPrefix;
 
             try

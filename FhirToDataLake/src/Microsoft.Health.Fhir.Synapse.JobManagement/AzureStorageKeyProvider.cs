@@ -19,7 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         public static string JobLockRowKey(string jobIdentifier) => $"lock_{jobIdentifier}";
 
-        public static string JobReverseIndexPartitionKey(byte queueType, long jobId) => $"{queueType:D3}_{jobId:D20}";
+        public static string JobReverseIndexPartitionKey(byte queueType, long jobId) => $"{queueType:D3}";
 
         public static string JobReverseIndexRowKey(byte queueType, long jobId) => $"{queueType:D3}_{jobId:D20}";
 

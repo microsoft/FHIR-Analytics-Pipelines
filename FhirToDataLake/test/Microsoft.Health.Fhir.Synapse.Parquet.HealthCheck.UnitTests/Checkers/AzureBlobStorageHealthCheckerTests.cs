@@ -54,7 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 Options.Create(_storeConfig),
                 new NullLogger<AzureBlobStorageHealthChecker>());
 
-            var result = await _storageAccountHealthChecker.PerformHealthCheckAsync(default);
+            var result = await _storageAccountHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.HEALTHY, result.Status);
             Assert.False(result.IsCritical);
         }
@@ -62,15 +62,15 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         [Fact]
         public async Task When_BlobClient_ThrowExceptionWhenReadWriteABlob_HealthCheck_Fails()
         {
-            _blobContainerClient.UpdateBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), default, default).ThrowsAsyncForAnyArgs(new Exception());
-            _blobContainerClient.GetBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), default).ThrowsAsyncForAnyArgs(new Exception());
+            _blobContainerClient.UpdateBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), default).ThrowsAsyncForAnyArgs(new Exception());
+            _blobContainerClient.GetBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix))).ThrowsAsyncForAnyArgs(new Exception());
             _storageAccountHealthChecker = new AzureBlobStorageHealthChecker(
                 new MockAzureBlobContainerClientFactory(_blobContainerClient),
                 Options.Create(_jobConfig),
                 Options.Create(_storeConfig),
                 new NullLogger<AzureBlobStorageHealthChecker>());
 
-            var result = await _storageAccountHealthChecker.PerformHealthCheckAsync(default);
+            var result = await _storageAccountHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.UNHEALTHY, result.Status);
             Assert.False(result.IsCritical);
         }

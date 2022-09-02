@@ -3,33 +3,34 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using EnsureThat;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch
 {
     /// <summary>
-    /// Wrap the patient information used for Fhir search
+    /// Wrap the patient information
     /// </summary>
     public class PatientWrapper
     {
         public PatientWrapper(
-            string patientId,
-            int versionId = 0)
+            string patientHash,
+            long versionId)
         {
-            PatientId = patientId;
+            PatientHash = EnsureArg.IsNotNullOrWhiteSpace(patientHash, nameof(patientHash));
             VersionId = versionId;
         }
 
         /// <summary>
         /// Patient id
         /// </summary>
-        [JsonProperty("patientId")]
-        public string PatientId { get; }
+        [JsonProperty("patientHash")]
+        public string PatientHash { get; }
 
         /// <summary>
         /// Version ID
         /// </summary>
         [JsonProperty("versionId")]
-        public int VersionId { get; set; }
+        public long VersionId { get; set; }
     }
 }

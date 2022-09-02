@@ -13,6 +13,7 @@ using Microsoft.Health.Fhir.Synapse.Core;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.HealthCheck;
+using Microsoft.Health.Fhir.Synapse.JobManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.FunctionApp
@@ -32,6 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
                         .AddHttpClient()
                         .AddConfiguration(context.Configuration)
                         .AddJobScheduler()
+                        .AddJobManagement()
                         .AddDataSource()
                         .AddDataWriter()
                         .AddAzure()

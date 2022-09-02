@@ -38,6 +38,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         // https://docs.microsoft.com/en-us/azure/storage/tables/scalability-targets#scale-targets-for-table-storage
         private const int MaxJobsCountForEnqueuingInABatch = 50;
 
+        private bool _isInitialized;
+
         public AzureStorageJobQueueClient(
             IAzureStorageClientFactory azureStorageClientFactory,
             ILogger<AzureStorageJobQueueClient<TJobInfo>> logger)
@@ -48,23 +50,19 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             _azureJobInfoTableClient = azureStorageClientFactory.CreateTableClient();
             _azureJobMessageQueueClient = azureStorageClientFactory.CreateQueueClient();
+            _isInitialized = false;
         }
 
         public bool IsInitialized()
         {
-            try
+            if (_isInitialized)
             {
-                _azureJobInfoTableClient.CreateIfNotExists();
-                _azureJobMessageQueueClient.CreateIfNotExists();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to initialize azure storage client.");
-                return false;
+                return _isInitialized;
             }
 
-            _logger.LogInformation("Initialize azure storage client successfully.");
-            return true;
+            // try to initialize if it is not initialized yet.
+            TryInitialize();
+            return _isInitialized;
         }
 
         // The expected behaviors:
@@ -123,6 +121,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             try
             {
                 await _azureJobInfoTableClient.SubmitTransactionAsync(transactionActions, cancellationToken);
+            }
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.InvalidDuplicateRowErrorCode))
+            {
+                _logger.LogError(ex, "There are duplicated jobs to be enqueued.");
+                throw;
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
             {
@@ -186,7 +189,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // for new added job lock entities, their etag are empty, need to get them to get etag.
-            if (jobLockEntities.Any(jobLockEntity => string.IsNullOrEmpty(jobLockEntity.ETag.ToString())))
+            if (jobLockEntities.Any(jobLockEntity => string.IsNullOrWhiteSpace(jobLockEntity.ETag.ToString())))
             {
                 var jobLockEntityQueryResult = _azureJobInfoTableClient.QueryAsync<TableEntity>(
                     filter: TransactionGetByKeys(jobLockEntities.First().PartitionKey, jobLockEntities.Select(entity => entity.RowKey).ToList()),
@@ -264,8 +267,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // step 2: get jobInfo entity and job lock entity
-            var (jobInfoEntity, jobLockEntity) = await AcquireJobEntityByRowKeysAsync(jobMessage.PartitionKey,
-                new List<string> {jobMessage.RowKey, jobMessage.LockRowKey}, cancellationToken);
+            var (jobInfoEntity, jobLockEntity) = await AcquireJobEntityByRowKeysAsync(jobMessage.PartitionKey, new List<string> {jobMessage.RowKey, jobMessage.LockRowKey}, cancellationToken);
             var jobInfo = jobInfoEntity.ToJobInfo<TJobInfo>();
 
             // step 3: check job status
@@ -360,22 +362,23 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             var result = new ConcurrentBag<JobInfo>();
 
             // https://docs.microsoft.com/en-us/dotnet/api/system.threading.semaphoreslim?view=net-6.0
-            var throttler = new SemaphoreSlim(MaxThreadsCountForGettingJob, MaxThreadsCountForGettingJob);
-
-            var tasks = jobIds.Select(async id =>
+            using (var throttler = new SemaphoreSlim(MaxThreadsCountForGettingJob, MaxThreadsCountForGettingJob))
             {
-                await throttler.WaitAsync(cancellationToken).ConfigureAwait(false);
-                try
+                var tasks = jobIds.Select(async id =>
                 {
-                    result.Add(await GetJobByIdAsync(queueType, id, returnDefinition, cancellationToken));
-                }
-                finally
-                {
-                    throttler.Release();
-                }
-            });
+                    await throttler.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        result.Add(await GetJobByIdAsync(queueType, id, returnDefinition, cancellationToken));
+                    }
+                    finally
+                    {
+                        throttler.Release();
+                    }
+                });
 
-            await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks);
+            }
 
             _logger.LogInformation($"Get jobs {string.Join(",", jobIds)} successfully.");
             return result;
@@ -573,7 +576,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             else
             {
-                jobInfoEntity[JobInfoEntityProperties.Status] = (int) JobStatus.Completed;
+                jobInfoEntity[JobInfoEntityProperties.Status] = (int)JobStatus.Completed;
             }
 
             // step 5: update job info entity to table
@@ -606,6 +609,25 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             _logger.LogInformation($"Complete job {jobInfo.Id} successfully.");
+        }
+
+        private void TryInitialize()
+        {
+            try
+            {
+                _azureJobInfoTableClient.CreateIfNotExists();
+                _azureJobMessageQueueClient.CreateIfNotExists();
+                _isInitialized = true;
+                _logger.LogInformation("Initialize azure storage client successfully.");
+            }
+            catch (RequestFailedException ex) when (IsAuthenticationError(ex))
+            {
+                _logger.LogInformation(ex, "Failed to initialize azure storage client due to authentication issue.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to initialize azure storage client.");
+            }
         }
 
         /// <summary>
@@ -720,6 +742,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         private static bool IsSpecifiedErrorCode(RequestFailedException exception, string expectedErrorCode) =>
             string.Equals(exception.ErrorCode, expectedErrorCode, StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsAuthenticationError(RequestFailedException exception) =>
+            string.Equals(exception.ErrorCode, AzureStorageErrorCode.NoAuthenticationInformationErrorCode, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(exception.ErrorCode, AzureStorageErrorCode.InvalidAuthenticationInfoErrorCode, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(exception.ErrorCode, AzureStorageErrorCode.AuthenticationFailedErrorCode, StringComparison.OrdinalIgnoreCase);
 
         private static string FilterJobInfosByGroupId(byte queueType, long groupId) =>
             $"PartitionKey eq '{AzureStorageKeyProvider.JobInfoPartitionKey(queueType, groupId)}' and RowKey ge '{groupId:D20}' and RowKey lt '{groupId + 1:D20}'";
