@@ -62,10 +62,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             _logger.LogInformation("Scheduler starts running.");
             using CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            CancellationToken ServiceCancellationToken = cancellationTokenSource.Token;
+            CancellationToken serviceCancellationToken = cancellationTokenSource.Token;
             var stopRunning = false;
 
-            while (!stopRunning && !ServiceCancellationToken.IsCancellationRequested)
+            while (!stopRunning && !serviceCancellationToken.IsCancellationRequested)
             {
                 var delayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), CancellationToken.None);
 
@@ -78,13 +78,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     }
                     else
                     {
-                        var leaseAcquired = await TryAcquireLeaseAsync(ServiceCancellationToken);
+                        var leaseAcquired = await TryAcquireLeaseAsync(serviceCancellationToken);
 
                         if (leaseAcquired)
                         {
                             try
                             {
-                                var renewLeaseTask = RenewLeaseAsync(ServiceCancellationToken);
+                                var renewLeaseTask = RenewLeaseAsync(serviceCancellationToken);
 
                                 // we don't catch exceptions in this function, if the request is cancelled, it could return false or throw exception
                                 // we should stop renew lease for both cases.
