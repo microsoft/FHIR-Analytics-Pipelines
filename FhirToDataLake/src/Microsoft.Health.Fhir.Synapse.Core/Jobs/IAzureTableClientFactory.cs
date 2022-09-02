@@ -14,6 +14,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         /// <param name="tableName">table name</param>
         /// <returns>TableClient</returns>
-        public TableClient Create(string tableName = null);
+        public TableClient Create(string tableName);
     }
 }
