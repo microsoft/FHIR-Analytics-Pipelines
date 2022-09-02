@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
     public class AzureContainerRegistryHealthChecker : BaseHealthChecker
     {
         private const string MediatypeV2Manifest = "application/vnd.docker.distribution.manifest.v2+json";
-        private readonly SchemaConfiguration _schemaConfiguration;
+        private readonly string _imageReference;
         private readonly IContainerRegistryTokenProvider _containerRegistryTokenProvider;
 
         public AzureContainerRegistryHealthChecker(
@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             EnsureArg.IsNotNull(schemaConfiguration, nameof(schemaConfiguration));
             _containerRegistryTokenProvider = EnsureArg.IsNotNull(containerRegistryTokenProvider, nameof(containerRegistryTokenProvider));
 
-            _schemaConfiguration = schemaConfiguration.Value;
+            _imageReference = schemaConfiguration.Value.SchemaImageReference;
         }
 
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
@@ -42,8 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
             try
             {
-                var imageReference = _schemaConfiguration.SchemaImageReference;
-                var imageInfo = ImageInfo.CreateFromImageReference(imageReference);
+                var imageInfo = ImageInfo.CreateFromImageReference(_imageReference);
                 var accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
                 var acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrClientCredentials(accessToken));
 

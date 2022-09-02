@@ -23,21 +23,22 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 
             services.AddSingleton<IHealthChecker, AzureBlobStorageHealthChecker>();
 
+            SchemaConfiguration schemaConfiguration;
             try
             {
-                var schemaConfiguration = services
+                schemaConfiguration = services
                     .BuildServiceProvider()
                     .GetRequiredService<IOptions<SchemaConfiguration>>()
                     .Value;
-
-                if (schemaConfiguration.EnableCustomizedSchema)
-                {
-                    services.AddSingleton<IHealthChecker, AzureContainerRegistryHealthChecker>();
-                }
             }
             catch (Exception ex)
             {
                 throw new ConfigurationErrorException("Failed to parse schema configuration", ex);
+            }
+
+            if (schemaConfiguration.EnableCustomizedSchema)
+            {
+                services.AddSingleton<IHealthChecker, AzureContainerRegistryHealthChecker>();
             }
 
             services.AddSingleton<IHealthChecker, FhirServerHealthChecker>();
