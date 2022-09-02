@@ -276,7 +276,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 CurrentTriggerEntity currentTriggerEntity = null;
                 while (currentTriggerEntity == null)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
+                    await Task.Delay(TimeSpan.FromSeconds(10), CancellationToken.None);
 
                     currentTriggerEntity = await GetCurrentTriggerEntity();
                 }
