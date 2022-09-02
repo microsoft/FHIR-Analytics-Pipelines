@@ -30,6 +30,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
 
         private readonly DateTime _testDate = new (2021, 10, 1);
 
+        private static readonly StorageConfiguration _storageConfiguration = new ();
+
         [Fact]
         public async Task GivenAValidParameter_WhenWritingToBlob_CorrectContentShouldBeWritten()
         {
@@ -42,7 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             var streamData = new StreamBatchData(stream, 1, TestResourceType);
             await dataWriter.WriteAsync(streamData, "mockJob", 0, 0, _testDate);
 
-            var containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
+            var containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
             var blobStream = await containerClient.GetBlobAsync($"staging/mockJob/Patient/2021/10/01/Patient_0000000000_0000000000.parquet");
             Assert.NotNull(blobStream);
 
@@ -104,6 +106,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             return new AzureBlobDataWriter(
                 new AzureBlobContainerClientFactory(
                     new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
+                    Options.Create(_storageConfiguration),
                     new NullLoggerFactory()),
                 GetLocalDataSink(),
                 new NullLogger<AzureBlobDataWriter>());
@@ -114,6 +117,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             return new AzureBlobDataWriter(
                 new AzureBlobContainerClientFactory(
                     new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
+                    Options.Create(_storageConfiguration),
                     new NullLoggerFactory()),
                 GetDataSink(),
                 new NullLogger<AzureBlobDataWriter>());
