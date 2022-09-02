@@ -115,18 +115,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
                 {
-                    _logger.LogWarning("The current trigger lease doesn't exist, will create a new one.");
-
-                    var initialTriggerLeaseEntity = new TriggerLeaseEntity()
-                    {
-                        PartitionKey = TableKeyProvider.LeasePartitionKey(_queueType),
-                        RowKey = TableKeyProvider.LeaseRowKey(_queueType),
-                        WorkingInstanceGuid = _instanceGuid,
-                        HeartbeatDateTime = DateTimeOffset.UtcNow,
-                    };
-
-                    // add the initial trigger entity to table
-                    await _metadataStore.AddEntityAsync(initialTriggerLeaseEntity, cancellationToken);
+                    await CreateInitialTriggerLeaseEntityAsync(cancellationToken);
 
                     // try to get trigger lease entity after insert
                     triggerLeaseEntity = await _metadataStore.GetTriggerLeaseEntityAsync(_queueType, cancellationToken);
@@ -163,6 +152,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _logger.LogInformation("Acquire lease successfully.");
             return true;
+        }
+
+        private async Task CreateInitialTriggerLeaseEntityAsync(CancellationToken cancellationToken)
+        {
+            var initialTriggerLeaseEntity = new TriggerLeaseEntity()
+            {
+                PartitionKey = TableKeyProvider.LeasePartitionKey(_queueType),
+                RowKey = TableKeyProvider.LeaseRowKey(_queueType),
+                WorkingInstanceGuid = _instanceGuid,
+                HeartbeatDateTime = DateTimeOffset.UtcNow,
+            };
+
+            // add the initial trigger entity to table
+            await _metadataStore.AddEntityAsync(initialTriggerLeaseEntity, cancellationToken);
+
+            _logger.LogInformation("Create initial trigger lease entity successfully.");
         }
 
         private async Task<bool> TryPullAndProcessTriggerEntity(CancellationToken cancellationToken)
