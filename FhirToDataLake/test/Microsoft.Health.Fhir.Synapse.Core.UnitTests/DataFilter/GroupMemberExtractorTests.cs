@@ -195,7 +195,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         public async Task GivenInvalidBundle_WhenGetGroupPatients_ExceptionShouldBeThrown()
         {
             var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_invalidBundle, null, _triggerTime, _noneCancellationToken));
-            Assert.StartsWith($"Failed to parse fhir bundle ", exception.Message);
+            Assert.StartsWith($"Failed to parse fhir 'Group' bundle ", exception.Message);
         }
 
         [Fact]
