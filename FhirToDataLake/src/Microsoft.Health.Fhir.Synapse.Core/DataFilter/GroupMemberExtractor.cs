@@ -142,8 +142,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"Failed to parse fhir bundle {fhirBundleResult}.");
-                throw new GroupMemberExtractorException($"Failed to parse fhir bundle {fhirBundleResult}.", exception);
+                _logger.LogError(exception, $"Failed to parse fhir 'Group' bundle {groupId}.");
+                throw new GroupMemberExtractorException($"Failed to parse fhir 'Group' bundle {groupId}.", exception);
             }
 
             var members = new List<Tuple<string, string>>();
