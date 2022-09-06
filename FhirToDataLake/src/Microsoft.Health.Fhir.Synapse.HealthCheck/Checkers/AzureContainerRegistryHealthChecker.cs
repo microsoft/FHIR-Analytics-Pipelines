@@ -47,7 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
                 var acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrClientCredentials(accessToken));
 
                 // Ensure we can read from acr.
-                var result = await acrClient.Manifests.GetAsync(imageInfo.ImageName, imageInfo.Label, MediatypeV2Manifest, cancellationToken);
+                await acrClient.Manifests.GetAsync(imageInfo.ImageName, imageInfo.Label, MediatypeV2Manifest, cancellationToken);
             }
             catch (Exception e)
             {
@@ -58,6 +58,5 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
             return healthCheckResult;
         }
-
     }
 }
