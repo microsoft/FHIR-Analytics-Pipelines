@@ -426,7 +426,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static IFilterManager GetFilterManager(FilterConfiguration filterConfiguration)
         {
             var filterManager = Substitute.For<IFilterManager>();
-            filterManager.GetTypeFilters().Returns(TestResourceTypeFilters);
+            filterManager.GetTypeFiltersAsync(default).Returns(TestResourceTypeFilters);
             filterManager.FilterScope().Returns(filterConfiguration.FilterScope);
             filterManager.GroupId().Returns(filterConfiguration.GroupId);
             return filterManager;

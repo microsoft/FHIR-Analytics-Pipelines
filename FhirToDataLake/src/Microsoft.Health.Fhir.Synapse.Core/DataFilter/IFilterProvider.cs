@@ -3,20 +3,14 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
-    public interface IFilterManager
+    public interface IFilterProvider
     {
-        public FilterScope FilterScope();
-
-        public string GroupId();
-
-        public Task<List<TypeFilter>> GetTypeFiltersAsync(CancellationToken cancellationToken);
+        public Task<FilterConfiguration> GetFilterAsync(CancellationToken cancellationToken);
     }
 }

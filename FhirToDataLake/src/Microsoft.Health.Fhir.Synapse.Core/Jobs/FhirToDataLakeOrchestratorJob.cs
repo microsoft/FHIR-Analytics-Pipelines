@@ -256,7 +256,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         // get the lastUpdated timestamp of next resource for next processing job
         private async Task<DateTimeOffset?> GetNextTimestamp(DateTimeOffset? start, DateTimeOffset end, CancellationToken cancellationToken)
         {
-            var typeFilters = _filterManager.GetTypeFilters();
+            var typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
 
             var parameters = new List<KeyValuePair<string, string>>
             {

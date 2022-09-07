@@ -104,7 +104,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _cacheResult = new CacheResult();
                 _outputFileIndexMap = new Dictionary<string, int>();
 
-                _typeFilters = _filterManager.GetTypeFilters();
+                _typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
 
                 switch (_filterManager.FilterScope())
                 {

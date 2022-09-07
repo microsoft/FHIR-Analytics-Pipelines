@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,31 +23,35 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
     public class FilterManager : IFilterManager
     {
         private readonly ILogger<FilterManager> _logger;
-        private readonly FilterConfiguration _filterConfiguration;
+        private FilterConfiguration _filterContent;
         private readonly IFhirSpecificationProvider _fhirSpecificationProvider;
-
-        private readonly List<TypeFilter> _typeFilters;
+        private readonly IFilterProvider _filterProvider;
+        private List<TypeFilter> _typeFilters;
 
         public FilterManager(
-            IOptions<FilterConfiguration> filterConfiguration,
+            IFilterProvider filterProvider,
             IFhirSpecificationProvider fhirSpecificationProvider,
             ILogger<FilterManager> logger)
         {
-            EnsureArg.IsNotNull(filterConfiguration, nameof(filterConfiguration));
-            _filterConfiguration = filterConfiguration.Value;
+            _filterProvider = EnsureArg.IsNotNull(filterProvider, nameof(filterProvider));
+
             _fhirSpecificationProvider = EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
-            _typeFilters = CreateTypeFilters(
-                _filterConfiguration.FilterScope,
-                _filterConfiguration.RequiredTypes,
-                _filterConfiguration.TypeFilters);
         }
 
-        public FilterScope FilterScope() => _filterConfiguration.FilterScope;
+        public FilterScope FilterScope() => _filterContent.FilterScope;
 
-        public string GroupId() => _filterConfiguration.GroupId;
+        public string GroupId() => _filterContent.GroupId;
 
-        public List<TypeFilter> GetTypeFilters() => _typeFilters;
+        public async Task<List<TypeFilter>> GetTypeFiltersAsync(CancellationToken cancellationToken)
+        {
+            _filterContent = await _filterProvider.GetFilterAsync(cancellationToken);
+            _typeFilters = CreateTypeFilters(
+                _filterContent.FilterScope,
+                _filterContent.RequiredTypes,
+                _filterContent.TypeFilters);
+            return _typeFilters;
+        }
 
         /// <summary>
         /// Create a list of <see cref="TypeFilter"/> objects from input string.

@@ -5,6 +5,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -46,7 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new FilterManager(Options.Create(new FilterConfiguration()), null, _nullFilterManagerLogger));
+                () => new FilterManager(new LocalFilterProvider(Options.Create(new FilterConfiguration())), null, _nullFilterManagerLogger));
         }
 
         [Theory]
@@ -56,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("Patient,Account", 2)]
         [InlineData("Patient", 1)]
         [InlineData("Patient,Patient", 1)]
-        public void GivenValidTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForSystem_ThenTheTypeFiltersForEachResourceTypesAreReturned(string typeString, int resourceTypeCount)
+        public async Task GivenValidTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForSystem_ThenTheTypeFiltersForEachResourceTypesAreReturnedAsync(string typeString, int resourceTypeCount)
         {
             var filterConfiguration = new FilterConfiguration
             {
@@ -65,8 +66,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 TypeFilters = null,
             };
 
-            var filterManager = new FilterManager(Options.Create(filterConfiguration), _fhirSpecificationProvider, _nullFilterManagerLogger);
-            var typeFilters = filterManager.GetTypeFilters();
+            var filterManager = new FilterManager(new LocalFilterProvider(Options.Create(filterConfiguration)), _fhirSpecificationProvider, _nullFilterManagerLogger);
+            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.NotNull(typeFilters);
             Assert.Equal(resourceTypeCount, typeFilters.Count());
@@ -80,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData(null)]
         [InlineData("")]
         [InlineData("  ")]
-        public void GivenNullOrWhiteSpaceTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForGroup_ThenOneTypeFilterAreReturned(string typeString)
+        public async Task GivenNullOrWhiteSpaceTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForGroup_ThenOneTypeFilterAreReturnedAsync(string typeString)
         {
             var filterConfiguration = new FilterConfiguration
             {
@@ -89,8 +90,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 TypeFilters = null,
             };
 
-            var filterManager = new FilterManager(Options.Create(filterConfiguration), _fhirSpecificationProvider, _nullFilterManagerLogger);
-            var typeFilters = filterManager.GetTypeFilters();
+            var filterManager = new FilterManager(new LocalFilterProvider(Options.Create(filterConfiguration)), _fhirSpecificationProvider, _nullFilterManagerLogger);
+            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.Single(typeFilters);
             Assert.Equal("*", typeFilters[0].ResourceType);
@@ -101,7 +102,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("Patient", "Patient")] // *?_type=Patient
         [InlineData("Patient,Account", "Patient,Account")] // *?_type=Patient,Account
         [InlineData("Patient,Patient", "Patient")] // *?_type=Patient
-        public void GivenValidTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForGroup_ThenOneTypeFilterAreReturned(string typeString, string expectedTypes)
+        public async Task GivenValidTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForGroup_ThenOneTypeFilterAreReturnedAsync(string typeString, string expectedTypes)
         {
             var filterConfiguration = new FilterConfiguration
             {
@@ -110,8 +111,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 TypeFilters = null,
             };
 
-            var filterManager = new FilterManager(Options.Create(filterConfiguration), _fhirSpecificationProvider, _nullFilterManagerLogger);
-            var typeFilters = filterManager.GetTypeFilters();
+            var filterManager = new FilterManager(new LocalFilterProvider(Options.Create(filterConfiguration)), _fhirSpecificationProvider, _nullFilterManagerLogger);
+            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.Single(typeFilters);
             Assert.Equal("*", typeFilters[0].ResourceType);
@@ -121,7 +122,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         }
 
         [Fact]
-        public void GivenEmptyStringTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturned()
+        public async Task GivenEmptyStringTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturnedAsync()
         {
             var filterConfiguration = new FilterConfiguration
             {
@@ -130,8 +131,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 TypeFilters = string.Empty,
             };
 
-            var filterManager = new FilterManager(Options.Create(filterConfiguration), _fhirSpecificationProvider, _nullFilterManagerLogger);
-            var typeFilters = filterManager.GetTypeFilters();
+            var filterManager = new FilterManager(new LocalFilterProvider(Options.Create(filterConfiguration)), _fhirSpecificationProvider, _nullFilterManagerLogger);
+            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.Single(typeFilters);
             Assert.Equal("Patient", typeFilters[0].ResourceType);
@@ -142,7 +143,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData(null)]
         [InlineData("")]
         [InlineData("  ")]
-        public void GivenNullOrWhiteSpaceTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturned(string filterString)
+        public async Task GivenNullOrWhiteSpaceTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturnedAsync(string filterString)
         {
             var filterConfiguration = new FilterConfiguration
             {
@@ -151,8 +152,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 TypeFilters = filterString,
             };
 
-            var filterManager = new FilterManager(Options.Create(filterConfiguration), _fhirSpecificationProvider, _nullFilterManagerLogger);
-            var typeFilters = filterManager.GetTypeFilters();
+            var filterManager = new FilterManager(new LocalFilterProvider(Options.Create(filterConfiguration)), _fhirSpecificationProvider, _nullFilterManagerLogger);
+            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.Single(typeFilters);
             Assert.Equal("Patient", typeFilters[0].ResourceType);
@@ -182,7 +183,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             };
 
             Assert.Throws<ConfigurationErrorException>(() =>
-                new FilterManager(Options.Create(filterConfiguration), _fhirSpecificationProvider, _nullFilterManagerLogger));
+                new FilterManager(new LocalFilterProvider(Options.Create(filterConfiguration)), _fhirSpecificationProvider, _nullFilterManagerLogger));
         }
 
         [Fact]
@@ -198,11 +199,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             };
 
             Assert.Throws<ConfigurationErrorException>(() =>
-                new FilterManager(Options.Create(filterConfiguration), _fhirSpecificationProvider, _nullFilterManagerLogger));
+                new FilterManager(new LocalFilterProvider(Options.Create(filterConfiguration)), _fhirSpecificationProvider, _nullFilterManagerLogger));
         }
 
         [Fact]
-        public void GivenMultiValidTypeFilter_WhenParseTypeFilterForGroup_ThenTheTypeFiltersAreReturned()
+        public async Task GivenMultiValidTypeFilter_WhenParseTypeFilterForGroup_ThenTheTypeFiltersAreReturnedAsync()
         {
             const string type = "Condition,MedicationRequest";
             const string typeFilter = "MedicationRequest?status=active,MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z";
@@ -213,8 +214,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 TypeFilters = typeFilter,
             };
 
-            var filterManager = new FilterManager(Options.Create(filterConfiguration), _fhirSpecificationProvider, _nullFilterManagerLogger);
-            var typeFilters = filterManager.GetTypeFilters();
+            var filterManager = new FilterManager(new LocalFilterProvider(Options.Create(filterConfiguration)), _fhirSpecificationProvider, _nullFilterManagerLogger);
+            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.NotNull(typeFilters);
             Assert.Equal(3, typeFilters.Count());
@@ -238,7 +239,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         }
 
         [Fact]
-        public void GivenMultiValidTypeFilter_WhenParseTypeFilterForSystem_ThenTheTypeFiltersAreReturned()
+        public async Task GivenMultiValidTypeFilter_WhenParseTypeFilterForSystem_ThenTheTypeFiltersAreReturnedAsync()
         {
             const string type = "Condition,MedicationRequest";
             const string typeFilter = "MedicationRequest?status=active,MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z";
@@ -250,8 +251,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 TypeFilters = typeFilter,
             };
 
-            var filterManager = new FilterManager(Options.Create(filterConfiguration), _fhirSpecificationProvider, _nullFilterManagerLogger);
-            var typeFilters = filterManager.GetTypeFilters();
+            var filterManager = new FilterManager(new LocalFilterProvider(Options.Create(filterConfiguration)), _fhirSpecificationProvider, _nullFilterManagerLogger);
+            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.NotNull(typeFilters);
             Assert.Equal(3, typeFilters.Count());
@@ -292,7 +293,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         // chained
         [InlineData("DiagnosticReport", "DiagnosticReport?subject:Patient.name=peter")]
         [InlineData("Observation", "Observation?patient.identifier=http://example.com/fhir/identifier/mrn|123456")]
-        public void GivenValidTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturned(string type, string typeFilter)
+        public async Task GivenValidTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturnedAsync(string type, string typeFilter)
         {
             var filterConfiguration = new FilterConfiguration
             {
@@ -301,8 +302,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 TypeFilters = typeFilter,
             };
 
-            var filterManager = new FilterManager(Options.Create(filterConfiguration), _fhirSpecificationProvider, _nullFilterManagerLogger);
-            var typeFilters = filterManager.GetTypeFilters();
+            var filterManager = new FilterManager(new LocalFilterProvider(Options.Create(filterConfiguration)), _fhirSpecificationProvider, _nullFilterManagerLogger);
+            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             var expectedTypes = type.Split(',');
 
@@ -324,7 +325,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             };
 
             Assert.Throws<ConfigurationErrorException>(() =>
-                new FilterManager(Options.Create(filterConfiguration), _fhirSpecificationProvider, _nullFilterManagerLogger));
+                new FilterManager(new LocalFilterProvider(Options.Create(filterConfiguration)), _fhirSpecificationProvider, _nullFilterManagerLogger));
         }
 
         [Theory]
@@ -362,7 +363,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 TypeFilters = typeFilter,
             };
             Assert.Throws<ConfigurationErrorException>(() =>
-                new FilterManager(Options.Create(filterConfiguration), _fhirSpecificationProvider, _nullFilterManagerLogger));
+                new FilterManager(new LocalFilterProvider(Options.Create(filterConfiguration)), _fhirSpecificationProvider, _nullFilterManagerLogger));
         }
     }
 }
