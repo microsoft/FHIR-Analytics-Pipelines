@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         private string _imageReference;
         private readonly IContainerRegistryTokenProvider _containerRegistryTokenProvider;
         private readonly ILogger<ContainerRegistryFilterProvider> _logger;
-        private readonly string _configName;
+        private readonly string _configName = "filterConfiguration.json";
 
         public ContainerRegistryFilterProvider(
             IOptions<FilterLocation> filterLocation,
@@ -40,6 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _imageReference = filterLocation.Value.FilterImageReference;
+            _configName = filterLocation.Value.FilterConfigurationFileName;
         }
 
         public async Task<FilterConfiguration> GetFilterAsync(CancellationToken cancellationToken)
