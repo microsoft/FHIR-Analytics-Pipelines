@@ -32,16 +32,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             return Stu3FhirModelInfo.IsKnownResource(resourceType);
         }
 
-        public override IEnumerable<string> GetCompartmentResourceTypes(string compartmentType)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override IEnumerable<string> GetSearchParametersByResourceType(string resourceType)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>> BuildSearchParametersLookupFromMetadata(string metaData)
         {
             throw new NotImplementedException();
