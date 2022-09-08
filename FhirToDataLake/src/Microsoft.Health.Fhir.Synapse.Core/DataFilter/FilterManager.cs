@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
@@ -23,7 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
     public class FilterManager : IFilterManager
     {
         private readonly ILogger<FilterManager> _logger;
-        private FilterConfiguration _filterContent;
+        private FilterConfiguration _filterConfiguration;
         private readonly IFhirSpecificationProvider _fhirSpecificationProvider;
         private readonly IFilterProvider _filterProvider;
         private List<TypeFilter> _typeFilters;
@@ -39,17 +38,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
-        public FilterScope FilterScope() => _filterContent.FilterScope;
+        public FilterScope FilterScope() => _filterConfiguration.FilterScope;
 
-        public string GroupId() => _filterContent.GroupId;
+        public string GroupId() => _filterConfiguration.GroupId;
 
         public async Task<List<TypeFilter>> GetTypeFiltersAsync(CancellationToken cancellationToken)
         {
-            _filterContent = await _filterProvider.GetFilterAsync(cancellationToken);
+            _filterConfiguration = await _filterProvider.GetFilterAsync(cancellationToken);
             _typeFilters = CreateTypeFilters(
-                _filterContent.FilterScope,
-                _filterContent.RequiredTypes,
-                _filterContent.TypeFilters);
+                _filterConfiguration.FilterScope,
+                _filterConfiguration.RequiredTypes,
+                _filterConfiguration.TypeFilters);
             return _typeFilters;
         }
 

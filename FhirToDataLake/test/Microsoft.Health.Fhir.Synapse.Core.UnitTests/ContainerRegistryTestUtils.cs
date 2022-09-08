@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
@@ -22,14 +21,12 @@ using NSubstitute;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 {
-    public class ContainerRegistryTestUtils
+    public static class ContainerRegistryTestUtils
     {
-
         public static string GetAcrAccessToken(string serverUsername, string serverPassword)
         {
             return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{serverUsername}:{serverPassword}"));
         }
-
 
         public static IContainerRegistryTokenProvider GetMockAcrTokenProvider(string accessToken)
         {

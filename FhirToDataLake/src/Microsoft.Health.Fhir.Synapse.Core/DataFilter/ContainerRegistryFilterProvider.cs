@@ -25,7 +25,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
     public class ContainerRegistryFilterProvider : IFilterProvider
     {
-        private string _imageReference;
+        private readonly string _imageReference;
         private readonly IContainerRegistryTokenProvider _containerRegistryTokenProvider;
         private readonly ILogger<ContainerRegistryFilterProvider> _logger;
         private readonly string _configName = "filterConfiguration.json";
@@ -105,8 +105,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     }
                 }
 
-                _logger.LogError(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Config not found.", _imageReference));
-                throw new FileNotFoundException(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Config not found.", _imageReference));
+                _logger.LogError(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1} not found.", _imageReference, _configName));
+                throw new FileNotFoundException(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1} not found.", _imageReference, _configName));
             }
             catch (ContainerRegistryAuthenticationException authEx)
             {

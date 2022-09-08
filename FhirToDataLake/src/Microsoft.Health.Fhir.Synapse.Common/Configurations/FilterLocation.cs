@@ -3,11 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
@@ -15,19 +10,19 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
     public class FilterLocation
     {
         /// <summary>
-        /// The filter scope, "System" and "Group" are supported now.
+        /// Gets or sets bool value for whether enable external filter configuration from acr.
         /// </summary>
         [JsonProperty("enableExternalFilter")]
         public bool EnableExternalFilter { get; set; } = false;
 
         /// <summary>
-        /// The group id for "Group" filter scope.
+        /// Azure Container Registry image reference of filter configuration file.
         /// </summary>
         [JsonProperty("filterImageReference")]
         public string FilterImageReference { get; set; } = string.Empty;
 
         /// <summary>
-        /// The group id for "Group" filter scope.
+        /// Filter configuration file name in Image.
         /// </summary>
         [JsonProperty("filterConfigurationFileName")]
         public string FilterConfigurationFileName { get; set; } = "filterConfiguration.json";
