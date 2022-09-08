@@ -36,6 +36,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public static readonly Regex ImageNameRegex = new Regex(@"^[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*(\/[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*)*$");
 
         // Currently the pipeline support FHIR R4 and R5 schemas.
-        public static readonly List<FhirVersion> SupportedFhirVersions = new List<FhirVersion> { FhirVersion.R4, FhirVersion.R5 };
+        public static readonly HashSet<FhirVersion> SupportedFhirVersions = new () { FhirVersion.R4, FhirVersion.R5 };
     }
 }
