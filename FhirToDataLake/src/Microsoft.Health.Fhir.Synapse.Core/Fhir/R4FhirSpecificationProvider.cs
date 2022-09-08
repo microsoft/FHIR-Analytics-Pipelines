@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using EnsureThat;
 using FhirR4::Hl7.Fhir.Model;
 using FhirR4::Hl7.Fhir.Serialization;
@@ -31,12 +32,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         /// <summary>
         /// Download from http://hl7.org/fhir/R4/compartmentdefinition-patient.json
         /// </summary>
-        private readonly IEnumerable<string> _compartmentFiles = new List<string> { "Fhir/Data/R4/compartmentdefinition-patient.json" };
+        private readonly IEnumerable<string> _compartmentFiles = new List<string> { "Specifications.R4.compartmentdefinition-patient.json" };
 
         /// <summary>
         /// Download from http://hl7.org/fhir/R4/search-parameters.json, which is defined in http://hl7.org/fhir/R4/searchparameter-registry.html
         /// </summary>
-        private readonly string _searchParameterFile = "Fhir/Data/R4/search-parameters.json";
+        private readonly string _searchParameterFile = "Specifications.R4.search-parameters.json";
 
         /// <summary>
         /// The resource types of each compartment type, extracted from _compartmentFiles
@@ -131,7 +132,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
                 string compartmentContext;
                 try
                 {
-                    compartmentContext = File.ReadAllText(compartmentFile);
+                    compartmentContext = LoadEmbeddedSpecification(compartmentFile);
                 }
                 catch (Exception ex)
                 {
@@ -255,7 +256,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
             string bundleContext;
             try
             {
-                bundleContext = File.ReadAllText(_searchParameterFile);
+                bundleContext = LoadEmbeddedSpecification(_searchParameterFile);
             }
             catch (Exception ex)
             {
@@ -311,5 +312,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         }
 
         private string SearchParameterKey(string resourceType, string searchParameter) => $"{resourceType}_{searchParameter}";
+
+        private string LoadEmbeddedSpecification(string specificationName)
+        {
+            // Dictionary<string, string> embeddedSchema = new Dictionary<string, string>();
+            var executingAssembly = Assembly.GetExecutingAssembly();
+            string specificationKey = string.Format("{0}.{1}", executingAssembly.GetName().Name, specificationName);
+            using (Stream stream = executingAssembly.GetManifestResourceStream(specificationKey))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                return reader.ReadToEnd();
+            }
+        }
     }
 }
