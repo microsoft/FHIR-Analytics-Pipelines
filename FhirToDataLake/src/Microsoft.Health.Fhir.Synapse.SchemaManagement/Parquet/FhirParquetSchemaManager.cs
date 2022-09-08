@@ -3,15 +3,11 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet

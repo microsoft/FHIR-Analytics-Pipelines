@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
@@ -16,7 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
             _client = client;
         }
 
-        public IAzureBlobContainerClient Create(string storeUrl, string containerName)
+        public IAzureBlobContainerClient Create(string storeUrl, string containerName, TokenCredentialTypes type = TokenCredentialTypes.Internal)
         {
             return _client;
         }

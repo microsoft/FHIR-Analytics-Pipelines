@@ -42,7 +42,6 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
 
         public override Task StopAsync(CancellationToken stoppingToken)
         {
-            _jobManager.Dispose();
             return Task.CompletedTask;
         }
     }

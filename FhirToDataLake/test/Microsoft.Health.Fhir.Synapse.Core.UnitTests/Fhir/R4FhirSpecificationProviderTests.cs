@@ -52,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         public void GivenBrokenDataClient_WhenInitialize_ExceptionShouldBeThrown()
         {
             var dataClient = Substitute.For<IFhirDataClient>();
-            dataClient.SearchAsync(default, default).ThrowsForAnyArgs(new FhirSearchException("mockException"));
+            dataClient.SearchAsync(default).ThrowsForAnyArgs(new FhirSearchException("mockException"));
             Assert.Throws<FhirSpecificationProviderException>(
                 () => new R4FhirSpecificationProvider(dataClient, _nullR4FhirSpecificationProviderLogger));
         }
@@ -65,7 +65,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         public void GivenInvalidMetadata_WhenInitialize_ExceptionShouldBeThrown(string metadataContent)
         {
             var dataClient = Substitute.For<IFhirDataClient>();
-            dataClient.SearchAsync(default, default).ReturnsForAnyArgs(metadataContent);
+            dataClient.SearchAsync(default).ReturnsForAnyArgs(metadataContent);
 
             Assert.Throws<FhirSpecificationProviderException>(
                 () => new R4FhirSpecificationProvider(dataClient, _nullR4FhirSpecificationProviderLogger));

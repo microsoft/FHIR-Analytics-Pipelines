@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Linq;
+using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -35,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException("Failed to parse fhir server configuration", ex);
             }
 
-            if (string.IsNullOrEmpty(fhirServerConfiguration.ServerUrl))
+            if (string.IsNullOrWhiteSpace(fhirServerConfiguration.ServerUrl))
             {
                 throw new ConfigurationErrorException($"Fhir server url can not be empty.");
             }
@@ -58,19 +60,29 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException("Failed to parse job configuration", ex);
             }
 
-            if (string.IsNullOrEmpty(jobConfiguration.ContainerName))
+            ValidateAgentName(jobConfiguration.AgentName);
+
+            EnsureArg.EnumIsDefined(jobConfiguration.QueueType, nameof(jobConfiguration.QueueType));
+
+            if (string.IsNullOrWhiteSpace(jobConfiguration.TableUrl))
+            {
+                throw new ConfigurationErrorException($"Table Url can not be empty.");
+            }
+
+            if (string.IsNullOrWhiteSpace(jobConfiguration.QueueUrl))
+            {
+                throw new ConfigurationErrorException($"Queue Url can not be empty.");
+            }
+
+            if (string.IsNullOrWhiteSpace(jobConfiguration.SchedulerCronExpression))
+            {
+                throw new ConfigurationErrorException($"Scheduler crontab expression can not be empty.");
+            }
+
+            if (string.IsNullOrWhiteSpace(jobConfiguration.ContainerName))
             {
                 throw new ConfigurationErrorException($"Target azure container name can not be empty.");
             }
-
-            // TODO: add more validation for agent name, table url, queue url
-            // TODO: enable it when generic task is enabled
-            /*
-            if (string.IsNullOrEmpty(jobConfiguration.AgentName))
-            {
-                throw new ConfigurationErrorException($"Agent name can not be empty.");
-            }
-            */
 
             FilterConfiguration filterConfiguration;
             try
@@ -92,7 +104,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 .GetRequiredService<IOptions<DataLakeStoreConfiguration>>()
                 .Value;
 
-            if (string.IsNullOrEmpty(storeConfiguration.StorageUrl))
+            if (string.IsNullOrWhiteSpace(storeConfiguration.StorageUrl))
             {
                 throw new ConfigurationErrorException($"Target azure storage url can not be empty.");
             }
@@ -147,6 +159,34 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 healthCheckConfiguration.HealthCheckTimeIntervalInSeconds < healthCheckConfiguration.HealthCheckTimeoutInSeconds)
             {
                 throw new ConfigurationErrorException("Invalid health check configuration. Health check time interval should be greater than health check timeout and both of them should greater than zero.");
+            }
+        }
+
+        // agent name is used as part of table name and queue name, need to validate agent name to contain only alphanumeric characters, and not begin with a numeric character.
+        // Reference: https://docs.microsoft.com/en-us/rest/api/storageservices/understanding-the-table-service-data-model#table-names
+        // https://docs.microsoft.com/en-us/rest/api/storageservices/naming-queues-and-metadata#queue-names
+        public static void ValidateAgentName(string agentName)
+        {
+
+            if (string.IsNullOrWhiteSpace(agentName))
+            {
+                throw new ConfigurationErrorException("Agent name can not be empty.");
+            }
+
+            if (!agentName.All(char.IsLetterOrDigit))
+            {
+                throw new ConfigurationErrorException("Agent name may contain only alphanumeric characters.");
+            }
+
+            if (!char.IsLetter(agentName.First()))
+            {
+                throw new ConfigurationErrorException("Agent name should begin with an alphabet character.");
+            }
+
+            // the table/queue name must be from 3 to 63 characters long, we add suffix to the agent name as table/queue name: {agentName}metadatatable, {agentName}jobinfotable, {agentName}jobinfoqueue
+            if (agentName.Length >= 50)
+            {
+                throw new ConfigurationErrorException("Agent name should less than 50 characters long.");
             }
         }
 

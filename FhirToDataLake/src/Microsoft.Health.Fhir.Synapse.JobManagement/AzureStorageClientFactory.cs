@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Azure.Core;
 using Azure.Data.Tables;
 using Azure.Storage.Queues;
 using EnsureThat;
@@ -16,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
     public class AzureStorageClientFactory : IAzureStorageClientFactory
     {
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
-        private readonly TokenCredential _tokenCredential;
+        private readonly ITokenCredentialProvider _credentialProvider;
 
         private readonly string _tableUrl;
         private readonly string _tableName;
@@ -32,16 +31,23 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             EnsureArg.IsNotNullOrWhiteSpace(config.Value.QueueUrl, nameof(config.Value.QueueUrl));
             EnsureArg.IsNotNullOrWhiteSpace(config.Value.AgentName, nameof(config.Value.AgentName));
 
-            // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
-            // Otherwise the relative part will be omitted when creating new search Uris. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
-            _tableUrl = config.Value.TableUrl.EndsWith("/") ? config.Value.TableUrl : $"{config.Value.TableUrl}/";
+            _tableUrl = config.Value.TableUrl;
             _tableName = AzureStorageKeyProvider.JobInfoTableName(config.Value.AgentName);
 
+            if (config.Value.QueueUrl != StorageEmulatorConnectionString)
+            {
+                // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
+                // Otherwise the relative part will be omitted when creating new Uri with queue name. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
             _queueUrl = config.Value.QueueUrl.EndsWith("/") ? config.Value.QueueUrl : $"{config.Value.QueueUrl}/";
+            }
+            else
+            {
+                _queueUrl = config.Value.QueueUrl;
+            }
+
             _queueName = AzureStorageKeyProvider.JobMessageQueueName(config.Value.AgentName);
 
-            EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
-            _tokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.Internal);
+            _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
         }
 
         public AzureStorageClientFactory(
@@ -51,14 +57,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             EnsureArg.IsNotNullOrWhiteSpace(tableName, nameof(tableName));
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
-            EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
+            _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
 
             _tableUrl = StorageEmulatorConnectionString;
             _tableName = tableName;
             _queueUrl = StorageEmulatorConnectionString;
             _queueName = queueName;
-            _tokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.Internal);
-
         }
 
         public TableClient CreateTableClient()
@@ -70,11 +74,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             var tableUri = new Uri(_tableUrl);
+            var tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             return new TableClient(
                 tableUri,
                 _tableName,
-                _tokenCredential);
+                tokenCredential);
         }
 
         public QueueClient CreateQueueClient()
@@ -86,10 +91,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             var queueUri = new Uri($"{_queueUrl}{_queueName}");
+            var tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             return new QueueClient(
                 queueUri,
-                _tokenCredential);
+                tokenCredential);
         }
     }
 }

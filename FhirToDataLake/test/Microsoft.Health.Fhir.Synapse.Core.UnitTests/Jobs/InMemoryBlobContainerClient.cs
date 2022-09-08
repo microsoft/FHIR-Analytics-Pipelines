@@ -9,12 +9,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Files.DataLake.Models;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Newtonsoft.Json;
@@ -39,29 +37,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             using var streamReader = new StreamReader(stream);
             var content = streamReader.ReadToEnd();
             return JsonConvert.DeserializeObject<T>(content);
-        }
-
-        public async Task CreateJob(Job job, string leaseId = null)
-        {
-            var schedulerSetting = new SchedulerMetadata
-            {
-                LastScheduledTimestamp = job.DataPeriod.End,
-            };
-            var jobConfigContent = JsonConvert.SerializeObject(schedulerSetting);
-            var configStream = new MemoryStream(Encoding.UTF8.GetBytes(jobConfigContent));
-            await CreateBlobAsync(AzureBlobJobConstants.SchedulerMetadataFileName, configStream);
-
-            var jobContent = JsonConvert.SerializeObject(job);
-            var jobName = $"{AzureBlobJobConstants.ActiveJobFolder}/{job.Id}.json";
-            var stream = new MemoryStream(Encoding.UTF8.GetBytes(jobContent));
-            await CreateBlobAsync(jobName, stream);
-
-            if (!string.IsNullOrEmpty(leaseId))
-            {
-                await CreateBlobAsync(AzureBlobJobConstants.JobLockFileName, new MemoryStream());
-
-                _blobLeaseStore[AzureBlobJobConstants.JobLockFileName] = new Tuple<string, DateTimeOffset>(leaseId, DateTimeOffset.UtcNow.AddSeconds(30));
-            }
         }
 
         public Task<bool> CreateBlobAsync(
@@ -154,7 +129,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     throw new Exception("Lease ids don't match!");
                 }
 
-                _blobLeaseStore[blobName] = new Tuple<string, DateTimeOffset>(leaseId, DateTimeOffset.UtcNow.Add(TimeSpan.FromSeconds(AzureBlobJobConstants.JobLeaseExpirationInSeconds)));
+                _blobLeaseStore[blobName] = new Tuple<string, DateTimeOffset>(leaseId, DateTimeOffset.UtcNow.Add(TimeSpan.FromSeconds(JobConfigurationConstants.DefaultSchedulerServiceLeaseExpirationInSeconds)));
                 return Task.FromResult(leaseId);
             }
         }

@@ -11,8 +11,8 @@ using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
-using Microsoft.Health.Fhir.Synapse.Core.Tasks;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
+using Microsoft.Health.JobManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.Core
 {
@@ -21,28 +21,31 @@ namespace Microsoft.Health.Fhir.Synapse.Core
         public static IServiceCollection AddJobScheduler(
             this IServiceCollection services)
         {
-            services.AddSingleton<IJobStore, AzureBlobJobStore>();
+            services.AddSingleton<JobHosting, JobHosting>();
 
-            services.AddSingleton<JobProgressUpdaterFactory, JobProgressUpdaterFactory>();
+            services.AddSingleton<IJobFactory, AzureStorageJobFactory>();
+
+            services.AddSingleton<IAzureTableClientFactory, AzureTableClientFactory>();
 
             services.AddSingleton<JobManager, JobManager>();
 
-            services.AddSingleton<IJobExecutor, JobExecutor>();
+            services.AddSingleton<ISchedulerService, SchedulerService>();
 
-            services.AddSingleton<JobExecutor, JobExecutor>();
-
-            services.AddSingleton<ITaskExecutor, TaskExecutor>();
+            services.AddSingleton<IMetadataStore, AzureTableMetadataStore>();
 
             services.AddSingleton<IColumnDataProcessor, ParquetDataProcessor>();
 
             services.AddSingleton<IGroupMemberExtractor, GroupMemberExtractor>();
 
-            services.AddSingleton<ITypeFilterParser, TypeFilterParser>();
+            services.AddSingleton<IFilterManager, FilterManager>();
 
             services.AddSingleton<IReferenceParser, R4ReferenceParser>();
 
             services.AddFhirSpecificationProviders();
-            services.AddSchemaConverters();            return services;
+
+            services.AddSchemaConverters();
+
+            return services;
         }
 
         public static IServiceCollection AddSchemaConverters(this IServiceCollection services)

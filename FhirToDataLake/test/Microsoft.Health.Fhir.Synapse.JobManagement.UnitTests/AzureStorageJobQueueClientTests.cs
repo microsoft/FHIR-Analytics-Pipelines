@@ -66,7 +66,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
         private const string TestAgentName = "testAgentName";
         private const string TestWorkerName = "test-worker";
-        private const int HeartbeatTimeoutSec = 1;
+        private const int HeartbeatTimeoutSec = 2;
 
         private readonly AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo> _azureStorageJobQueueClient;
         private readonly TableClient _azureJobInfoTableClient;
@@ -568,7 +568,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 false,
                 false,
                 CancellationToken.None));
-            Assert.Equal("EntityAlreadyExists", exception.ErrorCode);
         }
 
         [Fact]

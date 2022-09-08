@@ -49,7 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
             var healthCheckConfiduration = new HealthCheckConfiguration();
             var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiduration), new NullLogger<HealthCheckEngine>());
 
-            var healthStatus = await healthCheckEngine.CheckHealthAsync(default);
+            var healthStatus = await healthCheckEngine.CheckHealthAsync();
             var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
             Assert.Collection(
                 sortedHealthCheckResults,
@@ -76,7 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
             var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, mockTimeOutHealthChecker };
             var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiguration), new NullLogger<HealthCheckEngine>());
 
-            var healthStatus = await healthCheckEngine.CheckHealthAsync(default);
+            var healthStatus = await healthCheckEngine.CheckHealthAsync();
             var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
             Assert.Collection(
                 sortedHealthCheckResults,
