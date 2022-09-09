@@ -49,9 +49,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                 {
                     _logger.LogInformation("Starting to perform health checks");
 
-                    // Delay interval time.
-                    var delayTask = Task.Delay(_checkIntervalInSeconds, cancellationToken);
-
                     // Perform health check.
                     var healthStatus = await _healthCheckEngine.CheckHealthAsync(cancellationToken);
 
@@ -59,7 +56,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                     var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
                     _metricsLogger.LogHealthStatusMetric(healthStatus.Status == Models.HealthCheckStatus.HEALTHY ? 1 : 0);
                     await Task.WhenAll(listenerTasks);
-                    await delayTask;
                 }
                 catch (OperationCanceledException e)
                 {
@@ -70,6 +66,18 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                 catch (Exception e)
                 {
                     _logger.LogError(e, $"Unhandled exception occured. {e.Message}");
+                }
+
+                try
+                {
+                    // Delay interval time.
+                    var delayTask = Task.Delay(_checkIntervalInSeconds, cancellationToken);
+                    await delayTask;
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, $"Health check service is cancelled. {e.Message}");
+                    throw;
                 }
             }
 
