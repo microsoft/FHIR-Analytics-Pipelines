@@ -92,12 +92,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     throw new OperationCanceledException();
                 }
 
-                var inputs = _filterManager.FilterScope() switch
+                var inputs = await _filterManager.FilterScopeAsync(cancellationToken) switch
                 {
                     FilterScope.System => GetInputsAsyncForSystem(cancellationToken),
                     FilterScope.Group => GetInputsAsyncForGroup(cancellationToken),
                     _ => throw new ArgumentOutOfRangeException(
-                        $"The filterScope {_filterManager.FilterScope()} isn't supported now.")
+                        $"The filterScope {_filterManager.FilterScopeAsync(cancellationToken)} isn't supported now.")
                 };
 
                 await foreach (var input in inputs.WithCancellation(cancellationToken))
@@ -225,12 +225,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private async Task<List<PatientWrapper>> GetToBeProcessedPatientsAsync(CancellationToken cancellationToken)
         {
             // extract patient ids from group
-            _logger.LogInformation($"Start extracting patients from group '{_filterManager.GroupId()}'.");
+            _logger.LogInformation($"Start extracting patients from group '{await _filterManager.GroupIdAsync(cancellationToken)}'.");
 
             // For now, the queryParameters is always null.
             // This parameter will be used when we enable filter groups in the future.
             var patientsHash = (await _groupMemberExtractor.GetGroupPatientsAsync(
-                _filterManager.GroupId(),
+                await _filterManager.GroupIdAsync(cancellationToken),
                 null,
                 _inputData.DataEndTime,
                 cancellationToken)).Select(TableKeyProvider.CompartmentRowKey).ToHashSet();
@@ -247,7 +247,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _logger.LogInformation(
                 "Extract {patientCount} patients from group '{groupId}', including {newPatientCount} new patients.",
                 patientsHash.Count,
-                _filterManager.GroupId(),
+                await _filterManager.GroupIdAsync(cancellationToken),
                 toBeProcessedPatients.Where(p => p.VersionId == 0).ToList().Count);
 
             return toBeProcessedPatients;
@@ -358,10 +358,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             _result.SkippedResourceCounts =
                                 _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
 
-                            if (_filterManager.FilterScope() == FilterScope.Group)
+                            if (await _filterManager.FilterScopeAsync(cancellationToken) == FilterScope.Group)
                             {
-                                await _metadataStore.UpdatePatientVersionsAsync(_jobInfo.QueueType,
-                                    processingJobResult.ProcessedPatientVersion, cancellationToken);
+                                await _metadataStore.UpdatePatientVersionsAsync(
+                                    _jobInfo.QueueType,
+                                    processingJobResult.ProcessedPatientVersion,
+                                    cancellationToken);
                             }
                         }
                     }

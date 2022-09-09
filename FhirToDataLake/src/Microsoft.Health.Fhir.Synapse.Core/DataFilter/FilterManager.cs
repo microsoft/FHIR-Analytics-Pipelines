@@ -38,13 +38,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
-        public FilterScope FilterScope() => _filterConfiguration.FilterScope;
+        public async Task<FilterScope> FilterScopeAsync(CancellationToken cancellationToken)
+        {
+            _filterConfiguration ??= await _filterProvider.GetFilterAsync(cancellationToken);
 
-        public string GroupId() => _filterConfiguration.GroupId;
+            return _filterConfiguration.FilterScope;
+        }
+
+        public async Task<string> GroupIdAsync(CancellationToken cancellationToken)
+        {
+            _filterConfiguration ??= await _filterProvider.GetFilterAsync(cancellationToken);
+
+            return _filterConfiguration.GroupId;
+        }
 
         public async Task<List<TypeFilter>> GetTypeFiltersAsync(CancellationToken cancellationToken)
         {
-            _filterConfiguration = await _filterProvider.GetFilterAsync(cancellationToken);
+            _filterConfiguration ??= await _filterProvider.GetFilterAsync(cancellationToken);
             _typeFilters = CreateTypeFilters(
                 _filterConfiguration.FilterScope,
                 _filterConfiguration.RequiredTypes,

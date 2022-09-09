@@ -13,9 +13,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
     public interface IFilterManager
     {
-        public FilterScope FilterScope();
+        public Task<FilterScope> FilterScopeAsync(CancellationToken cancellationToken);
 
-        public string GroupId();
+        public Task<string> GroupIdAsync(CancellationToken cancellationToken);
 
         public Task<List<TypeFilter>> GetTypeFiltersAsync(CancellationToken cancellationToken);
     }
