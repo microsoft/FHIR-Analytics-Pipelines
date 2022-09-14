@@ -22,12 +22,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         /// <summary>
         /// Download from https://hl7.org/fhir/5.0.0-snapshot1/compartmentdefinition-patient.json.html
         /// </summary>
-        protected override IEnumerable<string> CompartmentFiles { get; } = new List<string> { "Fhir/Data/R5/compartmentdefinition-patient.json" };
+        protected override IEnumerable<string> _compartmentEmbeddedFiles { get; } = new List<string> { "Specifications.R5.compartmentdefinition-patient.json" };
 
         /// <summary>
         /// Download from https://hl7.org/fhir/5.0.0-snapshot1/search-parameters.json, which is defined in https://hl7.org/fhir/5.0.0-snapshot1/searchparameter.html
         /// </summary>
-        protected override string SearchParameterFile { get; } = "Fhir/Data/R5/search-parameters.json";
+        protected override string _searchParameterEmbeddedFile { get; } = "Specifications.R5.search-parameters.json";
 
         /// <summary>
         /// search parameter id to search parameter definition, extracted from _searchParameterFile

@@ -31,18 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Fhir\Data\R4\compartmentdefinition-patient.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fhir\Data\R4\search-parameters.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fhir\Data\R5\compartmentdefinition-patient.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fhir\Data\R5\search-parameters.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <EmbeddedResource Include="..\..\data\fhir-specifications\R4\compartmentdefinition-patient.json" Link="Specifications\R4\compartmentdefinition-patient.json" />
+    <EmbeddedResource Include="..\..\data\fhir-specifications\R4\search-parameters.json" Link="Specifications\R4\search-parameters.json" />
+    <EmbeddedResource Include="..\..\data\fhir-specifications\R5\compartmentdefinition-patient.json" Link="Specifications\R5\compartmentdefinition-patient.json" />
+    <EmbeddedResource Include="..\..\data\fhir-specifications\R5\search-parameters.json" Link="Specifications\R5\search-parameters.json" />
   </ItemGroup>
-
+	
 </Project>

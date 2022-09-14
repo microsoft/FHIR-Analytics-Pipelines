@@ -4,7 +4,9 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -51,17 +53,18 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
 
             var healthStatus = await healthCheckEngine.CheckHealthAsync();
             var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
+            var expectedResult = JsonSerializer.Deserialize<List<HealthCheckResult>>(File.ReadAllText("TestData/result.txt"));
             Assert.Collection(
                 sortedHealthCheckResults,
                 p =>
                 {
-                    Assert.Equal("AzureBlobStorage", p.Name);
-                    Assert.Equal(HealthCheckStatus.HEALTHY, p.Status);
+                    Assert.Equal(expectedResult[0].Name, p.Name);
+                    Assert.Equal(expectedResult[0].Status, p.Status);
                 },
                 p =>
                 {
-                    Assert.Equal("FhirServer", p.Name);
-                    Assert.Equal(HealthCheckStatus.UNHEALTHY, p.Status);
+                    Assert.Equal(expectedResult[1].Name, p.Name);
+                    Assert.Equal(expectedResult[1].Status, p.Status);
                 });
             Assert.Equal(HealthCheckStatus.HEALTHY, healthStatus.Status);
         }

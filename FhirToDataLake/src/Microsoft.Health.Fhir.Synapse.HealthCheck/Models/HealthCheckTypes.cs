@@ -9,5 +9,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
     {
         public const string AzureBlobStorageCanReadWrite = "AzureBlobStorage:CanReadWrite";
         public const string FhirServiceCanRead = "FhirService:CanRead";
+        public const string AzureContainerRegistryCanRead = "AzureContainerRegistry:CanRead";
     }
 }

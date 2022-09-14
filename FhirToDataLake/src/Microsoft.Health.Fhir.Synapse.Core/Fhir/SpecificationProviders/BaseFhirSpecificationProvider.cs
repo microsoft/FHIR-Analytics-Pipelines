@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
@@ -21,9 +22,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
         protected static readonly IEnumerable<string> ExcludeTypes = new List<string> { FhirConstants.StructureDefinition };
 
-        protected abstract IEnumerable<string> CompartmentFiles { get; }
+        protected abstract IEnumerable<string> _compartmentEmbeddedFiles { get; }
 
-        protected abstract string SearchParameterFile { get; }
+        protected abstract string _searchParameterEmbeddedFile { get; }
 
         /// <summary>
         /// The resource types of each compartment type, extracted from _compartmentFiles
@@ -94,12 +95,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         {
             var compartmentResourceTypesLookup = new Dictionary<string, HashSet<string>>();
 
-            foreach (var compartmentFile in CompartmentFiles)
+            foreach (var compartmentFile in _compartmentEmbeddedFiles)
             {
                 string compartmentContext;
                 try
                 {
-                    compartmentContext = File.ReadAllText(compartmentFile);
+                    compartmentContext = LoadEmbeddedSpecification(compartmentFile);
                 }
                 catch (Exception ex)
                 {
@@ -140,6 +141,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         }
 
         protected virtual string SearchParameterKey(string resourceType, string searchParameter) => $"{resourceType}_{searchParameter}";
+
+        protected string LoadEmbeddedSpecification(string specificationName)
+        {
+            // Dictionary<string, string> embeddedSchema = new Dictionary<string, string>();
+            var executingAssembly = Assembly.GetExecutingAssembly();
+            string specificationKey = string.Format("{0}.{1}", executingAssembly.GetName().Name, specificationName);
+            using (Stream stream = executingAssembly.GetManifestResourceStream(specificationKey))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                return reader.ReadToEnd();
+            }
+        }
 
         protected abstract Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>> BuildSearchParametersLookupFromMetadata(string metaData);
 

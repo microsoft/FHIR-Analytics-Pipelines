@@ -6,7 +6,6 @@
 using System;
 using System.Text.Json.Serialization;
 using EnsureThat;
-using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
 {
@@ -21,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Models
 
         public string Name { get; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public HealthCheckStatus Status { get; set; } = HealthCheckStatus.HEALTHY;
 
         /// <summary>
