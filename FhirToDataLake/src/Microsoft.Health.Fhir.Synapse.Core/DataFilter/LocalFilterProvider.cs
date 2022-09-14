@@ -13,18 +13,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
     public class LocalFilterProvider : IFilterProvider
     {
-        private FilterConfiguration _content;
+        private FilterConfiguration _filterConfiguration;
 
         public LocalFilterProvider(IOptions<FilterConfiguration> filterConfiguration)
         {
             EnsureArg.IsNotNull(filterConfiguration, nameof(filterConfiguration));
 
-            _content = filterConfiguration.Value;
+            _filterConfiguration = filterConfiguration.Value;
         }
 
         public Task<FilterConfiguration> GetFilterAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(_content);
+            return Task.FromResult(_filterConfiguration);
         }
     }
 }

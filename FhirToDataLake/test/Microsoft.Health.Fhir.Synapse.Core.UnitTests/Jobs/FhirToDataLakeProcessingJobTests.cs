@@ -189,8 +189,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             filterConfiguration ??= new FilterConfiguration();
             var filterManager = Substitute.For<IFilterManager>();
             filterManager.GetTypeFiltersAsync(default).Returns(TestResourceTypeFilters);
-            filterManager.FilterScopeAsync(default).Returns(filterConfiguration.FilterScope);
-            filterManager.GroupIdAsync(default).Returns(filterConfiguration.GroupId);
+            filterManager.GetFilterScopeAsync(default).Returns(filterConfiguration.FilterScope);
+            filterManager.GetGroupIdAsync(default).Returns(filterConfiguration.GroupId);
             return filterManager;
         }
 

@@ -38,14 +38,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
-        public async Task<FilterScope> FilterScopeAsync(CancellationToken cancellationToken)
+        public async Task<FilterScope> GetFilterScopeAsync(CancellationToken cancellationToken)
         {
             _filterConfiguration ??= await _filterProvider.GetFilterAsync(cancellationToken);
 
             return _filterConfiguration.FilterScope;
         }
 
-        public async Task<string> GroupIdAsync(CancellationToken cancellationToken)
+        public async Task<string> GetGroupIdAsync(CancellationToken cancellationToken)
         {
             _filterConfiguration ??= await _filterProvider.GetFilterAsync(cancellationToken);
 

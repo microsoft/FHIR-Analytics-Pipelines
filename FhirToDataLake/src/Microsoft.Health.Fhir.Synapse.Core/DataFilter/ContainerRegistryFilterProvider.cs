@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         private readonly string _imageReference;
         private readonly IContainerRegistryTokenProvider _containerRegistryTokenProvider;
         private readonly ILogger<ContainerRegistryFilterProvider> _logger;
-        private readonly string _configName = "filterConfiguration.json";
+        private readonly string _configName;
 
         public ContainerRegistryFilterProvider(
             IOptions<FilterLocation> filterLocation,
@@ -52,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (Exception ex)
             {
-                _logger.LogError(string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", _imageReference, ex.Message));
+                _logger.LogError("Failed to parse the schema image reference {0} to image information. Reason: {1}.", _imageReference, ex.Message);
                 throw new ContainerRegistryFilterException(string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", _imageReference, ex.Message), ex);
             }
 
@@ -69,7 +69,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 {
                     if (CheckConfigurationCollectionIsTooLarge(acrImage.Blobs[i].Content.LongLength))
                     {
-                        _logger.LogError(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Configuration collection is too large.", _imageReference));
+                        _logger.LogError("Failed to fetch filter configuration from image reference {0}. Reason: Configuration collection is too large.", _imageReference);
                         throw new ContainerRegistryFilterException(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Configuration collection is too large.", _imageReference));
                     }
 
@@ -83,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     {
                         if (CheckConfigurationIsTooLarge(blobsDict[_configName].LongLength))
                         {
-                            _logger.LogError(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Configuration file is too large.", _imageReference));
+                            _logger.LogError("Failed to fetch filter configuration from image reference {0}. Reason: Configuration file is too large.", _imageReference);
                             throw new ContainerRegistryFilterException(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Configuration file is too large.", _imageReference));
                         }
 
@@ -98,14 +98,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogError(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1}.", _imageReference, ex.Message));
+                                _logger.LogError("Failed to fetch filter configuration from image reference {0}. Reason: {1}.", _imageReference, ex.Message);
                                 throw new ContainerRegistryFilterException(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1}.", _imageReference, ex.Message));
                             }
                         }
                     }
                 }
 
-                _logger.LogError(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1} not found.", _imageReference, _configName));
+                _logger.LogError("Failed to fetch filter configuration from image reference {0}. Reason: {1} not found.", _imageReference, _configName);
                 throw new FileNotFoundException(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1} not found.", _imageReference, _configName));
             }
             catch (ContainerRegistryAuthenticationException authEx)

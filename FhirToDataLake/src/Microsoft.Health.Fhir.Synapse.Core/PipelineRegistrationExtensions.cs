@@ -42,18 +42,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
             services.AddSingleton<IGroupMemberExtractor, GroupMemberExtractor>();
 
-            FilterLocation filterLocation;
-            try
-            {
-                filterLocation = services
+            var filterLocation = services
                     .BuildServiceProvider()
                     .GetRequiredService<IOptions<FilterLocation>>()
                     .Value;
-            }
-            catch (Exception ex)
-            {
-                throw new ConfigurationErrorException("Failed to parse filter location", ex);
-            }
 
             if (filterLocation.EnableExternalFilter)
             {
