@@ -32,7 +32,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         }
 
         [Fact]
-        public async Task When_SchedulerService_IsInActive_HealthCheck_Succeeds()
+        public async Task When_SchedulerService_IsInactive_HealthCheck_Fails()
         {
             var schedulerService = Substitute.For<ISchedulerService>();
             schedulerService.LastHeartbeat.Returns(DateTimeOffset.UtcNow.AddMinutes(-5));
