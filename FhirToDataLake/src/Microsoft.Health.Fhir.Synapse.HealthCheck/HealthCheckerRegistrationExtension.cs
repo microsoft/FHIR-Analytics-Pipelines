@@ -38,7 +38,25 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 
             if (schemaConfiguration.EnableCustomizedSchema)
             {
-                services.AddSingleton<IHealthChecker, AzureContainerRegistryHealthChecker>();
+                services.AddSingleton<IHealthChecker, SchemaAzureContainerRegistryHealthChecker>();
+            }
+
+            FilterLocation filterLocation;
+            try
+            {
+                filterLocation = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<FilterLocation>>()
+                    .Value;
+            }
+            catch (Exception ex)
+            {
+                throw new ConfigurationErrorException("Failed to parse filter location", ex);
+            }
+
+            if (filterLocation.EnableExternalFilter)
+            {
+                services.AddSingleton<IHealthChecker, FilterAzureContainerRegistryHealthChecker>();
             }
 
             services.AddSingleton<IHealthChecker, FhirServerHealthChecker>();
