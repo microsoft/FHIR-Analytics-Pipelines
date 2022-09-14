@@ -50,10 +50,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
         public static IServiceCollection AddSchemaConverters(this IServiceCollection services)
         {
-            services.AddTransient<DefaultSchemaConverter>();
-            services.AddTransient<CustomSchemaConverter>();
+            services.AddSingleton<DefaultSchemaConverter>();
+            services.AddSingleton<CustomSchemaConverter>();
 
-            services.AddTransient<DataSchemaConverterDelegate>(delegateProvider => name =>
+            services.AddSingleton<DataSchemaConverterDelegate>(delegateProvider => name =>
             {
                 return name switch
                 {
@@ -70,10 +70,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core
         {
             services.AddSingleton<IFhirSpecificationProvider, R4FhirSpecificationProvider>();
 
-            services.AddTransient<R4FhirSpecificationProvider>();
-            services.AddTransient<R5FhirSpecificationProvider>();
+            services.AddSingleton<R4FhirSpecificationProvider>();
+            services.AddSingleton<R5FhirSpecificationProvider>();
 
-            services.AddTransient<FhirSpecificationProviderDelegate>(delegateProvider => fhirVersion =>
+            services.AddSingleton<FhirSpecificationProviderDelegate>(delegateProvider => fhirVersion =>
             {
                 return fhirVersion switch
                 {

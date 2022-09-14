@@ -7,9 +7,7 @@ extern alias FhirR4;
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using EnsureThat;
 using FhirR4::Hl7.Fhir.Model;
 using FhirR4::Hl7.Fhir.Serialization;
 using Microsoft.Extensions.Logging;
