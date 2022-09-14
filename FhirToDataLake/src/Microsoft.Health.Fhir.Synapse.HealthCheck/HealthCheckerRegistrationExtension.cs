@@ -42,6 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
             }
 
             services.AddSingleton<IHealthChecker, FhirServerHealthChecker>();
+            services.AddSingleton<IHealthChecker, SchedulerServiceHealthChecker>();
             return services;
         }
     }
