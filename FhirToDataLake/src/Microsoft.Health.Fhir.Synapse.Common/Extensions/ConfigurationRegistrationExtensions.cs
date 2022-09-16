@@ -22,6 +22,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 configuration.GetSection(ConfigurationConstants.JobConfigurationKey).Bind(options));
             services.Configure<FilterConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.FilterConfigurationKey).Bind(options));
+            services.Configure<FilterLocation>(options =>
+                configuration.GetSection(ConfigurationConstants.FilterConfigurationKey).Bind(options));
             services.Configure<DataLakeStoreConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.DataLakeStoreConfigurationKey).Bind(options));
             services.Configure<ArrowConfiguration>(options =>

@@ -84,20 +84,50 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException($"Target azure container name can not be empty.");
             }
 
-            FilterConfiguration filterConfiguration;
+            FilterLocation filterLocation;
             try
             {
-                filterConfiguration = services
+                filterLocation = services
                     .BuildServiceProvider()
-                    .GetRequiredService<IOptions<FilterConfiguration>>()
+                    .GetRequiredService<IOptions<FilterLocation>>()
                     .Value;
             }
             catch (Exception ex)
             {
-                throw new ConfigurationErrorException("Failed to parse filter configuration", ex);
+                throw new ConfigurationErrorException("Failed to parse filter location", ex);
             }
 
-            ValidateFilterConfiguration(filterConfiguration);
+            if (filterLocation.EnableExternalFilter)
+            {
+                if (string.IsNullOrWhiteSpace(filterLocation.FilterImageReference))
+                {
+                    throw new ConfigurationErrorException($"Filter image reference can not be empty when external filter configuration is enable.");
+                }
+
+                ValidateImageReference(filterLocation.FilterImageReference);
+
+                if (string.IsNullOrWhiteSpace(filterLocation.FilterConfigurationFileName))
+                {
+                    throw new ConfigurationErrorException($"Filter configuration file name can not be empty when external filter configuration is enable.");
+                }
+            }
+            else
+            {
+                FilterConfiguration filterConfiguration;
+                try
+                {
+                    filterConfiguration = services
+                        .BuildServiceProvider()
+                        .GetRequiredService<IOptions<FilterConfiguration>>()
+                        .Value;
+                }
+                catch (Exception ex)
+                {
+                    throw new ConfigurationErrorException("Failed to parse filter configuration", ex);
+                }
+
+                ValidateFilterConfiguration(filterConfiguration);
+            }
 
             var storeConfiguration = services
                 .BuildServiceProvider()

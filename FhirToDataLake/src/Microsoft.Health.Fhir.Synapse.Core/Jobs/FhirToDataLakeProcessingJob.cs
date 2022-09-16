@@ -104,9 +104,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _cacheResult = new CacheResult();
                 _outputFileIndexMap = new Dictionary<string, int>();
 
-                _typeFilters = _filterManager.GetTypeFilters();
+                _typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
 
-                switch (_filterManager.FilterScope())
+                var filterScope = await _filterManager.GetFilterScopeAsync(cancellationToken);
+                switch (filterScope)
                 {
                     case FilterScope.Group:
                     {
@@ -122,7 +123,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     default:
                         throw new ArgumentOutOfRangeException(
-                            $"The FilterScope {_filterManager.FilterScope()} isn't supported now.");
+                            $"The FilterScope {filterScope} isn't supported now.");
                 }
 
                 // force to commit result when all the resources of this job are processed.
@@ -190,7 +191,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             // TODO: how to ensure the group is the same?
             var allPatientIds = await _groupMemberExtractor.GetGroupPatientsAsync(
-                _filterManager.GroupId(),
+                await _filterManager.GetGroupIdAsync(cancellationToken),
                 null,
                 _inputData.DataEndTime,
                 cancellationToken);

@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -13,14 +14,29 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.ContainerRegistry;
 using Microsoft.Azure.ContainerRegistry.Models;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.TemplateManagement.Models;
 using Microsoft.Rest;
+using NSubstitute;
 
-namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegistry
+namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 {
     public static class ContainerRegistryTestUtils
     {
-        public static async Task GenerateTemplateImageAsync(ImageInfo imageInfo, string accessToken, string templateFilePath)
+        public static string GetAcrAccessToken(string serverUsername, string serverPassword)
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{serverUsername}:{serverPassword}"));
+        }
+
+        public static IContainerRegistryTokenProvider GetMockAcrTokenProvider(string accessToken)
+        {
+            var tokenProvider = Substitute.For<IContainerRegistryTokenProvider>();
+
+            tokenProvider.GetTokenAsync(default, default).ReturnsForAnyArgs($"Basic {accessToken}");
+            return tokenProvider;
+        }
+
+        public static async Task GenerateImageAsync(ImageInfo imageInfo, string accessToken, string templateFilePath)
         {
             AzureContainerRegistryClient acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrBasicToken(accessToken));
 
