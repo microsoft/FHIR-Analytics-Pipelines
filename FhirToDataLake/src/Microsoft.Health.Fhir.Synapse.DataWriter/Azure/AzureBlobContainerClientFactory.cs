@@ -17,7 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
         private readonly ILoggerFactory _loggerFactory;
         private readonly ITokenCredentialProvider _credentialProvider;
-        private readonly StorageConfiguration _storageConfiguration;
+        private readonly string _externalConnectionString;
 
         public AzureBlobContainerClientFactory(
             ITokenCredentialProvider credentialProvider,
@@ -30,10 +30,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
             _credentialProvider = credentialProvider;
             _loggerFactory = loggerFactory;
-            _storageConfiguration = storageConfiguration.Value;
+            _externalConnectionString = storageConfiguration.Value.ExternalStorageConnectionString;
         }
 
-        public IAzureBlobContainerClient Create(string storeUrl, string containerName, TokenCredentialTypes type = TokenCredentialTypes.External)
+        public IAzureBlobContainerClient Create(string storeUrl, string containerName)
         {
             EnsureArg.IsNotNull(storeUrl, nameof(storeUrl));
             EnsureArg.IsNotNull(containerName, nameof(containerName));
@@ -44,11 +44,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 return new AzureBlobContainerClient(StorageEmulatorConnectionString, containerName, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
             }
 
-            var connectionString = type == TokenCredentialTypes.Internal ?
-                _storageConfiguration.InternalStorageConnectionString : _storageConfiguration.ExternalStorageConnectionString;
-            if (!string.IsNullOrEmpty(connectionString))
+            if (!string.IsNullOrEmpty(_externalConnectionString))
             {
-                return new AzureBlobContainerClient(connectionString, containerName, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
+                return new AzureBlobContainerClient(_externalConnectionString, containerName, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
             }
 
             var storageUri = new Uri(storeUrl);

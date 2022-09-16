@@ -21,31 +21,34 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         private readonly string _tableName;
         private readonly string _queueUrl;
         private readonly string _queueName;
+        private readonly string _internalConnectionString;
 
         public AzureStorageClientFactory(
-            IOptions<JobConfiguration> config,
+            IOptions<JobConfiguration> jobConfiguration,
+            IOptions<StorageConfiguration> storageConfiguration,
             ITokenCredentialProvider credentialProvider)
         {
-            EnsureArg.IsNotNull(config, nameof(config));
-            EnsureArg.IsNotNullOrWhiteSpace(config.Value.TableUrl, nameof(config.Value.TableUrl));
-            EnsureArg.IsNotNullOrWhiteSpace(config.Value.QueueUrl, nameof(config.Value.QueueUrl));
-            EnsureArg.IsNotNullOrWhiteSpace(config.Value.AgentName, nameof(config.Value.AgentName));
+            EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
+            EnsureArg.IsNotNull(storageConfiguration, nameof(storageConfiguration));
+            _tableUrl = EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration.Value.TableUrl, nameof(jobConfiguration.Value.TableUrl));
+            EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration.Value.QueueUrl, nameof(jobConfiguration.Value.QueueUrl));
+            EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration.Value.AgentName, nameof(jobConfiguration.Value.AgentName));
 
-            _tableUrl = config.Value.TableUrl;
-            _tableName = AzureStorageKeyProvider.JobInfoTableName(config.Value.AgentName);
+            _tableName = AzureStorageKeyProvider.JobInfoTableName(jobConfiguration.Value.AgentName);
+            _internalConnectionString = storageConfiguration.Value.InternalStorageConnectionString;
 
-            if (config.Value.QueueUrl != StorageEmulatorConnectionString)
+            if (jobConfiguration.Value.QueueUrl != StorageEmulatorConnectionString)
             {
                 // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
                 // Otherwise the relative part will be omitted when creating new Uri with queue name. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
-            _queueUrl = config.Value.QueueUrl.EndsWith("/") ? config.Value.QueueUrl : $"{config.Value.QueueUrl}/";
+            _queueUrl = jobConfiguration.Value.QueueUrl.EndsWith("/") ? jobConfiguration.Value.QueueUrl : $"{jobConfiguration.Value.QueueUrl}/";
             }
             else
             {
-                _queueUrl = config.Value.QueueUrl;
+                _queueUrl = jobConfiguration.Value.QueueUrl;
             }
 
-            _queueName = AzureStorageKeyProvider.JobMessageQueueName(config.Value.AgentName);
+            _queueName = AzureStorageKeyProvider.JobMessageQueueName(jobConfiguration.Value.AgentName);
 
             _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
         }
@@ -73,6 +76,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 return new TableClient(_tableUrl, _tableName);
             }
 
+            if (!string.IsNullOrEmpty(_internalConnectionString))
+            {
+                return new TableClient(_internalConnectionString, _tableName);
+            }
+
             var tableUri = new Uri(_tableUrl);
             var tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
@@ -88,6 +96,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             if (string.Equals(_queueUrl, StorageEmulatorConnectionString, StringComparison.OrdinalIgnoreCase))
             {
                 return new QueueClient(_queueUrl, _queueName);
+            }
+
+            if (!string.IsNullOrEmpty(_internalConnectionString))
+            {
+                return new QueueClient(_internalConnectionString, _queueName);
             }
 
             var queueUri = new Uri($"{_queueUrl}{_queueName}");

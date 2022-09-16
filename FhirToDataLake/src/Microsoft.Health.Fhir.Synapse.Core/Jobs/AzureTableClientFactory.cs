@@ -16,19 +16,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
         private readonly ITokenCredentialProvider _credentialProvider;
-
         private readonly string _tableUrl;
+        private readonly string _internalConnectionString;
 
         public AzureTableClientFactory(
-            IOptions<JobConfiguration> config,
+            IOptions<StorageConfiguration> storageConfiguration,
+            IOptions<JobConfiguration> jobConfiguration,
             ITokenCredentialProvider credentialProvider)
         {
-            EnsureArg.IsNotNull(config, nameof(config));
-            EnsureArg.IsNotNullOrWhiteSpace(config.Value.TableUrl, nameof(config.Value.TableUrl));
-
-            _tableUrl = config.Value.TableUrl;
-
+            EnsureArg.IsNotNull(storageConfiguration, nameof(storageConfiguration));
+            _tableUrl = EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration?.Value?.TableUrl, nameof(jobConfiguration.Value.TableUrl));
             _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
+
+            _internalConnectionString = storageConfiguration.Value.InternalStorageConnectionString;
         }
 
         public AzureTableClientFactory(
@@ -48,6 +48,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             if (string.Equals(_tableUrl, StorageEmulatorConnectionString, StringComparison.OrdinalIgnoreCase))
             {
                 return new TableClient(_tableUrl, tableName);
+            }
+
+            if (!string.IsNullOrEmpty(_internalConnectionString))
+            {
+                return new TableClient(
+                _internalConnectionString,
+                tableName);
             }
 
             var tableUri = new Uri(_tableUrl);
