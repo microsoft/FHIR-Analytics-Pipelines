@@ -7,7 +7,6 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck
@@ -23,22 +22,24 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 
             services.AddSingleton<IHealthChecker, AzureBlobStorageHealthChecker>();
 
-            SchemaConfiguration schemaConfiguration;
-            try
-            {
-                schemaConfiguration = services
+            var schemaConfiguration = services
                     .BuildServiceProvider()
                     .GetRequiredService<IOptions<SchemaConfiguration>>()
                     .Value;
-            }
-            catch (Exception ex)
-            {
-                throw new ConfigurationErrorException("Failed to parse schema configuration", ex);
-            }
 
             if (schemaConfiguration.EnableCustomizedSchema)
             {
-                services.AddSingleton<IHealthChecker, AzureContainerRegistryHealthChecker>();
+                services.AddSingleton<IHealthChecker, SchemaAzureContainerRegistryHealthChecker>();
+            }
+
+            var filterLocation = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<FilterLocation>>()
+                    .Value;
+
+            if (filterLocation.EnableExternalFilter)
+            {
+                services.AddSingleton<IHealthChecker, FilterAzureContainerRegistryHealthChecker>();
             }
 
             services.AddSingleton<IHealthChecker, FhirServerHealthChecker>();

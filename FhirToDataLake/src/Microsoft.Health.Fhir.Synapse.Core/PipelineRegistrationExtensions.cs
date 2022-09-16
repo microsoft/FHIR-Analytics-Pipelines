@@ -3,7 +3,11 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
@@ -37,6 +41,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core
             services.AddSingleton<IFhirSpecificationProvider, R4FhirSpecificationProvider>();
 
             services.AddSingleton<IGroupMemberExtractor, GroupMemberExtractor>();
+
+            var filterLocation = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<FilterLocation>>()
+                    .Value;
+
+            if (filterLocation.EnableExternalFilter)
+            {
+                services.AddSingleton<IFilterProvider, ContainerRegistryFilterProvider>();
+            }
+            else
+            {
+                services.AddSingleton<IFilterProvider, LocalFilterProvider>();
+            }
 
             services.AddSingleton<IFilterManager, FilterManager>();
 
