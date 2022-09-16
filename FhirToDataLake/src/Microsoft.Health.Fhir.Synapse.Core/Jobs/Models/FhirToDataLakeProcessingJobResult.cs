@@ -36,6 +36,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         public Dictionary<string, int> ProcessedCount { get; set; } = new Dictionary<string, int>();
 
         /// <summary>
+        /// Processed count in total.
+        /// </summary>
+        public int ProcessedCountInTotal { get; set; }
+
+        /// <summary>
+        /// Processed data size in total in bytes.
+        /// </summary>
+        public long ProcessedDataSizeInTotal { get; set; } = 0;
+
+        /// <summary>
         /// The version id for each new/updated patient.
         /// </summary>
         public Dictionary<string, long> ProcessedPatientVersion { get; set; } = new Dictionary<string, long>();

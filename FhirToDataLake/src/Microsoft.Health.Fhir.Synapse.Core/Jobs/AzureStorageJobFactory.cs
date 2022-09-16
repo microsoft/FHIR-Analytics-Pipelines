@@ -8,6 +8,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -143,7 +144,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _fhirSchemaManager,
                         _groupMemberExtractor,
                         _filterManager,
-                        _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>());
+                        _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>(),
+                        new MetricsLogger(default));
                 }
             }
             catch (Exception e)

@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
@@ -43,6 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly IFilterManager _filterManager;
         private readonly ILogger<FhirToDataLakeProcessingJob> _logger;
+        private readonly IMetricsLogger _metricsLogger;
 
         private readonly long _jobId;
 
@@ -66,7 +68,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             IGroupMemberExtractor groupMemberExtractor,
             IFilterManager filterManager,
-            ILogger<FhirToDataLakeProcessingJob> logger)
+            ILogger<FhirToDataLakeProcessingJob> logger,
+            IMetricsLogger metricsLogger)
         {
             _jobId = jobId;
             _inputData = EnsureArg.IsNotNull(inputData, nameof(inputData));
@@ -78,6 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
         }
 
         // the processing job status is never set to failed or cancelled.
@@ -553,11 +557,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             _result.SkippedCount.AddToDictionary(schemaType, skippedCount);
                         _result.ProcessedCount =
                             _result.ProcessedCount.AddToDictionary(schemaType, parquetStream.BatchSize);
+                        _result.ProcessedDataSizeInTotal += parquetStream.Value.Length;
                     }
 
                     _result.SearchCount =
                         _result.SearchCount.AddToDictionary(resourceType, resources.Count);
                 }
+
+                _result.ProcessedCountInTotal = _result.ProcessedCount.Sum(x => x.Value);
+
+                // log metrics
+                _metricsLogger.LogSuccessfulResourceCountMetric(_result.ProcessedCountInTotal);
+                _metricsLogger.LogSuccessfulDataSizeMetric(_result.ProcessedDataSizeInTotal);
 
                 progress.Report(JsonConvert.SerializeObject(_result));
 

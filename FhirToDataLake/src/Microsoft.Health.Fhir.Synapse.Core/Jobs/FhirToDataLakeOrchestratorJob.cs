@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
@@ -357,6 +358,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 _result.ProcessedResourceCounts.ConcatDictionaryCount(processingJobResult.ProcessedCount);
                             _result.SkippedResourceCounts =
                                 _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
+                            _result.ProcessedCountInTotal += processingJobResult.ProcessedCountInTotal;
+                            _result.ProcessedDataSizeInTotal += processingJobResult.ProcessedDataSizeInTotal;
 
                             if (_filterManager.FilterScope() == FilterScope.Group)
                             {

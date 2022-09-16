@@ -54,5 +54,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// Skipped resource count for each schema type.
         /// </summary>
         public Dictionary<string, int> SkippedResourceCounts { get; set; } = new Dictionary<string, int>();
+
+        /// <summary>
+        /// Processed count in total.
+        /// </summary>
+        public int ProcessedCountInTotal { get; set; }
+
+        /// <summary>
+        /// Processed data size in total in bytes.
+        /// </summary>
+        public long ProcessedDataSizeInTotal { get; set; } = 0;
     }
 }
