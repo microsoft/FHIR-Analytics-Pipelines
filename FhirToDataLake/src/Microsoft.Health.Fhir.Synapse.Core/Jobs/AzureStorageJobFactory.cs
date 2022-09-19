@@ -37,6 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IMetadataStore _metadataStore;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<AzureStorageJobFactory> _logger;
+        private readonly IMetricsLogger _metricsLogger;
 
         public AzureStorageJobFactory(
             IQueueClient queueClient,
@@ -48,7 +49,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFilterManager filterManager,
             IMetadataStore metadataStore,
             IOptions<JobSchedulerConfiguration> schedulerConfiguration,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            IMetricsLogger metricsLogger)
         {
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
@@ -64,6 +66,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _loggerFactory = EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
             _logger = _loggerFactory.CreateLogger<AzureStorageJobFactory>();
+            _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
         }
 
         public IJob Create(JobInfo jobInfo)
@@ -145,7 +148,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _groupMemberExtractor,
                         _filterManager,
                         _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>(),
-                        new MetricsLogger(default));
+                        _metricsLogger);
                 }
             }
             catch (Exception e)
