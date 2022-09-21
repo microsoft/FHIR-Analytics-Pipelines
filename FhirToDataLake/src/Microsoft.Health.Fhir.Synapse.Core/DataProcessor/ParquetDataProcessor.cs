@@ -29,9 +29,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
     {
         private readonly ArrowConfiguration _arrowConfiguration;
         private readonly ILogger<ParquetDataProcessor> _logger;
-        private readonly ParquetConverter _parquetConverter;
         private readonly IDataSchemaConverter _defaultSchemaConverter;
         private readonly IDataSchemaConverter _customSchemaConverter;
+        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+
+        private ParquetConverter _parquetConverter;
 
         public ParquetDataProcessor(
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
@@ -47,11 +49,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             _arrowConfiguration = arrowConfiguration.Value;
             _defaultSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.DefaultSchemaProviderKey);
             _customSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.CustomSchemaProviderKey);
+            _fhirSchemaManager = fhirSchemaManager;
             _logger = logger;
-
-            var schemaSet = fhirSchemaManager.GetAllSchemaContent();
-            _parquetConverter = ParquetConverter.CreateWithSchemaSet(schemaSet);
-            _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
         }
 
         public Task<StreamBatchData> ProcessAsync(
@@ -82,6 +81,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             {
                 // Return null if no data has been converted.
                 return Task.FromResult<StreamBatchData>(null);
+            }
+
+            if (_parquetConverter is null)
+            {
+                var schemaSet = _fhirSchemaManager.GetAllSchemaContent();
+                _parquetConverter = ParquetConverter.CreateWithSchemaSet(schemaSet);
+                _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
             }
 
             // Convert JSON data to parquet stream.
