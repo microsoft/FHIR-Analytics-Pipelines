@@ -57,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!string.IsNullOrWhiteSpace(_schemaImageReference))
+            if (string.IsNullOrWhiteSpace(_schemaImageReference))
             {
                 _logger.LogError($"Schema image reference is empty or null.");
                 throw new ParquetDataProcessorException($"Schema image reference is empty or null.");

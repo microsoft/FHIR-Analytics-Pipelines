@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using EnsureThat;
+using Microsoft.Build.Framework.Profiler;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -19,6 +20,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         private readonly bool _enableCustomizedSchema;
         private readonly ILogger<FhirParquetSchemaManager> _logger;
 
+        private readonly object _schemaTypesMaplock = new object();
+        private readonly object _schemasMaplock = new object();
         private Dictionary<string, List<string>> _schemaTypesMap;
         private Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
 
@@ -41,7 +44,10 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             {
                 if (_resourceSchemaNodesMap is null)
                 {
-                    _resourceSchemaNodesMap = LoadSchemaMap();
+                    lock (_schemasMaplock)
+                    {
+                        _resourceSchemaNodesMap = LoadSchemaMap();
+                    }
                 }
 
                 return _resourceSchemaNodesMap;
@@ -55,7 +61,10 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             {
                 if (_schemaTypesMap is null)
                 {
-                    _schemaTypesMap = LoadSchemaTypeMap(ResourceSchemaNodesMap);
+                    lock (_schemaTypesMaplock)
+                    {
+                        _schemaTypesMap = LoadSchemaTypeMap(ResourceSchemaNodesMap);
+                    }
                 }
 
                 return _schemaTypesMap;

@@ -26,13 +26,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
     public class AzureBlobContainerClient : IAzureBlobContainerClient
     {
-        private BlobContainerClient _blobContainerClient;
-        private DataLakeFileSystemClient _dataLakeFileSystemClient;
-
         private readonly ITokenCredentialProvider _credentialProvider;
         private readonly Uri _storageUri;
-
         private readonly ILogger<AzureBlobContainerClient> _logger;
+
+        private readonly object _blobContainerClientLock = new object ();
+        private readonly object _dataLakeFileSystemClientLock = new object();
+        private BlobContainerClient _blobContainerClient;
+        private DataLakeFileSystemClient _dataLakeFileSystemClient;
 
         private const int ListBlobPageCount = 20;
 
@@ -77,7 +78,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             var blobContainerClient = new BlobContainerClient(
                 connectionString,
                 containerName);
-            InitializeBlobContainerClient(_blobContainerClient);
+            InitializeBlobContainerClient(blobContainerClient);
 
             BlobContainerClient = blobContainerClient;
 
@@ -92,12 +93,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             {
                 if (_blobContainerClient is null)
                 {
-                    var externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
-                    _blobContainerClient = new BlobContainerClient(
-                        _storageUri,
-                        externalTokenCredential);
+                    lock (_blobContainerClientLock)
+                    {
+                        var externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
+                        _blobContainerClient = new BlobContainerClient(
+                            _storageUri,
+                            externalTokenCredential);
 
-                    InitializeBlobContainerClient(_blobContainerClient);
+                        InitializeBlobContainerClient(_blobContainerClient);
+                    }
                 }
 
                 return _blobContainerClient;
@@ -111,10 +115,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             {
                 if (_dataLakeFileSystemClient is null)
                 {
-                    var externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
-                    _dataLakeFileSystemClient = new DataLakeFileSystemClient(
-                        _storageUri,
-                        externalTokenCredential);
+                    lock (_dataLakeFileSystemClientLock)
+                    {
+                        var externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
+                        _dataLakeFileSystemClient = new DataLakeFileSystemClient(
+                            _storageUri,
+                            externalTokenCredential);
+                    }
                 }
 
                 return _dataLakeFileSystemClient;
