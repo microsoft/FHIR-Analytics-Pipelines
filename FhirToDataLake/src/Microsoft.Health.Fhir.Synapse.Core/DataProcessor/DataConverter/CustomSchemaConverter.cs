@@ -66,9 +66,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             List<JObject> processedData;
             try
             {
-                // TODO: Update FHIR-Converter, add an interface to directly convert an Object.
                 processedData = inputData.Values.Select(dataObject
-                    => JObject.Parse(_jsonProcessor.Convert(dataObject.ToString(), resourceType, _templateProvider))).ToList();
+                    => JObject.Parse(_jsonProcessor.Convert(dataObject, resourceType, _templateProvider))).ToList();
             }
             catch (Exception ex)
             {
