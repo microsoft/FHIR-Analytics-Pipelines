@@ -119,7 +119,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _filterManager,
                         _metadataStore,
                         _schedulerConfiguration,
-                        _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>());
+                        _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>(),
+                        _metricsLogger);
                 }
             }
             catch (Exception e)
@@ -147,8 +148,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _fhirSchemaManager,
                         _groupMemberExtractor,
                         _filterManager,
-                        _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>(),
-                        _metricsLogger);
+                        _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>());
                 }
             }
             catch (Exception e)

@@ -129,8 +129,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFhirSchemaManager(),
                 GetGroupMemberExtractor(),
                 GetFilterManager(filterConfiguration),
-                new NullLogger<FhirToDataLakeProcessingJob>(),
-                new MetricsLogger(new NullLogger<MetricsLogger>()));
+                new NullLogger<FhirToDataLakeProcessingJob>());
         }
 
         private static IFhirDataClient GetMockFhirDataClient(string firstBundle)

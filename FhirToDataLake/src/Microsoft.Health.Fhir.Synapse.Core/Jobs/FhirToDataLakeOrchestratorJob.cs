@@ -44,6 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly JobSchedulerConfiguration _schedulerConfiguration;
         private readonly IFilterManager _filterManager;
         private readonly ILogger<FhirToDataLakeOrchestratorJob> _logger;
+        private readonly IMetricsLogger _metricsLogger;
 
         private FhirToDataLakeOrchestratorJobResult _result;
 
@@ -58,7 +59,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFilterManager filterManager,
             IMetadataStore metadataStore,
             JobSchedulerConfiguration schedulerConfiguration,
-            ILogger<FhirToDataLakeOrchestratorJob> logger)
+            ILogger<FhirToDataLakeOrchestratorJob> logger,
+            IMetricsLogger metricsLogger)
         {
             _jobInfo = EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
             _inputData = EnsureArg.IsNotNull(inputData, nameof(inputData));
@@ -70,8 +72,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _schedulerConfiguration = EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
-
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
         }
 
         public int InitialOrchestrationIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultInitialOrchestrationIntervalInSeconds;
@@ -360,6 +362,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
                             _result.ProcessedCountInTotal += processingJobResult.ProcessedCountInTotal;
                             _result.ProcessedDataSizeInTotal += processingJobResult.ProcessedDataSizeInTotal;
+
+                            // log metrics
+                            _metricsLogger.LogSuccessfulResourceCountMetric(_result.ProcessedCountInTotal);
+                            _metricsLogger.LogSuccessfulDataSizeMetric(_result.ProcessedDataSizeInTotal);
 
                             if (_filterManager.FilterScope() == FilterScope.Group)
                             {

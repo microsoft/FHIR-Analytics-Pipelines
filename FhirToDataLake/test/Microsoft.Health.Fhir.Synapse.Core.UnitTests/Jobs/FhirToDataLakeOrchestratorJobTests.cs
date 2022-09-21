@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
@@ -147,7 +148,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFilterManager(new FilterConfiguration()),
                 GetMetaDataStore(),
                 new JobSchedulerConfiguration(),
-                new NullLogger<FhirToDataLakeOrchestratorJob>());
+                new NullLogger<FhirToDataLakeOrchestratorJob>(),
+                new MetricsLogger(new NullLogger<MetricsLogger>()));
 
             var retriableJobException = await Assert.ThrowsAsync<RetriableJobException>(async () =>
                 await job.ExecuteAsync(progress, CancellationToken.None));
@@ -269,7 +271,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFilterManager(filterConfiguration),
                 metadataStore ?? GetMetaDataStore(),
                 schedulerConfig,
-                new NullLogger<FhirToDataLakeOrchestratorJob>())
+                new NullLogger<FhirToDataLakeOrchestratorJob>(),
+                new MetricsLogger(new NullLogger<MetricsLogger>()))
             {
                 NumberOfPatientsPerProcessingJob = 1,
             };
