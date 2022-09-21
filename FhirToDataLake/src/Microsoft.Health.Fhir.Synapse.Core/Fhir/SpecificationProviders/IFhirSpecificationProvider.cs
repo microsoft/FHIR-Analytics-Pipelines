@@ -4,12 +4,9 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using Microsoft.Health.Fhir.Synapse.Common;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 {
-    public delegate IFhirSpecificationProvider FhirSpecificationProviderDelegate(FhirVersion fhirVersion);
-
     public interface IFhirSpecificationProvider
     {
         /// <summary>

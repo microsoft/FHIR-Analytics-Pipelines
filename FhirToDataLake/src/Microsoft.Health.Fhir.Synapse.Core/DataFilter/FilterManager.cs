@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
@@ -31,16 +30,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
         public FilterManager(
             IFilterProvider filterProvider,
-            IOptions<FhirServerConfiguration> fhirServerConfiguration,
-            FhirSpecificationProviderDelegate fhirSpecificationDelegate,
+            IFhirSpecificationProvider fhirSpecificationProvider,
             ILogger<FilterManager> logger)
         {
-            EnsureArg.IsNotNull(fhirServerConfiguration, nameof(fhirServerConfiguration));
-            EnsureArg.IsNotNull(fhirSpecificationDelegate, nameof(fhirSpecificationDelegate));
-
             _filterProvider = EnsureArg.IsNotNull(filterProvider, nameof(filterProvider));
-            _fhirSpecificationProvider = fhirSpecificationDelegate(fhirServerConfiguration.Value.Version);
-
+            _fhirSpecificationProvider = EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 

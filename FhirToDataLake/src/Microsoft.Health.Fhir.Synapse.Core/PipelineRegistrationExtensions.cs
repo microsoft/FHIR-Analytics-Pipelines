@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
@@ -58,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
             services.AddSingleton<IReferenceParser, R4ReferenceParser>();
 
-            services.AddFhirSpecificationProviders();
+            services.AddFhirSpecificationProvider();
 
             services.AddSchemaConverters();
 
@@ -83,22 +82,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core
             return services;
         }
 
-        public static IServiceCollection AddFhirSpecificationProviders(this IServiceCollection services)
+        public static IServiceCollection AddFhirSpecificationProvider(this IServiceCollection services)
         {
-            services.AddSingleton<IFhirSpecificationProvider, R4FhirSpecificationProvider>();
+            var fhirServerConfiguration = services
+                .BuildServiceProvider()
+                .GetRequiredService<IOptions<FhirServerConfiguration>>()
+                .Value;
 
-            services.AddSingleton<R4FhirSpecificationProvider>();
-            services.AddSingleton<R5FhirSpecificationProvider>();
-
-            services.AddSingleton<FhirSpecificationProviderDelegate>(delegateProvider => fhirVersion =>
+            switch (fhirServerConfiguration.Version)
             {
-                return fhirVersion switch
-                {
-                    FhirVersion.R4 => delegateProvider.GetService<R4FhirSpecificationProvider>(),
-                    FhirVersion.R5 => delegateProvider.GetService<R5FhirSpecificationProvider>(),
-                    _ => throw new FhirSpecificationProviderException($"Fhir version {fhirVersion} is not supported when injecting"),
-                };
-            });
+                case FhirVersion.R4:
+                    services.AddSingleton<IFhirSpecificationProvider, R4FhirSpecificationProvider>(); break;
+                case FhirVersion.R5:
+                    services.AddSingleton<IFhirSpecificationProvider, R5FhirSpecificationProvider>(); break;
+                default:
+                    throw new FhirSpecificationProviderException($"Fhir version {fhirServerConfiguration.Version} is not supported when injecting");
+            }
 
             return services;
         }

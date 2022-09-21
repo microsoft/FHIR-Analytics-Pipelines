@@ -12,30 +12,42 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
+using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
+using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 {
     public class FilterManagerTests
     {
-        private readonly NullLogger<FilterManager> _nullFilterManagerLogger = NullLogger<FilterManager>.Instance;
+        private readonly NullLogger<FilterManager> _nullFilterManagerLogger;
+        private readonly IFhirSpecificationProvider _testFhirSpecificationProvider;
 
-        private readonly FhirServerConfiguration _fhirServerR4Configuration = new () { Version = Common.FhirVersion.R4 };
+        public FilterManagerTests()
+        {
+            var dataClient = Substitute.For<IFhirDataClient>();
+
+            var metadataOptions = new MetadataOptions();
+            dataClient.Search(metadataOptions)
+                .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile));
+
+            _testFhirSpecificationProvider = new R4FhirSpecificationProvider(dataClient, NullLogger<R4FhirSpecificationProvider>.Instance);
+            _nullFilterManagerLogger = NullLogger<FilterManager>.Instance;
+        }
 
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
-            var fhirServerConfigurationOption = Options.Create(_fhirServerR4Configuration);
             var fhilterConfigurationOption = Options.Create(new FilterConfiguration());
 
             Assert.Throws<ArgumentNullException>(
-                () => new FilterManager(null, fhirServerConfigurationOption, TestUtils.TestFhirSpecificationProviderDelegate, _nullFilterManagerLogger));
+                () => new FilterManager(null, _testFhirSpecificationProvider, _nullFilterManagerLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FilterManager(new LocalFilterProvider(Options.Create(new FilterConfiguration())), null, TestUtils.TestFhirSpecificationProviderDelegate, _nullFilterManagerLogger));
-
-            Assert.Throws<ArgumentNullException>(
-                () => new FilterManager(new LocalFilterProvider(Options.Create(new FilterConfiguration())), fhirServerConfigurationOption, null, _nullFilterManagerLogger));
+                () => new FilterManager(new LocalFilterProvider(Options.Create(new FilterConfiguration())), null, _nullFilterManagerLogger));
         }
 
         [Theory]
@@ -56,8 +68,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             var filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
-                Options.Create(_fhirServerR4Configuration),
-                TestUtils.TestFhirSpecificationProviderDelegate,
+                _testFhirSpecificationProvider,
                 _nullFilterManagerLogger);
 
             var typeFilters = await filterManager.GetTypeFiltersAsync(default);
@@ -85,8 +96,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             var filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
-                Options.Create(_fhirServerR4Configuration),
-                TestUtils.TestFhirSpecificationProviderDelegate,
+                _testFhirSpecificationProvider,
                 _nullFilterManagerLogger);
             var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
@@ -110,8 +120,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             var filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
-                Options.Create(_fhirServerR4Configuration),
-                TestUtils.TestFhirSpecificationProviderDelegate,
+                _testFhirSpecificationProvider,
                 _nullFilterManagerLogger);
             var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
@@ -134,8 +143,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             var filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
-                Options.Create(_fhirServerR4Configuration),
-                TestUtils.TestFhirSpecificationProviderDelegate,
+                _testFhirSpecificationProvider,
                 _nullFilterManagerLogger);
             var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
@@ -159,8 +167,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             var filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
-                Options.Create(_fhirServerR4Configuration),
-                TestUtils.TestFhirSpecificationProviderDelegate,
+                _testFhirSpecificationProvider,
                 _nullFilterManagerLogger);
             var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
@@ -193,8 +200,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             var manager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
-                Options.Create(_fhirServerR4Configuration),
-                TestUtils.TestFhirSpecificationProviderDelegate,
+                _testFhirSpecificationProvider,
                 _nullFilterManagerLogger);
 
             await Assert.ThrowsAsync<ConfigurationErrorException>(() =>
@@ -215,8 +221,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             var manager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
-                Options.Create(_fhirServerR4Configuration),
-                TestUtils.TestFhirSpecificationProviderDelegate,
+                _testFhirSpecificationProvider,
                 _nullFilterManagerLogger);
 
             await Assert.ThrowsAsync<ConfigurationErrorException>(() =>
@@ -236,8 +241,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             };
             var filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
-                Options.Create(_fhirServerR4Configuration),
-                TestUtils.TestFhirSpecificationProviderDelegate,
+                _testFhirSpecificationProvider,
                 _nullFilterManagerLogger);
             var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
@@ -277,8 +281,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             var filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
-                Options.Create(_fhirServerR4Configuration),
-                TestUtils.TestFhirSpecificationProviderDelegate,
+                _testFhirSpecificationProvider,
                 _nullFilterManagerLogger);
             var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
@@ -332,8 +335,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             var filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
-                Options.Create(_fhirServerR4Configuration),
-                TestUtils.TestFhirSpecificationProviderDelegate,
+                _testFhirSpecificationProvider,
                 _nullFilterManagerLogger);
             var typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
@@ -358,8 +360,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             var manager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
-                Options.Create(_fhirServerR4Configuration),
-                TestUtils.TestFhirSpecificationProviderDelegate,
+                _testFhirSpecificationProvider,
                 _nullFilterManagerLogger);
 
             await Assert.ThrowsAsync<ConfigurationErrorException>(() =>
@@ -403,8 +404,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             var manager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
-                Options.Create(_fhirServerR4Configuration),
-                TestUtils.TestFhirSpecificationProviderDelegate,
+                _testFhirSpecificationProvider,
                 _nullFilterManagerLogger);
 
             await Assert.ThrowsAsync<ConfigurationErrorException>(() =>
