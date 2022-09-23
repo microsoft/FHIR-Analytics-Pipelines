@@ -31,6 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         private readonly IContainerRegistryTemplateProvider _containerRegistryTemplateProvider;
         private readonly string _schemaImageReference;
 
+        private readonly object _templateProviderLock = new object();
         private ITemplateProvider _templateProvider;
 
         public CustomSchemaConverter(
@@ -45,6 +46,27 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             _schemaImageReference = schemaConfiguration.Value.SchemaImageReference;
 
             _jsonProcessor = new JsonProcessor(new ProcessorSettings());
+        }
+
+        private ITemplateProvider TemplateProvider
+        {
+            get
+            {
+                if (_templateProvider is null)
+                {
+                    lock (_templateProviderLock)
+                    {
+                        var templateCollections = _containerRegistryTemplateProvider.GetTemplateCollectionAsync(
+                             _schemaImageReference,
+                             CancellationToken.None).Result;
+
+                        _templateProvider = new TemplateProvider(templateCollections);
+                    }
+                }
+
+                return _templateProvider;
+            }
+            set => _templateProvider = value;
         }
 
         public JsonBatchData Convert(
@@ -63,21 +85,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 throw new ParquetDataProcessorException($"Schema image reference is empty or null.");
             }
 
-            if (_templateProvider == null)
-            {
-                var templateCollections = _containerRegistryTemplateProvider.GetTemplateCollectionAsync(
-                     _schemaImageReference,
-                     CancellationToken.None).Result;
-
-                _templateProvider = new TemplateProvider(templateCollections);
-            }
-
             List<JObject> processedData;
             try
             {
                 // TODO: Update FHIR-Converter, add an interface to directly convert an Object.
                 processedData = inputData.Values.Select(dataObject
-                    => JObject.Parse(_jsonProcessor.Convert(dataObject.ToString(), resourceType, _templateProvider))).ToList();
+                    => JObject.Parse(_jsonProcessor.Convert(dataObject.ToString(), resourceType, TemplateProvider))).ToList();
             }
             catch (Exception ex)
             {
