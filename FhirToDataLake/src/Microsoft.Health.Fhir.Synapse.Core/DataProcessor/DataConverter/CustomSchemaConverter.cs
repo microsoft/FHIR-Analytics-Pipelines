@@ -52,15 +52,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             get
             {
+                // Do the lazy initialization.
                 if (_templateProvider is null)
                 {
                     lock (_templateProviderLock)
                     {
-                        var templateCollections = _containerRegistryTemplateProvider.GetTemplateCollectionAsync(
-                             _schemaImageReference,
-                             CancellationToken.None).Result;
-
-                        _templateProvider = new TemplateProvider(templateCollections);
+                        _templateProvider ??= new TemplateProvider(_containerRegistryTemplateProvider.GetTemplateCollectionAsync(
+                            _schemaImageReference,
+                            CancellationToken.None).Result);
                     }
                 }
 

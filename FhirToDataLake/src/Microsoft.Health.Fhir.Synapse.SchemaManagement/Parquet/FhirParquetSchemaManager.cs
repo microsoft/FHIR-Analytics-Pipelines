@@ -42,11 +42,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         {
             get
             {
+                // Do the lazy initialization.
                 if (_resourceSchemaNodesMap is null)
                 {
                     lock (_schemasMaplock)
                     {
-                        _resourceSchemaNodesMap = LoadSchemaMap();
+                        _resourceSchemaNodesMap ??= LoadSchemaMap();
                     }
                 }
 
@@ -59,11 +60,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         {
             get
             {
+                // Do the lazy initialization.
                 if (_schemaTypesMap is null)
                 {
                     lock (_schemaTypesMaplock)
                     {
-                        _schemaTypesMap = LoadSchemaTypeMap(ResourceSchemaNodesMap);
+                        _schemaTypesMap ??= LoadSchemaTypeMap(ResourceSchemaNodesMap);
                     }
                 }
 

@@ -91,16 +91,21 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             get
             {
+                // Do the lazy initialization.
                 if (_blobContainerClient is null)
                 {
                     lock (_blobContainerClientLock)
                     {
-                        var externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
-                        _blobContainerClient = new BlobContainerClient(
-                            _storageUri,
-                            externalTokenCredential);
+                        // Check null again to avoid duplicate initialization.
+                        if (_blobContainerClient is null)
+                        {
+                            var externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
+                            _blobContainerClient = new BlobContainerClient(
+                                _storageUri,
+                                externalTokenCredential);
 
-                        InitializeBlobContainerClient(_blobContainerClient);
+                            InitializeBlobContainerClient(_blobContainerClient);
+                        }
                     }
                 }
 
@@ -113,14 +118,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             get
             {
+                // Do the lazy initialization.
                 if (_dataLakeFileSystemClient is null)
                 {
                     lock (_dataLakeFileSystemClientLock)
                     {
-                        var externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
-                        _dataLakeFileSystemClient = new DataLakeFileSystemClient(
+                        _dataLakeFileSystemClient ??= new DataLakeFileSystemClient(
                             _storageUri,
-                            externalTokenCredential);
+                            _credentialProvider.GetCredential(TokenCredentialTypes.External));
                     }
                 }
 

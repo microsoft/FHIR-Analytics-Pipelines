@@ -58,13 +58,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
         {
             get
             {
+                // Do the lazy initialization.
                 if (_parquetConverter is null)
                 {
                     lock (_parquetConverterLock)
                     {
-                        var schemaSet = _fhirSchemaManager.GetAllSchemaContent();
-                        _parquetConverter = ParquetConverter.CreateWithSchemaSet(schemaSet);
-                        _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
+                        // Check null again to avoid duplicate initialization.
+                        if (_parquetConverter is null)
+                        {
+                            var schemaSet = _fhirSchemaManager.GetAllSchemaContent();
+                            _parquetConverter = ParquetConverter.CreateWithSchemaSet(schemaSet);
+                            _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
+                        }
                     }
                 }
 
