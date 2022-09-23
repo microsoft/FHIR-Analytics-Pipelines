@@ -42,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException($"Fhir server url can not be empty.");
             }
 
-            if (fhirServerConfiguration.Version != FhirVersion.R4)
+            if (!ConfigurationConstants.SupportedFhirVersions.Contains(fhirServerConfiguration.Version))
             {
                 throw new ConfigurationErrorException($"Fhir version {fhirServerConfiguration.Version} is not supported.");
             }
@@ -197,7 +197,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
         // https://docs.microsoft.com/en-us/rest/api/storageservices/naming-queues-and-metadata#queue-names
         public static void ValidateAgentName(string agentName)
         {
-
             if (string.IsNullOrWhiteSpace(agentName))
             {
                 throw new ConfigurationErrorException("Agent name can not be empty.");

@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
+namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 {
     public interface IFhirSpecificationProvider
     {
