@@ -56,12 +56,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         public Dictionary<string, int> SkippedResourceCounts { get; set; } = new Dictionary<string, int>();
 
         /// <summary>
-        /// Processed count in total.
+        /// Processed resource count in total.
         /// </summary>
-        public int ProcessedCountInTotal { get; set; }
+        public int ProcessedCountInTotal { get; set; } = 0;
 
         /// <summary>
-        /// Processed data size in total in bytes.
+        /// Data size for output parquet data in bytes.
         /// </summary>
         public long ProcessedDataSizeInTotal { get; set; } = 0;
     }

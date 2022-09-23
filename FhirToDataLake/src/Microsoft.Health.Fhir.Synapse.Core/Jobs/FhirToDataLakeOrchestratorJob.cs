@@ -364,8 +364,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             _result.ProcessedDataSizeInTotal += processingJobResult.ProcessedDataSizeInTotal;
 
                             // log metrics
-                            _metricsLogger.LogSuccessfulResourceCountMetric(_result.ProcessedCountInTotal);
-                            _metricsLogger.LogSuccessfulDataSizeMetric(_result.ProcessedDataSizeInTotal);
+                            _metricsLogger.LogSuccessfulResourceCountMetric(processingJobResult.ProcessedCountInTotal);
+                            _metricsLogger.LogSuccessfulDataSizeMetric(processingJobResult.ProcessedDataSizeInTotal);
 
                             if (_filterManager.FilterScope() == FilterScope.Group)
                             {
