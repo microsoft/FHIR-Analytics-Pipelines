@@ -1,0 +1,25 @@
+steps:
+- task: PowerShell@2
+  displayName: Pack Nuget packages
+  inputs:
+    targetType: inline
+    workingDirectory: FhirToDataLake
+    script: |
+      $projects = @(
+        "Microsoft.Health.Fhir.Synapse.Common/Microsoft.Health.Fhir.Synapse.Common.csproj",
+        "Microsoft.Health.Fhir.Synapse.Core/Microsoft.Health.Fhir.Synapse.Core.csproj",
+        "Microsoft.Health.Fhir.Synapse.DataClient/Microsoft.Health.Fhir.Synapse.DataClient.csproj",
+        "Microsoft.Health.Fhir.Synapse.DataWriter/Microsoft.Health.Fhir.Synapse.DataWriter.csproj",
+        "Microsoft.Health.Fhir.Synapse.HealthCheck/Microsoft.Health.Fhir.Synapse.HealthCheck.csproj",
+        "Microsoft.Health.Fhir.Synapse.SchemaManagement/Microsoft.Health.Fhir.Synapse.SchemaManagement.csproj"
+      )
+      
+      foreach ($project in $projects) {
+        dotnet pack "src/$project" -p:NuspecProperties="version=$(version)" -c Release -o $(Build.ArtifactStagingDirectory)/nupkgs
+      }
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Nuget Packages 
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)/nupkgs'
+    artifactName: 'analyticspipelinenugetpack'
