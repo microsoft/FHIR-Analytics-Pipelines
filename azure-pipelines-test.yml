@@ -23,8 +23,12 @@ variables:
 stages:
 - stage: Release
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'ubuntu-22.04'
   jobs:
+  - job: BuildFhirToDataLake
+    steps:
+    - template: FhirToDataLake/azurepipelines/ci.yml
+
   - job: RunSynapseE2ETest
     steps:
     - template: FhirToDataLake/azurepipelines/synapse-e2e-test.yml

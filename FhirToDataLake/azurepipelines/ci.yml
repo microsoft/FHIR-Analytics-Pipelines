@@ -37,57 +37,6 @@ steps:
     projects: FhirToDataLake/*.sln
     arguments: '--configuration $(buildConfiguration) -p:Version=$(version)'
 
-- script: |
-    docker pull mcr.microsoft.com/azure-storage/azurite
-    docker run -d --name azurite-emulator-analytics-ci -p 10000-10002:10000-10002 \
-        mcr.microsoft.com/azure-storage/azurite
-  displayName: 'Start Azurite Emulator'
-
-- task: AzureKeyVault@2
-  inputs:
-    azureSubscription: 'ResoluteOpenSource'
-    KeyVaultName: 'fhiranalyticspipeline'
-    SecretsFilter: '*'
-    RunAsPreJob: false
-
-- task: AzureCLI@2
-  displayName: Run Unit tests
-  inputs:
-    azureSubscription: 'ResoluteOpenSource'
-    workingDirectory: FhirToDataLake
-    scriptType: bash
-    scriptLocation: inlineScript
-    inlineScript: |
-      export LD_LIBRARY_PATH=.
-      dotnet test test/**/bin/**.UnitTests.dll --verbosity detailed
-  env:
-    TestContainerRegistryServer: $(pipeline-container-registry-server)
-    TestContainerRegistryPassword: $(pipeline-container-registry-password)
-    AZURE_CLIENT_ID: $(pipeline-service-principal-name)
-    AZURE_CLIENT_SECRET: $(pipeline-service-principal-password)
-    AZURE_TENANT_ID: $(pipeline-tenant-id)
-    'dataLakeStore:storageUrl': $(DATALAKESTORE:STORAGEURL)
-
-- task: AzureCLI@2
-  displayName: Run E2E tests
-  inputs:
-    azureSubscription: 'ResoluteOpenSource'
-    workingDirectory: FhirToDataLake
-    scriptType: bash
-    scriptLocation: inlineScript
-    inlineScript: |
-      export LD_LIBRARY_PATH=.
-      dotnet test test/**/bin/**.E2ETests.dll --verbosity detailed
-  env:
-    'dataLakeStore:storageUrl': $(DATALAKESTORE:STORAGEURL)
-
-- task: Docker@2
-  displayName: Stop Azurite Emulator
-  condition: succeededOrFailed()
-  inputs:
-    command: stop
-    container: azurite-emulator-analytics-ci
-
 # ref: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-function-app?view=azure-devops#error-publish-using-zip-deploy-option-is-not-supported-for-msbuild-package-type
 - task: DotNetCoreCLI@2
   displayName: 'Publish function app'
