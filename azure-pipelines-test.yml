@@ -30,6 +30,8 @@ stages:
     - template: FhirToDataLake/azurepipelines/ci.yml
 
   - job: RunSynapseE2ETest
+    dependsOn: BuildFhirToDataLake
+    condition: succeeded()
     steps:
     - template: FhirToDataLake/azurepipelines/synapse-e2e-test.yml
 
