@@ -22,7 +22,7 @@
     Default: R4
     The fhir version of Parquet data on the storage.
 .PARAMETER SqlScriptCollectionPath
-    Default: sql/Resources
+    Default: sql
     Path to the sql scripts directory to create EXTERNAL TABLEs and VIEWs.
 .PARAMETER MasterKey
     Default: "FhirSynapseLink0!"
