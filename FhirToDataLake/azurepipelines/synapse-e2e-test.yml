@@ -77,7 +77,7 @@ steps:
                 -Container $(containerName) `
                 -Database $(databaseName) `
                 -CustomizedSchemaImage $(customizedSchemaImageReference) `
-                -SqlScriptCollectionPath $(System.DefaultWorkingDirectory)\FhirToDataLake\scripts\sql\Resources
+                -SqlScriptCollectionPath $(System.DefaultWorkingDirectory)\FhirToDataLake\scripts\sql\r4\Resources
               break;
           }
           catch [Exception]
