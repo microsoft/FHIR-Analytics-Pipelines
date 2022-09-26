@@ -32,6 +32,8 @@ stages:
   - job: RunSynapseE2ETest
     dependsOn: BuildFhirToDataLake
     condition: succeeded()
+    pool:
+      vmImage: 'windows-latest'
     steps:
     - template: FhirToDataLake/azurepipelines/synapse-e2e-test.yml
 
