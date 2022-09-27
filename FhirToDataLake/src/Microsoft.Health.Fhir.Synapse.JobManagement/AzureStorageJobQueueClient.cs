@@ -94,24 +94,24 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             // step 2: generate job info entities and job lock entities batch
             var jobInfos = definitions.Select((definition, i) => new TJobInfo
-            {
-                Id = jobIds[i],
-                QueueType = queueType,
-                Status = JobStatus.Created,
-                GroupId = groupId ?? 0,
-                Definition = definition,
-                Result = string.Empty,
-                CancelRequested = false,
-                CreateDate = DateTime.UtcNow,
-                HeartbeatDateTime = DateTime.UtcNow,
-            })
+                {
+                    Id = jobIds[i],
+                    QueueType = queueType,
+                    Status = JobStatus.Created,
+                    GroupId = groupId ?? 0,
+                    Definition = definition,
+                    Result = string.Empty,
+                    CancelRequested = false,
+                    CreateDate = DateTime.UtcNow,
+                    HeartbeatDateTime = DateTime.UtcNow,
+                })
                 .ToList();
 
             var jobInfoEntities = jobInfos.Select(jobInfo => jobInfo.ToTableEntity()).ToList();
             var jobLockEntities = jobInfoEntities.Select((jobInfoEntity, i) =>
                 new TableEntity(jobInfoEntity.PartitionKey, AzureStorageKeyProvider.JobLockRowKey(jobInfos[i].JobIdentifier()))
                 {
-                { JobLockEntityProperties.JobInfoEntityRowKey, jobInfoEntity.RowKey },
+                    { JobLockEntityProperties.JobInfoEntityRowKey, jobInfoEntity.RowKey },
                 }).ToList();
 
             // step 3: insert jobInfo entity and job lock entity in one transaction.
