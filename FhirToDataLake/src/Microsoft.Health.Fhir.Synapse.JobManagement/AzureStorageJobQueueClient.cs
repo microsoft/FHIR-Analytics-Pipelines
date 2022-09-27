@@ -94,24 +94,24 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             // step 2: generate job info entities and job lock entities batch
             var jobInfos = definitions.Select((definition, i) => new TJobInfo
-                {
-                    Id = jobIds[i],
-                    QueueType = queueType,
-                    Status = JobStatus.Created,
-                    GroupId = groupId ?? 0,
-                    Definition = definition,
-                    Result = string.Empty,
-                    CancelRequested = false,
-                    CreateDate = DateTime.UtcNow,
-                    HeartbeatDateTime = DateTime.UtcNow,
-                })
+            {
+                Id = jobIds[i],
+                QueueType = queueType,
+                Status = JobStatus.Created,
+                GroupId = groupId ?? 0,
+                Definition = definition,
+                Result = string.Empty,
+                CancelRequested = false,
+                CreateDate = DateTime.UtcNow,
+                HeartbeatDateTime = DateTime.UtcNow,
+            })
                 .ToList();
 
             var jobInfoEntities = jobInfos.Select(jobInfo => jobInfo.ToTableEntity()).ToList();
             var jobLockEntities = jobInfoEntities.Select((jobInfoEntity, i) =>
                 new TableEntity(jobInfoEntity.PartitionKey, AzureStorageKeyProvider.JobLockRowKey(jobInfos[i].JobIdentifier()))
                 {
-                    { JobLockEntityProperties.JobInfoEntityRowKey, jobInfoEntity.RowKey },
+                { JobLockEntityProperties.JobInfoEntityRowKey, jobInfoEntity.RowKey },
                 }).ToList();
 
             // step 3: insert jobInfo entity and job lock entity in one transaction.
@@ -236,7 +236,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             jobInfos = jobInfoEntities.Select(entity => entity.ToJobInfo<TJobInfo>()).ToList();
 
-            _logger.LogInformation($"Enqueue jobs '{string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())}' successfully.");
+            _logger.LogInformation($"Enqueue jobs {string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())} successfully.");
 
             return jobInfos;
         }
@@ -267,7 +267,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             // step 2: get jobInfo entity and job lock entity
-            var (jobInfoEntity, jobLockEntity) = await AcquireJobEntityByRowKeysAsync(jobMessage.PartitionKey, new List<string> {jobMessage.RowKey, jobMessage.LockRowKey}, cancellationToken);
+            var (jobInfoEntity, jobLockEntity) = await AcquireJobEntityByRowKeysAsync(jobMessage.PartitionKey, new List<string> { jobMessage.RowKey, jobMessage.LockRowKey }, cancellationToken);
             var jobInfo = jobInfoEntity.ToJobInfo<TJobInfo>();
 
             // step 3: check job status
@@ -327,7 +327,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             _ = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionUpdateActions, cancellationToken);
 
-            _logger.LogInformation($"Dequeue job '{jobInfo.Id}'. Successfully ");
+            _logger.LogInformation($"Dequeue job {jobInfo.Id} Successfully.");
             return jobInfo;
         }
 
@@ -441,7 +441,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 string message;
                 if (jobInfo.Status is JobStatus.Completed or JobStatus.Failed or JobStatus.Cancelled)
                 {
-                    message = $"Job {jobInfo.Id} has been completed. Keep alive failed";
+                    message = $"Failed to keep alive for Job {jobInfo.Id}, the job has been completed.";
                     _logger.LogInformation(message);
                 }
                 else
@@ -649,7 +649,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.GetEntityNotFoundErrorCode))
             {
-                _logger.LogWarning(ex, "Failed to get job id entity, the entity doesn't exist, will create one.");
+                _logger.LogInformation("Failed to get job id entity, the entity doesn't exist, will create one.");
 
                 // create new entity if not exist
                 var initialJobIdEntity = new JobIdEntity

@@ -83,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Start executing FhirToDataLake orchestrator job {_jobInfo.GroupId}");
+            _logger.LogInformation($"Start executing FhirToDataLake orchestrator job {_jobInfo.Id}.");
 
             try
             {
@@ -103,7 +103,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 await foreach (var input in inputs.WithCancellation(cancellationToken))
                 {
-                    while (_result.RunningJobIds.Count > _schedulerConfiguration.MaxConcurrencyCount)
+                    while (_result.RunningJobIds.Count >= _schedulerConfiguration.MaxConcurrencyCount)
                     {
                         await WaitRunningJobComplete(progress, cancellationToken);
                     }
@@ -133,7 +133,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 progress.Report(JsonConvert.SerializeObject(_result));
 
-                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.GroupId}");
+                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}");
 
                 return JsonConvert.SerializeObject(_result);
             }
@@ -386,6 +386,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (completedJobIds.Count > 0)
             {
+                _logger.LogInformation($"Processing jobs {string.Join(",", completedJobIds)} have been completed.");
                 _result.RunningJobIds.ExceptWith(completedJobIds);
                 progress.Report(JsonConvert.SerializeObject(_result));
             }

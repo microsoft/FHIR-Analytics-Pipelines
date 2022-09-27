@@ -83,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         // the processing job status is never set to failed or cancelled.
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Start executing processing job {_inputData.ProcessingJobSequenceId}.");
+            _logger.LogInformation($"Start executing processing job {_jobId}.");
 
             try
             {
@@ -133,7 +133,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 progress.Report(JsonConvert.SerializeObject(_result));
 
-                _logger.LogInformation($"Finished processing job '{_inputData.ProcessingJobSequenceId}'.");
+                _logger.LogInformation($"Finished processing job {_jobId}.");
 
                 return JsonConvert.SerializeObject(_result);
             }
@@ -564,7 +564,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // clear cache
                 _cacheResult.ClearCache();
-                _logger.LogInformation($"Commit cache resources successfully for processing job {_inputData.ProcessingJobSequenceId}.");
+                _logger.LogInformation($"Commit cache resources successfully for processing job {_jobId}.");
             }
         }
 

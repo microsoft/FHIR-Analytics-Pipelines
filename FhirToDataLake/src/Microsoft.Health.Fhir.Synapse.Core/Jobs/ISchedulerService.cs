@@ -16,6 +16,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         public DateTimeOffset LastHeartbeat { get; set; }
 
+        public int SchedulerServicePullingIntervalInSeconds { get; set; }
+
+        public int SchedulerServiceLeaseExpirationInSeconds { get; set; }
+
+        public int SchedulerServiceLeaseRefreshIntervalInSeconds { get; set; }
+
         /// <summary>
         /// Run scheduler
         /// </summary>
