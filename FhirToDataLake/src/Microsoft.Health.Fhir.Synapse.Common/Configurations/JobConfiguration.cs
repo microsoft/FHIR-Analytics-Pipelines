@@ -36,7 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public string JobInfoTableName { get; set; }
 
         /// <summary>
-        /// Job information table name.
+        /// Metadata table name.
         /// </summary>
         [JsonProperty("metadataTableName")]
         public string MetadataTableName { get; set; }
