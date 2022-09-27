@@ -159,7 +159,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogInformation(ex, "Error in data processing job.");
                 await CleanResourceAsync(CancellationToken.None);
 
-                throw new RetriableJobException("Error in data processing job.",ex);
+                throw new RetriableJobException("Error in data processing job.", ex);
             }
         }
 
