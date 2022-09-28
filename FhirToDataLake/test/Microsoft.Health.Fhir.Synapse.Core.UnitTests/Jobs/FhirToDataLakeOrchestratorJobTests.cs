@@ -148,8 +148,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFilterManager(new FilterConfiguration()),
                 GetMetaDataStore(),
                 new JobSchedulerConfiguration(),
-                new NullLogger<FhirToDataLakeOrchestratorJob>(),
-                new MetricsLogger(new NullLogger<MetricsLogger>()));
+                new MetricsLogger(new NullLogger<MetricsLogger>()),
+                new NullLogger<FhirToDataLakeOrchestratorJob>());
 
             var retriableJobException = await Assert.ThrowsAsync<RetriableJobException>(async () =>
                 await job.ExecuteAsync(progress, CancellationToken.None));
@@ -271,8 +271,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFilterManager(filterConfiguration),
                 metadataStore ?? GetMetaDataStore(),
                 schedulerConfig,
-                new NullLogger<FhirToDataLakeOrchestratorJob>(),
-                new MetricsLogger(new NullLogger<MetricsLogger>()))
+                new MetricsLogger(new NullLogger<MetricsLogger>()),
+                new NullLogger<FhirToDataLakeOrchestratorJob>())
             {
                 NumberOfPatientsPerProcessingJob = 1,
             };

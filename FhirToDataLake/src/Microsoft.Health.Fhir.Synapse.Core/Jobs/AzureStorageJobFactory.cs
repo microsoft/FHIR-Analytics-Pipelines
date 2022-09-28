@@ -119,8 +119,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _filterManager,
                         _metadataStore,
                         _schedulerConfiguration,
-                        _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>(),
-                        _metricsLogger);
+                        _metricsLogger,
+                        _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>());
                 }
             }
             catch (Exception e)
