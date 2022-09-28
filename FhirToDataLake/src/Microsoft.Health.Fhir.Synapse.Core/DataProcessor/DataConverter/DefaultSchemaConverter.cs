@@ -48,10 +48,85 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             }
 
             var processedJsonData = inputData.Values
-                .Select(json => ProcessStructObject(json, schema))
+                .Select(json => ProcessDicomMetadataObject(json, schema))
                 .Where(processedResult => processedResult != null);
 
             return new JsonBatchData(processedJsonData);
+        }
+
+        private JObject ProcessDicomMetadataObject(JToken metadata, FhirParquetSchemaNode schemaNode)
+        {
+            if (metadata is not JObject jObject)
+            {
+                _logger.LogError($"Current DICOM object is not a valid JObject: {schemaNode.GetNodePath()}.");
+                throw new ParquetDataProcessorException($"Current DICOM object is not a valid JObject: {schemaNode.GetNodePath()}.");
+            }
+
+            var processedObject = new JObject();
+
+            foreach (var subItem in jObject)
+            {
+                // Ignore DICOM metadata node if it doesn't exist in schema
+                if (!schemaNode.SubNodes.ContainsKey(subItem.Key))
+                {
+                    continue;
+                }
+
+                // Ignore SQ, BulkDataURI and InlineData
+                if (subItem.Value is not JObject subJObject ||
+                    !subJObject.ContainsKey("vr") ||
+                    !subJObject.ContainsKey("Value") ||
+                    string.Equals(subJObject["vr"].ToString(), "SQ") ||
+                    subJObject["Value"] is not JArray)
+                {
+                    continue;
+                }
+
+                var subNode = schemaNode.SubNodes[subItem.Key];
+                var subValueArray = subJObject["Value"] as JArray;
+
+                if (subNode.IsRepeated)
+                {
+                    processedObject.Add(subNode.Name, ProcessArrayObject(subValueArray, subNode));
+                }
+                else
+                {
+                    if (subValueArray.Count > 1)
+                    {
+                        _logger.LogError("Multiple values appear in an unrepeatable tag.");
+                        throw new ParquetDataProcessorException("Multiple values appear in an unrepeatable tag.");
+                    }
+
+                    var singleElement = subValueArray.First;
+                    if (subNode.IsLeaf)
+                    {
+                        processedObject.Add(subNode.Name, ProcessLeafObject(singleElement, subNode));
+                    }
+                    else
+                    {
+                        processedObject.Add(subNode.Name, ProcessPnObject(singleElement, subNode));
+                    }
+                }
+            }
+
+            return processedObject;
+        }
+
+        private JObject ProcessPnObject(JToken pnItem, FhirParquetSchemaNode schemaNode)
+        {
+            if (pnItem is not JObject jObject)
+            {
+                _logger.LogError($"Current PN object is not a valid JObject: {schemaNode.GetNodePath()}.");
+                throw new ParquetDataProcessorException($"Current PN object is not a valid JObject: {schemaNode.GetNodePath()}.");
+            }
+
+            if (jObject.Count > 1)
+            {
+                _logger.LogError("PN should contain only one of Alphabetic, Ideographic and Phonetic.");
+                throw new ParquetDataProcessorException("PN should contain only one of Alphabetic, Ideographic and Phonetic.");
+            }
+
+            return jObject;
         }
 
         private JObject ProcessStructObject(JToken structItem, FhirParquetSchemaNode schemaNode)
@@ -131,7 +206,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 }
                 else
                 {
-                    arrayObject.Add(ProcessStructObject(item, schemaNode));
+                    arrayObject.Add(ProcessPnObject(item, schemaNode));
                 }
             }
 
@@ -151,7 +226,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
             }
 
-            return fhirLeafObject;
+            // Convert every type to string for current ParquetConverter
+            return new JValue(fhirLeafObject.ToString());
         }
 
         private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirParquetSchemaNode schemaNode)

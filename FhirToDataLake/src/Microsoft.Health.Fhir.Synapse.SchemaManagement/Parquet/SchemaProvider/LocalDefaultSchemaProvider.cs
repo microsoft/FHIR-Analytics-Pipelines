@@ -22,7 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 {
     public class LocalDefaultSchemaProvider : IParquetSchemaProvider
     {
-        private const string SchemaR4EmbeddedPrefix = "Schemas.R4";
+        private const string SchemaR4EmbeddedPrefix = "Schemas.dicom";
         private const string SchemaR5EmbeddedPrefix = "Schemas.R5";
 
         private readonly FhirVersion _fhirVersion;
