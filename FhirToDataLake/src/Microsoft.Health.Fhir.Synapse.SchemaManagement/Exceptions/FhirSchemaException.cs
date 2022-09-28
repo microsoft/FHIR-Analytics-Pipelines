@@ -8,7 +8,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions
 {
-    public class FhirSchemaException : SynapsePipelineException
+    public class FhirSchemaException : SynapsePipelineRetriableException
     {
         public FhirSchemaException(string message)
             : base(message)

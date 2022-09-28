@@ -8,7 +8,7 @@ using System;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
-    public class DataSerializationException : SynapsePipelineException
+    public class DataSerializationException : SynapsePipelineRetriableException
     {
         public DataSerializationException(string message)
             : base(message)

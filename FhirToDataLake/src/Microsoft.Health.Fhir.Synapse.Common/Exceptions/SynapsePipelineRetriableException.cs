@@ -7,14 +7,14 @@ using System;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Exceptions
 {
-    public class SynapsePipelineException : Exception
+    public class SynapsePipelineRetriableException : Exception
     {
-        public SynapsePipelineException(string message)
+        public SynapsePipelineRetriableException(string message)
             : base(message)
         {
         }
 
-        public SynapsePipelineException(string message, Exception inner)
+        public SynapsePipelineRetriableException(string message, Exception inner)
             : base(message, inner)
         {
         }

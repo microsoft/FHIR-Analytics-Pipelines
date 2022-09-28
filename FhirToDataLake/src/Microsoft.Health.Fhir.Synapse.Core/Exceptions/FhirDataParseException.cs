@@ -8,7 +8,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
-    public class FhirDataParseException : SynapsePipelineException
+    public class FhirDataParseException : SynapsePipelineRetriableException
     {
         public FhirDataParseException(string message)
             : base(message)

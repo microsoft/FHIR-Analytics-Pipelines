@@ -8,7 +8,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
-    public class ContainerRegistryFilterException : SynapsePipelineException
+    public class ContainerRegistryFilterException : SynapsePipelineRetriableException
     {
         public ContainerRegistryFilterException(string message)
             : base(message)

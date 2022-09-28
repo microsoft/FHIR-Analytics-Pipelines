@@ -8,7 +8,7 @@ using System;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions
 {
-    public class AzureBlobOperationFailedException : SynapsePipelineException
+    public class AzureBlobOperationFailedException : SynapsePipelineRetriableException
     {
         public AzureBlobOperationFailedException(string message, Exception inner)
             : base(message, inner)

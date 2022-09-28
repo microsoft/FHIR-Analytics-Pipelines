@@ -172,7 +172,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 throw;
             }
-            catch (SynapsePipelineException synapsePipelineEx)
+            catch (SynapsePipelineRetriableException synapsePipelineEx)
             {
                 // Customer exceptions.
                 _diagnosticLogger.LogError($"Error in data processing job. Reason:{synapsePipelineEx}");

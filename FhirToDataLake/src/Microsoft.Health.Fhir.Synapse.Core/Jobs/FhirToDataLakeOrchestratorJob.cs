@@ -158,7 +158,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogInformation(operationCanceledEx, "Job is canceled.");
                 throw new RetriableJobException("Job is cancelled.", operationCanceledEx);
             }
-            catch (SynapsePipelineException synapsePipelineEx)
+            catch (SynapsePipelineRetriableException synapsePipelineEx)
             {
                 // Customer exceptions.
                 _diagnosticLogger.LogError($"Error in orchestrator job. Reason:{synapsePipelineEx}");
