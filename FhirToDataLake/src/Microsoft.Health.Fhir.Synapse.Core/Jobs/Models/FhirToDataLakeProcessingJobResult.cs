@@ -36,7 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         public Dictionary<string, int> ProcessedCount { get; set; } = new Dictionary<string, int>();
 
         /// <summary>
-        /// Processed resource count in total.
+        /// Output resource count in total.
         /// </summary>
         public int ProcessedCountInTotal { get; set; } = 0;
 

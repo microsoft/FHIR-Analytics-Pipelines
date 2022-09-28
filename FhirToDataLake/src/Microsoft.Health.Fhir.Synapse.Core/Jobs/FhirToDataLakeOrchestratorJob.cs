@@ -59,8 +59,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFilterManager filterManager,
             IMetadataStore metadataStore,
             JobSchedulerConfiguration schedulerConfiguration,
-            ILogger<FhirToDataLakeOrchestratorJob> logger,
-            IMetricsLogger metricsLogger)
+            IMetricsLogger metricsLogger,
+            ILogger<FhirToDataLakeOrchestratorJob> logger)
         {
             _jobInfo = EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
             _inputData = EnsureArg.IsNotNull(inputData, nameof(inputData));
@@ -72,8 +72,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _schedulerConfiguration = EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
-            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         public int InitialOrchestrationIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultInitialOrchestrationIntervalInSeconds;
