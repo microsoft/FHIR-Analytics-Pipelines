@@ -227,7 +227,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             }
 
             // Convert every type to string for current ParquetConverter
-            return new JValue(fhirLeafObject.ToString());
+            //return new JValue(fhirLeafObject.ToString());
+            return fhirLeafObject;
         }
 
         private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirParquetSchemaNode schemaNode)
