@@ -75,8 +75,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
             try
             {
-                imageInfo = ImageInfo.CreateFromImageReference(_imageReference);
-
                 AcrClient client = new AcrClient(imageInfo.Registry, accessToken);
                 var filterConfigurationProvider = new OciArtifactProvider(imageInfo, client);
                 var acrImage = await filterConfigurationProvider.GetOciArtifactAsync(cancellationToken);
