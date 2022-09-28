@@ -21,6 +21,8 @@ using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
@@ -41,6 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 {
     public class E2ETests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private readonly BlobServiceClient _blobServiceClient;
         private readonly ITestOutputHelper _testOutputHelper;
 
@@ -443,17 +446,18 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             // Make sure the container is deleted before running the tests
             Assert.False(await _blobContainerClient.ExistsAsync());
             var azureTableClientFactory = new AzureTableClientFactory(
-                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()));
 
-            _metadataStore = new AzureTableMetadataStore(azureTableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
+            _metadataStore = new AzureTableMetadataStore(azureTableClientFactory, jobConfig, _diagnosticLogger, new NullLogger<AzureTableMetadataStore>());
             Assert.True(_metadataStore.IsInitialized());
             _queueClientFactory = new AzureStorageClientFactory(
                 AzureStorageKeyProvider.JobInfoTableName(agentName),
                 AzureStorageKeyProvider.JobMessageQueueName(agentName),
-                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()));
 
             _queueClient = new AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>(
                 _queueClientFactory,
+                _diagnosticLogger,
                 new NullLogger<AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>());
 
             // set configuration
@@ -575,6 +579,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                         .AddDataSource()
                         .AddDataWriter()
                         .AddSchema()
+                        .AddMetricsLogger()
+                        .AddDiagnosticLogger()
                         .AddHostedService<SynapseLinkService>());
 
     }

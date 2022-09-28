@@ -10,6 +10,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
@@ -21,6 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 {
     public class DefaultSchemaConverterTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private static readonly JObject _testPatient;
         private static readonly DefaultSchemaConverter _testDefaultConverter;
 
@@ -31,9 +33,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
             var schemaManager = new FhirParquetSchemaManager(
                 schemaConfigurationOption,
                 TestUtils.TestParquetSchemaProviderDelegate,
+                _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
-            _testDefaultConverter = new DefaultSchemaConverter(schemaManager, NullLogger<DefaultSchemaConverter>.Instance);
+            _testDefaultConverter = new DefaultSchemaConverter(schemaManager, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
             _testPatient = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson")).First();
         }
 

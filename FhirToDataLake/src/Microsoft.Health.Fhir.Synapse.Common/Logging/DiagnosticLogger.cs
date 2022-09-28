@@ -3,20 +3,23 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-
-namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Common.Logging
 {
-    public class ExecuteTaskFailedException : Exception
+    public class DiagnosticLogger : IDiagnosticLogger
     {
-        public ExecuteTaskFailedException(string message)
-            : base(message)
+        public void LogInformation(string message)
         {
+
         }
 
-        public ExecuteTaskFailedException(string message, Exception inner)
-            : base(message, inner)
+        public void LogWarning(string message)
         {
+
+        }
+
+        public void LogError(string errorMessage)
+        {
+
         }
     }
 }

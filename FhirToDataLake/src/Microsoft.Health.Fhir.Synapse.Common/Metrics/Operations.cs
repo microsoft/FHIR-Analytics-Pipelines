@@ -13,6 +13,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         public static string CreateJob => nameof(CreateJob);
 
         /// <summary>
+        /// The stage to run job.
+        /// </summary>
+        public static string RunJob => nameof(RunJob);
+
+        /// <summary>
         /// The stage to load FHIR Schema.
         /// </summary>
         public static string LoadFhirSchema => nameof(LoadFhirSchema);

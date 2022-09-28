@@ -10,6 +10,7 @@ using DotLiquid;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
@@ -23,6 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 {
     public static class TestUtils
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         public const string TestDataFolder = "./TestData";
         public const string ExpectTestDataFolder = TestDataFolder + "/Expected";
         public const string TestNativeSchemaDirectoryPath = TestDataFolder + "/schemas";
@@ -68,13 +70,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         {
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
             {
-                return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
+                return new LocalDefaultSchemaProvider(_diagnosticLogger, NullLogger<LocalDefaultSchemaProvider>.Instance);
             }
             else
             {
                 return new AcrCustomizedSchemaProvider(
                     GetMockAcrTemplateProvider(),
                     Options.Create(TestCustomSchemaConfiguration),
+                    _diagnosticLogger,
                     NullLogger<AcrCustomizedSchemaProvider>.Instance);
             }
         }
@@ -84,12 +87,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             var fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestParquetSchemaProviderDelegate,
+                _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
             {
                 return new DefaultSchemaConverter(
                     fhirSchemaManagerWithoutCustomizedSchema,
+                    _diagnosticLogger,
                     NullLogger<DefaultSchemaConverter>.Instance);
             }
             else
@@ -97,6 +102,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
                 return new CustomSchemaConverter(
                     GetMockAcrTemplateProvider(),
                     Options.Create(TestCustomSchemaConfiguration),
+                    _diagnosticLogger,
                     NullLogger<CustomSchemaConverter>.Instance);
             }
         }

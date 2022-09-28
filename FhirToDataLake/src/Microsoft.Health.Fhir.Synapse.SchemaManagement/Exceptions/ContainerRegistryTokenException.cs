@@ -4,10 +4,11 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions
 {
-    public class ContainerRegistryTokenException : FhirSchemaException
+    public class ContainerRegistryTokenException : SynapsePipelineException
     {
         public ContainerRegistryTokenException(string message)
             : base(message)

@@ -11,9 +11,11 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Liquid.Converter;
+using Microsoft.Health.Fhir.Liquid.Converter.Exceptions;
 using Microsoft.Health.Fhir.Liquid.Converter.Models;
 using Microsoft.Health.Fhir.Liquid.Converter.Processors;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
@@ -28,14 +30,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
     {
         private readonly JsonProcessor _jsonProcessor;
         private readonly ITemplateProvider _templateProvider;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<CustomSchemaConverter> _logger;
 
         public CustomSchemaConverter(
             IContainerRegistryTemplateProvider containerRegistryTemplateProvider,
             IOptions<SchemaConfiguration> schemaConfiguration,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<CustomSchemaConverter> logger)
         {
-            _logger = logger;
+            EnsureArg.IsNotNull(containerRegistryTemplateProvider, nameof(containerRegistryTemplateProvider));
+            EnsureArg.IsNotNull(schemaConfiguration, nameof(schemaConfiguration));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+
             if (!string.IsNullOrWhiteSpace(schemaConfiguration.Value.SchemaImageReference))
             {
                 var templateCollections = containerRegistryTemplateProvider.GetTemplateCollectionAsync(
@@ -59,7 +67,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             if (_templateProvider == null)
             {
-                _logger.LogError($"No valid template provider be found, maybe the schema image reference is empty or null.");
+                _diagnosticLogger.LogError($"No valid template provider be found, maybe the schema image reference is empty or null.");
+                _logger.LogInformation($"No valid template provider be found, maybe the schema image reference is empty or null.");
                 throw new ParquetDataProcessorException($"No valid template provider be found, maybe the schema image reference is empty or null.");
             }
 
@@ -70,9 +79,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 processedData = inputData.Values.Select(dataObject
                     => JObject.Parse(_jsonProcessor.Convert(dataObject.ToString(), resourceType, _templateProvider))).ToList();
             }
+            catch (FhirConverterException convertException)
+            {
+                if (convertException.FhirConverterErrorCode == FhirConverterErrorCode.TimeoutError)
+                {
+                    _diagnosticLogger.LogError("Convert data operation timed out.");
+                    _logger.LogError(convertException.InnerException, "Convert data operation timed out.");
+                    throw new ParquetDataProcessorException($"Convert customized data for {resourceType} failed.", convertException);
+                }
+
+                _diagnosticLogger.LogError("Convert data failed.");
+                _logger.LogInformation(convertException, "Convert data failed.");
+                throw new ParquetDataProcessorException($"Convert customized data for {resourceType} failed.", convertException);
+            }
             catch (Exception ex)
             {
-                _logger.LogError($"Convert customized data for {resourceType} failed. " + ex.Message);
+                _diagnosticLogger.LogError($"Unhandled exception: Convert customized data for {resourceType} failed. " + ex.Message);
+                _logger.LogError(ex, "Unhandled exception: convert data process failed.");
                 throw new ParquetDataProcessorException($"Convert customized data for {resourceType} failed.", ex);
             }
 

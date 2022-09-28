@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
@@ -22,8 +23,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
         public FhirServerHealthChecker(
             IFhirDataClient fhirApiDataClient,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<FhirServerHealthChecker> logger)
-            : base(HealthCheckTypes.FhirServiceCanRead, false, logger)
+            : base(HealthCheckTypes.FhirServiceCanRead, false, diagnosticLogger, logger)
         {
             EnsureArg.IsNotNull(fhirApiDataClient, nameof(fhirApiDataClient));
 

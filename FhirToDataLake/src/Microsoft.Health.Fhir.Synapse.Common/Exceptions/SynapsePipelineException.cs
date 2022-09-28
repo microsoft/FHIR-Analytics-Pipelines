@@ -5,16 +5,16 @@
 
 using System;
 
-namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Common.Exceptions
 {
-    public class CompleteJobFailedException : Exception
+    public class SynapsePipelineException : Exception
     {
-        public CompleteJobFailedException(string message)
+        public SynapsePipelineException(string message)
             : base(message)
         {
         }
 
-        public CompleteJobFailedException(string message, Exception inner)
+        public SynapsePipelineException(string message, Exception inner)
             : base(message, inner)
         {
         }

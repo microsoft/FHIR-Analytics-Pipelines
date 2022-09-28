@@ -12,6 +12,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
@@ -21,20 +22,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
     public class FilterManager : IFilterManager
     {
-        private readonly ILogger<FilterManager> _logger;
         private FilterConfiguration _filterConfiguration;
         private readonly IFhirSpecificationProvider _fhirSpecificationProvider;
         private readonly IFilterProvider _filterProvider;
         private List<TypeFilter> _typeFilters;
+        private readonly IDiagnosticLogger _diagnosticLogger;
+        private readonly ILogger<FilterManager> _logger;
 
         public FilterManager(
             IFilterProvider filterProvider,
             IFhirSpecificationProvider fhirSpecificationProvider,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<FilterManager> logger)
         {
             _filterProvider = EnsureArg.IsNotNull(filterProvider, nameof(filterProvider));
 
             _fhirSpecificationProvider = EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
@@ -99,19 +103,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 switch (filterScope)
                 {
                     // For system filter scope, generate a typeFilter for each resource type
-                    case Common.Models.Jobs.FilterScope.System:
+                    case FilterScope.System:
                         typeFilters.AddRange(nonFilterTypes.Select(type => new TypeFilter(type, null)));
                         break;
 
                     // For group filter scope, just generate a typeFilter for all the resource types
-                    case Common.Models.Jobs.FilterScope.Group:
+                    case FilterScope.Group:
                         List<KeyValuePair<string, string>> parameters = null;
 
                         // if both typeString and filterString aren't specified, the request url is "https://{fhirURL}/Patient/{patientId}/*"
                         // otherwise, the request url is "https://{fhirURL}/Patient/{patientId}/*?_type={nonFilterTypes}"
                         if (!string.IsNullOrWhiteSpace(typeString) || !string.IsNullOrWhiteSpace(filterString))
                         {
-                            parameters = new List<KeyValuePair<string, string>> { new(FhirApiConstants.TypeKey, string.Join(',', nonFilterTypes)) };
+                            parameters = new List<KeyValuePair<string, string>> { new (FhirApiConstants.TypeKey, string.Join(',', nonFilterTypes)) };
                         }
 
                         typeFilters.Add(new TypeFilter(FhirConstants.AllResource, parameters));
@@ -122,6 +126,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 }
             }
 
+            _diagnosticLogger.LogInformation($"Create TypeFilters successfully, there are {typeFilters.Count} TypeFilters created.");
             _logger.LogInformation($"Create TypeFilters successfully, there are {typeFilters.Count} TypeFilters created.");
             return typeFilters;
         }
@@ -139,13 +144,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         {
             var supportedResourceTypes = filterScope switch
             {
-                Common.Models.Jobs.FilterScope.System => _fhirSpecificationProvider.GetAllResourceTypes().ToHashSet(),
-                Common.Models.Jobs.FilterScope.Group => _fhirSpecificationProvider.GetCompartmentResourceTypes(FhirConstants.PatientResource).ToHashSet(),
+                FilterScope.System => _fhirSpecificationProvider.GetAllResourceTypes().ToHashSet(),
+                FilterScope.Group => _fhirSpecificationProvider.GetCompartmentResourceTypes(FhirConstants.PatientResource).ToHashSet(),
                 _ => throw new ConfigurationErrorException($"The FilterScope {filterScope} isn't supported now.")
             };
 
             if (string.IsNullOrWhiteSpace(typeString))
             {
+                _diagnosticLogger.LogInformation("The required resource type string is null, empty or white space, all the resource types will be handled.");
                 _logger.LogDebug("The required resource type string is null, empty or white space, all the resource types will be handled.");
                 return supportedResourceTypes;
             }
@@ -158,7 +164,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 types.Where(type => !_fhirSpecificationProvider.IsValidFhirResourceType(type)).ToList();
             if (invalidFhirResourceTypes.Any())
             {
-                _logger.LogError($"The required resource types \"{string.Join(',', invalidFhirResourceTypes)}\" aren't valid resource types.");
+                _diagnosticLogger.LogError($"The required resource types \"{string.Join(',', invalidFhirResourceTypes)}\" aren't valid resource types.");
+                _logger.LogInformation($"The required resource types \"{string.Join(',', invalidFhirResourceTypes)}\" aren't valid resource types.");
                 throw new ConfigurationErrorException(
                     $"The required resource types \"{string.Join(',', invalidFhirResourceTypes)}\" aren't valid resource types.");
             }
@@ -167,7 +174,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             var unsupportedTypes = types.Where(type => !supportedResourceTypes.Contains(type)).ToList();
             if (unsupportedTypes.Any())
             {
-                _logger.LogError($"The required resource types \"{string.Join(',', unsupportedTypes)}\" aren't supported for scope {filterScope}.");
+                _diagnosticLogger.LogError($"The required resource types \"{string.Join(',', unsupportedTypes)}\" aren't supported for scope {filterScope}.");
+                _logger.LogInformation($"The required resource types \"{string.Join(',', unsupportedTypes)}\" aren't supported for scope {filterScope}.");
                 throw new ConfigurationErrorException(
                     $"The required resource types \"{string.Join(',', unsupportedTypes)}\" aren't supported for scope {filterScope}.");
             }
@@ -186,6 +194,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
             if (string.IsNullOrWhiteSpace(filterString))
             {
+                _diagnosticLogger.LogInformation("The type filter string is null, empty or white space.");
                 _logger.LogDebug("The type filter string is null, empty or white space.");
                 return filters;
             }
@@ -200,7 +209,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
                 if (parameterIndex <= 0 || parameterIndex == filter.Length - 1)
                 {
-                    _logger.LogError($"The typeFilter segment '{filter}' could not be parsed.");
+                    _diagnosticLogger.LogError($"The typeFilter segment '{filter}' could not be parsed.");
+                    _logger.LogInformation($"The typeFilter segment '{filter}' could not be parsed.");
                     throw new ConfigurationErrorException(
                         $"The typeFilter segment '{filter}' could not be parsed.");
                 }
@@ -216,7 +226,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
                     if (keyValue.Length != 2)
                     {
-                        _logger.LogError($"The typeFilter segment '{filter}' could not be parsed.");
+                        _diagnosticLogger.LogError($"The typeFilter segment '{filter}' could not be parsed.");
+                        _logger.LogInformation($"The typeFilter segment '{filter}' could not be parsed.");
                         throw new ConfigurationErrorException(
                             $"The typeFilter segment '{filter}' could not be parsed.");
                     }
@@ -245,7 +256,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 // The resource type in typeFilter should be in the required types.
                 if (!requiredTypes.Contains(typeFilter.ResourceType))
                 {
-                    _logger.LogError($"The resource type {typeFilter.ResourceType} in typeFilter isn't in the required types.");
+                    _diagnosticLogger.LogError($"The resource type {typeFilter.ResourceType} in typeFilter isn't in the required types.");
+                    _logger.LogInformation($"The resource type {typeFilter.ResourceType} in typeFilter isn't in the required types.");
                     throw new ConfigurationErrorException($"The resource type {typeFilter.ResourceType} in typeFilter isn't in the required types.");
                 }
 
@@ -260,7 +272,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     // the parameter name should be the supported parameter of this resource type.
                     if (paramName != "_has" && !supportedSearchParam.Contains(paramName))
                     {
-                        _logger.LogError($"The search parameter {paramName} isn't supported by resource type {typeFilter.ResourceType}.");
+                        _diagnosticLogger.LogError($"The search parameter {paramName} isn't supported by resource type {typeFilter.ResourceType}.");
+                        _logger.LogInformation($"The search parameter {paramName} isn't supported by resource type {typeFilter.ResourceType}.");
                         throw new ConfigurationErrorException(
                             $"The search parameter {paramName} isn't supported by resource type {typeFilter.ResourceType}.");
                     }

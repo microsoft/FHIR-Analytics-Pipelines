@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
@@ -16,21 +17,25 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
     {
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ITokenCredentialProvider _credentialProvider;
         private readonly StorageConfiguration _storageConfiguration;
 
         public AzureBlobContainerClientFactory(
             ITokenCredentialProvider credentialProvider,
             IOptions<StorageConfiguration> storageConfiguration,
+            IDiagnosticLogger diagnosticLogger,
             ILoggerFactory loggerFactory)
         {
             EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
             EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
             EnsureArg.IsNotNull(storageConfiguration, nameof(storageConfiguration));
+            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
 
             _credentialProvider = credentialProvider;
             _loggerFactory = loggerFactory;
             _storageConfiguration = storageConfiguration.Value;
+            _diagnosticLogger = diagnosticLogger;
         }
 
         public IAzureBlobContainerClient Create(string storeUrl, string containerName, TokenCredentialTypes type = TokenCredentialTypes.External)
@@ -57,6 +62,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             return new AzureBlobContainerClient(
                 containerUrl,
                 _credentialProvider,
+                _diagnosticLogger,
                 _loggerFactory.CreateLogger<AzureBlobContainerClient>());
         }
     }

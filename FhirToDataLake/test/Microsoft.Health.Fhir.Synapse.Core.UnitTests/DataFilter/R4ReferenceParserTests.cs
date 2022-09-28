@@ -7,6 +7,7 @@ using System;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
@@ -16,6 +17,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 {
     public class R4ReferenceParserTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+
         private readonly FhirApiDataSource _dataSource;
 
         private readonly R4ReferenceParser _referenceParser;
@@ -34,14 +37,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             };
             var fhirServerOption = Options.Create(fhirServerConfig);
             _dataSource = new FhirApiDataSource(fhirServerOption);
-            _referenceParser = new R4ReferenceParser(_dataSource, _nullR4ReferenceParserLogger);
+            _referenceParser = new R4ReferenceParser(_dataSource, _diagnosticLogger, _nullR4ReferenceParserLogger);
         }
 
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new R4ReferenceParser(null, _nullR4ReferenceParserLogger));
+                () => new R4ReferenceParser(null, _diagnosticLogger, _nullR4ReferenceParserLogger));
         }
 
         [Theory]
@@ -78,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             var fhirServerOption = Options.Create(fhirServerConfig);
             var dataSource = new FhirApiDataSource(fhirServerOption);
-            var referenceParser = new R4ReferenceParser(dataSource, _nullR4ReferenceParserLogger);
+            var referenceParser = new R4ReferenceParser(dataSource, _diagnosticLogger, _nullR4ReferenceParserLogger);
 
             var fhirReference = referenceParser.Parse("https://example.com/Patient/123/_history/2");
             Assert.NotNull(fhirReference);

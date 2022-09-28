@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
@@ -20,6 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         private const string DateKeyFormat = "yyyy/MM/dd";
 
         private readonly IAzureBlobContainerClient _containerClient;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<AzureBlobDataWriter> _logger;
 
         // Concurrency to control how many folders are processed concurrently.
@@ -32,12 +34,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         public AzureBlobDataWriter(
             IAzureBlobContainerClientFactory containerClientFactory,
             IDataSink dataSink,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureBlobDataWriter> logger)
         {
             EnsureArg.IsNotNull(containerClientFactory, nameof(containerClientFactory));
+            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _containerClient = containerClientFactory.Create(dataSink.StorageUrl, dataSink.Location);
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
         }
 
@@ -55,6 +60,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             var blobName = GetDataFileName(dateTime, schemaType, jobId, partId);
             var blobUrl = await _containerClient.UpdateBlobAsync(blobName, data.Value, cancellationToken);
 
+            _diagnosticLogger.LogInformation($"Write stream batch data to {blobUrl} successfully.");
             _logger.LogInformation($"Write stream batch data to {blobUrl} successfully.");
 
             return blobUrl;
@@ -122,7 +128,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Fail to delete job data from staging folder");
+                _diagnosticLogger.LogWarning("Fail to delete job data from staging folder");
+                _logger.LogInformation(ex, "Fail to delete job data from staging folder");
                 return false;
             }
 

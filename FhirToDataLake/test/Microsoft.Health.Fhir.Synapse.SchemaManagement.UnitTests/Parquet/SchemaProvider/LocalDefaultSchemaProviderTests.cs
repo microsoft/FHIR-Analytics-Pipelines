@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
 
         static LocalDefaultSchemaProviderTests()
         {
-            _testLocalDefaultSchemaProvider = new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
+            _testLocalDefaultSchemaProvider = new LocalDefaultSchemaProvider(new DiagnosticLogger(), NullLogger<LocalDefaultSchemaProvider>.Instance);
         }
 
         [InlineData("Patient", 24)]

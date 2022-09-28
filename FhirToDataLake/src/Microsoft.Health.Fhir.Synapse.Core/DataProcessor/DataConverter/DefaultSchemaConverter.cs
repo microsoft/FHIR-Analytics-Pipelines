@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
@@ -19,14 +20,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
     public class DefaultSchemaConverter : IDataSchemaConverter
     {
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<DefaultSchemaConverter> _logger;
 
         public DefaultSchemaConverter(
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<DefaultSchemaConverter> logger)
         {
-            _fhirSchemaManager = fhirSchemaManager;
-            _logger = logger;
+            _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         public JsonBatchData Convert(
@@ -43,7 +47,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             var schema = _fhirSchemaManager.GetSchema(schemaType);
             if (schema == null)
             {
-                _logger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
+                _diagnosticLogger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
+                _logger.LogInformation($"The FHIR schema node could not be found for schema type '{schemaType}'.");
                 throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{schemaType}'.");
             }
 
@@ -58,7 +63,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             if (structItem is not JObject fhirJObject)
             {
-                _logger.LogError($"Current FHIR object is not a valid JObject: {schemaNode.GetNodePath()}.");
+                _diagnosticLogger.LogError($"Current FHIR object is not a valid JObject: {schemaNode.GetNodePath()}.");
+                _logger.LogInformation($"Current FHIR object is not a valid JObject: {schemaNode.GetNodePath()}.");
                 throw new ParquetDataProcessorException($"Current FHIR object is not a valid JObject: {schemaNode.GetNodePath()}.");
             }
 
@@ -76,7 +82,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
                     if (!schemaNode.SubNodes[choiceTypeName].SubNodes.ContainsKey(choiceTypeDataType))
                     {
-                        _logger.LogError($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {schemaNode.GetNodePath()}.");
+                        _diagnosticLogger.LogError($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {schemaNode.GetNodePath()}.");
+                        _logger.LogInformation($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {schemaNode.GetNodePath()}.");
                         throw new ParquetDataProcessorException($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {schemaNode.GetNodePath()}.");
                     }
 
@@ -118,7 +125,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             if (arrayItem is not JArray fhirArrayObject)
             {
-                _logger.LogError($"Current FHIR object is not a valid JArray: {schemaNode.GetNodePath()}.");
+                _diagnosticLogger.LogError($"Current FHIR object is not a valid JArray: {schemaNode.GetNodePath()}.");
+                _logger.LogInformation($"Current FHIR object is not a valid JArray: {schemaNode.GetNodePath()}.");
                 throw new ParquetDataProcessorException($"Current FHIR object is not a valid JArray: {schemaNode.GetNodePath()}.");
             }
 
@@ -147,7 +155,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             if (fhirObject is not JValue fhirLeafObject)
             {
-                _logger.LogError($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
+                _diagnosticLogger.LogError($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
+                _logger.LogInformation($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
                 throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
             }
 

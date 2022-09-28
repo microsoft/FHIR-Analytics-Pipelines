@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
@@ -33,6 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
             _testFhirConverter = new CustomSchemaConverter(
                 TestUtils.GetMockAcrTemplateProvider(),
                 schemaConfigurationOptionWithCustomizedSchema,
+                new DiagnosticLogger(),
                 NullLogger<CustomSchemaConverter>.Instance);
 
             var testDataContent = File.ReadLines(Path.Join(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson"))

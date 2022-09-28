@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -25,6 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
     public class AzureTableMetadataStoreTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private readonly NullLogger<AzureTableMetadataStore> _nullAzureTableMetadataStoreLogger =
             NullLogger<AzureTableMetadataStore>.Instance;
 
@@ -377,9 +379,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Make sure the container is deleted before running the tests
             var azureTableClientFactory = new AzureTableClientFactory(
-                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()));
 
-            var metadataStore = new AzureTableMetadataStore(azureTableClientFactory, jobConfig, _nullAzureTableMetadataStoreLogger);
+            var metadataStore = new AzureTableMetadataStore(azureTableClientFactory, jobConfig, _diagnosticLogger, _nullAzureTableMetadataStoreLogger);
             Assert.True(metadataStore.IsInitialized());
             return metadataStore;
         }

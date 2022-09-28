@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
@@ -21,6 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
 {
     public class AzureBlobStorageHealthCheckerTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private readonly IAzureBlobContainerClient _blobContainerClient;
         private readonly string _healthCheckBlobPrefix = AzureBlobStorageHealthChecker.HealthCheckBlobPrefix;
         private AzureBlobStorageHealthChecker _storageAccountHealthChecker;
@@ -52,6 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 new MockAzureBlobContainerClientFactory(_blobContainerClient),
                 Options.Create(_jobConfig),
                 Options.Create(_storeConfig),
+                _diagnosticLogger,
                 new NullLogger<AzureBlobStorageHealthChecker>());
 
             var result = await _storageAccountHealthChecker.PerformHealthCheckAsync();
@@ -68,6 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 new MockAzureBlobContainerClientFactory(_blobContainerClient),
                 Options.Create(_jobConfig),
                 Options.Create(_storeConfig),
+                _diagnosticLogger,
                 new NullLogger<AzureBlobStorageHealthChecker>());
 
             var result = await _storageAccountHealthChecker.PerformHealthCheckAsync();

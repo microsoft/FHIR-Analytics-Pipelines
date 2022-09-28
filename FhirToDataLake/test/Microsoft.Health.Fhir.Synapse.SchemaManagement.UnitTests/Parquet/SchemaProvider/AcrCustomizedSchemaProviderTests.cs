@@ -7,6 +7,7 @@ using System.IO;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using NJsonSchema;
@@ -35,6 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
             var schemaProvider = new AcrCustomizedSchemaProvider(
                 TestUtils.GetMockAcrTemplateProvider(testSchemaTemplateCollections),
                 Options.Create(_schemaConfigurationWithCustomizedSchema),
+                new DiagnosticLogger(),
                 NullLogger<AcrCustomizedSchemaProvider>.Instance);
 
             var schemaCollections = await schemaProvider.GetSchemasAsync();
@@ -51,6 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
             var schemaProvider = new AcrCustomizedSchemaProvider(
                 TestUtils.GetMockAcrTemplateProvider(testSchemaTemplateCollections),
                 Options.Create(_schemaConfigurationWithCustomizedSchema),
+                new DiagnosticLogger(),
                 NullLogger<AcrCustomizedSchemaProvider>.Instance);
 
             await Assert.ThrowsAsync<ContainerRegistrySchemaException>(() => schemaProvider.GetSchemasAsync());

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Azure.Core;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 {
@@ -19,16 +20,19 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
     /// </summary>
     public class AzureAccessTokenProvider : IAccessTokenProvider
     {
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<AzureAccessTokenProvider> _logger;
         private readonly TokenCredential _tokenCredential;
         private ConcurrentDictionary<string, AccessToken> _accessTokenDic = new ();
         private const int _tokenExpireInterval = 5;
 
-        public AzureAccessTokenProvider(TokenCredential tokenCredential, ILogger<AzureAccessTokenProvider> logger)
+        public AzureAccessTokenProvider(TokenCredential tokenCredential, IDiagnosticLogger diagnosticLogger, ILogger<AzureAccessTokenProvider> logger)
         {
             EnsureArg.IsNotNull(tokenCredential, nameof(tokenCredential));
+            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
             _tokenCredential = tokenCredential;
         }
@@ -46,12 +50,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                     _accessTokenDic.AddOrUpdate(resourceUrl, accessToken, (key, value) => accessToken);
                 }
 
+                _diagnosticLogger.LogInformation(string.Format("Get access token for resource '{0}' successfully.", resourceUrl));
                 _logger.LogInformation("Get access token for resource '{0}' successfully.", resourceUrl);
                 return accessToken.Token;
             }
             catch (Exception exception)
             {
-                _logger.LogError("Get access token for resource '{0}' failed. Reason: '{1}'", resourceUrl, exception);
+                _diagnosticLogger.LogError(string.Format("Get access token for resource '{0}' failed. Reason: '{1}'", resourceUrl, exception));
+                _logger.LogInformation(exception, "Get access token for resource '{0}' failed. Reason: '{1}'", resourceUrl, exception);
                 throw;
             }
         }

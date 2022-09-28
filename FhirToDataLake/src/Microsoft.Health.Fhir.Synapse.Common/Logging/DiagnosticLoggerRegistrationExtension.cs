@@ -3,21 +3,17 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Common.Logging
 {
-    public class FhirDataParseException : SynapsePipelineException
+    public static class DiagnosticLoggerRegistrationExtension
     {
-        public FhirDataParseException(string message)
-            : base(message)
+        public static IServiceCollection AddDiagnosticLogger(this IServiceCollection services)
         {
-        }
+            services.AddSingleton<IDiagnosticLogger, DiagnosticLogger>();
 
-        public FhirDataParseException(string message, Exception inner)
-            : base(message, inner)
-        {
+            return services;
         }
     }
 }

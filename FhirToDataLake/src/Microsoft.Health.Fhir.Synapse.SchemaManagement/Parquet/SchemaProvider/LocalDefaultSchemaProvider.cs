@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Newtonsoft.Json;
 
@@ -18,10 +19,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 {
     public class LocalDefaultSchemaProvider : IParquetSchemaProvider
     {
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<LocalDefaultSchemaProvider> _logger;
 
-        public LocalDefaultSchemaProvider(ILogger<LocalDefaultSchemaProvider> logger)
+        public LocalDefaultSchemaProvider(IDiagnosticLogger diagnosticLogger, ILogger<LocalDefaultSchemaProvider> logger)
         {
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
         }
 
@@ -39,7 +42,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Parse schema file failed. Reason: {ex.Message}.");
+                _diagnosticLogger.LogError($"Parse schema file failed. Reason: {ex.Message}.");
+                _logger.LogInformation($"Parse schema file failed. Reason: {ex.Message}.");
                 throw new GenerateFhirParquetSchemaNodeException($"Parse schema file failed. Reason: {ex.Message}.", ex);
             }
 

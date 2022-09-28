@@ -14,6 +14,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.JobManagement;
 
@@ -22,6 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class AzureTableMetadataStore : IMetadataStore
     {
         private readonly TableClient _metadataTableClient;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<AzureTableMetadataStore> _logger;
 
         private const int MaxCountOfQueryEntities = 50;
@@ -35,6 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public AzureTableMetadataStore(
             IAzureTableClientFactory azureTableClientFactory,
             IOptions<JobConfiguration> config,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureTableMetadataStore> logger)
         {
             EnsureArg.IsNotNull(azureTableClientFactory, nameof(azureTableClientFactory));
@@ -43,6 +46,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _metadataTableClient = azureTableClientFactory.Create(TableKeyProvider.MetadataTableName(config.Value.AgentName));
             _metadataTableClient.CreateIfNotExists();
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             _isInitialized = false;
         }
@@ -89,6 +93,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     TableKeyProvider.TriggerPartitionKey(queueType),
                     TableKeyProvider.TriggerRowKey(queueType),
                     cancellationToken: cancellationToken);
+
+                // Todo: test behavior if status is not 200.
                 if (response.GetRawResponse().Status == 200)
                 {
                     entity = response.Value;
@@ -100,12 +106,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
             {
-                _logger.LogWarning("The current trigger doesn't exist, will create a new one.");
+                _diagnosticLogger.LogInformation("The current trigger doesn't exist, will create a new one.");
+                _logger.LogInformation("The current trigger doesn't exist, will create a new one.");
             }
             catch (Exception ex)
             {
                 // any exceptions while getting entity will log a error and try next time
-                _logger.LogError($"Failed to get current trigger entity from table, exception: {ex.Message}");
+                _diagnosticLogger.LogError($"Failed to get current trigger entity from table, exception: {ex.Message}");
+                _logger.LogError(ex, $"Failed to get current trigger entity from table, exception: {ex.Message}");
                 throw;
             }
 
@@ -126,8 +134,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 var selectedPatients = patientsHash.Skip(i).Take(MaxCountOfQueryEntities).ToList();
                 var jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
-                    filter: TransactionGetByKeys(pk, selectedPatients),
-                    cancellationToken: cancellationToken);
+                        filter: TransactionGetByKeys(pk, selectedPatients),
+                        cancellationToken: cancellationToken);
 
                 await foreach (var pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
                 {
@@ -144,7 +152,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public async Task<Dictionary<string, long>> GetPatientVersionsAsync(byte queueType, CancellationToken cancellationToken = default)
         {
             var patientVersions = new Dictionary<string, long>();
-
             var jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
                 filter: $"PartitionKey eq '{TableKeyProvider.CompartmentPartitionKey(queueType)}'",
                 cancellationToken: cancellationToken);
@@ -191,15 +198,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _metadataTableClient.CreateIfNotExists();
                 _isInitialized = true;
+                _diagnosticLogger.LogInformation("Initialize metadata store successfully.");
                 _logger.LogInformation("Initialize metadata store successfully.");
             }
             catch (RequestFailedException ex) when (IsAuthenticationError(ex))
             {
+                _diagnosticLogger.LogInformation("Failed to initialize metadata store due to authentication issue.");
                 _logger.LogInformation(ex, "Failed to initialize metadata store due to authentication issue.");
-
             }
             catch (Exception ex)
             {
+                _diagnosticLogger.LogError("Failed to initialize metadata store.");
                 _logger.LogError(ex, "Failed to initialize metadata store.");
             }
         }

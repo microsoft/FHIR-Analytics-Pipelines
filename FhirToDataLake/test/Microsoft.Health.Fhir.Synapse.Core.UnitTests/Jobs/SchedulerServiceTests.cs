@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -25,6 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
     public class SchedulerServiceTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private readonly NullLogger<SchedulerService> _nullSchedulerServiceLogger =
             NullLogger<SchedulerService>.Instance;
 
@@ -55,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new SchedulerService(null, _metadataStore, Options.Create(new JobConfiguration()), _nullSchedulerServiceLogger));
+                () => new SchedulerService(null, _metadataStore, Options.Create(new JobConfiguration()), _diagnosticLogger, _nullSchedulerServiceLogger));
         }
 
         [Fact]
@@ -74,12 +76,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Make sure the container is deleted before running the tests
             _azureTableClientFactory = new AzureTableClientFactory(
-                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()));
 
             var queueClient = new MockQueueClient();
 
             Assert.Throws<NCrontab.CrontabException>(
-                () => new SchedulerService(queueClient, _metadataStore, Options.Create(jobConfig), _nullSchedulerServiceLogger));
+                () => new SchedulerService(queueClient, _metadataStore, Options.Create(jobConfig), _diagnosticLogger, _nullSchedulerServiceLogger));
         }
 
         [Fact]
@@ -91,7 +93,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 var queueClient = new MockQueueClient();
 
-                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _diagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -163,7 +165,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 var queueClient = new MockQueueClient();
 
-                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _diagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -201,14 +203,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 var queueClient = new MockQueueClient();
 
-                var schedulerService1 = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService1 = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _diagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
                     SchedulerServiceLeaseExpirationInSeconds = 2,
                 };
 
-                var schedulerService2 = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService2 = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _diagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -261,7 +263,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 var queueClient = new MockQueueClient();
 
-                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _diagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -354,7 +356,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 var queueClient = new MockQueueClient();
 
-                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _diagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -429,7 +431,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 brokenQueueClient.EnqueueFaultAction = FaultAction;
 
-                var schedulerService1 = new SchedulerService(brokenQueueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService1 = new SchedulerService(brokenQueueClient, _metadataStore, _jobConfigOption, _diagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -453,7 +455,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 await task1;
 
                 var queueClient = new MockQueueClient();
-                var schedulerService2 = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService2 = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _diagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -519,7 +521,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     false,
                     CancellationToken.None)).ToList();
 
-                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _nullSchedulerServiceLogger)
+                var schedulerService = new SchedulerService(queueClient, _metadataStore, _jobConfigOption, _diagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -562,9 +564,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Make sure the container is deleted before running the tests
             _azureTableClientFactory = new AzureTableClientFactory(
-                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()));
 
-            _metadataStore = new AzureTableMetadataStore(_azureTableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
+            _metadataStore = new AzureTableMetadataStore(_azureTableClientFactory, jobConfig, _diagnosticLogger, new NullLogger<AzureTableMetadataStore>());
             Assert.True(_metadataStore.IsInitialized());
         }
 

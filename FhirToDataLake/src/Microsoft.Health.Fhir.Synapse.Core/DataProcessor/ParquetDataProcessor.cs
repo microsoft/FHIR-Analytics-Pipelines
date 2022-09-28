@@ -14,6 +14,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
@@ -32,25 +33,31 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
         private readonly ParquetConverter _parquetConverter;
         private readonly IDataSchemaConverter _defaultSchemaConverter;
         private readonly IDataSchemaConverter _customSchemaConverter;
+        private readonly IDiagnosticLogger _diagnosticLogger;
 
         public ParquetDataProcessor(
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             IOptions<ArrowConfiguration> arrowConfiguration,
             DataSchemaConverterDelegate schemaConverterDelegate,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<ParquetDataProcessor> logger)
         {
             EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
             EnsureArg.IsNotNull(arrowConfiguration, nameof(arrowConfiguration));
             EnsureArg.IsNotNull(schemaConverterDelegate, nameof(schemaConverterDelegate));
+            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _arrowConfiguration = arrowConfiguration.Value;
             _defaultSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.DefaultSchemaProviderKey);
             _customSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.CustomSchemaProviderKey);
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
 
             var schemaSet = fhirSchemaManager.GetAllSchemaContent();
             _parquetConverter = ParquetConverter.CreateWithSchemaSet(schemaSet);
+
+            _diagnosticLogger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
             _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
         }
 
@@ -94,10 +101,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
                         processedData.Values.Count(),
                         processParameters.SchemaType));
             }
+            catch (ParquetException parquetEx)
+            {
+                _diagnosticLogger.LogError($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".");
+                _logger.LogInformation(parquetEx, $"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".");
+                throw new ParquetDataProcessorException($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".", parquetEx);
+            }
             catch (Exception ex)
             {
-                _logger.LogError($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".");
-                throw new ParquetDataProcessorException($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".", ex);
+                _diagnosticLogger.LogError($"Unhandeled exception when converting input data to parquet for \"{processParameters.SchemaType}\".");
+                _logger.LogError($"Unhandeled exception when converting input data to parquet for \"{processParameters.SchemaType}\".");
+                throw new ParquetDataProcessorException($"Unhandeled exception when converting input data to parquet for \"{processParameters.SchemaType}\".", ex);
             }
         }
 
@@ -118,7 +132,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             // TODO: Confirm the BlockSize handle logic in arrow.lib.
             if (data.Length > _arrowConfiguration.ReadOptions.BlockSize)
             {
-                _logger.LogWarning($"Single data length of {schemaType} is larger than BlockSize {_arrowConfiguration.ReadOptions.BlockSize}, will be ignored when converting to parquet.");
+                _diagnosticLogger.LogWarning($"Single data length of {schemaType} is larger than BlockSize {_arrowConfiguration.ReadOptions.BlockSize}, will be ignored when converting to parquet.");
+                _logger.LogInformation($"Single data length of {schemaType} is larger than BlockSize {_arrowConfiguration.ReadOptions.BlockSize}, will be ignored when converting to parquet.");
                 return false;
             }
 
@@ -126,7 +141,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             // Temporarily use 1/3 as the a threshold to give the warning message.
             if (data.Length * 3 > _arrowConfiguration.ReadOptions.BlockSize)
             {
-                _logger.LogWarning($"Single data length of {schemaType} is closing to BlockSize {_arrowConfiguration.ReadOptions.BlockSize}.");
+                _diagnosticLogger.LogWarning($"Single data length of {schemaType} is closing to BlockSize {_arrowConfiguration.ReadOptions.BlockSize}.");
+                _logger.LogInformation($"Single data length of {schemaType} is closing to BlockSize {_arrowConfiguration.ReadOptions.BlockSize}.");
             }
 
             return true;
