@@ -156,6 +156,9 @@
     },
     "variables": {
         "appName": "[toLower(parameters('appName'))]",
+        "jobInfoQueueName": "[concat(variables('appName'), 'jobinfoqueue')]",
+        "jobInfoTableName": "[concat(variables('appName'), 'jobinfotable')]",
+        "metadataTableName": "[concat(variables('appName'), 'metadatatable')]",
         "functionAppName": "[variables('appName')]",
         "hostingPlanName": "[variables('appName')]",
         "applicationInsightsName": "[concat('AppInsights-', variables('appName'))]",
@@ -268,6 +271,18 @@
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
                             "value": "dotnet-isolated"
+                        },
+                        {
+                            "name": "job__jobInfoQueueName",
+                            "value": "[variables('jobInfoQueueName')]"
+                        },
+                        {
+                            "name": "job__jobInfoTableName",
+                            "value": "[variables('jobInfoTableName')]"
+                        },
+                        {
+                            "name": "job__metadataTableName",
+                            "value": "[variables('metadataTableName')]"
                         },
                         {
                             "name": "job__containerName",

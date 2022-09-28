@@ -395,7 +395,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var jobConfig = Options.Create(new JobConfiguration
             {
-                AgentName = "testagentname",
+                JobInfoTableName = "jobinfotable",
+                MetadataTableName = "metadatatable",
+                JobInfoQueueName = "jobinfoqueue",
             });
             var tableClientFactory = new AzureTableClientFactory(
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));

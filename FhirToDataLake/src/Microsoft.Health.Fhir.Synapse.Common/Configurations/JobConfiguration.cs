@@ -30,16 +30,28 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public string QueueUrl { get; set; }
 
         /// <summary>
+        /// Job information table name.
+        /// </summary>
+        [JsonProperty("jobInfoTableName")]
+        public string JobInfoTableName { get; set; }
+
+        /// <summary>
+        /// Metadata table name.
+        /// </summary>
+        [JsonProperty("metadataTableName")]
+        public string MetadataTableName { get; set; }
+
+        /// <summary>
+        /// Job information queue name.
+        /// </summary>
+        [JsonProperty("jobInfoQueueName")]
+        public string JobInfoQueueName { get; set; }
+
+        /// <summary>
         /// Scheduler crontab expression.
         /// </summary>
         [JsonProperty("schedulerCronExpression")]
         public string SchedulerCronExpression { get; set; }
-
-        /// <summary>
-        /// Agent name
-        /// </summary>
-        [JsonProperty("agentName")]
-        public string AgentName { get; set; }
 
         /// <summary>
         /// Container name for this job.

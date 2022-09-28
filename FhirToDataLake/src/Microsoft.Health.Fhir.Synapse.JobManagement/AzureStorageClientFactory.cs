@@ -27,12 +27,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             ITokenCredentialProvider credentialProvider)
         {
             EnsureArg.IsNotNull(config, nameof(config));
-            EnsureArg.IsNotNullOrWhiteSpace(config.Value.TableUrl, nameof(config.Value.TableUrl));
             EnsureArg.IsNotNullOrWhiteSpace(config.Value.QueueUrl, nameof(config.Value.QueueUrl));
-            EnsureArg.IsNotNullOrWhiteSpace(config.Value.AgentName, nameof(config.Value.AgentName));
 
-            _tableUrl = config.Value.TableUrl;
-            _tableName = AzureStorageKeyProvider.JobInfoTableName(config.Value.AgentName);
+            _tableUrl = EnsureArg.IsNotNullOrWhiteSpace(config.Value.TableUrl, nameof(config.Value.TableUrl));
+            _tableName = EnsureArg.IsNotNullOrWhiteSpace(config.Value.JobInfoTableName, nameof(config.Value.JobInfoTableName));
+            _queueName = EnsureArg.IsNotNullOrWhiteSpace(config.Value.JobInfoQueueName, nameof(config.Value.JobInfoQueueName));
+            _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
 
             if (config.Value.QueueUrl != StorageEmulatorConnectionString)
             {
@@ -44,10 +44,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             {
                 _queueUrl = config.Value.QueueUrl;
             }
-
-            _queueName = AzureStorageKeyProvider.JobMessageQueueName(config.Value.AgentName);
-
-            _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
         }
 
         public AzureStorageClientFactory(
