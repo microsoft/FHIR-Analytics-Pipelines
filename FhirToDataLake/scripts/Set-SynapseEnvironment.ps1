@@ -152,7 +152,7 @@ function New-ContainerIfNotExists
 {
     param([string]$storageName, [string]$containerName)
 
-    $storageContext = New-AzStorageContext -StorageAccountName $storageName -UseConnectedAccount
+    $storageContext = New-AzStorageContext -StorageAccountName $storageName -UseConnectedAccount -ErrorAction stop
     if(Get-AzStorageContainer -Name $containerName -Context $storageContext -ErrorAction SilentlyContinue)  {
         Write-Host "Container '$containerName' already exists." -ForegroundColor Green 
     }
@@ -165,6 +165,10 @@ function New-ContainerIfNotExists
 function New-PlaceHolderBlobs
 {
     param([string]$storageName, [string]$container, [string]$resultPath, [string[]]$schemaTypes)
+
+    $storageContext = New-AzStorageContext -StorageAccountName $storageName -UseConnectedAccount -ErrorAction stop
+    $expiryTime = (Get-Date).AddMinutes(30)
+    $sasToken = New-AzStorageContainerSASToken -Name $container -Permission rwd -ExpiryTime $expiryTime -context $storageContext -ErrorAction stop
 
     foreach ($schemaType in $schemaTypes) {
         $blobName = "$resultPath/$schemaType/.readme.txt"
@@ -181,19 +185,41 @@ function New-PlaceHolderBlobs
             }
         }
 
-        # Create TABLES and VIEWs for resouces
+        # Create place holder blobs
         Write-Host " -> Upload blob '$blobName'."
-
+        
         Start-Job -Name $JobName -ScriptBlock{
-            $storageContext = New-AzStorageContext -StorageAccountName $args[3] -UseConnectedAccount -ErrorAction stop
-            Set-AzStorageBlobContent `
-                -File $args[0]`
-                -Container $args[1] `
-                -Blob $args[2] `
-                -Context $storageContext `
-                -Force `
-                -ErrorAction stop
-        } -ArgumentList "$(Get-Location)/$PlaceHolderName", $container, $blobName, $storageName | Out-Null
+            $retryCount = 0
+            $retryMax = 2
+            $delay = 500
+                
+            do {
+                try 
+                {
+                    $storageContext = New-AzStorageContext -StorageAccountName $args[3] -SasToken $args[4] -ErrorAction stop
+                    Set-AzStorageBlobContent `
+                        -File $args[0]`
+                        -Container $args[1] `
+                        -Blob $args[2] `
+                        -Context $storageContext `
+                        -Force `
+                        -ErrorAction stop
+                    return
+                }
+                catch [Exception]
+                {
+                    $retryCount++
+                    if ($retryCount -le $retryMax)
+                    {
+                        Start-Sleep -Milliseconds $delay
+                    }
+                    else
+                    {
+                        throw
+                    }
+                }
+            } while ($true)
+        } -ArgumentList "$(Get-Location)/$PlaceHolderName", $container, $blobName, $storageName, $sasToken | Out-Null
     }
 
     foreach ($finishedJob in (Get-Job -Name $JobName | Wait-Job)) {
@@ -233,13 +259,35 @@ function New-TableAndViewsForResources
         # Create TABLES and VIEWs for resouces
         Write-Host " -> Executing script $filePath"
         Start-Job -Name $JobName -ScriptBlock{
-            Invoke-Sqlcmd `
-                -ServerInstance $args[0] `
-                -Database $args[1] `
-                -AccessToken $args[2] `
-                -InputFile $args[3] `
-                -ConnectionTimeout 120 `
-                -ErrorAction Stop
+            $retryCount = 0
+            $retryMax = 2
+            $delay = 500
+                    
+            do {
+                try 
+                {
+                    Invoke-Sqlcmd `
+                        -ServerInstance $args[0] `
+                        -Database $args[1] `
+                        -AccessToken $args[2] `
+                        -InputFile $args[3] `
+                        -ConnectionTimeout 120 `
+                        -ErrorAction Stop
+                    return
+                }
+                catch [Exception]
+                {
+                    $retryCount++
+                    if ($retryCount -le $retryMax)
+                    {
+                        Start-Sleep -Milliseconds $delay
+                    }
+                    else
+                    {
+                        throw
+                    }
+                }
+            } while ($true)
         } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $filePath | Out-Null
     }
 
@@ -408,13 +456,35 @@ function New-CustomizedTables
 
         Write-Host "Create customized table from schema file: $schemaFile" -ForegroundColor Green 
         Start-Job -Name $JobName -ScriptBlock{
-            Invoke-Sqlcmd `
-                -ServerInstance $args[0] `
-                -Database $args[1] `
-                -AccessToken $args[2] `
-                -Query $args[3] `
-                -ConnectionTimeout 120 `
-                -ErrorAction Stop
+            $retryCount = 0
+            $retryMax = 2
+            $delay = 500
+                
+            do {
+                try 
+                {
+                    Invoke-Sqlcmd `
+                        -ServerInstance $args[0] `
+                        -Database $args[1] `
+                        -AccessToken $args[2] `
+                        -Query $args[3] `
+                        -ConnectionTimeout 120 `
+                        -ErrorAction Stop
+                    return
+                }
+                catch [Exception]
+                {
+                    $retryCount++
+                    if ($retryCount -le $retryMax)
+                    {
+                        Start-Sleep -Milliseconds $delay
+                    }
+                    else
+                    {
+                        throw
+                    }
+                }
+            } while ($true)
         } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $sql | Out-Null
     }
 
