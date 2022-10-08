@@ -185,7 +185,7 @@ function New-PlaceHolderBlobs
         Write-Host " -> Upload blob '$blobName'."
 
         Start-Job -Name $JobName -ScriptBlock{
-            $storageContext = New-AzStorageContext -StorageAccountName $args[3] -UseConnectedAccount
+            $storageContext = New-AzStorageContext -StorageAccountName $args[3] -UseConnectedAccount -ErrorAction stop
             Set-AzStorageBlobContent `
                 -File $args[0]`
                 -Container $args[1] `
