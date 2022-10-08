@@ -79,6 +79,56 @@ else
     throw " -> The FHIR version '$FhirVersion' is not supported."
 }
 
+function Start-Retryable-Job {
+    [CmdletBinding()]
+    Param(
+        [string]$Name, [scriptblock]$ScriptBlock, [Object[]]$ArgumentList 
+    )
+
+    $prefixBlock = '
+        $retryCount = 0
+        $retryMax = 2
+        $delay = 300
+            
+        do {
+            try 
+            {
+    '
+    $suffixBlock = '
+                return
+            }
+            catch [Exception]
+            {
+                $retryCount++
+                if ($retryCount -le $retryMax)
+                {
+                    Start-Sleep -Milliseconds $delay
+                }
+                else 
+                {
+                    throw
+                }
+            }
+        } while ($true)
+
+    '
+    $executeBlock = [ScriptBlock]::Create($prefixBlock + $ScriptBlock.ToString() + $suffixBlock)
+
+    Start-Job -Name $Name -ScriptBlock $executeBlock -ArgumentList $ArgumentList | Out-Null
+}
+
+function Execute_File
+{
+    param([string]$fileName, [string[]]$argumentList)
+    & $fileName $argumentList
+
+    if ($LastExitCode -ne 0) {
+        throw "Failed for executing '$fileName $argumentList'."
+    }
+
+    Write-Host "Finish executing '$fileName $argumentList'." -ForegroundColor Green
+}
+
 function New-FhirDatabase
 {
     param([string]$serviceEndpoint, [string]$databaseName)
@@ -187,39 +237,17 @@ function New-PlaceHolderBlobs
 
         # Create place holder blobs
         Write-Host " -> Upload blob '$blobName'."
-        
-        Start-Job -Name $JobName -ScriptBlock{
-            $retryCount = 0
-            $retryMax = 2
-            $delay = 500
-                
-            do {
-                try 
-                {
-                    $storageContext = New-AzStorageContext -StorageAccountName $args[3] -SasToken $args[4] -ErrorAction stop
-                    Set-AzStorageBlobContent `
-                        -File $args[0]`
-                        -Container $args[1] `
-                        -Blob $args[2] `
-                        -Context $storageContext `
-                        -Force `
-                        -ErrorAction stop
-                    return
-                }
-                catch [Exception]
-                {
-                    $retryCount++
-                    if ($retryCount -le $retryMax)
-                    {
-                        Start-Sleep -Milliseconds $delay
-                    }
-                    else
-                    {
-                        throw
-                    }
-                }
-            } while ($true)
-        } -ArgumentList "$(Get-Location)/$PlaceHolderName", $container, $blobName, $storageName, $sasToken | Out-Null
+
+        Start-Retryable-Job -Name $JobName -ScriptBlock{
+            $storageContext = New-AzStorageContext -StorageAccountName $args[3] -SasToken $args[4] -ErrorAction stop
+            Set-AzStorageBlobContent `
+                -File $args[0]`
+                -Container $args[1] `
+                -Blob $args[2] `
+                -Context $storageContext `
+                -Force `
+                -ErrorAction stop
+        } -ArgumentList "$(Get-Location)/$PlaceHolderName", $container, $blobName, $storageName, $sasToken
     }
 
     foreach ($finishedJob in (Get-Job -Name $JobName | Wait-Job)) {
@@ -258,37 +286,15 @@ function New-TableAndViewsForResources
 
         # Create TABLES and VIEWs for resouces
         Write-Host " -> Executing script $filePath"
-        Start-Job -Name $JobName -ScriptBlock{
-            $retryCount = 0
-            $retryMax = 2
-            $delay = 500
-                    
-            do {
-                try 
-                {
-                    Invoke-Sqlcmd `
-                        -ServerInstance $args[0] `
-                        -Database $args[1] `
-                        -AccessToken $args[2] `
-                        -InputFile $args[3] `
-                        -ConnectionTimeout 120 `
-                        -ErrorAction Stop
-                    return
-                }
-                catch [Exception]
-                {
-                    $retryCount++
-                    if ($retryCount -le $retryMax)
-                    {
-                        Start-Sleep -Milliseconds $delay
-                    }
-                    else
-                    {
-                        throw
-                    }
-                }
-            } while ($true)
-        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $filePath | Out-Null
+        Start-Retryable-Job -Name $JobName -ScriptBlock{
+            Invoke-Sqlcmd `
+            -ServerInstance $args[0] `
+            -Database $args[1] `
+            -AccessToken $args[2] `
+            -InputFile $args[3] `
+            -ConnectionTimeout 120 `
+            -ErrorAction Stop
+        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $filePath
     }
 
     foreach ($finishedJob in (Get-Job -Name $JobName | Wait-Job)) {
@@ -300,18 +306,6 @@ function New-TableAndViewsForResources
             throw "Creating Table and Views job failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
         }
     }
-}
-
-function Execute_File
-{
-    param([string]$fileName, [string[]]$argumentList)
-    & $fileName $argumentList
-
-    if ($LastExitCode -ne 0) {
-        throw "Failed for executing '$fileName $argumentList'."
-    }
-
-    Write-Host "Finish executing '$fileName $argumentList'." -ForegroundColor Green
 }
 
 function Get-OrasExeApp {
@@ -455,37 +449,15 @@ function New-CustomizedTables
         $sql = Get-CustomizedTableSql -schemaType $schemaType -jsonSchemaObject $testObject -ErrorAction stop
 
         Write-Host "Create customized table from schema file: $schemaFile" -ForegroundColor Green 
-        Start-Job -Name $JobName -ScriptBlock{
-            $retryCount = 0
-            $retryMax = 2
-            $delay = 500
-                
-            do {
-                try 
-                {
-                    Invoke-Sqlcmd `
-                        -ServerInstance $args[0] `
-                        -Database $args[1] `
-                        -AccessToken $args[2] `
-                        -Query $args[3] `
-                        -ConnectionTimeout 120 `
-                        -ErrorAction Stop
-                    return
-                }
-                catch [Exception]
-                {
-                    $retryCount++
-                    if ($retryCount -le $retryMax)
-                    {
-                        Start-Sleep -Milliseconds $delay
-                    }
-                    else
-                    {
-                        throw
-                    }
-                }
-            } while ($true)
-        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $sql | Out-Null
+        Start-Retryable-Job -Name $JobName -ScriptBlock{
+            Invoke-Sqlcmd `
+                -ServerInstance $args[0] `
+                -Database $args[1] `
+                -AccessToken $args[2] `
+                -Query $args[3] `
+                -ConnectionTimeout 120 `
+                -ErrorAction Stop
+        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $sql
     }
 
     foreach ($finishedJob in (Get-Job -Name $JobName | Wait-Job)) {
