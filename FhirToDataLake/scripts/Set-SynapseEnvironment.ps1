@@ -110,7 +110,6 @@ function Start-Retryable-Job {
                 }
             }
         } while ($true)
-
     '
     $executeBlock = [ScriptBlock]::Create($prefixBlock + $ScriptBlock.ToString() + $suffixBlock)
 
@@ -226,17 +225,20 @@ function New-PlaceHolderBlobs
         $jobs = @(Get-Job -Name $JobName -ErrorAction Ignore)
         if ($jobs.Count -ge $Concurrent) {
             $finishedJob = (Get-Job -Name $JobName | Wait-Job -Any)
-            Remove-Job -Job $finishedJob
 
-            if ($finishedJob.State -eq 'Failed') {
+            if (($finishedJob.State -eq 'Failed') -or ($finishedJob.ChildJobs[0].State -eq 'Failed')) {
                 Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
                 Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
                 throw "Uploading readme files to storage failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
             }
+            else {
+                Write-Host $finishedJob.ChildJobs[0].Information[0].MessageData.Message
+                Remove-Job -Job $finishedJob
+            }
         }
 
         # Create place holder blobs
-        Write-Host " -> Upload blob '$blobName'."
+        Write-Host " -> Begin to upload blob '$blobName'."
 
         Start-Retryable-Job -Name $JobName -ScriptBlock{
             $storageContext = New-AzStorageContext -StorageAccountName $args[3] -SasToken $args[4] -ErrorAction stop
@@ -247,16 +249,19 @@ function New-PlaceHolderBlobs
                 -Context $storageContext `
                 -Force `
                 -ErrorAction stop
+            Write-Host " -> Finished uploading blob '$blobName'."
         } -ArgumentList "$(Get-Location)/$PlaceHolderName", $container, $blobName, $storageName, $sasToken
     }
 
     foreach ($finishedJob in (Get-Job -Name $JobName | Wait-Job)) {
-        Remove-Job -Job $finishedJob
-
-        if ($finishedJob.State -eq 'Failed') {
+        if (($finishedJob.State -eq 'Failed') -or ($finishedJob.ChildJobs[0].State -eq 'Failed')) {
             Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
             Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
             throw "Uploading readme files to storage failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+        }
+        else {
+            Write-Host $finishedJob.ChildJobs[0].Information[0].MessageData.Message
+            Remove-Job -Job $finishedJob
         }
     }
 }
@@ -274,36 +279,42 @@ function New-TableAndViewsForResources
         $jobs = @(Get-Job -Name $JobName -ErrorAction Ignore)
         if ($jobs.Count -ge $Concurrent) {
             $finishedJob = (Get-Job -Name $JobName | Wait-Job -Any)
-            Remove-Job -Job $finishedJob
 
-            if ($finishedJob.State -eq 'Failed') {
+            if (($finishedJob.State -eq 'Failed') -or ($finishedJob.ChildJobs[0].State -eq 'Failed')) {
                 Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
                 Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
                 throw "Creating Table and Views job failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+            }
+            else {
+                Write-Host $finishedJob.ChildJobs[0].Information[0].MessageData.Message
+                Remove-Job -Job $finishedJob
             }
         }
         $filePath = $file.FullName
 
         # Create TABLES and VIEWs for resouces
-        Write-Host " -> Executing script $filePath"
+        Write-Host " -> Begin to execute script $filePath"
         Start-Retryable-Job -Name $JobName -ScriptBlock{
             Invoke-Sqlcmd `
-            -ServerInstance $args[0] `
-            -Database $args[1] `
-            -AccessToken $args[2] `
-            -InputFile $args[3] `
-            -ConnectionTimeout 120 `
-            -ErrorAction Stop
+                -ServerInstance $args[0] `
+                -Database $args[1] `
+                -AccessToken $args[2] `
+                -InputFile $args[3] `
+                -ConnectionTimeout 120 `
+                -ErrorAction Stop
+            Write-Host " -> Finished executing script $filePath"
         } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $filePath
     }
 
     foreach ($finishedJob in (Get-Job -Name $JobName | Wait-Job)) {
-        Remove-Job -Job $finishedJob
-
-        if ($finishedJob.State -eq 'Failed') {
+        if (($finishedJob.State -eq 'Failed') -or ($finishedJob.ChildJobs[0].State -eq 'Failed')) {
             Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
             Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
             throw "Creating Table and Views job failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+        }
+        else {
+            Write-Host $finishedJob.ChildJobs[0].Information[0].MessageData.Message
+            Remove-Job -Job $finishedJob
         }
     }
 }
@@ -432,12 +443,15 @@ function New-CustomizedTables
         $jobs = @(Get-Job -Name $JobName -ErrorAction Ignore)
         if ($jobs.Count -ge $Concurrent) {
             $finishedJob = (Get-Job -Name $JobName | Wait-Job -Any)
-            Remove-Job -Job $finishedJob
 
-            if ($finishedJob.State -eq 'Failed') {
+            if (($finishedJob.State -eq 'Failed') -or ($finishedJob.ChildJobs[0].State -eq 'Failed')) {
                 Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
                 Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
                 throw "Create customized Table failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+            }
+            else {
+                Write-Host $finishedJob.ChildJobs[0].Information[0].MessageData.Message
+                Remove-Job -Job $finishedJob
             }
         }
 
@@ -448,7 +462,7 @@ function New-CustomizedTables
     
         $sql = Get-CustomizedTableSql -schemaType $schemaType -jsonSchemaObject $testObject -ErrorAction stop
 
-        Write-Host "Create customized table from schema file: $schemaFile" -ForegroundColor Green 
+        Write-Host "Begin to create customized table for $schemaType" -ForegroundColor Green 
         Start-Retryable-Job -Name $JobName -ScriptBlock{
             Invoke-Sqlcmd `
                 -ServerInstance $args[0] `
@@ -457,20 +471,22 @@ function New-CustomizedTables
                 -Query $args[3] `
                 -ConnectionTimeout 120 `
                 -ErrorAction Stop
-        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $sql
+            Write-Host "Finished creating customized table from schema file: $($args[4])"
+        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $sql, $schemaType
     }
 
     foreach ($finishedJob in (Get-Job -Name $JobName | Wait-Job)) {
-        Remove-Job -Job $finishedJob
-
-        if ($finishedJob.State -eq 'Failed') {
+        if (($finishedJob.State -eq 'Failed') -or ($finishedJob.ChildJobs[0].State -eq 'Failed')) {
             Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
             Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
             throw "Create customized Table failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
         }
+        else {
+            Write-Host $finishedJob.ChildJobs[0].Information[0].MessageData.Message
+            Remove-Job -Job $finishedJob
+        }
     }
 }
-
 
 $stopwatch =  [system.diagnostics.stopwatch]::StartNew()
 
