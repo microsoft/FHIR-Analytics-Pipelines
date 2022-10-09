@@ -402,9 +402,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 AgentName = "testagentname",
             });
             var tableClientFactory = new AzureTableClientFactory(
-                new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
-            IMetadataStore metadataStore = new AzureTableMetadataStore(tableClientFactory, jobConfig, _diagnosticLogger, new NullLogger<AzureTableMetadataStore>());
+            IMetadataStore metadataStore = new AzureTableMetadataStore(tableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
             Assert.True(metadataStore.IsInitialized());
             return metadataStore;
         }

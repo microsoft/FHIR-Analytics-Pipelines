@@ -55,7 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
             if (healthCheckResult.Status is HealthCheckStatus.UNHEALTHY)
             {
-                _diagnosticLogger.LogInformation($"Health check component {Name} is unhealthy. Failed reason: {healthCheckResult.ErrorMessage}");
+                _diagnosticLogger.LogWarning($"Health check component {Name} is unhealthy. Failed reason: {healthCheckResult.ErrorMessage}");
                 _logger.LogInformation($"Health check component {Name} is unhealthy. Failed reason: {healthCheckResult.ErrorMessage}");
             }
             else

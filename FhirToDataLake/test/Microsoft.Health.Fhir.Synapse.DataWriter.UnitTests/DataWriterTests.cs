@@ -51,7 +51,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             var streamData = new StreamBatchData(stream, 1, TestResourceType);
             await dataWriter.WriteAsync(streamData, jobId, partIndex, _testDate);
 
-            var containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), _diagnosticLogger, new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
+            var containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), _diagnosticLogger, new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
             var blobStream = await containerClient.GetBlobAsync($"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet");
             Assert.NotNull(blobStream);
 
@@ -175,7 +175,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         {
             return new AzureBlobDataWriter(
                 new AzureBlobContainerClientFactory(
-                    new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()),
+                    new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
                     Options.Create(_storageConfiguration),
                     _diagnosticLogger,
                     new NullLoggerFactory()),
@@ -200,7 +200,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         {
             return new AzureBlobDataWriter(
                 new AzureBlobContainerClientFactory(
-                    new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()),
+                    new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
                     Options.Create(_storageConfiguration),
                     _diagnosticLogger,
                     new NullLoggerFactory()),

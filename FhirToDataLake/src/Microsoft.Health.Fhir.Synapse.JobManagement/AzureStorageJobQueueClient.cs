@@ -29,7 +29,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         private readonly TableClient _azureJobInfoTableClient;
         private readonly QueueClient _azureJobMessageQueueClient;
 
-        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<AzureStorageJobQueueClient<TJobInfo>> _logger;
 
         private const int DefaultVisibilityTimeoutInSeconds = 30;
@@ -44,12 +43,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         public AzureStorageJobQueueClient(
             IAzureStorageClientFactory azureStorageClientFactory,
-            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureStorageJobQueueClient<TJobInfo>> logger)
         {
             EnsureArg.IsNotNull(azureStorageClientFactory, nameof(azureStorageClientFactory));
 
-            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _azureJobInfoTableClient = azureStorageClientFactory.CreateTableClient();
@@ -84,12 +81,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             bool isCompleted,
             CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation($"Start to enqueue {definitions.Length} jobs.");
             _logger.LogInformation($"Start to enqueue {definitions.Length} jobs.");
 
             if (definitions.Length > MaxJobsCountForEnqueuingInABatch)
             {
-                _diagnosticLogger.LogError($"The count of jobs to be enqueued is larger than the maximum allowed length {MaxJobsCountForEnqueuingInABatch}.");
                 _logger.LogError($"The count of jobs to be enqueued is larger than the maximum allowed length {MaxJobsCountForEnqueuingInABatch}.");
                 throw new JobManagementException(
                     $"The count of jobs to be enqueued is larger than the maximum allowed length {MaxJobsCountForEnqueuingInABatch}.");
@@ -130,7 +125,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.InvalidDuplicateRowErrorCode))
             {
-                _diagnosticLogger.LogError("There are duplicated jobs to be enqueued.");
                 _logger.LogError(ex, "There are duplicated jobs to be enqueued.");
                 throw new JobManagementException("There are duplicated jobs to be enqueued.", ex);
             }
@@ -150,7 +144,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
                 if (!retrievedJobLockEntities.Any())
                 {
-                    _diagnosticLogger.LogError("There are duplicated jobs to be enqueued.");
                     _logger.LogError(ex, "There are duplicated jobs to be enqueued.");
                     throw;
                 }
@@ -173,13 +166,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.RequestBodyTooLargeErrorCode))
             {
-                _diagnosticLogger.LogError("The maximum size of a single table entity is 1MB, the size of entity is larger than 1MB.");
                 _logger.LogError(ex, "The maximum size of a single table entity is 1MB, the size of entity is larger than 1MB.");
                 throw new JobManagementException("The maximum size of a single table entity is 1MB, the size of entity is larger than 1MB.", ex);
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError($"Fail to enqueue jobs. Reason: {ex}");
                 _logger.LogError(ex, "Fail to enqueue jobs. Reason:{0}", ex);
                 throw new JobManagementException($"Fail to enqueue jobs. Reason:{ex}", ex);
             }
@@ -200,12 +191,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
             {
-                _diagnosticLogger.LogInformation("The job reverse index entities already exist.");
                 _logger.LogInformation(ex, "The job reverse index entities already exist.");
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError($"Fail to enqueue jobs. Reason: {ex}");
                 _logger.LogError(ex, "Fail to enqueue jobs. Reason:{0}", ex);
                 throw new JobManagementException($"Fail to enqueue jobs. Reason:{ex}", ex);
             }
@@ -260,14 +249,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
                 jobInfos = jobInfoEntities.Select(entity => entity.ToJobInfo<TJobInfo>()).ToList();
 
-                _diagnosticLogger.LogInformation($"Enqueue jobs '{string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())}' successfully.");
                 _logger.LogInformation($"Enqueue jobs '{string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())}' successfully.");
 
                 return jobInfos;
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError($"Fail to enqueue jobs. Reason: {ex}");
                 _logger.LogError(ex, "Fail to enqueue jobs. Reason:{0}", ex);
                 throw new JobManagementException($"Fail to enqueue jobs. Reason:{ex}", ex);
             }
@@ -275,7 +262,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         public async Task<JobInfo> DequeueAsync(byte queueType, string worker, int heartbeatTimeoutSec, CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation("Start to dequeue.");
             _logger.LogInformation("Start to dequeue.");
 
             // step 1: receive message from message queue
@@ -287,7 +273,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             if (message == null)
             {
-                _diagnosticLogger.LogInformation("The queue is empty.");
                 _logger.LogInformation("The queue is empty.");
                 return null;
             }
@@ -296,7 +281,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             if (jobMessage == null)
             {
-                _diagnosticLogger.LogInformation("Failed to deserialize message.");
                 _logger.LogInformation("Failed to deserialize message.");
                 return null;
             }
@@ -310,7 +294,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // if status is running and CancelRequest is true, the job will be dequeued, and jobHosting will continue to handle it
             if (jobInfo.Status is JobStatus.Completed or JobStatus.Failed or JobStatus.Cancelled)
             {
-                _diagnosticLogger.LogError($"Discard queue message {message.MessageId}, the job status is {jobInfo.Status}.");
                 _logger.LogError($"Discard queue message {message.MessageId}, the job status is {jobInfo.Status}.");
                 await _azureJobMessageQueueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);
 
@@ -321,14 +304,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             if (!jobLockEntity.ContainsKey(JobLockEntityProperties.JobMessageId))
             {
                 // the message is enqueued and dequeued immediately before the update the message info to table entity, skip processing it this time.
-                _diagnosticLogger.LogInformation("The message id in job lock entity is null, skip processing this message this time.");
                 _logger.LogInformation("The message id in job lock entity is null, skip processing this message this time.");
                 return null;
             }
 
             if (!string.Equals(jobLockEntity.GetString(JobLockEntityProperties.JobMessageId), message.MessageId, StringComparison.OrdinalIgnoreCase))
             {
-                _diagnosticLogger.LogError($"Discard queue message {message.MessageId}, the message id is inconsistent with the one in the table entity.");
                 _logger.LogError($"Discard queue message {message.MessageId}, the message id is inconsistent with the one in the table entity.");
                 await _azureJobMessageQueueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);
 
@@ -339,7 +320,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // step 5: skip it if the job is running and still active
             if (jobInfo.Status == JobStatus.Running && jobInfo.HeartbeatDateTime.AddSeconds(heartbeatTimeoutSec) > DateTime.UtcNow)
             {
-                _diagnosticLogger.LogError($"Job {jobInfo.Id} is still active.");
                 _logger.LogError($"Job {jobInfo.Id} is still active.");
 
                 throw new JobManagementException($"Job {jobInfo.Id} is still active.");
@@ -366,14 +346,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             _ = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionUpdateActions, cancellationToken);
 
-            _diagnosticLogger.LogInformation($"Dequeue job '{jobInfo.Id}'. Successfully ");
             _logger.LogInformation($"Dequeue job '{jobInfo.Id}'. Successfully ");
             return jobInfo;
         }
 
         public async Task<JobInfo> GetJobByIdAsync(byte queueType, long jobId, bool returnDefinition, CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation($"Start to get job {jobId}.");
             _logger.LogInformation($"Start to get job {jobId}.");
 
             // step 1: get job reverse index entity
@@ -392,14 +370,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // step 3: convert to job info.
             var jobInfo = jobInfoEntity.ToJobInfo<TJobInfo>();
 
-            _diagnosticLogger.LogInformation($"Get job {jobId} successfully.");
             _logger.LogInformation($"Get job {jobId} successfully.");
             return jobInfo;
         }
 
         public async Task<IEnumerable<JobInfo>> GetJobsByIdsAsync(byte queueType, long[] jobIds, bool returnDefinition, CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation($"Start to get jobs {string.Join(",", jobIds)}.");
             _logger.LogInformation($"Start to get jobs {string.Join(",", jobIds)}.");
 
             var result = new ConcurrentBag<JobInfo>();
@@ -423,14 +399,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 await Task.WhenAll(tasks);
             }
 
-            _diagnosticLogger.LogInformation($"Get jobs {string.Join(",", jobIds)} successfully.");
             _logger.LogInformation($"Get jobs {string.Join(",", jobIds)} successfully.");
             return result;
         }
 
         public async Task<IEnumerable<JobInfo>> GetJobByGroupIdAsync(byte queueType, long groupId, bool returnDefinition, CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation($"Start to get jobs in group {groupId}.");
             _logger.LogInformation($"Start to get jobs in group {groupId}.");
 
             var jobs = new List<JobInfo>();
@@ -447,14 +421,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 jobs.AddRange(pageResult.Values.Select(entity => entity.ToJobInfo<TJobInfo>()));
             }
 
-            _diagnosticLogger.LogInformation($"Get jobs in group {groupId} successfully.");
             _logger.LogInformation($"Get jobs in group {groupId} successfully.");
             return jobs;
         }
 
         public async Task<bool> KeepAliveJobAsync(JobInfo jobInfo, CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation($"Start to keep alive for job {jobInfo.Id}.");
             _logger.LogInformation($"Start to keep alive for job {jobInfo.Id}.");
 
             // step 1: get jobInfo entity and job lock entity
@@ -465,7 +437,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // if the version does not match, means there are more than one running jobs for it, only the last one keep alive
             if ((long)jobInfoEntity[JobInfoEntityProperties.Version] != jobInfo.Version)
             {
-                _diagnosticLogger.LogError($"Job {jobInfo.Id} precondition failed, version does not match.");
                 _logger.LogError($"Job {jobInfo.Id} precondition failed, version does not match.");
 
                 throw new JobNotExistException($"Job {jobInfo.Id} precondition failed, version does not match.");
@@ -490,13 +461,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 if (jobInfo.Status is JobStatus.Completed or JobStatus.Failed or JobStatus.Cancelled)
                 {
                     message = $"Job {jobInfo.Id} has been completed. Keep alive failed";
-                    _diagnosticLogger.LogInformation(message);
                     _logger.LogInformation(message);
                 }
                 else
                 {
                     message = $"Failed to keep alive for job {jobInfo.Id}, the job message is not found.";
-                    _diagnosticLogger.LogWarning(message);
                     _logger.LogInformation(message);
                 }
 
@@ -527,7 +496,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.RequestBodyTooLargeErrorCode))
             {
-                _diagnosticLogger.LogError("The maximum size of a single table entity is 1MB, the size of result is larger than 1MB.");
                 _logger.LogError(ex, "The maximum size of a single table entity is 1MB, the size of result is larger than 1MB.");
                 throw;
             }
@@ -535,7 +503,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // step 8: check if cancel requested
             var shouldCancel = (await GetJobByIdAsync(jobInfo.QueueType, jobInfo.Id, false, cancellationToken)).CancelRequested;
 
-            _diagnosticLogger.LogInformation($"Keep alive for job {jobInfo.Id} successfully.");
             _logger.LogInformation($"Keep alive for job {jobInfo.Id} successfully.");
 
             return shouldCancel;
@@ -543,7 +510,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         public async Task CancelJobByGroupIdAsync(byte queueType, long groupId, CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation($"Start to cancel jobs in group {groupId}.");
             _logger.LogInformation($"Start to cancel jobs in group {groupId}.");
 
             var jobInfoEntities = new List<TableEntity>();
@@ -573,7 +539,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             if (batchFailed)
             {
                 var errorMessage = responseList.Value.Where(response => response.IsError).Select(response => response.ReasonPhrase).First();
-                _diagnosticLogger.LogError($"Failed to cancel jobs in group {groupId}. Reason: {errorMessage}");
                 _logger.LogError($"Failed to cancel jobs in group {groupId}. Reason: {errorMessage}");
                 throw new JobManagementException($"Failed to cancel jobs in group {groupId}. Reason: {errorMessage}");
             }

@@ -21,7 +21,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
     public class R4ReferenceParser : IReferenceParser
     {
-        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<R4ReferenceParser> _logger;
         private readonly IFhirApiDataSource _dataSource;
 
@@ -37,11 +36,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
         public R4ReferenceParser(
             IFhirApiDataSource dataSource,
-            IDiagnosticLogger diagnosticLogger,
             ILogger<R4ReferenceParser> logger)
         {
             _dataSource = EnsureArg.IsNotNull(dataSource, nameof(dataSource));
-            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
@@ -49,7 +46,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         {
             if (string.IsNullOrWhiteSpace(reference))
             {
-                _diagnosticLogger.LogWarning("The reference string is null or white space.");
                 _logger.LogInformation("The reference string is null or white space.");
                 throw new ReferenceParseException("The reference string is null or white space.");
             }
@@ -86,7 +82,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                             if (SupportedSchemes.Contains(baseUri.Scheme, StringComparer.OrdinalIgnoreCase))
                             {
                                 // This is an absolute URL pointing to an external resource.
-                                _diagnosticLogger.LogWarning($"The reference {reference} is an absolute URL pointing to an external resource.");
                                 _logger.LogInformation($"The reference {reference} is an absolute URL pointing to an external resource.");
                                 throw new ReferenceParseException($"The reference {reference} is an absolute URL pointing to an external resource.");
                             }
@@ -95,20 +90,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     catch (UriFormatException ex)
                     {
                         // The reference is not a relative reference but is not a valid absolute reference either.
-                        _diagnosticLogger.LogWarning($"The reference {reference} is not a relative reference but is not a valid absolute reference either. UriFormatException: {ex}.");
                         _logger.LogInformation(ex, $"The reference {reference} is not a relative reference but is not a valid absolute reference either. UriFormatException: {ex}.");
                         throw new ReferenceParseException($"The reference {reference} is not a relative reference but is not a valid absolute reference either.", ex);
                     }
                 }
                 else
                 {
-                    _diagnosticLogger.LogWarning($"The resource type {resourceTypeInString} in reference {reference} isn't a known resource type.");
                     _logger.LogInformation($"The resource type {resourceTypeInString} in reference {reference} isn't a known resource type.");
                     throw new ReferenceParseException($"The resource type {resourceTypeInString} in reference {reference} isn't a known resource type.");
                 }
             }
 
-            _diagnosticLogger.LogWarning($"Fail to parse reference {reference}.");
             _logger.LogInformation($"Fail to parse reference {reference}.");
             throw new ReferenceParseException($"Fail to parse reference {reference}.");
         }

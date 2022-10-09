@@ -90,7 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             {
                 _diagnosticLogger.LogError("Unhandled exception: failed to get template collection.");
                 _logger.LogError(unhandledEx, "Unhandled exception: failed to get template collection.");
-                throw new ContainerRegistrySchemaException("Unhandled exception: failed to get template collection.", unhandledEx);
+                throw;
             }
         }
     }

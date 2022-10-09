@@ -126,7 +126,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 }
             }
 
-            _diagnosticLogger.LogInformation($"Create TypeFilters successfully, there are {typeFilters.Count} TypeFilters created.");
             _logger.LogInformation($"Create TypeFilters successfully, there are {typeFilters.Count} TypeFilters created.");
             return typeFilters;
         }
@@ -151,8 +150,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
             if (string.IsNullOrWhiteSpace(typeString))
             {
-                _diagnosticLogger.LogInformation("The required resource type string is null, empty or white space, all the resource types will be handled.");
-                _logger.LogDebug("The required resource type string is null, empty or white space, all the resource types will be handled.");
+                _logger.LogInformation("The required resource type string is null, empty or white space, all the resource types will be handled.");
                 return supportedResourceTypes;
             }
 
@@ -194,8 +192,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
             if (string.IsNullOrWhiteSpace(filterString))
             {
-                _diagnosticLogger.LogInformation("The type filter string is null, empty or white space.");
-                _logger.LogDebug("The type filter string is null, empty or white space.");
+                _logger.LogInformation("The type filter string is null, empty or white space.");
                 return filters;
             }
 

@@ -163,7 +163,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
-            var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<FhirParquetSchemaManager>.Instance);
+            var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
             var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             var defaultConverter = new DefaultSchemaConverter(fhirSchemaManager, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
@@ -186,7 +186,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
-            return new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<FhirParquetSchemaManager>.Instance);
+            return new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
         }
 
         private static IFilterManager GetFilterManager(FilterConfiguration filterConfiguration)

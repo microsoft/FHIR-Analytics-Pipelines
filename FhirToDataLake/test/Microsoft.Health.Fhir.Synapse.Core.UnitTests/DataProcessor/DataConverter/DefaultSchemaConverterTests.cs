@@ -33,7 +33,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
             var schemaManager = new FhirParquetSchemaManager(
                 schemaConfigurationOption,
                 TestUtils.TestParquetSchemaProviderDelegate,
-                _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
             _testDefaultConverter = new DefaultSchemaConverter(schemaManager, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);

@@ -43,7 +43,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 {
     public class E2ETests
     {
-        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private readonly BlobServiceClient _blobServiceClient;
         private readonly ITestOutputHelper _testOutputHelper;
 
@@ -446,18 +445,17 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             // Make sure the container is deleted before running the tests
             Assert.False(await _blobContainerClient.ExistsAsync());
             var azureTableClientFactory = new AzureTableClientFactory(
-                new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
-            _metadataStore = new AzureTableMetadataStore(azureTableClientFactory, jobConfig, _diagnosticLogger, new NullLogger<AzureTableMetadataStore>());
+            _metadataStore = new AzureTableMetadataStore(azureTableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
             Assert.True(_metadataStore.IsInitialized());
             _queueClientFactory = new AzureStorageClientFactory(
                 AzureStorageKeyProvider.JobInfoTableName(agentName),
                 AzureStorageKeyProvider.JobMessageQueueName(agentName),
-                new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
             _queueClient = new AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>(
                 _queueClientFactory,
-                _diagnosticLogger,
                 new NullLogger<AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>());
 
             // set configuration

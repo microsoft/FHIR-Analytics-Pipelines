@@ -60,7 +60,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
     [Trait("Category", "JobManagementTests")]
     public class AzureStorageJobQueueClientTests
     {
-        private IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private readonly NullLogger<AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>
             _nullAzureStorageJobQueueClientLogger =
                 NullLogger<AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>.Instance;
@@ -91,11 +90,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             var azureStorageClientFactory = new AzureStorageClientFactory(
                 tableName,
                 queueName,
-                new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
             _azureStorageJobQueueClient = new AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>(
                 azureStorageClientFactory,
-                _diagnosticLogger,
                 _nullAzureStorageJobQueueClientLogger);
 
             _azureStorageJobQueueClient.IsInitialized();

@@ -84,7 +84,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 if (convertException.FhirConverterErrorCode == FhirConverterErrorCode.TimeoutError)
                 {
                     _diagnosticLogger.LogError("Convert data operation timed out.");
-                    _logger.LogError(convertException.InnerException, "Convert data operation timed out.");
+                    _logger.LogInformation(convertException.InnerException, "Convert data operation timed out.");
                     throw new ParquetDataProcessorException($"Convert customized data for {resourceType} failed.", convertException);
                 }
 
@@ -94,7 +94,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError($"Unhandled exception: Convert customized data for {resourceType} failed. " + ex.Message);
+                _diagnosticLogger.LogError($"Unhandled exception: Convert customized data for {resourceType} failed.");
                 _logger.LogError(ex, "Unhandled exception: convert data process failed.");
                 throw new ParquetDataProcessorException($"Convert customized data for {resourceType} failed.", ex);
             }

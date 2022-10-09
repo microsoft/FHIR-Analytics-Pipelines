@@ -57,7 +57,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             var schemaSet = fhirSchemaManager.GetAllSchemaContent();
             _parquetConverter = ParquetConverter.CreateWithSchemaSet(schemaSet);
 
-            _diagnosticLogger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
             _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
         }
 
@@ -132,7 +131,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             // TODO: Confirm the BlockSize handle logic in arrow.lib.
             if (data.Length > _arrowConfiguration.ReadOptions.BlockSize)
             {
-                _diagnosticLogger.LogWarning($"Single data length of {schemaType} is larger than BlockSize {_arrowConfiguration.ReadOptions.BlockSize}, will be ignored when converting to parquet.");
                 _logger.LogInformation($"Single data length of {schemaType} is larger than BlockSize {_arrowConfiguration.ReadOptions.BlockSize}, will be ignored when converting to parquet.");
                 return false;
             }
@@ -141,7 +139,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             // Temporarily use 1/3 as the a threshold to give the warning message.
             if (data.Length * 3 > _arrowConfiguration.ReadOptions.BlockSize)
             {
-                _diagnosticLogger.LogWarning($"Single data length of {schemaType} is closing to BlockSize {_arrowConfiguration.ReadOptions.BlockSize}.");
                 _logger.LogInformation($"Single data length of {schemaType} is closing to BlockSize {_arrowConfiguration.ReadOptions.BlockSize}.");
             }
 

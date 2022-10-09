@@ -27,8 +27,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
                 SchemaImageReference = TestUtils.MockSchemaImageReference,
             });
 
-            _testParquetSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithoutCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, new DiagnosticLogger(), NullLogger<FhirParquetSchemaManager>.Instance);
-            _testParquetSchemaManagerWithCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, new DiagnosticLogger(), NullLogger<FhirParquetSchemaManager>.Instance);
+            _testParquetSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithoutCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
+            _testParquetSchemaManagerWithCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
         }
 
         [InlineData("Patient", 24)]

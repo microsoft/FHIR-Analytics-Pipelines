@@ -50,7 +50,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                     _accessTokenDic.AddOrUpdate(resourceUrl, accessToken, (key, value) => accessToken);
                 }
 
-                _diagnosticLogger.LogInformation(string.Format("Get access token for resource '{0}' successfully.", resourceUrl));
                 _logger.LogInformation("Get access token for resource '{0}' successfully.", resourceUrl);
                 return accessToken.Token;
             }

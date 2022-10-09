@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
-using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
@@ -28,7 +27,6 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
-using Microsoft.Health.Fhir.Synapse.JobManagement.Exceptions;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -158,40 +156,30 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogInformation(operationCanceledEx, "Job is canceled.");
                 throw new RetriableJobException("Job is cancelled.", operationCanceledEx);
             }
-            catch (SynapsePipelineRetriableException synapsePipelineEx)
+            catch (SynapsePipelineRetriableException synapsePipelineRetriableEx)
             {
                 // Customer exceptions.
-                _diagnosticLogger.LogError($"Error in orchestrator job. Reason:{synapsePipelineEx}");
-                _logger.LogWarning(synapsePipelineEx, "Error in orchestrator job. Reason:{0}", synapsePipelineEx);
-                throw new RetriableJobException("Error in orchestrator job.", synapsePipelineEx);
+                _logger.LogInformation(synapsePipelineRetriableEx, "Error in orchestrator job. Reason:{0}", synapsePipelineRetriableEx);
+                throw new RetriableJobException("Error in orchestrator job.", synapsePipelineRetriableEx);
             }
             catch (RetriableJobException retriableJobEx)
             {
                 // always throw RetriableJobException
-                _diagnosticLogger.LogError($"Error in orchestrator job. Reason:{retriableJobEx}");
-                _logger.LogWarning(retriableJobEx, "Error in orchestrator job. Reason:{0}", retriableJobEx);
+                _logger.LogInformation(retriableJobEx, "Error in orchestrator job. Reason:{0}", retriableJobEx);
                 throw;
             }
-            catch (JobManagementException jobManagementEx)
+            catch (SynapsePipelineInternalException synapsePipelineInternalEx)
             {
-                // Internal 1ueue client exceptions.
-                _diagnosticLogger.LogError($"Error in scheduling processing jobs. Reason:{jobManagementEx}");
-                _logger.LogError(jobManagementEx, "Error in scheduling processing jobs. Reason:{0}", jobManagementEx);
-                throw new RetriableJobException("Error in scheduling processing jobs.", jobManagementEx);
-            }
-            catch (MetadataStoreException metadataStoreEx)
-            {
-                // Internal metadata table exception.
-                _diagnosticLogger.LogError($"Error in orchestrator job. Reason:{metadataStoreEx}");
-                _logger.LogError(metadataStoreEx, "Error in orchestrator job. Reason:{0}", metadataStoreEx);
-                throw new RetriableJobException("Error in orchestrator job.", metadataStoreEx);
+                _diagnosticLogger.LogError($"Internal error occurred in orchestrator job.");
+                _logger.LogError(synapsePipelineInternalEx, "Error in orchestrator job. Reason:{0}", synapsePipelineInternalEx);
+                throw new RetriableJobException("Error in orchestrator job.", synapsePipelineInternalEx);
             }
             catch (Exception unhandledEx)
             {
                 // Unhandled exceptions.
-                _diagnosticLogger.LogError("Unhandled Error in orchestrator job.");
-                _logger.LogError(unhandledEx, "Error in orchestrator job.");
-                throw new RetriableJobException("Error in orchestrator job.", unhandledEx);
+                _diagnosticLogger.LogError("Unhandled error occurred in orchestrator job.");
+                _logger.LogError(unhandledEx, "Unhandled error occurred in orchestrator job. Reason:{0}", unhandledEx);
+                throw new RetriableJobException("Unhandled error occurred in orchestrator job.", unhandledEx);
             }
         }
 
@@ -263,7 +251,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var groupID = await _filterManager.GetGroupIdAsync(cancellationToken);
 
             // extract patient ids from group
-            _diagnosticLogger.LogInformation($"Start extracting patients from group '{groupID}'.");
             _logger.LogInformation($"Start extracting patients from group '{groupID}'.");
 
             // For now, the queryParameters is always null.
@@ -281,7 +268,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (RequestFailedException ex)
             {
-                _diagnosticLogger.LogError("Failed to get patient versions from metadata table.");
                 _logger.LogError(ex, "Failed to get patient versions from metadata table.");
                 throw new MetadataStoreException("Failed to get patient versions from metadata table.", ex);
             }
@@ -299,7 +285,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 groupID,
                 toBeProcessedPatients.Where(p => p.VersionId == 0).ToList().Count());
 
-            _diagnosticLogger.LogInformation(info);
             _logger.LogInformation(info);
 
             return toBeProcessedPatients;
@@ -350,7 +335,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             string.Join(", ", searchOptions.QueryParameters.Select(parameter => $"{parameter.Key}: {parameter.Value}")));
 
                     _diagnosticLogger.LogError(reason);
-                    _logger.LogWarning(exception, reason);
+                    _logger.LogInformation(exception, reason);
                     throw new FhirDataParseException(reason, exception);
                 }
 
@@ -409,7 +394,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 }
                                 catch (RequestFailedException ex)
                                 {
-                                    _diagnosticLogger.LogError("Failed to update patient versions from metadata table.");
                                     _logger.LogError(ex, "Failed to update patient versions from metadata table.");
                                     throw new MetadataStoreException("Failed to update patient versions from metadata table.", ex);
                                 }
@@ -419,13 +403,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     else if (latestJobInfo.Status == JobStatus.Failed)
                     {
                         _diagnosticLogger.LogError("The processing job is failed.");
-                        _logger.LogWarning("The processing job is failed.");
+                        _logger.LogInformation("The processing job is failed.");
                         throw new RetriableJobException("The processing job is failed.");
                     }
                     else if (latestJobInfo.Status == JobStatus.Cancelled)
                     {
                         _diagnosticLogger.LogError("Operation cancelled by customer.");
-                        _logger.LogWarning("Operation cancelled by customer.");
+                        _logger.LogInformation("Operation cancelled by customer.");
                         throw new OperationCanceledException("Operation cancelled by customer.");
                     }
 

@@ -76,7 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Make sure the container is deleted before running the tests
             _azureTableClientFactory = new AzureTableClientFactory(
-                new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
             var queueClient = new MockQueueClient();
 
@@ -564,9 +564,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Make sure the container is deleted before running the tests
             _azureTableClientFactory = new AzureTableClientFactory(
-                new DefaultTokenCredentialProvider(_diagnosticLogger, new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
-            _metadataStore = new AzureTableMetadataStore(_azureTableClientFactory, jobConfig, _diagnosticLogger, new NullLogger<AzureTableMetadataStore>());
+            _metadataStore = new AzureTableMetadataStore(_azureTableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
             Assert.True(_metadataStore.IsInitialized());
         }
 

@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
-using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -37,8 +36,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IFilterManager _filterManager;
         private readonly IMetadataStore _metadataStore;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly ILogger<AzureStorageJobFactory> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
+        private readonly ILogger<AzureStorageJobFactory> _logger;
 
         public AzureStorageJobFactory(
             IQueueClient queueClient,
@@ -90,12 +89,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // job hosting didn't catch any exception thrown during creating job,
                 // return null for failure case, and job hosting will skip it.
-                _diagnosticLogger.LogWarning($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
                 _logger.LogInformation($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
                 return null;
             }
 
-            _diagnosticLogger.LogInformation("Metadata store isn't initialized yet.");
             _logger.LogInformation("Metadata store isn't initialized yet.");
             return null;
         }
@@ -128,7 +125,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
-                _diagnosticLogger.LogWarning("Failed to create orchestrator job.");
                 _logger.LogInformation(e, "Failed to create orchestrator job.");
                 return null;
             }
@@ -158,7 +154,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
-                _diagnosticLogger.LogWarning("Failed to create processing job.");
                 _logger.LogInformation(e, "Failed to create processing job.");
                 return null;
             }

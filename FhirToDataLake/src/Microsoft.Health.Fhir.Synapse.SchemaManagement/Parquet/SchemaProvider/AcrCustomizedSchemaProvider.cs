@@ -82,7 +82,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
                     if (!templatePathSegments[1].EndsWith(FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        _diagnosticLogger.LogWarning($"{templatePathSegments[1]} doesn't have {FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension} extension in \"Schema\" directory.");
                         _logger.LogInformation($"{templatePathSegments[1]} doesn't have {FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension} extension in \"Schema\" directory.");
                     }
                     else

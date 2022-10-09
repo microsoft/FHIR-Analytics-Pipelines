@@ -184,7 +184,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                     // retry for 429 exception
                     if (retryCount < RetryCount && response.StatusCode == HttpStatusCode.TooManyRequests)
                     {
-                        _diagnosticLogger.LogWarning(string.Format("Get response from http request failed due to 429 too many requests, will delay for {0}ms and retry it. Url: '{1}',", RetryTimeSpan, uri));
                         _logger.LogInformation("Get response from http request failed due to 429 too many requests, will delay for {0}ms and retry it. Url: '{1}',", RetryTimeSpan, uri);
                         Thread.Sleep(RetryTimeSpan);
                         response = await _httpClient.SendAsync(searchRequest, cancellationToken);
@@ -198,7 +197,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
                 response.EnsureSuccessStatusCode();
 
-                _diagnosticLogger.LogInformation(string.Format("Successfully retrieved result for url: '{0}'.", uri));
                 _logger.LogInformation("Successfully retrieved result for url: '{url}'.", uri);
 
                 return await response.Content.ReadAsStringAsync(cancellationToken);
@@ -217,13 +215,19 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                         break;
                     default:
                         _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: Status code: {0}.", ex.StatusCode));
-                        _logger.LogWarning(ex, "Failed to search from FHIR server: Status code: {0}.", ex.StatusCode);
+                        _logger.LogInformation(ex, "Failed to search from FHIR server: Status code: {0}.", ex.StatusCode);
                         break;
                 }
 
                 throw new FhirSearchException(
                     string.Format(Resource.FhirSearchFailed, uri),
                     ex);
+            }
+            catch (Exception ex)
+            {
+                _diagnosticLogger.LogError("Unhandeled error while searching from FHIR server.");
+                _logger.LogError(ex, "Unhandeled error while searching from FHIR server.");
+                throw;
             }
         }
 
@@ -235,7 +239,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
                 HttpResponseMessage response = _httpClient.Send(searchRequest);
                 response.EnsureSuccessStatusCode();
-                _diagnosticLogger.LogInformation($"Successfully retrieved result for url: '{uri}'.");
                 _logger.LogInformation("Successfully retrieved result for url: '{url}'.", uri);
 
                 var stream = response.Content.ReadAsStream();
@@ -257,13 +260,19 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                         break;
                     default:
                         _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: Status code: {0}.", ex.StatusCode));
-                        _logger.LogWarning(ex, "Failed to search from FHIR server: Status code: {0}.", ex.StatusCode);
+                        _logger.LogInformation(ex, "Failed to search from FHIR server: Status code: {0}.", ex.StatusCode);
                         break;
                 }
 
                 throw new FhirSearchException(
                     string.Format(Resource.FhirSearchFailed, uri),
                     ex);
+            }
+            catch (Exception ex)
+            {
+                _diagnosticLogger.LogError("Unhandeled error while searching from FHIR server.");
+                _logger.LogError(ex, "Unhandeled error while searching from FHIR server.");
+                throw;
             }
         }
     }

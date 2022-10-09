@@ -47,7 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             var schema = _fhirSchemaManager.GetSchema(schemaType);
             if (schema == null)
             {
-                _diagnosticLogger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
+                _diagnosticLogger.LogError($"Failed to get schema for schema type '{schemaType}'.");
                 _logger.LogInformation($"The FHIR schema node could not be found for schema type '{schemaType}'.");
                 throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{schemaType}'.");
             }

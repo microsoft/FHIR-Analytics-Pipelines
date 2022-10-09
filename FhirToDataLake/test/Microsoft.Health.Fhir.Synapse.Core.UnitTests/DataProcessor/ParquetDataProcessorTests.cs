@@ -38,13 +38,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestUtils.TestParquetSchemaProviderDelegate,
-                _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
             var fhirSchemaManagerWithCustomizedSchema = new FhirParquetSchemaManager(
                 Options.Create(TestUtils.TestCustomSchemaConfiguration),
                 TestUtils.TestParquetSchemaProviderDelegate,
-                _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
             var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
@@ -75,7 +73,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var fhirSchemaManager = new FhirParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestUtils.TestParquetSchemaProviderDelegate,
-                _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
             var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());

@@ -4,13 +4,14 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
     /// <summary>
     /// Failed to start a job.
     /// </summary>
-    public class MetadataStoreException : Exception
+    public class MetadataStoreException : SynapsePipelineInternalException
     {
         public MetadataStoreException(string message)
             : base(message)

@@ -79,7 +79,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                   .Handle<HttpRequestException>()
                   .RetryAsync(3, onRetry: (exception, retryCount) =>
                   {
-                      _diagnosticLogger.LogWarning($"Get ACR token failed. Retry {retryCount}.");
                       _logger.LogInformation(exception, "Get ACR token failed. Retry {RetryCount}.", retryCount);
                   })
                   .ExecuteAsync(() => GetAcrAccessTokenWithAadToken(registryServer, aadToken, cancellationToken));
@@ -89,6 +88,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                 _diagnosticLogger.LogError("Failed to get ACR access token with AAD access token.");
                 _logger.LogInformation(ex, "Failed to get ACR access token with AAD access token.");
                 throw new ContainerRegistryTokenException("Failed to get ACR access token with AAD access token.", ex);
+            }
+            catch (Exception ex)
+            {
+                _diagnosticLogger.LogError("Unhandeled error while getting ACR access token with AAD access token.");
+                _logger.LogError(ex, "Unhandeled error while getting ACR access token with AAD access token.");
+                throw;
             }
         }
 
@@ -127,7 +132,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                         throw new ContainerRegistryTokenException(string.Format("Failed to exchange ACR refresh token: ACR server {0} is not found.", registryServer));
                     default:
                         _diagnosticLogger.LogError(string.Format("Failed to exchange ACR refresh token with AAD access token. Status code: {0}.", refreshTokenResponse.StatusCode));
-                        _logger.LogWarning("Failed to exchange ACR refresh token with AAD access token. Status code: {0}.", refreshTokenResponse.StatusCode);
+                        _logger.LogInformation("Failed to exchange ACR refresh token with AAD access token. Status code: {0}.", refreshTokenResponse.StatusCode);
                         throw new ContainerRegistryTokenException(string.Format("Failed to exchange ACR refresh token with AAD access token. Status code: {StatusCode}.", refreshTokenResponse.StatusCode));
                 }
             }
@@ -142,7 +147,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                 throw new ContainerRegistryTokenException("ACR refresh token is empty.");
             }
 
-            _diagnosticLogger.LogInformation("Successfully exchanged ACR refresh token.");
             _logger.LogInformation("Successfully exchanged ACR refresh token.");
             return refreshToken;
         }
@@ -179,7 +183,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                         throw new ContainerRegistryTokenException(string.Format("Failed to get ACR access token: ACR server {0} is not found.", registryServer));
                     default:
                         _diagnosticLogger.LogError(string.Format("Failed to get ACR access token with ACR refresh token. Status code: {0}.", accessTokenResponse.StatusCode));
-                        _logger.LogWarning("Failed to get ACR access token with ACR refresh token. Status code: {0}.", accessTokenResponse.StatusCode);
+                        _logger.LogInformation("Failed to get ACR access token with ACR refresh token. Status code: {0}.", accessTokenResponse.StatusCode);
                         throw new ContainerRegistryTokenException(string.Format("Failed to get ACR access token with ACR refresh token. Status code: {StatusCode}.", accessTokenResponse.StatusCode));
                 }
             }
@@ -194,7 +198,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                 throw new ContainerRegistryTokenException("ACR access token is empty.");
             }
 
-            _diagnosticLogger.LogInformation("Successfully retrieved ACR access token.");
             _logger.LogInformation("Successfully retrieved ACR access token.");
             return $"Bearer {accessToken}";
         }

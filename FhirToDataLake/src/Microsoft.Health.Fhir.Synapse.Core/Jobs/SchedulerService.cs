@@ -81,7 +81,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     // try next time if the queue client isn't initialized.
                     if (!_queueClient.IsInitialized() || !_metadataStore.IsInitialized())
                     {
-                        _diagnosticLogger.LogInformation("The storage isn't initialized.");
                         _logger.LogInformation("The storage isn't initialized.");
                     }
                     else
@@ -102,8 +101,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             }
                             catch (Exception ex)
                             {
-                                _diagnosticLogger.LogWarning("Failed to pull and update trigger.");
-                                _logger.LogInformation(ex, "Failed to pull and update trigger.");
+                                _diagnosticLogger.LogError("Internal error occurred in scheduler service, will retry later.");
+                                _logger.LogError(ex, "Failed to pull and update trigger, will retry later.");
                             }
                         }
                     }
@@ -113,11 +112,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 catch (Exception ex)
                 {
-                    _diagnosticLogger.LogWarning($"There is an exception thrown while processing current trigger, will retry later. Exception {ex.Message};");
-                    _logger.LogInformation($"There is an exception thrown while processing current trigger, will retry later. Exception {ex.Message};");
+                    _diagnosticLogger.LogError($"Internal error occurred in scheduler service, will retry later.");
+                    _logger.LogError($"There is an exception thrown while processing current trigger, will retry later. Exception {ex.Message};");
                 }
             }
 
+            _diagnosticLogger.LogInformation("Scheduler stops running.");
             _logger.LogInformation("Scheduler stops running.");
         }
 
@@ -143,7 +143,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 if (triggerLeaseEntity == null)
                 {
-                    _diagnosticLogger.LogInformation("Try to acquire lease failed, the retrieved lease trigger entity is null.");
                     _logger.LogInformation("Try to acquire lease failed, the retrieved lease trigger entity is null.");
                     return false;
                 }
@@ -151,7 +150,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 if (triggerLeaseEntity.WorkingInstanceGuid != _instanceGuid &&
                     triggerLeaseEntity.HeartbeatDateTime.AddSeconds(SchedulerServiceLeaseExpirationInSeconds) > DateTimeOffset.UtcNow)
                 {
-                    _diagnosticLogger.LogInformation("Try to acquire lease failed, another worker is using it.");
                     _logger.LogInformation("Try to acquire lease failed, another worker is using it.");
                     return false;
                 }
@@ -166,14 +164,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogInformation(
-                    $"Try acquire lease failed. Exception: {ex.Message}.");
-                _logger.LogInformation(
-                    $"Try acquire lease failed. Exception: {ex.Message}.");
+                _diagnosticLogger.LogError(
+                    $"Internal error occurred in scheduler service, will retry later.");
+                _logger.LogError(
+                    $"Unhandled exception while acquiring lease. Exception: {ex.Message}.");
                 return false;
             }
 
-            _diagnosticLogger.LogInformation("Acquire lease successfully.");
             _logger.LogInformation("Acquire lease successfully.");
             return true;
         }
@@ -191,7 +188,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             // add the initial trigger entity to table
             await _metadataStore.AddEntityAsync(initialTriggerLeaseEntity, cancellationToken);
 
-            _diagnosticLogger.LogInformation("Create initial trigger lease entity successfully.");
             _logger.LogInformation("Create initial trigger lease entity successfully.");
         }
 
@@ -223,7 +219,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         case TriggerStatus.Failed:
                         case TriggerStatus.Cancelled:
                             // if the current trigger is cancelled/failed, stop scheduler, this case should not happen
-                            _diagnosticLogger.LogWarning("Trigger Status is cancelled or failed.");
                             _logger.LogInformation("Trigger Status is cancelled or failed.");
                             cancellationTokenSource.Cancel();
                             return true;
@@ -261,8 +256,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             currentTriggerEntity.TriggerStatus = TriggerStatus.Running;
             await _metadataStore.UpdateEntityAsync(currentTriggerEntity, cancellationToken);
 
-            _diagnosticLogger.LogInformation(
-                $"Enqueue orchestrator job for trigger index {currentTriggerEntity.TriggerSequenceId}, the orchestrator job id is {currentTriggerEntity.OrchestratorJobId}.");
             _logger.LogInformation(
                 $"Enqueue orchestrator job for trigger index {currentTriggerEntity.TriggerSequenceId}, the orchestrator job id is {currentTriggerEntity.OrchestratorJobId}.");
         }
@@ -284,17 +277,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 case JobStatus.Completed:
                     currentTriggerEntity.TriggerStatus = TriggerStatus.Completed;
-                    _diagnosticLogger.LogInformation("Current trigger is completed.");
                     _logger.LogInformation("Current trigger is completed.");
                     break;
                 case JobStatus.Failed:
                     currentTriggerEntity.TriggerStatus = TriggerStatus.Failed;
-                    _diagnosticLogger.LogWarning("The orchestrator job is failed.");
                     _logger.LogInformation("The orchestrator job is failed.");
                     break;
                 case JobStatus.Cancelled:
                     currentTriggerEntity.TriggerStatus = TriggerStatus.Cancelled;
-                    _diagnosticLogger.LogWarning("The orchestrator job is cancelled.");
                     _logger.LogInformation("The orchestrator job is cancelled.");
                     break;
                 default:
@@ -325,15 +315,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 currentTriggerEntity.TriggerEndTime = GetTriggerEndTime(nextTriggerTime);
                 if (currentTriggerEntity.TriggerStartTime > currentTriggerEntity.TriggerEndTime)
                 {
-                    _diagnosticLogger.LogInformation("The job has been scheduled to end.");
                     _logger.LogInformation("The job has been scheduled to end.");
                     return;
                 }
 
                 await _metadataStore.UpdateEntityAsync(currentTriggerEntity, cancellationToken);
 
-                _diagnosticLogger.LogInformation(
-                    $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table.");
                 _logger.LogInformation(
                     $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table.");
             }
@@ -363,8 +350,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (RequestFailedException ex)
             {
-                _diagnosticLogger.LogWarning($"Failed to add trigger entity to table, exception: {ex.Message}");
-                _logger.LogInformation($"Failed to add trigger entity to table, exception: {ex.Message}");
+                _logger.LogError($"Failed to add trigger entity to table, exception: {ex.Message}");
                 throw;
             }
 
@@ -395,7 +381,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async Task RenewLeaseAsync(CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation($"Start to renew lease for working instance {_instanceGuid}.");
             _logger.LogInformation($"Start to renew lease for working instance {_instanceGuid}.");
 
             while (!cancellationToken.IsCancellationRequested)
@@ -410,7 +395,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     if (triggerLeaseEntity == null || triggerLeaseEntity.WorkingInstanceGuid != _instanceGuid)
                     {
-                        _diagnosticLogger.LogWarning("Failed to renew lease, the retrieved lease trigger entity is null or working instance doesn't match.");
                         _logger.LogInformation("Failed to renew lease, the retrieved lease trigger entity is null or working instance doesn't match.");
                     }
                     else
@@ -424,8 +408,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 catch (Exception ex)
                 {
-                    _diagnosticLogger.LogWarning($"Failed to renew lease for working instance {_instanceGuid}.");
-                    _logger.LogInformation(ex, $"Failed to renew lease for working instance {_instanceGuid}.");
+                    _diagnosticLogger.LogError($"Internal error occurred in scheduler service.");
+                    _logger.LogError(ex, $"Failed to renew lease for working instance {_instanceGuid}.");
                 }
 
                 if (!cancellationToken.IsCancellationRequested)
@@ -434,7 +418,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
             }
 
-            _diagnosticLogger.LogInformation($"Stop to renew lease for working instance {_instanceGuid}.");
             _logger.LogInformation($"Stop to renew lease for working instance {_instanceGuid}.");
         }
     }

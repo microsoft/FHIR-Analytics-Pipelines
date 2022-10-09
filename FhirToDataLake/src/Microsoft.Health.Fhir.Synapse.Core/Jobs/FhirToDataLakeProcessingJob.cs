@@ -100,6 +100,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 if (cancellationToken.IsCancellationRequested)
                 {
+                    _diagnosticLogger.LogError("Job is cancelled.");
                     _logger.LogInformation("Job is cancelled.");
                     throw new OperationCanceledException();
                 }
@@ -155,7 +156,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (OperationCanceledException operationCanceledEx)
             {
-                _diagnosticLogger.LogError("Data processing task is canceled.");
                 _logger.LogInformation(operationCanceledEx, "Data processing task is canceled.");
 
                 await CleanResourceAsync(CancellationToken.None);
@@ -165,8 +165,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (RetriableJobException retriableJobEx)
             {
                 // always throw RetriableJobException
-                _diagnosticLogger.LogError($"Error in data processing job. Reason : {retriableJobEx}");
-                _logger.LogWarning(retriableJobEx, "Error in data processing job. Reason : {0}", retriableJobEx);
+                _logger.LogInformation(retriableJobEx, "Error in data processing job. Reason : {0}", retriableJobEx);
 
                 await CleanResourceAsync(CancellationToken.None);
 
@@ -175,8 +174,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (SynapsePipelineRetriableException synapsePipelineEx)
             {
                 // Customer exceptions.
-                _diagnosticLogger.LogError($"Error in data processing job. Reason:{synapsePipelineEx}");
-                _logger.LogWarning(synapsePipelineEx, "Error in data processing job.. Reason:{0}", synapsePipelineEx);
+                _logger.LogInformation(synapsePipelineEx, "Error in data processing job.. Reason:{0}", synapsePipelineEx);
 
                 await CleanResourceAsync(CancellationToken.None);
 
@@ -185,11 +183,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (Exception ex)
             {
                 // Unhandeled exceptions.
-                _diagnosticLogger.LogError($"Error in data processing job. Reason : {ex}");
-                _logger.LogError(ex, "Error in data processing job. Reason : {0}", ex);
+                _diagnosticLogger.LogError($"Unhandeled error occurred in data processing job. Reason : {ex}");
+                _logger.LogError(ex, "Unhandeled error occurred in data processing job. Reason : {0}", ex);
                 await CleanResourceAsync(CancellationToken.None);
 
-                throw new RetriableJobException("Error in data processing job.",ex);
+                throw new RetriableJobException("Unhandeled error occurred in data processing job.", ex);
             }
         }
 
@@ -235,7 +233,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 if (!patientHashToId.ContainsKey(patientInfo.PatientHash))
                 {
-                    _diagnosticLogger.LogWarning($"Can't find patient in group for patient hash {patientInfo.PatientHash}, the group is modified.");
                     _logger.LogInformation($"Can't find patient in group for patient hash {patientInfo.PatientHash}, the group is modified.");
                     continue;
                 }
@@ -258,7 +255,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     _diagnosticLogger.LogError(
                         $"Failed to extract version id for patient {patientId}.");
-                    _logger.LogWarning(
+                    _logger.LogInformation(
                         $"Failed to extract version id for patient {patientId}.");
                     throw new FhirSearchException(
                         $"Failed to extract version id for patient {patientId}.");
@@ -277,7 +274,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // add this patient's version id in result
                 _result.ProcessedPatientVersion[patientInfo.PatientHash] = currentPatientVersionId;
 
-                _diagnosticLogger.LogInformation($"Get patient resource {patientId} successfully.");
                 _logger.LogInformation($"Get patient resource {patientId} successfully.");
 
                 // the version id is 0 for newly patient
@@ -309,7 +305,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // retrieve this patient's compartment resources for all the filters
                 await ProcessFiltersAsync(progress, searchOption, cancellationToken);
 
-                _diagnosticLogger.LogInformation($"Process patient resource {patientId} successfully.");
                 _logger.LogInformation($"Process patient resource {patientId} successfully.");
             }
         }
@@ -369,7 +364,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             // if the patient does not exist, log a warning, and do nothing about it.
             if (searchResult.FhirResources == null || !searchResult.FhirResources.Any())
             {
-                _diagnosticLogger.LogWarning($"The patient {patientId} dose not exist in fhir server, ignore it.");
                 _logger.LogInformation($"The patient {patientId} dose not exist in fhir server, ignore it.");
                 return null;
             }
@@ -379,7 +373,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             if (patientResource["resourceType"]?.ToString() != FhirConstants.PatientResource)
             {
                 _diagnosticLogger.LogError($"Failed to get patient {patientId}.");
-                _logger.LogWarning($"Failed to get patient {patientId}.");
+                _logger.LogInformation($"Failed to get patient {patientId}.");
                 throw new FhirSearchException($"Failed to get patient {patientId}.");
             }
 
@@ -489,7 +483,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (JsonReaderException exception)
             {
                 _diagnosticLogger.LogError("Failed to parse fhir search result.");
-                _logger.LogWarning(exception, "Failed to parse fhir search result.");
+                _logger.LogInformation(exception, "Failed to parse fhir search result.");
                 throw new FhirDataParseException($"Failed to parse fhir search result", exception);
             }
 
@@ -498,8 +492,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var operationOutcomes = FhirBundleParser.GetOperationOutcomes(fhirResources).ToList();
             if (operationOutcomes.Any())
             {
-                _diagnosticLogger.LogError($"There are operationOutcomes returned from FHIR server: {string.Join(',', operationOutcomes)}");
-                _logger.LogWarning($"There are operationOutcomes returned from FHIR server: {string.Join(',', operationOutcomes)}");
+                _diagnosticLogger.LogError($"There is operationOutcome returned from FHIR server: {string.Join(',', operationOutcomes)}");
+                _logger.LogInformation($"There is operationOutcome returned from FHIR server: {string.Join(',', operationOutcomes)}");
                 throw new FhirSearchException($"There is operationOutcome returned from FHIR server: {string.Join(',', operationOutcomes)}");
             }
 
@@ -519,7 +513,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 if (string.IsNullOrWhiteSpace(resourceType))
                 {
                     _diagnosticLogger.LogError($"Failed to parse fhir search resource {resource}");
-                    _logger.LogWarning($"Failed to parse fhir search resource {resource}");
+                    _logger.LogInformation($"Failed to parse fhir search resource {resource}");
                     throw new FhirDataParseException($"Failed to parse fhir search resource {resource}");
                 }
 
@@ -548,7 +542,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _cacheResult.CacheSize > JobConfigurationConstants.DataSizeInBytesPerCommit ||
                 forceCommit)
             {
-                _diagnosticLogger.LogInformation($"commit data: {cacheResourceCount} resources, {_cacheResult.CacheSize} data size.");
                 _logger.LogInformation($"commit data: {cacheResourceCount} resources, {_cacheResult.CacheSize} data size.");
 
                 foreach (var (resourceType, resources) in _cacheResult.Resources)
@@ -574,14 +567,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             var blobUrl = await _dataWriter.WriteAsync(parquetStream, _jobId, _outputFileIndexMap[schemaType], _inputData.DataEndTime, cancellationToken);
                             _outputFileIndexMap[schemaType] += 1;
 
-                            _diagnosticLogger.LogInformation(string.Format(
-                                "Commit Batch Result: resource type {0}, schemaType {1}, {2} resources are searched in total. {3} resources are processed. The blob URL is {4}",
-                                resourceType,
-                                schemaType,
-                                batchData.Values.Count(),
-                                parquetStream.BatchSize,
-                                blobUrl));
-
                             _logger.LogInformation(
                                 "Commit Batch Result: resource type {resourceType}, schemaType {schemaType}, {resourceCount} resources are searched in total. {processedCount} resources are processed. The blob URL is {blobURL}",
                                 resourceType,
@@ -592,12 +577,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         }
                         else
                         {
-                            _diagnosticLogger.LogWarning(string.Format(
-                                "No resource of schema type {0} from {1} is processed. {2} resources are skipped.",
-                                schemaType,
-                                resourceType,
-                                skippedCount));
-
                             _logger.LogInformation(
                                 "No resource of schema type {schemaType} from {resourceType} is processed. {skippedCount} resources are skipped.",
                                 schemaType,
@@ -634,7 +613,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogWarning("Failed to clean resource.");
                 _logger.LogInformation(ex, "Failed to clean resource.");
             }
         }

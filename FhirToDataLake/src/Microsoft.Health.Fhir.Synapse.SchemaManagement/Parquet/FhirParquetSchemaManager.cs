@@ -20,16 +20,13 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         private readonly Dictionary<string, string> _schemaData = new Dictionary<string, string>();
 
         private readonly Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
-        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<FhirParquetSchemaManager> _logger;
 
         public FhirParquetSchemaManager(
             IOptions<SchemaConfiguration> schemaConfiguration,
             ParquetSchemaProviderDelegate parquetSchemaDelegate,
-            IDiagnosticLogger diagnosticLogger,
             ILogger<FhirParquetSchemaManager> logger)
         {
-            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
 
             var defaultSchemaProvider = parquetSchemaDelegate(FhirParquetSchemaConstants.DefaultSchemaProviderKey);
@@ -37,7 +34,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             // Get default schema, the default schema keys are resource types, like "Patient", "Encounter".
             _resourceSchemaNodesMap = defaultSchemaProvider.GetSchemasAsync().Result;
 
-            _diagnosticLogger.LogInformation($"{_resourceSchemaNodesMap.Count} resource default schemas have been loaded.");
             _logger.LogInformation($"{_resourceSchemaNodesMap.Count} resource default schemas have been loaded.");
 
             if (schemaConfiguration.Value.EnableCustomizedSchema)
@@ -47,7 +43,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
                 // Get customized schema, the customized schema keys are resource types with "_customized" suffix, like "Patient_Customized", "Encounter_Customized".
                 var resourceCustomizedSchemaNodesMap = customizedSchemaProvider.GetSchemasAsync().Result;
 
-                _diagnosticLogger.LogInformation($"{resourceCustomizedSchemaNodesMap.Count} resource customized schemas have been loaded.");
                 _logger.LogInformation($"{resourceCustomizedSchemaNodesMap.Count} resource customized schemas have been loaded.");
                 _resourceSchemaNodesMap = _resourceSchemaNodesMap.Concat(resourceCustomizedSchemaNodesMap).ToDictionary(x => x.Key, x => x.Value);
             }
@@ -68,7 +63,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
                 }
             }
 
-            _diagnosticLogger.LogInformation($"Initialize FHIR schemas completed.");
             _logger.LogInformation($"Initialize FHIR schemas completed.");
         }
 
@@ -76,7 +70,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         {
             if (!_schemaTypesMap.ContainsKey(resourceType))
             {
-                _diagnosticLogger.LogInformation($"Schema types for {resourceType} is empty.");
                 _logger.LogInformation($"Schema types for {resourceType} is empty.");
                 return new List<string>();
             }
@@ -88,7 +81,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         {
             if (!_resourceSchemaNodesMap.ContainsKey(schemaType))
             {
-                _diagnosticLogger.LogInformation($"Schema for schema type {schemaType} is not supported.");
                 _logger.LogInformation($"Schema for schema type {schemaType} is not supported.");
                 return null;
             }

@@ -56,15 +56,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (ImageReferenceException ex)
             {
-                var reason = string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", _imageReference, ex.Message);
-
+                var reason = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Failed to parse filter image reference {0}.", _imageReference);
                 _diagnosticLogger.LogError(reason);
                 _logger.LogInformation(ex, reason);
                 throw new ContainerRegistryFilterException(reason, ex);
             }
             catch (Exception ex)
             {
-                var reason = string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", _imageReference, ex.Message);
+                var reason = string.Format("Failed to fetch filter configuration from image reference {_imageReference}. Reason: Unhandeled exception while parsing image reference {_imageReference}.", _imageReference);
 
                 _diagnosticLogger.LogError(reason);
                 _logger.LogError(ex, reason);
@@ -119,7 +118,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                             }
                             catch (Exception ex)
                             {
-                                var reason = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1}.", _imageReference, ex.Message);
+                                var reason = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Invalid filter format.", _imageReference);
 
                                 _diagnosticLogger.LogError(reason);
                                 _logger.LogInformation(ex, reason);
@@ -137,7 +136,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (ContainerRegistryAuthenticationException authEx)
             {
-                var reason = string.Format("Failed to access container registry: {0}. Reason: {1}.", _imageReference, authEx.Message);
+                var reason = string.Format("Failed to access container registry: {0}. Authentication failed.", _imageReference);
 
                 _diagnosticLogger.LogError(reason);
                 _logger.LogInformation(authEx, reason);
@@ -145,7 +144,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (TemplateManagementException ex)
             {
-                var reason = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1}.", _imageReference, ex.Message);
+                var reason = string.Format("Failed to fetch filter configuration from image reference {0}.", _imageReference);
 
                 _diagnosticLogger.LogError(reason);
                 _logger.LogInformation(ex, reason);
@@ -157,7 +156,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (Exception ex)
             {
-                var reason = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1}.", _imageReference, ex.Message);
+                var reason = string.Format("Unhandled exception while fetching filter configuration from image reference {0}.", _imageReference);
 
                 _diagnosticLogger.LogError(reason);
                 _logger.LogError(ex, reason);

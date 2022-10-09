@@ -82,7 +82,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             };
             var fhirServerOption = Options.Create(fhirServerConfig);
             _dataSource = new FhirApiDataSource(fhirServerOption);
-            _referenceParser = new R4ReferenceParser(_dataSource, _diagnosticLogger, NullLogger<R4ReferenceParser>.Instance);
+            _referenceParser = new R4ReferenceParser(_dataSource, NullLogger<R4ReferenceParser>.Instance);
             _groupMemberExtractor = new GroupMemberExtractor(dataClient, _referenceParser, _diagnosticLogger, _nullGroupMemberExtractorLogger);
         }
 
