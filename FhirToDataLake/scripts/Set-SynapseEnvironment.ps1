@@ -28,7 +28,7 @@
     Default: "FhirSynapseLink0!"
     Master key that will be set in created database. Database need to have master key then we can create EXTERNAL TABLEs and VIEWs on it.
 .PARAMETER Concurrent
-    Default: 30
+    Default: 15
     Max concurrent tasks number that will be used to upload placeholder files and execute SQL scripts.
 .PARAMETER CustomizedSchemaImage
     Customized schema image reference.
@@ -46,7 +46,7 @@ Param(
     [string]$FhirVersion = "R4",
     [string]$SqlScriptCollectionPath = "sql",
     [string]$MasterKey = "FhirSynapseLink0!",
-    [int]$Concurrent = 30,
+    [int]$Concurrent = 15,
     [string]$CustomizedSchemaImage
 )
 
@@ -400,18 +400,18 @@ function Get-CustomizedSchemaType {
 }
 
 function Get-CustomizedTableSql {
-    param ([string]$schemaType, [Hashtable]$jsonSchemaObject)
+    param ([string]$schemaType, [PSCustomObject]$schemaObject)
 
     $customizedTableProperties = ""
-    foreach ($property in $jsonSchemaObject['properties'].GetEnumerator()){
-        $sqlType = switch($property.Value['type']) 
+    foreach ($property in $schemaObject.properties.psobject.properties){
+        $sqlType = switch($property.type) 
         {
             'number' { 'float' ; Break }
             'integer' { 'bigint' ; Break }
             'boolean' { 'bit' ; Break }
             'string' { 'NVARCHAR(4000)' ; Break }
             Default {
-                Write-Host "Invalid property type in '$schemaType.$($property.Name)': $($property.Value['type'])"
+                Write-Host "Invalid property type in '$schemaType.$($property.Name)': $($property.type)"
                 throw
             }
         }
@@ -456,11 +456,11 @@ function New-CustomizedTables
         }
 
         $schemaFilePath = Join-Path -Path $customizedSchemaDirectory -ChildPath $schemaFile
-        $schemaObject = Get-Content $schemaFilePath | Out-String | ConvertFrom-Json -AsHashtable -ErrorAction stop
+        $schemaObject = Get-Content $schemaFilePath | Out-String | ConvertFrom-Json -ErrorAction stop
         $resourceType = $schemaFile.Substring(0, $schemaFile.IndexOf('.schema.json'))
         $schemaType = Get-CustomizedSchemaType -resourceType $resourceType
     
-        $sql = Get-CustomizedTableSql -schemaType $schemaType -jsonSchemaObject $schemaObject -ErrorAction stop
+        $sql = Get-CustomizedTableSql -schemaType $schemaType -schemaObject $schemaObject -ErrorAction stop
 
         Write-Host "Begin to create customized table for $schemaType" -ForegroundColor Green 
         Start-Retryable-Job -Name $JobName -ScriptBlock{
