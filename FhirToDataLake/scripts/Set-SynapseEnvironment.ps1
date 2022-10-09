@@ -404,14 +404,14 @@ function Get-CustomizedTableSql {
 
     $customizedTableProperties = ""
     foreach ($property in $schemaObject.properties.psobject.properties){
-        $sqlType = switch($property.type) 
+        $sqlType = switch($property.Value.type) 
         {
             'number' { 'float' ; Break }
             'integer' { 'bigint' ; Break }
             'boolean' { 'bit' ; Break }
             'string' { 'NVARCHAR(4000)' ; Break }
             Default {
-                Write-Host "Invalid property type in '$schemaType.$($property.Name)': $($property.type)"
+                Write-Host "Invalid property type in '$schemaType.$($property.Name)': $($property.Value.type)"
                 throw
             }
         }
