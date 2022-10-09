@@ -273,7 +273,7 @@ function New-TableAndViewsForResources
     $files = Get-ChildItem $SqlScriptCollectionPath -Filter "*.sql"
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
 
-    Write-Host "Start creating default TABLEs and VIEWs on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
+    Write-Host "Start to create default TABLEs and VIEWs on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
     
     foreach ($file in $files) {
         $jobs = @(Get-Job -Name $JobName -ErrorAction Ignore)
@@ -330,7 +330,7 @@ function Get-OrasExeApp {
         return
     }
 
-    Write-Host "Start download oras application from $orasUrl" -ForegroundColor Green 
+    Write-Host "Start to download oras application from $orasUrl" -ForegroundColor Green 
     try {
         Invoke-WebRequest $orasUrl -OutFile $orasGzFile -ErrorAction Stop
     }
@@ -437,7 +437,7 @@ function New-CustomizedTables
     $schemaFiles = Get-ChildItem -Path $(Join-Path -Path $customizedSchemaDirectory -ChildPath *) -Include '*.schema.json' -Name
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
 
-    Write-Host "Start creating customized Tables on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
+    Write-Host "Start to create customized Tables on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
     
     foreach ($schemaFile in $schemaFiles){
         $jobs = @(Get-Job -Name $JobName -ErrorAction Ignore)
