@@ -229,7 +229,7 @@ function New-PlaceHolderBlobs
             if (($finishedJob.State -eq 'Failed') -or ($finishedJob.ChildJobs[0].State -eq 'Failed')) {
                 Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
                 Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
-                throw "Uploading readme files to storage failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+                throw "Creating placeholder blob failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
             }
             else {
                 Write-Host $finishedJob.ChildJobs[0].Information[0].MessageData.Message
@@ -238,7 +238,7 @@ function New-PlaceHolderBlobs
         }
 
         # Create place holder blobs
-        Write-Host " -> Begin to upload blob '$blobName'."
+        Write-Host " -> Begin to create place holder blob '$blobName'."
 
         Start-Retryable-Job -Name $JobName -ScriptBlock{
             $storageContext = New-AzStorageContext -StorageAccountName $args[3] -SasToken $args[4] -ErrorAction stop
@@ -249,7 +249,7 @@ function New-PlaceHolderBlobs
                 -Context $storageContext `
                 -Force `
                 -ErrorAction stop
-            Write-Host " -> Finished uploading blob '$blobName'."
+            Write-Host " -> Finished creating placeholder blob '$($args[2])'."
         } -ArgumentList "$(Get-Location)/$PlaceHolderName", $container, $blobName, $storageName, $sasToken
     }
 
@@ -257,7 +257,7 @@ function New-PlaceHolderBlobs
         if (($finishedJob.State -eq 'Failed') -or ($finishedJob.ChildJobs[0].State -eq 'Failed')) {
             Write-Host "$($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)" -ForegroundColor Red
             Get-Job -Name $JobName | Wait-Job | Remove-Job | Out-Null
-            throw "Uploading readme files to storage failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+            throw "Creating placeholder blob failed: $($finishedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
         }
         else {
             Write-Host $finishedJob.ChildJobs[0].Information[0].MessageData.Message
@@ -302,7 +302,7 @@ function New-TableAndViewsForResources
                 -InputFile $args[3] `
                 -ConnectionTimeout 120 `
                 -ErrorAction Stop
-            Write-Host " -> Finished executing script $filePath"
+            Write-Host " -> Finished executing script $($args[3])"
         } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $filePath
     }
 
@@ -471,7 +471,7 @@ function New-CustomizedTables
                 -Query $args[3] `
                 -ConnectionTimeout 120 `
                 -ErrorAction Stop
-            Write-Host "Finished creating customized table from schema file: $($args[4])"
+            Write-Host "Finished creating customized table for $($args[4])"
         } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $sql, $schemaType
     }
 
