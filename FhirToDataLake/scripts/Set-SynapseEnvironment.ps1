@@ -29,7 +29,7 @@
     Master key that will be set in created database. Database need to have master key then we can create EXTERNAL TABLEs and VIEWs on it.
 .PARAMETER Concurrent
     Default: 30
-    Max concurrent tasks number that will be used to upload place holder files and execute SQL scripts.
+    Max concurrent tasks number that will be used to upload placeholder files and execute SQL scripts.
 .PARAMETER CustomizedSchemaImage
     Customized schema image reference.
 #>
@@ -63,20 +63,20 @@ $CustomizedTemplateDirectory = "CustomizedSchema"
 $OrasDirectoryPath = "Oras"
 $OrasAppPath = "oras.exe"
 $OrasWinUrl = "https://github.com/deislabs/oras/releases/download/v0.12.0/oras_0.12.0_windows_amd64.tar.gz"
-
+$ErrorActionPreference = "Stop"
 
 $FhirVersion = $FhirVersion.ToUpper()
 if ($FhirVersion -eq "R4")
 {
-    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r4" "Resources"
+    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r4" | Join-Path -ChildPath "Resources"
 }
 elseif ($FhirVersion -eq "R5")
 {
-    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r5" "Resources"
+    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r5" | Join-Path -ChildPath "Resources"
 }
 else
 {
-    throw " -> The FHIR version '$FhirVersion' is not supported."
+    throw "The FHIR version '$FhirVersion' is not supported."
 }
 
 function Start-Retryable-Job {
@@ -237,8 +237,8 @@ function New-PlaceHolderBlobs
             }
         }
 
-        # Create place holder blobs
-        Write-Host " -> Begin to create place holder blob '$blobName'."
+        # Create placeholder blobs
+        Write-Host " -> Begin to create placeholder blob '$blobName'."
 
         Start-Retryable-Job -Name $JobName -ScriptBlock{
             $storageContext = New-AzStorageContext -StorageAccountName $args[3] -SasToken $args[4] -ErrorAction stop
@@ -293,7 +293,7 @@ function New-TableAndViewsForResources
         $filePath = $file.FullName
 
         # Create TABLES and VIEWs for resouces
-        Write-Host " -> Begin to execute script $filePath"
+        Write-Host " -> Begin to execute script '$filePath'"
         Start-Retryable-Job -Name $JobName -ScriptBlock{
             Invoke-Sqlcmd `
                 -ServerInstance $args[0] `
@@ -302,7 +302,7 @@ function New-TableAndViewsForResources
                 -InputFile $args[3] `
                 -ConnectionTimeout 120 `
                 -ErrorAction Stop
-            Write-Host " -> Finished executing script $($args[3])"
+            Write-Host " -> Finished executing script '$($args[3])'"
         } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $filePath
     }
 
@@ -456,11 +456,11 @@ function New-CustomizedTables
         }
 
         $schemaFilePath = Join-Path -Path $customizedSchemaDirectory -ChildPath $schemaFile
-        $testObject = Get-Content $schemaFilePath | Out-String | ConvertFrom-Json -AsHashtable -ErrorAction stop
+        $schemaObject = Get-Content $schemaFilePath | Out-String | ConvertFrom-Json -AsHashtable -ErrorAction stop
         $resourceType = $schemaFile.Substring(0, $schemaFile.IndexOf('.schema.json'))
         $schemaType = Get-CustomizedSchemaType -resourceType $resourceType
     
-        $sql = Get-CustomizedTableSql -schemaType $schemaType -jsonSchemaObject $testObject -ErrorAction stop
+        $sql = Get-CustomizedTableSql -schemaType $schemaType -jsonSchemaObject $schemaObject -ErrorAction stop
 
         Write-Host "Begin to create customized table for $schemaType" -ForegroundColor Green 
         Start-Retryable-Job -Name $JobName -ScriptBlock{
@@ -543,7 +543,7 @@ catch {
 ###
 # 2.Create Tables and Views for default schema data.
 ###
-# a). Create place holder blobs for default schema data.
+# a). Create placeholder blobs for default schema data.
 try{
     $sqlFiles = Get-ChildItem $SqlScriptCollectionPath -Filter "*.sql" -Name 
     $defaultSchemaTypes = $sqlFiles | ForEach-Object {$($_ -split "\.")[0]}
@@ -551,7 +551,7 @@ try{
 }
 catch
 {
-    Write-Host "Create place holder blobs for default schema data failed: $($_.ToString())."
+    Write-Host "Create placeholder blobs for default schema data failed: $($_.ToString())."
     throw
 }
 
@@ -606,7 +606,7 @@ if ($CustomizedSchemaImage) {
 
         $customizedSchemaDirectory = Join-Path -Path $CustomizedTemplateDirectory -ChildPath "Schema"
         
-        # c). Create place holder blobs for customized schema data.
+        # c). Create placeholder blobs for customized schema data.
         $sqlFiles = Get-ChildItem $customizedSchemaDirectory -Filter "*.schema.json" -Name 
         $customizedSchemaTypes = $sqlFiles | ForEach-Object { Get-CustomizedSchemaType -resourceType $($_ -split "\.")[0] }
         New-PlaceHolderBlobs -storage $StorageName -container $Container -resultPath $ResultPath -schemaTypes $customizedSchemaTypes
