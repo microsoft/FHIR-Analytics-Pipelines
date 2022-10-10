@@ -29,9 +29,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
     {
         private readonly ArrowConfiguration _arrowConfiguration;
         private readonly ILogger<ParquetDataProcessor> _logger;
-        private readonly ParquetConverter _parquetConverter;
         private readonly IDataSchemaConverter _defaultSchemaConverter;
         private readonly IDataSchemaConverter _customSchemaConverter;
+        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+
+        private readonly object _parquetConverterLock = new object();
+        private ParquetConverter _parquetConverter;
 
         public ParquetDataProcessor(
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
@@ -47,11 +50,32 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             _arrowConfiguration = arrowConfiguration.Value;
             _defaultSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.DefaultSchemaProviderKey);
             _customSchemaConverter = schemaConverterDelegate(FhirParquetSchemaConstants.CustomSchemaProviderKey);
+            _fhirSchemaManager = fhirSchemaManager;
             _logger = logger;
+        }
 
-            var schemaSet = fhirSchemaManager.GetAllSchemaContent();
-            _parquetConverter = ParquetConverter.CreateWithSchemaSet(schemaSet);
-            _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
+        private ParquetConverter ParquetConverter
+        {
+            get
+            {
+                // Do the lazy initialization.
+                if (_parquetConverter is null)
+                {
+                    lock (_parquetConverterLock)
+                    {
+                        // Check null again to avoid duplicate initialization.
+                        if (_parquetConverter is null)
+                        {
+                            var schemaSet = _fhirSchemaManager.GetAllSchemaContent();
+                            _parquetConverter = ParquetConverter.CreateWithSchemaSet(schemaSet);
+                            _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
+                        }
+                    }
+                }
+
+                return _parquetConverter;
+            }
+            set => _parquetConverter = value;
         }
 
         public Task<StreamBatchData> ProcessAsync(
@@ -87,7 +111,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             // Convert JSON data to parquet stream.
             try
             {
-                var resultStream = _parquetConverter.ConvertJsonToParquet(processParameters.SchemaType, inputContent);
+                var resultStream = ParquetConverter.ConvertJsonToParquet(processParameters.SchemaType, inputContent);
                 return Task.FromResult(
                     new StreamBatchData(
                         resultStream,
