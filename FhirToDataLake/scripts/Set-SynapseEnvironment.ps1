@@ -38,12 +38,12 @@
 Param(
     [parameter(Mandatory=$true)]
     [string]$SynapseWorkspaceName,
-    [string]$Database = "fhirdb",
+    [string]$Database = "dicomdb",
     [parameter(Mandatory=$true)]
     [string]$StorageName,
-    [string]$Container = "fhir",
+    [string]$Container = "dicom",
     [string]$ResultPath = "result",
-    [string]$FhirVersion = "R4",
+    [string]$FhirVersion = "DICOM",
     [string]$SqlScriptCollectionPath = "sql",
     [string]$MasterKey = "FhirSynapseLink0!",
     [int]$Concurrent = 15,
@@ -73,6 +73,10 @@ if ($FhirVersion -eq "R4")
 elseif ($FhirVersion -eq "R5")
 {
     $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r5" | Join-Path -ChildPath "Resources"
+}
+elseif ($FhirVersion -eq "DICOM")
+{
+	$SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "dicom"
 }
 else
 {
@@ -180,7 +184,7 @@ function Set-InitializeEnvironment
     CREATE EXTERNAL FILE FORMAT ParquetFormat WITH (  FORMAT_TYPE = PARQUET );
     
     GO
-    CREATE SCHEMA fhir;
+    CREATE SCHEMA dicom;
     
     GO
     USE [master]"
