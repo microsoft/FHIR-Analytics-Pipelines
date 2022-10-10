@@ -33,5 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 
         // Reference docker's image name format: https://docs.docker.com/engine/reference/commandline/tag/#extended-description
         public static readonly Regex ImageNameRegex = new Regex(@"^[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*(\/[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*)*$");
+
+        public const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
     }
 }

@@ -14,7 +14,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class AzureTableClientFactory : IAzureTableClientFactory
     {
-        private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
         private readonly ITokenCredentialProvider _credentialProvider;
         private readonly string _tableUrl;
         private readonly string _internalConnectionString;
@@ -25,10 +24,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             ITokenCredentialProvider credentialProvider)
         {
             EnsureArg.IsNotNull(storageConfiguration, nameof(storageConfiguration));
-            _tableUrl = EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration?.Value?.TableUrl, nameof(jobConfiguration.Value.TableUrl));
             _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
 
             _internalConnectionString = storageConfiguration.Value.InternalStorageConnectionString;
+
+            if (string.IsNullOrEmpty(_internalConnectionString))
+            {
+                _tableUrl = EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration?.Value?.TableUrl, nameof(jobConfiguration.Value.TableUrl));
+            }
         }
 
         public AzureTableClientFactory(
@@ -36,7 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
 
-            _tableUrl = StorageEmulatorConnectionString;
+            _tableUrl = ConfigurationConstants.StorageEmulatorConnectionString;
             _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
         }
 
@@ -45,7 +48,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             EnsureArg.IsNotNullOrWhiteSpace(tableName, nameof(tableName));
 
             // Create client for local emulator.
-            if (string.Equals(_tableUrl, StorageEmulatorConnectionString, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(_tableUrl, ConfigurationConstants.StorageEmulatorConnectionString, StringComparison.OrdinalIgnoreCase))
             {
                 return new TableClient(_tableUrl, tableName);
             }
