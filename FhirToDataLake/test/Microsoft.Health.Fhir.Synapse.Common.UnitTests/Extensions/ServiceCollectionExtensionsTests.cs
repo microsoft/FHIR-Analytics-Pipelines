@@ -21,8 +21,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
         {
             { "fhirServer:serverUrl", "https://test.fhir.azurehealthcareapis.com" },
             { "dataLakeStore:storageUrl", "https://test.blob.core.windows.net/" },
+            { "job:jobInfoTableName", "jobinfotable" },
+            { "job:metadataTableName", "metadatatable" },
+            { "job:jobInfoQueueName", "jobinfoqueue" },
             { "job:containerName", "fhir" },
-            { "job:agentName", "agentName" },
             { "job:queueUrl", "UseDevelopmentStorage=true" },
             { "job:tableUrl", "UseDevelopmentStorage=true" },
             { "job:schedulerCronExpression", "5 * * * * *" },
@@ -86,7 +88,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             yield return new object[] { "testacr.azurecr.io/templateset:V1" };
         }
 
-        public static IEnumerable<object[]> GetInValidAgentName()
+        public static IEnumerable<object[]> GetInValidQueueOrTableName()
         {
             yield return new object[] { "1beginweithnumberic" };
             yield return new object[] { "agent_name" };
@@ -96,7 +98,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             yield return new object[] { " " };
         }
 
-        public static IEnumerable<object[]> GetValidAgentName()
+        public static IEnumerable<object[]> GetValidTableOrQueueName()
         {
             yield return new object[] { "agentname" };
             yield return new object[] { "agentName" };
@@ -149,17 +151,17 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
         }
 
         [Theory]
-        [MemberData(nameof(GetInValidAgentName))]
-        public void GivenInvalidAgentName_WhenValidate_ExceptionShouldBeThrown(string agentName)
+        [MemberData(nameof(GetInValidQueueOrTableName))]
+        public void GivenInvalidAgentName_WhenValidate_ExceptionShouldBeThrown(string name)
         {
-            Assert.Throws<ConfigurationErrorException>(() => ServiceCollectionExtensions.ValidateAgentName(agentName));
+            Assert.Throws<ConfigurationErrorException>(() => ServiceCollectionExtensions.ValidateQueueOrTableName(name));
         }
 
         [Theory]
-        [MemberData(nameof(GetValidAgentName))]
-        public void GivenValidAgentName_WhenValidate_NoExceptionShouldBeThrown(string agentName)
+        [MemberData(nameof(GetValidTableOrQueueName))]
+        public void GivenValidAgentName_WhenValidate_NoExceptionShouldBeThrown(string name)
         {
-            var exception = Record.Exception(() => ServiceCollectionExtensions.ValidateAgentName(agentName));
+            var exception = Record.Exception(() => ServiceCollectionExtensions.ValidateQueueOrTableName(name));
             Assert.Null(exception);
         }
 

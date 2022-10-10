@@ -29,10 +29,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             EnsureArg.IsNotNull(storageConfiguration, nameof(storageConfiguration));
-            EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration.Value.AgentName, nameof(jobConfiguration.Value.AgentName));
-
-            _tableName = AzureStorageKeyProvider.JobInfoTableName(jobConfiguration.Value.AgentName);
+            _queueName = EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration.Value.JobInfoQueueName, nameof(jobConfiguration.Value.JobInfoQueueName));
+            _tableName = EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration.Value.JobInfoTableName, nameof(jobConfiguration.Value.JobInfoTableName));
             _internalConnectionString = storageConfiguration.Value.InternalStorageConnectionString;
+            _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
 
             if (string.IsNullOrEmpty(_internalConnectionString))
             {
@@ -51,9 +51,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 }
             }
 
-            _queueName = AzureStorageKeyProvider.JobMessageQueueName(jobConfiguration.Value.AgentName);
-
-            _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
         }
 
         public AzureStorageClientFactory(

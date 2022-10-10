@@ -9,9 +9,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public static class TableKeyProvider
     {
-        // The table name must conform to rules: https://docs.microsoft.com/en-us/rest/api/storageservices/understanding-the-table-service-data-model#table-names
-        public static string MetadataTableName(string agentName) => $"{agentName.ToLower()}metadatatable";
-
         public static string TriggerPartitionKey(byte queueType) => $"{queueType:D3}_trigger";
 
         public static string TriggerRowKey(byte queueType) => $"{queueType:D3}_trigger";

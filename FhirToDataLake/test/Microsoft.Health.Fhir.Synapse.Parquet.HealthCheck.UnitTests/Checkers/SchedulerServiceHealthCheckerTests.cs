@@ -16,7 +16,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
 {
     public class SchedulerServiceHealthCheckerTests
     {
-
         [Fact]
         public async Task When_SchedulerService_IsActive_HealthCheck_Succeeds()
         {
