@@ -109,8 +109,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Unhandeled exception when converting input data to parquet for \"{processParameters.SchemaType}\".");
-                _logger.LogError($"Unhandeled exception when converting input data to parquet for \"{processParameters.SchemaType}\".");
-                throw new ParquetDataProcessorException($"Unhandeled exception when converting input data to parquet for \"{processParameters.SchemaType}\".", ex);
+                _logger.LogError(ex, $"Unhandeled exception when converting input data to parquet for \"{processParameters.SchemaType}\".");
+                throw;
             }
         }
 

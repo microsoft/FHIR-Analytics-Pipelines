@@ -180,7 +180,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
                     _diagnosticLogger,
                     new NullLoggerFactory()),
                 GetLocalDataSink(),
-                _diagnosticLogger,
                 new NullLogger<AzureBlobDataWriter>());
         }
 
@@ -192,7 +191,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             return new AzureBlobDataWriter(
                 mockFactory,
                 GetLocalDataSink(),
-                _diagnosticLogger,
                 new NullLogger<AzureBlobDataWriter>());
         }
 
@@ -205,7 +203,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
                     _diagnosticLogger,
                     new NullLoggerFactory()),
                 GetBrokenDataSink(),
-                _diagnosticLogger,
                 new NullLogger<AzureBlobDataWriter>());
         }
     }

@@ -159,12 +159,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (SynapsePipelineRetriableException synapsePipelineRetriableEx)
             {
                 // Customer exceptions.
+                _diagnosticLogger.LogError("Error in orchestrator job.");
                 _logger.LogInformation(synapsePipelineRetriableEx, "Error in orchestrator job. Reason:{0}", synapsePipelineRetriableEx);
                 throw new RetriableJobException("Error in orchestrator job.", synapsePipelineRetriableEx);
             }
             catch (RetriableJobException retriableJobEx)
             {
                 // always throw RetriableJobException
+                _diagnosticLogger.LogError("Error in orchestrator job. Reason:{0}");
                 _logger.LogInformation(retriableJobEx, "Error in orchestrator job. Reason:{0}", retriableJobEx);
                 throw;
             }

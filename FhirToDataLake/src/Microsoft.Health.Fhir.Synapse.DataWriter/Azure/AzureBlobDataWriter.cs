@@ -33,7 +33,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         public AzureBlobDataWriter(
             IAzureBlobContainerClientFactory containerClientFactory,
             IDataSink dataSink,
-            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureBlobDataWriter> logger)
         {
             EnsureArg.IsNotNull(containerClientFactory, nameof(containerClientFactory));

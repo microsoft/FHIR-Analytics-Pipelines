@@ -352,18 +352,17 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
+                _diagnosticLogger.LogError($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'. Reason: '{ex}'");
                 if (ex is RequestFailedException || ex is ArgumentException || ex is PathTooLongException)
                 {
                     _logger.LogInformation(ex, "Failed to move blob directory '{0}' to '{1}'. Reason: '{2}'", sourceDirectory, targetDirectory, ex);
+                    throw new AzureBlobOperationFailedException($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'.", ex);
                 }
                 else
                 {
                     _logger.LogError(ex, "Failed to move blob directory '{0}' to '{1}'. Reason: '{2}'", sourceDirectory, targetDirectory, ex);
                     throw;
                 }
-
-                _diagnosticLogger.LogError($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'. Reason: '{ex}'");
-                throw new AzureBlobOperationFailedException($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'.", ex);
             }
         }
 
@@ -374,7 +373,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
                 await directoryClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
 
-                _diagnosticLogger.LogInformation("Delete blob directory '{directory}' successfully.");
                 _logger.LogInformation("Delete blob directory '{0}' successfully.", directory);
             }
             catch (RequestFailedException ex)
@@ -415,7 +413,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             catch (RequestFailedException ex)
                     when (ex.ErrorCode == DataLakePathNotFoundErrorCode)
             {
-                _diagnosticLogger.LogInformation($"Directory '{directory}' is empty.");
                 _logger.LogInformation("Directory '{0}' is empty.", directory);
                 yield break;
             }

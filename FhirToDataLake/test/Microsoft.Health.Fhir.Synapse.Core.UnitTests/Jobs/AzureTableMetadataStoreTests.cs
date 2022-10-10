@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -13,14 +12,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
-using Newtonsoft.Json;
 using Xunit;
-using JobStatus = Microsoft.Health.JobManagement.JobStatus;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {

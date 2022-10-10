@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using R4FhirModelInfo = FhirR4::Hl7.Fhir.Model.ModelInfo;
 
@@ -194,11 +195,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
             {
                 metaData = _dataClient.Search(metadataOptions);
             }
-            catch (Exception exception)
+            catch (FhirSearchException exception)
             {
                 _diagnosticLogger.LogError($"Failed to request Fhir server metadata.");
-                _logger.LogInformation($"Failed to request Fhir server metadata. Reason: {exception.Message}.");
+                _logger.LogInformation(exception, $"Failed to request Fhir server metadata. Reason: {exception.Message}.");
                 throw new FhirSpecificationProviderException($"Failed to request Fhir server metadata.", exception);
+            }
+            catch (Exception exception)
+            {
+                _diagnosticLogger.LogError($"Unhandeled error while requesting Fhir server metadata.");
+                _logger.LogError(exception, $"Unhandeled error while requesting Fhir server metadata. Reason: {exception.Message}.");
+                throw;
             }
 
             var parser = new FhirJsonParser();
@@ -211,7 +218,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
             catch (Exception exception)
             {
                 _diagnosticLogger.LogError($"Failed to parse capability statement from FHIR server metadata.");
-                _logger.LogInformation($"Failed to parse capability statement from FHIR server metadata. Reason: {exception.Message}");
+                _logger.LogInformation(exception, $"Failed to parse capability statement from FHIR server metadata. Reason: {exception.Message}");
                 throw new FhirSpecificationProviderException($"Failed to parse capability statement from FHIR server metadata.", exception);
             }
 

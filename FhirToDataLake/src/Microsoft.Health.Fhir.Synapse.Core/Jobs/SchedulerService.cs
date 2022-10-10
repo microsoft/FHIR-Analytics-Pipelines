@@ -408,8 +408,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 catch (Exception ex)
                 {
-                    _diagnosticLogger.LogError($"Internal error occurred in scheduler service.");
-                    _logger.LogError(ex, $"Failed to renew lease for working instance {_instanceGuid}.");
+                    _logger.LogInformation(ex, $"Failed to renew lease for working instance {_instanceGuid}.");
                 }
 
                 if (!cancellationToken.IsCancellationRequested)

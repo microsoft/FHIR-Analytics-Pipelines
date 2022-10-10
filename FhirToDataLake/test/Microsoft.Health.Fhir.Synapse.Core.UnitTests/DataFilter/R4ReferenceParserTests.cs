@@ -7,7 +7,6 @@ using System;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;

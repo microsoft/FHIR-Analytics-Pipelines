@@ -96,7 +96,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             {
                 _diagnosticLogger.LogError($"Unhandled exception: Convert customized data for {resourceType} failed.");
                 _logger.LogError(ex, "Unhandled exception: convert data process failed.");
-                throw new ParquetDataProcessorException($"Convert customized data for {resourceType} failed.", ex);
+                throw;
             }
 
             return new JsonBatchData(processedData);

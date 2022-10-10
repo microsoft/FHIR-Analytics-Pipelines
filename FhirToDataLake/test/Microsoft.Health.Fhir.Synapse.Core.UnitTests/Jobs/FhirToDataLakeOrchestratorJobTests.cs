@@ -424,7 +424,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             var dataSink = new AzureBlobDataSink(Options.Create(storageConfig), Options.Create(jobConfig));
-            return new AzureBlobDataWriter(mockFactory, dataSink, _diagnosticLogger, new NullLogger<AzureBlobDataWriter>());
+            return new AzureBlobDataWriter(mockFactory, dataSink, new NullLogger<AzureBlobDataWriter>());
         }
 
         private static IFilterManager GetFilterManager(FilterConfiguration filterConfiguration)

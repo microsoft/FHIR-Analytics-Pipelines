@@ -156,6 +156,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (OperationCanceledException operationCanceledEx)
             {
+                _diagnosticLogger.LogError("Data processing task is canceled.");
                 _logger.LogInformation(operationCanceledEx, "Data processing task is canceled.");
 
                 await CleanResourceAsync(CancellationToken.None);
@@ -165,6 +166,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (RetriableJobException retriableJobEx)
             {
                 // always throw RetriableJobException
+                _diagnosticLogger.LogError("Error in data processing job.");
                 _logger.LogInformation(retriableJobEx, "Error in data processing job. Reason : {0}", retriableJobEx);
 
                 await CleanResourceAsync(CancellationToken.None);
@@ -174,7 +176,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (SynapsePipelineRetriableException synapsePipelineEx)
             {
                 // Customer exceptions.
-                _logger.LogInformation(synapsePipelineEx, "Error in data processing job.. Reason:{0}", synapsePipelineEx);
+                _diagnosticLogger.LogError("Error in data processing job.");
+                _logger.LogInformation(synapsePipelineEx, "Error in data processing job. Reason:{0}", synapsePipelineEx);
 
                 await CleanResourceAsync(CancellationToken.None);
 

@@ -10,7 +10,6 @@ using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
@@ -145,7 +144,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 if (!retrievedJobLockEntities.Any())
                 {
                     _logger.LogError(ex, "There are duplicated jobs to be enqueued.");
-                    throw;
+                    throw new JobManagementException("There are duplicated jobs to be enqueued.", ex);
                 }
 
                 jobLockEntities = retrievedJobLockEntities;
@@ -171,8 +170,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Fail to enqueue jobs. Reason:{0}", ex);
-                throw new JobManagementException($"Fail to enqueue jobs. Reason:{ex}", ex);
+                _logger.LogError(ex, "Unhandled error while enqueueing jobs. Reason:{0}", ex);
+                throw new JobManagementException($"Unhandled error while enqueueing jobs. Reason:{ex}", ex);
             }
 
             // step 5: try to add reverse index for jobInfo entity
@@ -196,7 +195,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Fail to enqueue jobs. Reason:{0}", ex);
-                throw new JobManagementException($"Fail to enqueue jobs. Reason:{ex}", ex);
+                throw new JobManagementException($"Unhandled error while enqueueing jobs. Reason:{ex}", ex);
             }
 
             try

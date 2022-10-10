@@ -67,7 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
                 _diagnosticLogger.LogError(reason);
                 _logger.LogError(ex, reason);
-                throw new ContainerRegistryFilterException(reason, ex);
+                throw;
             }
 
             var accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
@@ -160,7 +160,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
                 _diagnosticLogger.LogError(reason);
                 _logger.LogError(ex, reason);
-                throw new ContainerRegistryFilterException(reason, ex);
+                throw;
             }
         }
 

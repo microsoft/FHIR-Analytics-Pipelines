@@ -160,7 +160,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 }
 
                 // for the nested group, log a warning if the group doesn't exist.
-                _diagnosticLogger.LogWarning($"Group {groupId} is not found.");
+                _logger.LogInformation($"Group {groupId} is not found.");
                 return members;
             }
 
