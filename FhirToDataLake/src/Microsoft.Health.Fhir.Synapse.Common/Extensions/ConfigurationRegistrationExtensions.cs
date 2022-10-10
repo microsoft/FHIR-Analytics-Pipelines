@@ -24,6 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 
             switch (configVersion)
             {
+                // ToDo: refactor resolver and validator when we support multiple configuration versions.
                 case SupportedConfigVersion.V1:
                     ConfigurationResolverV1.Resolve(services, configuration);
                     ConfigurationValidatorV1.Validate(services);

@@ -44,6 +44,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             yield return new object[] { "configVersion", -1, "ConfigVersion '-1' is not supported." };
             yield return new object[] { "configVersion", 0, "ConfigVersion '0' is not supported." };
             yield return new object[] { "configVersion", 2, "ConfigVersion '2' is not supported." };
+            yield return new object[] { "configVersion", "1.0", "ConfigVersion '1.0' is not supported." };
+            yield return new object[] { "configVersion", "abc", "ConfigVersion 'abc' is not supported." };
         }
 
         [Theory]
