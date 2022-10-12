@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
@@ -34,6 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
     public class FhirToDataLakeOrchestratorJobTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private const string TestBlobEndpoint = "UseDevelopmentStorage=true";
 
         private static readonly DateTimeOffset TestStartTime = new DateTimeOffset(2014, 8, 18, 0, 0, 0, TimeSpan.FromHours(0));
@@ -147,6 +149,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFilterManager(new FilterConfiguration()),
                 GetMetaDataStore(),
                 new JobSchedulerConfiguration(),
+                _diagnosticLogger,
                 new NullLogger<FhirToDataLakeOrchestratorJob>());
 
             var retriableJobException = await Assert.ThrowsAsync<RetriableJobException>(async () =>
@@ -265,6 +268,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFilterManager(filterConfiguration),
                 metadataStore ?? GetMetaDataStore(),
                 schedulerConfig,
+                _diagnosticLogger,
                 new NullLogger<FhirToDataLakeOrchestratorJob>())
             {
                 NumberOfPatientsPerProcessingJob = 1,
@@ -395,7 +399,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var jobConfig = Options.Create(new JobConfiguration
             {
-                AgentName = "testagentname",
+                JobInfoTableName = "jobinfotable",
+                MetadataTableName = "metadatatable",
+                JobInfoQueueName = "jobinfoqueue",
             });
             var tableClientFactory = new AzureTableClientFactory(
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));

@@ -4,10 +4,11 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
-    public class DataSerializationException : Exception
+    public class DataSerializationException : SynapsePipelineRetriableException
     {
         public DataSerializationException(string message)
             : base(message)

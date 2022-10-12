@@ -3,9 +3,11 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
+
 namespace Microsoft.Health.Fhir.Synapse.JobManagement.Exceptions
 {
-    public class JobManagementException : Exception
+    public class JobManagementException : SynapsePipelineInternalException
     {
         public JobManagementException(string message)
             : base(message)

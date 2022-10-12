@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Liquid.Converter.Models.Json;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using NJsonSchema;
@@ -21,14 +22,17 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
     public class AcrCustomizedSchemaProvider : IParquetSchemaProvider
     {
         private readonly IContainerRegistryTemplateProvider _containerRegistryTemplateProvider;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<AcrCustomizedSchemaProvider> _logger;
         private readonly string _schemaImageReference;
 
         public AcrCustomizedSchemaProvider(
             IContainerRegistryTemplateProvider containerRegistryTemplateProvider,
             IOptions<SchemaConfiguration> schemaConfiguration,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AcrCustomizedSchemaProvider> logger)
         {
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
             _containerRegistryTemplateProvider = containerRegistryTemplateProvider;
             _schemaImageReference = schemaConfiguration.Value.SchemaImageReference;
@@ -49,7 +53,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
             if (string.IsNullOrWhiteSpace(_schemaImageReference))
             {
-                _logger.LogError("Schema image reference is null or empty.");
+                _diagnosticLogger.LogError("Schema image reference is null or empty.");
+                _logger.LogInformation("Schema image reference is null or empty.");
                 throw new ContainerRegistrySchemaException("Schema image reference is null or empty.");
             }
 
@@ -70,13 +75,14 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
                     if (templatePathSegments.Length != 2)
                     {
-                        _logger.LogError($"All Json schema should be directly in \"Schema\" directory.");
+                        _diagnosticLogger.LogError($"All Json schema should be directly in \"Schema\" directory.");
+                        _logger.LogInformation($"All Json schema should be directly in \"Schema\" directory.");
                         throw new ContainerRegistrySchemaException($"All Json schema should be directly in \"Schema\" directory.");
                     }
 
                     if (!templatePathSegments[1].EndsWith(FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        _logger.LogWarning($"{templatePathSegments[1]} doesn't have {FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension} extension in \"Schema\" directory.");
+                        _logger.LogInformation($"{templatePathSegments[1]} doesn't have {FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension} extension in \"Schema\" directory.");
                     }
                     else
                     {
@@ -85,7 +91,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
                         if (!(templateItem.Value.Root is JSchemaDocument customizedSchemaDocument) || customizedSchemaDocument.Schema == null)
                         {
-                            _logger.LogError($"Invalid Json schema template {templateItem.Key}, no JSchema content be found.");
+                            _diagnosticLogger.LogError($"Invalid Json schema template {templateItem.Key}, no JSchema content be found.");
+                            _logger.LogInformation($"Invalid Json schema template {templateItem.Key}, no JSchema content be found.");
                             throw new ContainerRegistrySchemaException($"Invalid Json schema template {templateItem.Key}, no JSchema content be found.");
                         }
 

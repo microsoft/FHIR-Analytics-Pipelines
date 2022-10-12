@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.ContainerRegistry;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.TemplateManagement.Client;
@@ -27,8 +28,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             string prefix,
             string imageReference,
             IContainerRegistryTokenProvider containerRegistryTokenProvider,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureContainerRegistryHealthChecker> logger)
-            : base(prefix + HealthCheckTypes.AzureContainerRegistryCanRead, false, logger)
+            : base(prefix + HealthCheckTypes.AzureContainerRegistryCanRead, false, diagnosticLogger, logger)
         {
             EnsureArg.IsNotNull(prefix, nameof(prefix));
             _imageReference = EnsureArg.IsNotNull(imageReference, nameof(imageReference));

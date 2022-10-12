@@ -1,0 +1,3491 @@
+{
+  "Name": "Coverage",
+  "Type": "Coverage",
+  "Depth": 0,
+  "IsRepeated": false,
+  "IsLeaf": false,
+  "NodePaths": [
+    "Coverage"
+  ],
+  "SubNodes": {
+    "resourceType": {
+      "Name": "resourceType",
+      "Type": "string",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Coverage",
+        "resourceType"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "id": {
+      "Name": "id",
+      "Type": "id",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Coverage",
+        "id"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "meta": {
+      "Name": "meta",
+      "Type": "Meta",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "meta"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "meta",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "meta",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "versionId": {
+          "Name": "versionId",
+          "Type": "id",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "meta",
+            "versionId"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "lastUpdated": {
+          "Name": "lastUpdated",
+          "Type": "instant",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "meta",
+            "lastUpdated"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "source": {
+          "Name": "source",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "meta",
+            "source"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "profile": {
+          "Name": "profile",
+          "Type": "canonical",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "meta",
+            "profile"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "security": {
+          "Name": "security",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "meta",
+            "security"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "security",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "security",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "security",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "security",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "security",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "security",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "security",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "tag": {
+          "Name": "tag",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "meta",
+            "tag"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "tag",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "tag",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "tag",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "tag",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "tag",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "tag",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "meta",
+                "tag",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "implicitRules": {
+      "Name": "implicitRules",
+      "Type": "uri",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Coverage",
+        "implicitRules"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "language": {
+      "Name": "language",
+      "Type": "code",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Coverage",
+        "language"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "text": {
+      "Name": "text",
+      "Type": "Narrative",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "text"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "text",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "text",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "status": {
+          "Name": "status",
+          "Type": "enum",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "text",
+            "status"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "div": {
+          "Name": "div",
+          "Type": "xhtml",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "text",
+            "div"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "extension": {
+      "Name": "extension",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Coverage",
+        "extension"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "modifierExtension": {
+      "Name": "modifierExtension",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Coverage",
+        "modifierExtension"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "identifier": {
+      "Name": "identifier",
+      "Type": "Identifier",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "identifier"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "identifier",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "identifier",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "use": {
+          "Name": "use",
+          "Type": "enum",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "identifier",
+            "use"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "CodeableConcept",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "identifier",
+            "type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "coding": {
+              "Name": "coding",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "type",
+                "coding"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "text": {
+              "Name": "text",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "type",
+                "text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "system": {
+          "Name": "system",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "identifier",
+            "system"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "value": {
+          "Name": "value",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "identifier",
+            "value"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "period": {
+          "Name": "period",
+          "Type": "Period",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "identifier",
+            "period"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "period",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "period",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "start": {
+              "Name": "start",
+              "Type": "dateTime",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "period",
+                "start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "end": {
+              "Name": "end",
+              "Type": "dateTime",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "period",
+                "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "assigner": {
+          "Name": "assigner",
+          "Type": "Reference",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "identifier",
+            "assigner"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "assigner",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "assigner",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "reference": {
+              "Name": "reference",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "assigner",
+                "reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "assigner",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "identifier": {
+              "Name": "identifier",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "assigner",
+                "identifier"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "identifier",
+                "assigner",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "status": {
+      "Name": "status",
+      "Type": "code",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Coverage",
+        "status"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "type": {
+      "Name": "type",
+      "Type": "CodeableConcept",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "type"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "type",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "type",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "coding": {
+          "Name": "coding",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "type",
+            "coding"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "type",
+                "coding",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "type",
+                "coding",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "type",
+                "coding",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "type",
+                "coding",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "type",
+                "coding",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "type",
+                "coding",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "type",
+                "coding",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "text": {
+          "Name": "text",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "type",
+            "text"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "policyHolder": {
+      "Name": "policyHolder",
+      "Type": "Reference",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "policyHolder"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "policyHolder",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "policyHolder",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "policyHolder",
+            "reference"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "policyHolder",
+            "type"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "policyHolder",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "policyHolder",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "policyHolder",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "policyHolder",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "policyHolder",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "policyHolder",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "policyHolder",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "policyHolder",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "policyHolder",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "display": {
+          "Name": "display",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "policyHolder",
+            "display"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "subscriber": {
+      "Name": "subscriber",
+      "Type": "Reference",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "subscriber"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "subscriber",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "subscriber",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "subscriber",
+            "reference"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "subscriber",
+            "type"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "subscriber",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriber",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriber",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriber",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriber",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriber",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriber",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriber",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriber",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "display": {
+          "Name": "display",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "subscriber",
+            "display"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "subscriberId": {
+      "Name": "subscriberId",
+      "Type": "Identifier",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "subscriberId"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "subscriberId",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "subscriberId",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "use": {
+          "Name": "use",
+          "Type": "enum",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "subscriberId",
+            "use"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "CodeableConcept",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "subscriberId",
+            "type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "coding": {
+              "Name": "coding",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "type",
+                "coding"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "text": {
+              "Name": "text",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "type",
+                "text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "system": {
+          "Name": "system",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "subscriberId",
+            "system"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "value": {
+          "Name": "value",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "subscriberId",
+            "value"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "period": {
+          "Name": "period",
+          "Type": "Period",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "subscriberId",
+            "period"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "period",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "period",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "start": {
+              "Name": "start",
+              "Type": "dateTime",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "period",
+                "start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "end": {
+              "Name": "end",
+              "Type": "dateTime",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "period",
+                "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "assigner": {
+          "Name": "assigner",
+          "Type": "Reference",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "subscriberId",
+            "assigner"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "assigner",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "assigner",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "reference": {
+              "Name": "reference",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "assigner",
+                "reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "assigner",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "identifier": {
+              "Name": "identifier",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "assigner",
+                "identifier"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "subscriberId",
+                "assigner",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "beneficiary": {
+      "Name": "beneficiary",
+      "Type": "Reference",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "beneficiary"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "beneficiary",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "beneficiary",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "beneficiary",
+            "reference"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "beneficiary",
+            "type"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "beneficiary",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "beneficiary",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "beneficiary",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "beneficiary",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "beneficiary",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "beneficiary",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "beneficiary",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "beneficiary",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "beneficiary",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "display": {
+          "Name": "display",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "beneficiary",
+            "display"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "dependent": {
+      "Name": "dependent",
+      "Type": "string",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Coverage",
+        "dependent"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "relationship": {
+      "Name": "relationship",
+      "Type": "CodeableConcept",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "relationship"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "relationship",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "relationship",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "coding": {
+          "Name": "coding",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "relationship",
+            "coding"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "relationship",
+                "coding",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "relationship",
+                "coding",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "relationship",
+                "coding",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "relationship",
+                "coding",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "relationship",
+                "coding",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "relationship",
+                "coding",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "relationship",
+                "coding",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "text": {
+          "Name": "text",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "relationship",
+            "text"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "period": {
+      "Name": "period",
+      "Type": "Period",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "period"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "period",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "period",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "start": {
+          "Name": "start",
+          "Type": "dateTime",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "period",
+            "start"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "end": {
+          "Name": "end",
+          "Type": "dateTime",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "period",
+            "end"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "payor": {
+      "Name": "payor",
+      "Type": "Reference",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "payor"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "payor",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "payor",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "payor",
+            "reference"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "payor",
+            "type"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "payor",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "payor",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "payor",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "payor",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "payor",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "payor",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "payor",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "payor",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "payor",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "display": {
+          "Name": "display",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "payor",
+            "display"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "class": {
+      "Name": "class",
+      "Type": "Coverage_Class",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "class"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "class",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "class",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "modifierExtension": {
+          "Name": "modifierExtension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "class",
+            "modifierExtension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "CodeableConcept",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "class",
+            "type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "class",
+                "type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "class",
+                "type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "coding": {
+              "Name": "coding",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "class",
+                "type",
+                "coding"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "text": {
+              "Name": "text",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "class",
+                "type",
+                "text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "value": {
+          "Name": "value",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "class",
+            "value"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "name": {
+          "Name": "name",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "class",
+            "name"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "order": {
+      "Name": "order",
+      "Type": "positiveInt",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Coverage",
+        "order"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "network": {
+      "Name": "network",
+      "Type": "string",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Coverage",
+        "network"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "costToBeneficiary": {
+      "Name": "costToBeneficiary",
+      "Type": "Coverage_CostToBeneficiary",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "costToBeneficiary"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "costToBeneficiary",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "costToBeneficiary",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "modifierExtension": {
+          "Name": "modifierExtension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "costToBeneficiary",
+            "modifierExtension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "CodeableConcept",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "costToBeneficiary",
+            "type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "coding": {
+              "Name": "coding",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "type",
+                "coding"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "text": {
+              "Name": "text",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "type",
+                "text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "valueQuantity": {
+          "Name": "valueQuantity",
+          "Type": "Quantity",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "costToBeneficiary",
+            "valueQuantity"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "valueQuantity",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "valueQuantity",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "decimal",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "valueQuantity",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "comparator": {
+              "Name": "comparator",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "valueQuantity",
+                "comparator"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "unit": {
+              "Name": "unit",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "valueQuantity",
+                "unit"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "valueQuantity",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "valueQuantity",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "exception": {
+          "Name": "exception",
+          "Type": "Coverage_Exception",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "costToBeneficiary",
+            "exception"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "exception",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "exception",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "modifierExtension": {
+              "Name": "modifierExtension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "exception",
+                "modifierExtension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "exception",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "exception",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "value": {
+          "Name": "value",
+          "Type": "CHOICE",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "costToBeneficiary",
+            "value"
+          ],
+          "SubNodes": {
+            "quantity": {
+              "Name": "quantity",
+              "Type": "Quantity",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": false,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "value",
+                "quantity"
+              ],
+              "SubNodes": {
+                "id": {
+                  "Name": "id",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Coverage",
+                    "costToBeneficiary",
+                    "value",
+                    "quantity",
+                    "id"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "extension": {
+                  "Name": "extension",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Coverage",
+                    "costToBeneficiary",
+                    "value",
+                    "quantity",
+                    "extension"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "value": {
+                  "Name": "value",
+                  "Type": "decimal",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Coverage",
+                    "costToBeneficiary",
+                    "value",
+                    "quantity",
+                    "value"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "comparator": {
+                  "Name": "comparator",
+                  "Type": "enum",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Coverage",
+                    "costToBeneficiary",
+                    "value",
+                    "quantity",
+                    "comparator"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "unit": {
+                  "Name": "unit",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Coverage",
+                    "costToBeneficiary",
+                    "value",
+                    "quantity",
+                    "unit"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "system": {
+                  "Name": "system",
+                  "Type": "uri",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Coverage",
+                    "costToBeneficiary",
+                    "value",
+                    "quantity",
+                    "system"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "code": {
+                  "Name": "code",
+                  "Type": "code",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Coverage",
+                    "costToBeneficiary",
+                    "value",
+                    "quantity",
+                    "code"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                }
+              },
+              "ChoiceTypeNodes": {}
+            },
+            "money": {
+              "Name": "money",
+              "Type": "Money",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": false,
+              "NodePaths": [
+                "Coverage",
+                "costToBeneficiary",
+                "value",
+                "money"
+              ],
+              "SubNodes": {
+                "id": {
+                  "Name": "id",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Coverage",
+                    "costToBeneficiary",
+                    "value",
+                    "money",
+                    "id"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "extension": {
+                  "Name": "extension",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Coverage",
+                    "costToBeneficiary",
+                    "value",
+                    "money",
+                    "extension"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "value": {
+                  "Name": "value",
+                  "Type": "decimal",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Coverage",
+                    "costToBeneficiary",
+                    "value",
+                    "money",
+                    "value"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "currency": {
+                  "Name": "currency",
+                  "Type": "code",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Coverage",
+                    "costToBeneficiary",
+                    "value",
+                    "money",
+                    "currency"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                }
+              },
+              "ChoiceTypeNodes": {}
+            }
+          },
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {
+        "valueQuantity": {
+          "Item1": "value",
+          "Item2": "quantity"
+        },
+        "valueMoney": {
+          "Item1": "value",
+          "Item2": "money"
+        }
+      }
+    },
+    "subrogation": {
+      "Name": "subrogation",
+      "Type": "boolean",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Coverage",
+        "subrogation"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "contract": {
+      "Name": "contract",
+      "Type": "Reference",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Coverage",
+        "contract"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "contract",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "contract",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "contract",
+            "reference"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "contract",
+            "type"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Coverage",
+            "contract",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "contract",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "contract",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "contract",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "contract",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "contract",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "contract",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "contract",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Coverage",
+                "contract",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "display": {
+          "Name": "display",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Coverage",
+            "contract",
+            "display"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    }
+  },
+  "ChoiceTypeNodes": {}
+}

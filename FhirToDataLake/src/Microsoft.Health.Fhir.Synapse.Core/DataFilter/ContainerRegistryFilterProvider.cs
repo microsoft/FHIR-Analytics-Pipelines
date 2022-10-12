@@ -12,8 +12,9 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.TemplateManagement.ArtifactProviders;
 using Microsoft.Health.Fhir.TemplateManagement.Client;
 using Microsoft.Health.Fhir.TemplateManagement.Exceptions;
@@ -29,15 +30,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         private readonly IContainerRegistryTokenProvider _containerRegistryTokenProvider;
         private readonly ILogger<ContainerRegistryFilterProvider> _logger;
         private readonly string _configName;
+        private readonly IDiagnosticLogger _diagnosticLogger;
 
         public ContainerRegistryFilterProvider(
             IOptions<FilterLocation> filterLocation,
             IContainerRegistryTokenProvider containerRegistryTokenProvider,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<ContainerRegistryFilterProvider> logger)
         {
             EnsureArg.IsNotNull(filterLocation, nameof(filterLocation));
             _containerRegistryTokenProvider = EnsureArg.IsNotNull(containerRegistryTokenProvider, nameof(containerRegistryTokenProvider));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
 
             _imageReference = filterLocation.Value.FilterImageReference;
             _configName = filterLocation.Value.FilterConfigurationFileName;
@@ -50,10 +54,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             {
                 imageInfo = ImageInfo.CreateFromImageReference(_imageReference);
             }
+            catch (ImageReferenceException ex)
+            {
+                var reason = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Failed to parse filter image reference {0}.", _imageReference);
+                _diagnosticLogger.LogError(reason);
+                _logger.LogInformation(ex, reason);
+                throw new ContainerRegistryFilterException(reason, ex);
+            }
             catch (Exception ex)
             {
-                _logger.LogError("Failed to parse the schema image reference {0} to image information. Reason: {1}.", _imageReference, ex.Message);
-                throw new ContainerRegistryFilterException(string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", _imageReference, ex.Message), ex);
+                var reason = string.Format("Failed to fetch filter configuration from image reference {_imageReference}. Reason: Unhandeled exception while parsing image reference {_imageReference}.", _imageReference);
+
+                _diagnosticLogger.LogError(reason);
+                _logger.LogError(ex, reason);
+                throw;
             }
 
             var accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
@@ -69,8 +83,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 {
                     if (CheckConfigurationCollectionIsTooLarge(acrImage.Blobs[i].Content.LongLength))
                     {
-                        _logger.LogError("Failed to fetch filter configuration from image reference {0}. Reason: Configuration collection is too large.", _imageReference);
-                        throw new ContainerRegistryFilterException(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Configuration collection is too large.", _imageReference));
+                        var reason = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Configuration collection is too large.", _imageReference);
+
+                        _diagnosticLogger.LogError(reason);
+                        _logger.LogInformation(reason);
+                        throw new ContainerRegistryFilterException(reason);
                     }
 
                     using var blobStream = new MemoryStream(acrImage.Blobs[i].Content);
@@ -83,8 +100,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     {
                         if (CheckConfigurationIsTooLarge(blobsDict[_configName].LongLength))
                         {
-                            _logger.LogError("Failed to fetch filter configuration from image reference {0}. Reason: Configuration file is too large.", _imageReference);
-                            throw new ContainerRegistryFilterException(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Configuration file is too large.", _imageReference));
+                            var reason = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Configuration file is too large.", _imageReference);
+
+                            _diagnosticLogger.LogError(reason);
+                            _logger.LogInformation(reason);
+                            throw new ContainerRegistryFilterException(reason);
                         }
 
                         using var config = new MemoryStream(blobsDict[_configName]);
@@ -98,20 +118,49 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogError("Failed to fetch filter configuration from image reference {0}. Reason: {1}.", _imageReference, ex.Message);
-                                throw new ContainerRegistryFilterException(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1}.", _imageReference, ex.Message));
+                                var reason = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Invalid filter format.", _imageReference);
+
+                                _diagnosticLogger.LogError(reason);
+                                _logger.LogInformation(ex, reason);
+                                throw new ContainerRegistryFilterException(reason, ex);
                             }
                         }
                     }
                 }
 
-                _logger.LogError("Failed to fetch filter configuration from image reference {0}. Reason: {1} not found.", _imageReference, _configName);
-                throw new FileNotFoundException(string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1} not found.", _imageReference, _configName));
+                var failReason = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1} not found.", _imageReference, _configName);
+
+                _diagnosticLogger.LogError(failReason);
+                _logger.LogInformation(failReason);
+                throw new ContainerRegistryFilterException(failReason);
             }
             catch (ContainerRegistryAuthenticationException authEx)
             {
-                _logger.LogError(authEx, "Failed to access container registry.");
-                throw new ContainerRegistryFilterException("Failed to access container registry.", authEx);
+                var reason = string.Format("Failed to access container registry: {0}. Authentication failed.", _imageReference);
+
+                _diagnosticLogger.LogError(reason);
+                _logger.LogInformation(authEx, reason);
+                throw new ContainerRegistryFilterException(reason, authEx);
+            }
+            catch (TemplateManagementException ex)
+            {
+                var reason = string.Format("Failed to fetch filter configuration from image reference {0}.", _imageReference);
+
+                _diagnosticLogger.LogError(reason);
+                _logger.LogInformation(ex, reason);
+                throw new ContainerRegistryFilterException(reason, ex);
+            }
+            catch (ContainerRegistryFilterException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                var reason = string.Format("Unhandled exception while fetching filter configuration from image reference {0}.", _imageReference);
+
+                _diagnosticLogger.LogError(reason);
+                _logger.LogError(ex, reason);
+                throw;
             }
         }
 

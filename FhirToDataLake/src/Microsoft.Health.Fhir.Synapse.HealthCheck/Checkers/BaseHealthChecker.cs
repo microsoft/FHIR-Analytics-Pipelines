@@ -8,19 +8,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 {
     public abstract class BaseHealthChecker : IHealthChecker
     {
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<BaseHealthChecker> _logger;
 
         protected BaseHealthChecker(
             string healthCheckName,
             bool isCritical,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<BaseHealthChecker> logger)
         {
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             Name = EnsureArg.IsNotNullOrWhiteSpace(healthCheckName, nameof(healthCheckName));
             IsCritical = isCritical;
@@ -44,15 +48,19 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
                     Status = HealthCheckStatus.UNHEALTHY,
                     ErrorMessage = $"Unhandled exception : {e.Message}.",
                 };
-                _logger.LogError($"Unhandled exception occured in health check component {Name}. {e.Message}");
+
+                _diagnosticLogger.LogWarning($"Unhandled exception occured in health check component {Name}. {e.Message}");
+                _logger.LogInformation($"Unhandled exception occured in health check component {Name}. {e.Message}");
             }
 
             if (healthCheckResult.Status is HealthCheckStatus.UNHEALTHY)
             {
+                _diagnosticLogger.LogWarning($"Health check component {Name} is unhealthy. Failed reason: {healthCheckResult.ErrorMessage}");
                 _logger.LogInformation($"Health check component {Name} is unhealthy. Failed reason: {healthCheckResult.ErrorMessage}");
             }
             else
             {
+                _diagnosticLogger.LogInformation($"Health check component {Name} is healthy");
                 _logger.LogInformation($"Health check component {Name} is healthy");
             }
 

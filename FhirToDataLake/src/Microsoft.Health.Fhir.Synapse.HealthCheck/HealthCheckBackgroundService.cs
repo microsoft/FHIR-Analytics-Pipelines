@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck
@@ -21,6 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
     {
         private readonly IHealthCheckEngine _healthCheckEngine;
         private readonly IEnumerable<IHealthCheckListener> _healthCheckListeners;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<HealthCheckBackgroundService> _logger;
         private readonly IMetricsLogger _metricsLogger;
         private TimeSpan _checkIntervalInSeconds;
@@ -29,10 +31,12 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
             IHealthCheckEngine healthCheckEngine,
             IEnumerable<IHealthCheckListener> healthCheckListeners,
             IOptions<HealthCheckConfiguration> healthCheckConfiguration,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<HealthCheckBackgroundService> logger,
             IMetricsLogger metricsLogger)
         {
             _healthCheckEngine = EnsureArg.IsNotNull(healthCheckEngine, nameof(healthCheckEngine));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
             _healthCheckListeners = EnsureArg.IsNotNull(healthCheckListeners, nameof(healthCheckListeners));
@@ -45,42 +49,42 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
         {
             while (!cancellationToken.IsCancellationRequested)
             {
+                // Delay interval time.
+                var delayTask = Task.Delay(_checkIntervalInSeconds, cancellationToken);
                 try
                 {
+                    _diagnosticLogger.LogInformation("Starting to perform health checks");
                     _logger.LogInformation("Starting to perform health checks");
 
                     // Perform health check.
                     var healthStatus = await _healthCheckEngine.CheckHealthAsync(cancellationToken);
 
+                    _diagnosticLogger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}.");
+                    _logger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}.");
+
                     // Todo: Send notification to mediator and remove listeners here.
                     var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
                     _metricsLogger.LogHealthStatusMetric(healthStatus.Status == Models.HealthCheckStatus.HEALTHY ? 1 : 0);
                     await Task.WhenAll(listenerTasks);
+                    await delayTask;
                 }
                 catch (OperationCanceledException e)
                 {
                     // not expected to trigger this exception.
-                    _logger.LogError(e, $"Health check service is cancelled. {e.Message}");
-                    throw;
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, $"Unhandled exception occured. {e.Message}");
-                }
-
-                try
-                {
-                    // Delay interval time.
-                    var delayTask = Task.Delay(_checkIntervalInSeconds, cancellationToken);
+                    _diagnosticLogger.LogError($"Health check service is cancelled. {e.Message}");
+                    _logger.LogInformation(e, $"Health check service is cancelled. {e.Message}");
                     await delayTask;
+                    throw;
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"Health check service is cancelled. {e.Message}");
-                    throw;
+                    _diagnosticLogger.LogError( $"Unhandled exception occured in health check. {e.Message}");
+                    _logger.LogError(e, $"Unhandled exception occured in health check. {e.Message}");
+                    await delayTask;
                 }
             }
 
+            _diagnosticLogger.LogInformation("Health check service stopped.");
             _logger.LogInformation("Health check service stopped.");
         }
     }

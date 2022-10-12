@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using FhirR4::Hl7.Fhir.Serialization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient;
@@ -28,15 +29,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
     {
         private readonly IFhirDataClient _dataClient;
         private readonly IReferenceParser _referenceParser;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<GroupMemberExtractor> _logger;
 
         public GroupMemberExtractor(
             IFhirDataClient dataClient,
             IReferenceParser referenceParser,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<GroupMemberExtractor> logger)
         {
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _referenceParser = EnsureArg.IsNotNull(referenceParser, nameof(referenceParser));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
@@ -87,12 +91,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 switch (resourceType)
                 {
                     case FhirConstants.PatientResource:
-                        var isAdd = patientIds.Add(resourceId);
-                        if (!isAdd)
-                        {
-                            _logger.LogDebug($"The patient {resourceId} is duplicated in group.");
-                        }
-
+                        patientIds.Add(resourceId);
                         break;
                     case FhirConstants.GroupResource:
                         // need to check that loops aren't happening
@@ -125,8 +124,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         {
             if (string.IsNullOrWhiteSpace(groupId))
             {
-                _logger.LogError("The input group id is null or white space.");
-                throw new GroupMemberExtractorException("The input group id is null or white space.");
+                _diagnosticLogger.LogError("Failed to extract group members. Reason: The input group id is null or white space.");
+                _logger.LogInformation("Failed to extract group members. Reason: The input group id is null or white space.");
+                throw new GroupMemberExtractorException("Fail to extract group members. Reason: The input group id is null or white space.");
             }
 
             var searchOptions = new ResourceIdSearchOptions(nameof(ResourceType.Group), groupId, queryParameters);
@@ -142,7 +142,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"Failed to parse fhir 'Group' bundle {groupId}.");
+                _diagnosticLogger.LogError($"Failed to parse fhir 'Group' bundle {groupId}.");
+                _logger.LogInformation(exception, $"Failed to parse fhir 'Group' bundle {groupId}.");
                 throw new GroupMemberExtractorException($"Failed to parse fhir 'Group' bundle {groupId}.", exception);
             }
 
@@ -153,12 +154,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 // throw an exception if the specified group id isn't found.
                 if (isRootGroup)
                 {
-                    _logger.LogError($"Group {groupId} is not found.");
-                    throw new GroupMemberExtractorException($"Group {groupId} is not found.");
+                    _diagnosticLogger.LogError($"Failed to extract group members. Reason: Group {groupId} is not found.");
+                    _logger.LogInformation($"Failed to extract group members. Reason: Group {groupId} is not found.");
+                    throw new GroupMemberExtractorException($"Failed to extract group members. Reason: Group {groupId} is not found.");
                 }
 
                 // for the nested group, log a warning if the group doesn't exist.
-                _logger.LogWarning($"Group {groupId} is not found.");
+                _logger.LogInformation($"Group {groupId} is not found.");
                 return members;
             }
 
@@ -166,24 +168,27 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             var invalidEntries = bundle.Entry.Where(entry => entry.Resource.TypeName != FhirConstants.GroupResource);
             if (invalidEntries.Any())
             {
-                _logger.LogError(
-                    $"There are invalid group entries returned: {string.Join(',', invalidEntries.ToString())}.");
+                _diagnosticLogger.LogError($"Failed to extract group members. Reason: There are invalid group entries returned: {string.Join(',', invalidEntries.ToString())}.");
+                _logger.LogInformation(
+                    $"Failed to extract group members. Reason: There are invalid group entries returned: {string.Join(',', invalidEntries.ToString())}.");
                 throw new GroupMemberExtractorException(
-                    $"There are invalid group entries returned: {string.Join(',', invalidEntries.ToString())}");
+                    $"Failed to extract group members. Reason: There are invalid group entries returned: {string.Join(',', invalidEntries.ToString())}");
             }
 
             // this case should not happen
             if (bundle.Entry.Count > 1)
             {
-                _logger.LogError($"There are {bundle.Entry.Count} groups found for group id {groupId}.");
+                _diagnosticLogger.LogError($"Failed to extract group members. Reason: There are {bundle.Entry.Count} groups found for group id {groupId}.");
+                _logger.LogInformation($"Failed to extract group members. Reason: There are {bundle.Entry.Count} groups found for group id {groupId}.");
                 throw new GroupMemberExtractorException(
-                    $"There are {bundle.Entry.Count} groups found for group id {groupId}.");
+                    $"Failed to extract group members. Reason: There are {bundle.Entry.Count} groups found for group id {groupId}.");
             }
 
             if (bundle.Entry[0].Resource == null)
             {
-                _logger.LogError($"The resource of Group {groupId} is null.");
-                throw new GroupMemberExtractorException($"The resource of Group {groupId} is null.");
+                _diagnosticLogger.LogError($"Failed to extract group members. Reason: The resource of Group {groupId} is null.");
+                _logger.LogInformation($"Failed to extract group members. Reason: The resource of Group {groupId} is null.");
+                throw new GroupMemberExtractorException($"Failed to extract group members. Reason: The resource of Group {groupId} is null.");
             }
 
             var groupResource = (Group)bundle.Entry[0].Resource;
@@ -205,7 +210,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning($"Fail to parse reference {member.Entity?.Reference}, exception {ex}");
+                        _logger.LogInformation(ex, $"Failed to parse reference {member.Entity?.Reference}, exception {ex}");
                     }
                 }
             }

@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.TemplateManagement.Models;
@@ -19,6 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 {
     public class ContainerRegistryFilterProviderTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private readonly string _testImageReference;
         private readonly string _testContainerRegistryAccessToken;
         private readonly IContainerRegistryTokenProvider _testTokenProvider;
@@ -55,6 +58,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                     FilterImageReference = _testImageReference,
                 }),
                 _testTokenProvider,
+                _diagnosticLogger,
                 new NullLogger<ContainerRegistryFilterProvider>());
             var filterConfiguration = await containerRegistryFilterProvider.GetFilterAsync(CancellationToken.None);
 
@@ -76,6 +80,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                     FilterImageReference = _testImageReference,
                 }),
                 ContainerRegistryTestUtils.GetMockAcrTokenProvider("invalid token"),
+                _diagnosticLogger,
                 new NullLogger<ContainerRegistryFilterProvider>());
 
             await Assert.ThrowsAsync<ContainerRegistryFilterException>(

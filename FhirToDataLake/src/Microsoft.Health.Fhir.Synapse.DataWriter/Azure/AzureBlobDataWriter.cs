@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
@@ -122,7 +123,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Fail to delete job data from staging folder");
+                _logger.LogInformation(ex, "Fail to delete job data from staging folder");
                 return false;
             }
 

@@ -1,0 +1,3226 @@
+{
+  "Name": "NutritionProduct",
+  "Type": "NutritionProduct",
+  "Depth": 0,
+  "IsRepeated": false,
+  "IsLeaf": false,
+  "NodePaths": [
+    "NutritionProduct"
+  ],
+  "SubNodes": {
+    "resourceType": {
+      "Name": "resourceType",
+      "Type": "string",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "NutritionProduct",
+        "resourceType"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "id": {
+      "Name": "id",
+      "Type": "id",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "NutritionProduct",
+        "id"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "meta": {
+      "Name": "meta",
+      "Type": "Meta",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "NutritionProduct",
+        "meta"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "meta",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "meta",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "versionId": {
+          "Name": "versionId",
+          "Type": "id",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "meta",
+            "versionId"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "lastUpdated": {
+          "Name": "lastUpdated",
+          "Type": "instant",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "meta",
+            "lastUpdated"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "source": {
+          "Name": "source",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "meta",
+            "source"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "profile": {
+          "Name": "profile",
+          "Type": "canonical",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "meta",
+            "profile"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "security": {
+          "Name": "security",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "meta",
+            "security"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "security",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "security",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "security",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "security",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "security",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "security",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "security",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "tag": {
+          "Name": "tag",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "meta",
+            "tag"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "tag",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "tag",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "tag",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "tag",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "tag",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "tag",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "meta",
+                "tag",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "implicitRules": {
+      "Name": "implicitRules",
+      "Type": "uri",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "NutritionProduct",
+        "implicitRules"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "language": {
+      "Name": "language",
+      "Type": "code",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "NutritionProduct",
+        "language"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "text": {
+      "Name": "text",
+      "Type": "Narrative",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "NutritionProduct",
+        "text"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "text",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "text",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "status": {
+          "Name": "status",
+          "Type": "enum",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "text",
+            "status"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "div": {
+          "Name": "div",
+          "Type": "xhtml",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "text",
+            "div"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "extension": {
+      "Name": "extension",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "NutritionProduct",
+        "extension"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "modifierExtension": {
+      "Name": "modifierExtension",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "NutritionProduct",
+        "modifierExtension"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "status": {
+      "Name": "status",
+      "Type": "code",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "NutritionProduct",
+        "status"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "category": {
+      "Name": "category",
+      "Type": "CodeableConcept",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "NutritionProduct",
+        "category"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "category",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "category",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "coding": {
+          "Name": "coding",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "category",
+            "coding"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "category",
+                "coding",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "category",
+                "coding",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "category",
+                "coding",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "category",
+                "coding",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "category",
+                "coding",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "category",
+                "coding",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "category",
+                "coding",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "text": {
+          "Name": "text",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "category",
+            "text"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "code": {
+      "Name": "code",
+      "Type": "CodeableConcept",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "NutritionProduct",
+        "code"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "code",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "code",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "coding": {
+          "Name": "coding",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "code",
+            "coding"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "code",
+                "coding",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "code",
+                "coding",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "code",
+                "coding",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "code",
+                "coding",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "code",
+                "coding",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "code",
+                "coding",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "code",
+                "coding",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "text": {
+          "Name": "text",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "code",
+            "text"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "manufacturer": {
+      "Name": "manufacturer",
+      "Type": "Reference",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "NutritionProduct",
+        "manufacturer"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "manufacturer",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "manufacturer",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "manufacturer",
+            "reference"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "manufacturer",
+            "type"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "manufacturer",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "manufacturer",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "manufacturer",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "manufacturer",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "manufacturer",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "manufacturer",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "manufacturer",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "manufacturer",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "manufacturer",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "display": {
+          "Name": "display",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "manufacturer",
+            "display"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "nutrient": {
+      "Name": "nutrient",
+      "Type": "NutritionProduct_Nutrient",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "NutritionProduct",
+        "nutrient"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "nutrient",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "nutrient",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "modifierExtension": {
+          "Name": "modifierExtension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "nutrient",
+            "modifierExtension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "item": {
+          "Name": "item",
+          "Type": "CodeableReference",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "nutrient",
+            "item"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "nutrient",
+                "item",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "nutrient",
+                "item",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "concept": {
+              "Name": "concept",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "nutrient",
+                "item",
+                "concept"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "reference": {
+              "Name": "reference",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "nutrient",
+                "item",
+                "reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "amount": {
+          "Name": "amount",
+          "Type": "Ratio",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "nutrient",
+            "amount"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "nutrient",
+                "amount",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "nutrient",
+                "amount",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "numerator": {
+              "Name": "numerator",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "nutrient",
+                "amount",
+                "numerator"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "denominator": {
+              "Name": "denominator",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "nutrient",
+                "amount",
+                "denominator"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "ingredient": {
+      "Name": "ingredient",
+      "Type": "NutritionProduct_Ingredient",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "NutritionProduct",
+        "ingredient"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "ingredient",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "ingredient",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "modifierExtension": {
+          "Name": "modifierExtension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "ingredient",
+            "modifierExtension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "item": {
+          "Name": "item",
+          "Type": "CodeableReference",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "ingredient",
+            "item"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "ingredient",
+                "item",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "ingredient",
+                "item",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "concept": {
+              "Name": "concept",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "ingredient",
+                "item",
+                "concept"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "reference": {
+              "Name": "reference",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "ingredient",
+                "item",
+                "reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "amount": {
+          "Name": "amount",
+          "Type": "Ratio",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "ingredient",
+            "amount"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "ingredient",
+                "amount",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "ingredient",
+                "amount",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "numerator": {
+              "Name": "numerator",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "ingredient",
+                "amount",
+                "numerator"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "denominator": {
+              "Name": "denominator",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "ingredient",
+                "amount",
+                "denominator"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "knownAllergen": {
+      "Name": "knownAllergen",
+      "Type": "CodeableReference",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "NutritionProduct",
+        "knownAllergen"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "knownAllergen",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "knownAllergen",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "concept": {
+          "Name": "concept",
+          "Type": "CodeableConcept",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "knownAllergen",
+            "concept"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "knownAllergen",
+                "concept",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "knownAllergen",
+                "concept",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "coding": {
+              "Name": "coding",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "knownAllergen",
+                "concept",
+                "coding"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "text": {
+              "Name": "text",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "knownAllergen",
+                "concept",
+                "text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "Reference",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "knownAllergen",
+            "reference"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "knownAllergen",
+                "reference",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "knownAllergen",
+                "reference",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "reference": {
+              "Name": "reference",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "knownAllergen",
+                "reference",
+                "reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "knownAllergen",
+                "reference",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "identifier": {
+              "Name": "identifier",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "knownAllergen",
+                "reference",
+                "identifier"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "knownAllergen",
+                "reference",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "productCharacteristic": {
+      "Name": "productCharacteristic",
+      "Type": "NutritionProduct_ProductCharacteristic",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "NutritionProduct",
+        "productCharacteristic"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "productCharacteristic",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "productCharacteristic",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "modifierExtension": {
+          "Name": "modifierExtension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "productCharacteristic",
+            "modifierExtension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "CodeableConcept",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "productCharacteristic",
+            "type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "coding": {
+              "Name": "coding",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "type",
+                "coding"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "text": {
+              "Name": "text",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "type",
+                "text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "valueQuantity": {
+          "Name": "valueQuantity",
+          "Type": "Quantity",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "productCharacteristic",
+            "valueQuantity"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "valueQuantity",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "valueQuantity",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "decimal",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "valueQuantity",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "comparator": {
+              "Name": "comparator",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "valueQuantity",
+                "comparator"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "unit": {
+              "Name": "unit",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "valueQuantity",
+                "unit"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "valueQuantity",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "valueQuantity",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "value": {
+          "Name": "value",
+          "Type": "CHOICE",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "productCharacteristic",
+            "value"
+          ],
+          "SubNodes": {
+            "codeableConcept": {
+              "Name": "codeableConcept",
+              "Type": "CodeableConcept",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": false,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "value",
+                "codeableConcept"
+              ],
+              "SubNodes": {
+                "id": {
+                  "Name": "id",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "codeableConcept",
+                    "id"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "extension": {
+                  "Name": "extension",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "codeableConcept",
+                    "extension"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "coding": {
+                  "Name": "coding",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "codeableConcept",
+                    "coding"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "text": {
+                  "Name": "text",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "codeableConcept",
+                    "text"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                }
+              },
+              "ChoiceTypeNodes": {}
+            },
+            "string": {
+              "Name": "string",
+              "Type": "string",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "value",
+                "string"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "quantity": {
+              "Name": "quantity",
+              "Type": "Quantity",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": false,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "value",
+                "quantity"
+              ],
+              "SubNodes": {
+                "id": {
+                  "Name": "id",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "quantity",
+                    "id"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "extension": {
+                  "Name": "extension",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "quantity",
+                    "extension"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "value": {
+                  "Name": "value",
+                  "Type": "decimal",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "quantity",
+                    "value"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "comparator": {
+                  "Name": "comparator",
+                  "Type": "enum",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "quantity",
+                    "comparator"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "unit": {
+                  "Name": "unit",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "quantity",
+                    "unit"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "system": {
+                  "Name": "system",
+                  "Type": "uri",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "quantity",
+                    "system"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "code": {
+                  "Name": "code",
+                  "Type": "code",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "quantity",
+                    "code"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                }
+              },
+              "ChoiceTypeNodes": {}
+            },
+            "base64Binary": {
+              "Name": "base64Binary",
+              "Type": "base64Binary",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "value",
+                "base64Binary"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "attachment": {
+              "Name": "attachment",
+              "Type": "Attachment",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": false,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "value",
+                "attachment"
+              ],
+              "SubNodes": {
+                "id": {
+                  "Name": "id",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "id"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "extension": {
+                  "Name": "extension",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "extension"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "contentType": {
+                  "Name": "contentType",
+                  "Type": "code",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "contentType"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "language": {
+                  "Name": "language",
+                  "Type": "code",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "language"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "data": {
+                  "Name": "data",
+                  "Type": "base64Binary",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "data"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "url": {
+                  "Name": "url",
+                  "Type": "url",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "url"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "size": {
+                  "Name": "size",
+                  "Type": "integer64",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "size"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "hash": {
+                  "Name": "hash",
+                  "Type": "base64Binary",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "hash"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "title": {
+                  "Name": "title",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "title"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "creation": {
+                  "Name": "creation",
+                  "Type": "dateTime",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "creation"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "height": {
+                  "Name": "height",
+                  "Type": "positiveInt",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "height"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "width": {
+                  "Name": "width",
+                  "Type": "positiveInt",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "width"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "frames": {
+                  "Name": "frames",
+                  "Type": "positiveInt",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "frames"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "duration": {
+                  "Name": "duration",
+                  "Type": "decimal",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "duration"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "pages": {
+                  "Name": "pages",
+                  "Type": "positiveInt",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "productCharacteristic",
+                    "value",
+                    "attachment",
+                    "pages"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                }
+              },
+              "ChoiceTypeNodes": {}
+            },
+            "boolean": {
+              "Name": "boolean",
+              "Type": "boolean",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "productCharacteristic",
+                "value",
+                "boolean"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {
+        "valueCodeableConcept": {
+          "Item1": "value",
+          "Item2": "codeableConcept"
+        },
+        "valueString": {
+          "Item1": "value",
+          "Item2": "string"
+        },
+        "valueQuantity": {
+          "Item1": "value",
+          "Item2": "quantity"
+        },
+        "valueBase64Binary": {
+          "Item1": "value",
+          "Item2": "base64Binary"
+        },
+        "valueAttachment": {
+          "Item1": "value",
+          "Item2": "attachment"
+        },
+        "valueBoolean": {
+          "Item1": "value",
+          "Item2": "boolean"
+        }
+      }
+    },
+    "instance": {
+      "Name": "instance",
+      "Type": "NutritionProduct_Instance",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "NutritionProduct",
+        "instance"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "instance",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "instance",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "modifierExtension": {
+          "Name": "modifierExtension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "instance",
+            "modifierExtension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "quantity": {
+          "Name": "quantity",
+          "Type": "Quantity",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "instance",
+            "quantity"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "quantity",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "quantity",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "decimal",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "quantity",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "comparator": {
+              "Name": "comparator",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "quantity",
+                "comparator"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "unit": {
+              "Name": "unit",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "quantity",
+                "unit"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "quantity",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "quantity",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "instance",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "lotNumber": {
+          "Name": "lotNumber",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "instance",
+            "lotNumber"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "expiry": {
+          "Name": "expiry",
+          "Type": "dateTime",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "instance",
+            "expiry"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "useBy": {
+          "Name": "useBy",
+          "Type": "dateTime",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "instance",
+            "useBy"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "biologicalSource": {
+          "Name": "biologicalSource",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "instance",
+            "biologicalSource"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "biologicalSource",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "biologicalSource",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "biologicalSource",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "biologicalSource",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "biologicalSource",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "biologicalSource",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "biologicalSource",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "instance",
+                "biologicalSource",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "note": {
+      "Name": "note",
+      "Type": "Annotation",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "NutritionProduct",
+        "note"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "note",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "note",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "time": {
+          "Name": "time",
+          "Type": "dateTime",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "note",
+            "time"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "text": {
+          "Name": "text",
+          "Type": "markdown",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "NutritionProduct",
+            "note",
+            "text"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "author": {
+          "Name": "author",
+          "Type": "CHOICE",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "NutritionProduct",
+            "note",
+            "author"
+          ],
+          "SubNodes": {
+            "reference": {
+              "Name": "reference",
+              "Type": "Reference",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": false,
+              "NodePaths": [
+                "NutritionProduct",
+                "note",
+                "author",
+                "reference"
+              ],
+              "SubNodes": {
+                "id": {
+                  "Name": "id",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "note",
+                    "author",
+                    "reference",
+                    "id"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "extension": {
+                  "Name": "extension",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "note",
+                    "author",
+                    "reference",
+                    "extension"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "reference": {
+                  "Name": "reference",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "note",
+                    "author",
+                    "reference",
+                    "reference"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "type": {
+                  "Name": "type",
+                  "Type": "uri",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "note",
+                    "author",
+                    "reference",
+                    "type"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "identifier": {
+                  "Name": "identifier",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "note",
+                    "author",
+                    "reference",
+                    "identifier"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "display": {
+                  "Name": "display",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "NutritionProduct",
+                    "note",
+                    "author",
+                    "reference",
+                    "display"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                }
+              },
+              "ChoiceTypeNodes": {}
+            },
+            "string": {
+              "Name": "string",
+              "Type": "string",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "NutritionProduct",
+                "note",
+                "author",
+                "string"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {
+        "authorReference": {
+          "Item1": "author",
+          "Item2": "reference"
+        },
+        "authorString": {
+          "Item1": "author",
+          "Item2": "string"
+        }
+      }
+    }
+  },
+  "ChoiceTypeNodes": {}
+}

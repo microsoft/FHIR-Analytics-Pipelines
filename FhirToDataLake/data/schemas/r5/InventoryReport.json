@@ -1,0 +1,2154 @@
+{
+  "Name": "InventoryReport",
+  "Type": "InventoryReport",
+  "Depth": 0,
+  "IsRepeated": false,
+  "IsLeaf": false,
+  "NodePaths": [
+    "InventoryReport"
+  ],
+  "SubNodes": {
+    "resourceType": {
+      "Name": "resourceType",
+      "Type": "string",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "InventoryReport",
+        "resourceType"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "id": {
+      "Name": "id",
+      "Type": "id",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "InventoryReport",
+        "id"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "meta": {
+      "Name": "meta",
+      "Type": "Meta",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "InventoryReport",
+        "meta"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "meta",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "meta",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "versionId": {
+          "Name": "versionId",
+          "Type": "id",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "meta",
+            "versionId"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "lastUpdated": {
+          "Name": "lastUpdated",
+          "Type": "instant",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "meta",
+            "lastUpdated"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "source": {
+          "Name": "source",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "meta",
+            "source"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "profile": {
+          "Name": "profile",
+          "Type": "canonical",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "meta",
+            "profile"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "security": {
+          "Name": "security",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "InventoryReport",
+            "meta",
+            "security"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "security",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "security",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "security",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "security",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "security",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "security",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "security",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "tag": {
+          "Name": "tag",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "InventoryReport",
+            "meta",
+            "tag"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "tag",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "tag",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "tag",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "tag",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "tag",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "tag",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "meta",
+                "tag",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "implicitRules": {
+      "Name": "implicitRules",
+      "Type": "uri",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "InventoryReport",
+        "implicitRules"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "language": {
+      "Name": "language",
+      "Type": "code",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "InventoryReport",
+        "language"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "text": {
+      "Name": "text",
+      "Type": "Narrative",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "InventoryReport",
+        "text"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "text",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "text",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "status": {
+          "Name": "status",
+          "Type": "enum",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "text",
+            "status"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "div": {
+          "Name": "div",
+          "Type": "xhtml",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "text",
+            "div"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "extension": {
+      "Name": "extension",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "InventoryReport",
+        "extension"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "modifierExtension": {
+      "Name": "modifierExtension",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "InventoryReport",
+        "modifierExtension"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "identifier": {
+      "Name": "identifier",
+      "Type": "Identifier",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "InventoryReport",
+        "identifier"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "identifier",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "identifier",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "use": {
+          "Name": "use",
+          "Type": "enum",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "identifier",
+            "use"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "CodeableConcept",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "InventoryReport",
+            "identifier",
+            "type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "coding": {
+              "Name": "coding",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "type",
+                "coding"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "text": {
+              "Name": "text",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "type",
+                "text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "system": {
+          "Name": "system",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "identifier",
+            "system"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "value": {
+          "Name": "value",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "identifier",
+            "value"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "period": {
+          "Name": "period",
+          "Type": "Period",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "InventoryReport",
+            "identifier",
+            "period"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "period",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "period",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "start": {
+              "Name": "start",
+              "Type": "dateTime",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "period",
+                "start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "end": {
+              "Name": "end",
+              "Type": "dateTime",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "period",
+                "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "assigner": {
+          "Name": "assigner",
+          "Type": "Reference",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "InventoryReport",
+            "identifier",
+            "assigner"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "assigner",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "assigner",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "reference": {
+              "Name": "reference",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "assigner",
+                "reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "assigner",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "identifier": {
+              "Name": "identifier",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "assigner",
+                "identifier"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "identifier",
+                "assigner",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "status": {
+      "Name": "status",
+      "Type": "code",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "InventoryReport",
+        "status"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "countType": {
+      "Name": "countType",
+      "Type": "code",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "InventoryReport",
+        "countType"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "operationType": {
+      "Name": "operationType",
+      "Type": "CodeableConcept",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "InventoryReport",
+        "operationType"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "operationType",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "operationType",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "coding": {
+          "Name": "coding",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "InventoryReport",
+            "operationType",
+            "coding"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationType",
+                "coding",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationType",
+                "coding",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationType",
+                "coding",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationType",
+                "coding",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationType",
+                "coding",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationType",
+                "coding",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationType",
+                "coding",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "text": {
+          "Name": "text",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "operationType",
+            "text"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "operationTypeReason": {
+      "Name": "operationTypeReason",
+      "Type": "CodeableConcept",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "InventoryReport",
+        "operationTypeReason"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "operationTypeReason",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "operationTypeReason",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "coding": {
+          "Name": "coding",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "InventoryReport",
+            "operationTypeReason",
+            "coding"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationTypeReason",
+                "coding",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationTypeReason",
+                "coding",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationTypeReason",
+                "coding",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationTypeReason",
+                "coding",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationTypeReason",
+                "coding",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationTypeReason",
+                "coding",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "operationTypeReason",
+                "coding",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "text": {
+          "Name": "text",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "operationTypeReason",
+            "text"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "reportedDateTime": {
+      "Name": "reportedDateTime",
+      "Type": "dateTime",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "InventoryReport",
+        "reportedDateTime"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "reporter": {
+      "Name": "reporter",
+      "Type": "Reference",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "InventoryReport",
+        "reporter"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "reporter",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "reporter",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "reporter",
+            "reference"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "reporter",
+            "type"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "InventoryReport",
+            "reporter",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "reporter",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "reporter",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "reporter",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "reporter",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "reporter",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "reporter",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "reporter",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "reporter",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "display": {
+          "Name": "display",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "reporter",
+            "display"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "reportingPeriod": {
+      "Name": "reportingPeriod",
+      "Type": "Period",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "InventoryReport",
+        "reportingPeriod"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "reportingPeriod",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "reportingPeriod",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "start": {
+          "Name": "start",
+          "Type": "dateTime",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "reportingPeriod",
+            "start"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "end": {
+          "Name": "end",
+          "Type": "dateTime",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "reportingPeriod",
+            "end"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "inventoryListing": {
+      "Name": "inventoryListing",
+      "Type": "InventoryReport_InventoryListing",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "InventoryReport",
+        "inventoryListing"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "inventoryListing",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "inventoryListing",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "modifierExtension": {
+          "Name": "modifierExtension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "inventoryListing",
+            "modifierExtension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "location": {
+          "Name": "location",
+          "Type": "Reference",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "InventoryReport",
+            "inventoryListing",
+            "location"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "location",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "location",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "reference": {
+              "Name": "reference",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "location",
+                "reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "location",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "identifier": {
+              "Name": "identifier",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "location",
+                "identifier"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "location",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "itemStatus": {
+          "Name": "itemStatus",
+          "Type": "CodeableConcept",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "InventoryReport",
+            "inventoryListing",
+            "itemStatus"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "itemStatus",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "itemStatus",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "coding": {
+              "Name": "coding",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "itemStatus",
+                "coding"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "text": {
+              "Name": "text",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "itemStatus",
+                "text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "countingDateTime": {
+          "Name": "countingDateTime",
+          "Type": "dateTime",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "inventoryListing",
+            "countingDateTime"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "items": {
+          "Name": "items",
+          "Type": "InventoryReport_Items",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "InventoryReport",
+            "inventoryListing",
+            "items"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "items",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "items",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "modifierExtension": {
+              "Name": "modifierExtension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "items",
+                "modifierExtension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "category": {
+              "Name": "category",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "items",
+                "category"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "quantity": {
+              "Name": "quantity",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "items",
+                "quantity"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "item": {
+              "Name": "item",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "items",
+                "item"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "lot": {
+              "Name": "lot",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "items",
+                "lot"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "serial": {
+              "Name": "serial",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "items",
+                "serial"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "expiry": {
+              "Name": "expiry",
+              "Type": "dateTime",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "items",
+                "expiry"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "manufacturingDate": {
+              "Name": "manufacturingDate",
+              "Type": "dateTime",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "inventoryListing",
+                "items",
+                "manufacturingDate"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "note": {
+      "Name": "note",
+      "Type": "Annotation",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "InventoryReport",
+        "note"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "note",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "note",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "time": {
+          "Name": "time",
+          "Type": "dateTime",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "note",
+            "time"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "text": {
+          "Name": "text",
+          "Type": "markdown",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "InventoryReport",
+            "note",
+            "text"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "author": {
+          "Name": "author",
+          "Type": "CHOICE",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "InventoryReport",
+            "note",
+            "author"
+          ],
+          "SubNodes": {
+            "reference": {
+              "Name": "reference",
+              "Type": "Reference",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": false,
+              "NodePaths": [
+                "InventoryReport",
+                "note",
+                "author",
+                "reference"
+              ],
+              "SubNodes": {
+                "id": {
+                  "Name": "id",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "InventoryReport",
+                    "note",
+                    "author",
+                    "reference",
+                    "id"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "extension": {
+                  "Name": "extension",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "InventoryReport",
+                    "note",
+                    "author",
+                    "reference",
+                    "extension"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "reference": {
+                  "Name": "reference",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "InventoryReport",
+                    "note",
+                    "author",
+                    "reference",
+                    "reference"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "type": {
+                  "Name": "type",
+                  "Type": "uri",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "InventoryReport",
+                    "note",
+                    "author",
+                    "reference",
+                    "type"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "identifier": {
+                  "Name": "identifier",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "InventoryReport",
+                    "note",
+                    "author",
+                    "reference",
+                    "identifier"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "display": {
+                  "Name": "display",
+                  "Type": "string",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "InventoryReport",
+                    "note",
+                    "author",
+                    "reference",
+                    "display"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                }
+              },
+              "ChoiceTypeNodes": {}
+            },
+            "string": {
+              "Name": "string",
+              "Type": "string",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "InventoryReport",
+                "note",
+                "author",
+                "string"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {
+        "authorReference": {
+          "Item1": "author",
+          "Item2": "reference"
+        },
+        "authorString": {
+          "Item1": "author",
+          "Item2": "string"
+        }
+      }
+    }
+  },
+  "ChoiceTypeNodes": {}
+}

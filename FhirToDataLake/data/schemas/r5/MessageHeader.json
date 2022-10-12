@@ -1,0 +1,2655 @@
+{
+  "Name": "MessageHeader",
+  "Type": "MessageHeader",
+  "Depth": 0,
+  "IsRepeated": false,
+  "IsLeaf": false,
+  "NodePaths": [
+    "MessageHeader"
+  ],
+  "SubNodes": {
+    "resourceType": {
+      "Name": "resourceType",
+      "Type": "string",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "MessageHeader",
+        "resourceType"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "id": {
+      "Name": "id",
+      "Type": "id",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "MessageHeader",
+        "id"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "meta": {
+      "Name": "meta",
+      "Type": "Meta",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MessageHeader",
+        "meta"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "meta",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "meta",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "versionId": {
+          "Name": "versionId",
+          "Type": "id",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "meta",
+            "versionId"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "lastUpdated": {
+          "Name": "lastUpdated",
+          "Type": "instant",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "meta",
+            "lastUpdated"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "source": {
+          "Name": "source",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "meta",
+            "source"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "profile": {
+          "Name": "profile",
+          "Type": "canonical",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "meta",
+            "profile"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "security": {
+          "Name": "security",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "meta",
+            "security"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "security",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "security",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "security",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "security",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "security",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "security",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "security",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "tag": {
+          "Name": "tag",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "meta",
+            "tag"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "tag",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "tag",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "tag",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "tag",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "tag",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "tag",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "meta",
+                "tag",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "implicitRules": {
+      "Name": "implicitRules",
+      "Type": "uri",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "MessageHeader",
+        "implicitRules"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "language": {
+      "Name": "language",
+      "Type": "code",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "MessageHeader",
+        "language"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "text": {
+      "Name": "text",
+      "Type": "Narrative",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MessageHeader",
+        "text"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "text",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "text",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "status": {
+          "Name": "status",
+          "Type": "enum",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "text",
+            "status"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "div": {
+          "Name": "div",
+          "Type": "xhtml",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "text",
+            "div"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "extension": {
+      "Name": "extension",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "MessageHeader",
+        "extension"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "modifierExtension": {
+      "Name": "modifierExtension",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "MessageHeader",
+        "modifierExtension"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "destination": {
+      "Name": "destination",
+      "Type": "MessageHeader_Destination",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MessageHeader",
+        "destination"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "destination",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "destination",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "modifierExtension": {
+          "Name": "modifierExtension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "destination",
+            "modifierExtension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "name": {
+          "Name": "name",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "destination",
+            "name"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "target": {
+          "Name": "target",
+          "Type": "Reference",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "destination",
+            "target"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "destination",
+                "target",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "destination",
+                "target",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "reference": {
+              "Name": "reference",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "destination",
+                "target",
+                "reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "destination",
+                "target",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "identifier": {
+              "Name": "identifier",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "destination",
+                "target",
+                "identifier"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "destination",
+                "target",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "endpoint": {
+          "Name": "endpoint",
+          "Type": "url",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "destination",
+            "endpoint"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "receiver": {
+          "Name": "receiver",
+          "Type": "Reference",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "destination",
+            "receiver"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "destination",
+                "receiver",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "destination",
+                "receiver",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "reference": {
+              "Name": "reference",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "destination",
+                "receiver",
+                "reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "destination",
+                "receiver",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "identifier": {
+              "Name": "identifier",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "destination",
+                "receiver",
+                "identifier"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "destination",
+                "receiver",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "sender": {
+      "Name": "sender",
+      "Type": "Reference",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MessageHeader",
+        "sender"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "sender",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "sender",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "sender",
+            "reference"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "sender",
+            "type"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "sender",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "sender",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "sender",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "sender",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "sender",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "sender",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "sender",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "sender",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "sender",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "display": {
+          "Name": "display",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "sender",
+            "display"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "enterer": {
+      "Name": "enterer",
+      "Type": "Reference",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MessageHeader",
+        "enterer"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "enterer",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "enterer",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "enterer",
+            "reference"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "enterer",
+            "type"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "enterer",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "enterer",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "enterer",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "enterer",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "enterer",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "enterer",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "enterer",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "enterer",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "enterer",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "display": {
+          "Name": "display",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "enterer",
+            "display"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "author": {
+      "Name": "author",
+      "Type": "Reference",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MessageHeader",
+        "author"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "author",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "author",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "author",
+            "reference"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "author",
+            "type"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "author",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "author",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "author",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "author",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "author",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "author",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "author",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "author",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "author",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "display": {
+          "Name": "display",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "author",
+            "display"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "source": {
+      "Name": "source",
+      "Type": "MessageHeader_Source",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MessageHeader",
+        "source"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "source",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "source",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "modifierExtension": {
+          "Name": "modifierExtension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "source",
+            "modifierExtension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "name": {
+          "Name": "name",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "source",
+            "name"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "software": {
+          "Name": "software",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "source",
+            "software"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "version": {
+          "Name": "version",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "source",
+            "version"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "contact": {
+          "Name": "contact",
+          "Type": "ContactPoint",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "source",
+            "contact"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "source",
+                "contact",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "source",
+                "contact",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "source",
+                "contact",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "source",
+                "contact",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "source",
+                "contact",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "rank": {
+              "Name": "rank",
+              "Type": "positiveInt",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "source",
+                "contact",
+                "rank"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "source",
+                "contact",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "endpoint": {
+          "Name": "endpoint",
+          "Type": "url",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "source",
+            "endpoint"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "responsible": {
+      "Name": "responsible",
+      "Type": "Reference",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MessageHeader",
+        "responsible"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "responsible",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "responsible",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "responsible",
+            "reference"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "responsible",
+            "type"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "responsible",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "responsible",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "responsible",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "responsible",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "responsible",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "responsible",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "responsible",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "responsible",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "responsible",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "display": {
+          "Name": "display",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "responsible",
+            "display"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "reason": {
+      "Name": "reason",
+      "Type": "CodeableConcept",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MessageHeader",
+        "reason"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "reason",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "reason",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "coding": {
+          "Name": "coding",
+          "Type": "Coding",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "reason",
+            "coding"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "reason",
+                "coding",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "reason",
+                "coding",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "reason",
+                "coding",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "reason",
+                "coding",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "reason",
+                "coding",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "reason",
+                "coding",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "reason",
+                "coding",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "text": {
+          "Name": "text",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "reason",
+            "text"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "response": {
+      "Name": "response",
+      "Type": "MessageHeader_Response",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MessageHeader",
+        "response"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "response",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "response",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "modifierExtension": {
+          "Name": "modifierExtension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "response",
+            "modifierExtension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "id",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "response",
+            "identifier"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "code": {
+          "Name": "code",
+          "Type": "code",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "response",
+            "code"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "details": {
+          "Name": "details",
+          "Type": "Reference",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "response",
+            "details"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "response",
+                "details",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "response",
+                "details",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "reference": {
+              "Name": "reference",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "response",
+                "details",
+                "reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "response",
+                "details",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "identifier": {
+              "Name": "identifier",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "response",
+                "details",
+                "identifier"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "response",
+                "details",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "focus": {
+      "Name": "focus",
+      "Type": "Reference",
+      "Depth": 1,
+      "IsRepeated": true,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MessageHeader",
+        "focus"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "focus",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "focus",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "reference": {
+          "Name": "reference",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "focus",
+            "reference"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "type": {
+          "Name": "type",
+          "Type": "uri",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "focus",
+            "type"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "identifier": {
+          "Name": "identifier",
+          "Type": "Identifier",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "focus",
+            "identifier"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "focus",
+                "identifier",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "focus",
+                "identifier",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "use": {
+              "Name": "use",
+              "Type": "enum",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "focus",
+                "identifier",
+                "use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "type": {
+              "Name": "type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "focus",
+                "identifier",
+                "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "focus",
+                "identifier",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "value": {
+              "Name": "value",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "focus",
+                "identifier",
+                "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "period": {
+              "Name": "period",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "focus",
+                "identifier",
+                "period"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "assigner": {
+              "Name": "assigner",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "focus",
+                "identifier",
+                "assigner"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "display": {
+          "Name": "display",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "focus",
+            "display"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
+    "definition": {
+      "Name": "definition",
+      "Type": "canonical",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "MessageHeader",
+        "definition"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
+    },
+    "event": {
+      "Name": "event",
+      "Type": "CHOICE",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MessageHeader",
+        "event"
+      ],
+      "SubNodes": {
+        "coding": {
+          "Name": "coding",
+          "Type": "Coding",
+          "Depth": 1,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MessageHeader",
+            "event",
+            "coding"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "event",
+                "coding",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "event",
+                "coding",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "system": {
+              "Name": "system",
+              "Type": "uri",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "event",
+                "coding",
+                "system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "version": {
+              "Name": "version",
+              "Type": "string",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "event",
+                "coding",
+                "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "code": {
+              "Name": "code",
+              "Type": "code",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "event",
+                "coding",
+                "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "display": {
+              "Name": "display",
+              "Type": "string",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "event",
+                "coding",
+                "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "userSelected": {
+              "Name": "userSelected",
+              "Type": "boolean",
+              "Depth": 2,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MessageHeader",
+                "event",
+                "coding",
+                "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "uri": {
+          "Name": "uri",
+          "Type": "uri",
+          "Depth": 1,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MessageHeader",
+            "event",
+            "uri"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": null
+    }
+  },
+  "ChoiceTypeNodes": {
+    "eventCoding": {
+      "Item1": "event",
+      "Item2": "coding"
+    },
+    "eventUri": {
+      "Item1": "event",
+      "Item2": "uri"
+    }
+  }
+}

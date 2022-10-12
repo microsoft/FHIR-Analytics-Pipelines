@@ -3,11 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using System;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
-    public class ReferenceParseException : Exception
+    public class ReferenceParseException : SynapsePipelineRetriableException
     {
         public ReferenceParseException(string message)
             : base(message)

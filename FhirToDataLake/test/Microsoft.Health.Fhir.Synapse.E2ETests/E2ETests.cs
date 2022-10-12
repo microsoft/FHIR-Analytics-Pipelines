@@ -21,6 +21,8 @@ using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
@@ -422,7 +424,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 {
                     Assert.Equal(1, kv.Value);
                 }
-
             }
             finally
             {
@@ -433,11 +434,16 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private async Task InitializeUniqueStorage()
         {
             var uniqueName = Guid.NewGuid().ToString("N");
-            var agentName = $"agent{uniqueName}";
+            var jobInfoTableName = $"jobinfotable{uniqueName}";
+            var jobInfoQueueName = $"jobinfoqueue{uniqueName}";
+            var metadataTableName = $"metadatatable{uniqueName}";
+
             _blobContainerClient = _blobServiceClient.GetBlobContainerClient(uniqueName);
             var jobConfig = Options.Create(new JobConfiguration
             {
-                AgentName = agentName,
+                JobInfoTableName = jobInfoTableName,
+                MetadataTableName = metadataTableName,
+                JobInfoQueueName = jobInfoQueueName,
             });
 
             // Make sure the container is deleted before running the tests
@@ -448,8 +454,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             _metadataStore = new AzureTableMetadataStore(azureTableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
             Assert.True(_metadataStore.IsInitialized());
             _queueClientFactory = new AzureStorageClientFactory(
-                AzureStorageKeyProvider.JobInfoTableName(agentName),
-                AzureStorageKeyProvider.JobMessageQueueName(agentName),
+                jobInfoTableName,
+                jobInfoQueueName,
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
             _queueClient = new AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>(
@@ -458,7 +464,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
             // set configuration
             Environment.SetEnvironmentVariable("job:containerName", uniqueName);
-            Environment.SetEnvironmentVariable("job:agentName", agentName);
+            Environment.SetEnvironmentVariable("job:metadataTableName", metadataTableName);
+            Environment.SetEnvironmentVariable("job:jobInfoTableName", jobInfoTableName);
+            Environment.SetEnvironmentVariable("job:jobInfoQueueName", jobInfoQueueName);
         }
 
         private async Task<CurrentTriggerEntity> WaitJobCompleted(DateTimeOffset configurationEndTime)
@@ -575,7 +583,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                         .AddDataSource()
                         .AddDataWriter()
                         .AddSchema()
+                        .AddMetricsLogger()
+                        .AddDiagnosticLogger()
                         .AddHostedService<SynapseLinkService>());
-
     }
 }

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Newtonsoft.Json;
@@ -33,21 +34,26 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
 
         private readonly IAccessTokenProvider _aadTokenProvider;
         private readonly HttpClient _client;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<ContainerRegistryAccessTokenProvider> _logger;
 
         public ContainerRegistryAccessTokenProvider(
             ITokenCredentialProvider tokenCredentialProvider,
             HttpClient httpClient,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<ContainerRegistryAccessTokenProvider> logger)
         {
             EnsureArg.IsNotNull(tokenCredentialProvider, nameof(tokenCredentialProvider));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
+            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _aadTokenProvider = new AzureAccessTokenProvider(
                 tokenCredentialProvider.GetCredential(TokenCredentialTypes.External),
+                diagnosticLogger,
                 new Logger<AzureAccessTokenProvider>(new LoggerFactory()));
             _client = httpClient;
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
         }
 
@@ -62,7 +68,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get AAD access token from managed identity.");
+                _diagnosticLogger.LogError("Failed to get AAD access token from managed identity.");
+                _logger.LogInformation(ex, "Failed to get AAD access token from managed identity.");
                 throw new ContainerRegistryTokenException("Failed to get AAD access token from managed identity.", ex);
             }
 
@@ -72,14 +79,21 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                   .Handle<HttpRequestException>()
                   .RetryAsync(3, onRetry: (exception, retryCount) =>
                   {
-                      _logger.LogWarning(exception, "Get ACR token failed. Retry {RetryCount}.", retryCount);
+                      _logger.LogInformation(exception, "Get ACR token failed. Retry {RetryCount}.", retryCount);
                   })
                   .ExecuteAsync(() => GetAcrAccessTokenWithAadToken(registryServer, aadToken, cancellationToken));
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Failed to get ACR access token with AAD access token.");
+                _diagnosticLogger.LogError("Failed to get ACR access token with AAD access token.");
+                _logger.LogInformation(ex, "Failed to get ACR access token with AAD access token.");
                 throw new ContainerRegistryTokenException("Failed to get ACR access token with AAD access token.", ex);
+            }
+            catch (Exception ex)
+            {
+                _diagnosticLogger.LogError("Unhandeled error while getting ACR access token with AAD access token.");
+                _logger.LogError(ex, "Unhandeled error while getting ACR access token with AAD access token.");
+                throw;
             }
         }
 
@@ -109,13 +123,16 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                 switch (refreshTokenResponse.StatusCode)
                 {
                     case HttpStatusCode.Unauthorized:
-                        _logger.LogError(string.Format("Failed to exchange ACR refresh token: ACR server {0} is unauthorized.", registryServer));
+                        _diagnosticLogger.LogError(string.Format("Failed to exchange ACR refresh token: ACR server {0} is unauthorized.", registryServer));
+                        _logger.LogInformation("Failed to exchange ACR refresh token: ACR server {0} is unauthorized.", registryServer);
                         throw new ContainerRegistryTokenException(string.Format("Failed to exchange ACR refresh token: ACR server {0} is unauthorized.", registryServer));
                     case HttpStatusCode.NotFound:
-                        _logger.LogError(string.Format("Failed to exchange ACR refresh token: ACR server {0} is not found.", registryServer));
+                        _diagnosticLogger.LogError(string.Format("Failed to exchange ACR refresh token: ACR server {0} is not found.", registryServer));
+                        _logger.LogInformation("Failed to exchange ACR refresh token: ACR server {0} is not found.", registryServer);
                         throw new ContainerRegistryTokenException(string.Format("Failed to exchange ACR refresh token: ACR server {0} is not found.", registryServer));
                     default:
-                        _logger.LogError(string.Format("Failed to exchange ACR refresh token with AAD access token. Status code: {StatusCode}.", refreshTokenResponse.StatusCode));
+                        _diagnosticLogger.LogError(string.Format("Failed to exchange ACR refresh token with AAD access token. Status code: {0}.", refreshTokenResponse.StatusCode));
+                        _logger.LogInformation("Failed to exchange ACR refresh token with AAD access token. Status code: {0}.", refreshTokenResponse.StatusCode);
                         throw new ContainerRegistryTokenException(string.Format("Failed to exchange ACR refresh token with AAD access token. Status code: {StatusCode}.", refreshTokenResponse.StatusCode));
                 }
             }
@@ -125,7 +142,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             string refreshToken = (string)refreshTokenJson.refresh_token;
             if (string.IsNullOrEmpty(refreshToken))
             {
-                _logger.LogError("ACR refresh token is empty.");
+                _diagnosticLogger.LogError("ACR refresh token is empty.");
+                _logger.LogInformation("ACR refresh token is empty.");
                 throw new ContainerRegistryTokenException("ACR refresh token is empty.");
             }
 
@@ -156,13 +174,16 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                 switch (accessTokenResponse.StatusCode)
                 {
                     case HttpStatusCode.Unauthorized:
-                        _logger.LogError(string.Format("Failed to get ACR access token: ACR server {0} is unauthorized.", registryServer));
+                        _diagnosticLogger.LogError(string.Format("Failed to get ACR access token: ACR server {0} is unauthorized.", registryServer));
+                        _logger.LogInformation("Failed to get ACR access token: ACR server {0} is unauthorized.", registryServer);
                         throw new ContainerRegistryTokenException(string.Format("Failed to get ACR access token: ACR server {0} is unauthorized.", registryServer));
                     case HttpStatusCode.NotFound:
-                        _logger.LogError(string.Format("Failed to get ACR access token: ACR server {0} is not found.", registryServer));
+                        _diagnosticLogger.LogError(string.Format("Failed to get ACR access token: ACR server {0} is not found.", registryServer));
+                        _logger.LogInformation("Failed to get ACR access token: ACR server {0} is not found.", registryServer);
                         throw new ContainerRegistryTokenException(string.Format("Failed to get ACR access token: ACR server {0} is not found.", registryServer));
                     default:
-                        _logger.LogError(string.Format("Failed to get ACR access token with ACR refresh token. Status code: {StatusCode}.", accessTokenResponse.StatusCode));
+                        _diagnosticLogger.LogError(string.Format("Failed to get ACR access token with ACR refresh token. Status code: {0}.", accessTokenResponse.StatusCode));
+                        _logger.LogInformation("Failed to get ACR access token with ACR refresh token. Status code: {0}.", accessTokenResponse.StatusCode);
                         throw new ContainerRegistryTokenException(string.Format("Failed to get ACR access token with ACR refresh token. Status code: {StatusCode}.", accessTokenResponse.StatusCode));
                 }
             }
@@ -172,7 +193,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             string accessToken = accessTokenJson.access_token;
             if (string.IsNullOrEmpty(accessToken))
             {
-                _logger.LogError("ACR access token is empty.");
+                _diagnosticLogger.LogError("ACR access token is empty.");
+                _logger.LogInformation("ACR access token is empty.");
                 throw new ContainerRegistryTokenException("ACR access token is empty.");
             }
 

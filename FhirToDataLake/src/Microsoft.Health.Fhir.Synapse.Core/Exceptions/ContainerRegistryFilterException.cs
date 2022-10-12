@@ -4,10 +4,11 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 
-namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
-    public class ContainerRegistryFilterException : Exception
+    public class ContainerRegistryFilterException : SynapsePipelineRetriableException
     {
         public ContainerRegistryFilterException(string message)
             : base(message)

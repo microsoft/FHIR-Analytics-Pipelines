@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
@@ -23,6 +24,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
     [Trait("Category", "DataWriter")]
     public class DataWriterTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+
         private const string LocalTestStorageUrl = "UseDevelopmentStorage=true";
 
         private const string TestStorageUrl = "https://fake.blob.windows.core.net";
@@ -48,7 +51,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             var streamData = new StreamBatchData(stream, 1, TestResourceType);
             await dataWriter.WriteAsync(streamData, jobId, partIndex, _testDate);
 
-            var containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
+            var containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), _diagnosticLogger, new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
             var blobStream = await containerClient.GetBlobAsync($"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet");
             Assert.NotNull(blobStream);
 
@@ -66,9 +69,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         }
 
         [Fact]
-        public void GivenAnInvalidBlobContainerClient_WhenCreateDataWriter_ExceptionShouldBeThrown()
+        public async void GivenAnInvalidBlobContainerClient_WhenCommitTheData_ExceptionShouldBeThrown()
         {
-            Assert.Throws<AzureBlobOperationFailedException>(GetBrokenDataWriter);
+            var invalidContainerDataWriter = GetBrokenDataWriter();
+
+            await Assert.ThrowsAsync<AzureBlobOperationFailedException>(() => invalidContainerDataWriter.CommitJobDataAsync(00));
         }
 
         [Fact]
@@ -174,6 +179,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
                 new AzureBlobContainerClientFactory(
                     new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
                     Options.Create(_storageConfiguration),
+                    _diagnosticLogger,
                     new NullLoggerFactory()),
                 GetLocalDataSink(),
                 new NullLogger<AzureBlobDataWriter>());
@@ -196,6 +202,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
                 new AzureBlobContainerClientFactory(
                     new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
                     Options.Create(_storageConfiguration),
+                    _diagnosticLogger,
                     new NullLoggerFactory()),
                 GetBrokenDataSink(),
                 new NullLogger<AzureBlobDataWriter>());

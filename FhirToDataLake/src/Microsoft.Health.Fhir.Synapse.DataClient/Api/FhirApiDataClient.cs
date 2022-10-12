@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
@@ -27,6 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         private readonly IFhirApiDataSource _dataSource;
         private readonly HttpClient _httpClient;
         private readonly IAccessTokenProvider _accessTokenProvider;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<FhirApiDataClient> _logger;
 
         private const int RetryCount = 1;
@@ -36,19 +38,23 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             IFhirApiDataSource dataSource,
             HttpClient httpClient,
             ITokenCredentialProvider tokenCredentialProvider,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<FhirApiDataClient> logger)
         {
             EnsureArg.IsNotNull(dataSource, nameof(dataSource));
             EnsureArg.IsNotNullOrEmpty(dataSource.FhirServerUrl, nameof(dataSource.FhirServerUrl));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
             EnsureArg.IsNotNull(tokenCredentialProvider, nameof(tokenCredentialProvider));
+            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _dataSource = dataSource;
             _httpClient = httpClient;
             _accessTokenProvider = new AzureAccessTokenProvider(
                 tokenCredentialProvider.GetCredential(TokenCredentialTypes.External),
+                _diagnosticLogger,
                 new Logger<AzureAccessTokenProvider>(new LoggerFactory()));
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
 
             // Timeout will be handled by Polly policy.
@@ -71,7 +77,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             }
             catch (Exception ex)
             {
-                _logger.LogError("Create search Uri failed, Reason: '{reason}'", ex);
+                _diagnosticLogger.LogError(string.Format("Create search Uri failed, Reason: '{reason}'", ex));
+                _logger.LogInformation(ex, "Create search Uri failed, Reason: '{reason}'", ex);
                 throw new FhirSearchException("Create search Uri failed", ex);
             }
 
@@ -93,7 +100,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Get fhir server access token failed, Reason: '{reason}'", ex);
+                    _diagnosticLogger.LogError(string.Format("Get fhir server access token failed, Reason: '{reason}'", ex));
+                    _logger.LogInformation(ex, "Get fhir server access token failed, Reason: '{reason}'", ex);
                     throw new FhirSearchException("Get fhir server access token failed", ex);
                 }
             }
@@ -105,7 +113,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         {
             if (fhirApiOptions.IsAccessTokenRequired && _dataSource.Authentication == AuthenticationType.ManagedIdentity)
             {
-                _logger.LogError("Synchronous search doesn't support AccessToken, please use Asynchronous method SearchAsync() instead.");
+                _diagnosticLogger.LogError("Synchronous search doesn't support AccessToken, please use Asynchronous method SearchAsync() instead.");
+                _logger.LogInformation("Synchronous search doesn't support AccessToken, please use Asynchronous method SearchAsync() instead.");
                 throw new FhirSearchException(
                     "Synchronous search doesn't support AccessToken, please use Asynchronous method SearchAsync() instead.");
             }
@@ -117,7 +126,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             }
             catch (Exception ex)
             {
-                _logger.LogError("Create search Uri failed, Reason: '{reason}'", ex);
+                _diagnosticLogger.LogError($"Create search Uri failed, Reason: '{ex}'");
+                _logger.LogInformation(ex, "Create search Uri failed, Reason: '{reason}'", ex);
                 throw new FhirSearchException("Create search Uri failed", ex);
             }
 
@@ -174,7 +184,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                     // retry for 429 exception
                     if (retryCount < RetryCount && response.StatusCode == HttpStatusCode.TooManyRequests)
                     {
-                        _logger.LogError("Get response from http request failed due to 429 too many requests, will delay for {}ms and retry it. Url: '{url}',", RetryTimeSpan, uri);
+                        _logger.LogInformation("Get response from http request failed due to 429 too many requests, will delay for {0}ms and retry it. Url: '{1}',", RetryTimeSpan, uri);
                         Thread.Sleep(RetryTimeSpan);
                         response = await _httpClient.SendAsync(searchRequest, cancellationToken);
                         retryCount++;
@@ -186,16 +196,38 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 }
 
                 response.EnsureSuccessStatusCode();
+
                 _logger.LogInformation("Successfully retrieved result for url: '{url}'.", uri);
 
                 return await response.Content.ReadAsStringAsync(cancellationToken);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError("Get response from http request failed. Url: '{url}', Reason: '{reason}'", uri, ex);
+                switch (ex.StatusCode)
+                {
+                    case HttpStatusCode.Unauthorized:
+                        _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: FHIR server {0} is unauthorized.", _dataSource.FhirServerUrl));
+                        _logger.LogInformation(ex, "Failed to search from FHIR server: FHIR server {0} is unauthorized.", _dataSource.FhirServerUrl);
+                        break;
+                    case HttpStatusCode.NotFound:
+                        _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: FHIR server {0} is not found.", _dataSource.FhirServerUrl));
+                        _logger.LogInformation(ex, "Failed to search from FHIR server: FHIR server {0} is not found.", _dataSource.FhirServerUrl);
+                        break;
+                    default:
+                        _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: Status code: {0}.", ex.StatusCode));
+                        _logger.LogInformation(ex, "Failed to search from FHIR server: Status code: {0}.", ex.StatusCode);
+                        break;
+                }
+
                 throw new FhirSearchException(
                     string.Format(Resource.FhirSearchFailed, uri),
                     ex);
+            }
+            catch (Exception ex)
+            {
+                _diagnosticLogger.LogError("Unhandeled error while searching from FHIR server.");
+                _logger.LogError(ex, "Unhandeled error while searching from FHIR server.");
+                throw;
             }
         }
 
@@ -214,12 +246,33 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 StreamReader reader = new StreamReader(stream);
                 return reader.ReadToEnd();
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError("Get response from http request failed. Url: '{url}', Reason: '{reason}'", uri, ex);
+                switch (ex.StatusCode)
+                {
+                    case HttpStatusCode.Unauthorized:
+                        _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: FHIR server {0} is unauthorized.", _dataSource.FhirServerUrl));
+                        _logger.LogInformation(ex, "Failed to search from FHIR server: FHIR server {0} is unauthorized.", _dataSource.FhirServerUrl);
+                        break;
+                    case HttpStatusCode.NotFound:
+                        _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: FHIR server {0} is not found.", _dataSource.FhirServerUrl));
+                        _logger.LogInformation(ex, "Failed to search from FHIR server: FHIR server {0} is not found.", _dataSource.FhirServerUrl);
+                        break;
+                    default:
+                        _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: Status code: {0}.", ex.StatusCode));
+                        _logger.LogInformation(ex, "Failed to search from FHIR server: Status code: {0}.", ex.StatusCode);
+                        break;
+                }
+
                 throw new FhirSearchException(
                     string.Format(Resource.FhirSearchFailed, uri),
                     ex);
+            }
+            catch (Exception ex)
+            {
+                _diagnosticLogger.LogError("Unhandeled error while searching from FHIR server.");
+                _logger.LogError(ex, "Unhandeled error while searching from FHIR server.");
+                throw;
             }
         }
     }

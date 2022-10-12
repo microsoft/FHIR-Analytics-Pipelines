@@ -50,7 +50,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
                     onRetry: (outcome, timespan, retryAttempt, context) =>
                     {
                         services.BuildServiceProvider().GetService<ILogger<FhirApiDataClient>>()
-                            .LogWarning("Searching FHIR data failed, delaying for {delay}ms, then making retry {retry}.", timespan.TotalMilliseconds, retryAttempt);
+                            .LogInformation("Searching FHIR data failed, delaying for {delay}ms, then making retry {retry}.", timespan.TotalMilliseconds, retryAttempt);
                     });
         }
 

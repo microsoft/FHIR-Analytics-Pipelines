@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
@@ -20,8 +21,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
         public SchedulerServiceHealthChecker(
             ISchedulerService schedulerService,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<SchedulerServiceHealthChecker> logger)
-            : base(HealthCheckTypes.SchedulerServiceIsActive, true, logger)
+            : base(HealthCheckTypes.SchedulerServiceIsActive, true, diagnosticLogger, logger)
         {
             _schedulerService = EnsureArg.IsNotNull(schedulerService, nameof(schedulerService));
         }

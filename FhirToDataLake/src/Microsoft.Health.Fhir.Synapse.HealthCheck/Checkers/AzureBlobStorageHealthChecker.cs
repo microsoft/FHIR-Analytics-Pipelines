@@ -12,6 +12,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
@@ -27,8 +28,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             IAzureBlobContainerClientFactory azureBlobContainerClientFactory,
             IOptions<JobConfiguration> jobConfiguration,
             IOptions<DataLakeStoreConfiguration> storeConfiguration,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureBlobStorageHealthChecker> logger)
-            : base(HealthCheckTypes.AzureBlobStorageCanReadWrite, false, logger)
+            : base(HealthCheckTypes.AzureBlobStorageCanReadWrite, false, diagnosticLogger, logger)
         {
             EnsureArg.IsNotNull(azureBlobContainerClientFactory, nameof(azureBlobContainerClientFactory));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));

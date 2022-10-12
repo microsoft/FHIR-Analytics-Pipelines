@@ -36,6 +36,5 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         /// A metric dimension that represents stage of synapse pipeline.
         /// </summary>
         public static string Operation => nameof(DimensionNames.Operation);
-
     }
 }

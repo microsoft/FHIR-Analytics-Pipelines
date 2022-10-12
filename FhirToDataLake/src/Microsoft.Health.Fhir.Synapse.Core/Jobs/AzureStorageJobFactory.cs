@@ -8,6 +8,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -35,6 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IFilterManager _filterManager;
         private readonly IMetadataStore _metadataStore;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<AzureStorageJobFactory> _logger;
 
         public AzureStorageJobFactory(
@@ -47,6 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFilterManager filterManager,
             IMetadataStore metadataStore,
             IOptions<JobSchedulerConfiguration> schedulerConfiguration,
+            IDiagnosticLogger diagnosticLogger,
             ILoggerFactory loggerFactory)
         {
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
@@ -57,6 +60,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
 
             EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
             _schedulerConfiguration = schedulerConfiguration.Value;
@@ -85,7 +89,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // job hosting didn't catch any exception thrown during creating job,
                 // return null for failure case, and job hosting will skip it.
-                _logger.LogWarning($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
+                _logger.LogInformation($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
                 return null;
             }
 
@@ -115,12 +119,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _filterManager,
                         _metadataStore,
                         _schedulerConfiguration,
+                        _diagnosticLogger,
                         _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>());
                 }
             }
             catch (Exception e)
             {
-                _logger.LogWarning(e, "Failed to create orchestrator job.");
+                _logger.LogInformation(e, "Failed to create orchestrator job.");
                 return null;
             }
 
@@ -143,12 +148,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _fhirSchemaManager,
                         _groupMemberExtractor,
                         _filterManager,
+                        _diagnosticLogger,
                         _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>());
                 }
             }
             catch (Exception e)
             {
-                _logger.LogWarning(e, "Failed to create processing job.");
+                _logger.LogInformation(e, "Failed to create processing job.");
                 return null;
             }
 

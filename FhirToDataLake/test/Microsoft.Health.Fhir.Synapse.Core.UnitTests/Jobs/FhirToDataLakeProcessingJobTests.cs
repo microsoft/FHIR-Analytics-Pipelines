@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
@@ -34,6 +35,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
     public class FhirToDataLakeProcessingJobTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+
         private const string TestBlobEndpoint = "UseDevelopmentStorage=true";
 
         private static readonly List<TypeFilter> TestResourceTypeFilters =
@@ -124,6 +127,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFhirSchemaManager(),
                 GetGroupMemberExtractor(),
                 GetFilterManager(filterConfiguration),
+                _diagnosticLogger,
                 new NullLogger<FhirToDataLakeProcessingJob>());
         }
 
@@ -162,19 +166,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
             var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
-            var defaultConverter = new DefaultSchemaConverter(fhirSchemaManager, NullLogger<DefaultSchemaConverter>.Instance);
-            var fhirConverter = new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), schemaConfigurationOption, NullLogger<CustomSchemaConverter>.Instance);
+            var defaultConverter = new DefaultSchemaConverter(fhirSchemaManager, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
+            var fhirConverter = new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), schemaConfigurationOption, _diagnosticLogger, NullLogger<CustomSchemaConverter>.Instance);
 
             return new ParquetDataProcessor(
                 fhirSchemaManager,
                 arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
+                _diagnosticLogger,
                 NullLogger<ParquetDataProcessor>.Instance);
         }
 
         private static IParquetSchemaProvider ParquetSchemaProviderDelegate(string name)
         {
-            return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
+            return new LocalDefaultSchemaProvider(Options.Create(new FhirServerConfiguration()), _diagnosticLogger, NullLogger<LocalDefaultSchemaProvider>.Instance);
         }
 
         private static IFhirSchemaManager<FhirParquetSchemaNode> GetFhirSchemaManager()

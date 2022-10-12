@@ -11,6 +11,7 @@ using DotLiquid;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.TemplateManagement;
 using Microsoft.Health.Fhir.TemplateManagement.Exceptions;
@@ -22,13 +23,16 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
     {
         private readonly IContainerRegistryTokenProvider _containerRegistryTokenProvider;
         private readonly ITemplateCollectionProviderFactory _templateCollectionProviderFactory;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<ContainerRegistryTemplateProvider> _logger;
 
         public ContainerRegistryTemplateProvider(
             IContainerRegistryTokenProvider containerRegistryTokenProvider,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<ContainerRegistryTemplateProvider> logger)
         {
             _containerRegistryTokenProvider = containerRegistryTokenProvider;
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
 
             var templateCollectionCache = new MemoryCache(new MemoryCacheOptions() { SizeLimit = 100000000 });
@@ -40,7 +44,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
         {
             if (string.IsNullOrWhiteSpace(schemaImageReference))
             {
-                _logger.LogError("Schema image reference is null or empty.");
+                _diagnosticLogger.LogError("Schema image reference is null or empty.");
+                _logger.LogInformation("Schema image reference is null or empty.");
                 throw new ContainerRegistrySchemaException("Schema image reference is null or empty.");
             }
 
@@ -51,7 +56,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             }
             catch (Exception ex)
             {
-                _logger.LogError(string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", schemaImageReference, ex.Message));
+                _diagnosticLogger.LogError(string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", schemaImageReference, ex.Message));
+                _logger.LogInformation(string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", schemaImageReference, ex.Message));
                 throw new ContainerRegistrySchemaException(string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", schemaImageReference, ex.Message), ex);
             }
 
@@ -64,23 +70,27 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             }
             catch (ContainerRegistryAuthenticationException authEx)
             {
-                _logger.LogError(authEx, "Failed to access container registry.");
+                _diagnosticLogger.LogError("Failed to access container registry.");
+                _logger.LogInformation(authEx, "Failed to access container registry.");
                 throw new ContainerRegistrySchemaException("Failed to access container registry.", authEx);
             }
             catch (ImageFetchException fetchEx)
             {
-                _logger.LogError(fetchEx, "Failed to fetch template image.");
+                _diagnosticLogger.LogError("Failed to fetch template image.");
+                _logger.LogInformation(fetchEx, "Failed to fetch template image.");
                 throw new ContainerRegistrySchemaException("Failed to fetch template image.", fetchEx);
             }
             catch (TemplateManagementException templateEx)
             {
-                _logger.LogError(templateEx, "Template collection is invalid.");
+                _diagnosticLogger.LogError("Template collection is invalid.");
+                _logger.LogInformation(templateEx, "Template collection is invalid.");
                 throw new ContainerRegistrySchemaException("Template collection is invalid.", templateEx);
             }
             catch (Exception unhandledEx)
             {
+                _diagnosticLogger.LogError("Unhandled exception: failed to get template collection.");
                 _logger.LogError(unhandledEx, "Unhandled exception: failed to get template collection.");
-                throw new ContainerRegistrySchemaException("Unhandled exception: failed to get template collection.", unhandledEx);
+                throw;
             }
         }
     }

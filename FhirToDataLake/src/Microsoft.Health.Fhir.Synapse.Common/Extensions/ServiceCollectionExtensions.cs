@@ -42,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException($"Fhir server url can not be empty.");
             }
 
-            if (fhirServerConfiguration.Version != FhirVersion.R4)
+            if (!ConfigurationConstants.SupportedFhirVersions.Contains(fhirServerConfiguration.Version))
             {
                 throw new ConfigurationErrorException($"Fhir version {fhirServerConfiguration.Version} is not supported.");
             }
@@ -60,7 +60,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
                 throw new ConfigurationErrorException("Failed to parse job configuration", ex);
             }
 
-            ValidateAgentName(jobConfiguration.AgentName);
+            ValidateQueueOrTableName(jobConfiguration.JobInfoQueueName);
+            ValidateQueueOrTableName(jobConfiguration.JobInfoTableName);
+            ValidateQueueOrTableName(jobConfiguration.MetadataTableName);
 
             EnsureArg.EnumIsDefined(jobConfiguration.QueueType, nameof(jobConfiguration.QueueType));
 
@@ -192,31 +194,30 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
             }
         }
 
-        // agent name is used as part of table name and queue name, need to validate agent name to contain only alphanumeric characters, and not begin with a numeric character.
+        // Validate queue or table name to contain only alphanumeric characters, and not begin with a numeric character.
         // Reference: https://docs.microsoft.com/en-us/rest/api/storageservices/understanding-the-table-service-data-model#table-names
         // https://docs.microsoft.com/en-us/rest/api/storageservices/naming-queues-and-metadata#queue-names
-        public static void ValidateAgentName(string agentName)
+        public static void ValidateQueueOrTableName(string name)
         {
-
-            if (string.IsNullOrWhiteSpace(agentName))
+            if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ConfigurationErrorException("Agent name can not be empty.");
+                throw new ConfigurationErrorException("Queue or table name can not be empty.");
             }
 
-            if (!agentName.All(char.IsLetterOrDigit))
+            if (!name.All(char.IsLetterOrDigit))
             {
-                throw new ConfigurationErrorException("Agent name may contain only alphanumeric characters.");
+                throw new ConfigurationErrorException("Queue or table name may contain only alphanumeric characters.");
             }
 
-            if (!char.IsLetter(agentName.First()))
+            if (!char.IsLetter(name.First()))
             {
-                throw new ConfigurationErrorException("Agent name should begin with an alphabet character.");
+                throw new ConfigurationErrorException("Queue or table name should begin with an alphabet character.");
             }
 
-            // the table/queue name must be from 3 to 63 characters long, we add suffix to the agent name as table/queue name: {agentName}metadatatable, {agentName}jobinfotable, {agentName}jobinfoqueue
-            if (agentName.Length >= 50)
+            // The table/queue name must be from 3 to 63 characters long.
+            if (name.Length < 3 || name.Length > 63)
             {
-                throw new ConfigurationErrorException("Agent name should less than 50 characters long.");
+                throw new ConfigurationErrorException("Queue or table name should be from 3 to 63 characters long.");
             }
         }
 
