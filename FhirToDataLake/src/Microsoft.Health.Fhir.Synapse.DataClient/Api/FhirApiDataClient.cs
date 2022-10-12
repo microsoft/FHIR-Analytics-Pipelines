@@ -52,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             _httpClient = httpClient;
             _accessTokenProvider = new AzureAccessTokenProvider(
                 tokenCredentialProvider.GetCredential(TokenCredentialTypes.External),
-                _diagnosticLogger,
+                diagnosticLogger,
                 new Logger<AzureAccessTokenProvider>(new LoggerFactory()));
             _diagnosticLogger = diagnosticLogger;
             _logger = logger;
