@@ -16,6 +16,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
@@ -36,7 +37,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             ILogger<FilterManager> logger)
         {
             _filterProvider = EnsureArg.IsNotNull(filterProvider, nameof(filterProvider));
-
             _fhirSpecificationProvider = EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));

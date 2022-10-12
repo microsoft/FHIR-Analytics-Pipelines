@@ -40,9 +40,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             EnsureArg.IsNotNull(azureTableClientFactory, nameof(azureTableClientFactory));
             EnsureArg.IsNotNull(config, nameof(config));
-            EnsureArg.IsNotNullOrWhiteSpace(config.Value.AgentName, nameof(config.Value.AgentName));
+            EnsureArg.IsNotNullOrWhiteSpace(config.Value.MetadataTableName, nameof(config.Value.MetadataTableName));
 
-            _metadataTableClient = azureTableClientFactory.Create(TableKeyProvider.MetadataTableName(config.Value.AgentName));
+            _metadataTableClient = azureTableClientFactory.Create(config.Value.MetadataTableName);
             _metadataTableClient.CreateIfNotExists();
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             _isInitialized = false;

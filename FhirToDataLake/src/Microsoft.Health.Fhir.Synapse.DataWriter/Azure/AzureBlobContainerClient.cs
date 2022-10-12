@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
+using Azure.Core;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
@@ -26,10 +27,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
     public class AzureBlobContainerClient : IAzureBlobContainerClient
     {
-        private readonly BlobContainerClient _blobContainerClient;
-        private readonly DataLakeFileSystemClient _dataLakeFileSystemClient;
+        private readonly ITokenCredentialProvider _credentialProvider;
+        private readonly Uri _storageUri;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<AzureBlobContainerClient> _logger;
+
+        private readonly object _blobContainerClientLock = new object ();
+        private readonly object _dataLakeFileSystemClientLock = new object();
+        private BlobContainerClient _blobContainerClient;
+        private DataLakeFileSystemClient _dataLakeFileSystemClient;
 
         private const int ListBlobPageCount = 20;
 
@@ -52,15 +58,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
             _diagnosticLogger = diagnosticLogger;
             _logger = logger;
-
-            var externalTokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.External);
-            _blobContainerClient = new BlobContainerClient(
-                storageUri,
-                externalTokenCredential);
-            _dataLakeFileSystemClient = new DataLakeFileSystemClient(
-                storageUri,
-                externalTokenCredential);
-            InitializeBlobContainerClient();
+            _credentialProvider = credentialProvider;
+            _storageUri = storageUri;
         }
 
         /// <summary>
@@ -81,21 +80,70 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
             _logger = logger;
 
-            _blobContainerClient = new BlobContainerClient(
+            var blobContainerClient = new BlobContainerClient(
                 connectionString,
                 containerName);
-            _dataLakeFileSystemClient = new DataLakeFileSystemClient(
-                connectionString,
-                containerName);
+            InitializeBlobContainerClient(blobContainerClient);
 
-            InitializeBlobContainerClient();
+            BlobContainerClient = blobContainerClient;
+
+            DataLakeFileSystemClient = new DataLakeFileSystemClient(
+                connectionString,
+                containerName);
         }
 
-        private void InitializeBlobContainerClient()
+        private BlobContainerClient BlobContainerClient
+        {
+            get
+            {
+                // Do the lazy initialization.
+                if (_blobContainerClient is null)
+                {
+                    lock (_blobContainerClientLock)
+                    {
+                        // Check null again to avoid duplicate initialization.
+                        if (_blobContainerClient is null)
+                        {
+                            var externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
+                            _blobContainerClient = new BlobContainerClient(
+                                _storageUri,
+                                externalTokenCredential);
+
+                            InitializeBlobContainerClient(_blobContainerClient);
+                        }
+                    }
+                }
+
+                return _blobContainerClient;
+            }
+            set => _blobContainerClient = value;
+        }
+
+        private DataLakeFileSystemClient DataLakeFileSystemClient
+        {
+            get
+            {
+                // Do the lazy initialization.
+                if (_dataLakeFileSystemClient is null)
+                {
+                    lock (_dataLakeFileSystemClientLock)
+                    {
+                        _dataLakeFileSystemClient ??= new DataLakeFileSystemClient(
+                            _storageUri,
+                            _credentialProvider.GetCredential(TokenCredentialTypes.External));
+                    }
+                }
+
+                return _dataLakeFileSystemClient;
+            }
+            set => _dataLakeFileSystemClient = value;
+        }
+
+        private void InitializeBlobContainerClient(BlobContainerClient blobContainerClient)
         {
             try
             {
-                _blobContainerClient.CreateIfNotExists();
+                blobContainerClient.CreateIfNotExists();
             }
             catch (RequestFailedException ex)
             {
@@ -113,7 +161,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         public async Task<bool> BlobExistsAsync(string blobName, CancellationToken cancellationToken = default)
         {
-            var blobClient = _blobContainerClient.GetBlobClient(blobName);
+            var blobClient = BlobContainerClient.GetBlobClient(blobName);
             try
             {
                 return await blobClient.ExistsAsync(cancellationToken);
@@ -137,7 +185,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             var blobNameList = new List<string>();
             try
             {
-                await foreach (var page in _blobContainerClient.GetBlobsByHierarchyAsync(prefix: blobPrefix, cancellationToken: cancellationToken)
+                await foreach (var page in BlobContainerClient.GetBlobsByHierarchyAsync(prefix: blobPrefix, cancellationToken: cancellationToken)
                     .AsPages(default, ListBlobPageCount))
                 {
                     blobNameList.AddRange(page.Values.Where(item => item.IsBlob).Select(item => item.Blob.Name));
@@ -161,7 +209,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         public async Task<Stream> GetBlobAsync(string blobName, CancellationToken cancellationToken = default)
         {
-            var blobClient = _blobContainerClient.GetBlobClient(blobName);
+            var blobClient = BlobContainerClient.GetBlobClient(blobName);
             try
             {
                 var stream = new MemoryStream();
@@ -190,7 +238,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         public async Task<bool> CreateBlobAsync(string blobName, Stream stream, CancellationToken cancellationToken = default)
         {
-            var blobClient = _blobContainerClient.GetBlobClient(blobName);
+            var blobClient = BlobContainerClient.GetBlobClient(blobName);
 
             stream.Seek(0, SeekOrigin.Begin);
             try
@@ -223,7 +271,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         public async Task<bool> DeleteBlobAsync(string blobName, CancellationToken cancellationToken = default)
         {
-            var blob = _blobContainerClient.GetBlobClient(blobName);
+            var blob = BlobContainerClient.GetBlobClient(blobName);
             try
             {
                 return await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
@@ -247,7 +295,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             EnsureArg.IsNotNull(blobName, nameof(blobName));
             EnsureArg.IsNotNull(stream, nameof(stream));
 
-            var blob = _blobContainerClient.GetBlobClient(blobName);
+            var blob = BlobContainerClient.GetBlobClient(blobName);
 
             try
             {
@@ -276,7 +324,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             try
             {
-                BlobLeaseClient blobLeaseClient = _blobContainerClient.GetBlobClient(blobName).GetBlobLeaseClient(leaseId);
+                BlobLeaseClient blobLeaseClient = BlobContainerClient.GetBlobClient(blobName).GetBlobLeaseClient(leaseId);
                 BlobLease blobLease = await blobLeaseClient.AcquireAsync(timeSpan, cancellationToken: cancellationToken);
 
                 _logger.LogInformation("Acquire lease on the blob '{0}' successfully.", blobName);
@@ -293,7 +341,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             try
             {
-                var blobClient = _blobContainerClient.GetBlobClient(blobName);
+                var blobClient = BlobContainerClient.GetBlobClient(blobName);
                 BlobLeaseClient blobLeaseClient = blobClient.GetBlobLeaseClient(leaseId);
                 var leaseResponse = await blobLeaseClient.RenewAsync(cancellationToken: cancellationToken);
 
@@ -318,7 +366,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             try
             {
-                var blobClient = _blobContainerClient.GetBlobClient(blobName);
+                var blobClient = BlobContainerClient.GetBlobClient(blobName);
                 BlobLeaseClient blobLeaseClient = blobClient.GetBlobLeaseClient(leaseId);
                 await blobLeaseClient.ReleaseAsync(cancellationToken: cancellationToken);
 
@@ -336,13 +384,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             try
             {
-                var sourceDirectoryClient = _dataLakeFileSystemClient.GetDirectoryClient(sourceDirectory);
+                var sourceDirectoryClient = DataLakeFileSystemClient.GetDirectoryClient(sourceDirectory);
 
                 // Create target parent directory if not exists.
                 var targetParentDirectory = Path.GetDirectoryName(targetDirectory);
                 if (!string.IsNullOrWhiteSpace(targetParentDirectory))
                 {
-                    var targetParentDirectoryClient = _dataLakeFileSystemClient.GetDirectoryClient(targetParentDirectory);
+                    var targetParentDirectoryClient = DataLakeFileSystemClient.GetDirectoryClient(targetParentDirectory);
                     await targetParentDirectoryClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
                 }
 
@@ -370,7 +418,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             try
             {
-                var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
+                var directoryClient = DataLakeFileSystemClient.GetDirectoryClient(directory);
                 await directoryClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
 
                 _logger.LogInformation("Delete blob directory '{0}' successfully.", directory);

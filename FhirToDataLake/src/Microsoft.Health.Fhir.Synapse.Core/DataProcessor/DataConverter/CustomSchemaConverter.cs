@@ -29,9 +29,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
     public class CustomSchemaConverter : IDataSchemaConverter
     {
         private readonly JsonProcessor _jsonProcessor;
-        private readonly ITemplateProvider _templateProvider;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<CustomSchemaConverter> _logger;
+        private readonly IContainerRegistryTemplateProvider _containerRegistryTemplateProvider;
+        private readonly string _schemaImageReference;
+
+        private readonly object _templateProviderLock = new object();
+        private ITemplateProvider _templateProvider;
 
         public CustomSchemaConverter(
             IContainerRegistryTemplateProvider containerRegistryTemplateProvider,
@@ -39,20 +43,34 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             IDiagnosticLogger diagnosticLogger,
             ILogger<CustomSchemaConverter> logger)
         {
-            EnsureArg.IsNotNull(containerRegistryTemplateProvider, nameof(containerRegistryTemplateProvider));
             EnsureArg.IsNotNull(schemaConfiguration, nameof(schemaConfiguration));
+
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _containerRegistryTemplateProvider = EnsureArg.IsNotNull(containerRegistryTemplateProvider, nameof(containerRegistryTemplateProvider));
+            _schemaImageReference = schemaConfiguration.Value.SchemaImageReference;
 
-            if (!string.IsNullOrWhiteSpace(schemaConfiguration.Value.SchemaImageReference))
+            _jsonProcessor = new JsonProcessor(new ProcessorSettings());
+        }
+
+        private ITemplateProvider TemplateProvider
+        {
+            get
             {
-                var templateCollections = containerRegistryTemplateProvider.GetTemplateCollectionAsync(
-                    schemaConfiguration.Value.SchemaImageReference,
-                    CancellationToken.None).Result;
+                // Do the lazy initialization.
+                if (_templateProvider is null)
+                {
+                    lock (_templateProviderLock)
+                    {
+                        _templateProvider ??= new TemplateProvider(_containerRegistryTemplateProvider.GetTemplateCollectionAsync(
+                            _schemaImageReference,
+                            CancellationToken.None).Result);
+                    }
+                }
 
-                _jsonProcessor = new JsonProcessor(new ProcessorSettings());
-                _templateProvider = new TemplateProvider(templateCollections);
+                return _templateProvider;
             }
+            set => _templateProvider = value;
         }
 
         public JsonBatchData Convert(
@@ -65,19 +83,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (_templateProvider == null)
+            if (string.IsNullOrWhiteSpace(_schemaImageReference))
             {
-                _diagnosticLogger.LogError($"No valid template provider be found, maybe the schema image reference is empty or null.");
-                _logger.LogInformation($"No valid template provider be found, maybe the schema image reference is empty or null.");
-                throw new ParquetDataProcessorException($"No valid template provider be found, maybe the schema image reference is empty or null.");
+                _diagnosticLogger.LogError($"Schema image reference is empty or null.");
+                _logger.LogInformation($"Schema image reference is empty or null.");
+                throw new ParquetDataProcessorException($"Schema image reference is empty or null.");
             }
 
             List<JObject> processedData;
             try
             {
-                // TODO: Update FHIR-Converter, add an interface to directly convert an Object.
                 processedData = inputData.Values.Select(dataObject
-                    => JObject.Parse(_jsonProcessor.Convert(dataObject.ToString(), resourceType, _templateProvider))).ToList();
+                    => JObject.Parse(_jsonProcessor.Convert(dataObject, resourceType, TemplateProvider))).ToList();
             }
             catch (FhirConverterException convertException)
             {

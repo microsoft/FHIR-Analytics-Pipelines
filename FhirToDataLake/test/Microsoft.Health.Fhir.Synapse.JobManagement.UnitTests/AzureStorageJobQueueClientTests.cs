@@ -65,7 +65,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 NullLogger<AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>.Instance;
 
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
-        private const string TestAgentName = "testAgentName";
+        private const string TestJobInfoTableName = "testjobinfotable";
+        private const string TestJobInfoQueueName = "testjobinfoqueue";
         private const string TestWorkerName = "test-worker";
         private const int HeartbeatTimeoutSec = 2;
 
@@ -75,21 +76,18 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
         public AzureStorageJobQueueClientTests()
         {
-            var tableName = AzureStorageKeyProvider.JobInfoTableName(TestAgentName);
-            var queueName = AzureStorageKeyProvider.JobMessageQueueName(TestAgentName);
-
             _azureJobInfoTableClient =
-                new TableClient(StorageEmulatorConnectionString, tableName);
+                new TableClient(StorageEmulatorConnectionString, TestJobInfoTableName);
             _azureJobMessageQueueClient =
-                new QueueClient(StorageEmulatorConnectionString, queueName);
+                new QueueClient(StorageEmulatorConnectionString, TestJobInfoQueueName);
 
             // Delete table and queue if exists
             _azureJobInfoTableClient.Delete();
             _azureJobMessageQueueClient.DeleteIfExists();
 
             var azureStorageClientFactory = new AzureStorageClientFactory(
-                tableName,
-                queueName,
+                TestJobInfoTableName,
+                TestJobInfoQueueName,
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
             _azureStorageJobQueueClient = new AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>(

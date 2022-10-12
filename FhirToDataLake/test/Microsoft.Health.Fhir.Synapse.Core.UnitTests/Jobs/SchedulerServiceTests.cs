@@ -31,7 +31,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             NullLogger<SchedulerService>.Instance;
 
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
-        private const string TestAgentName = "testAgentName";
+        private const string TestJobInfoQueueName = "jobinfoqueue";
+        private const string TestJobInfoTableName = "jobinfotable";
+        private const string TestMetadataTableName = "metadatatable";
         private const string TestWorkerName = "test-worker";
         private const string TestSchedulerCronExpression = "*/2 * * * * *";
 
@@ -46,7 +48,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 QueueType = QueueType.FhirToDataLake,
                 TableUrl = StorageEmulatorConnectionString,
                 SchedulerCronExpression = TestSchedulerCronExpression,
-                AgentName = TestAgentName,
+                JobInfoTableName = TestJobInfoTableName,
+                MetadataTableName = TestMetadataTableName,
+                JobInfoQueueName = TestJobInfoQueueName,
             };
 
             _jobConfigOption = Options.Create(jobConfig);
@@ -71,7 +75,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 QueueType = QueueType.FhirToDataLake,
                 TableUrl = StorageEmulatorConnectionString,
                 SchedulerCronExpression = "invalid cron expression",
-                AgentName = agentName,
+                JobInfoTableName = TestJobInfoTableName,
+                MetadataTableName = TestMetadataTableName,
+                JobInfoQueueName = TestJobInfoQueueName,
             };
 
             // Make sure the container is deleted before running the tests
@@ -555,11 +561,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private void InitializeUniqueStorage()
         {
             var uniqueName = Guid.NewGuid().ToString("N");
-            var agentName = $"agent{uniqueName}";
 
             var jobConfig = Options.Create(new JobConfiguration
             {
-                AgentName = agentName,
+                JobInfoTableName = $"{TestJobInfoTableName}{uniqueName}",
+                MetadataTableName = $"{TestMetadataTableName}{uniqueName}",
+                JobInfoQueueName = $"{TestJobInfoQueueName}{uniqueName}",
             });
 
             // Make sure the container is deleted before running the tests

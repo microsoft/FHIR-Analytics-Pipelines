@@ -366,10 +366,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private IMetadataStore CreateUniqueMetadataStore()
         {
             var uniqueName = Guid.NewGuid().ToString("N");
-            var agentName = $"agent{uniqueName}";
             var jobConfig = Options.Create(new JobConfiguration
             {
-                AgentName = agentName,
+                JobInfoTableName = $"jobinfotable{uniqueName}",
+                MetadataTableName = $"metadatatable{uniqueName}",
+                JobInfoQueueName = $"jobinfoqueue{uniqueName}",
             });
 
             // Make sure the container is deleted before running the tests

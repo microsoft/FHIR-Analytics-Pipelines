@@ -69,9 +69,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         }
 
         [Fact]
-        public void GivenAnInvalidBlobContainerClient_WhenCreateDataWriter_ExceptionShouldBeThrown()
+        public async void GivenAnInvalidBlobContainerClient_WhenCommitTheData_ExceptionShouldBeThrown()
         {
-            Assert.Throws<AzureBlobOperationFailedException>(GetBrokenDataWriter);
+            var invalidContainerDataWriter = GetBrokenDataWriter();
+
+            await Assert.ThrowsAsync<AzureBlobOperationFailedException>(() => invalidContainerDataWriter.CommitJobDataAsync(00));
         }
 
         [Fact]

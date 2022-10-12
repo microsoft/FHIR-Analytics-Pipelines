@@ -44,6 +44,10 @@ stages:
     steps:
     - template: FhirToDataLake/azurepipelines/synapse-e2e-test.yml
 
+  - job: PackNugetPackages
+    steps:
+    - template: FhirToDataLake/azurepipelines/pack-nugets.yml
+
   - job: PublishFhirToCdm
     dependsOn: RunSynapseE2ETest
     condition: succeeded()

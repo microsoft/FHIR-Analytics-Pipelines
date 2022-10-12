@@ -70,7 +70,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         {
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
             {
-                return new LocalDefaultSchemaProvider(_diagnosticLogger, NullLogger<LocalDefaultSchemaProvider>.Instance);
+                return new LocalDefaultSchemaProvider(
+                    Options.Create(new FhirServerConfiguration()),
+                    _diagnosticLogger,
+                    NullLogger<LocalDefaultSchemaProvider>.Instance);
             }
             else
             {
