@@ -126,7 +126,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             {
                 _diagnosticLogger.LogError("Failed to extract group members. Reason: The input group id is null or white space.");
                 _logger.LogInformation("Failed to extract group members. Reason: The input group id is null or white space.");
-                throw new GroupMemberExtractorException("Fail to extract group members. Reason: The input group id is null or white space.");
+                throw new GroupMemberExtractorException("Failed to extract group members. Reason: The input group id is null or white space.");
             }
 
             var searchOptions = new ResourceIdSearchOptions(nameof(ResourceType.Group), groupId, queryParameters);

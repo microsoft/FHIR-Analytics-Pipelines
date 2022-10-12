@@ -696,7 +696,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
         private AzureBlobContainerClient GetTestBlobProvider(string connectionString, string containerName)
         {
-            return new AzureBlobContainerClient(connectionString, containerName, new NullLogger<AzureBlobContainerClient>());
+            return new AzureBlobContainerClient(connectionString, containerName, new DiagnosticLogger(), new NullLogger<AzureBlobContainerClient>());
         }
 
         // Get Azure Data Lake store gen2 account connection string.

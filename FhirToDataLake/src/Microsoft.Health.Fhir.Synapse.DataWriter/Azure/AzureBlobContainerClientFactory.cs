@@ -46,14 +46,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             // Create client for local emulator.
             if (string.Equals(storeUrl, StorageEmulatorConnectionString, StringComparison.OrdinalIgnoreCase))
             {
-                return new AzureBlobContainerClient(StorageEmulatorConnectionString, containerName, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
+                return new AzureBlobContainerClient(StorageEmulatorConnectionString, containerName, _diagnosticLogger, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
             }
 
             var connectionString = type == TokenCredentialTypes.Internal ?
                 _storageConfiguration.InternalStorageConnectionString : _storageConfiguration.ExternalStorageConnectionString;
             if (!string.IsNullOrEmpty(connectionString))
             {
-                return new AzureBlobContainerClient(connectionString, containerName, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
+                return new AzureBlobContainerClient(connectionString, containerName, _diagnosticLogger, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
             }
 
             var storageUri = new Uri(storeUrl);

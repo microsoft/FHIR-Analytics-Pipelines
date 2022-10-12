@@ -72,12 +72,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         public AzureBlobContainerClient(
             string connectionString,
             string containerName,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureBlobContainerClient> logger)
         {
             EnsureArg.IsNotNull(connectionString, nameof(connectionString));
             EnsureArg.IsNotNull(containerName, nameof(containerName));
+            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
 
             var blobContainerClient = new BlobContainerClient(
@@ -147,14 +150,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (RequestFailedException ex)
             {
-                _diagnosticLogger.LogError($"Create container {_blobContainerClient.Name} failed. Reason: {ex}");
-                _logger.LogInformation(ex, $"Create container {_blobContainerClient.Name} failed. Reason: {ex}");
-                throw new AzureBlobOperationFailedException($"Create container {_blobContainerClient.Name} failed.", ex);
+                _diagnosticLogger.LogError($"Create container {blobContainerClient.Name} failed. Reason: {ex}");
+                _logger.LogInformation(ex, $"Create container {blobContainerClient.Name} failed. Reason: {ex}");
+                throw new AzureBlobOperationFailedException($"Create container {blobContainerClient.Name} failed.", ex);
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError($"Unhandeled error while creating container {_blobContainerClient.Name}. Reason: {ex}");
-                _logger.LogError(ex, $"Unhandeled error while creating container {_blobContainerClient.Name}. Reason: {ex}");
+                _diagnosticLogger.LogError($"Unhandeled error while creating container {blobContainerClient.Name}. Reason: {ex}");
+                _logger.LogError(ex, $"Unhandeled error while creating container {blobContainerClient.Name}. Reason: {ex}");
                 throw;
             }
         }
@@ -442,7 +445,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             try
             {
                 // Enumerate all paths in folder, see List directory contents https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-directory-file-acl-dotnet#list-directory-contents
-                var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
+                var directoryClient = DataLakeFileSystemClient.GetDirectoryClient(directory);
                 IAsyncEnumerator<PathItem> asyncEnumerator = directoryClient.GetPathsAsync(true, cancellationToken: cancellationToken).GetAsyncEnumerator(cancellationToken);
 
                 PathItem item;
