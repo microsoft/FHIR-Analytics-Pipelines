@@ -159,8 +159,6 @@
         "jobInfoQueueName": "[concat(variables('pipelineName'), 'jobinfoqueue')]",
         "jobInfoTableName": "[concat(variables('pipelineName'), 'jobinfotable')]",
         "metadataTableName": "[concat(variables('pipelineName'), 'metadatatable')]",
-        "containerName": "[variables('pipelineName')]",
-        "hostingPlanName": "[variables('pipelineName')]",
         "applicationInsightsName": "[concat('AppInsights-', variables('pipelineName'))]",
         "deployAppInsights": "[parameters('deployAppInsights')]",
         "resourceTags": {"FhirAnalyticsPipeline": "FhirToDataLake", "FhirSchemaVersion": "v0.4.0"},
@@ -168,7 +166,7 @@
         "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
         "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
         "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
-        "restartPolicy": "Never"
+        "restartPolicy": "OnFailure"
     },
     "resources": [
         {
@@ -251,6 +249,14 @@
                                 }
                             },
                             "environmentVariables": [
+                                {
+                                    "name": "ApplicationInsights__ConnectionString",
+                                    "value": "[if(variables('deployAppInsights'),reference(resourceId('microsoft.insights/components', variables('applicationInsightsName')), '2020-02-02-preview').ConnectionString, '')]"
+                                },
+                                {
+                                    "name": "Logging__ApplicationInsights__LogLevel__Default",
+                                    "value": "Information"
+                                },
                                 {
                                     "name": "job__jobInfoQueueName",
                                     "value": "[variables('jobInfoQueueName')]"
