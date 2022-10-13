@@ -304,7 +304,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             {
                 // will overwrite when blob exists.
                 await blob.UploadAsync(stream, true, cancellationToken);
-                _diagnosticLogger.LogInformation($"Updated blob '{blobName}' successfully.");
                 _logger.LogInformation("Updated blob '{0}' successfully.", blobName);
 
                 return blob.Uri.AbsoluteUri;

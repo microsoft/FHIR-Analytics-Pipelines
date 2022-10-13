@@ -142,9 +142,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (Exception exception)
             {
-                _diagnosticLogger.LogError($"Failed to parse fhir 'Group' bundle {groupId}.");
-                _logger.LogInformation(exception, $"Failed to parse fhir 'Group' bundle {groupId}.");
-                throw new GroupMemberExtractorException($"Failed to parse fhir 'Group' bundle {groupId}.", exception);
+                _diagnosticLogger.LogError($"Failed to extract group members. Reason: Failed to parse fhir 'Group' bundle {groupId}.");
+                _logger.LogInformation(exception, $"Failed to extract group members. Reason: Failed to parse fhir 'Group' bundle {groupId}.");
+                throw new GroupMemberExtractorException($"Failed to extract group members. Reason: Failed to parse fhir 'Group' bundle {groupId}.", exception);
             }
 
             var members = new List<Tuple<string, string>>();
@@ -210,7 +210,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogInformation(ex, $"Failed to parse reference {member.Entity?.Reference}, exception {ex}");
+                        _logger.LogInformation(ex, $"Failed to extract group members. Reason: Failed to parse reference {member.Entity?.Reference}, exception {ex}");
                     }
                 }
             }
