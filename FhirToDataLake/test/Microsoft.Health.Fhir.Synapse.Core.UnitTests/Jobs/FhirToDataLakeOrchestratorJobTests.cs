@@ -146,7 +146,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetGroupMemberExtractor(0),
                 GetFilterManager(new FilterConfiguration()),
                 GetMetaDataStore(),
-                new JobSchedulerConfiguration(),
+                10,
                 new NullLogger<FhirToDataLakeOrchestratorJob>());
 
             var retriableJobException = await Assert.ThrowsAsync<RetriableJobException>(async () =>
@@ -248,11 +248,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 }
             }
 
-            var schedulerConfig = new JobSchedulerConfiguration
-            {
-                MaxConcurrencyCount = concurrentCount,
-            };
-
             var groupMemberExtractor = GetGroupMemberExtractor(inputFileCount);
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
@@ -264,7 +259,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 groupMemberExtractor,
                 GetFilterManager(filterConfiguration),
                 metadataStore ?? GetMetaDataStore(),
-                schedulerConfig,
+                concurrentCount,
                 new NullLogger<FhirToDataLakeOrchestratorJob>())
             {
                 NumberOfPatientsPerProcessingJob = 1,

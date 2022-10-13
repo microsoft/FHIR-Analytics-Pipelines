@@ -72,5 +72,17 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         // TODO: don't expose to PaaS
         [JsonProperty("endTime")]
         public DateTimeOffset? EndTime { get; set; }
+
+        /// <summary>
+        /// Max concurrency count in an instance.
+        /// </summary>
+        [JsonProperty("maxConcurrencyCount")]
+        public int MaxConcurrencyCount { get; set; } = 10;
+
+        /// <summary>
+        /// Max job count in the running pool.
+        /// </summary>
+        [JsonProperty("maxJobCountInRunningPool")]
+        public int MaxJobCountInRunningPool { get; set; } = 100;
     }
 }

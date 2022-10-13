@@ -27,8 +27,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationResol
                 configuration.GetSection(ConfigurationConstants.DataLakeStoreConfigurationKey).Bind(options));
             services.Configure<ArrowConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.ArrowConfigurationKey).Bind(options));
-            services.Configure<JobSchedulerConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.SchedulerConfigurationKey).Bind(options));
             services.Configure<SchemaConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey).Bind(options));
             services.Configure<HealthCheckConfiguration>(options =>
