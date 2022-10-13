@@ -559,7 +559,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             const byte queueType = (byte)TestQueueType.GivenJobsWithSameDefinition_WhenEnqueueInABatch_ThenTheExceptionShouldBeThrown;
 
-            var exception = await Assert.ThrowsAsync<TableTransactionFailedException>(async () =>
+            var exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
                 await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1", "job1" },

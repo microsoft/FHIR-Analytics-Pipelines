@@ -148,17 +148,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             {
                 blobContainerClient.CreateIfNotExists();
             }
-            catch (RequestFailedException ex)
+            catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Create container {blobContainerClient.Name} failed. Reason: {ex}");
                 _logger.LogInformation(ex, $"Create container {blobContainerClient.Name} failed. Reason: {ex}");
                 throw new AzureBlobOperationFailedException($"Create container {blobContainerClient.Name} failed.", ex);
-            }
-            catch (Exception ex)
-            {
-                _diagnosticLogger.LogError($"Unhandeled error while creating container {blobContainerClient.Name}. Reason: {ex}");
-                _logger.LogError(ex, $"Unhandeled error while creating container {blobContainerClient.Name}. Reason: {ex}");
-                throw;
             }
         }
 
@@ -441,14 +435,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         public async IAsyncEnumerable<PathItem> ListPathsAsync(string directory, [EnumeratorCancellation]CancellationToken cancellationToken = default)
         {
-            try
-            {
-                // Enumerate all paths in folder, see List directory contents https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-directory-file-acl-dotnet#list-directory-contents
-                var directoryClient = DataLakeFileSystemClient.GetDirectoryClient(directory);
-                IAsyncEnumerator<PathItem> asyncEnumerator = directoryClient.GetPathsAsync(true, cancellationToken: cancellationToken).GetAsyncEnumerator(cancellationToken);
+            // Enumerate all paths in folder, see List directory contents https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-directory-file-acl-dotnet#list-directory-contents
+            var directoryClient = DataLakeFileSystemClient.GetDirectoryClient(directory);
+            IAsyncEnumerator<PathItem> asyncEnumerator = directoryClient.GetPathsAsync(true, cancellationToken: cancellationToken).GetAsyncEnumerator(cancellationToken);
 
-                PathItem item;
-                do
+            PathItem item;
+            do
+            {
+                try
                 {
                     // Exception might throw when querying data lake storage.
                     if (!await asyncEnumerator.MoveNextAsync())
@@ -458,26 +452,22 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
                     item = asyncEnumerator.Current;
                 }
-                while (item != null);
-            }
-            catch (RequestFailedException ex)
+                catch (RequestFailedException ex)
                     when (ex.ErrorCode == DataLakePathNotFoundErrorCode)
-            {
-                _logger.LogInformation("Directory '{0}' is empty.", directory);
-                yield break;
+                {
+                    _logger.LogInformation("Directory '{0}' is empty.", directory);
+                    yield break;
+                }
+                catch (Exception ex)
+                {
+                    _diagnosticLogger.LogError($"Failed to query paths of directory '{directory}'. Reason: '{ex}'");
+                    _logger.LogError("Failed to query paths of directory '{0}'. Reason: '{1}'", directory, ex);
+                    throw new AzureBlobOperationFailedException($"Failed to query paths of directory '{directory}'.", ex);
+                }
+
+                yield return item;
             }
-            catch (RequestFailedException ex)
-            {
-                _diagnosticLogger.LogError($"Failed to query paths of directory '{directory}'. Reason: '{ex}'");
-                _logger.LogInformation("Failed to query paths of directory '{0}'. Reason: '{1}'", directory, ex);
-                throw new AzureBlobOperationFailedException($"Failed to query paths of directory '{directory}'.", ex);
-            }
-            catch (Exception ex)
-            {
-                _diagnosticLogger.LogError($"Unhandeled error while querying paths of directory '{directory}'. Reason: '{ex}'");
-                _logger.LogError("Unhandeled error while querying paths of directory '{0}'. Reason: '{1}'", directory, ex);
-                throw;
-            }
+            while (item != null);
         }
     }
 }
