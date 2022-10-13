@@ -10,6 +10,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 {
     public static class ConfigurationConstants
     {
+        public const string ConfigVersionKey = "configVersion";
+
         public const string JobConfigurationKey = "job";
 
         public const string FilterConfigurationKey = "filter";
