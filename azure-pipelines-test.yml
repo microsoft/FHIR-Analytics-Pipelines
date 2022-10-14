@@ -16,9 +16,6 @@ variables:
   patch: 0
   buildnum: $[counter(format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch']), 1)]
   version: $(major).$(minor).$(patch).$(buildnum)
-  containerInstanceName: testfhirtodatalake
-  synapseWorkspaceName: testcisynapseworkspace
-  storageAccountName: testfhirtodoglaw6s6zpluk
   imageName: fhirtodatalake
 
 stages:
@@ -37,7 +34,7 @@ stages:
     - template: FhirToDataLake/azurepipelines/ci.yml
 
 - stage: OverallTest
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  condition: succeeded()
   jobs:
   - job: PrepareTestEnvironment
     pool:
@@ -62,14 +59,3 @@ stages:
     steps:
     - template: FhirToDataLake/azurepipelines/pack-nugets.yml
 
-  - job: PublishFhirToCdm
-    dependsOn: PackNugetPackages
-    condition: succeeded()
-    steps:
-    - template: FhirToCdm/publish.yml
-
-  - job: PublishArtifactsToGitHub
-    dependsOn: PublishFhirToCdm
-    condition: succeeded()
-    steps:
-    - template: publish.yml

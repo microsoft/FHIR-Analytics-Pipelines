@@ -53,6 +53,13 @@
                 "description": "The name of the container to store job and data."
             }
         },
+        "filterConfigImageReference":{
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Azure Container Registry image reference of filter configuration file."
+            }
+        },
         "filterScope":{
             "type": "string",
             "defaultValue": "System",
@@ -166,6 +173,7 @@
         "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
         "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
         "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
+        "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
         "restartPolicy": "OnFailure"
     },
     "resources": [
@@ -296,6 +304,14 @@
                                 {
                                     "name": "filter__filterScope",
                                     "value": "[parameters('filterScope')]"
+                                },
+                                {
+                                    "name": "filter__enableExternalFilter",
+                                    "value": "[if(empty(variables('filterConfigImageReference')), 'false', 'true')]"
+                                },
+                                {
+                                    "name": "filter__filterImageReference",
+                                    "value": "[variables('filterConfigImageReference')]"
                                 },
                                 {
                                     "name": "filter__groupId",
