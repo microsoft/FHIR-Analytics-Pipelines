@@ -218,7 +218,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                             ProcessedCount = new Dictionary<string, int> { { "Patient", 1 } },
                             SkippedCount = new Dictionary<string, int> { { "Patient", 0 } },
                             ProcessedCountInTotal = 1,
-                            ProcessedDataSizeInTotal = TBValue,
+                            ProcessedDataSizeInTotal = 1000L * TBValue,
                         };
 
                         jobInfo.Result = JsonConvert.SerializeObject(processingResult);
@@ -287,7 +287,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(inputFileCount, result.ProcessedResourceCounts["Patient"]);
             Assert.Equal(0, result.SkippedResourceCounts["Patient"]);
             Assert.Equal(inputFileCount, result.ProcessedCountInTotal);
-            Assert.Equal(inputFileCount * TBValue, result.ProcessedDataSizeInTotal);
+            Assert.Equal(inputFileCount * 1000L * TBValue, result.ProcessedDataSizeInTotal);
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));
             var progressForContext = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(progressResult);
@@ -337,7 +337,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                         ProcessedCount = new Dictionary<string, int> { { "Patient", 1 } },
                         SkippedCount = new Dictionary<string, int> { { "Patient", 0 } },
                         ProcessedCountInTotal = 1,
-                        ProcessedDataSizeInTotal = TBValue,
+                        ProcessedDataSizeInTotal = 1000L * TBValue,
                     };
 
                     if (filterScope == FilterScope.Group)
