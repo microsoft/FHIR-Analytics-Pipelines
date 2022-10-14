@@ -83,6 +83,16 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
                 throw new ConfigurationErrorException($"Target azure container name can not be empty.");
             }
 
+            if (jobConfiguration.MaxRunningJobCount < 1)
+            {
+                throw new ConfigurationErrorException("Max running job count should be greater than 0.");
+            }
+
+            if (jobConfiguration.MaxQueuedJobCountPerOrchestration < 1)
+            {
+                throw new ConfigurationErrorException("Max queued job count per orchestration job should be greater than 0.");
+            }
+
             FilterLocation filterLocation;
             try
             {

@@ -40,8 +40,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IQueueClient _queueClient;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly IMetadataStore _metadataStore;
-        private readonly JobSchedulerConfiguration _schedulerConfiguration;
         private readonly IFilterManager _filterManager;
+        private readonly int _maxJobCountInRunningPool;
         private readonly ILogger<FhirToDataLakeOrchestratorJob> _logger;
 
         private FhirToDataLakeOrchestratorJobResult _result;
@@ -56,7 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IGroupMemberExtractor groupMemberExtractor,
             IFilterManager filterManager,
             IMetadataStore metadataStore,
-            JobSchedulerConfiguration schedulerConfiguration,
+            int maxJobCountInRunningPool,
             ILogger<FhirToDataLakeOrchestratorJob> logger)
         {
             _jobInfo = EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
@@ -68,7 +68,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
-            _schedulerConfiguration = EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
+            _maxJobCountInRunningPool = maxJobCountInRunningPool;
 
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
@@ -103,7 +103,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 await foreach (var input in inputs.WithCancellation(cancellationToken))
                 {
-                    while (_result.RunningJobIds.Count > _schedulerConfiguration.MaxConcurrencyCount)
+                    while (_result.RunningJobIds.Count >= _maxJobCountInRunningPool)
                     {
                         await WaitRunningJobComplete(progress, cancellationToken);
                     }

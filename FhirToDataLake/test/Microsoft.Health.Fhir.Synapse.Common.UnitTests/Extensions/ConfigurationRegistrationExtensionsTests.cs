@@ -10,7 +10,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
@@ -87,8 +86,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
                 configuration.GetSection(ConfigurationConstants.DataLakeStoreConfigurationKey).Bind(options));
             services.Configure<ArrowConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.ArrowConfigurationKey).Bind(options));
-            services.Configure<JobSchedulerConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.SchedulerConfigurationKey).Bind(options));
             services.Configure<SchemaConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey).Bind(options));
         }
