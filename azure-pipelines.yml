@@ -13,7 +13,7 @@ variables:
   buildPlatform: 'x64'
   major: 0
   minor: 4
-  patch: 0
+  patch: 1
   buildnum: $[counter(format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch']), 1)]
   version: $(major).$(minor).$(patch).$(buildnum)
   azureFunctionName: testanalyticspipeline
@@ -34,7 +34,7 @@ stages:
     - template: FhirToDataLake/build.yml
 
 - stage: Release
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/'))
   pool:
     vmImage: 'windows-latest'
   jobs:
