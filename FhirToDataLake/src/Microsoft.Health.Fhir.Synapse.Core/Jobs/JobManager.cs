@@ -47,7 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var scheduleTask = _scheduler.RunAsync(cancellationTokenSource.Token);
 
             // TODO: the max running job count need to be decided after performance test
-            _jobHosting.MaxRunningJobCount = (short)_jobConfiguration.MaxConcurrencyCount;
+            _jobHosting.MaxRunningJobCount = (short)_jobConfiguration.MaxRunningJobCount;
             await _jobHosting.StartAsync((byte)_jobConfiguration.QueueType, Environment.MachineName, cancellationTokenSource);
             await scheduleTask;
         }

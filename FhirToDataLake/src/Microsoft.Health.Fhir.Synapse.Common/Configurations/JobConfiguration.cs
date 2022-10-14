@@ -74,15 +74,15 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public DateTimeOffset? EndTime { get; set; }
 
         /// <summary>
-        /// Max concurrency count in an instance.
+        /// Max running job count in an instance.
         /// </summary>
-        [JsonProperty("maxConcurrencyCount")]
-        public int MaxConcurrencyCount { get; set; } = 10;
+        [JsonProperty("maxRunningJobCount ")]
+        public int MaxRunningJobCount { get; set; } = 10;
 
         /// <summary>
-        /// Max job count in the running pool.
+        /// Max queued job count per orchestration job.
         /// </summary>
-        [JsonProperty("maxJobCountInRunningPool")]
-        public int MaxJobCountInRunningPool { get; set; } = 100;
+        [JsonProperty("maxQueuedJobCountPerOrchestration")]
+        public int MaxQueuedJobCountPerOrchestration { get; set; } = 100;
     }
 }

@@ -59,7 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
 
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
-            _maxJobCountInRunningPool = jobConfiguration.Value.MaxJobCountInRunningPool;
+            _maxJobCountInRunningPool = jobConfiguration.Value.MaxQueuedJobCountPerOrchestration;
 
             _loggerFactory = EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
             _logger = _loggerFactory.CreateLogger<AzureStorageJobFactory>();
