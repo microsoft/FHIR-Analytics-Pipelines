@@ -20,6 +20,7 @@ using Microsoft.Health.Fhir.TemplateManagement.Exceptions;
 using Microsoft.Health.Fhir.TemplateManagement.Models;
 using Microsoft.Health.Fhir.TemplateManagement.Utilities;
 using Newtonsoft.Json;
+using Polly;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
@@ -62,7 +63,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             {
                 AcrClient client = new AcrClient(imageInfo.Registry, accessToken);
                 var filterConfigurationProvider = new OciArtifactProvider(imageInfo, client);
-                var acrImage = await filterConfigurationProvider.GetOciArtifactAsync(cancellationToken);
+                var acrImage = await Policy
+                  .Handle<TemplateManagementException>()
+                  .RetryAsync(3, onRetry: (exception, retryCount) =>
+                  {
+                      _logger.LogWarning(exception, "Failed to get image from Container Registry. Retry {RetryCount}.", retryCount);
+                  })
+                  .ExecuteAsync(() => filterConfigurationProvider.GetOciArtifactAsync(cancellationToken));
 
                 var blobsSize = acrImage.Blobs.Count;
                 for (var i = blobsSize - 1; i >= 0; i--)

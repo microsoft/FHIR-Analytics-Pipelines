@@ -17,6 +17,9 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
+using Microsoft.Health.Fhir.TemplateManagement.Exceptions;
+using Polly;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
@@ -60,6 +63,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 _filterConfiguration.RequiredTypes,
                 _filterConfiguration.TypeFilters);
             return _typeFilters;
+        }
+
+        private async Task<FilterConfiguration> GetFilterConfigurationAsync(CancellationToken cancellationToken)
+        {
+            return await Policy
+              .Handle<ContainerRegistryTokenException>()
+              .RetryAsync(3, onRetry: (exception, retryCount) =>
+              {
+                  _logger.LogWarning(exception, "Failed to get template collection. Retry {RetryCount}.", retryCount);
+              })
+              .ExecuteAsync(() => _filterProvider.GetFilterAsync(cancellationToken));
         }
 
         /// <summary>
