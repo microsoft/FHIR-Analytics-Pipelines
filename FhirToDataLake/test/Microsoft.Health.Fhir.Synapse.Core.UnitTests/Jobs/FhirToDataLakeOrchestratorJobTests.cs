@@ -36,7 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
     public class FhirToDataLakeOrchestratorJobTests
     {
         private const string TestBlobEndpoint = "UseDevelopmentStorage=true";
-        private const long TBValue = 1000L * 1000L * 1000L * 1000L;
+        private const long TBValue = 1024L * 1024L * 1024L * 1024L;
         private static readonly DateTimeOffset TestStartTime = new DateTimeOffset(2014, 8, 18, 0, 0, 0, TimeSpan.FromHours(0));
         private static readonly DateTimeOffset TestEndTime = new DateTimeOffset(2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0));
 
