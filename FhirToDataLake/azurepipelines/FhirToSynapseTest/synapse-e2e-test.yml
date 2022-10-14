@@ -169,6 +169,9 @@ steps:
       $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(storageAccountName)).Value[0]
       $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $storageAccountKey
       Remove-AzStorageContainer -Name $(containerName) -Context $storageContext -Force
+      Remove-AzStorageTable -Name $(containerName)jobinfotable -Context $storageContext -Force
+      Remove-AzStorageTable -Name $(containerName)metadatatable -Context $storageContext -Force
+      Remove-AzStorageQueue -Name $(containerName)jobinfoqueue -Context $storageContext -Force
       Write-Host "##[section]Clear test container"
 
       Remove-AzContainerRegistryRepository -Name $(imageName) -RegistryName ($env:CONTAINER_REGISTRY_SERVER -split '.', 0, "simplematch")[0]
