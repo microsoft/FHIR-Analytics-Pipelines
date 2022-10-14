@@ -142,10 +142,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         break;
                     }
 
-                    job.RunningTasks[taskContext.Id] = taskContext;
-                    tasks.Add(Task.Run(async () => await _taskExecutor.ExecuteAsync(taskContext, jobProgressUpdater, cancellationToken)));
-                    _logger.LogInformation("Start processing task '{taskIndex}'", job.NextTaskIndex);
-                    job.NextTaskIndex++;
+                    if (job.RunningTasks.TryAdd(taskContext.Id, taskContext))
+                    {
+                        tasks.Add(Task.Run(async () => await _taskExecutor.ExecuteAsync(taskContext, jobProgressUpdater, cancellationToken)));
+                        _logger.LogInformation("Start processing task '{taskIndex}'", job.NextTaskIndex);
+                        job.NextTaskIndex++;
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Fail to add task {taskContext.Id} to job's running tasks dictionary.");
+                    }
                 }
 
                 var taskResults = await Task.WhenAll(tasks);

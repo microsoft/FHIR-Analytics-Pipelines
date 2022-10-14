@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Tasks;
@@ -23,7 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             DateTimeOffset lastHeartBeat,
             IEnumerable<PatientWrapper> patients = null,
             int nextTaskIndex = 0,
-            Dictionary<string, TaskContext> runningTasks = null,
+            ConcurrentDictionary<string, TaskContext> runningTasks = null,
             Dictionary<string, int> totalResourceCounts = null,
             Dictionary<string, int> processedResourceCounts = null,
             Dictionary<string, int> skippedResourceCounts = null,
@@ -48,7 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
 
             // fields to record job progress
             NextTaskIndex = nextTaskIndex;
-            RunningTasks = runningTasks ?? new Dictionary<string, TaskContext>();
+            RunningTasks = runningTasks ?? new ConcurrentDictionary<string, TaskContext>();
 
             // statistical fields
             TotalResourceCounts = totalResourceCounts ?? new Dictionary<string, int>();
@@ -134,7 +135,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// The running tasks
         /// </summary>
         [JsonProperty("runningTasks")]
-        public Dictionary<string, TaskContext> RunningTasks { get; set; }
+        public ConcurrentDictionary<string, TaskContext> RunningTasks { get; set; }
 
         /// <summary>
         /// Total resource count (from data source) for each resource types.
@@ -167,7 +168,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
             FilterInfo filterInfo,
             IEnumerable<PatientWrapper> patients = null,
             int nextTaskIndex = 0,
-            Dictionary<string, TaskContext> runningTasks = null,
+            ConcurrentDictionary<string, TaskContext> runningTasks = null,
             Dictionary<string, int> totalResourceCounts = null,
             Dictionary<string, int> processedResourceCounts = null,
             Dictionary<string, int> skippedResourceCounts = null,

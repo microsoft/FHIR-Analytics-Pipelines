@@ -69,7 +69,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 }
                             }
 
-                            _job.RunningTasks.Remove(context.Id);
+                            if (!_job.RunningTasks.TryRemove(context.Id, out TaskContext retrievedTaskContext))
+                            {
+                                _logger.LogWarning($"Fail to remove task {context.Id} from job's running tasks dictionary.");
+                            }
                         }
                     }
 
