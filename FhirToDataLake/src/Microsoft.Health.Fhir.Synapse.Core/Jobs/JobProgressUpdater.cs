@@ -52,8 +52,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     // when the first context is consumed, its data are merged to job and it is removed from the job, so we do nothing for the second context.
                     if (_job.RunningTasks.ContainsKey(context.Id))
                     {
-                        _job.RunningTasks[context.Id] = context;
-
                         if (context.IsCompleted)
                         {
                             _job.TotalResourceCounts = _job.TotalResourceCounts.ConcatDictionaryCount(context.SearchCount);
