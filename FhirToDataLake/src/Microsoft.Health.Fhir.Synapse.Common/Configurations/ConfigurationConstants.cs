@@ -39,5 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 
         // Currently the pipeline support FHIR R4 and R5 schemas.
         public static readonly HashSet<FhirVersion> SupportedFhirVersions = new () { FhirVersion.R4, FhirVersion.R5 };
+
+        public const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
     }
 }
