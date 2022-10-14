@@ -56,7 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
         private JObject ProcessDicomMetadataObject(JToken metadata, FhirParquetSchemaNode schemaNode)
         {
-            if (metadata is not JObject jObject)
+            if (metadata is not JObject metadataObject)
             {
                 _logger.LogError($"Current DICOM object is not a valid JObject: {schemaNode.GetNodePath()}.");
                 throw new ParquetDataProcessorException($"Current DICOM object is not a valid JObject: {schemaNode.GetNodePath()}.");
@@ -64,26 +64,27 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             var processedObject = new JObject();
 
-            foreach (var subItem in jObject)
+            foreach (var item in metadataObject)
             {
                 // Ignore DICOM metadata node if it doesn't exist in schema
-                if (!schemaNode.SubNodes.ContainsKey(subItem.Key))
+                if (!schemaNode.SubNodes.ContainsKey(item.Key))
                 {
                     continue;
                 }
 
-                // Ignore SQ, BulkDataURI and InlineData
-                if (subItem.Value is not JObject subJObject ||
-                    !subJObject.ContainsKey("vr") ||
-                    !subJObject.ContainsKey("Value") ||
-                    string.Equals(subJObject["vr"].ToString(), "SQ") ||
-                    subJObject["Value"] is not JArray)
+                // Ignore empty tag, BulkDataURI and InlineBinary
+                // Ignore SQ
+                if (item.Value is not JObject jObject ||
+                    !jObject.ContainsKey("vr") ||
+                    !jObject.ContainsKey("Value") ||
+                    jObject["Value"] is not JArray ||
+                    string.Equals(jObject["vr"].ToString(), "SQ"))
                 {
                     continue;
                 }
 
-                var subNode = schemaNode.SubNodes[subItem.Key];
-                var subValueArray = subJObject["Value"] as JArray;
+                var subNode = schemaNode.SubNodes[item.Key];
+                var subValueArray = jObject["Value"] as JArray;
 
                 if (subNode.IsRepeated)
                 {
@@ -93,8 +94,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 {
                     if (subValueArray.Count > 1)
                     {
-                        _logger.LogError("Multiple values appear in an unrepeatable tag.");
-                        throw new ParquetDataProcessorException("Multiple values appear in an unrepeatable tag.");
+                        _logger.LogError("Multiple values appear in an unique tag.");
+                        throw new ParquetDataProcessorException("Multiple values appear in an unique tag.");
                     }
 
                     var singleElement = subValueArray.First;
@@ -118,12 +119,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             {
                 _logger.LogError($"Current PN object is not a valid JObject: {schemaNode.GetNodePath()}.");
                 throw new ParquetDataProcessorException($"Current PN object is not a valid JObject: {schemaNode.GetNodePath()}.");
-            }
-
-            if (jObject.Count > 1)
-            {
-                _logger.LogError("PN should contain only one of Alphabetic, Ideographic and Phonetic.");
-                throw new ParquetDataProcessorException("PN should contain only one of Alphabetic, Ideographic and Phonetic.");
             }
 
             return jObject;
@@ -226,7 +221,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
             }
 
-            // Convert every type to string for current ParquetConverter
+            // Convert every type to string
             return new JValue(fhirLeafObject.ToString());
         }
 
