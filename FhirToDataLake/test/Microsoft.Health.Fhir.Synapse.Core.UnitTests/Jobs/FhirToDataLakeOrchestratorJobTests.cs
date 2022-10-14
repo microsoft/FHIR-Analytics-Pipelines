@@ -36,7 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
     public class FhirToDataLakeOrchestratorJobTests
     {
         private const string TestBlobEndpoint = "UseDevelopmentStorage=true";
-
+        private const long TBValue = 1000L * 1000L * 1000L * 1000L;
         private static readonly DateTimeOffset TestStartTime = new DateTimeOffset(2014, 8, 18, 0, 0, 0, TimeSpan.FromHours(0));
         private static readonly DateTimeOffset TestEndTime = new DateTimeOffset(2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0));
 
@@ -218,7 +218,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                             ProcessedCount = new Dictionary<string, int> { { "Patient", 1 } },
                             SkippedCount = new Dictionary<string, int> { { "Patient", 0 } },
                             ProcessedCountInTotal = 1,
-                            ProcessedDataSizeInTotal = 1000,
+                            ProcessedDataSizeInTotal = TBValue,
                         };
 
                         jobInfo.Result = JsonConvert.SerializeObject(processingResult);
@@ -287,7 +287,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(inputFileCount, result.ProcessedResourceCounts["Patient"]);
             Assert.Equal(0, result.SkippedResourceCounts["Patient"]);
             Assert.Equal(inputFileCount, result.ProcessedCountInTotal);
-            Assert.Equal(inputFileCount * 1000, result.ProcessedDataSizeInTotal);
+            Assert.Equal(inputFileCount * TBValue, result.ProcessedDataSizeInTotal);
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));
             var progressForContext = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(progressResult);
@@ -337,7 +337,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                         ProcessedCount = new Dictionary<string, int> { { "Patient", 1 } },
                         SkippedCount = new Dictionary<string, int> { { "Patient", 0 } },
                         ProcessedCountInTotal = 1,
-                        ProcessedDataSizeInTotal = 1000,
+                        ProcessedDataSizeInTotal = TBValue,
                     };
 
                     if (filterScope == FilterScope.Group)
