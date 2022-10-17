@@ -144,7 +144,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             var queryParameters = new List<KeyValuePair<string, string>>
             {
                 new (FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
-                new (FhirApiConstants.SortKey, FhirApiConstants.LastUpdatedKey),
             };
 
             return uri.AddQueryString(queryParameters);

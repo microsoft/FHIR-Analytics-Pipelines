@@ -233,25 +233,25 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var comparer = StringComparer.OrdinalIgnoreCase;
             var requestMap = new Dictionary<string, HttpResponseMessage>(comparer);
             requestMap.Add(
-                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&_sort=_lastUpdated",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
-                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&ct=Y29udGludWF0aW9udG9rZW4%3d&_count=1000&_sort=_lastUpdated",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&ct=Y29udGludWF0aW9udG9rZW4%3d&_count=1000",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile2)));
             requestMap.Add(
-                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&ct=invalidresponsetest&_count=1000&_sort=_lastUpdated",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&ct=invalidresponsetest&_count=1000",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidResponseFile)));
             requestMap.Add(
-                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&ct=invalidbundletest&_count=1000&_sort=_lastUpdated",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&ct=invalidbundletest&_count=1000",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidBundleFile)));
             requestMap.Add(
-                $"{fhirServerUrl.TrimEnd('/')}/Patient?_count=1000&_sort=_lastUpdated",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient?_count=1000",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
-                $"{fhirServerUrl.TrimEnd('/')}/MedicationRequest?_id=3123&_count=1000&_sort=_lastUpdated",
+                $"{fhirServerUrl.TrimEnd('/')}/MedicationRequest?_id=3123&_count=1000",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
-                $"{fhirServerUrl.TrimEnd('/')}/Patient/347/*?_lastUpdated=ge2021-08-01T12%3a00%3a00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3a40%3a59%2b08%3a00&_count=1000&_sort=_lastUpdated",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient/347/*?_lastUpdated=ge2021-08-01T12%3a00%3a00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3a40%3a59%2b08%3a00&_count=1000",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/metadata",
