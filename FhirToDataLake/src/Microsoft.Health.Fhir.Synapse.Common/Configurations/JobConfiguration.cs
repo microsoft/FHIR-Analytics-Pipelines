@@ -30,16 +30,28 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public string QueueUrl { get; set; }
 
         /// <summary>
+        /// Job information table name.
+        /// </summary>
+        [JsonProperty("jobInfoTableName")]
+        public string JobInfoTableName { get; set; }
+
+        /// <summary>
+        /// Metadata table name.
+        /// </summary>
+        [JsonProperty("metadataTableName")]
+        public string MetadataTableName { get; set; }
+
+        /// <summary>
+        /// Job information queue name.
+        /// </summary>
+        [JsonProperty("jobInfoQueueName")]
+        public string JobInfoQueueName { get; set; }
+
+        /// <summary>
         /// Scheduler crontab expression.
         /// </summary>
         [JsonProperty("schedulerCronExpression")]
         public string SchedulerCronExpression { get; set; }
-
-        /// <summary>
-        /// Agent name
-        /// </summary>
-        [JsonProperty("agentName")]
-        public string AgentName { get; set; }
 
         /// <summary>
         /// Container name for this job.
@@ -60,5 +72,17 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         // TODO: don't expose to PaaS
         [JsonProperty("endTime")]
         public DateTimeOffset? EndTime { get; set; }
+
+        /// <summary>
+        /// Max running job count in an instance.
+        /// </summary>
+        [JsonProperty("maxRunningJobCount ")]
+        public int MaxRunningJobCount { get; set; } = 10;
+
+        /// <summary>
+        /// Max queued job count per orchestration job.
+        /// </summary>
+        [JsonProperty("maxQueuedJobCountPerOrchestration")]
+        public int MaxQueuedJobCountPerOrchestration { get; set; } = 100;
     }
 }

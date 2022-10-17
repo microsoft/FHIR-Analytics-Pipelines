@@ -6,14 +6,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
@@ -21,31 +23,44 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
     public class FilterManager : IFilterManager
     {
         private readonly ILogger<FilterManager> _logger;
-        private readonly FilterConfiguration _filterConfiguration;
+        private FilterConfiguration _filterConfiguration;
         private readonly IFhirSpecificationProvider _fhirSpecificationProvider;
-
-        private readonly List<TypeFilter> _typeFilters;
+        private readonly IFilterProvider _filterProvider;
+        private List<TypeFilter> _typeFilters;
 
         public FilterManager(
-            IOptions<FilterConfiguration> filterConfiguration,
+            IFilterProvider filterProvider,
             IFhirSpecificationProvider fhirSpecificationProvider,
             ILogger<FilterManager> logger)
         {
-            EnsureArg.IsNotNull(filterConfiguration, nameof(filterConfiguration));
-            _filterConfiguration = filterConfiguration.Value;
+            _filterProvider = EnsureArg.IsNotNull(filterProvider, nameof(filterProvider));
             _fhirSpecificationProvider = EnsureArg.IsNotNull(fhirSpecificationProvider, nameof(fhirSpecificationProvider));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+        }
+
+        public async Task<FilterScope> GetFilterScopeAsync(CancellationToken cancellationToken)
+        {
+            _filterConfiguration ??= await _filterProvider.GetFilterAsync(cancellationToken);
+
+            return _filterConfiguration.FilterScope;
+        }
+
+        public async Task<string> GetGroupIdAsync(CancellationToken cancellationToken)
+        {
+            _filterConfiguration ??= await _filterProvider.GetFilterAsync(cancellationToken);
+
+            return _filterConfiguration.GroupId;
+        }
+
+        public async Task<List<TypeFilter>> GetTypeFiltersAsync(CancellationToken cancellationToken)
+        {
+            _filterConfiguration ??= await _filterProvider.GetFilterAsync(cancellationToken);
             _typeFilters = CreateTypeFilters(
                 _filterConfiguration.FilterScope,
                 _filterConfiguration.RequiredTypes,
                 _filterConfiguration.TypeFilters);
+            return _typeFilters;
         }
-
-        public FilterScope FilterScope() => _filterConfiguration.FilterScope;
-
-        public string GroupId() => _filterConfiguration.GroupId;
-
-        public List<TypeFilter> GetTypeFilters() => _typeFilters;
 
         /// <summary>
         /// Create a list of <see cref="TypeFilter"/> objects from input string.
@@ -96,7 +111,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                         // otherwise, the request url is "https://{fhirURL}/Patient/{patientId}/*?_type={nonFilterTypes}"
                         if (!string.IsNullOrWhiteSpace(typeString) || !string.IsNullOrWhiteSpace(filterString))
                         {
-                            parameters = new List<KeyValuePair<string, string>> { new(FhirApiConstants.TypeKey, string.Join(',', nonFilterTypes)) };
+                            parameters = new List<KeyValuePair<string, string>> { new (FhirApiConstants.TypeKey, string.Join(',', nonFilterTypes)) };
                         }
 
                         typeFilters.Add(new TypeFilter(FhirConstants.AllResource, parameters));

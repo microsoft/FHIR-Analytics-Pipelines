@@ -70,7 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var metadataOption = new MetadataOptions();
             var metaData = client.Search(metadataOption);
 
-            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile), metaData);
+            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile), metaData);
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var metadataOption = new MetadataOptions();
             var metaData = await client.SearchAsync(metadataOption);
 
-            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile), metaData);
+            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile), metaData);
         }
 
         [Fact]
@@ -255,7 +255,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/metadata",
-                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile)));
+                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile)));
 
             dataSource ??= CreateFhirApiDataSource(fhirServerUrl, AuthenticationType.ManagedIdentity);
 

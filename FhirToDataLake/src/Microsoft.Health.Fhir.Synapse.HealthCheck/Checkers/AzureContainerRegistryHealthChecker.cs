@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.ContainerRegistry;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.TemplateManagement.Client;
@@ -23,22 +21,24 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
         private const string MediatypeV2Manifest = "application/vnd.docker.distribution.manifest.v2+json";
         private readonly string _imageReference;
         private readonly IContainerRegistryTokenProvider _containerRegistryTokenProvider;
+        private readonly string _name;
 
         public AzureContainerRegistryHealthChecker(
-            IOptions<SchemaConfiguration> schemaConfiguration,
+            string prefix,
+            string imageReference,
             IContainerRegistryTokenProvider containerRegistryTokenProvider,
             ILogger<AzureContainerRegistryHealthChecker> logger)
-            : base(HealthCheckTypes.AzureContainerRegistryCanRead, false, logger)
+            : base(prefix + HealthCheckTypes.AzureContainerRegistryCanRead, false, logger)
         {
-            EnsureArg.IsNotNull(schemaConfiguration, nameof(schemaConfiguration));
+            EnsureArg.IsNotNull(prefix, nameof(prefix));
+            _imageReference = EnsureArg.IsNotNull(imageReference, nameof(imageReference));
             _containerRegistryTokenProvider = EnsureArg.IsNotNull(containerRegistryTokenProvider, nameof(containerRegistryTokenProvider));
-
-            _imageReference = schemaConfiguration.Value.SchemaImageReference;
+            _name = prefix + HealthCheckTypes.AzureContainerRegistryCanRead;
         }
 
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            var healthCheckResult = new HealthCheckResult(HealthCheckTypes.AzureContainerRegistryCanRead, false);
+            var healthCheckResult = new HealthCheckResult(_name, false);
 
             try
             {

@@ -52,6 +52,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _instanceGuid = Guid.NewGuid();
         }
 
+        public DateTimeOffset LastHeartbeat { get; set; } = DateTimeOffset.UtcNow;
+
         public int SchedulerServicePullingIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultSchedulerServicePullingIntervalInSeconds;
 
         public int SchedulerServiceLeaseExpirationInSeconds { get; set; } = JobConfigurationConstants.DefaultSchedulerServiceLeaseExpirationInSeconds;
@@ -100,6 +102,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     }
 
                     await delayTask;
+                    LastHeartbeat = DateTimeOffset.UtcNow;
                 }
                 catch (Exception ex)
                 {
@@ -213,6 +216,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
 
                 await intervalDelayTask;
+                LastHeartbeat = DateTimeOffset.UtcNow;
             }
 
             return false;

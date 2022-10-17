@@ -179,7 +179,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private static IParquetSchemaProvider ParquetSchemaProviderDelegate(string name)
         {
-            return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
+            return new LocalDefaultSchemaProvider(Options.Create(new FhirServerConfiguration()), NullLogger<LocalDefaultSchemaProvider>.Instance);
         }
 
         private static IFhirSchemaManager<FhirParquetSchemaNode> GetFhirSchemaManager()
@@ -193,9 +193,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             filterConfiguration ??= new FilterConfiguration();
             var filterManager = Substitute.For<IFilterManager>();
-            filterManager.GetTypeFilters().Returns(TestResourceTypeFilters);
-            filterManager.FilterScope().Returns(filterConfiguration.FilterScope);
-            filterManager.GroupId().Returns(filterConfiguration.GroupId);
+            filterManager.GetTypeFiltersAsync(default).Returns(TestResourceTypeFilters);
+            filterManager.GetFilterScopeAsync(default).Returns(filterConfiguration.FilterScope);
+            filterManager.GetGroupIdAsync(default).Returns(filterConfiguration.GroupId);
             return filterManager;
         }
 

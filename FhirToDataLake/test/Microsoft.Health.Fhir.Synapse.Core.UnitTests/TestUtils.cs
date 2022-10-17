@@ -27,6 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         public const string ExpectTestDataFolder = TestDataFolder + "/Expected";
         public const string TestNativeSchemaDirectoryPath = TestDataFolder + "/schemas";
         public const string TestCustomizedSchemaDirectoryPath = TestDataFolder + "/CustomizedSchema";
+        public const string TestFilterTarGzPath = TestDataFolder + "/filter.tar.gz";
 
         public static readonly SchemaConfiguration TestDefaultSchemaConfiguration = new SchemaConfiguration();
         public static readonly SchemaConfiguration TestCustomSchemaConfiguration = new SchemaConfiguration()
@@ -67,7 +68,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         {
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
             {
-                return new LocalDefaultSchemaProvider(NullLogger<LocalDefaultSchemaProvider>.Instance);
+                return new LocalDefaultSchemaProvider(
+                    Options.Create(new FhirServerConfiguration()),
+                    NullLogger<LocalDefaultSchemaProvider>.Instance);
             }
             else
             {

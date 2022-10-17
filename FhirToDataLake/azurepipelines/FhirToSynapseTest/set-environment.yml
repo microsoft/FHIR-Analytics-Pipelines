@@ -1,0 +1,33 @@
+steps:
+- task: AzureKeyVault@2
+  inputs:
+    azureSubscription: 'ResoluteOpenSource'
+    KeyVaultName: $(keyVaultName)
+    SecretsFilter: '*'
+    RunAsPreJob: false
+
+- task: DownloadPipelineArtifact@2
+  displayName: Download test FhirToDataLake image
+  inputs:
+    buildType: current
+    artifactName: FhirToDataLakeImage
+    targetPath: $(Build.ArtifactStagingDirectory)
+
+- task: PowerShell@2
+  displayName: Push image to test ACR
+  inputs:
+    targetType: inline
+    workingDirectory: FhirToDataLake
+    script: |
+      # Load image from pipeline artifact
+      docker load --input $(Build.ArtifactStagingDirectory)//$(imageName).tar
+
+      # Push to test ACR
+      $serverName = ($env:CONTAINER_REGISTRY_SERVER -split '.', 0, "simplematch")[0]
+      docker login $env:CONTAINER_REGISTRY_SERVER --username $serverName --password $env:CONTAINER_REGISTRY_PASSWORD
+      docker tag $(imageName):$(version) $env:CONTAINER_REGISTRY_SERVER/$(imageName):$(version)
+      docker push $env:CONTAINER_REGISTRY_SERVER/$(imageName):$(version)
+  env:
+    CONTAINER_REGISTRY_SERVER: $(pipeline-container-registry-server)
+    CONTAINER_REGISTRY_PASSWORD: $(pipeline-container-registry-password)
+      

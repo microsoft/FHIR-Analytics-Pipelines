@@ -147,7 +147,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetGroupMemberExtractor(0),
                 GetFilterManager(new FilterConfiguration()),
                 GetMetaDataStore(),
-                new JobSchedulerConfiguration(),
+                10,
                 new MetricsLogger(new NullLogger<MetricsLogger>()),
                 new NullLogger<FhirToDataLakeOrchestratorJob>());
 
@@ -254,11 +254,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 }
             }
 
-            var schedulerConfig = new JobSchedulerConfiguration
-            {
-                MaxConcurrencyCount = concurrentCount,
-            };
-
             var groupMemberExtractor = GetGroupMemberExtractor(inputFileCount);
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
@@ -270,7 +265,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 groupMemberExtractor,
                 GetFilterManager(filterConfiguration),
                 metadataStore ?? GetMetaDataStore(),
-                schedulerConfig,
+                concurrentCount,
                 new MetricsLogger(new NullLogger<MetricsLogger>()),
                 new NullLogger<FhirToDataLakeOrchestratorJob>())
             {
@@ -408,7 +403,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var jobConfig = Options.Create(new JobConfiguration
             {
-                AgentName = "testagentname",
+                JobInfoTableName = "jobinfotable",
+                MetadataTableName = "metadatatable",
+                JobInfoQueueName = "jobinfoqueue",
             });
             var tableClientFactory = new AzureTableClientFactory(
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
@@ -439,9 +436,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static IFilterManager GetFilterManager(FilterConfiguration filterConfiguration)
         {
             var filterManager = Substitute.For<IFilterManager>();
-            filterManager.GetTypeFilters().Returns(TestResourceTypeFilters);
-            filterManager.FilterScope().Returns(filterConfiguration.FilterScope);
-            filterManager.GroupId().Returns(filterConfiguration.GroupId);
+            filterManager.GetTypeFiltersAsync(default).Returns(TestResourceTypeFilters);
+            filterManager.GetFilterScopeAsync(default).Returns(filterConfiguration.FilterScope);
+            filterManager.GetGroupIdAsync(default).Returns(filterConfiguration.GroupId);
             return filterManager;
         }
 

@@ -5,10 +5,9 @@
 
 using System;
 using System.Linq;
-using System.Threading;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.Core.Fhir;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
@@ -23,7 +22,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
     {
         private IFhirSpecificationProvider _r4FhirSpecificationProvider;
 
-        private readonly CancellationToken _noneCancellationToken = CancellationToken.None;
         private readonly NullLogger<R4FhirSpecificationProvider> _nullR4FhirSpecificationProviderLogger =
             NullLogger<R4FhirSpecificationProvider>.Instance;
 
@@ -33,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
 
             var metadataOptions = new MetadataOptions();
             dataClient.Search(metadataOptions)
-                .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.MetadataFile));
+                .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile));
 
             _r4FhirSpecificationProvider = new R4FhirSpecificationProvider(dataClient, _nullR4FhirSpecificationProviderLogger);
         }

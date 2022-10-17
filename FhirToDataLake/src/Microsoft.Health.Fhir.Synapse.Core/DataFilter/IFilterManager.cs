@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 
@@ -11,10 +13,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
     public interface IFilterManager
     {
-        public FilterScope FilterScope();
+        public Task<FilterScope> GetFilterScopeAsync(CancellationToken cancellationToken);
 
-        public string GroupId();
+        public Task<string> GetGroupIdAsync(CancellationToken cancellationToken);
 
-        public List<TypeFilter> GetTypeFilters();
+        public Task<List<TypeFilter>> GetTypeFiltersAsync(CancellationToken cancellationToken);
     }
 }
