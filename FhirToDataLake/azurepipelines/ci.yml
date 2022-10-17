@@ -7,7 +7,7 @@ steps:
   inputs:
     versionSpec: 5.11
 
-# Install for Azure Function dependencies
+# Install for Project dependencies
 - task: UseDotNet@2
   displayName: 'Install .NET Core sdk 3.1'
   inputs:
@@ -46,7 +46,7 @@ steps:
 - task: AzureKeyVault@2
   inputs:
     azureSubscription: 'ResoluteOpenSource'
-    KeyVaultName: 'fhiranalyticspipeline'
+    KeyVaultName: $(keyVaultName)
     SecretsFilter: '*'
     RunAsPreJob: false
 
@@ -88,18 +88,18 @@ steps:
     command: stop
     container: azurite-emulator-analytics-ci
 
-# ref: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-function-app?view=azure-devops#error-publish-using-zip-deploy-option-is-not-supported-for-msbuild-package-type
-- task: DotNetCoreCLI@2
-  displayName: 'Publish function app'
+- task: PowerShell@2
+  displayName: Build FhirToDataLake Tool Docker Image
   inputs:
-    command: publish
-    publishWebProjects: False
-    arguments: '--configuration $(BuildConfiguration) --arch $(buildPlatform)  -p:Version=$(version) --output $(Build.ArtifactStagingDirectory)/FhirToDataLake'
-    zipAfterPublish: True
-    projects: FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.FunctionApp/Microsoft.Health.Fhir.Synapse.FunctionApp.csproj
+    targetType: inline
+    workingDirectory: FhirToDataLake
+    script: |
+      docker build -t $(imageName):$(version) -f ./src/Microsoft.Health.Fhir.Synapse.Tool/Dockerfile .
+      docker save $(imageName):$(version) -o $(Build.ArtifactStagingDirectory)/$(imageName).tar
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact'
+- task: PublishPipelineArtifact@1
+  displayName: Publish FhirToDataLake Tool Image As Artifact
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/FhirToDataLake'
-    ArtifactName: FhirToDataLakeBuild
+    targetPath: '$(Build.ArtifactStagingDirectory)/$(imageName).tar'
+    artifact: FhirToDataLakeImage
+    publishLocation: pipeline
