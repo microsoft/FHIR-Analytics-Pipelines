@@ -3,8 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
     public static class MetricsLoggerExtensions
@@ -14,7 +12,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
             metricsLogger.LogMetrics(new TotalErrorsMetric(errorType, reason, operation), value);
         }
 
-        public static void LogSuccessfulResourceCountMetrics(this IMetricsLogger metricsLogger, double value)
+        public static void LogSuccessfulResourceCountMetric(this IMetricsLogger metricsLogger, double value)
         {
             metricsLogger.LogMetrics(new SuccessfulResourceCountMetric(), value);
         }

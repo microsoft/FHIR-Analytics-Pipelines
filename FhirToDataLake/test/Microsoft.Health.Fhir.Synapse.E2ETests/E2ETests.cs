@@ -21,6 +21,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
@@ -581,6 +582,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                         .AddDataSource()
                         .AddDataWriter()
                         .AddSchema()
+                        .AddMetricsLogger()
                         .AddHostedService<SynapseLinkService>());
     }
 }

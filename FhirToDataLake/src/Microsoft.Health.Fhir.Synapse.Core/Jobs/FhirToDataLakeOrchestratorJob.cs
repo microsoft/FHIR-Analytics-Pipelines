@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
@@ -43,6 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IFilterManager _filterManager;
         private readonly int _maxJobCountInRunningPool;
         private readonly ILogger<FhirToDataLakeOrchestratorJob> _logger;
+        private readonly IMetricsLogger _metricsLogger;
 
         private FhirToDataLakeOrchestratorJobResult _result;
 
@@ -57,6 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFilterManager filterManager,
             IMetadataStore metadataStore,
             int maxJobCountInRunningPool,
+            IMetricsLogger metricsLogger,
             ILogger<FhirToDataLakeOrchestratorJob> logger)
         {
             _jobInfo = EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
@@ -68,8 +71,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
+            _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
             _maxJobCountInRunningPool = maxJobCountInRunningPool;
-
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
@@ -360,6 +363,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 _result.ProcessedResourceCounts.ConcatDictionaryCount(processingJobResult.ProcessedCount);
                             _result.SkippedResourceCounts =
                                 _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
+                            _result.ProcessedCountInTotal += processingJobResult.ProcessedCountInTotal;
+                            _result.ProcessedDataSizeInTotal += processingJobResult.ProcessedDataSizeInTotal;
+
+                            // log metrics
+                            _metricsLogger.LogSuccessfulResourceCountMetric(processingJobResult.ProcessedCountInTotal);
+                            _metricsLogger.LogSuccessfulDataSizeMetric(processingJobResult.ProcessedDataSizeInTotal);
 
                             if (await _filterManager.GetFilterScopeAsync(cancellationToken) == FilterScope.Group)
                             {

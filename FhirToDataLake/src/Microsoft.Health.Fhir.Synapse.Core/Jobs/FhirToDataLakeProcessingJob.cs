@@ -554,11 +554,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             _result.SkippedCount.AddToDictionary(schemaType, skippedCount);
                         _result.ProcessedCount =
                             _result.ProcessedCount.AddToDictionary(schemaType, parquetStream.BatchSize);
+                        _result.ProcessedDataSizeInTotal += parquetStream.Value.Length;
                     }
 
                     _result.SearchCount =
                         _result.SearchCount.AddToDictionary(resourceType, resources.Count);
                 }
+
+                _result.ProcessedCountInTotal = _result.ProcessedCount.Sum(x => x.Value);
 
                 progress.Report(JsonConvert.SerializeObject(_result));
 

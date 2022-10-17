@@ -8,6 +8,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -36,6 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly ILoggerFactory _loggerFactory;
         private readonly int _maxJobCountInRunningPool;
         private readonly ILogger<AzureStorageJobFactory> _logger;
+        private readonly IMetricsLogger _metricsLogger;
 
         public AzureStorageJobFactory(
             IQueueClient queueClient,
@@ -47,6 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFilterManager filterManager,
             IMetadataStore metadataStore,
             IOptions<JobConfiguration> jobConfiguration,
+            IMetricsLogger metricsLogger,
             ILoggerFactory loggerFactory)
         {
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
@@ -63,6 +66,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _loggerFactory = EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
             _logger = _loggerFactory.CreateLogger<AzureStorageJobFactory>();
+            _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
         }
 
         public IJob Create(JobInfo jobInfo)
@@ -115,6 +119,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _filterManager,
                         _metadataStore,
                         _maxJobCountInRunningPool,
+                        _metricsLogger,
                         _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>());
                 }
             }
