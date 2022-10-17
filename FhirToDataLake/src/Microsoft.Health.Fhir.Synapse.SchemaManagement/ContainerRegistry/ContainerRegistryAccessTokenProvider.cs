@@ -70,10 +70,13 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             {
                 return await Policy
                   .Handle<HttpRequestException>()
-                  .RetryAsync(3, onRetry: (exception, retryCount) =>
-                  {
-                      _logger.LogWarning(exception, "Get ACR token failed. Retry {RetryCount}.", retryCount);
-                  })
+                  .WaitAndRetryAsync(
+                    3,
+                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                    onRetry: (exception, timeSpan, retryCount, context) =>
+                    {
+                        _logger.LogWarning(exception, "Get ACR token from {Server} failed. Retry {RetryCount}.", registryServer, retryCount);
+                    })
                   .ExecuteAsync(() => GetAcrAccessTokenWithAadToken(registryServer, aadToken, cancellationToken));
             }
             catch (HttpRequestException ex)
