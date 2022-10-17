@@ -11,7 +11,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Core;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
@@ -163,17 +162,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             {
                 return await blobClient.ExistsAsync(cancellationToken);
             }
-            catch (RequestFailedException ex)
+            catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Check whether blob '{blobName}' exists failed. Reason: '{ex}'");
                 _logger.LogInformation(ex, $"Check whether blob '{blobName}' exists failed. Reason: '{ex}'");
                 throw new AzureBlobOperationFailedException($"Check whether blob '{blobName}' exists failed.", ex);
-            }
-            catch (Exception ex)
-            {
-                _diagnosticLogger.LogError($"Unhandeled error while checking blob '{blobName}' exists. Reason: '{ex}'");
-                _logger.LogError(ex, $"Unhandeled error while checking blob '{blobName}' exists. Reason: '{ex}'");
-                throw;
             }
         }
 
@@ -190,17 +183,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
                 return blobNameList;
             }
-            catch (RequestFailedException ex)
+            catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"List blob prefix '{blobPrefix}' failed. Reason: '{ex}'");
                 _logger.LogInformation(ex, $"List blob prefix '{blobPrefix}' failed. Reason: '{ex}'");
                 throw new AzureBlobOperationFailedException($"List blob prefix '{blobPrefix}' failed.", ex);
-            }
-            catch (Exception ex)
-            {
-                _diagnosticLogger.LogError($"Unhandeled error while list blob prefix '{blobPrefix}'. Reason: '{ex}'");
-                _logger.LogError(ex, $"Unhandeled error while list blob prefix '{blobPrefix}'. Reason: '{ex}'");
-                throw;
             }
         }
 
@@ -219,17 +206,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             {
                 return null;
             }
-            catch (RequestFailedException ex)
+            catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Get blob '{blobName}' failed. Reason: '{ex}'");
                 _logger.LogInformation(ex, $"Get blob '{blobName}' failed. Reason: '{ex}'");
                 throw new AzureBlobOperationFailedException($"Get blob '{blobName}' failed.", ex);
-            }
-            catch (Exception ex)
-            {
-                _diagnosticLogger.LogError($"Unhandeled error while getting blob '{blobName}'. Reason: '{ex}'");
-                _logger.LogError(ex, $"Unhandeled error while getting blob '{blobName}'. Reason: '{ex}'");
-                throw;
             }
         }
 
@@ -252,17 +233,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 _logger.LogInformation($"Blob '{blobName}' already exists.");
                 return false;
             }
-            catch (RequestFailedException ex)
+            catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Create blob '{blobName}' failed. Reason: '{ex}'");
                 _logger.LogInformation(ex, $"Create blob '{blobName}' failed. Reason: '{ex}'");
                 throw new AzureBlobOperationFailedException($"Create blob '{blobName}' failed.", ex);
-            }
-            catch (Exception ex)
-            {
-                _diagnosticLogger.LogError($"Unhandeled error while creating blob '{blobName}'. Reason: '{ex}'");
-                _logger.LogError(ex, $"Unhandeled error while creating blob '{blobName}'. Reason: '{ex}'");
-                throw;
             }
         }
 
@@ -273,17 +248,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             {
                 return await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
             }
-            catch (RequestFailedException ex)
+            catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Delete blob '{blobName}' failed. Reason: '{ex}'");
                 _logger.LogInformation(ex, $"Delete blob '{blobName}' failed. Reason: '{ex}'");
                 throw new AzureBlobOperationFailedException($"Delete blob '{blobName}' failed.", ex);
-            }
-            catch (Exception ex)
-            {
-                _diagnosticLogger.LogError($"Unhandled error while deleting blob '{blobName}'. Reason: '{ex}'");
-                _logger.LogError(ex, $"Unhandled error while deleting blob '{blobName}'. Reason: '{ex}'");
-                throw;
             }
         }
 
@@ -302,17 +271,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
                 return blob.Uri.AbsoluteUri;
             }
-            catch (RequestFailedException ex)
+            catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Update blob '{blobName}' failed. Reason: '{ex}'");
                 _logger.LogInformation(ex, $"Update blob '{blobName}' failed. Reason: '{ex}'");
                 throw new AzureBlobOperationFailedException($"Update blob '{blobName}' failed.", ex);
-            }
-            catch (Exception ex)
-            {
-                _diagnosticLogger.LogError($"Unhandeled error while updating blob '{blobName}'. Reason: '{ex}'");
-                _logger.LogError(ex, $"Unhandeled error while updating blob '{blobName}'. Reason: '{ex}'");
-                throw;
             }
         }
 
@@ -344,17 +307,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 _logger.LogInformation("Renew lease on the blob '{0}' successfully.", blobName);
                 return leaseResponse.Value.LeaseId;
             }
-            catch (RequestFailedException ex)
-            {
-                // When renew lease failed, we should stop the application and exits. So we throw here.
-                _logger.LogInformation("Failed to renew lease on the blob '{0}'. Reason: '{1}'", blobName, ex);
-                throw new AzureBlobOperationFailedException($"Failed to renew lease on the blob '{blobName}'.", ex);
-            }
             catch (Exception ex)
             {
                 // When renew lease failed, we should stop the application and exits. So we throw here.
-                _logger.LogError("Failed to renew lease on the blob '{0}'. Reason: '{1}'", blobName, ex);
-                throw;
+                _diagnosticLogger.LogError("Failed to renew lease on the blob '{blobName}'. Reason: '{ex}'");
+                _logger.LogInformation("Failed to renew lease on the blob '{0}'. Reason: '{1}'", blobName, ex);
+                throw new AzureBlobOperationFailedException($"Failed to renew lease on the blob '{blobName}'.", ex);
             }
         }
 
@@ -397,16 +355,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'. Reason: '{ex}'");
-                if (ex is RequestFailedException || ex is ArgumentException || ex is PathTooLongException)
-                {
-                    _logger.LogInformation(ex, "Failed to move blob directory '{0}' to '{1}'. Reason: '{2}'", sourceDirectory, targetDirectory, ex);
-                    throw new AzureBlobOperationFailedException($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'.", ex);
-                }
-                else
-                {
-                    _logger.LogError(ex, "Failed to move blob directory '{0}' to '{1}'. Reason: '{2}'", sourceDirectory, targetDirectory, ex);
-                    throw;
-                }
+                _logger.LogInformation(ex, "Failed to move blob directory '{0}' to '{1}'. Reason: '{2}'", sourceDirectory, targetDirectory, ex);
+                throw new AzureBlobOperationFailedException($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'.", ex);
             }
         }
 
@@ -419,17 +369,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
                 _logger.LogInformation("Delete blob directory '{0}' successfully.", directory);
             }
-            catch (RequestFailedException ex)
+            catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Failed to delete blob directory '{directory}'. Reason: '{ex}'");
                 _logger.LogInformation("Failed to delete blob directory '{0}'. Reason: '{1}'", directory, ex);
                 throw new AzureBlobOperationFailedException($"Failed to delete blob directory '{directory}'.", ex);
-            }
-            catch (Exception ex)
-            {
-                _diagnosticLogger.LogError($"Unhandeled error while deleting blob directory '{directory}'. Reason: '{ex}'");
-                _logger.LogError("Unhandeled error while deleting blob directory '{0}'. Reason: '{1}'", directory, ex);
-                throw;
             }
         }
 

@@ -14,7 +14,6 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.JobManagement;
 
@@ -98,7 +97,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 else
                 {
-                    _logger.LogError($"Failed to get current trigger entity from table, status {response.GetRawResponse().Status}");
+                    _logger.LogInformation($"Failed to get current trigger entity from table, status {response.GetRawResponse().Status}");
                 }
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
@@ -201,7 +200,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to initialize metadata store.");
+                _logger.LogInformation(ex, "Failed to initialize metadata store.");
             }
         }
 

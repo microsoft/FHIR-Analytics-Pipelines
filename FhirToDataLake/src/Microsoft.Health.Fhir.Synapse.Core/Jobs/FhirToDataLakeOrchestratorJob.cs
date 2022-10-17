@@ -166,7 +166,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (RetriableJobException retriableJobEx)
             {
                 // always throw RetriableJobException
-                _diagnosticLogger.LogError("Error in orchestrator job. Reason:{0}");
+                _diagnosticLogger.LogError($"Error in orchestrator job. Reason:{retriableJobEx.Message}");
                 _logger.LogInformation(retriableJobEx, "Error in orchestrator job. Reason:{0}", retriableJobEx);
                 throw;
             }
@@ -281,13 +281,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     patientHash,
                     processedPatientVersions.ContainsKey(patientHash) ? processedPatientVersions[patientHash] : 0)).ToList();
 
-            string info = string.Format(
-                "Extract {0} patients from group '{1}', including {2} new patients.",
+            _logger.LogInformation(
+                "Extract {patientCount} patients from group '{groupId}', including {newPatientCount} new patients.",
                 patientsHash.Count,
                 groupID,
-                toBeProcessedPatients.Where(p => p.VersionId == 0).ToList().Count());
-
-            _logger.LogInformation(info);
+                toBeProcessedPatients.Where(p => p.VersionId == 0).ToList().Count);
 
             return toBeProcessedPatients;
         }

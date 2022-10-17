@@ -100,7 +100,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _diagnosticLogger.LogError("Job is cancelled.");
                     _logger.LogInformation("Job is cancelled.");
                     throw new OperationCanceledException();
                 }
@@ -483,7 +482,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 fhirBundleObject = JObject.Parse(fhirBundleResult);
             }
-            catch (JsonReaderException exception)
+            catch (Exception exception)
             {
                 _diagnosticLogger.LogError("Failed to parse fhir search result.");
                 _logger.LogInformation(exception, "Failed to parse fhir search result.");
