@@ -5,6 +5,9 @@
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Logging
 {
+    /// <summary>
+    /// Diagnostic logger reports to customer's interface.
+    /// </summary>
     public interface IDiagnosticLogger
     {
         public void LogInformation(string message);

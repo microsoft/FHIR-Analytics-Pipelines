@@ -78,7 +78,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                 }
                 catch (Exception e)
                 {
-                    _diagnosticLogger.LogError( $"Unhandled exception occured in health check. {e.Message}");
+                    _diagnosticLogger.LogError($"Unknown exception occured in health check. {e.Message}");
                     _logger.LogError(e, $"Unhandled exception occured in health check. {e.Message}");
                     await delayTask;
                 }

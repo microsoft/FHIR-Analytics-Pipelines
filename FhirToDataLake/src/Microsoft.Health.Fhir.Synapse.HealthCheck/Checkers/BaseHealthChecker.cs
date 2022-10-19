@@ -49,8 +49,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
                     ErrorMessage = $"Unhandled exception : {e.Message}.",
                 };
 
-                _diagnosticLogger.LogWarning($"Unhandled exception occured in health check component {Name}. {e.Message}");
-                _logger.LogInformation($"Unhandled exception occured in health check component {Name}. {e.Message}");
+                _diagnosticLogger.LogError($"Unknown exception occured in health check component {Name}. {e.Message}");
+                _logger.LogInformation(e, $"Unhandled exception occured in health check component {Name}. {e.Message}");
             }
 
             if (healthCheckResult.Status is HealthCheckStatus.UNHEALTHY)

@@ -7,6 +7,9 @@ using System;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Exceptions
 {
+    /// <summary>
+    /// Internal resources dependency error.
+    /// </summary>
     public class SynapsePipelineInternalException : Exception
     {
         public SynapsePipelineInternalException(string message)

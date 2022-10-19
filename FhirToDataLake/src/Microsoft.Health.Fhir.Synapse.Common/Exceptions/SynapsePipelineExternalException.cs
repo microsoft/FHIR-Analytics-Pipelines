@@ -7,16 +7,20 @@ using System;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Exceptions
 {
-    public class SynapsePipelineRetriableException : Exception
+    /// <summary>
+    /// External resources dependency error.
+    /// </summary>
+    public class SynapsePipelineExternalException : Exception
     {
-        public SynapsePipelineRetriableException(string message)
+        public SynapsePipelineExternalException(string message)
             : base(message)
         {
         }
 
-        public SynapsePipelineRetriableException(string message, Exception inner)
+        public SynapsePipelineExternalException(string message, Exception inner)
             : base(message, inner)
         {
+
         }
     }
 }

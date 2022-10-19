@@ -113,7 +113,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 catch (Exception ex)
                 {
                     _diagnosticLogger.LogError($"Internal error occurred in scheduler service, will retry later.");
-                    _logger.LogError($"There is an exception thrown while processing current trigger, will retry later. Exception {ex.Message};");
+                    _logger.LogError(ex, $"There is an exception thrown while processing current trigger, will retry later. Exception {ex.Message};");
                 }
             }
 
@@ -167,6 +167,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _diagnosticLogger.LogError(
                     $"Internal error occurred in scheduler service, will retry later.");
                 _logger.LogError(
+                    ex,
                     $"Unhandled exception while acquiring lease. Exception: {ex.Message}.");
                 return false;
             }
@@ -350,7 +351,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (RequestFailedException ex)
             {
-                _logger.LogError($"Failed to add trigger entity to table, exception: {ex.Message}");
+                _logger.LogError(ex, $"Failed to add trigger entity to table, exception: {ex.Message}");
                 throw;
             }
 

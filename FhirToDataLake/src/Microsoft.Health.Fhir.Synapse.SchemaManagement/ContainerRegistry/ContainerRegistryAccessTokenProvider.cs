@@ -91,8 +91,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError("Unhandeled error while getting ACR access token with AAD access token.");
-                _logger.LogError(ex, "Unhandeled error while getting ACR access token with AAD access token.");
+                _diagnosticLogger.LogError("Unknown error while getting ACR access token with AAD access token.");
+                _logger.LogError(ex, "Unhandled error while getting ACR access token with AAD access token.");
                 throw;
             }
         }

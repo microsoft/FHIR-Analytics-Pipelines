@@ -33,12 +33,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         public static string FhirSchemaError => nameof(FhirSchemaError);
 
         /// <summary>
-        /// A metric type for errors that occur when job running failed.
+        /// A metric type for errors that occur when job execution failed.
         /// </summary>
-        public static string ScheduleJobError => nameof(ScheduleJobError);
+        public static string JobExecutionError => nameof(JobExecutionError);
 
         /// <summary>
-        /// A metric type for errors that occur when job running failed.
+        /// A metric type for errors that occur when getting filters.
         /// </summary>
         public static string ReadFilterError => nameof(ReadFilterError);
     }

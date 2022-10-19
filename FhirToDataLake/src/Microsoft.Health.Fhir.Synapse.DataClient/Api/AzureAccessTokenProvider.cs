@@ -55,8 +55,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             }
             catch (Exception exception)
             {
-                _diagnosticLogger.LogError(string.Format("Get access token for resource '{0}' failed. Reason: '{1}'", resourceUrl, exception));
-                _logger.LogInformation(exception, "Get access token for resource '{0}' failed. Reason: '{1}'", resourceUrl, exception);
+                _diagnosticLogger.LogError(string.Format("Get access token for resource '{0}' failed. Reason: '{1}'", resourceUrl, exception.Message));
+                _logger.LogInformation(exception, "Get access token for resource '{0}' failed. Reason: '{1}'", resourceUrl, exception.Message);
                 throw;
             }
         }

@@ -70,7 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             catch (Exception exception)
             {
-                _logger.LogError($"Failed to parse compartment definition from file {compartmentFile}. Reason: {exception.Message}");
+                _logger.LogError(exception, $"Failed to parse compartment definition from file {compartmentFile}. Reason: {exception.Message}");
                 throw new FhirSpecificationProviderException($"Failed to parse compartment definition from file {compartmentFile}.", exception);
             }
 
@@ -80,7 +80,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 var resourceTypes = compartment.Resource?.Where(x => x.Param.Any()).Select(x => x.Code?.ToString()).ToHashSet();
                 if (resourceTypes == null)
                 {
-                    _logger.LogWarning($"There is not any resource type defined for compartment type {compartmentType} in file {compartmentFile}");
+                    _logger.LogInformation($"There is not any resource type defined for compartment type {compartmentType} in file {compartmentFile}");
                 }
                 else
                 {
@@ -90,7 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             else
             {
-                _logger.LogWarning($"The compartment type {compartmentType} in file {compartmentFile} isn't a valid compartment type.");
+                _logger.LogInformation($"The compartment type {compartmentType} in file {compartmentFile} isn't a valid compartment type.");
             }
 
             return compartmentResourceTypesLookup;
@@ -108,7 +108,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             catch (Exception exception)
             {
                 _diagnosticLogger.LogError($"Failed to parse capability statement from FHIR server metadata. Reason: {exception.Message}");
-                _logger.LogInformation($"Failed to parse capability statement from FHIR server metadata. Reason: {exception.Message}");
+                _logger.LogInformation(exception, $"Failed to parse capability statement from FHIR server metadata. Reason: {exception.Message}");
                 throw new FhirSpecificationProviderException($"Failed to parse capability statement from FHIR server metadata.", exception);
             }
 

@@ -10,7 +10,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Exceptions
     /// <summary>
     /// Configuration error.
     /// </summary>
-    public class ConfigurationErrorException : SynapsePipelineRetriableException
+    public class ConfigurationErrorException : SynapsePipelineExternalException
     {
         public ConfigurationErrorException(string message)
             : base(message)

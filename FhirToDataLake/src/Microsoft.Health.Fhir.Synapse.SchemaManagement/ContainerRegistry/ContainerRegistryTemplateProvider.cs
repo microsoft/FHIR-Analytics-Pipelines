@@ -57,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             catch (Exception ex)
             {
                 _diagnosticLogger.LogError(string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", schemaImageReference, ex.Message));
-                _logger.LogInformation(string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", schemaImageReference, ex.Message));
+                _logger.LogInformation(ex, string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", schemaImageReference, ex.Message));
                 throw new ContainerRegistrySchemaException(string.Format("Failed to parse the schema image reference {0} to image information. Reason: {1}.", schemaImageReference, ex.Message), ex);
             }
 
@@ -76,20 +76,20 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             }
             catch (ImageFetchException fetchEx)
             {
-                _diagnosticLogger.LogError("Failed to fetch template image.");
-                _logger.LogInformation(fetchEx, "Failed to fetch template image.");
+                _diagnosticLogger.LogError($"Failed to fetch template image. Reason: {fetchEx.Message}");
+                _logger.LogInformation(fetchEx, $"Failed to fetch template image. Reason: {fetchEx.Message}");
                 throw new ContainerRegistrySchemaException("Failed to fetch template image.", fetchEx);
             }
             catch (TemplateManagementException templateEx)
             {
-                _diagnosticLogger.LogError("Template collection is invalid.");
-                _logger.LogInformation(templateEx, "Template collection is invalid.");
+                _diagnosticLogger.LogError($"Template collection is invalid. Reason: {templateEx.Message}");
+                _logger.LogInformation(templateEx, $"Template collection is invalid. Reason: {templateEx.Message}");
                 throw new ContainerRegistrySchemaException("Template collection is invalid.", templateEx);
             }
             catch (Exception unhandledEx)
             {
-                _diagnosticLogger.LogError("Unhandled exception: failed to get template collection.");
-                _logger.LogError(unhandledEx, "Unhandled exception: failed to get template collection.");
+                _diagnosticLogger.LogError($"Unknown exception: failed to get template collection. Reason: {unhandledEx.Message}");
+                _logger.LogError(unhandledEx, $"Unhandled exception: failed to get template collection. Reason: {unhandledEx.Message}");
                 throw;
             }
         }

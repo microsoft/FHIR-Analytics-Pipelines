@@ -88,8 +88,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation($"Start executing FhirToDataLake orchestrator job {_jobInfo.GroupId}");
-            _logger.LogInformation($"Start executing FhirToDataLake orchestrator job {_jobInfo.GroupId}");
+            _diagnosticLogger.LogInformation($"Start executing FhirToDataLake job {_jobInfo.Id}.");
+            _logger.LogInformation($"Start executing FhirToDataLake orchestrator job {_jobInfo.Id}.");
 
             try
             {
@@ -139,48 +139,48 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 progress.Report(JsonConvert.SerializeObject(_result));
 
-                _diagnosticLogger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.GroupId}");
-                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.GroupId}");
+                _diagnosticLogger.LogInformation($"Finish FhirToDataLake job {_jobInfo.Id}");
+                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}");
 
                 return JsonConvert.SerializeObject(_result);
             }
             catch (TaskCanceledException taskCanceledEx)
             {
-                _diagnosticLogger.LogError("Job is canceled.");
-                _logger.LogInformation(taskCanceledEx, "Job is canceled.");
+                _diagnosticLogger.LogError($"Job {_jobInfo.Id} is canceled.");
+                _logger.LogInformation(taskCanceledEx, "Job {0} is canceled.", _jobInfo.Id);
                 throw new RetriableJobException("Job is cancelled.", taskCanceledEx);
             }
             catch (OperationCanceledException operationCanceledEx)
             {
-                _diagnosticLogger.LogError("Job is canceled.");
-                _logger.LogInformation(operationCanceledEx, "Job is canceled.");
+                _diagnosticLogger.LogError($"Job {_jobInfo.Id} is canceled.");
+                _logger.LogInformation(operationCanceledEx, "Job {0} is canceled.", _jobInfo.Id);
                 throw new RetriableJobException("Job is cancelled.", operationCanceledEx);
             }
-            catch (SynapsePipelineRetriableException synapsePipelineRetriableEx)
+            catch (SynapsePipelineExternalException synapsePipelineRetriableEx)
             {
                 // Customer exceptions.
-                _diagnosticLogger.LogError("Error in orchestrator job.");
-                _logger.LogInformation(synapsePipelineRetriableEx, "Error in orchestrator job. Reason:{0}", synapsePipelineRetriableEx);
+                _diagnosticLogger.LogError($"Error in job {_jobInfo.Id}. Reason:{synapsePipelineRetriableEx.Message}");
+                _logger.LogInformation(synapsePipelineRetriableEx, "Error in orchestrator job {0}. Reason:{1}", _jobInfo.Id, synapsePipelineRetriableEx);
                 throw new RetriableJobException("Error in orchestrator job.", synapsePipelineRetriableEx);
             }
             catch (RetriableJobException retriableJobEx)
             {
                 // always throw RetriableJobException
-                _diagnosticLogger.LogError($"Error in orchestrator job. Reason:{retriableJobEx.Message}");
-                _logger.LogInformation(retriableJobEx, "Error in orchestrator job. Reason:{0}", retriableJobEx);
+                _diagnosticLogger.LogError($"Error in job {_jobInfo.Id}. Reason:{retriableJobEx.Message}");
+                _logger.LogInformation(retriableJobEx, "Error in orchestrator job {0}. Reason:{1}", _jobInfo.Id, retriableJobEx);
                 throw;
             }
             catch (SynapsePipelineInternalException synapsePipelineInternalEx)
             {
-                _diagnosticLogger.LogError($"Internal error occurred in orchestrator job.");
-                _logger.LogError(synapsePipelineInternalEx, "Error in orchestrator job. Reason:{0}", synapsePipelineInternalEx);
+                _diagnosticLogger.LogError($"Internal error occurred in job {_jobInfo.Id}.");
+                _logger.LogError(synapsePipelineInternalEx, "Error in orchestrator job {0}. Reason:{1}", _jobInfo.Id, synapsePipelineInternalEx);
                 throw new RetriableJobException("Error in orchestrator job.", synapsePipelineInternalEx);
             }
             catch (Exception unhandledEx)
             {
                 // Unhandled exceptions.
-                _diagnosticLogger.LogError("Unhandled error occurred in orchestrator job.");
-                _logger.LogError(unhandledEx, "Unhandled error occurred in orchestrator job. Reason:{0}", unhandledEx);
+                _diagnosticLogger.LogError($"Unknown error occurred in job {_jobInfo.Id}.");
+                _logger.LogError(unhandledEx, "Unhandled error occurred in orchestrator job {0}. Reason:{1}", _jobInfo.Id, unhandledEx);
                 throw new RetriableJobException("Unhandled error occurred in orchestrator job.", unhandledEx);
             }
         }

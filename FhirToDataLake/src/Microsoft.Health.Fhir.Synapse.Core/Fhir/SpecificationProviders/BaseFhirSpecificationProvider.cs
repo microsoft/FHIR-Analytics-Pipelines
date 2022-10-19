@@ -91,7 +91,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
             if (!_resourceTypeSearchParametersLookup.ContainsKey(resourceType))
             {
-                _logger.LogInformation($"There isn't any search parameter defined for resource type {resourceType}.");
+                _logger.LogInformation($"There is no search parameter defined for resource type {resourceType}.");
                 return new HashSet<string>();
             }
 
@@ -111,7 +111,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.");
+                    _logger.LogError(ex, $"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.");
                     throw new FhirSpecificationProviderException($"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.", ex);
                 }
 
@@ -140,7 +140,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             catch (Exception exception)
             {
-                _logger.LogError($"Failed to request Fhir server metadata. Reason: {exception.Message}.");
+                _logger.LogError(exception, $"Failed to request Fhir server metadata. Reason: {exception.Message}.");
                 throw new FhirSpecificationProviderException($"Failed to request Fhir server metadata.", exception);
             }
 

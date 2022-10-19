@@ -9,7 +9,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
     /// <summary>
-    /// Failed to start a job.
+    /// Failed to process internal metadata storage.
     /// </summary>
     public class MetadataStoreException : SynapsePipelineInternalException
     {

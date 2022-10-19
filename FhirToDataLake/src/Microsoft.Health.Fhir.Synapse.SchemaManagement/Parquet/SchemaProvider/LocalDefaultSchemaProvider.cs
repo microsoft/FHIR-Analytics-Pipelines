@@ -59,7 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Parse schema file failed. Reason: {ex.Message}.");
-                _logger.LogInformation($"Parse schema file failed. Reason: {ex.Message}.");
+                _logger.LogInformation(ex, $"Parse schema file failed. Reason: {ex.Message}.");
                 throw new GenerateFhirParquetSchemaNodeException($"Parse schema file failed. Reason: {ex.Message}.", ex);
             }
 

@@ -125,14 +125,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             }
             catch (ParquetException parquetEx)
             {
-                _diagnosticLogger.LogError($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".");
-                _logger.LogInformation(parquetEx, $"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".");
+                _diagnosticLogger.LogError($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\". Reason: {parquetEx.Message}");
+                _logger.LogInformation(parquetEx, $"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\". Reason: {0}", parquetEx.Message);
                 throw new ParquetDataProcessorException($"Exception happened when converting input data to parquet for \"{processParameters.SchemaType}\".", parquetEx);
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError($"Unhandeled exception when converting input data to parquet for \"{processParameters.SchemaType}\".");
-                _logger.LogError(ex, $"Unhandeled exception when converting input data to parquet for \"{processParameters.SchemaType}\".");
+                _diagnosticLogger.LogError($"Unknown exception when converting input data to parquet for \"{processParameters.SchemaType}\".");
+                _logger.LogError(ex, $"Unhandled exception when converting input data to parquet for \"{processParameters.SchemaType}\".");
                 throw;
             }
         }

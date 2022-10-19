@@ -88,8 +88,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         // the processing job status is never set to failed or cancelled.
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation($"Start executing processing job {_inputData.ProcessingJobSequenceId}.");
-            _logger.LogInformation($"Start executing processing job {_inputData.ProcessingJobSequenceId}.");
+            _diagnosticLogger.LogInformation($"Start executing job {_jobId}.");
+            _logger.LogInformation($"Start executing processing job {_jobId}.");
 
             try
             {
@@ -139,44 +139,44 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 progress.Report(JsonConvert.SerializeObject(_result));
 
-                _diagnosticLogger.LogInformation($"Finished processing job '{_inputData.ProcessingJobSequenceId}'.");
-                _logger.LogInformation($"Finished processing job '{_inputData.ProcessingJobSequenceId}'.");
+                _diagnosticLogger.LogInformation($"Finished job '{_jobId}'.");
+                _logger.LogInformation($"Finished processing job '{_jobId}'.");
 
                 return JsonConvert.SerializeObject(_result);
             }
             catch (TaskCanceledException taskCanceledEx)
             {
-                _diagnosticLogger.LogError("Data processing task is canceled.");
-                _logger.LogInformation(taskCanceledEx, "Data processing task is canceled.");
+                _diagnosticLogger.LogError($"Job {_jobId} is canceled.");
+                _logger.LogInformation(taskCanceledEx, "Processing job {0} is canceled.", _jobId);
 
                 await CleanResourceAsync(CancellationToken.None);
 
-                throw new RetriableJobException("Data processing task is canceled.", taskCanceledEx);
+                throw new RetriableJobException("Processing job is canceled.", taskCanceledEx);
             }
             catch (OperationCanceledException operationCanceledEx)
             {
-                _diagnosticLogger.LogError("Data processing task is canceled.");
-                _logger.LogInformation(operationCanceledEx, "Data processing task is canceled.");
+                _diagnosticLogger.LogError($"Job {_jobId} is canceled.");
+                _logger.LogInformation(operationCanceledEx, "Processing job {0} is canceled.", _jobId);
 
                 await CleanResourceAsync(CancellationToken.None);
 
-                throw new RetriableJobException("Data processing task is canceled.", operationCanceledEx);
+                throw new RetriableJobException("Processing job is canceled.", operationCanceledEx);
             }
             catch (RetriableJobException retriableJobEx)
             {
                 // always throw RetriableJobException
-                _diagnosticLogger.LogError("Error in data processing job.");
-                _logger.LogInformation(retriableJobEx, "Error in data processing job. Reason : {0}", retriableJobEx);
+                _diagnosticLogger.LogError($"Error in job {_jobId}.");
+                _logger.LogInformation(retriableJobEx, "Error in processing job {0}. Reason : {1}", _jobId, retriableJobEx.Message);
 
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw;
             }
-            catch (SynapsePipelineRetriableException synapsePipelineEx)
+            catch (SynapsePipelineExternalException synapsePipelineEx)
             {
                 // Customer exceptions.
-                _diagnosticLogger.LogError("Error in data processing job.");
-                _logger.LogInformation(synapsePipelineEx, "Error in data processing job. Reason:{0}", synapsePipelineEx);
+                _diagnosticLogger.LogError($"Error in job {_jobId}.");
+                _logger.LogInformation(synapsePipelineEx, "Error in data processing job {0}. Reason:{1}", _jobId, synapsePipelineEx.Message);
 
                 await CleanResourceAsync(CancellationToken.None);
 
@@ -184,12 +184,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception ex)
             {
-                // Unhandeled exceptions.
-                _diagnosticLogger.LogError($"Unhandeled error occurred in data processing job. Reason : {ex}");
-                _logger.LogError(ex, "Unhandeled error occurred in data processing job. Reason : {0}", ex);
+                // Unhandled exceptions.
+                _diagnosticLogger.LogError($"Unknown error occurred in job {_jobId}.");
+                _logger.LogError(ex, "Unhandled error occurred in data processing job {0}. Reason : {1}", _jobId, ex.Message);
                 await CleanResourceAsync(CancellationToken.None);
 
-                throw new RetriableJobException("Unhandeled error occurred in data processing job.", ex);
+                throw new RetriableJobException("Unhandled error occurred in data processing job.", ex);
             }
         }
 

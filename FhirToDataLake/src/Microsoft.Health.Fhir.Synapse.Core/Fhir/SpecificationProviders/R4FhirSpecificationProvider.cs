@@ -71,7 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             catch (Exception exception)
             {
-                _logger.LogError($"Failed to parse compartment definition from file {compartmentFile}. Reason: {exception.Message}");
+                _logger.LogError(exception, $"Failed to parse compartment definition from file {compartmentFile}. Reason: {exception.Message}");
                 throw new FhirSpecificationProviderException($"Failed to parse compartment definition from file {compartmentFile}.", exception);
             }
 
@@ -108,7 +108,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             catch (Exception exception)
             {
-                _diagnosticLogger.LogError($"Failed to parse capability statement from FHIR server metadata.");
+                _diagnosticLogger.LogError($"Failed to parse capability statement from FHIR server metadata. Reason: {exception.Message}");
                 _logger.LogInformation(exception, $"Failed to parse capability statement from FHIR server metadata. Reason: {exception.Message}");
                 throw new FhirSpecificationProviderException($"Failed to parse capability statement from FHIR server metadata.", exception);
             }
@@ -168,7 +168,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Read search parameter file \"{_searchParameterEmbeddedFile}\" failed. Reason: {ex.Message}.");
+                _logger.LogError(ex, $"Read search parameter file \"{_searchParameterEmbeddedFile}\" failed. Reason: {ex.Message}.");
                 throw new FhirSpecificationProviderException($"Read search parameter file \"{_searchParameterEmbeddedFile}\" failed. Reason: {ex.Message}.", ex);
             }
 
@@ -180,7 +180,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             catch (Exception exception)
             {
-                _logger.LogError($"Failed to parse parameter bundle from file {_searchParameterEmbeddedFile}. Reason: {exception.Message}.");
+                _logger.LogError(exception, $"Failed to parse parameter bundle from file {_searchParameterEmbeddedFile}. Reason: {exception.Message}.");
                 throw new FhirSpecificationProviderException($"Failed to parse parameter bundle from file {_searchParameterEmbeddedFile}.", exception);
             }
 

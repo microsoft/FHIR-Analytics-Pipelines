@@ -105,13 +105,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                     throw new ParquetDataProcessorException($"Convert customized data for {resourceType} failed.", convertException);
                 }
 
-                _diagnosticLogger.LogError("Convert data failed.");
-                _logger.LogInformation(convertException, "Convert data failed.");
+                _diagnosticLogger.LogError($"Convert data failed. Reason : {convertException.Message}");
+                _logger.LogInformation(convertException, "Convert data failed. Reason : {0}", convertException.Message);
                 throw new ParquetDataProcessorException($"Convert customized data for {resourceType} failed.", convertException);
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError($"Unhandled exception: Convert customized data for {resourceType} failed.");
+                _diagnosticLogger.LogError($"Unknown exception: Convert customized data for {resourceType} failed. Reason : {ex.Message}");
                 _logger.LogError(ex, "Unhandled exception: convert data process failed.");
                 throw;
             }

@@ -242,13 +242,13 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                     }
                     catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateEntityPreconditionFailedErrorCode))
                     {
-                        _logger.LogWarning(ex, "Update job info entity conflicts.");
+                        _logger.LogInformation(ex, "Update job info entity conflicts.");
                     }
                 }
 
                 jobInfos = jobInfoEntities.Select(entity => entity.ToJobInfo<TJobInfo>()).ToList();
 
-                _logger.LogInformation($"Enqueue jobs '{string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())}' successfully.");
+                _logger.LogInformation($"Enqueue jobs {string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())} successfully.");
 
                 return jobInfos;
             }
@@ -345,7 +345,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             _ = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionUpdateActions, cancellationToken);
 
-            _logger.LogInformation($"Dequeue job '{jobInfo.Id}'. Successfully ");
+            _logger.LogInformation($"Dequeue job {jobInfo.Id} Successfully ");
             return jobInfo;
         }
 
@@ -464,7 +464,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 }
                 else
                 {
-                    message = $"Failed to keep alive for job {jobInfo.Id}, the job message is not found.";
+                    message = $"Failed to keep alive for job {jobInfo.Id}, the job message has been completed.";
                     _logger.LogInformation(message);
                 }
 
@@ -617,7 +617,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateOrDeleteMessageNotFoundErrorCode))
             {
-                _logger.LogWarning($"Failed to delete message, the message {jobLockEntity.GetString(JobLockEntityProperties.JobMessageId)} does not exist.");
+                _logger.LogInformation(ex, $"Failed to delete message, the message {jobLockEntity.GetString(JobLockEntityProperties.JobMessageId)} does not exist.");
             }
 
             // step 7: cancel jobs if requested
@@ -667,7 +667,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.GetEntityNotFoundErrorCode))
             {
-                _logger.LogWarning(ex, "Failed to get job id entity, the entity doesn't exist, will create one.");
+                _logger.LogInformation(ex, "Failed to get job id entity, the entity doesn't exist, will create one.");
 
                 // create new entity if not exist
                 var initialJobIdEntity = new JobIdEntity
@@ -683,7 +683,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 }
                 catch (RequestFailedException exception) when (IsSpecifiedErrorCode(exception, AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode))
                 {
-                    _logger.LogWarning(exception, "Failed to add job id entity, the entity already exists.");
+                    _logger.LogInformation(exception, "Failed to add job id entity, the entity already exists.");
                 }
 
                 // get the job id entity again
@@ -704,7 +704,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateEntityPreconditionFailedErrorCode))
             {
-                _logger.LogWarning(ex, "Update job id entity conflicts, will try again.");
+                _logger.LogInformation(ex, "Update job id entity conflicts, will try again.");
 
                 // try to get job ids again
                 result = await GetIncrementalJobIds(queueType, count, cancellationToken);

@@ -77,8 +77,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError(string.Format("Create search Uri failed, Reason: '{reason}'", ex));
-                _logger.LogInformation(ex, "Create search Uri failed, Reason: '{reason}'", ex);
+                _diagnosticLogger.LogError(string.Format("Create search Uri failed, Reason: '{reason}'", ex.Message));
+                _logger.LogInformation(ex, "Create search Uri failed, Reason: '{reason}'", ex.Message);
                 throw new FhirSearchException("Create search Uri failed", ex);
             }
 
@@ -100,8 +100,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 }
                 catch (Exception ex)
                 {
-                    _diagnosticLogger.LogError(string.Format("Get fhir server access token failed, Reason: '{reason}'", ex));
-                    _logger.LogInformation(ex, "Get fhir server access token failed, Reason: '{reason}'", ex);
+                    _diagnosticLogger.LogError(string.Format("Get fhir server access token failed, Reason: '{reason}'", ex.Message));
+                    _logger.LogInformation(ex, "Get fhir server access token failed, Reason: '{reason}'", ex.Message);
                     throw new FhirSearchException("Get fhir server access token failed", ex);
                 }
             }
@@ -126,8 +126,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError($"Create search Uri failed, Reason: '{ex}'");
-                _logger.LogInformation(ex, "Create search Uri failed, Reason: '{reason}'", ex);
+                _diagnosticLogger.LogError($"Create search Uri failed, Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, "Create search Uri failed, Reason: '{reason}'", ex.Message);
                 throw new FhirSearchException("Create search Uri failed", ex);
             }
 
@@ -225,8 +225,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError("Unhandeled error while searching from FHIR server.");
-                _logger.LogError(ex, "Unhandeled error while searching from FHIR server.");
+                _diagnosticLogger.LogError($"Unknown error while searching from FHIR server. Reason: {ex.Message}");
+                _logger.LogError(ex, "Unhandled error while searching from FHIR server. Reason: {0}", ex.Message);
                 throw;
             }
         }
@@ -270,8 +270,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError("Unhandeled error while searching from FHIR server.");
-                _logger.LogError(ex, "Unhandeled error while searching from FHIR server.");
+                _diagnosticLogger.LogError($"Unknown error while searching from FHIR server. Reason: {ex.Message}");
+                _logger.LogError(ex, "Unhandled error while searching from FHIR server. Reason: {0}", ex.Message);
                 throw;
             }
         }
