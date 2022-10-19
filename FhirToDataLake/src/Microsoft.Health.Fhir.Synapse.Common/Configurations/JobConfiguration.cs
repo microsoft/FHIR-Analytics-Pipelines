@@ -72,5 +72,17 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         // TODO: don't expose to PaaS
         [JsonProperty("endTime")]
         public DateTimeOffset? EndTime { get; set; }
+
+        /// <summary>
+        /// Max running job count in an instance.
+        /// </summary>
+        [JsonProperty("maxRunningJobCount ")]
+        public int MaxRunningJobCount { get; set; } = 10;
+
+        /// <summary>
+        /// Max queued job count per orchestration job.
+        /// </summary>
+        [JsonProperty("maxQueuedJobCountPerOrchestration")]
+        public int MaxQueuedJobCountPerOrchestration { get; set; } = 100;
     }
 }

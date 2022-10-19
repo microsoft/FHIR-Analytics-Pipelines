@@ -1,47 +1,19 @@
-// -------------------------------------------------------------------------------------------------
+﻿// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValidators;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
-using Microsoft.Health.Fhir.Synapse.Common.Extensions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Xunit;
 
-namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
+namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Configurations.ConfigurationValidators
 {
-    public class ServiceCollectionExtensionsTests
+    public class ValidatorUtilityTests
     {
-        private static readonly Dictionary<string, string> TestValidConfiguration = new Dictionary<string, string>
-        {
-            { "fhirServer:serverUrl", "https://test.fhir.azurehealthcareapis.com" },
-            { "dataLakeStore:storageUrl", "https://test.blob.core.windows.net/" },
-            { "job:jobInfoTableName", "jobinfotable" },
-            { "job:metadataTableName", "metadatatable" },
-            { "job:jobInfoQueueName", "jobinfoqueue" },
-            { "job:containerName", "fhir" },
-            { "job:queueUrl", "UseDevelopmentStorage=true" },
-            { "job:tableUrl", "UseDevelopmentStorage=true" },
-            { "job:schedulerCronExpression", "5 * * * * *" },
-            { "job:queueType", "FhirToDataLake" },
-        };
-
-        public static IEnumerable<object[]> GetInvalidServiceConfiguration()
-        {
-            yield return new object[] { "fhirServer:serverUrl", string.Empty };
-            yield return new object[] { "job:containerName", string.Empty };
-            yield return new object[] { "dataLakeStore:storageUrl", string.Empty };
-            yield return new object[] { "fhirServer:version", "invalidVersion" };
-            yield return new object[] { "job:startTime", "invalidDataTime" };
-            yield return new object[] { "filter:filterScope", "invalidScope" };
-            yield return new object[] { "schema:schemaImageReference", 12345 };
-        }
-
         public static IEnumerable<object[]> GetInvalidImageReference()
         {
             yield return new object[] { "testacr.azurecr.io@v1" };
@@ -109,35 +81,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             yield return new object[] { "agent685c4e36859149cdb88e9a1b75485d7b" };
         }
 
-        [Theory]
-        [MemberData(nameof(GetInvalidServiceConfiguration))]
-        public void GivenInvalidServiceCollectionConfiguration_WhenValidate_ExceptionShouldBeThrown(string configKey, string configValue)
-        {
-            var config = new Dictionary<string, string>(TestValidConfiguration);
-            config[configKey] = configValue;
-
-            var builder = new ConfigurationBuilder();
-            builder.AddInMemoryCollection(config);
-            var serviceCollection = new ServiceCollection();
-            RegistryConfiguration(serviceCollection, builder.Build());
-
-            Assert.Throws<ConfigurationErrorException>(() => serviceCollection.ValidateConfiguration());
-        }
-
-        [Fact]
-        public void GivenValidServiceCollectionConfiguration_WhenValidate_NoExceptionShouldBeThrown()
-        {
-            var builder = new ConfigurationBuilder();
-            builder.AddInMemoryCollection(TestValidConfiguration);
-            var config = builder.Build();
-
-            var serviceCollection = new ServiceCollection();
-            RegistryConfiguration(serviceCollection, config);
-
-            var exception = Record.Exception(() => serviceCollection.ValidateConfiguration());
-            Assert.Null(exception);
-        }
-
         [Fact]
         public void GivenInvalidFilterConfiguration_WhenValidate_ExceptionShouldBeThrown()
         {
@@ -147,21 +90,21 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
                 GroupId = string.Empty,
             };
 
-            Assert.Throws<ConfigurationErrorException>(() => ServiceCollectionExtensions.ValidateFilterConfiguration(config));
+            Assert.Throws<ConfigurationErrorException>(() => ValidateUtility.ValidateFilterConfiguration(config));
         }
 
         [Theory]
         [MemberData(nameof(GetInValidQueueOrTableName))]
         public void GivenInvalidAgentName_WhenValidate_ExceptionShouldBeThrown(string name)
         {
-            Assert.Throws<ConfigurationErrorException>(() => ServiceCollectionExtensions.ValidateQueueOrTableName(name));
+            Assert.Throws<ConfigurationErrorException>(() => ValidateUtility.ValidateQueueOrTableName(name));
         }
 
         [Theory]
         [MemberData(nameof(GetValidTableOrQueueName))]
         public void GivenValidAgentName_WhenValidate_NoExceptionShouldBeThrown(string name)
         {
-            var exception = Record.Exception(() => ServiceCollectionExtensions.ValidateQueueOrTableName(name));
+            var exception = Record.Exception(() => ValidateUtility.ValidateQueueOrTableName(name));
             Assert.Null(exception);
         }
 
@@ -169,33 +112,15 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
         [MemberData(nameof(GetInvalidImageReference))]
         public void GivenInvalidImageReference_WhenValidate_ExceptionShouldBeThrown(string imageReference)
         {
-            Assert.Throws<ConfigurationErrorException>(() => ServiceCollectionExtensions.ValidateImageReference(imageReference));
+            Assert.Throws<ConfigurationErrorException>(() => ValidateUtility.ValidateImageReference(imageReference));
         }
 
         [Theory]
         [MemberData(nameof(GetValidImageReference))]
         public void GivenValidImageReference_WhenValidate_NoExceptionShouldBeThrown(string imageReference)
         {
-            var exception = Record.Exception(() => ServiceCollectionExtensions.ValidateImageReference(imageReference));
+            var exception = Record.Exception(() => ValidateUtility.ValidateImageReference(imageReference));
             Assert.Null(exception);
-        }
-
-        private static void RegistryConfiguration(IServiceCollection services, IConfigurationRoot configuration)
-        {
-            services.Configure<FhirServerConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options));
-            services.Configure<JobConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.JobConfigurationKey).Bind(options));
-            services.Configure<FilterConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.FilterConfigurationKey).Bind(options));
-            services.Configure<DataLakeStoreConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.DataLakeStoreConfigurationKey).Bind(options));
-            services.Configure<ArrowConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.ArrowConfigurationKey).Bind(options));
-            services.Configure<JobSchedulerConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.SchedulerConfigurationKey).Bind(options));
-            services.Configure<SchemaConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey).Bind(options));
         }
     }
 }

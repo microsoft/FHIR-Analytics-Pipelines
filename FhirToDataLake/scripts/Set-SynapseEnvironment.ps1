@@ -294,7 +294,7 @@ function New-TableAndViewsForResources
 
         # Create TABLES and VIEWs for resouces
         Write-Host " -> Begin to execute script '$filePath'"
-        Start-Retryable-Job -Name $JobName -ScriptBlock{
+        Start-Job -Name $JobName -ScriptBlock{
             Invoke-Sqlcmd `
                 -ServerInstance $args[0] `
                 -Database $args[1] `
@@ -303,7 +303,7 @@ function New-TableAndViewsForResources
                 -ConnectionTimeout 120 `
                 -ErrorAction Stop
             Write-Host " -> Finished executing script '$($args[3])'"
-        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $filePath
+        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $filePath | Out-Null
     }
 
     foreach ($finishedJob in (Get-Job -Name $JobName | Wait-Job)) {
@@ -354,7 +354,7 @@ function Get-OrasExeApp {
 
     Execute_File -fileName 'tar' -argumentList $unpackParameters
 
-    Copy-Item "$orasDirectoryPath\$orasAppPath" -Destination "."
+    Copy-Item "$orasDirectoryPath/$orasAppPath" -Destination "."
     Remove-Item $orasGzFile
     Write-Host "Finish download oras application from $orasUrl" -ForegroundColor Green 
 }
@@ -371,7 +371,7 @@ function Get-CustomizedSchemaImage {
         $schemaImageReference
     )
     
-    Execute_File -fileName ".\$orasAppPath" -argumentList $orasParameters
+    Execute_File -fileName "./$orasAppPath" -argumentList $orasParameters
 
     $compressPackages = Get-ChildItem -Path * -Include '*.tar.gz' -Name
     Write-Host "Successfully pull the customized schema image: $compressPackages" -ForegroundColor Green
@@ -463,7 +463,7 @@ function New-CustomizedTables
         $sql = Get-CustomizedTableSql -schemaType $schemaType -schemaObject $schemaObject -ErrorAction stop
 
         Write-Host "Begin to create customized table for $schemaType" -ForegroundColor Green 
-        Start-Retryable-Job -Name $JobName -ScriptBlock{
+        Start-Job -Name $JobName -ScriptBlock{
             Invoke-Sqlcmd `
                 -ServerInstance $args[0] `
                 -Database $args[1] `
@@ -472,7 +472,7 @@ function New-CustomizedTables
                 -ConnectionTimeout 120 `
                 -ErrorAction Stop
             Write-Host "Finished creating customized table for $($args[4])"
-        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $sql, $schemaType
+        } -ArgumentList $serviceEndpoint, $databaseName, $sqlAccessToken, $sql, $schemaType  | Out-Null
     }
 
     foreach ($finishedJob in (Get-Job -Name $JobName | Wait-Job)) {

@@ -17,7 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
             _client = client;
         }
 
-        public IAzureBlobContainerClient Create(string storeUrl, string containerName, TokenCredentialTypes type = TokenCredentialTypes.Internal)
+        public IAzureBlobContainerClient Create(string storeUrl, string containerName)
         {
             return _client;
         }

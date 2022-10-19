@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using DotLiquid;
@@ -16,6 +17,7 @@ using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.TemplateManagement;
 using Microsoft.Health.Fhir.TemplateManagement.Exceptions;
 using Microsoft.Health.Fhir.TemplateManagement.Models;
+using Polly;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
 {
@@ -66,7 +68,18 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             try
             {
                 var provider = _templateCollectionProviderFactory.CreateTemplateCollectionProvider(schemaImageReference, accessToken);
-                return await provider.GetTemplateCollectionAsync(cancellationToken);
+
+                // "TemplateManagementException" is base exception for "ContainerRegistryAuthenticationException" and "ImageFetchException"
+                return await Policy
+                  .Handle<TemplateManagementException>()
+                  .WaitAndRetryAsync(
+                    3,
+                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                    onRetry: (exception, timeSpan, retryCount, context) =>
+                    {
+                        _logger.LogWarning(exception, "Failed to get template collection from {Image}. Retry {RetryCount}.", schemaImageReference, retryCount);
+                    })
+                  .ExecuteAsync(() => provider.GetTemplateCollectionAsync(cancellationToken));
             }
             catch (ContainerRegistryAuthenticationException authEx)
             {

@@ -3,16 +3,16 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Newtonsoft.Json;
-
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 {
-    public class JobSchedulerConfiguration
+    /// <summary>
+    /// Supported versions for configurations.
+    /// </summary>
+    public enum SupportedConfigVersion
     {
         /// <summary>
-        /// How many resource types to proceed in parallel.
+        /// First version.
         /// </summary>
-        [JsonProperty("maxConcurrencyCount")]
-        public int MaxConcurrencyCount { get; set; } = 10;
+        V1 = 1,
     }
 }

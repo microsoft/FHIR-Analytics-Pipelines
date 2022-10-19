@@ -32,11 +32,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         public const string ContinuationKey = "ct";
 
         /// <summary>
-        /// Sort search parameter.
-        /// </summary>
-        public const string SortKey = "_sort";
-
-        /// <summary>
         /// Type search parameter.
         /// </summary>
         public const string TypeKey = "_type";

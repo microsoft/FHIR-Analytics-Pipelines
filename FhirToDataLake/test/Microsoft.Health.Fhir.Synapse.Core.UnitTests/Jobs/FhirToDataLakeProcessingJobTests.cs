@@ -70,6 +70,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(3, result.SearchCount["Patient"]);
             Assert.Equal(3, result.ProcessedCount["Patient"]);
             Assert.Equal(0, result.SkippedCount["Patient"]);
+            Assert.Equal(52314, result.ProcessedDataSizeInTotal);
+            Assert.Equal(3, result.ProcessedCountInTotal);
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));
             var progressForContext = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(progressResult);
@@ -77,6 +79,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(progressForContext.SearchCount["Patient"], result.SearchCount["Patient"]);
             Assert.Equal(progressForContext.ProcessedCount["Patient"], result.ProcessedCount["Patient"]);
             Assert.Equal(progressForContext.SkippedCount["Patient"], result.SkippedCount["Patient"]);
+            Assert.Equal(progressForContext.ProcessedDataSizeInTotal, result.ProcessedDataSizeInTotal);
+            Assert.Equal(progressForContext.ProcessedCountInTotal, result.ProcessedCountInTotal);
 
             // verify blob data;
             var blobs = await blobClient.ListBlobsAsync("staging");

@@ -6,6 +6,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -21,6 +22,7 @@ using Microsoft.Health.Fhir.TemplateManagement.Exceptions;
 using Microsoft.Health.Fhir.TemplateManagement.Models;
 using Microsoft.Health.Fhir.TemplateManagement.Utilities;
 using Newtonsoft.Json;
+using Polly;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
@@ -76,7 +78,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             {
                 AcrClient client = new AcrClient(imageInfo.Registry, accessToken);
                 var filterConfigurationProvider = new OciArtifactProvider(imageInfo, client);
-                var acrImage = await filterConfigurationProvider.GetOciArtifactAsync(cancellationToken);
+                var acrImage = await Policy
+                  .Handle<TemplateManagementException>()
+                  .WaitAndRetryAsync(
+                    3,
+                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                    onRetry: (exception, timeSpan, retryCount, context) =>
+                    {
+                        _logger.LogWarning(exception, "Failed to get image {Image} from Container Registry. Retry {RetryCount}.", _imageReference, retryCount);
+                    })
+                  .ExecuteAsync(() => filterConfigurationProvider.GetOciArtifactAsync(cancellationToken));
 
                 var blobsSize = acrImage.Blobs.Count;
                 for (var i = blobsSize - 1; i >= 0; i--)

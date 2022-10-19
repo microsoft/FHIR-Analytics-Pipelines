@@ -10,6 +10,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 {
     public static class ConfigurationConstants
     {
+        public const string ConfigVersionKey = "configVersion";
+
         public const string JobConfigurationKey = "job";
 
         public const string FilterConfigurationKey = "filter";
@@ -37,5 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 
         // Currently the pipeline support FHIR R4 and R5 schemas.
         public static readonly HashSet<FhirVersion> SupportedFhirVersions = new () { FhirVersion.R4, FhirVersion.R5 };
+
+        public const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
     }
 }

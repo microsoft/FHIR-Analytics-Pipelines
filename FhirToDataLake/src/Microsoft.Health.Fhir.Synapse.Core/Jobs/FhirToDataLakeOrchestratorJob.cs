@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 using Azure;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
@@ -43,10 +43,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IQueueClient _queueClient;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly IMetadataStore _metadataStore;
-        private readonly JobSchedulerConfiguration _schedulerConfiguration;
         private readonly IFilterManager _filterManager;
+        private readonly int _maxJobCountInRunningPool;
         private readonly ILogger<FhirToDataLakeOrchestratorJob> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
+        private readonly IMetricsLogger _metricsLogger;
 
         private FhirToDataLakeOrchestratorJobResult _result;
 
@@ -60,7 +61,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IGroupMemberExtractor groupMemberExtractor,
             IFilterManager filterManager,
             IMetadataStore metadataStore,
-            JobSchedulerConfiguration schedulerConfiguration,
+            int maxJobCountInRunningPool,
+            IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
             ILogger<FhirToDataLakeOrchestratorJob> logger)
         {
@@ -73,8 +75,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
-            _schedulerConfiguration = EnsureArg.IsNotNull(schedulerConfiguration, nameof(schedulerConfiguration));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
+            _maxJobCountInRunningPool = maxJobCountInRunningPool;
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
@@ -109,7 +112,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 await foreach (var input in inputs.WithCancellation(cancellationToken))
                 {
-                    while (_result.RunningJobIds.Count > _schedulerConfiguration.MaxConcurrencyCount)
+                    while (_result.RunningJobIds.Count >= _maxJobCountInRunningPool)
                     {
                         await WaitRunningJobComplete(progress, cancellationToken);
                     }
@@ -382,6 +385,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 _result.ProcessedResourceCounts.ConcatDictionaryCount(processingJobResult.ProcessedCount);
                             _result.SkippedResourceCounts =
                                 _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
+                            _result.ProcessedCountInTotal += processingJobResult.ProcessedCountInTotal;
+                            _result.ProcessedDataSizeInTotal += processingJobResult.ProcessedDataSizeInTotal;
+
+                            // log metrics
+                            _metricsLogger.LogSuccessfulResourceCountMetric(processingJobResult.ProcessedCountInTotal);
+                            _metricsLogger.LogSuccessfulDataSizeMetric(processingJobResult.ProcessedDataSizeInTotal);
 
                             if (await _filterManager.GetFilterScopeAsync(cancellationToken) == FilterScope.Group)
                             {
