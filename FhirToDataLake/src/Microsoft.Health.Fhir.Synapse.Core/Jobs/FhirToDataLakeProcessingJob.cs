@@ -88,7 +88,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         // the processing job status is never set to failed or cancelled.
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation($"Start executing job {_jobId}.");
             _logger.LogInformation($"Start executing processing job {_jobId}.");
 
             try
@@ -139,14 +138,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 progress.Report(JsonConvert.SerializeObject(_result));
 
-                _diagnosticLogger.LogInformation($"Finished job '{_jobId}'.");
                 _logger.LogInformation($"Finished processing job '{_jobId}'.");
 
                 return JsonConvert.SerializeObject(_result);
             }
             catch (TaskCanceledException taskCanceledEx)
             {
-                _diagnosticLogger.LogError($"Job {_jobId} is canceled.");
                 _logger.LogInformation(taskCanceledEx, "Processing job {0} is canceled.", _jobId);
 
                 await CleanResourceAsync(CancellationToken.None);
@@ -155,7 +152,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (OperationCanceledException operationCanceledEx)
             {
-                _diagnosticLogger.LogError($"Job {_jobId} is canceled.");
                 _logger.LogInformation(operationCanceledEx, "Processing job {0} is canceled.", _jobId);
 
                 await CleanResourceAsync(CancellationToken.None);
@@ -165,7 +161,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (RetriableJobException retriableJobEx)
             {
                 // always throw RetriableJobException
-                _diagnosticLogger.LogError($"Error in job {_jobId}.");
                 _logger.LogInformation(retriableJobEx, "Error in processing job {0}. Reason : {1}", _jobId, retriableJobEx.Message);
 
                 await CleanResourceAsync(CancellationToken.None);
@@ -175,7 +170,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (SynapsePipelineExternalException synapsePipelineEx)
             {
                 // Customer exceptions.
-                _diagnosticLogger.LogError($"Error in job {_jobId}.");
                 _logger.LogInformation(synapsePipelineEx, "Error in data processing job {0}. Reason:{1}", _jobId, synapsePipelineEx.Message);
 
                 await CleanResourceAsync(CancellationToken.None);
@@ -185,7 +179,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (Exception ex)
             {
                 // Unhandled exceptions.
-                _diagnosticLogger.LogError($"Unknown error occurred in job {_jobId}.");
                 _logger.LogError(ex, "Unhandled error occurred in data processing job {0}. Reason : {1}", _jobId, ex.Message);
                 await CleanResourceAsync(CancellationToken.None);
 

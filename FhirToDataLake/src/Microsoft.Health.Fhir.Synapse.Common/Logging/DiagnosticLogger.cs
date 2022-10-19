@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
+using System.Diagnostics;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Logging
 {
@@ -11,17 +11,17 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Logging
     {
         public void LogInformation(string message)
         {
-            Console.WriteLine("Info: " + message);
+            Debug.WriteLine("Info: " + message);
         }
 
         public void LogWarning(string message)
         {
-            Console.WriteLine("Warning: " + message);
+            Debug.WriteLine("Warning: " + message);
         }
 
         public void LogError(string errorMessage)
         {
-            Console.WriteLine("Error: " + errorMessage);
+            Debug.WriteLine("Error: " + errorMessage);
         }
     }
 }
