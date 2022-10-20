@@ -38,10 +38,10 @@
 Param(
     [parameter(Mandatory=$true)]
     [string]$SynapseWorkspaceName,
-    [string]$Database = "dicomdb2",
+    [string]$Database = "dicomdb3",
     [parameter(Mandatory=$true)]
     [string]$StorageName,
-    [string]$Container = "dicom2",
+    [string]$Container = "dicom3",
     [string]$ResultPath = "result",
     [string]$FhirVersion = "DICOM",
     [string]$SqlScriptCollectionPath = "sql",
@@ -423,7 +423,7 @@ function Get-CustomizedTableSql {
         $customizedTableProperties += "    [$($property.Name)] $sqlType,"
     }
 
-    $createCustomizedTableSql = "CREATE EXTERNAL TABLE [fhir].[$schemaType] (
+    $createCustomizedTableSql = "CREATE EXTERNAL TABLE [dicom].[$schemaType] (
         $customizedTableProperties
         ) WITH (
             LOCATION='/$schemaType/**',
