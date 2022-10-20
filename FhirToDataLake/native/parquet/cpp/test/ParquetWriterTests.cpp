@@ -12,7 +12,7 @@ TEST (ParquetWriter, RegisterVailidSchema)
     EXPECT_EQ(0, schemaStatus);
 }
 
-TEST (ParquetWriter, RegisterInvalidContentSchema)
+TEST (ParquetWriter, RegisterInvalidSchemaContent)
 {
     string resourceType = "Patient";
     string invalidSchema = "invalid json";
@@ -27,7 +27,7 @@ TEST (ParquetWriter, RegisterInvalidContentSchema)
     EXPECT_EQ(11001, schemaStatus);
 }
 
-TEST (ParquetWriter, RegisterInvalidKeySchema)
+TEST (ParquetWriter, RegisterInvalidSchemaKey)
 {
     string exampleSchema = read_file_text(TestDataDir + "patient_example_schema.json");
     ParquetWriter writer;

@@ -14,14 +14,25 @@ namespace Microsoft.Health.Parquet.UnitTests
     public class ParquetConverterTests
     {
         private const string PatientResourceType = "Patient";
-        private const string InputPatientFile = "./TestData/Patient.ndjson";
-        private const string SchemaFile = "./TestData/patient_example_schema.json";
-        private const string ExpectedPatientParquetFile = "./TestData/Expected/expected_patient.parquet";
 
-        [Fact]
-        public void GivenInvalidSchemaFile_WhenInitializeSchema_ExceptionShouldBeThrown()
+        [Theory]
+        [InlineData("Invalid Json")]
+        [InlineData("")]
+        [InlineData(" ")]
+        [InlineData(null)]
+        public void GivenInvalidSchemaContent_WhenInitializeSchemaSet_ExceptionShouldBeThrown(string invalidSchema)
         {
-            var invalidSchemaMap = new Dictionary<string, string> { { PatientResourceType, "Invalid json" } };
+            var invalidSchemaMap = new Dictionary<string, string> { { PatientResourceType, invalidSchema } };
+            var exception = Assert.Throws<ParquetException>(() => ParquetConverter.CreateWithSchemaSet(invalidSchemaMap));
+            Assert.Equal("Parse given schema failed.", exception.Message);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void GivenInvalidSchemaKey_WhenInitializeSchemaSet_ExceptionShouldBeThrown(string invalidSchemaKey)
+        {
+            var invalidSchemaMap = new Dictionary<string, string> { { invalidSchemaKey, File.ReadAllText(TestConstants.SchemaFile) } };
             var exception = Assert.Throws<ParquetException>(() => ParquetConverter.CreateWithSchemaSet(invalidSchemaMap));
             Assert.Equal("Parse given schema failed.", exception.Message);
         }
@@ -30,7 +41,7 @@ namespace Microsoft.Health.Parquet.UnitTests
         public void GivenNoSchemaFile_WhenConvertingToJson_ExceptionShouldBeThrown()
         {
             var parquetConverter = new ParquetConverter();
-            string jsonInput = File.ReadAllText(InputPatientFile);
+            string jsonInput = File.ReadAllText(TestConstants.InputPatientFile);
             var exception = Assert.Throws<ParquetException>(() => parquetConverter.ConvertJsonToParquet(PatientResourceType, jsonInput));
             Assert.StartsWith("Target schema is not found.", exception.Message);
         }
@@ -41,7 +52,7 @@ namespace Microsoft.Health.Parquet.UnitTests
         [InlineData("#@!asdasd(*&^")]
         public void GivenInvalidPatient_WhenConvertingToJson_ExceptionShouldBeThrown(string patient)
         {
-            var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, File.ReadAllText(SchemaFile) } };
+            var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, File.ReadAllText(TestConstants.SchemaFile) } };
             var parquetConverter = ParquetConverter.CreateWithSchemaSet(validSchemaMap);
 
             var exception = Assert.Throws<ParquetException>(() => parquetConverter.ConvertJsonToParquet(PatientResourceType, patient));
@@ -51,11 +62,11 @@ namespace Microsoft.Health.Parquet.UnitTests
         [Fact]
         public void GivenValidPatient_WhenConvertingToJson_ResultShouldBeReturned()
         {
-            var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, File.ReadAllText(SchemaFile) } };
+            var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, File.ReadAllText(TestConstants.SchemaFile) } };
             var parquetConverter = ParquetConverter.CreateWithSchemaSet(validSchemaMap);
 
-            using var stream = parquetConverter.ConvertJsonToParquet(PatientResourceType, File.ReadAllText(InputPatientFile));
-            var expectedHash = GetFileHash(ExpectedPatientParquetFile);
+            using var stream = parquetConverter.ConvertJsonToParquet(PatientResourceType, File.ReadAllText(TestConstants.InputPatientFile));
+            var expectedHash = GetFileHash(TestConstants.ExpectedPatientParquetFile);
             var streamHash = GetStreamHash(stream);
             Assert.Equal(expectedHash, streamHash);
         }

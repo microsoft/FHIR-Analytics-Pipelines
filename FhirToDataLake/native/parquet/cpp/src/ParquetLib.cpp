@@ -17,6 +17,11 @@ void DestroyParquetWriter(ParquetWriter* writer)
 // Register parquet schema data with given key (resource type)
 int RegisterParquetSchema(ParquetWriter* writer, const char* schemaKey, const char* schemaData)
 {
+    if (schemaKey == nullptr || schemaData == nullptr)
+    {
+        return ParseParquetSchemaError;
+    }
+
     string key = schemaKey;
     string data = schemaData;
     return writer->RegisterSchema(key, data);

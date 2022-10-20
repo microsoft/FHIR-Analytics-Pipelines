@@ -39,6 +39,9 @@ TEST (ParquetLib, RegisterEmptyOrWhiteSpaceContentParquetSchema)
     schemaStatus = RegisterParquetSchema(writer, resourceType.data(), whiteSpaceSchema.data());
     EXPECT_EQ(11001, schemaStatus);
 
+    schemaStatus = RegisterParquetSchema(writer, resourceType.data(), nullptr);
+    EXPECT_EQ(11001, schemaStatus);
+
     DestroyParquetWriter(writer);
 }
 
@@ -55,6 +58,8 @@ TEST (ParquetLib, RegisterEmptyOrWhiteSpaceKeyParquetSchema)
     schemaStatus = RegisterParquetSchema(writer, whiteSpaceResourceType.data(), exampleSchema.data());
     EXPECT_EQ(11001, schemaStatus);
 
+    schemaStatus = RegisterParquetSchema(writer, nullptr, exampleSchema.data());
+    EXPECT_EQ(11001, schemaStatus);
     DestroyParquetWriter(writer);
 }
 
