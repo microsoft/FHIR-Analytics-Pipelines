@@ -22,7 +22,7 @@ int RegisterParquetSchema(ParquetWriter* writer, const char* schemaKey, const ch
     return writer->RegisterSchema(key, data);
 }
 
-// Convert input json data to output parquet stream. G
+// Convert input json data to output parquet stream.
 // Here we need to allocate a byte array for output stream in outputData[0] manually because the target output length is determined after computation.
 int ConvertJsonToParquet(ParquetWriter* writer, const char* schemaKey, const char* inputJson, int inputLength, byte** outputData, int *outputLength, char* errorMessage)
 {

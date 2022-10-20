@@ -12,21 +12,29 @@ TEST (ParquetWriter, RegisterVailidSchema)
     EXPECT_EQ(0, schemaStatus);
 }
 
-TEST (ParquetWriter, RegisterInvalidSchema)
+TEST (ParquetWriter, RegisterInvalidContentSchema)
 {
     string resourceType = "Patient";
-    string exampleSchema = "invalid json";
+    string invalidSchema = "invalid json";
     ParquetWriter writer;
-    int schemaStatus = writer.RegisterSchema(resourceType, exampleSchema);
+    int schemaStatus = writer.RegisterSchema(resourceType, invalidSchema);
+    EXPECT_EQ(11001, schemaStatus);
+
+    schemaStatus = writer.RegisterSchema(resourceType, "");
+    EXPECT_EQ(11001, schemaStatus);
+
+    schemaStatus = writer.RegisterSchema(resourceType, " ");
     EXPECT_EQ(11001, schemaStatus);
 }
 
-TEST (ParquetWriter, RegisterEmptySchema)
+TEST (ParquetWriter, RegisterInvalidKeySchema)
 {
-    string resourceType = "Patient";
-    string exampleSchema = "";
+    string exampleSchema = read_file_text(TestDataDir + "patient_example_schema.json");
     ParquetWriter writer;
-    int schemaStatus = writer.RegisterSchema(resourceType, exampleSchema);
+    int schemaStatus = writer.RegisterSchema("", exampleSchema);
+    EXPECT_EQ(11001, schemaStatus);
+
+    schemaStatus = writer.RegisterSchema(" ", exampleSchema);
     EXPECT_EQ(11001, schemaStatus);
 }
 

@@ -14,7 +14,7 @@ TEST (ParquetLib, RegisterVailidParquetSchema)
     DestroyParquetWriter(writer);
 }
 
-TEST (ParquetLib, RegisterInvalidParquetSchema)
+TEST (ParquetLib, RegisterInvalidContentParquetSchema)
 {
     ParquetWriter* writer = CreateParquetWriter();
 
@@ -26,13 +26,33 @@ TEST (ParquetLib, RegisterInvalidParquetSchema)
     DestroyParquetWriter(writer);
 }
 
-TEST (ParquetLib, RegisterEmptyParquetSchema)
+TEST (ParquetLib, RegisterEmptyOrWhiteSpaceContentParquetSchema)
 {
     ParquetWriter* writer = CreateParquetWriter();
 
     string resourceType = "Patient";
-    string exampleSchema = "";
-    int schemaStatus = RegisterParquetSchema(writer, resourceType.data(), exampleSchema.data());
+    string emptySchema = "";
+    int schemaStatus = RegisterParquetSchema(writer, resourceType.data(), emptySchema.data());
+    EXPECT_EQ(11001, schemaStatus);
+
+    string whiteSpaceSchema = " ";
+    schemaStatus = RegisterParquetSchema(writer, resourceType.data(), whiteSpaceSchema.data());
+    EXPECT_EQ(11001, schemaStatus);
+
+    DestroyParquetWriter(writer);
+}
+
+TEST (ParquetLib, RegisterEmptyOrWhiteSpaceKeyParquetSchema)
+{
+    ParquetWriter* writer = CreateParquetWriter();
+
+    string emptyResourceType = "";
+    string exampleSchema = read_file_text(TestDataDir + "patient_example_schema.json");
+    int schemaStatus = RegisterParquetSchema(writer, emptyResourceType.data(), exampleSchema.data());
+    EXPECT_EQ(11001, schemaStatus);
+
+    string whiteSpaceResourceType = " ";
+    schemaStatus = RegisterParquetSchema(writer, whiteSpaceResourceType.data(), exampleSchema.data());
     EXPECT_EQ(11001, schemaStatus);
 
     DestroyParquetWriter(writer);

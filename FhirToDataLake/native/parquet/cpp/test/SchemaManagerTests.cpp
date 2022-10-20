@@ -5,7 +5,7 @@
 
 using namespace std;
 
-TEST (LoadJsonTest, Valid)
+TEST (LoadJsonTest, ValidContent)
 {
     // valid json
     string json = "{\"a\":123}";
@@ -15,7 +15,7 @@ TEST (LoadJsonTest, Valid)
     EXPECT_TRUE(success);
 }
 
-TEST (LoadJsonTest, Empty)
+TEST (LoadJsonTest, EmptyValidContent)
 {
     // empty json
     string json = "";
@@ -25,7 +25,7 @@ TEST (LoadJsonTest, Empty)
     EXPECT_FALSE(success);
 }
 
-TEST (LoadJsonTest, Invalid)
+TEST (LoadJsonTest, InvalidValidContent)
 {
     // invalid json
     string json = "Abcdefg";
@@ -35,7 +35,7 @@ TEST (LoadJsonTest, Invalid)
     EXPECT_FALSE(success);
 }
 
-TEST (SchemaTest, Valid)
+TEST (SchemaTest, AddAndGetValidSchema)
 {
     SchemaManager schemaManager;
     string mockSchema = "{\"Name\": \"Organization\", \"NodePaths\": [\"Organization\"], \"SubNodes\": { \"id\": {\"Name\":\"id\", \"Depth\": 1, \"Type\": \"id\", \"IsLeaf\": true, \"IsRepeated\": false}}, \"Type\": \"Organization\", \"IsRepeated\": false}";
@@ -48,22 +48,38 @@ TEST (SchemaTest, Valid)
     EXPECT_EQ(1, schema->num_fields());
 }
 
-TEST (SchemaTest, Empty)
+TEST (SchemaTest, AddAndGetEmptySchemaContent)
 {
     SchemaManager schemaManager;
+    string schemaKey = "Empty";
     string empty = "";
-    int status = schemaManager.AddSchema("Empty", empty);
-    auto emptySchema = schemaManager.GetSchema("Empty");
+    int status = schemaManager.AddSchema(schemaKey, empty);
     EXPECT_EQ(11001, status);
+
+    auto emptySchema = schemaManager.GetSchema(schemaKey);
     EXPECT_TRUE(emptySchema == nullptr);
 }
 
-TEST (SchemaTest, Invalid)
+TEST (SchemaTest,  AddAndGetNoneJsonSchemaContent)
 {
     SchemaManager schemaManager;
+    string schemaKey = "Broken";
     string broken = "abc";
-    int status = schemaManager.AddSchema("Broken", broken);
-    auto brokenSchema = schemaManager.GetSchema("Broken");
+    int status = schemaManager.AddSchema(schemaKey, broken);
     EXPECT_EQ(11001, status);
+
+    auto brokenSchema = schemaManager.GetSchema(schemaKey);
     EXPECT_TRUE(brokenSchema == nullptr);
+}
+
+
+TEST (SchemaTest,  AddAndGetEmptyOrWhiteSpaceSchemaKey)
+{
+    SchemaManager schemaManager;
+    string mockSchema = "{\"Name\": \"Organization\", \"NodePaths\": [\"Organization\"], \"SubNodes\": { \"id\": {\"Name\":\"id\", \"Depth\": 1, \"Type\": \"id\", \"IsLeaf\": true, \"IsRepeated\": false}}, \"Type\": \"Organization\", \"IsRepeated\": false}";
+    int status = schemaManager.AddSchema("", mockSchema);
+    EXPECT_EQ(11001, status);
+
+    status = schemaManager.AddSchema(" ", mockSchema);
+    EXPECT_EQ(11001, status);
 }

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Health.Parquet;
 using Xunit;
 
 namespace Microsoft.Health.Parquet.UnitTests
