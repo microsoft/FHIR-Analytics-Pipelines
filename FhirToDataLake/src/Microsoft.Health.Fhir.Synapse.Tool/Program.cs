@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core;
 using Microsoft.Health.Fhir.Synapse.DataClient;
@@ -39,6 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
                         .AddSchema()
                         .AddHealthCheckService()
                         .AddMetricsLogger()
+                        .AddDiagnosticLogger()
                         .AddHostedService<SynapseLinkService>()
                         .AddApplicationInsightsTelemetryWorkerService());
     }

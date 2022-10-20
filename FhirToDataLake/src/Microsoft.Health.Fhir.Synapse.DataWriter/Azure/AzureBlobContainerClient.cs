@@ -11,7 +11,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Core;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
@@ -20,6 +19,7 @@ using Azure.Storage.Files.DataLake.Models;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
@@ -28,6 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
     {
         private readonly ITokenCredentialProvider _credentialProvider;
         private readonly Uri _storageUri;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<AzureBlobContainerClient> _logger;
 
         private readonly object _blobContainerClientLock = new object ();
@@ -46,12 +47,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         public AzureBlobContainerClient(
             Uri storageUri,
             ITokenCredentialProvider credentialProvider,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureBlobContainerClient> logger)
         {
             EnsureArg.IsNotNull(storageUri, nameof(storageUri));
             EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
+            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
             _credentialProvider = credentialProvider;
             _storageUri = storageUri;
@@ -67,12 +71,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         public AzureBlobContainerClient(
             string connectionString,
             string containerName,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureBlobContainerClient> logger)
         {
             EnsureArg.IsNotNull(connectionString, nameof(connectionString));
             EnsureArg.IsNotNull(containerName, nameof(containerName));
+            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
 
             var blobContainerClient = new BlobContainerClient(
@@ -142,7 +149,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Create container {blobContainerClient.Name} failed. Reason: {ex}");
+                _diagnosticLogger.LogError($"Create container {blobContainerClient.Name} failed. Reason: {ex.Message}");
+                _logger.LogInformation(ex, $"Create container {blobContainerClient.Name} failed. Reason: {ex.Message}");
                 throw new AzureBlobOperationFailedException($"Create container {blobContainerClient.Name} failed.", ex);
             }
         }
@@ -156,7 +164,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Check whether blob '{blobName}' exists failed. Reason: '{ex}'");
+                _diagnosticLogger.LogError($"Check whether blob '{blobName}' exists failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"Check whether blob '{blobName}' exists failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"Check whether blob '{blobName}' exists failed.", ex);
             }
         }
@@ -176,7 +185,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"List blob prefix '{blobPrefix}' failed. Reason: '{ex}'");
+                _diagnosticLogger.LogError($"List blob prefix '{blobPrefix}' failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"List blob prefix '{blobPrefix}' failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"List blob prefix '{blobPrefix}' failed.", ex);
             }
         }
@@ -198,7 +208,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Get blob '{blobName}' failed. Reason: '{ex}'");
+                _diagnosticLogger.LogError($"Get blob '{blobName}' failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"Get blob '{blobName}' failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"Get blob '{blobName}' failed.", ex);
             }
         }
@@ -224,7 +235,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Create blob '{blobName}' failed. Reason: '{ex}'");
+                _diagnosticLogger.LogError($"Create blob '{blobName}' failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"Create blob '{blobName}' failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"Create blob '{blobName}' failed.", ex);
             }
         }
@@ -238,7 +250,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Delete blob '{blobName}' failed. Reason: '{ex}'");
+                _diagnosticLogger.LogError($"Delete blob '{blobName}' failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"Delete blob '{blobName}' failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"Delete blob '{blobName}' failed.", ex);
             }
         }
@@ -260,7 +273,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Update blob '{blobName}' failed. Reason: '{ex}'");
+                _diagnosticLogger.LogError($"Update blob '{blobName}' failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"Update blob '{blobName}' failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"Update blob '{blobName}' failed.", ex);
             }
         }
@@ -277,7 +291,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Failed to acquire lease on the blob '{0}'. Reason: '{1}'", blobName, ex);
+                _logger.LogInformation(ex, "Failed to acquire lease on the blob '{0}'. Reason: '{1}'", blobName, ex.Message);
                 return null;
             }
         }
@@ -296,7 +310,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             catch (Exception ex)
             {
                 // When renew lease failed, we should stop the application and exits. So we throw here.
-                _logger.LogWarning("Failed to renew lease on the blob '{0}'. Reason: '{1}'", blobName, ex);
+                _diagnosticLogger.LogError($"Failed to renew lease on the blob '{blobName}'. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, "Failed to renew lease on the blob '{0}'. Reason: '{1}'", blobName, ex.Message);
                 throw new AzureBlobOperationFailedException($"Failed to renew lease on the blob '{blobName}'.", ex);
             }
         }
@@ -314,7 +329,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Failed to release lease on the blob '{0}'. Reason: '{1}'", blobName, ex);
+                _logger.LogInformation(ex, "Failed to release lease on the blob '{0}'. Reason: '{1}'", blobName, ex.Message);
                 return false;
             }
         }
@@ -339,7 +354,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Failed to move blob directory '{0}' to '{1}'. Reason: '{2}'", sourceDirectory, targetDirectory, ex);
+                _diagnosticLogger.LogError($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, "Failed to move blob directory '{0}' to '{1}'. Reason: '{2}'", sourceDirectory, targetDirectory, ex.Message);
                 throw new AzureBlobOperationFailedException($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'.", ex);
             }
         }
@@ -355,7 +371,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Failed to delete blob directory '{0}'. Reason: '{1}'", directory, ex);
+                _diagnosticLogger.LogError($"Failed to delete blob directory '{directory}'. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, "Failed to delete blob directory '{0}'. Reason: '{1}'", directory, ex.Message);
                 throw new AzureBlobOperationFailedException($"Failed to delete blob directory '{directory}'.", ex);
             }
         }
@@ -387,7 +404,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Failed to query paths of directory '{0}'. Reason: '{1}'", directory, ex);
+                    _diagnosticLogger.LogError($"Failed to query paths of directory '{directory}'. Reason: '{ex.Message}'");
+                    _logger.LogInformation(ex, "Failed to query paths of directory '{0}'. Reason: '{1}'", directory, ex.Message);
                     throw new AzureBlobOperationFailedException($"Failed to query paths of directory '{directory}'.", ex);
                 }
 

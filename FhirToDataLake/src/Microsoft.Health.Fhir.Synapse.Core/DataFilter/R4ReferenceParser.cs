@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
@@ -45,7 +46,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         {
             if (string.IsNullOrWhiteSpace(reference))
             {
-                _logger.LogError("The reference string is null or white space.");
+                _logger.LogInformation("The reference string is null or white space.");
                 throw new ReferenceParseException("The reference string is null or white space.");
             }
 
@@ -81,7 +82,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                             if (SupportedSchemes.Contains(baseUri.Scheme, StringComparer.OrdinalIgnoreCase))
                             {
                                 // This is an absolute URL pointing to an external resource.
-                                _logger.LogError($"The reference {reference} is an absolute URL pointing to an external resource.");
+                                _logger.LogInformation($"The reference {reference} is an absolute URL pointing to an external resource.");
                                 throw new ReferenceParseException($"The reference {reference} is an absolute URL pointing to an external resource.");
                             }
                         }
@@ -89,18 +90,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     catch (UriFormatException ex)
                     {
                         // The reference is not a relative reference but is not a valid absolute reference either.
-                        _logger.LogError($"The reference {reference} is not a relative reference but is not a valid absolute reference either. UriFormatException: {ex}.");
+                        _logger.LogInformation(ex, $"The reference {reference} is not a relative reference but is not a valid absolute reference either. UriFormatException: {ex}.");
                         throw new ReferenceParseException($"The reference {reference} is not a relative reference but is not a valid absolute reference either.", ex);
                     }
                 }
                 else
                 {
-                    _logger.LogError($"The resource type {resourceTypeInString} in reference {reference} isn't a known resource type.");
+                    _logger.LogInformation($"The resource type {resourceTypeInString} in reference {reference} isn't a known resource type.");
                     throw new ReferenceParseException($"The resource type {resourceTypeInString} in reference {reference} isn't a known resource type.");
                 }
             }
 
-            _logger.LogError($"Fail to parse reference {reference}.");
+            _logger.LogInformation($"Fail to parse reference {reference}.");
             throw new ReferenceParseException($"Fail to parse reference {reference}.");
         }
     }

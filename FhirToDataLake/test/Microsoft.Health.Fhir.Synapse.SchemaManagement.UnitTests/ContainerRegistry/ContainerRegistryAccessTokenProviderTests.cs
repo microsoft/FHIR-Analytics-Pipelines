@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using NSubstitute;
@@ -64,7 +65,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
 
             // tokenProvider.GetAccessTokenAsync(default, default).ReturnsForAnyArgs("Bearer test");
             var httpClient = new HttpClient(new MockHttpMessageHandler(content, statusCode));
-            return new ContainerRegistryAccessTokenProvider(tokenProvider, httpClient, new NullLogger<ContainerRegistryAccessTokenProvider>());
+            return new ContainerRegistryAccessTokenProvider(tokenProvider, httpClient, new DiagnosticLogger(), new NullLogger<ContainerRegistryAccessTokenProvider>());
         }
 
         internal class MockHttpMessageHandler : HttpMessageHandler

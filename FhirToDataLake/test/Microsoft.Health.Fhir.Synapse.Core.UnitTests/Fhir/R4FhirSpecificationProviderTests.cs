@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
 using Microsoft.Health.Fhir.Synapse.DataClient;
@@ -20,6 +21,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
 {
     public class R4FhirSpecificationProviderTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+
         private IFhirSpecificationProvider _r4FhirSpecificationProvider;
 
         private readonly NullLogger<R4FhirSpecificationProvider> _nullR4FhirSpecificationProviderLogger =
@@ -33,19 +36,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
             dataClient.Search(metadataOptions)
                 .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile));
 
-            _r4FhirSpecificationProvider = new R4FhirSpecificationProvider(dataClient, _nullR4FhirSpecificationProviderLogger);
+            _r4FhirSpecificationProvider = new R4FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR4FhirSpecificationProviderLogger);
         }
 
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new R4FhirSpecificationProvider(null, _nullR4FhirSpecificationProviderLogger));
+                () => new R4FhirSpecificationProvider(null, _diagnosticLogger, _nullR4FhirSpecificationProviderLogger));
 
             var dataClient = Substitute.For<IFhirDataClient>();
 
             Assert.Throws<ArgumentNullException>(
-                () => new R4FhirSpecificationProvider(dataClient, null));
+                () => new R4FhirSpecificationProvider(dataClient, _diagnosticLogger, null));
         }
 
         [Fact]
@@ -54,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
             var dataClient = Substitute.For<IFhirDataClient>();
             dataClient.SearchAsync(default).ThrowsForAnyArgs(new FhirSearchException("mockException"));
             Assert.Throws<FhirSpecificationProviderException>(
-                () => new R4FhirSpecificationProvider(dataClient, _nullR4FhirSpecificationProviderLogger));
+                () => new R4FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR4FhirSpecificationProviderLogger));
         }
 
         [Theory]
@@ -68,7 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
             dataClient.SearchAsync(default).ReturnsForAnyArgs(metadataContent);
 
             Assert.Throws<FhirSpecificationProviderException>(
-                () => new R4FhirSpecificationProvider(dataClient, _nullR4FhirSpecificationProviderLogger));
+                () => new R4FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR4FhirSpecificationProviderLogger));
         }
 
         [Fact]

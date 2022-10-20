@@ -11,6 +11,7 @@ using DotLiquid;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
@@ -66,6 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
             {
                 return new LocalDefaultSchemaProvider(
                     Options.Create(new FhirServerConfiguration()),
+                    new DiagnosticLogger(),
                     NullLogger<LocalDefaultSchemaProvider>.Instance);
             }
             else
@@ -79,6 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
                 return new AcrCustomizedSchemaProvider(
                     GetMockAcrTemplateProvider(testSchemaTemplateCollections),
                     schemaConfigurationOptionWithCustomizedSchema,
+                    new DiagnosticLogger(),
                     NullLogger<AcrCustomizedSchemaProvider>.Instance);
             }
         }

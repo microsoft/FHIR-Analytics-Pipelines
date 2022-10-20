@@ -89,23 +89,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     TableKeyProvider.TriggerPartitionKey(queueType),
                     TableKeyProvider.TriggerRowKey(queueType),
                     cancellationToken: cancellationToken);
+
+                // Todo: test behavior if status is not 200.
                 if (response.GetRawResponse().Status == 200)
                 {
                     entity = response.Value;
                 }
                 else
                 {
-                    _logger.LogError($"Failed to get current trigger entity from table, status {response.GetRawResponse().Status}");
+                    _logger.LogInformation($"Failed to get current trigger entity from table, status {response.GetRawResponse().Status}");
                 }
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
             {
-                _logger.LogWarning("The current trigger doesn't exist, will create a new one.");
+                _logger.LogInformation(ex, "The current trigger doesn't exist, will create a new one.");
             }
             catch (Exception ex)
             {
                 // any exceptions while getting entity will log a error and try next time
-                _logger.LogError($"Failed to get current trigger entity from table, exception: {ex.Message}");
+                _logger.LogError(ex, $"Failed to get current trigger entity from table, exception: {ex.Message}");
                 throw;
             }
 
@@ -126,8 +128,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 var selectedPatients = patientsHash.Skip(i).Take(MaxCountOfQueryEntities).ToList();
                 var jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
-                    filter: TransactionGetByKeys(pk, selectedPatients),
-                    cancellationToken: cancellationToken);
+                        filter: TransactionGetByKeys(pk, selectedPatients),
+                        cancellationToken: cancellationToken);
 
                 await foreach (var pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
                 {
@@ -144,7 +146,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public async Task<Dictionary<string, long>> GetPatientVersionsAsync(byte queueType, CancellationToken cancellationToken = default)
         {
             var patientVersions = new Dictionary<string, long>();
-
             var jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
                 filter: $"PartitionKey eq '{TableKeyProvider.CompartmentPartitionKey(queueType)}'",
                 cancellationToken: cancellationToken);
@@ -196,11 +197,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (RequestFailedException ex) when (IsAuthenticationError(ex))
             {
                 _logger.LogInformation(ex, "Failed to initialize metadata store due to authentication issue.");
-
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to initialize metadata store.");
+                _logger.LogInformation(ex, "Failed to initialize metadata store.");
             }
         }
 

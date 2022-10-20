@@ -4,18 +4,20 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 
-namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Common.Exceptions
 {
-    public class FhirDataParseException : SynapsePipelineExternalException
+    /// <summary>
+    /// Internal resources dependency error.
+    /// </summary>
+    public class SynapsePipelineInternalException : Exception
     {
-        public FhirDataParseException(string message)
+        public SynapsePipelineInternalException(string message)
             : base(message)
         {
         }
 
-        public FhirDataParseException(string message, Exception inner)
+        public SynapsePipelineInternalException(string message, Exception inner)
             : base(message, inner)
         {
         }

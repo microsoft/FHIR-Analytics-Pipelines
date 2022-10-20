@@ -14,7 +14,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
     public class Stu3FhirSpecificationProvider : BaseFhirSpecificationProvider
     {
         public Stu3FhirSpecificationProvider()
-            : base(null, null)
+            : base(null, null, null)
         {
         }
 

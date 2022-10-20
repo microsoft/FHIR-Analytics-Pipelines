@@ -3,23 +3,17 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-
-namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Common.Logging
 {
     /// <summary>
-    /// Failed to start a job.
+    /// Diagnostic logger reports to customer's interface.
     /// </summary>
-    public class StartJobFailedException : Exception
+    public interface IDiagnosticLogger
     {
-        public StartJobFailedException(string message)
-            : base(message)
-        {
-        }
+        public void LogInformation(string message);
 
-        public StartJobFailedException(string message, Exception inner)
-            : base(message, inner)
-        {
-        }
+        public void LogWarning(string message);
+
+        public void LogError(string errorMessage);
     }
 }

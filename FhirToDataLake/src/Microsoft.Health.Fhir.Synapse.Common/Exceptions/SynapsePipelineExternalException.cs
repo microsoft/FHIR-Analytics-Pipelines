@@ -5,18 +5,22 @@
 
 using System;
 
-namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Common.Exceptions
 {
-    public class ExecuteTaskFailedException : Exception
+    /// <summary>
+    /// External resources dependency error.
+    /// </summary>
+    public class SynapsePipelineExternalException : Exception
     {
-        public ExecuteTaskFailedException(string message)
+        public SynapsePipelineExternalException(string message)
             : base(message)
         {
         }
 
-        public ExecuteTaskFailedException(string message, Exception inner)
+        public SynapsePipelineExternalException(string message, Exception inner)
             : base(message, inner)
         {
+
         }
     }
 }

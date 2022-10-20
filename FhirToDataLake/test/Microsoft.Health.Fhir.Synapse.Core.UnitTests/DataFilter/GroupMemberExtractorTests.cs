@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient;
@@ -24,6 +25,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 {
     public class GroupMemberExtractorTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+
         private readonly GroupMemberExtractor _groupMemberExtractor;
 
         private readonly FhirApiDataSource _dataSource;
@@ -80,18 +83,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             var fhirServerOption = Options.Create(fhirServerConfig);
             _dataSource = new FhirApiDataSource(fhirServerOption);
             _referenceParser = new R4ReferenceParser(_dataSource, NullLogger<R4ReferenceParser>.Instance);
-            _groupMemberExtractor = new GroupMemberExtractor(dataClient, _referenceParser, _nullGroupMemberExtractorLogger);
+            _groupMemberExtractor = new GroupMemberExtractor(dataClient, _referenceParser, _diagnosticLogger, _nullGroupMemberExtractorLogger);
         }
 
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new GroupMemberExtractor(null, _referenceParser, _nullGroupMemberExtractorLogger));
+                () => new GroupMemberExtractor(null, _referenceParser, _diagnosticLogger, _nullGroupMemberExtractorLogger));
 
             var dataClient = Substitute.For<IFhirDataClient>();
             Assert.Throws<ArgumentNullException>(
-                () => new GroupMemberExtractor(dataClient, null, _nullGroupMemberExtractorLogger));
+                () => new GroupMemberExtractor(dataClient, null, _diagnosticLogger, _nullGroupMemberExtractorLogger));
         }
 
         [Fact]
@@ -178,7 +181,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         public async Task GivenNoFoundGroupId_WhenGetGroupPatients_ExceptionShouldBeThrown()
         {
             var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_notFoundGroupId, null, _triggerTime, _noneCancellationToken));
-            Assert.StartsWith($"Group {_notFoundGroupId} is not found.", exception.Message);
+            Assert.StartsWith($"Failed to extract group members. Reason: Group {_notFoundGroupId} is not found.", exception.Message);
         }
 
         [Theory]
@@ -188,21 +191,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         public async Task GivenNullOrWhiteSpaceGroupId_WhenGetGroupPatients_ExceptionShouldBeThrown(string groupId)
         {
             var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(groupId, null, _triggerTime, _noneCancellationToken));
-            Assert.Equal($"The input group id is null or white space.", exception.Message);
+            Assert.Equal($"Failed to extract group members. Reason: The input group id is null or white space.", exception.Message);
         }
 
         [Fact]
         public async Task GivenInvalidBundle_WhenGetGroupPatients_ExceptionShouldBeThrown()
         {
             var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_invalidBundle, null, _triggerTime, _noneCancellationToken));
-            Assert.StartsWith($"Failed to parse fhir 'Group' bundle ", exception.Message);
+            Assert.StartsWith($"Failed to extract group members. Reason: Failed to parse fhir 'Group' bundle ", exception.Message);
         }
 
         [Fact]
         public async Task GivenInvalidGroupBundle_WhenGetGroupPatients_ExceptionShouldBeThrown()
         {
             var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_invalidGroup, null, _triggerTime, _noneCancellationToken));
-            Assert.StartsWith($"There are invalid group entries returned: ", exception.Message);
+            Assert.StartsWith($"Failed to extract group members. Reason: There are invalid group entries returned: ", exception.Message);
         }
 
         [Fact]

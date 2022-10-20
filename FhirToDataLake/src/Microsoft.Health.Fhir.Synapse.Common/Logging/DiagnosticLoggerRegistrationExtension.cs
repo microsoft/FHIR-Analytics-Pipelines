@@ -3,16 +3,17 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Common.Logging
 {
-    public class AzureBlobOperationFailedException : SynapsePipelineExternalException
+    public static class DiagnosticLoggerRegistrationExtension
     {
-        public AzureBlobOperationFailedException(string message, Exception inner)
-            : base(message, inner)
+        public static IServiceCollection AddDiagnosticLogger(this IServiceCollection services)
         {
+            services.AddSingleton<IDiagnosticLogger, DiagnosticLogger>();
+
+            return services;
         }
     }
 }

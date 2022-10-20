@@ -11,6 +11,7 @@ using System.Linq;
 using FhirR5::Hl7.Fhir.Model;
 using FhirR5::Hl7.Fhir.Serialization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using R5FhirModelInfo = FhirR5::Hl7.Fhir.Model.ModelInfo;
@@ -35,8 +36,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         // TODO: it is not used now. enable it if we would like do more search parameter validation in pipeline
         private readonly Dictionary<string, SearchParameter> _searchParameterDefinitionLookup;
 
-        public R5FhirSpecificationProvider(IFhirDataClient dataClient, ILogger<R5FhirSpecificationProvider> logger)
-            : base(dataClient, logger)
+        public R5FhirSpecificationProvider(IFhirDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R5FhirSpecificationProvider> logger)
+            : base(dataClient, diagnosticLogger, logger)
         {
             // _searchParameterDefinitionLookup = BuildSearchParameterDefinitionLookup();
         }
@@ -69,7 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             catch (Exception exception)
             {
-                _logger.LogError($"Failed to parse compartment definition from file {compartmentFile}. Reason: {exception.Message}");
+                _logger.LogError(exception, $"Failed to parse compartment definition from file {compartmentFile}. Reason: {exception.Message}");
                 throw new FhirSpecificationProviderException($"Failed to parse compartment definition from file {compartmentFile}.", exception);
             }
 
@@ -79,7 +80,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 var resourceTypes = compartment.Resource?.Where(x => x.Param.Any()).Select(x => x.Code?.ToString()).ToHashSet();
                 if (resourceTypes == null)
                 {
-                    _logger.LogWarning($"There is not any resource type defined for compartment type {compartmentType} in file {compartmentFile}");
+                    _logger.LogInformation($"There is not any resource type defined for compartment type {compartmentType} in file {compartmentFile}");
                 }
                 else
                 {
@@ -89,7 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             else
             {
-                _logger.LogWarning($"The compartment type {compartmentType} in file {compartmentFile} isn't a valid compartment type.");
+                _logger.LogInformation($"The compartment type {compartmentType} in file {compartmentFile} isn't a valid compartment type.");
             }
 
             return compartmentResourceTypesLookup;
@@ -106,7 +107,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             catch (Exception exception)
             {
-                _logger.LogError($"Failed to parse capability statement from FHIR server metadata. Reason: {exception.Message}");
+                _diagnosticLogger.LogError($"Failed to parse capability statement from FHIR server metadata. Reason: {exception.Message}");
+                _logger.LogInformation(exception, $"Failed to parse capability statement from FHIR server metadata. Reason: {exception.Message}");
                 throw new FhirSpecificationProviderException($"Failed to parse capability statement from FHIR server metadata.", exception);
             }
 
@@ -116,7 +118,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             var rest = capabilityStatement?.Rest;
             if (rest == null || !rest.Any())
             {
-                _logger.LogError($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");
+                _diagnosticLogger.LogError($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");
+                _logger.LogInformation($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");
                 throw new FhirSpecificationProviderException($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");
             }
 
@@ -124,7 +127,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
             if (resources == null || !resources.Any())
             {
-                _logger.LogError($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");
+                _diagnosticLogger.LogError($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");
+                _logger.LogInformation($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");
                 throw new FhirSpecificationProviderException($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");
             }
 
@@ -140,7 +144,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
             if (!searchParameters.Any())
             {
-                _logger.LogError("There is not any items in the built SearchParametersLookup.");
+                _diagnosticLogger.LogError("There is not any items in the built SearchParametersLookup.");
+                _logger.LogInformation("There is not any items in the built SearchParametersLookup.");
                 throw new FhirSpecificationProviderException("There is not any items in the built SearchParametersLookup.");
             }
 

@@ -8,6 +8,7 @@ using Azure.Data.Tables;
 using Azure.Storage.Queues;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
@@ -558,7 +559,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             const byte queueType = (byte)TestQueueType.GivenJobsWithSameDefinition_WhenEnqueueInABatch_ThenTheExceptionShouldBeThrown;
 
-            var exception = await Assert.ThrowsAsync<TableTransactionFailedException>(async () =>
+            var exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
                 await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1", "job1" },

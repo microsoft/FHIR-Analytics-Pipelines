@@ -7,6 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.UnitTests;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
@@ -48,6 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
 
             var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
                 _testTokenProvider,
+                new DiagnosticLogger(),
                 new NullLogger<ContainerRegistryTemplateProvider>());
             var templateCollection = await containerRegistryTemplateProvider.GetTemplateCollectionAsync(_testImageReference, CancellationToken.None);
 
@@ -61,6 +63,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
 
             var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
                 TestUtils.GetMockAcrTokenProvider("invalid token"),
+                new DiagnosticLogger(),
                 new NullLogger<ContainerRegistryTemplateProvider>());
 
             await Assert.ThrowsAsync<ContainerRegistrySchemaException>(

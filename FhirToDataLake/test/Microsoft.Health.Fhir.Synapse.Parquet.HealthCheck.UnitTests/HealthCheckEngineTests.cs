@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 using NSubstitute;
@@ -49,7 +50,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
         {
             var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker };
             var healthCheckConfiduration = new HealthCheckConfiguration();
-            var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiduration), new NullLogger<HealthCheckEngine>());
+            var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiduration));
 
             var healthStatus = await healthCheckEngine.CheckHealthAsync();
             var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
@@ -75,9 +76,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
             var healthCheckConfiguration = new HealthCheckConfiguration();
             healthCheckConfiguration.HealthCheckTimeoutInSeconds = 1;
 
-            var mockTimeOutHealthChecker = new MockTimeoutHealthChecker(new NullLogger<MockTimeoutHealthChecker>());
+            var mockTimeOutHealthChecker = new MockTimeoutHealthChecker(new DiagnosticLogger() ,new NullLogger<MockTimeoutHealthChecker>());
             var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, mockTimeOutHealthChecker };
-            var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiguration), new NullLogger<HealthCheckEngine>());
+            var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiguration));
 
             var healthStatus = await healthCheckEngine.CheckHealthAsync();
             var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);

@@ -6,6 +6,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
@@ -15,8 +16,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
         public FilterAzureContainerRegistryHealthChecker(
             IOptions<FilterLocation> filterLocation,
             IContainerRegistryTokenProvider containerRegistryTokenProvider,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureContainerRegistryHealthChecker> logger)
-            : base("Filter", filterLocation?.Value?.FilterImageReference, containerRegistryTokenProvider, logger)
+            : base("Filter", filterLocation?.Value?.FilterImageReference, containerRegistryTokenProvider, diagnosticLogger, logger)
         {
         }
     }

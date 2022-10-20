@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
@@ -35,6 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
     public class FhirToDataLakeOrchestratorJobTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private const string TestBlobEndpoint = "UseDevelopmentStorage=true";
         private const long TBValue = 1024L * 1024L * 1024L * 1024L;
         private static readonly DateTimeOffset TestStartTime = new DateTimeOffset(2014, 8, 18, 0, 0, 0, TimeSpan.FromHours(0));
@@ -149,6 +151,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetMetaDataStore(),
                 10,
                 new MetricsLogger(new NullLogger<MetricsLogger>()),
+                _diagnosticLogger,
                 new NullLogger<FhirToDataLakeOrchestratorJob>());
 
             var retriableJobException = await Assert.ThrowsAsync<RetriableJobException>(async () =>
@@ -267,6 +270,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 metadataStore ?? GetMetaDataStore(),
                 concurrentCount,
                 new MetricsLogger(new NullLogger<MetricsLogger>()),
+                _diagnosticLogger,
                 new NullLogger<FhirToDataLakeOrchestratorJob>())
             {
                 NumberOfPatientsPerProcessingJob = 1,

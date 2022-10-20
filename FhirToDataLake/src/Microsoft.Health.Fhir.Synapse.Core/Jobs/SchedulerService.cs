@@ -12,6 +12,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.JobManagement;
@@ -30,6 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly ILogger<SchedulerService> _logger;
         private readonly Guid _instanceGuid;
         private readonly JobConfiguration _jobConfiguration;
+        private readonly IDiagnosticLogger _diagnosticLogger;
 
         // See https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression
         private readonly CrontabSchedule _crontabSchedule;
@@ -38,10 +40,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IQueueClient queueClient,
             IMetadataStore metadataStore,
             IOptions<JobConfiguration> jobConfiguration,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<SchedulerService> logger)
         {
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _jobConfiguration = jobConfiguration.Value;
@@ -62,6 +66,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task RunAsync(CancellationToken cancellationToken)
         {
+            _diagnosticLogger.LogInformation("Scheduler starts running.");
             _logger.LogInformation("Scheduler starts running.");
             using CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             CancellationToken serviceCancellationToken = cancellationTokenSource.Token;
@@ -96,7 +101,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogError(ex, "Failed to pull and update trigger.");
+                                _diagnosticLogger.LogError("Internal error occurred in scheduler service, will retry later.");
+                                _logger.LogError(ex, "Failed to pull and update trigger, will retry later.");
                             }
                         }
                     }
@@ -106,10 +112,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning($"There is an exception thrown while processing current trigger, will retry later. Exception {ex.Message};");
+                    _diagnosticLogger.LogError($"Internal error occurred in scheduler service, will retry later.");
+                    _logger.LogError(ex, $"There is an exception thrown while processing current trigger, will retry later. Exception {ex.Message};");
                 }
             }
 
+            _diagnosticLogger.LogInformation("Scheduler stops running.");
             _logger.LogInformation("Scheduler stops running.");
         }
 
@@ -135,7 +143,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 if (triggerLeaseEntity == null)
                 {
-                    _logger.LogWarning("Try to acquire lease failed, the retrieved lease trigger entity is null.");
+                    _logger.LogInformation("Try to acquire lease failed, the retrieved lease trigger entity is null.");
                     return false;
                 }
 
@@ -156,8 +164,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(
-                    $"Try acquire lease failed. Exception: {ex.Message}.");
+                _diagnosticLogger.LogError(
+                    $"Internal error occurred in scheduler service, will retry later.");
+                _logger.LogError(
+                    ex,
+                    $"Unhandled exception while acquiring lease. Exception: {ex.Message}.");
                 return false;
             }
 
@@ -209,7 +220,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         case TriggerStatus.Failed:
                         case TriggerStatus.Cancelled:
                             // if the current trigger is cancelled/failed, stop scheduler, this case should not happen
-                            _logger.LogWarning("Trigger Status is cancelled or failed.");
+                            _logger.LogInformation("Trigger Status is cancelled or failed.");
                             cancellationTokenSource.Cancel();
                             return true;
                     }
@@ -271,11 +282,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     break;
                 case JobStatus.Failed:
                     currentTriggerEntity.TriggerStatus = TriggerStatus.Failed;
-                    _logger.LogError("The orchestrator job is failed.");
+                    _logger.LogInformation("The orchestrator job is failed.");
                     break;
                 case JobStatus.Cancelled:
                     currentTriggerEntity.TriggerStatus = TriggerStatus.Cancelled;
-                    _logger.LogError("The orchestrator job is cancelled.");
+                    _logger.LogInformation("The orchestrator job is cancelled.");
                     break;
                 default:
                     needUpdateTriggerEntity = false;
@@ -340,7 +351,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (RequestFailedException ex)
             {
-                _logger.LogError($"Failed to add trigger entity to table, exception: {ex.Message}");
+                _logger.LogError(ex, $"Failed to add trigger entity to table, exception: {ex.Message}");
                 throw;
             }
 
@@ -385,7 +396,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     if (triggerLeaseEntity == null || triggerLeaseEntity.WorkingInstanceGuid != _instanceGuid)
                     {
-                        _logger.LogWarning("Failed to renew lease, the retrieved lease trigger entity is null or working instance doesn't match.");
+                        _logger.LogInformation("Failed to renew lease, the retrieved lease trigger entity is null or working instance doesn't match.");
                     }
                     else
                     {
@@ -398,7 +409,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to renew lease for working instance {_instanceGuid}.");
+                    _logger.LogInformation(ex, $"Failed to renew lease for working instance {_instanceGuid}.");
                 }
 
                 if (!cancellationToken.IsCancellationRequested)

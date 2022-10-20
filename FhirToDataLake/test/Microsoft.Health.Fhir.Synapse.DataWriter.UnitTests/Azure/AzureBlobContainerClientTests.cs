@@ -15,6 +15,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Files.DataLake.Models;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 using Xunit;
@@ -695,7 +696,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
         private AzureBlobContainerClient GetTestBlobProvider(string connectionString, string containerName)
         {
-            return new AzureBlobContainerClient(connectionString, containerName, new NullLogger<AzureBlobContainerClient>());
+            return new AzureBlobContainerClient(connectionString, containerName, new DiagnosticLogger(), new NullLogger<AzureBlobContainerClient>());
         }
 
         // Get Azure Data Lake store gen2 account connection string.
@@ -708,7 +709,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
                 return null;
             }
 
-            return new AzureBlobContainerClient(new Uri(new Uri(storageUrl), containerName), new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLogger<AzureBlobContainerClient>());
+            return new AzureBlobContainerClient(new Uri(new Uri(storageUrl), containerName), new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new DiagnosticLogger(), new NullLogger<AzureBlobContainerClient>());
         }
 
         private static BlobContainerClient GetBlobContainerClient(string containerName)

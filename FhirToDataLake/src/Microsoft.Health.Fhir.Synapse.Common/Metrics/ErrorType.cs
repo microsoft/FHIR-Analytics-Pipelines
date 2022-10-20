@@ -31,5 +31,15 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         /// A metric type for errors that occur when loading or parsing the FHIR template json file.
         /// </summary>
         public static string FhirSchemaError => nameof(FhirSchemaError);
+
+        /// <summary>
+        /// A metric type for errors that occur when job execution failed.
+        /// </summary>
+        public static string JobExecutionError => nameof(JobExecutionError);
+
+        /// <summary>
+        /// A metric type for errors that occur when getting filters.
+        /// </summary>
+        public static string ReadFilterError => nameof(ReadFilterError);
     }
 }

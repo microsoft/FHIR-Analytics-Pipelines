@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
@@ -24,6 +25,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 {
     public class FhirApiDataClientTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private readonly MockTokenCredentialProvider _mockTokenCredentialProvider = new ();
         private readonly NullLogger<FhirApiDataClient> _nullFhirApiDataClientLogger =
             NullLogger<FhirApiDataClient>.Instance;
@@ -38,7 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new FhirApiDataClient(null, null, null, null));
+                () => new FhirApiDataClient(null, null, null, null, null));
 
             var fhirServerConfiguration = new FhirServerConfiguration()
             {
@@ -50,16 +52,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var httpClient = new HttpClient(new MockHttpMessageHandler(new Dictionary<string, HttpResponseMessage>()));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirApiDataClient(null, httpClient, _mockTokenCredentialProvider, _nullFhirApiDataClientLogger));
+                () => new FhirApiDataClient(null, httpClient, _mockTokenCredentialProvider, _diagnosticLogger, _nullFhirApiDataClientLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirApiDataClient(dataSource, null, _mockTokenCredentialProvider, _nullFhirApiDataClientLogger));
+                () => new FhirApiDataClient(dataSource, null, _mockTokenCredentialProvider, _diagnosticLogger, _nullFhirApiDataClientLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirApiDataClient(dataSource, httpClient, null, _nullFhirApiDataClientLogger));
+                () => new FhirApiDataClient(dataSource, httpClient, null, _diagnosticLogger, _nullFhirApiDataClientLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirApiDataClient(dataSource, httpClient, _mockTokenCredentialProvider, null));
+                () => new FhirApiDataClient(dataSource, httpClient, _mockTokenCredentialProvider, _diagnosticLogger, null));
         }
 
         [Fact]
@@ -261,7 +263,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 
             var httpClient = new HttpClient(new MockHttpMessageHandler(requestMap));
 
-            var dataClient = new FhirApiDataClient(dataSource, httpClient, mockProvider, _nullFhirApiDataClientLogger);
+            var dataClient = new FhirApiDataClient(dataSource, httpClient, mockProvider, _diagnosticLogger, _nullFhirApiDataClientLogger);
             return dataClient;
         }
 

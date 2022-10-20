@@ -6,6 +6,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
@@ -16,6 +17,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
 {
     public class SchedulerServiceHealthCheckerTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+
         [Fact]
         public async Task When_SchedulerService_IsActive_HealthCheck_Succeeds()
         {
@@ -23,6 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
             schedulerService.LastHeartbeat.Returns(DateTimeOffset.UtcNow);
             var schedulerServiceHealthChecker = new SchedulerServiceHealthChecker(
                 schedulerService,
+                _diagnosticLogger,
                 new NullLogger<SchedulerServiceHealthChecker>());
 
             var result = await schedulerServiceHealthChecker.PerformHealthCheckAsync();
@@ -37,6 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
             schedulerService.LastHeartbeat.Returns(DateTimeOffset.UtcNow.AddMinutes(-5));
             var schedulerServiceHealthChecker = new SchedulerServiceHealthChecker(
                 schedulerService,
+                _diagnosticLogger,
                 new NullLogger<SchedulerServiceHealthChecker>());
 
             var result = await schedulerServiceHealthChecker.PerformHealthCheckAsync();

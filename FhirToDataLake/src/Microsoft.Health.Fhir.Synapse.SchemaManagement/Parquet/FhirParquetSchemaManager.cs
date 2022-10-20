@@ -6,7 +6,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using EnsureThat;
-using Microsoft.Build.Framework.Profiler;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -78,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         {
             if (!SchemaTypesMap.ContainsKey(resourceType))
             {
-                _logger.LogError($"Schema types for {resourceType} is empty.");
+                _logger.LogInformation($"Schema types for {resourceType} is empty.");
                 return new List<string>();
             }
 
@@ -89,7 +88,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         {
             if (!ResourceSchemaNodesMap.ContainsKey(schemaType))
             {
-                _logger.LogError($"Schema for schema type {schemaType} is not supported.");
+                _logger.LogInformation($"Schema for schema type {schemaType} is not supported.");
                 return null;
             }
 

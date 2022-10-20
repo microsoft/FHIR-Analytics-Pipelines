@@ -9,6 +9,7 @@ using System.IO;
 using System.Reflection;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
@@ -18,6 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
     public abstract class BaseFhirSpecificationProvider : IFhirSpecificationProvider
     {
         private readonly IFhirDataClient _dataClient;
+        protected readonly IDiagnosticLogger _diagnosticLogger;
         protected readonly ILogger _logger;
 
         protected static readonly IEnumerable<string> ExcludeTypes = new List<string> { FhirConstants.StructureDefinition };
@@ -43,9 +45,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
         public BaseFhirSpecificationProvider(
             IFhirDataClient dataClient,
+            IDiagnosticLogger diagnosticLogger,
             ILogger logger)
         {
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _compartmentResourceTypesLookup = BuildCompartmentResourceTypesLookup();
@@ -61,13 +65,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         {
             if (!IsValidCompartmentType(compartmentType))
             {
-                _logger.LogError($"The compartment type {compartmentType} isn't a valid compartment type.");
+                _diagnosticLogger.LogError($"The compartment type {compartmentType} isn't a valid compartment type.");
+                _logger.LogInformation($"The compartment type {compartmentType} isn't a valid compartment type.");
                 throw new FhirSpecificationProviderException($"The compartment type {compartmentType} isn't a valid compartment type.");
             }
 
             if (!_compartmentResourceTypesLookup.ContainsKey(compartmentType))
             {
-                _logger.LogError($"The compartment type {compartmentType} isn't supported now.");
+                _diagnosticLogger.LogError($"The compartment type {compartmentType} isn't supported now.");
+                _logger.LogInformation($"The compartment type {compartmentType} isn't supported now.");
                 throw new FhirSpecificationProviderException($"The compartment type {compartmentType} isn't supported now.");
             }
 
@@ -78,13 +84,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         {
             if (!IsValidFhirResourceType(resourceType))
             {
-                _logger.LogError($"The input {resourceType} isn't a valid resource type.");
+                _diagnosticLogger.LogError($"The input {resourceType} isn't a valid resource type.");
+                _logger.LogInformation($"The input {resourceType} isn't a valid resource type.");
                 throw new FhirSpecificationProviderException($"The input {resourceType} isn't a valid resource type.");
             }
 
             if (!_resourceTypeSearchParametersLookup.ContainsKey(resourceType))
             {
-                _logger.LogWarning($"There isn't any search parameter defined for resource type {resourceType}.");
+                _logger.LogInformation($"There is no search parameter defined for resource type {resourceType}.");
                 return new HashSet<string>();
             }
 
@@ -104,7 +111,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.");
+                    _logger.LogError(ex, $"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.");
                     throw new FhirSpecificationProviderException($"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.", ex);
                 }
 
@@ -133,7 +140,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             catch (Exception exception)
             {
-                _logger.LogError($"Failed to request Fhir server metadata. Reason: {exception.Message}.");
+                _logger.LogError(exception, $"Failed to request Fhir server metadata. Reason: {exception.Message}.");
                 throw new FhirSpecificationProviderException($"Failed to request Fhir server metadata.", exception);
             }
 
