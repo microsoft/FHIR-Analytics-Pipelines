@@ -72,7 +72,6 @@ TEST (SchemaTest,  AddAndGetNoneJsonSchemaContent)
     EXPECT_TRUE(brokenSchema == nullptr);
 }
 
-
 TEST (SchemaTest,  AddAndGetEmptyOrWhiteSpaceSchemaKey)
 {
     SchemaManager schemaManager;
