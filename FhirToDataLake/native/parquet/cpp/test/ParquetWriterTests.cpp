@@ -41,7 +41,7 @@ TEST (ParquetWriter, RegisterInvalidSchemaKey)
 TEST (ParquetWriter, WritePatientWithNoSchema)
 {
     byte** outputData = new byte*[1];
-    int outputLength;
+    int outputLength = 0;
     string resourceType = "Patient";
     ParquetWriter writer;
 
@@ -49,6 +49,8 @@ TEST (ParquetWriter, WritePatientWithNoSchema)
     int status = writer.Write(resourceType, PatientData.c_str(), static_cast<int>(PatientData.size()), outputData, &outputLength, error);
     // Write success.
     EXPECT_EQ(11002, status);
+    EXPECT_EQ(0, outputLength);
+    EXPECT_EQ("Schema not found for '" + resourceType + "'.", std::string(error));
 }
 
 TEST (ParquetWriter, WriteInvalidPatient)
@@ -90,6 +92,78 @@ TEST (ParquetWriter, WriteEmptyPatient)
     EXPECT_EQ(10001, status);
     EXPECT_EQ(0, outputLength);
     EXPECT_EQ("Invalid: Empty JSON file", std::string(error));
+}
+
+TEST (ParquetWriter, WriteEmptyPatientWithoutError)
+{
+    byte** outputData = new byte*[1];
+    int outputLength = 0;
+    string resourceType = "Patient";
+
+    string exampleSchema = read_file_text(TestDataDir + "patient_example_schema.json");
+    ParquetWriter writer;
+    int schemaStatus = writer.RegisterSchema(resourceType, exampleSchema);
+    EXPECT_EQ(0, schemaStatus);
+
+    string emptyPatient = "";
+    int status = writer.Write(resourceType, emptyPatient.c_str(), 0, outputData, &outputLength);
+    
+    // Write success but output is 0
+    EXPECT_EQ(10001, status);
+    EXPECT_EQ(0, outputLength);
+}
+
+TEST (ParquetWriter, WriteNullPatient)
+{
+    byte** outputData = new byte*[1];
+    int outputLength = 0;
+    string resourceType = "Patient";
+    string exampleSchema = read_file_text(TestDataDir + "patient_example_schema.json");
+    ParquetWriter writer;
+    int schemaStatus = writer.RegisterSchema(resourceType, exampleSchema);
+    EXPECT_EQ(0, schemaStatus);
+
+    char error[256];
+    int status = writer.Write(resourceType, nullptr, static_cast<int>(PatientData.size()), outputData, &outputLength, error);
+    // Write success.
+    EXPECT_EQ(10001, status);
+    EXPECT_EQ(0, outputLength);
+    EXPECT_EQ("Input Json data is null.", std::string(error));
+}
+
+TEST (ParquetWriter, WriteWithNullOutputPointer)
+{
+    int outputLength = 0;
+    string resourceType = "Patient";
+    string exampleSchema = read_file_text(TestDataDir + "patient_example_schema.json");
+    ParquetWriter writer;
+    int schemaStatus = writer.RegisterSchema(resourceType, exampleSchema);
+    EXPECT_EQ(0, schemaStatus);
+
+    char error[256];
+    int status = writer.Write(resourceType , PatientData.c_str(), static_cast<int>(PatientData.size()), nullptr, &outputLength, error);
+    // Write success.
+    EXPECT_EQ(10002, status);
+    EXPECT_EQ(0, outputLength);
+    EXPECT_EQ("Output data pointer is null.", std::string(error));
+}
+
+TEST (ParquetWriter, WriteWithNullOutputSize)
+{
+    byte** outputData = new byte*[1];
+    int outputLength = 0;
+    string resourceType = "Patient";
+    string exampleSchema = read_file_text(TestDataDir + "patient_example_schema.json");
+    ParquetWriter writer;
+    int schemaStatus = writer.RegisterSchema(resourceType, exampleSchema);
+    EXPECT_EQ(0, schemaStatus);
+
+    char error[256];
+    int status = writer.Write(resourceType , PatientData.c_str(), static_cast<int>(PatientData.size()), outputData, nullptr, error);
+    // Write success.
+    EXPECT_EQ(10002, status);
+    EXPECT_EQ(0, outputLength);
+    EXPECT_EQ("Output data size is null.", std::string(error));
 }
 
 TEST (ParquetWriter, WriteExamplePatient)
@@ -150,4 +224,3 @@ TEST (ParquetWriter, WriteBatchPatient)
 
     delete *outputData;
 }
-

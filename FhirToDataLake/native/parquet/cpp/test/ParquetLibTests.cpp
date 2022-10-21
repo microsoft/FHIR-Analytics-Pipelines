@@ -63,6 +63,24 @@ TEST (ParquetLib, RegisterEmptyOrWhiteSpaceKeyParquetSchema)
     DestroyParquetWriter(writer);
 }
 
+TEST (ParquetLib, WriteWithNullResourceType)
+{
+    ParquetWriter* writer = CreateParquetWriter();
+
+    byte** outputData = new byte*[1];
+    int outputLength = 0;
+    string resourceType = "Patient";
+    string exampleSchema = read_file_text(TestDataDir + "patient_example_schema.json");
+    int schemaStatus = RegisterParquetSchema(writer, resourceType.data(), exampleSchema.data());
+    EXPECT_EQ(0, schemaStatus);
+    
+    char* error = new char[256];
+    int status = ConvertJsonToParquet(writer, nullptr, PatientData.c_str(), PatientData.size(), outputData, &outputLength, error);
+    // Write success.
+    EXPECT_EQ(11001, status);
+    EXPECT_EQ(0, outputLength);
+}
+
 TEST (ParquetLib, WriteExamplePatient)
 {
     ParquetWriter* writer = CreateParquetWriter();
@@ -90,4 +108,5 @@ TEST (ParquetLib, WriteExamplePatient)
 
     DestroyParquetWriter(writer);
     TryReleaseUnmanagedData(outputData);
+    EXPECT_EQ(nullptr, *outputData);
 }

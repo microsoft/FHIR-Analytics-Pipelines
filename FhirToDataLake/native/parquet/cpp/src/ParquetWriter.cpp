@@ -14,7 +14,7 @@ int WriteToParquet(const shared_ptr<arrow::Table> table, byte** outputData, int*
     if (!status.ok())
     {
         string errorDetail = status.ToString();
-        strncpy(errorMessage, errorDetail.c_str(), 200);
+        WriteErrorMessage(errorDetail, errorMessage);
         return WriteToParquetError;
     }
 
@@ -49,9 +49,28 @@ int ParquetWriter::RegisterSchema(const string& schemaKey, const string& schemaD
 
 int ParquetWriter::Write(const string& resourceType, const char* inputJson, int inputLength, byte** outputData, int* outputLength, char* errorMessage)
 {
+    if (outputData == nullptr || *outputData == nullptr)
+    {
+        WriteErrorMessage("Output data pointer is null.", errorMessage);
+        return WriteToParquetError;
+    }
+
+    if (outputLength == nullptr)
+    {
+        WriteErrorMessage("Output data size is null.", errorMessage);
+        return WriteToParquetError;
+    }
+
+    if (inputJson == nullptr)
+    {
+        WriteErrorMessage("Input Json data is null.", errorMessage);
+        return ReadInputJsonError;
+    }
+    
     auto schema = _schemaManager.GetSchema(resourceType);
     if (schema == nullptr)
     {
+        WriteErrorMessage("Schema not found for '" + resourceType + "'.", errorMessage);
         return SchemaNotFound;
     }
 
@@ -65,7 +84,7 @@ int ParquetWriter::Write(const string& resourceType, const char* inputJson, int 
     if (!tableReaderResult.ok())
     {
         string errorDetail = tableReaderResult.status().ToString();
-        strncpy(errorMessage, errorDetail.c_str(), 200);
+        WriteErrorMessage(errorDetail, errorMessage);
         return ReadInputJsonError;
     }
     const shared_ptr<arrow::json::TableReader> tableReader = tableReaderResult.ValueOrDie();
@@ -74,10 +93,18 @@ int ParquetWriter::Write(const string& resourceType, const char* inputJson, int 
     if (!tableResult.ok())
     {
         string errorDetail = tableResult.status().ToString();
-        strncpy(errorMessage, errorDetail.c_str(), 200);
+        WriteErrorMessage(errorDetail, errorMessage);
         return ReadInputJsonError;
     }
 
     const shared_ptr<arrow::Table> table = tableResult.ValueOrDie();
     return WriteToParquet(table, outputData, outputLength, errorMessage, _parquetOptions);
+}
+
+void WriteErrorMessage(const string& errorMessage, char* outputErrorMessage)
+{
+    if (outputErrorMessage != nullptr)
+    {
+        strncpy(outputErrorMessage, errorMessage.c_str(), 200);
+    }
 }

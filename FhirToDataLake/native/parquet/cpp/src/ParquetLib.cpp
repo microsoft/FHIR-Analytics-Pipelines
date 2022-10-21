@@ -31,6 +31,11 @@ int RegisterParquetSchema(ParquetWriter* writer, const char* schemaKey, const ch
 // Here we need to allocate a byte array for output stream in outputData[0] manually because the target output length is determined after computation.
 int ConvertJsonToParquet(ParquetWriter* writer, const char* schemaKey, const char* inputJson, int inputLength, byte** outputData, int *outputLength, char* errorMessage)
 {
+    if (schemaKey == nullptr)
+    {
+        return ParseParquetSchemaError;
+    }
+    
     string key = schemaKey;
     return writer->Write(key, inputJson, inputLength, outputData, outputLength, errorMessage);
 }
