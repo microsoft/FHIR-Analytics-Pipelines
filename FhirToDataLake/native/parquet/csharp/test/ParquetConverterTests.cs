@@ -40,6 +40,7 @@ namespace Microsoft.Health.Parquet.UnitTests
         [Theory]
         [InlineData("")]
         [InlineData(" ")]
+        [InlineData(null)]
         public void GivenInvalidSchemaKey_WhenInitializeSchemaSet_ExceptionShouldBeThrown(string invalidSchemaKey)
         {
             var invalidSchemaMap = new Dictionary<string, string> { { invalidSchemaKey, _testPatientSchema } };
@@ -59,6 +60,7 @@ namespace Microsoft.Health.Parquet.UnitTests
         [InlineData("")]
         [InlineData("123456")]
         [InlineData("#@!asdasd(*&^")]
+        [InlineData(null)]
         public void GivenInvalidPatient_WhenConvertingToParquet_ExceptionShouldBeThrown(string patient)
         {
             var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, _testPatientSchema } };
@@ -81,6 +83,25 @@ namespace Microsoft.Health.Parquet.UnitTests
         }
 
         [Theory]
+        [InlineData(20)]
+        [InlineData(200)]
+        public void GivenValidPatient_WhenConvertingToParquet_WithMultipleTimes_ResultShouldBeReturned(int multipleTimes)
+        {
+            var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, _testPatientSchema } };
+            var parquetConverter = ParquetConverter.CreateWithSchemaSet(validSchemaMap);
+
+            Stream stream = new MemoryStream();
+            for (int i = 0; i < multipleTimes; i++)
+            {
+                stream = parquetConverter.ConvertJsonToParquet(PatientResourceType, _testPatientNormalData);
+            }
+
+            var expectedHash = GetFileHash(string.Format(TestConstants.ExpectedPatientNormalParquetFile, 1));
+            var streamHash = GetStreamHash(stream);
+            Assert.Equal(expectedHash, streamHash);
+        }
+
+        [Theory]
         [InlineData(1)]
         [InlineData(20)]
         public void GivenValidLargePatient_WhenConvertingToParquet_ResultShouldBeReturned(int multipleCount)
@@ -88,7 +109,7 @@ namespace Microsoft.Health.Parquet.UnitTests
             var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, _testPatientSchema } };
             var parquetConverter = ParquetConverter.CreateWithSchemaSet(validSchemaMap);
 
-            var largePatientBuilder = new StringBuilder(_testPatientNormalData);
+            var largePatientBuilder = new StringBuilder();
             for (int i = 0; i < multipleCount; i++)
             {
                 largePatientBuilder.Append(_testPatientNormalData);

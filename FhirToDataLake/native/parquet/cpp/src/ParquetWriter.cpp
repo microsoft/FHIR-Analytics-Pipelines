@@ -49,7 +49,7 @@ int ParquetWriter::RegisterSchema(const string& schemaKey, const string& schemaD
 
 int ParquetWriter::Write(const string& resourceType, const char* inputJson, int inputLength, byte** outputData, int* outputLength, char* errorMessage)
 {
-    if (outputData == nullptr || *outputData == nullptr)
+    if (outputData == nullptr)
     {
         WriteErrorMessage("Output data pointer is null.", errorMessage);
         return WriteToParquetError;
