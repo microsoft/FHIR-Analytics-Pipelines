@@ -14,6 +14,16 @@ namespace Microsoft.Health.Parquet.UnitTests
     public class ParquetConverterTests
     {
         private const string PatientResourceType = "Patient";
+        private static string _testPatientSmallData;
+        private static string _testPatientNormalData;
+        private static string _testPatientSchema;
+
+        public ParquetConverterTests()
+        {
+            _testPatientSmallData = File.ReadAllText(TestConstants.InputPatientSmallFile);
+            _testPatientNormalData = File.ReadAllText(TestConstants.InputPatientNormalFile);
+            _testPatientSchema = File.ReadAllText(TestConstants.SchemaFile);
+        }
 
         [Theory]
         [InlineData("Invalid Json")]
@@ -32,17 +42,16 @@ namespace Microsoft.Health.Parquet.UnitTests
         [InlineData(" ")]
         public void GivenInvalidSchemaKey_WhenInitializeSchemaSet_ExceptionShouldBeThrown(string invalidSchemaKey)
         {
-            var invalidSchemaMap = new Dictionary<string, string> { { invalidSchemaKey, File.ReadAllText(TestConstants.SchemaFile) } };
+            var invalidSchemaMap = new Dictionary<string, string> { { invalidSchemaKey, _testPatientSchema } };
             var exception = Assert.Throws<ParquetException>(() => ParquetConverter.CreateWithSchemaSet(invalidSchemaMap));
             Assert.Equal("Parse given schema failed.", exception.Message);
         }
 
         [Fact]
-        public void GivenNoSchemaFile_WhenConvertingToJson_ExceptionShouldBeThrown()
+        public void GivenNoSchemaFile_WhenConvertingToParquet_ExceptionShouldBeThrown()
         {
             var parquetConverter = new ParquetConverter();
-            string jsonInput = File.ReadAllText(TestConstants.InputPatientFile);
-            var exception = Assert.Throws<ParquetException>(() => parquetConverter.ConvertJsonToParquet(PatientResourceType, jsonInput));
+            var exception = Assert.Throws<ParquetException>(() => parquetConverter.ConvertJsonToParquet(PatientResourceType, _testPatientSmallData));
             Assert.StartsWith("Target schema is not found.", exception.Message);
         }
 
@@ -50,9 +59,9 @@ namespace Microsoft.Health.Parquet.UnitTests
         [InlineData("")]
         [InlineData("123456")]
         [InlineData("#@!asdasd(*&^")]
-        public void GivenInvalidPatient_WhenConvertingToJson_ExceptionShouldBeThrown(string patient)
+        public void GivenInvalidPatient_WhenConvertingToParquet_ExceptionShouldBeThrown(string patient)
         {
-            var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, File.ReadAllText(TestConstants.SchemaFile) } };
+            var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, _testPatientSchema } };
             var parquetConverter = ParquetConverter.CreateWithSchemaSet(validSchemaMap);
 
             var exception = Assert.Throws<ParquetException>(() => parquetConverter.ConvertJsonToParquet(PatientResourceType, patient));
@@ -60,13 +69,34 @@ namespace Microsoft.Health.Parquet.UnitTests
         }
 
         [Fact]
-        public void GivenValidPatient_WhenConvertingToJson_ResultShouldBeReturned()
+        public void GivenValidPatient_WhenConvertingToParquet_ResultShouldBeReturned()
         {
-            var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, File.ReadAllText(TestConstants.SchemaFile) } };
+            var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, _testPatientSchema } };
             var parquetConverter = ParquetConverter.CreateWithSchemaSet(validSchemaMap);
 
-            using var stream = parquetConverter.ConvertJsonToParquet(PatientResourceType, File.ReadAllText(TestConstants.InputPatientFile));
-            var expectedHash = GetFileHash(TestConstants.ExpectedPatientParquetFile);
+            using var stream = parquetConverter.ConvertJsonToParquet(PatientResourceType, _testPatientSmallData);
+            var expectedHash = GetFileHash(TestConstants.ExpectedPatientSmallParquetFile);
+            var streamHash = GetStreamHash(stream);
+            Assert.Equal(expectedHash, streamHash);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(20)]
+        public void GivenValidLargePatient_WhenConvertingToParquet_ResultShouldBeReturned(int multipleCount)
+        {
+            var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, _testPatientSchema } };
+            var parquetConverter = ParquetConverter.CreateWithSchemaSet(validSchemaMap);
+
+            var largePatientBuilder = new StringBuilder(_testPatientNormalData);
+            for (int i = 0; i < multipleCount; i++)
+            {
+                largePatientBuilder.Append(_testPatientNormalData);
+            }
+
+            using var stream = parquetConverter.ConvertJsonToParquet(PatientResourceType, largePatientBuilder.ToString());
+
+            var expectedHash = GetFileHash(string.Format(TestConstants.ExpectedPatientNormalParquetFile, multipleCount));
             var streamHash = GetStreamHash(stream);
             Assert.Equal(expectedHash, streamHash);
         }

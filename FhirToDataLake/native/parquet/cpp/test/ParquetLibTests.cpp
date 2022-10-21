@@ -89,5 +89,5 @@ TEST (ParquetLib, WriteExamplePatient)
     EXPECT_TRUE(expected_table->Equals(*table));
 
     DestroyParquetWriter(writer);
-    ReleaseUnmanagedData(outputData);
+    TryReleaseUnmanagedData(outputData);
 }

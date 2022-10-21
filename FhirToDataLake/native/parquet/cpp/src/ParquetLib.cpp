@@ -35,8 +35,8 @@ int ConvertJsonToParquet(ParquetWriter* writer, const char* schemaKey, const cha
     return writer->Write(key, inputJson, inputLength, outputData, outputLength, errorMessage);
 }
 
-// Release the allocated parquet stream.
-int ReleaseUnmanagedData(byte** data)
+// Try to release the allocated parquet stream.
+int TryReleaseUnmanagedData(byte** data)
 {
     if (data != nullptr && *data != nullptr)
     {
