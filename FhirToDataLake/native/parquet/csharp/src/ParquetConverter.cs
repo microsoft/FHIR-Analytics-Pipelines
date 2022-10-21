@@ -46,6 +46,11 @@ namespace Microsoft.Health.Parquet
             // Output buffer pointer
             IntPtr outputPointer = IntPtr.Zero;
 
+            if (inputJson == null)
+            {
+                throw new ParquetException(ParquetConverterErrorCodes.ReadInputJsonError, "Input Json is null.");
+            }
+
             // Get byte counts from input
             int inputSize = Encoding.UTF8.GetByteCount(inputJson);
             StringBuilder errorMessage = new StringBuilder(ErrorMessageSize);

@@ -40,7 +40,6 @@ namespace Microsoft.Health.Parquet.UnitTests
         [Theory]
         [InlineData("")]
         [InlineData(" ")]
-        [InlineData(null)]
         public void GivenInvalidSchemaKey_WhenInitializeSchemaSet_ExceptionShouldBeThrown(string invalidSchemaKey)
         {
             var invalidSchemaMap = new Dictionary<string, string> { { invalidSchemaKey, _testPatientSchema } };
