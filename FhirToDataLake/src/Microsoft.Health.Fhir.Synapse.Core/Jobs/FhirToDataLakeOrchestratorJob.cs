@@ -24,9 +24,12 @@ using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
+using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -48,6 +51,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly ILogger<FhirToDataLakeOrchestratorJob> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly IMetricsLogger _metricsLogger;
+        private readonly IJobExecutionErrorProcessor _jobExecutionErrorProcessor;
 
         private FhirToDataLakeOrchestratorJobResult _result;
 
@@ -63,6 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IMetadataStore metadataStore,
             int maxJobCountInRunningPool,
             IMetricsLogger metricsLogger,
+            IJobExecutionErrorProcessor jobExecutionErrorProcessor,
             IDiagnosticLogger diagnosticLogger,
             ILogger<FhirToDataLakeOrchestratorJob> logger)
         {
@@ -77,6 +82,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
+            _jobExecutionErrorProcessor = EnsureArg.IsNotNull(jobExecutionErrorProcessor, nameof(jobExecutionErrorProcessor));
             _maxJobCountInRunningPool = maxJobCountInRunningPool;
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
@@ -150,13 +156,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (TaskCanceledException taskCanceledEx)
             {
                 _diagnosticLogger.LogError("FhirToDataLake job is canceled.");
-                _logger.LogInformation(taskCanceledEx, "FhirToDataLake job {0} is canceled.", _jobInfo.Id);
+                _logger.LogInformation(taskCanceledEx, "FhirToDataLake orchestrator job {0} is canceled.", _jobInfo.Id);
+                _jobExecutionErrorProcessor.Process(taskCanceledEx, "FhirToDataLake orchestrator job is canceled.");
                 throw new RetriableJobException("Job is cancelled.", taskCanceledEx);
             }
             catch (OperationCanceledException operationCanceledEx)
             {
                 _diagnosticLogger.LogError("FhirToDataLake job is canceled.");
-                _logger.LogInformation(operationCanceledEx, "FhirToDataLake job {0} is canceled.", _jobInfo.Id);
+                _logger.LogInformation(operationCanceledEx, "FhirToDataLake orchestrator job {0} is canceled.", _jobInfo.Id);
+                _jobExecutionErrorProcessor.Process(operationCanceledEx, "FhirToDataLake orchestrator job is canceled.");
                 throw new RetriableJobException("Job is cancelled.", operationCanceledEx);
             }
             catch (SynapsePipelineExternalException synapsePipelineRetriableEx)
@@ -164,6 +172,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // Customer exceptions.
                 _diagnosticLogger.LogError($"Error in FhirToDataLake job. Reason:{synapsePipelineRetriableEx.Message}");
                 _logger.LogInformation(synapsePipelineRetriableEx, "Error in orchestrator job {0}. Reason:{1}", _jobInfo.Id, synapsePipelineRetriableEx);
+                _jobExecutionErrorProcessor.Process(synapsePipelineRetriableEx, "Error in orchestrator job.");
                 throw new RetriableJobException("Error in orchestrator job.", synapsePipelineRetriableEx);
             }
             catch (RetriableJobException retriableJobEx)
@@ -171,12 +180,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // always throw RetriableJobException
                 _diagnosticLogger.LogError($"Error in FhirToDataLake job. Reason:{retriableJobEx.Message}");
                 _logger.LogInformation(retriableJobEx, "Error in orchestrator job {0}. Reason:{1}", _jobInfo.Id, retriableJobEx);
+                _jobExecutionErrorProcessor.Process(retriableJobEx, "Error in orchestrator job.");
                 throw;
             }
             catch (SynapsePipelineInternalException synapsePipelineInternalEx)
             {
                 _diagnosticLogger.LogError("Internal error occurred in FhirToDataLake job.");
                 _logger.LogError(synapsePipelineInternalEx, "Error in orchestrator job {0}. Reason:{1}", _jobInfo.Id, synapsePipelineInternalEx);
+                _jobExecutionErrorProcessor.Process(synapsePipelineInternalEx, "Error in orchestrator job.");
                 throw new RetriableJobException("Error in orchestrator job.", synapsePipelineInternalEx);
             }
             catch (Exception unhandledEx)
@@ -184,6 +195,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // Unhandled exceptions.
                 _diagnosticLogger.LogError("Unknown error occurred in FhirToDataLake job.");
                 _logger.LogError(unhandledEx, "Unhandled error occurred in orchestrator job {0}. Reason:{1}", _jobInfo.Id, unhandledEx);
+                _jobExecutionErrorProcessor.Process(unhandledEx, "Unhandled in orchestrator job.");
                 throw new RetriableJobException("Unhandled error occurred in orchestrator job.", unhandledEx);
             }
         }

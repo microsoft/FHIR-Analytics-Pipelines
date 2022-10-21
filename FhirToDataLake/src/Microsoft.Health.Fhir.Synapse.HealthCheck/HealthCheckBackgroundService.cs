@@ -71,8 +71,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                 catch (OperationCanceledException e)
                 {
                     // not expected to trigger this exception.
-                    _diagnosticLogger.LogError($"Health check service is cancelled. {e.Message}");
-                    _logger.LogInformation(e, $"Health check service is cancelled. {e.Message}");
+                    _diagnosticLogger.LogError($"Health check service is cancelled. Reason: {e.Message}");
+                    _logger.LogInformation(e, $"Health check service is cancelled. Reason: {e.Message}");
+                    _metricsLogger.LogTotalErrorsMetrics(ErrorType.HealthCheckError, $"Health check service is cancelled. Reason: {e.Message}", Operations.HealthCheck);
                     await delayTask;
                     throw;
                 }
@@ -80,6 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                 {
                     _diagnosticLogger.LogError($"Unknown exception occured in health check. {e.Message}");
                     _logger.LogError(e, $"Unhandled exception occured in health check. {e.Message}");
+                    _metricsLogger.LogTotalErrorsMetrics(ErrorType.HealthCheckError, $"Unhandled exception occured in health check.", Operations.HealthCheck);
                     await delayTask;
                 }
             }

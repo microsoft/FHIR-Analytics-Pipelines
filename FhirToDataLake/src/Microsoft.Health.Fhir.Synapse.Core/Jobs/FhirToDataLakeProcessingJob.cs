@@ -46,6 +46,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IFilterManager _filterManager;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<FhirToDataLakeProcessingJob> _logger;
+        private readonly IJobExecutionErrorProcessor _jobExecutionErrorProcessor;
 
         private readonly long _jobId;
 
@@ -69,6 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             IGroupMemberExtractor groupMemberExtractor,
             IFilterManager filterManager,
+            IJobExecutionErrorProcessor jobExecutionErrorProcessor,
             IDiagnosticLogger diagnosticLogger,
             ILogger<FhirToDataLakeProcessingJob> logger)
         {
@@ -83,6 +85,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _jobExecutionErrorProcessor = EnsureArg.IsNotNull(jobExecutionErrorProcessor, nameof(jobExecutionErrorProcessor));
         }
 
         // the processing job status is never set to failed or cancelled.
@@ -145,7 +148,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (TaskCanceledException taskCanceledEx)
             {
                 _logger.LogInformation(taskCanceledEx, "Processing job {0} is canceled.", _jobId);
-
+                _jobExecutionErrorProcessor.Process(taskCanceledEx, "Processing job is canceled.");
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Processing job is canceled.", taskCanceledEx);
@@ -153,7 +156,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (OperationCanceledException operationCanceledEx)
             {
                 _logger.LogInformation(operationCanceledEx, "Processing job {0} is canceled.", _jobId);
-
+                _jobExecutionErrorProcessor.Process(operationCanceledEx, "Processing job is canceled.");
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Processing job is canceled.", operationCanceledEx);
@@ -162,7 +165,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // always throw RetriableJobException
                 _logger.LogInformation(retriableJobEx, "Error in processing job {0}. Reason : {1}", _jobId, retriableJobEx.Message);
-
+                _jobExecutionErrorProcessor.Process(retriableJobEx, "Error in processing job.");
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw;
@@ -171,7 +174,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Customer exceptions.
                 _logger.LogInformation(synapsePipelineEx, "Error in data processing job {0}. Reason:{1}", _jobId, synapsePipelineEx.Message);
-
+                _jobExecutionErrorProcessor.Process(synapsePipelineEx, "Error in processing job.");
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Error in data processing job.", synapsePipelineEx);
@@ -180,6 +183,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Unhandled exceptions.
                 _logger.LogError(ex, "Unhandled error occurred in data processing job {0}. Reason : {1}", _jobId, ex.Message);
+                _jobExecutionErrorProcessor.Process(ex, "Unhandled in processing job.");
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Unhandled error occurred in data processing job.", ex);

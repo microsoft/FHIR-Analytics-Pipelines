@@ -12,11 +12,13 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
@@ -131,6 +133,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFhirSchemaManager(),
                 GetGroupMemberExtractor(),
                 GetFilterManager(filterConfiguration),
+                new JobExecutionErrorProcessor(new MetricsLogger(new NullLogger<MetricsLogger>())),
                 _diagnosticLogger,
                 new NullLogger<FhirToDataLakeProcessingJob>());
         }
