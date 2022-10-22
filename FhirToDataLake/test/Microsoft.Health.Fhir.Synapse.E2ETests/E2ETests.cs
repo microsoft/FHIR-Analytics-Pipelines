@@ -25,6 +25,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
@@ -585,6 +586,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                         .AddSchema()
                         .AddMetricsLogger()
                         .AddDiagnosticLogger()
+                        .AddJobExecutionErrorProcessor()
                         .AddHostedService<SynapseLinkService>());
     }
 }
