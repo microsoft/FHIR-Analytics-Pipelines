@@ -85,7 +85,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<bool> TryAddEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default)
         {
-            // TODO: double check the error code
             try
             {
                 await _metadataTableClient.AddEntityAsync(tableEntity, cancellationToken);
@@ -100,7 +99,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<bool> TryUpdateEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default)
         {
-            // TODO: double check the error code
             try
             {
                 await _metadataTableClient.UpdateEntityAsync(
@@ -111,7 +109,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.UpdateEntityPreconditionFailedErrorCode)
             {
-                _logger.LogInformation($"Failed to update entity, the etag is not satisfied.");
+                _logger.LogInformation("Failed to update entity, the etag is not satisfied.");
                 return false;
             }
         }
@@ -126,16 +124,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     TableKeyProvider.TriggerRowKey(queueType),
                     cancellationToken: cancellationToken);
 
-                // TODO: unit tests
-                // Todo: test behavior if status is not 200.
-                if (response.GetRawResponse().Status == 200)
-                {
-                    entity = response.Value;
-                }
-                else
-                {
-                    _logger.LogInformation($"Failed to get current trigger entity from table, status {response.GetRawResponse().Status}");
-                }
+                entity = response.Value;
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
             {

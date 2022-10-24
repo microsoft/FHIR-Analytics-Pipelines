@@ -10,16 +10,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // Get the type of source object and create a new instance of that type
             Type typeSource = objSource.GetType();
             object objTarget = Activator.CreateInstance(typeSource);
+
             // Get all the properties of source object type
             PropertyInfo[] propertyInfo = typeSource.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            // Assign all source property to taget object 's properties
+
+            // Assign all source property to target object 's properties
             foreach (PropertyInfo property in propertyInfo)
             {
                 // Check whether property can be written to
                 if (property.CanWrite)
                 {
                     // check whether property type is value type, enum or string type
-                    if (property.PropertyType.IsValueType || property.PropertyType.IsEnum || property.PropertyType.Equals(typeof(System.String)))
+                    if (property.PropertyType.IsValueType || property.PropertyType.IsEnum || property.PropertyType == typeof(string))
                     {
                         property.SetValue(objTarget, property.GetValue(objSource, null), null);
                     }
@@ -29,14 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     {
                         object objPropertyValue = property.GetValue(objSource, null);
 
-                        if (objPropertyValue == null)
-                        {
-                            property.SetValue(objTarget, null, null);
-                        }
-                        else
-                        {
-                            property.SetValue(objTarget, objPropertyValue.CloneObject(), null);
-                        }
+                        property.SetValue(objTarget, objPropertyValue?.CloneObject(), null);
                     }
                 }
             }

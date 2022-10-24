@@ -164,7 +164,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
-        public async Task GivenExistingEntity_WhenAddSameEntityAgain_ThenFalseWillBeReturned()
+        public async Task GivenExistingEntity_WhenAddSameEntityAgain_ThenFalseShouldBeReturned()
         {
             var metadataStore = CreateUniqueMetadataStore();
             try
@@ -230,7 +230,50 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 Assert.NotNull(retrievedEntity2);
                 Assert.Equal(instanceGuid2, retrievedEntity2.WorkingInstanceGuid);
                 Assert.True(retrievedEntity2.Timestamp > retrievedEntity.Timestamp);
+            }
+            finally
+            {
+                await metadataStore.DeleteMetadataTableAsync();
+            }
+        }
 
+        [Fact]
+        public async Task GivenOldEntity_WhenUpdateEntity_ThenFalseShouldBeReturned()
+        {
+            var metadataStore = CreateUniqueMetadataStore();
+            try
+            {
+                var instanceGuid = Guid.NewGuid();
+                var entity = new TriggerLeaseEntity
+                {
+                    PartitionKey = TableKeyProvider.LeasePartitionKey(QueueTypeByte),
+                    RowKey = TableKeyProvider.LeaseRowKey(QueueTypeByte),
+                    WorkingInstanceGuid = instanceGuid,
+                    HeartbeatDateTime = DateTimeOffset.UtcNow,
+                };
+
+                bool isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
+                var retrievedEntity =
+                    await metadataStore.GetTriggerLeaseEntityAsync(QueueTypeByte, CancellationToken.None);
+                Assert.NotNull(retrievedEntity);
+                Assert.Equal(instanceGuid, retrievedEntity.WorkingInstanceGuid);
+                var instanceGuid2 = Guid.NewGuid();
+                retrievedEntity.WorkingInstanceGuid = instanceGuid2;
+                retrievedEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
+                isSucceeded = await metadataStore.TryUpdateEntityAsync(retrievedEntity);
+                Assert.True(isSucceeded);
+                var retrievedEntity2 =
+                    await metadataStore.GetTriggerLeaseEntityAsync(QueueTypeByte, CancellationToken.None);
+                Assert.NotNull(retrievedEntity2);
+                Assert.Equal(instanceGuid2, retrievedEntity2.WorkingInstanceGuid);
+                Assert.True(retrievedEntity2.Timestamp > retrievedEntity.Timestamp);
+
+                // fail to update entity with old etag
+                retrievedEntity.WorkingInstanceGuid = instanceGuid;
+                retrievedEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
+                isSucceeded = await metadataStore.TryUpdateEntityAsync(retrievedEntity);
+                Assert.False(isSucceeded);
             }
             finally
             {
