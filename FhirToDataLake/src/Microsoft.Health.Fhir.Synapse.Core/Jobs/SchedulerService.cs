@@ -4,18 +4,18 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
-using Microsoft.Health.Fhir.Synapse.JobManagement;
 using Microsoft.Health.JobManagement;
 using NCrontab;
 using Newtonsoft.Json;
@@ -28,10 +28,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private readonly IMetadataStore _metadataStore;
         private readonly byte _queueType;
+        private readonly DateTimeOffset? _startTime;
+        private readonly DateTimeOffset? _endTime;
         private readonly ILogger<SchedulerService> _logger;
-        private readonly Guid _instanceGuid;
-        private readonly JobConfiguration _jobConfiguration;
         private readonly IDiagnosticLogger _diagnosticLogger;
+        private readonly Guid _instanceGuid;
 
         // See https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression
         private readonly CrontabSchedule _crontabSchedule;
@@ -44,15 +45,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             ILogger<SchedulerService> logger)
         {
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
-            EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
-            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
-            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
 
-            _jobConfiguration = jobConfiguration.Value;
+            EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             _queueType = (byte)jobConfiguration.Value.QueueType;
+
+            _startTime = jobConfiguration.Value.StartTime;
+            _endTime = jobConfiguration.Value.EndTime;
+
+            if (_startTime != null && _endTime != null && _startTime >= _endTime)
+            {
+                throw new ConfigurationErrorException("The start time should be less than the end time.");
+            }
+
             _crontabSchedule = CrontabSchedule.Parse(jobConfiguration.Value.SchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
 
-            _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             _instanceGuid = Guid.NewGuid();
         }
 
@@ -64,121 +73,149 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public int SchedulerServiceLeaseRefreshIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultSchedulerServiceLeaseRefreshIntervalInSeconds;
 
+        // scheduler service is a long running service, it shouldn't stop for any exception.
+        // It stops only when the job is scheduled to end or is cancelled.
         public async Task RunAsync(CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation("Scheduler starts running.");
-            _logger.LogInformation("Scheduler starts running.");
-            using CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            CancellationToken serviceCancellationToken = cancellationTokenSource.Token;
-            var stopRunning = false;
+            _diagnosticLogger.LogInformation($"Scheduler instance {_instanceGuid} starts running.");
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} starts running.");
 
-            while (!stopRunning && !serviceCancellationToken.IsCancellationRequested)
+            bool scheduledToEnd = false;
+            while (!scheduledToEnd && !cancellationToken.IsCancellationRequested)
             {
-                var delayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), CancellationToken.None);
+                // delay task should stop without throwing exception when is cancellation requested.
+                Task delayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), cancellationToken).ContinueWith(_ => { });
 
                 try
                 {
-                    // try next time if the queue client isn't initialized.
+                    // try next time if the storage aren't initialized.
                     if (!_queueClient.IsInitialized() || !_metadataStore.IsInitialized())
                     {
                         _logger.LogInformation("The storage isn't initialized.");
                     }
                     else
                     {
-                        var leaseAcquired = await TryAcquireLeaseAsync(serviceCancellationToken);
+                        bool leaseAcquired = await TryAcquireLeaseAsync(cancellationToken);
 
                         if (leaseAcquired)
                         {
-                            try
-                            {
-                                var renewLeaseTask = RenewLeaseAsync(serviceCancellationToken);
-
-                                // we don't catch exceptions in this function, if the request is cancelled, it could return false or throw exception
-                                // we should stop renew lease for both cases.
-                                var processTriggerTask = TryPullAndProcessTriggerEntity(cancellationTokenSource);
-                                await Task.WhenAll(renewLeaseTask, processTriggerTask);
-                                stopRunning = processTriggerTask.Result;
-                            }
-                            catch (Exception ex)
-                            {
-                                _diagnosticLogger.LogError("Internal error occurred in scheduler service, will retry later.");
-                                _logger.LogError(ex, "Failed to pull and update trigger, will retry later.");
-                            }
+                            scheduledToEnd = await ProcessInternalAsync(cancellationToken);
                         }
                     }
-
-                    await delayTask;
-                    LastHeartbeat = DateTimeOffset.UtcNow;
                 }
                 catch (Exception ex)
                 {
-                    _diagnosticLogger.LogError($"Internal error occurred in scheduler service, will retry later.");
-                    _logger.LogError(ex, $"There is an exception thrown while processing current trigger, will retry later. Exception {ex.Message};");
+                    // if cancelled, the exception will be caught here and exit while loop as cancellationToken.IsCancellationRequested is true
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
+                        _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
+                    }
                 }
+
+                if (!scheduledToEnd && !cancellationToken.IsCancellationRequested)
+                {
+                    await delayTask;
+                }
+
+                LastHeartbeat = DateTimeOffset.UtcNow;
             }
 
-            _diagnosticLogger.LogInformation("Scheduler stops running.");
-            _logger.LogInformation("Scheduler stops running.");
+            if (cancellationToken.IsCancellationRequested)
+            {
+                _diagnosticLogger.LogError($"Scheduler service {_instanceGuid} is cancelled.");
+                _logger.LogError($"Scheduler service {_instanceGuid} is cancelled.");
+            }
+
+            _diagnosticLogger.LogInformation($"Scheduler instance {_instanceGuid} stops running.");
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} stops running.");
         }
 
+        /// <summary>
+        /// try to acquire lease
+        /// </summary>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>return true if lease is acquired, otherwise return false, will throw unexpected or cancellation exception.</returns>
         private async Task<bool> TryAcquireLeaseAsync(CancellationToken cancellationToken)
         {
-            try
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} starts to acquires lease.");
+
+            // try to get trigger lease entity
+            TriggerLeaseEntity triggerLeaseEntity = await _metadataStore.GetTriggerLeaseEntityAsync(_queueType, cancellationToken);
+
+            // if the trigger lease entity doesn't exist, create it and try to get it again
+            if (triggerLeaseEntity == null)
             {
-                TriggerLeaseEntity triggerLeaseEntity;
-                var needRenewLease = true;
-                try
-                {
-                    // try to get trigger lease entity
-                    triggerLeaseEntity = await _metadataStore.GetTriggerLeaseEntityAsync(_queueType, cancellationToken);
-                }
-                catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
-                {
-                    await CreateInitialTriggerLeaseEntityAsync(cancellationToken);
+                // if there are two instances try to create initialize trigger lease entity, then only one instance will success,
+                // the failed one will find the triggerLeaseEntity's WorkingInstanceGuid doesn't match in the below step and return false;
+                await CreateInitialTriggerLeaseEntityAsync(cancellationToken);
 
-                    // try to get trigger lease entity after insert
-                    triggerLeaseEntity = await _metadataStore.GetTriggerLeaseEntityAsync(_queueType, cancellationToken);
-                    needRenewLease = false;
-                }
-
-                if (triggerLeaseEntity == null)
-                {
-                    _logger.LogInformation("Try to acquire lease failed, the retrieved lease trigger entity is null.");
-                    return false;
-                }
-
-                if (triggerLeaseEntity.WorkingInstanceGuid != _instanceGuid &&
-                    triggerLeaseEntity.HeartbeatDateTime.AddSeconds(SchedulerServiceLeaseExpirationInSeconds) > DateTimeOffset.UtcNow)
-                {
-                    _logger.LogInformation("Try to acquire lease failed, another worker is using it.");
-                    return false;
-                }
-
-                if (needRenewLease)
-                {
-                    triggerLeaseEntity.WorkingInstanceGuid = _instanceGuid;
-                    triggerLeaseEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
-
-                    await _metadataStore.UpdateEntityAsync(triggerLeaseEntity, cancellationToken);
-                }
+                triggerLeaseEntity = await _metadataStore.GetTriggerLeaseEntityAsync(_queueType, cancellationToken);
             }
-            catch (Exception ex)
+
+            if (triggerLeaseEntity == null)
             {
-                _diagnosticLogger.LogError(
-                    $"Internal error occurred in scheduler service, will retry later.");
-                _logger.LogError(
-                    ex,
-                    $"Unhandled exception while acquiring lease. Exception: {ex.Message}.");
+                _logger.LogError($"Scheduler instance {_instanceGuid} fails to acquire lease, failed to get trigger lease entity.");
                 return false;
             }
 
-            _logger.LogInformation("Acquire lease successfully.");
-            return true;
+            if (triggerLeaseEntity.WorkingInstanceGuid != _instanceGuid &&
+                triggerLeaseEntity.HeartbeatDateTime.AddSeconds(SchedulerServiceLeaseExpirationInSeconds) > DateTimeOffset.UtcNow)
+            {
+                _logger.LogInformation($"Scheduler instance {_instanceGuid} fails to acquire lease, another scheduler instance {triggerLeaseEntity.WorkingInstanceGuid} is using it.");
+                return false;
+            }
+
+            triggerLeaseEntity.WorkingInstanceGuid = _instanceGuid;
+            triggerLeaseEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
+
+            // if the existing lease is timeout, and there are two instances try to acquire the lease and update the entity, only one will success, and the failed one will return false. 
+            bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(triggerLeaseEntity, cancellationToken);
+            _logger.LogInformation(isSucceeded
+                ? $"Scheduler instance {_instanceGuid} acquires lease successfully."
+                : $"Scheduler instance {_instanceGuid} fails to acquire lease, failed to update lease trigger entity.");
+
+            return isSucceeded;
         }
 
-        private async Task CreateInitialTriggerLeaseEntityAsync(CancellationToken cancellationToken)
+        /// <summary>
+        /// Internal function for processing
+        /// </summary>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>return true if The job has been scheduled to end, otherwise return false</returns>
+        private async Task<bool> ProcessInternalAsync(CancellationToken cancellationToken)
         {
-            var initialTriggerLeaseEntity = new TriggerLeaseEntity()
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} starts internal processing.");
+
+            using CancellationTokenSource runningCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            CancellationToken runningCancellationToken = runningCancellationTokenSource.Token;
+
+            // renew lease task will complete if cancelled or any exception
+            Task renewLeaseTask = LoopToRenewLeaseAsync(runningCancellationToken);
+
+            // process trigger task will complete if cancelled or the job has been scheduled to end.
+            Task<bool> processTriggerTask = LoopToCheckAndUpdateTriggerEntityAsync(runningCancellationToken);
+
+            // if one of these two tasks returns, should cancel the other one.
+            await Task.WhenAny(renewLeaseTask, processTriggerTask);
+
+            runningCancellationTokenSource.Cancel();
+
+            await Task.WhenAll(renewLeaseTask, processTriggerTask);
+
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} stops internal processing.");
+
+            return processTriggerTask.Result;
+        }
+
+        /// <summary>
+        /// Add the initial trigger entity to table
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>return true if add entity successfully, return false if the entity already exists.</returns>
+        private async Task<bool> CreateInitialTriggerLeaseEntityAsync(CancellationToken cancellationToken)
+        {
+            TriggerLeaseEntity initialTriggerLeaseEntity = new TriggerLeaseEntity
             {
                 PartitionKey = TableKeyProvider.LeasePartitionKey(_queueType),
                 RowKey = TableKeyProvider.LeaseRowKey(_queueType),
@@ -186,66 +223,110 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 HeartbeatDateTime = DateTimeOffset.UtcNow,
             };
 
-            // add the initial trigger entity to table
-            await _metadataStore.AddEntityAsync(initialTriggerLeaseEntity, cancellationToken);
+            bool isSucceeded = await _metadataStore.TryAddEntityAsync(initialTriggerLeaseEntity, cancellationToken);
 
-            _logger.LogInformation("Create initial trigger lease entity successfully.");
+            _logger.LogInformation(isSucceeded
+                ? "Create initial trigger lease entity successfully."
+                : "Failed to create initial trigger lease entity, the entity already exists.");
+
+            return isSucceeded;
         }
 
-        private async Task<bool> TryPullAndProcessTriggerEntity(CancellationTokenSource cancellationTokenSource)
+        /// <summary>
+        /// a while-loop to check and update trigger entity
+        /// </summary>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>return true if The job has been scheduled to end, otherwise return false</returns>
+        private async Task<bool> LoopToCheckAndUpdateTriggerEntityAsync(CancellationToken cancellationToken)
         {
-            var cancellationToken = cancellationTokenSource.Token;
-            while (!cancellationToken.IsCancellationRequested)
+            _logger.LogInformation($"scheduler instance {_instanceGuid} starts to check and update trigger entity in loop.");
+
+            bool scheduledToEnd = false;
+            while (!scheduledToEnd && !cancellationToken.IsCancellationRequested)
             {
-                var intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), CancellationToken.None);
+                Task intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), cancellationToken).ContinueWith(_ => { });
 
-                var currentTriggerEntity = await _metadataStore.GetCurrentTriggerEntityAsync(_queueType, cancellationToken) ??
-                                           await CreateInitialTriggerEntity(cancellationToken);
-
-                // if current trigger entity is still null after initializing, just skip processing it this time and try again next time.
-                // this case should not happen.
-                if (currentTriggerEntity != null)
+                try
                 {
-                    switch (currentTriggerEntity.TriggerStatus)
+                    scheduledToEnd = await CheckAndUpdateTriggerEntityAsync(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    // if cancelled, the exception will be caught here and exit while loop as cancellationToken.IsCancellationRequested is true
+                    if (!cancellationToken.IsCancellationRequested)
                     {
-                        case TriggerStatus.New:
-                            await EnqueueOrchestratorJobAsync(currentTriggerEntity, cancellationToken);
-                            break;
-                        case TriggerStatus.Running:
-                            await CheckAndUpdateOrchestratorJobStatusAsync(currentTriggerEntity, cancellationToken);
-                            break;
-                        case TriggerStatus.Completed:
-                            await CreateNextTriggerAsync(currentTriggerEntity, cancellationToken);
-                            break;
-                        case TriggerStatus.Failed:
-                        case TriggerStatus.Cancelled:
-                            // if the current trigger is cancelled/failed, stop scheduler, this case should not happen
-                            _logger.LogInformation("Trigger Status is cancelled or failed.");
-                            cancellationTokenSource.Cancel();
-                            return true;
+                        _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
+                        _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
                     }
                 }
 
-                await intervalDelayTask;
+                if (!scheduledToEnd && !cancellationToken.IsCancellationRequested)
+                {
+                    await intervalDelayTask;
+                }
+
                 LastHeartbeat = DateTimeOffset.UtcNow;
             }
 
-            return false;
+            _logger.LogInformation($"scheduler instance {_instanceGuid} stops to check and update trigger entity in loop.");
+
+            return scheduledToEnd;
+        }
+
+        /// <summary>
+        /// check and update trigger entity
+        /// </summary>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>return true if The job has been scheduled to end, otherwise return false</returns>
+        private async Task<bool> CheckAndUpdateTriggerEntityAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation($"scheduler instance {_instanceGuid} starts to check and update trigger entity.");
+
+            CurrentTriggerEntity currentTriggerEntity = await _metadataStore.GetCurrentTriggerEntityAsync(_queueType, cancellationToken) ??
+                                                        await CreateInitialTriggerEntity(cancellationToken);
+
+            // if current trigger entity is still null after initializing, just skip processing it this time and try again next time.
+            // this case should not happen.
+            bool scheduledToEnd = false;
+            if (currentTriggerEntity != null)
+            {
+                switch (currentTriggerEntity.TriggerStatus)
+                {
+                    case TriggerStatus.New:
+                        await EnqueueOrchestratorJobAsync(currentTriggerEntity, cancellationToken);
+                        break;
+                    case TriggerStatus.Running:
+                        await CheckAndUpdateOrchestratorJobStatusAsync(currentTriggerEntity, cancellationToken);
+                        break;
+                    case TriggerStatus.Completed:
+                        scheduledToEnd = await CreateNextTriggerAsync(currentTriggerEntity, cancellationToken);
+                        break;
+                    case TriggerStatus.Failed:
+                    case TriggerStatus.Cancelled:
+                        // if the current trigger is cancelled/failed, do noting and keep running, this case should not happen
+                        _logger.LogError("Trigger Status is cancelled or failed.");
+                        break;
+                }
+            }
+
+            _logger.LogInformation($"scheduler instance {_instanceGuid} checks and updates trigger entity successfully.");
+
+            return scheduledToEnd;
         }
 
         private async Task EnqueueOrchestratorJobAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
         {
             // enqueue a orchestrator job for this trigger
-            var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
+            FhirToDataLakeOrchestratorJobInputData orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
                 TriggerSequenceId = currentTriggerEntity.TriggerSequenceId,
-                Since = _jobConfiguration?.StartTime,
+                Since = _startTime,
                 DataStartTime = currentTriggerEntity.TriggerStartTime,
                 DataEndTime = currentTriggerEntity.TriggerEndTime,
             };
 
-            var jobInfoList = await _queueClient.EnqueueAsync(
+            IEnumerable<JobInfo> jobInfoList = await _queueClient.EnqueueAsync(
                 _queueType,
                 new[] { JsonConvert.SerializeObject(orchestratorDefinition) },
                 currentTriggerEntity.TriggerSequenceId,
@@ -255,22 +336,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             currentTriggerEntity.OrchestratorJobId = jobInfoList.First().Id;
             currentTriggerEntity.TriggerStatus = TriggerStatus.Running;
-            await _metadataStore.UpdateEntityAsync(currentTriggerEntity, cancellationToken);
 
-            _logger.LogInformation(
-                $"Enqueue orchestrator job for trigger index {currentTriggerEntity.TriggerSequenceId}, the orchestrator job id is {currentTriggerEntity.OrchestratorJobId}.");
+            bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
+
+            _logger.LogInformation(isSucceeded
+                ? $"Enqueue orchestrator job for trigger sequence id {currentTriggerEntity.TriggerSequenceId}, the orchestrator job id is {currentTriggerEntity.OrchestratorJobId}."
+                : $"Failed to enqueue orchestrator job for trigger sequence id {currentTriggerEntity.TriggerSequenceId}, the etag is not satisfied.");
         }
 
         private async Task CheckAndUpdateOrchestratorJobStatusAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
         {
-            var orchestratorJobId = currentTriggerEntity.OrchestratorJobId;
-            var orchestratorJob = await _queueClient.GetJobByIdAsync(
+            long orchestratorJobId = currentTriggerEntity.OrchestratorJobId;
+            JobInfo orchestratorJob = await _queueClient.GetJobByIdAsync(
                 _queueType,
                 orchestratorJobId,
                 false,
                 cancellationToken);
 
-            var needUpdateTriggerEntity = true;
+            bool needUpdateTriggerEntity = true;
 
             // job status "Archived" is useless,
             // shouldn't set job status to archived, if do, need to update the handle logic here
@@ -278,15 +361,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 case JobStatus.Completed:
                     currentTriggerEntity.TriggerStatus = TriggerStatus.Completed;
-                    _logger.LogInformation("Current trigger is completed.");
+                    _logger.LogInformation($"Current trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is completed.");
                     break;
                 case JobStatus.Failed:
                     currentTriggerEntity.TriggerStatus = TriggerStatus.Failed;
-                    _logger.LogInformation("The orchestrator job is failed.");
+                    _logger.LogError($"The orchestrator job of trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is failed.");
                     break;
                 case JobStatus.Cancelled:
                     currentTriggerEntity.TriggerStatus = TriggerStatus.Cancelled;
-                    _logger.LogInformation("The orchestrator job is cancelled.");
+                    _logger.LogError($"The orchestrator job trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is cancelled.");
                     break;
                 default:
                     needUpdateTriggerEntity = false;
@@ -295,36 +378,43 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (needUpdateTriggerEntity)
             {
-                await _metadataStore.UpdateEntityAsync(currentTriggerEntity, cancellationToken);
+                await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
             }
         }
 
-        private async Task CreateNextTriggerAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
+        /// <summary>
+        /// Create the next trigger entity
+        /// </summary>
+        /// <param name="currentTriggerEntity">current trigger entity.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>return true if the job has been scheduled to end, otherwise return false.</returns>
+        private async Task<bool> CreateNextTriggerAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
         {
-            var nextTriggerDateTimeTime =
-                _crontabSchedule.GetNextOccurrence(currentTriggerEntity.TriggerEndTime.DateTime);
+            DateTimeOffset? nextTriggerEndTime = GetNextTriggerEndTime(currentTriggerEntity.TriggerEndTime);
 
-            var nextTriggerTime = DateTime.SpecifyKind(nextTriggerDateTimeTime, DateTimeKind.Utc);
-
-            // next trigger time was the past time, assign the fields of next trigger to the currentTriggerEntity
-            if (nextTriggerTime.AddMinutes(JobConfigurationConstants.JobQueryLatencyInMinutes) < DateTimeOffset.UtcNow)
+            if (nextTriggerEndTime != null)
             {
+                DateTimeOffset? nextTriggerStartTime = GetNextTriggerStartTime(currentTriggerEntity.TriggerEndTime);
+
+                if (nextTriggerStartTime >= nextTriggerEndTime)
+                {
+                    _logger.LogInformation($"The job has been scheduled to end {nextTriggerStartTime}.");
+                    return true;
+                }
+
                 currentTriggerEntity.TriggerSequenceId += 1;
                 currentTriggerEntity.TriggerStatus = TriggerStatus.New;
 
-                currentTriggerEntity.TriggerStartTime = GetTriggerStartTime(currentTriggerEntity.TriggerEndTime);
-                currentTriggerEntity.TriggerEndTime = GetTriggerEndTime(nextTriggerTime);
-                if (currentTriggerEntity.TriggerStartTime > currentTriggerEntity.TriggerEndTime)
-                {
-                    _logger.LogInformation("The job has been scheduled to end.");
-                    return;
-                }
+                currentTriggerEntity.TriggerStartTime = nextTriggerStartTime;
+                currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerEndTime;
 
-                await _metadataStore.UpdateEntityAsync(currentTriggerEntity, cancellationToken);
+                await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
 
                 _logger.LogInformation(
                     $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table.");
             }
+
+            return false;
         }
 
         /// <summary>
@@ -334,91 +424,142 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>The created trigger entity</returns>
         private async Task<CurrentTriggerEntity> CreateInitialTriggerEntity(CancellationToken cancellationToken)
         {
-            var initialTriggerEntity = new CurrentTriggerEntity
+            CurrentTriggerEntity initialTriggerEntity = new ()
             {
                 PartitionKey = TableKeyProvider.TriggerPartitionKey(_queueType),
                 RowKey = TableKeyProvider.TriggerPartitionKey(_queueType),
-                TriggerStartTime = GetTriggerStartTime(null),
-                TriggerEndTime = GetTriggerEndTime(null),
+                TriggerStartTime = GetNextTriggerStartTime(null),
+                TriggerEndTime = (DateTimeOffset)GetNextTriggerEndTime(null),
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 0,
             };
 
-            try
-            {
-                // add the initial trigger entity to table
-                await _metadataStore.AddEntityAsync(initialTriggerEntity, cancellationToken);
-            }
-            catch (RequestFailedException ex)
-            {
-                _logger.LogError(ex, $"Failed to add trigger entity to table, exception: {ex.Message}");
-                throw;
-            }
+            // add the initial trigger entity to table
+            bool isSucceeded = await _metadataStore.TryAddEntityAsync(initialTriggerEntity, cancellationToken);
+
+            _logger.LogInformation(isSucceeded
+                ? "Create initial initial trigger entity successfully."
+                : "Failed to create initial trigger entity, the entity already exists.");
 
             return await _metadataStore.GetCurrentTriggerEntityAsync(_queueType, cancellationToken);
         }
 
-        private DateTimeOffset? GetTriggerStartTime(DateTimeOffset? lastTriggerEndTime)
+        /// <summary>
+        /// return the start time in configuration for initial load job, otherwise return the last trigger end time
+        /// </summary>
+        private DateTimeOffset? GetNextTriggerStartTime(DateTimeOffset? lastTriggerEndTime)
         {
-            return lastTriggerEndTime ?? _jobConfiguration?.StartTime;
+            return lastTriggerEndTime ?? _startTime;
         }
 
-        // Job end time could be null (which means runs forever) or a timestamp in the future like 2120/01/01.
-        // In this case, we will create a job to run with end time earlier that current timestamp.
-        // Also, FHIR data use processing time as lastUpdated timestamp, there might be some latency when saving to data store.
-        // Here we add a JobEndTimeLatencyInMinutes latency to avoid data missing due to latency in creation.
-        private DateTimeOffset GetTriggerEndTime(DateTimeOffset? occurrenceTime)
+        /// <summary>
+        /// FHIR data use processing time as lastUpdated timestamp, there might be some latency when saving to data store.
+        /// Here we add a JobEndTimeLatencyInMinutes latency to avoid data missing due to latency in creation.
+        /// So the nextTriggerEndTime is set JobEndTimeLatencyInMinutes earlier than the current timestamp.
+        /// If Job end time is specified and earlier than the nextTriggerEndTime, will set the nextTriggerEndTime to the specified job end time.
+        /// For initial load job, lastTriggerEndTime is null;
+        /// For incremental job, lastTriggerEndTime is the end time of the last trigger, we also check the nextoccurrence time.
+        /// If nextoccurrence time comes after nextTriggerEndTime, will return null and skip this iteration.
+        /// </summary>
+        /// <param name="lastTriggerEndTime">the end time of the last trigger</param>
+        /// <returns>the end time of the next trigger, return null if it is not yet the next occurrence time</returns>
+        private DateTimeOffset? GetNextTriggerEndTime(DateTimeOffset? lastTriggerEndTime)
         {
-            // Add latency here to allow latency in saving resources to database.
-            var endTime = occurrenceTime ?? DateTimeOffset.UtcNow.AddMinutes(-1 * JobConfigurationConstants.JobQueryLatencyInMinutes);
+            DateTimeOffset nextTriggerEndTime =
+                DateTimeOffset.UtcNow.AddMinutes(-1 * JobConfigurationConstants.JobQueryLatencyInMinutes);
 
-            if (_jobConfiguration?.EndTime != null && endTime > _jobConfiguration.EndTime)
+            if (lastTriggerEndTime != null)
             {
-                endTime = (DateTimeOffset)_jobConfiguration.EndTime;
+                DateTime nextOccurrenceTime =
+                    _crontabSchedule.GetNextOccurrence(((DateTimeOffset)lastTriggerEndTime).DateTime);
+                nextOccurrenceTime = DateTime.SpecifyKind(nextOccurrenceTime, DateTimeKind.Utc);
+                DateTimeOffset nextOccurrenceOffsetTime = nextOccurrenceTime;
+                if (nextOccurrenceOffsetTime > nextTriggerEndTime)
+                {
+                    return null;
+                }
+
+                // TODO: remove this line for refine later
+                nextTriggerEndTime = nextOccurrenceOffsetTime;
             }
 
-            return endTime;
+            if (nextTriggerEndTime > _endTime)
+            {
+                nextTriggerEndTime = (DateTimeOffset)_endTime;
+            }
+
+            return nextTriggerEndTime;
         }
 
-        private async Task RenewLeaseAsync(CancellationToken cancellationToken)
+        /// <summary>
+        /// A while-loop to renew lease, stop and return if cancelled or any exception, should not throw any exception
+        /// </summary>
+        private async Task LoopToRenewLeaseAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Start to renew lease for working instance {_instanceGuid}.");
-
-            while (!cancellationToken.IsCancellationRequested)
+            _logger.LogInformation($"scheduler instance {_instanceGuid} starts to renew lease in loop.");
+            bool stopRenew = false;
+            while (!stopRenew && !cancellationToken.IsCancellationRequested)
             {
-                var intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServiceLeaseRefreshIntervalInSeconds), CancellationToken.None);
-
                 try
                 {
-                    // try to get trigger lease entity
-                    var triggerLeaseEntity =
-                        await _metadataStore.GetTriggerLeaseEntityAsync(_queueType, cancellationToken);
+                    // if cancelled, also stop delay task
+                    Task intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServiceLeaseRefreshIntervalInSeconds), cancellationToken);
 
-                    if (triggerLeaseEntity == null || triggerLeaseEntity.WorkingInstanceGuid != _instanceGuid)
+                    // if renew lease successfully, then delay some time to renew again
+                    // if fail to renew lease, then stop renew and return
+                    // if there is an exception while renewing lease, then stop renew and return
+                    // if cancelled, the cancel exception will be caught and then stop renew and return.
+                    bool isSucceeded = await TryRenewLeaseInternalAsync(cancellationToken);
+                    if (isSucceeded)
                     {
-                        _logger.LogInformation("Failed to renew lease, the retrieved lease trigger entity is null or working instance doesn't match.");
+                        await intervalDelayTask;
                     }
                     else
                     {
-                        triggerLeaseEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
-
-                        await _metadataStore.UpdateEntityAsync(
-                            triggerLeaseEntity,
-                            cancellationToken: cancellationToken);
+                        stopRenew = true;
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogInformation(ex, $"Failed to renew lease for working instance {_instanceGuid}.");
-                }
-
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    await intervalDelayTask;
+                    _logger.LogInformation(ex, $"scheduler instance {_instanceGuid} fails to renew lease.");
+                    stopRenew = true;
                 }
             }
 
-            _logger.LogInformation($"Stop to renew lease for working instance {_instanceGuid}.");
+            _logger.LogInformation($"scheduler instance {_instanceGuid} stops to renew lease in loop.");
+        }
+
+        /// <summary>
+        /// try to renew lease
+        /// </summary>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>return true if the lease is renewed, otherwise return false or throw unknown exceptions</returns>
+        private async Task<bool> TryRenewLeaseInternalAsync(CancellationToken cancellationToken)
+        {
+            // try to get trigger lease entity
+            TriggerLeaseEntity triggerLeaseEntity =
+                await _metadataStore.GetTriggerLeaseEntityAsync(_queueType, cancellationToken);
+
+            if (triggerLeaseEntity == null)
+            {
+                _logger.LogInformation($"scheduler instance {_instanceGuid} fails to renew lease, the retrieved lease trigger entity is null.");
+                return false;
+            }
+
+            if (triggerLeaseEntity.WorkingInstanceGuid != _instanceGuid)
+            {
+                _logger.LogInformation($"scheduler instance {_instanceGuid} Fails to renew lease, the retrieved lease trigger entity's working instance {triggerLeaseEntity.WorkingInstanceGuid} doesn't match.");
+                return false;
+            }
+
+            triggerLeaseEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
+
+            await _metadataStore.TryUpdateEntityAsync(
+                triggerLeaseEntity,
+                cancellationToken: cancellationToken);
+
+            _logger.LogInformation($"scheduler instance {_instanceGuid} renews lease successfully.");
+            return true;
         }
     }
 }

@@ -93,6 +93,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
                 throw new ConfigurationErrorException("Max queued job count per orchestration job should be greater than 0.");
             }
 
+            if (jobConfiguration.StartTime != null && jobConfiguration.EndTime != null && jobConfiguration.StartTime >= jobConfiguration.EndTime)
+            {
+                throw new ConfigurationErrorException("The start time should be less than the end time.");
+            }
+
             FilterLocation filterLocation;
             try
             {
