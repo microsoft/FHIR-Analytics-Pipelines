@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,6 +58,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         private Dictionary<string, int> _outputFileIndexMap;
 
+        private double apiCost;
+        private double jsonCost;
+        private double parquetCost;
+        private double blobCost;
+        private int searchCount;
+        private double maxResponseTime;
+
         public FhirToDataLakeProcessingJob(
             long jobId,
             FhirToDataLakeProcessingJobInputData inputData,
@@ -78,19 +86,26 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+
+            apiCost = 0;
+            jsonCost = 0;
+            parquetCost = 0;
+            blobCost = 0;
+            searchCount = 0;
+            maxResponseTime = 0;
         }
 
         // the processing job status is never set to failed or cancelled.
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Start executing processing job {_inputData.ProcessingJobSequenceId}.");
+            _logger.LogInformation($"Start executing processing job {_jobId}.");
 
             try
             {
                 // clear result at first
                 _result = new FhirToDataLakeProcessingJobResult();
 
-                progress.Report(JsonConvert.SerializeObject(_result));
+                //progress.Report(JsonConvert.SerializeObject(_result));
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -131,10 +146,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 _result.ProcessingCompleteTime = DateTime.UtcNow;
 
-                progress.Report(JsonConvert.SerializeObject(_result));
+                _result.ExecutionTime = ((DateTimeOffset)_result.ProcessingCompleteTime).Subtract(_result.ProcessingStartTime).TotalSeconds;
+                _result.ProcessedTime["SearchCount"] = searchCount;
+                _result.ProcessedTime["ApiCost"] = apiCost;
+                _result.ProcessedTime["MaxResponseTime"] = maxResponseTime;
+                _result.ProcessedTime["JsonCost"] = jsonCost;
+                _result.ProcessedTime["ParquetCost"] = parquetCost;
+                _result.ProcessedTime["BlobCost"] = blobCost;
+                _result.Tag = "FinishedProcessing";
+                //progress.Report(JsonConvert.SerializeObject(_result));
 
-                _logger.LogInformation($"Finished processing job '{_inputData.ProcessingJobSequenceId}'.");
+                _logger.LogInformation($"Finished processing job '{_jobId}'.");
 
+                _logger.LogWarning(
+                    $"Performance test: Processed job {_jobId}: search count {searchCount} | {apiCost:F2} | {jsonCost:F2} | {parquetCost:F2} | {blobCost:F2} MaxResponseTime: {maxResponseTime:F2}");
+
+                _result.Tag = "ReturnResult";
                 return JsonConvert.SerializeObject(_result);
             }
             catch (TaskCanceledException taskCanceledEx)
@@ -440,7 +467,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         private async Task<SearchResult> ExecuteSearchAsync(BaseSearchOptions searchOptions, CancellationToken cancellationToken)
         {
-            var fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
+            searchCount++;
+            var stopWatch = Stopwatch.StartNew();
+            string fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
+
+            var responseTime = stopWatch.Elapsed.TotalSeconds;
+            apiCost += responseTime;
+            if (responseTime > maxResponseTime)
+            {
+                maxResponseTime = responseTime;
+            }
+
+            stopWatch.Restart();
 
             // Parse bundle result.
             JObject fhirBundleObject;
@@ -465,6 +503,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
 
             var continuationToken = FhirBundleParser.ExtractContinuationToken(fhirBundleObject);
+
+            jsonCost += stopWatch.Elapsed.TotalSeconds;
+            stopWatch.Stop();
 
             return new SearchResult(fhirResources.ToList(), fhirBundleResult.Length * sizeof(char), continuationToken);
         }
@@ -517,10 +558,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     var schemaTypes = _fhirSchemaManager.GetSchemaTypes(resourceType);
                     foreach (var schemaType in schemaTypes)
                     {
+                        var stopWatch = Stopwatch.StartNew();
+
                         // Convert grouped data to parquet stream
                         var processParameters = new ProcessParameters(schemaType, resourceType);
                         var parquetStream = await _parquetDataProcessor.ProcessAsync(batchData, processParameters, cancellationToken);
                         var skippedCount = batchData.Values.Count() - parquetStream.BatchSize;
+
+                        parquetCost += stopWatch.Elapsed.TotalSeconds;
+                        stopWatch.Restart();
 
                         if (parquetStream?.Value?.Length > 0)
                         {
@@ -550,6 +596,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 skippedCount);
                         }
 
+                        blobCost += stopWatch.Elapsed.TotalSeconds;
+                        stopWatch.Stop();
+
                         _result.SkippedCount =
                             _result.SkippedCount.AddToDictionary(schemaType, skippedCount);
                         _result.ProcessedCount =
@@ -560,11 +609,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _result.SearchCount.AddToDictionary(resourceType, resources.Count);
                 }
 
-                progress.Report(JsonConvert.SerializeObject(_result));
+                _result.Tag = "CommitResult";
+                //progress.Report(JsonConvert.SerializeObject(_result));
 
                 // clear cache
                 _cacheResult.ClearCache();
-                _logger.LogInformation($"Commit cache resources successfully for processing job {_inputData.ProcessingJobSequenceId}.");
+                _logger.LogInformation($"Commit cache resources successfully for processing job {_jobId}.");
             }
         }
 

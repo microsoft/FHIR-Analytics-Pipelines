@@ -26,5 +26,4 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 RUN echo "/app" >> /etc/ld.so.conf.d/app.conf && ldconfig
-ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/app"
 ENTRYPOINT ["dotnet", "Microsoft.Health.Fhir.Synapse.Tool.dll"]

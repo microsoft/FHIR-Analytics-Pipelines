@@ -15,10 +15,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// </summary>
         public DateTimeOffset ProcessingStartTime { get; set; } = DateTimeOffset.UtcNow;
 
+        public string Tag { get; set; } = "Initialization";
+
         /// <summary>
         /// Processing job complete time
         /// </summary>
         public DateTimeOffset? ProcessingCompleteTime { get; set; }
+
+        public double ExecutionTime { get; set; }
+
+        public Dictionary<string, double> ProcessedTime { get; set; } = new Dictionary<string, double>();
 
         /// <summary>
         /// Search count for each resource type.

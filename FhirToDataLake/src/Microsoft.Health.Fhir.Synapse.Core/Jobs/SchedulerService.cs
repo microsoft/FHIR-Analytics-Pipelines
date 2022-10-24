@@ -303,7 +303,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 currentTriggerEntity.TriggerStartTime = GetTriggerStartTime(currentTriggerEntity.TriggerEndTime);
                 currentTriggerEntity.TriggerEndTime = GetTriggerEndTime(nextTriggerTime);
-                if (currentTriggerEntity.TriggerStartTime > currentTriggerEntity.TriggerEndTime)
+                if (currentTriggerEntity.TriggerStartTime >= currentTriggerEntity.TriggerEndTime)
                 {
                     _logger.LogInformation("The job has been scheduled to end.");
                     return;

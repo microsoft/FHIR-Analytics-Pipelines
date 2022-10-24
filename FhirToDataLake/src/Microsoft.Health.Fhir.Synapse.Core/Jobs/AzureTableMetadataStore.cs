@@ -100,7 +100,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
             {
-                _logger.LogWarning("The current trigger doesn't exist, will create a new one.");
+                _logger.LogInformation("The current trigger doesn't exist, will create a new one.");
             }
             catch (Exception ex)
             {

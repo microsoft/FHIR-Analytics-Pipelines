@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -83,7 +84,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Start executing FhirToDataLake orchestrator job {_jobInfo.GroupId}");
+            _logger.LogInformation($"Start executing FhirToDataLake orchestrator job {_jobInfo.Id}");
+            _logger.LogWarning("Orchestrator Job Starts at {time}", DateTime.Now);
+            var stopWatch = Stopwatch.StartNew();
 
             try
             {
@@ -103,7 +106,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 await foreach (var input in inputs.WithCancellation(cancellationToken))
                 {
-                    while (_result.RunningJobIds.Count > _schedulerConfiguration.MaxConcurrencyCount)
+                    while (_result.RunningJobIds.Count >= _schedulerConfiguration.MaxConcurrencyCount*10)
                     {
                         await WaitRunningJobComplete(progress, cancellationToken);
                     }
@@ -131,10 +134,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 _result.CompleteTime = DateTimeOffset.UtcNow;
 
+                _result.ExecutionTime = ((DateTimeOffset)_result.CompleteTime).Subtract(_result.StartTime).TotalSeconds;
+
+                _result.Tag = "FinishedProcessing";
                 progress.Report(JsonConvert.SerializeObject(_result));
 
-                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.GroupId}");
+                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}");
+                _logger.LogWarning($"Performance test: Orchestrator job exetution time at {stopWatch.Elapsed.TotalSeconds:F2}");
 
+                stopWatch.Stop();
+
+                _result.Tag = "ReturnResult";
                 return JsonConvert.SerializeObject(_result);
             }
             catch (TaskCanceledException taskCanceledEx)
@@ -361,6 +371,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             _result.SkippedResourceCounts =
                                 _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
 
+                            _result.TotalProcessedResourceCount = _result.ProcessedResourceCounts.Sum(x => x.Value);
+
+                            foreach (var (key, time) in processingJobResult.ProcessedTime)
+                            {
+                                if (!_result.ProcessedTime.ContainsKey(key))
+                                {
+                                    _result.ProcessedTime[key] = time;
+                                }
+                                else
+                                {
+                                    _result.ProcessedTime[key] += time;
+                                }
+                            }
+
                             if (await _filterManager.GetFilterScopeAsync(cancellationToken) == FilterScope.Group)
                             {
                                 await _metadataStore.UpdatePatientVersionsAsync(
@@ -368,6 +392,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                     processingJobResult.ProcessedPatientVersion,
                                     cancellationToken);
                             }
+
+                            _logger.LogWarning($"Performance test: job {latestJobInfo.Id} result in orchestrator job {latestJobInfo.Result}");
+                            _logger.LogWarning(
+                                    "Performance test: Progress: jobId {jobID} finished. processed {count} resources {} types, total {} resources, at {time}",
+                                    latestJobInfo.Id,
+                                    processingJobResult.SearchCount.Sum(x => x.Value),
+                                    processingJobResult.SearchCount.Count,
+                                    _result.TotalResourceCounts.Sum(x => x.Value),
+                                    DateTime.Now);
                         }
                     }
                     else if (latestJobInfo.Status == JobStatus.Failed)

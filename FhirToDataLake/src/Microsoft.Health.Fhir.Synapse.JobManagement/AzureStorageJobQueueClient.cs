@@ -236,7 +236,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             jobInfos = jobInfoEntities.Select(entity => entity.ToJobInfo<TJobInfo>()).ToList();
 
-            _logger.LogInformation($"Enqueue jobs '{string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())}' successfully.");
+            _logger.LogInformation($"Enqueue jobs {string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())} successfully.");
 
             return jobInfos;
         }
@@ -327,7 +327,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             _ = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionUpdateActions, cancellationToken);
 
-            _logger.LogInformation($"Dequeue job '{jobInfo.Id}'. Successfully ");
+            _logger.LogInformation($"Dequeue job {jobInfo.Id} Successfully ");
             return jobInfo;
         }
 
@@ -550,6 +550,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         {
             _logger.LogInformation($"Start to complete job {jobInfo.Id}.");
 
+            _logger.LogWarning($"Performance test: job {jobInfo.Id} result in complete job {jobInfo.Result}");
+
             // step 1: get jobInfo entity and job lock entity
             var (retrievedJobInfoEntity, jobLockEntity) = await AcquireJobEntityByJobInfoAsync(jobInfo, cancellationToken);
 
@@ -583,6 +585,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             try
             {
                 await _azureJobInfoTableClient.UpdateEntityAsync(jobInfoEntity, ETag.All, cancellationToken: cancellationToken);
+                _logger.LogWarning($"Performance test: job {jobInfo.Id} result in entity in complete job updated to table {jobInfoEntity[JobInfoEntityProperties.Result]}");
+                _logger.LogWarning($"Performance test: job {jobInfo.Id} result in jobinfo in complete job updated to table {jobInfo.Result}");
+
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.RequestBodyTooLargeErrorCode))
             {
@@ -649,7 +654,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.GetEntityNotFoundErrorCode))
             {
-                _logger.LogWarning(ex, "Failed to get job id entity, the entity doesn't exist, will create one.");
+                _logger.LogInformation(ex, "Failed to get job id entity, the entity doesn't exist, will create one.");
 
                 // create new entity if not exist
                 var initialJobIdEntity = new JobIdEntity
