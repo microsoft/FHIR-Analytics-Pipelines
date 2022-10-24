@@ -61,13 +61,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _logger.LogInformation("The trigger lease entity doesn't exist.");
             }
-            catch (Exception ex)
-            {
-                // any exceptions while getting entity will log a error and try next time
-                _logger.LogError(ex, "Failed to get trigger lease entity from table.");
-                throw;
-            }
 
+            // don't catch other exceptions, the caller should handle it
             return entity;
         }
 
@@ -130,13 +125,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _logger.LogInformation(ex, "The current trigger doesn't exist, will create a new one.");
             }
-            catch (Exception ex)
-            {
-                // any exceptions while getting entity will log a error and try next time
-                _logger.LogError(ex, $"Failed to get current trigger entity from table, exception: {ex.Message}");
-                throw;
-            }
 
+            // don't catch other exceptions, the caller should handle it
             return entity;
         }
 
