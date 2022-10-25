@@ -114,11 +114,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
                 }
 
                 ValidateUtility.ValidateImageReference(filterLocation.FilterImageReference);
-
-                if (string.IsNullOrWhiteSpace(filterLocation.FilterConfigurationFileName))
-                {
-                    throw new ConfigurationErrorException($"Filter configuration file name can not be empty when external filter configuration is enable.");
-                }
             }
             else
             {
