@@ -96,7 +96,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             return compartmentResourceTypesLookup;
         }
 
-        protected override Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>> BuildSearchParametersLookupFromMetadata(string metaData)
+        protected override FhirCapabilityData BuildCapabilityDataFromMetadata(string metaData)
         {
             var parser = new FhirJsonParser();
 
@@ -151,7 +151,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
             _logger.LogInformation($"Build SearchParametersLookup from fhir server metadata successfully.");
 
-            return new Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>>(searchParameters, searchParameterIds);
+            return new FhirCapabilityData(searchParameters, searchParameterIds);
         }
     }
 }
