@@ -106,19 +106,19 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                         // Check null again to avoid duplicate initialization.
                         if (_blobContainerClient is null)
                         {
-                            var externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
-                            _blobContainerClient = new BlobContainerClient(
-                                _storageUri,
-                                externalTokenCredential);
-
                             try
                             {
-                                InitializeBlobContainerClient(_blobContainerClient);
+                                var externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
+                                var tempBlobContainerClient = new BlobContainerClient(
+                                    _storageUri,
+                                    externalTokenCredential);
+
+                                InitializeBlobContainerClient(tempBlobContainerClient);
+                                _blobContainerClient = tempBlobContainerClient;
                             }
                             catch (Exception ex)
                             {
-                                // Reset to null for initialization later.
-                                _blobContainerClient = null;
+                                _logger.LogInformation(ex, $"Initialize blob container client failed: {ex}");
                             }
                         }
                     }
