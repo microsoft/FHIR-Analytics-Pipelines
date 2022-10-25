@@ -119,6 +119,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                             catch (Exception ex)
                             {
                                 _logger.LogInformation(ex, $"Initialize blob container client failed: {ex}");
+                                throw;
                             }
                         }
                     }
@@ -138,9 +139,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 {
                     lock (_dataLakeFileSystemClientLock)
                     {
-                        _dataLakeFileSystemClient ??= new DataLakeFileSystemClient(
-                            _storageUri,
-                            _credentialProvider.GetCredential(TokenCredentialTypes.External));
+                        if (_dataLakeFileSystemClient is null)
+                        {
+                            _dataLakeFileSystemClient ??= new DataLakeFileSystemClient(
+                                _storageUri,
+                                _credentialProvider.GetCredential(TokenCredentialTypes.External));
+                        }
                     }
                 }
 
