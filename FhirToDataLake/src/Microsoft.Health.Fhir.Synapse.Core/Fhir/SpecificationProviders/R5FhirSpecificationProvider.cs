@@ -30,16 +30,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         /// </summary>
         protected override string _searchParameterEmbeddedFile { get; } = "Specifications.R5.search-parameters.json";
 
-        /// <summary>
-        /// search parameter id to search parameter definition, extracted from _searchParameterFile
-        /// </summary>
-        // TODO: it is not used now. enable it if we would like do more search parameter validation in pipeline
-        private readonly Dictionary<string, SearchParameter> _searchParameterDefinitionLookup;
 
         public R5FhirSpecificationProvider(IFhirDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R5FhirSpecificationProvider> logger)
             : base(dataClient, diagnosticLogger, logger)
         {
-            // _searchParameterDefinitionLookup = BuildSearchParameterDefinitionLookup();
         }
 
         public override IEnumerable<string> GetAllResourceTypes()

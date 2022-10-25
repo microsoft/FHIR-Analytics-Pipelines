@@ -226,7 +226,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             catch (BrokenCircuitException bcEx)
             {
                 _diagnosticLogger.LogError($"Failed to search from FHIR server. Reason: {bcEx.Message}");
-                _logger.LogError(bcEx, "Broken circuit while searching from FHIR server. Reason: {0}", bcEx.Message);
+                _logger.LogInformation(bcEx, "Broken circuit while searching from FHIR server. Reason: {0}", bcEx.Message);
 
                 throw new FhirSearchException(
                     string.Format(Resource.FhirSearchFailed, uri),
