@@ -49,7 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
             using MemoryStream stream = new (bytes);
             blobContainerClient.UpdateBlobAsync(Arg.Any<string>(), default, cancellationToken: default).Returns("test");
             blobContainerClient.GetBlobAsync(Arg.Any<string>(), cancellationToken: default).Returns(stream);
-            blobContainerClient.DeleteDirectoryIfExistsAsync(Arg.Is<string>(p => p.StartsWith(AzureBlobStorageHealthChecker.HealthCheckTargetSubFolder)), cancellationToken: default).Returns(Task.CompletedTask);
+            blobContainerClient.DeleteDirectoryIfExistsAsync(Arg.Any<string>(), cancellationToken: default).Returns(Task.CompletedTask);
             blobContainerClient.MoveDirectoryAsync(Arg.Any<string>(), Arg.Any<string>(), cancellationToken: default).Returns(Task.CompletedTask);
 
             AzureBlobStorageHealthChecker storageAccountHealthChecker = new AzureBlobStorageHealthChecker(
@@ -70,11 +70,11 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
             IAzureBlobContainerClient blobContainerClient = Substitute.For<IAzureBlobContainerClient>();
 
             byte[] bytes = Encoding.UTF8.GetBytes(AzureBlobStorageHealthChecker.HealthCheckUploadedContent);
-            using MemoryStream stream = new(bytes);
+            using MemoryStream stream = new (bytes);
 
             blobContainerClient.UpdateBlobAsync(Arg.Any<string>(), default, cancellationToken: default).Returns("test");
             blobContainerClient.GetBlobAsync(Arg.Any<string>(), cancellationToken: default).Returns(stream);
-            blobContainerClient.DeleteDirectoryIfExistsAsync(Arg.Is<string>(p => p.StartsWith(AzureBlobStorageHealthChecker.HealthCheckTargetSubFolder)), cancellationToken: default).ThrowsAsync<Exception>();
+            blobContainerClient.DeleteDirectoryIfExistsAsync(Arg.Any<string>(), cancellationToken: default).ThrowsAsync<Exception>();
             AzureBlobStorageHealthChecker storageAccountHealthChecker = new AzureBlobStorageHealthChecker(
                 new MockAzureBlobContainerClientFactory(blobContainerClient),
                 Options.Create(_jobConfig),
