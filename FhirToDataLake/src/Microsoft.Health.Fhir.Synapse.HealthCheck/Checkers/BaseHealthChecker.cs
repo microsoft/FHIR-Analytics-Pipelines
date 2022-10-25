@@ -16,7 +16,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
     public abstract class BaseHealthChecker : IHealthChecker
     {
         private readonly IDiagnosticLogger _diagnosticLogger;
-        private readonly ILogger<BaseHealthChecker> _logger;
+        protected readonly ILogger<BaseHealthChecker> _logger;
 
         protected BaseHealthChecker(
             string healthCheckName,
