@@ -55,8 +55,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         {
             var dataClient = Substitute.For<IFhirDataClient>();
             dataClient.SearchAsync(default, default).ThrowsForAnyArgs(new FhirSearchException("mockException"));
+
+            var provider = new R5FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR5FhirSpecificationProviderLogger);
             Assert.Throws<FhirSpecificationProviderException>(
-                () => new R5FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR5FhirSpecificationProviderLogger));
+                () => provider.GetSearchParametersByResourceType("Patient"));
         }
 
         [Theory]
@@ -69,8 +71,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
             var dataClient = Substitute.For<IFhirDataClient>();
             dataClient.SearchAsync(default, default).ReturnsForAnyArgs(metadataContent);
 
+            var provider = new R5FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR5FhirSpecificationProviderLogger);
             Assert.Throws<FhirSpecificationProviderException>(
-                () => new R5FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR5FhirSpecificationProviderLogger));
+                () => provider.GetSearchParametersByResourceType("Patient"));
         }
 
         [Fact]

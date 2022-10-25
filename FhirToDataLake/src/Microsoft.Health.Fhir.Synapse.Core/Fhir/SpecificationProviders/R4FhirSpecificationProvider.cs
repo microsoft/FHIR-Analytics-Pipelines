@@ -31,16 +31,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         /// </summary>
         protected override string _searchParameterEmbeddedFile { get; } = "Specifications.R4.search-parameters.json";
 
-        /// <summary>
-        /// search parameter id to search parameter definition, extracted from _searchParameterFile
-        /// </summary>
-        // TODO: it is not used now. enable it if we would like do more search parameter validation in pipeline
-        private readonly Dictionary<string, SearchParameter> _searchParameterDefinitionLookup;
-
         public R4FhirSpecificationProvider(IFhirDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R4FhirSpecificationProvider> logger)
             : base(dataClient, diagnosticLogger, logger)
         {
-            // _searchParameterDefinitionLookup = BuildSearchParameterDefinitionLookup();
         }
 
         public override IEnumerable<string> GetAllResourceTypes()
@@ -97,7 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             return compartmentResourceTypesLookup;
         }
 
-        protected override Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>> BuildSearchParametersLookupFromMetadata(string metaData)
+        protected override FhirCapabilityData BuildCapabilityDataFromMetadata(string metaData)
         {
             var parser = new FhirJsonParser();
 
@@ -152,7 +145,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
             _logger.LogInformation($"Build SearchParametersLookup from fhir server metadata successfully.");
 
-            return new Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>>(searchParameters, searchParameterIds);
+            return new FhirCapabilityData(searchParameters, searchParameterIds);
         }
 
         /// <summary>
