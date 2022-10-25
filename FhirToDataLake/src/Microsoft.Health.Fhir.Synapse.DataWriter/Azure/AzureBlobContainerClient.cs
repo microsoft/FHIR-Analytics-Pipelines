@@ -111,7 +111,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                                 _storageUri,
                                 externalTokenCredential);
 
-                            InitializeBlobContainerClient(_blobContainerClient);
+                            try
+                            {
+                                InitializeBlobContainerClient(_blobContainerClient);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Reset to null for initialization later.
+                                _blobContainerClient = null;
+                            }
                         }
                     }
                 }
@@ -146,6 +154,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             try
             {
                 blobContainerClient.CreateIfNotExists();
+                _logger.LogInformation($"Create container {blobContainerClient.Name} successfully.");
             }
             catch (Exception ex)
             {

@@ -53,6 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
+                _logger.LogInformation(e, $"Check ACR health status {_imageReference} failed: {e}.");
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = $"Read from acr failed. {e.Message}";
                 return healthCheckResult;

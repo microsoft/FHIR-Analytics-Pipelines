@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -21,6 +23,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
     public class AzureBlobStorageHealthChecker : BaseHealthChecker
     {
         public const string HealthCheckBlobPrefix = ".healthcheck";
+        public const string HealthCheckSourceSubFolder = "__healthcheck__/source";
+        public const string HealthCheckTargetSubFolder = "__healthcheck__/target";
         public const string HealthCheckUploadedContent = "healthCheckContent";
         private readonly IAzureBlobContainerClient _blobContainerClient;
 
@@ -42,7 +46,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
             var healthCheckResult = new HealthCheckResult(HealthCheckTypes.AzureBlobStorageCanReadWrite);
-            var blobPath = HealthCheckBlobPrefix;
+            var blobPath = $"{HealthCheckSourceSubFolder}/{HealthCheckBlobPrefix}";
 
             try
             {
@@ -51,6 +55,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
+                _logger.LogInformation(e, $"Check write storage account failed: {e}.");
+
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = $"Write content to blob failed. {e.Message}";
                 return healthCheckResult;
@@ -69,8 +75,25 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
+                _logger.LogInformation(e, $"Check read storage account failed: {e}.");
+
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = $"Read content from blob failed. {e.Message}";
+                return healthCheckResult;
+            }
+
+            try
+            {
+                // Ensure hierachical namespace is enabled (supports directory operations) from the storage account
+                await _blobContainerClient.DeleteDirectoryIfExistsAsync(HealthCheckTargetSubFolder, cancellationToken);
+                await _blobContainerClient.MoveDirectoryAsync(HealthCheckSourceSubFolder, HealthCheckTargetSubFolder, cancellationToken);
+            }
+            catch (Exception e)
+            {
+                _logger.LogInformation(e, $"Check hierachical namespace enabled in storage account failed: {e}.");
+
+                healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
+                healthCheckResult.ErrorMessage = $"Check hierachical namespace enabled in storage account failed. {e.Message}";
                 return healthCheckResult;
             }
 

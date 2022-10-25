@@ -44,6 +44,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
+                _logger.LogInformation(e, $"Check FHIR server health status {_fhirApiDataClient} failed: {e}.");
+
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = "Read from FHIR server failed." + e.Message;
                 return healthCheckResult;
