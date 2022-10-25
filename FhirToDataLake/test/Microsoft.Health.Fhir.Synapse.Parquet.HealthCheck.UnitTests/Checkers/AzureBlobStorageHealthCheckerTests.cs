@@ -48,8 +48,11 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         {
             byte[] bytes = Encoding.UTF8.GetBytes(AzureBlobStorageHealthChecker.HealthCheckUploadedContent);
             using MemoryStream stream = new (bytes);
-            _blobContainerClient.UpdateBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), default, cancellationToken: default).Returns("test");
-            _blobContainerClient.GetBlobAsync(Arg.Is<string>(p => p.StartsWith(_healthCheckBlobPrefix)), cancellationToken: default).Returns(stream);
+            _blobContainerClient.UpdateBlobAsync(Arg.Any<string>(), default, cancellationToken: default).Returns("test");
+            _blobContainerClient.GetBlobAsync(Arg.Any<string>(), cancellationToken: default).Returns(stream);
+            _blobContainerClient.DeleteDirectoryIfExistsAsync(Arg.Is<string>(p => p.StartsWith(AzureBlobStorageHealthChecker.HealthCheckTargetSubFolder)), cancellationToken: default).Returns(Task.CompletedTask);
+            _blobContainerClient.MoveDirectoryAsync(Arg.Any<string>(), Arg.Any<string>(), cancellationToken: default).Returns(Task.CompletedTask);
+
             _storageAccountHealthChecker = new AzureBlobStorageHealthChecker(
                 new MockAzureBlobContainerClientFactory(_blobContainerClient),
                 Options.Create(_jobConfig),
