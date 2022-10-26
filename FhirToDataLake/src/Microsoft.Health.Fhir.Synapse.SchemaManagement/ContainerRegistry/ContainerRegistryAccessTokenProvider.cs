@@ -44,22 +44,19 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             ILogger<ContainerRegistryAccessTokenProvider> logger)
         {
             EnsureArg.IsNotNull(tokenCredentialProvider, nameof(tokenCredentialProvider));
-            EnsureArg.IsNotNull(httpClient, nameof(httpClient));
-            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
-            EnsureArg.IsNotNull(logger, nameof(logger));
 
+            _client = EnsureArg.IsNotNull(httpClient, nameof(httpClient));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _aadTokenProvider = new AzureAccessTokenProvider(
                 tokenCredentialProvider.GetCredential(TokenCredentialTypes.External),
                 diagnosticLogger,
                 new Logger<AzureAccessTokenProvider>(new LoggerFactory()));
-            _client = httpClient;
-            _diagnosticLogger = diagnosticLogger;
-            _logger = logger;
         }
 
         public async Task<string> GetTokenAsync(string registryServer, CancellationToken cancellationToken)
         {
-            EnsureArg.IsNotNullOrEmpty(registryServer, nameof(registryServer));
+            EnsureArg.IsNotNullOrWhiteSpace(registryServer, nameof(registryServer));
 
             string aadToken;
             try

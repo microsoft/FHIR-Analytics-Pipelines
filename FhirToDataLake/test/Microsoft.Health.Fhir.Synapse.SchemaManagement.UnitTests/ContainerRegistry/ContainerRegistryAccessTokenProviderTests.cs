@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -49,6 +50,15 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         {
             var acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.OK, content);
             await Assert.ThrowsAsync<ContainerRegistryTokenException>(() => acrTokenProvider.GetTokenAsync(RegistryServer, default));
+        }
+
+        [Fact]
+        public async Task GivenInvalidRegistry_WhenRefreshTokenIsEmpty_ExceptionShouldBeThrown()
+        {
+            var acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.OK);
+            await Assert.ThrowsAsync<ArgumentException>(() => acrTokenProvider.GetTokenAsync(string.Empty, default));
+            await Assert.ThrowsAsync<ArgumentException>(() => acrTokenProvider.GetTokenAsync(" ", default));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => acrTokenProvider.GetTokenAsync(null, default));
         }
 
         [Fact]
