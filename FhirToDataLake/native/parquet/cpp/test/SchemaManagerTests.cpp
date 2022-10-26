@@ -82,3 +82,15 @@ TEST (SchemaTest,  AddAndGetEmptyOrWhiteSpaceSchemaKey)
     status = schemaManager.AddSchema(" ", mockSchema);
     EXPECT_EQ(11001, status);
 }
+
+
+TEST (SchemaTest,  CheckStringIsEmptyOrWhiteSpace)
+{
+    EXPECT_TRUE(IsEmptyOrWhitespace(string("")));
+    EXPECT_TRUE(IsEmptyOrWhitespace(string(" ")));
+    EXPECT_FALSE(IsEmptyOrWhitespace(string("a")));
+    EXPECT_FALSE(IsEmptyOrWhitespace(string("ab")));
+    EXPECT_FALSE(IsEmptyOrWhitespace(string(" a")));
+    EXPECT_FALSE(IsEmptyOrWhitespace(string("a ")));
+    EXPECT_FALSE(IsEmptyOrWhitespace(string(" aa ")));
+}

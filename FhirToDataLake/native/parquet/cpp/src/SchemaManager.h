@@ -16,7 +16,7 @@ const set<string> FhirBooleanTypes { "boolean" };
 shared_ptr<arrow::Field> GenerateStructField(const string& fieldName, const Json::Value& node);
 vector<shared_ptr<arrow::Field>> GenerateSchemaFields(const Json::Value& node);
 bool LoadJson(const string& json, Json::Value* root);
-bool isNullOrWhitespace(const std::string& str);
+bool IsEmptyOrWhitespace(const std::string& str);
 
 class SchemaManager
 {

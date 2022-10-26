@@ -48,7 +48,7 @@ namespace Microsoft.Health.Parquet
 
             if (inputJson == null)
             {
-                throw new ParquetException(ParquetConverterErrorCodes.ReadInputJsonError, "Input Json is null.");
+                throw new ParquetException(ParquetConverterErrorCodes.ReadInputJsonError, Resources.InputJsonIsNull);
             }
 
             // Get byte counts from input
@@ -88,7 +88,7 @@ namespace Microsoft.Health.Parquet
                 int status = RegisterParquetSchema(_nativeConverter, key, value);
                 if (status != 0)
                 {
-                    throw new ParquetException(status, "Failed to initialize schema set.");
+                    throw new ParquetException(status, Resources.InitializeSchemaSetError);
                 }
             }
         }

@@ -100,7 +100,7 @@ shared_ptr<arrow::Schema> SchemaManager::GetSchema(const string& schemaKey)
 // Return 0 if operation succeeds.
 int SchemaManager::AddSchema(const string& schemaKey, const string& schemaJson)
 {
-    if (isNullOrWhitespace(schemaKey) || isNullOrWhitespace(schemaJson))
+    if (IsEmptyOrWhitespace(schemaKey) || IsEmptyOrWhitespace(schemaJson))
     {
         return ParseParquetSchemaError;
     }
@@ -122,7 +122,7 @@ int SchemaManager::AddSchema(const string& schemaKey, const string& schemaJson)
     }
 }
 
-bool isNullOrWhitespace(const std::string& str) {
+bool IsEmptyOrWhitespace(const std::string& str) {
     return str.empty()
         || std::all_of(str.begin(), str.end(), [](char c) {
         return std::isspace(static_cast<unsigned char>(c));
