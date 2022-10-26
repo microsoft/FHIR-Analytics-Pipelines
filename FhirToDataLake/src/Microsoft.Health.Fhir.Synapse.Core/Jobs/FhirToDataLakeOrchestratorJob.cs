@@ -19,6 +19,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -195,7 +196,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // Unhandled exceptions.
                 _diagnosticLogger.LogError("Unknown error occurred in FhirToDataLake job.");
                 _logger.LogError(unhandledEx, "Unhandled error occurred in orchestrator job {0}. Reason:{1}", _jobInfo.Id, unhandledEx);
-                _jobExecutionErrorProcessor.Process(unhandledEx, "Unhandled in orchestrator job.");
+                _jobExecutionErrorProcessor.Process(unhandledEx, "Unhandled error occurred in orchestrator job.");
                 throw new RetriableJobException("Unhandled error occurred in orchestrator job.", unhandledEx);
             }
         }

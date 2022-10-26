@@ -18,7 +18,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
-using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;

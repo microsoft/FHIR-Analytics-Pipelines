@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
-using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 {

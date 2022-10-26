@@ -12,7 +12,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
-using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
@@ -42,6 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly ILogger<AzureStorageJobFactory> _logger;
         private readonly IMetricsLogger _metricsLogger;
         private readonly IJobExecutionErrorProcessor _jobExecutionErrorProcessor;
+        private readonly JobFactoryErrorProcessor _jobFactoryErrorProcessor;
 
         public AzureStorageJobFactory(
             IQueueClient queueClient,
@@ -75,6 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _loggerFactory = EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
             _logger = _loggerFactory.CreateLogger<AzureStorageJobFactory>();
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
+            _jobFactoryErrorProcessor = new JobFactoryErrorProcessor(_metricsLogger);
         }
 
         public IJob Create(JobInfo jobInfo)
@@ -135,7 +137,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
-                _metricsLogger.LogTotalErrorsMetrics(ErrorType.CreateJobError, $"Failed to create orchestrator job. Reason: {e.Message}", Operations.CreateJob);
+                _jobFactoryErrorProcessor.Process(e, $"Failed to create orchestrator job.");
                 _logger.LogInformation(e, "Failed to create orchestrator job.");
                 return null;
             }
@@ -166,7 +168,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
-                _metricsLogger.LogTotalErrorsMetrics(ErrorType.CreateJobError, $"Failed to create processing job. Reason: {e.Message}", Operations.CreateJob);
+                _jobFactoryErrorProcessor.Process(e, $"Failed to create processing job.");
                 _logger.LogInformation(e, "Failed to create processing job.");
                 return null;
             }

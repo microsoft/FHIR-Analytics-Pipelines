@@ -7,9 +7,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
     public static class MetricsLoggerExtensions
     {
-        public static void LogTotalErrorsMetrics(this IMetricsLogger metricsLogger, string errorType, string reason, string operation)
+        public static void LogTotalErrorsMetrics(this IMetricsLogger metricsLogger, bool isDiagnostic, string errorType, string reason, string operation)
         {
-            metricsLogger.LogMetrics(new TotalErrorsMetric(errorType, reason, operation), 1);
+            metricsLogger.LogMetrics(new TotalErrorsMetric(isDiagnostic, errorType, reason, operation), 1);
         }
 
         public static void LogSuccessfulResourceCountMetric(this IMetricsLogger metricsLogger, double value)

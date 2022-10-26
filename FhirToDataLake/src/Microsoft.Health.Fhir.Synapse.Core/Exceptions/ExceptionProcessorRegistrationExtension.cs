@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {

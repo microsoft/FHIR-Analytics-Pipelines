@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors
 {
     public interface IJobExecutionErrorProcessor
     {

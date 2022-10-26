@@ -5,12 +5,13 @@
 
 using System;
 using EnsureThat;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 
-namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors
 {
     public class JobExecutionErrorProcessor : IJobExecutionErrorProcessor
     {
@@ -27,25 +28,28 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
             switch (ex)
             {
                 case FhirSearchException:
-                    _metricsLogger.LogTotalErrorsMetrics(ErrorType.ReadFhirDataError, message, Operations.RunJob);
+                    _metricsLogger.LogTotalErrorsMetrics(true, ErrorType.ReadFhirDataError, message, Operations.RunJob);
                     break;
                 case AzureBlobOperationFailedException:
-                    _metricsLogger.LogTotalErrorsMetrics(ErrorType.WriteToDatalakeError, message, Operations.RunJob);
+                    _metricsLogger.LogTotalErrorsMetrics(true, ErrorType.WriteToDatalakeError, message, Operations.RunJob);
                     break;
                 case FhirSchemaException:
-                    _metricsLogger.LogTotalErrorsMetrics(ErrorType.FhirSchemaError, message, Operations.RunJob);
+                    _metricsLogger.LogTotalErrorsMetrics(true, ErrorType.FhirSchemaError, message, Operations.RunJob);
                     break;
                 case ContainerRegistryTokenException:
-                    _metricsLogger.LogTotalErrorsMetrics(ErrorType.AuthenticationError, message, Operations.RunJob);
+                    _metricsLogger.LogTotalErrorsMetrics(true, ErrorType.AuthenticationError, message, Operations.RunJob);
                     break;
                 case DataSerializationException:
-                    _metricsLogger.LogTotalErrorsMetrics(ErrorType.DataProcessError, message, Operations.RunJob);
+                    _metricsLogger.LogTotalErrorsMetrics(true, ErrorType.DataProcessError, message, Operations.RunJob);
                     break;
                 case ContainerRegistryFilterException:
-                    _metricsLogger.LogTotalErrorsMetrics(ErrorType.ReadFilterError, message, Operations.RunJob);
+                    _metricsLogger.LogTotalErrorsMetrics(true, ErrorType.ReadFilterError, message, Operations.RunJob);
+                    break;
+                case SynapsePipelineExternalException:
+                    _metricsLogger.LogTotalErrorsMetrics(true, ErrorType.JobExecutionError, message, Operations.RunJob);
                     break;
                 default:
-                    _metricsLogger.LogTotalErrorsMetrics(ErrorType.JobExecutionError, message, Operations.RunJob);
+                    _metricsLogger.LogTotalErrorsMetrics(false, ErrorType.JobExecutionError, message, Operations.RunJob);
                     break;
             }
         }

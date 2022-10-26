@@ -10,7 +10,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         /// <summary>
         /// A metric type for errors that occur when creating job.
         /// </summary>
-        public static string CreateJobError => nameof(JobExecutionError);
+        public static string CreateJobError => nameof(CreateJobError);
 
         /// <summary>
         /// A metric type for authentication errors

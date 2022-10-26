@@ -18,6 +18,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -183,7 +184,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Unhandled exceptions.
                 _logger.LogError(ex, "Unhandled error occurred in data processing job {0}. Reason : {1}", _jobId, ex.Message);
-                _jobExecutionErrorProcessor.Process(ex, "Unhandled in processing job.");
+                _jobExecutionErrorProcessor.Process(ex, "Unhandled error occurred in data processing job.");
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Unhandled error occurred in data processing job.", ex);

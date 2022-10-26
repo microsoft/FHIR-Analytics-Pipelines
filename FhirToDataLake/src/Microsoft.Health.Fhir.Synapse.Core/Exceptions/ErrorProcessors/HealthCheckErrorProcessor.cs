@@ -7,13 +7,13 @@ using System;
 using EnsureThat;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 
-namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
+namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors
 {
-    public class SchedulerServiceErrorProcessor
+    public class HealthCheckErrorProcessor
     {
         private IMetricsLogger _metricsLogger;
 
-        public SchedulerServiceErrorProcessor(IMetricsLogger metricsLogger)
+        public HealthCheckErrorProcessor(IMetricsLogger metricsLogger)
         {
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
         }
@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
         public void Process(Exception ex, string message = "")
         {
             message += ex.Message;
-            _metricsLogger.LogTotalErrorsMetrics(ErrorType.SchedulerServiceError, message, Operations.RunSchedulerService);
+            _metricsLogger.LogTotalErrorsMetrics(true, ErrorType.HealthCheckError, message, Operations.HealthCheck);
         }
     }
 }
