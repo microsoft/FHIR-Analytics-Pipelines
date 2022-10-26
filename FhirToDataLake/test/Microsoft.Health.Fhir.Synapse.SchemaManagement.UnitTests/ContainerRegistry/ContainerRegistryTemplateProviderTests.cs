@@ -6,11 +6,13 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.UnitTests;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Microsoft.Health.Fhir.TemplateManagement.Models;
 using Xunit;
 
@@ -21,6 +23,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         private readonly string _testImageReference;
         private readonly string _testContainerRegistryAccessToken;
         private readonly IContainerRegistryTokenProvider _testTokenProvider;
+
+        private readonly IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+        private readonly ILogger<ContainerRegistryTemplateProvider> _nullLogger = new NullLogger<ContainerRegistryTemplateProvider>();
 
         public ContainerRegistryTemplateProviderTests()
         {
@@ -39,6 +44,19 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
             _testTokenProvider = TestUtils.GetMockAcrTokenProvider(_testContainerRegistryAccessToken);
         }
 
+        [Fact]
+        public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new ContainerRegistryTemplateProvider(null, _diagnosticLogger, _nullLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new ContainerRegistryTemplateProvider(_testTokenProvider, null, _nullLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new ContainerRegistryTemplateProvider(_testTokenProvider, _diagnosticLogger, null));
+        }
+
         [SkippableFact]
         public async Task GivenTemplateReference_WhenFetchingTemplates_CorrectTemplateCollectionsShouldBeReturned()
         {
@@ -47,13 +65,24 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
             ImageInfo imageInfo = ImageInfo.CreateFromImageReference(_testImageReference);
             await ContainerRegistryTestUtils.GenerateImageAsync(imageInfo, _testContainerRegistryAccessToken, TestUtils.TestTemplateTarGzPath);
 
-            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
-                _testTokenProvider,
-                new DiagnosticLogger(),
-                new NullLogger<ContainerRegistryTemplateProvider>());
+            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(_testTokenProvider, _diagnosticLogger, _nullLogger);
             var templateCollection = await containerRegistryTemplateProvider.GetTemplateCollectionAsync(_testImageReference, CancellationToken.None);
 
             Assert.NotEmpty(templateCollection);
+        }
+
+        [SkippableTheory]
+        [InlineData("")]
+        [InlineData(" ")]
+        [InlineData("Invalid reference")]
+        [InlineData(null)]
+        public async Task GivenInvalidSchemaReference_WhenFetchingTemplates_CorrectTemplateCollectionsShouldBeReturned(string imageReference)
+        {
+            Skip.If(_testImageReference == null);
+
+            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(_testTokenProvider, _diagnosticLogger, _nullLogger);
+            await Assert.ThrowsAsync<ContainerRegistrySchemaException>(
+                () => containerRegistryTemplateProvider.GetTemplateCollectionAsync(imageReference, CancellationToken.None));
         }
 
         [SkippableFact]
@@ -61,11 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         {
             Skip.If(_testImageReference == null);
 
-            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
-                TestUtils.GetMockAcrTokenProvider("invalid token"),
-                new DiagnosticLogger(),
-                new NullLogger<ContainerRegistryTemplateProvider>());
-
+            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(TestUtils.GetMockAcrTokenProvider("invalid token"), _diagnosticLogger, _nullLogger);
             await Assert.ThrowsAsync<ContainerRegistrySchemaException>(
                 () => containerRegistryTemplateProvider.GetTemplateCollectionAsync(_testImageReference, CancellationToken.None));
         }

@@ -5,10 +5,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using DotLiquid;
+using EnsureThat;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,6 +23,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
 {
     public class ContainerRegistryTemplateProvider : IContainerRegistryTemplateProvider
     {
+        private const int TemplateCollectionCacheSizeLimit = 100000000;
+
         private readonly IContainerRegistryTokenProvider _containerRegistryTokenProvider;
         private readonly ITemplateCollectionProviderFactory _templateCollectionProviderFactory;
         private readonly IDiagnosticLogger _diagnosticLogger;
@@ -33,11 +35,11 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             IDiagnosticLogger diagnosticLogger,
             ILogger<ContainerRegistryTemplateProvider> logger)
         {
-            _containerRegistryTokenProvider = containerRegistryTokenProvider;
-            _diagnosticLogger = diagnosticLogger;
-            _logger = logger;
+            _containerRegistryTokenProvider = EnsureArg.IsNotNull(containerRegistryTokenProvider, nameof(containerRegistryTokenProvider));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
-            var templateCollectionCache = new MemoryCache(new MemoryCacheOptions() { SizeLimit = 100000000 });
+            var templateCollectionCache = new MemoryCache(new MemoryCacheOptions() { SizeLimit = TemplateCollectionCacheSizeLimit });
             var config = new TemplateCollectionConfiguration();
             _templateCollectionProviderFactory = new TemplateCollectionProviderFactory(templateCollectionCache, Options.Create(config));
         }
