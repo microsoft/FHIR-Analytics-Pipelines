@@ -13,6 +13,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         public static string Name => nameof(DimensionNames.Name);
 
         /// <summary>
+        /// An metric dimension for the detail component.
+        /// </summary>
+        public static string Component => nameof(DimensionNames.Component);
+
+        /// <summary>
         /// An metric dimension for category
         /// </summary>
         public static string Category => nameof(DimensionNames.Category);

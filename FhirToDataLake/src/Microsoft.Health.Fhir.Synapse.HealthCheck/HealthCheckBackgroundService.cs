@@ -59,12 +59,16 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                     // Perform health check.
                     var healthStatus = await _healthCheckEngine.CheckHealthAsync(cancellationToken);
 
-                    _diagnosticLogger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}.");
-                    _logger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}.");
+                    _diagnosticLogger.LogInformation($"Finished health checks: {string.Join(',', healthStatus.HealthCheckResults.Select(x => string.Format("{0}:{1}", x.Name, x.Status)))}.");
+                    _logger.LogInformation($"Finished health checks: {string.Join(',', healthStatus.HealthCheckResults.Select(x => string.Format("{0}:{1}", x.Name, x.Status)))}.");
 
                     // Todo: Send notification to mediator and remove listeners here.
                     var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
-                    _metricsLogger.LogHealthStatusMetric(healthStatus.Status == Models.HealthCheckStatus.HEALTHY ? 1 : 0);
+                    foreach (var component in healthStatus.HealthCheckResults)
+                    {
+                        _metricsLogger.LogHealthStatusMetric(component.Name, !component.IsCritical, component.Status == Models.HealthCheckStatus.HEALTHY ? 1 : 0);
+                    }
+
                     await Task.WhenAll(listenerTasks);
                     await delayTask;
                 }
