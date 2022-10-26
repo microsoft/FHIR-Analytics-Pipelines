@@ -10,15 +10,16 @@ using namespace std;
 
 typedef unsigned char byte;
 
-void WriteToParquet(const shared_ptr<arrow::Table> table, byte** outputData, size_t outputSize);
+int WriteToParquet(const shared_ptr<arrow::Table> table, byte** outputData, int* outputSize, char* errorMessage, const shared_ptr<parquet::WriterProperties> writeProperties);
 void WriteErrorMessage(const string& errorMessage, char* outputErrorMessage);
 
 class ParquetWriter
 {
     private:
         SchemaManager _schemaManager;
-        ParquetOptions _parquetOptions;
         arrow::json::ReadOptions _readOptions;
+        arrow::json::UnexpectedFieldBehavior _unexpectedFieldBehavior;
+        shared_ptr<parquet::WriterProperties> _writeProperties;
 
     public:
         ParquetWriter();

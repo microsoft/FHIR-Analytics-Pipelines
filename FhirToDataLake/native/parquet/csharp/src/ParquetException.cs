@@ -31,9 +31,9 @@ namespace Microsoft.Health.Parquet
                 case ParquetConverterErrorCodes.ReadInputJsonError:
                     return "Input json is invalid.";
                 case ParquetConverterErrorCodes.WriteToParquetError:
-                    return "Write to parquet failed.";
+                    return "Failed to write to parquet.";
                 case ParquetConverterErrorCodes.ParseParquetSchemaError:
-                    return "Parse given schema failed.";
+                    return "Failed to parse the given schema.";
                 case ParquetConverterErrorCodes.SchemaNotFound:
                     return "Target schema is not found.";
                 default:

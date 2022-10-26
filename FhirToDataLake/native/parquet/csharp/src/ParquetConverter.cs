@@ -63,6 +63,7 @@ namespace Microsoft.Health.Parquet
 
             if (outputPointer == IntPtr.Zero || outputSize == 0)
             {
+                TryReleaseUnmanagedData(ref outputPointer);
                 return null;
             }
 
@@ -87,7 +88,7 @@ namespace Microsoft.Health.Parquet
                 int status = RegisterParquetSchema(_nativeConverter, key, value);
                 if (status != 0)
                 {
-                    throw new ParquetException(status);
+                    throw new ParquetException(status, "Failed to initialize schema set.");
                 }
             }
         }

@@ -163,7 +163,7 @@ TEST (ParquetWriter, WriteWithNullOutputSize)
     // Write success.
     EXPECT_EQ(10002, status);
     EXPECT_EQ(0, outputLength);
-    EXPECT_EQ("Output data size is null.", std::string(error));
+    EXPECT_EQ("Output data size pointer is null.", std::string(error));
 }
 
 TEST (ParquetWriter, WriteExamplePatient)
