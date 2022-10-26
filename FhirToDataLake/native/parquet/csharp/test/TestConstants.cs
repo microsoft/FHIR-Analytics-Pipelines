@@ -11,7 +11,9 @@ namespace Microsoft.Health.Parquet.UnitTests
 
         public const string InputPatientNormalFile = "./TestData/Patient_normal.ndjson";
 
-        public const string SchemaFile = "./TestData/patient_example_schema.json";
+        public const string ExampleSchemaFile = "./TestData/TestSchema/patient_example_schema.json";
+
+        public const string ExampleSimplestSchemaFile = "./TestData/TestSchema/patient_example_schema.json";
 
         public const string ExpectedPatientSmallParquetFile = "./TestData/Expected/expected_patient_small.parquet";
 
