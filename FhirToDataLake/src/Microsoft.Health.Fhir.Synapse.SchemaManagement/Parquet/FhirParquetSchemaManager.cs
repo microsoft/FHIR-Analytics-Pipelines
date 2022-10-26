@@ -75,7 +75,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 
         public List<string> GetSchemaTypes(string resourceType)
         {
-            if (!SchemaTypesMap.ContainsKey(resourceType))
+            if (string.IsNullOrWhiteSpace(resourceType) || !SchemaTypesMap.ContainsKey(resourceType))
             {
                 _logger.LogInformation($"Schema types for {resourceType} is empty.");
                 return new List<string>();
@@ -86,7 +86,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 
         public FhirParquetSchemaNode GetSchema(string schemaType)
         {
-            if (!ResourceSchemaNodesMap.ContainsKey(schemaType))
+            if (string.IsNullOrWhiteSpace(schemaType) || !ResourceSchemaNodesMap.ContainsKey(schemaType))
             {
                 _logger.LogInformation($"Schema for schema type {schemaType} is not supported.");
                 return null;

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Liquid.Converter.Models.Json;
@@ -32,9 +33,11 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             IDiagnosticLogger diagnosticLogger,
             ILogger<AcrCustomizedSchemaProvider> logger)
         {
-            _diagnosticLogger = diagnosticLogger;
-            _logger = logger;
-            _containerRegistryTemplateProvider = containerRegistryTemplateProvider;
+            EnsureArg.IsNotNull(schemaConfiguration, nameof(schemaConfiguration));
+
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _containerRegistryTemplateProvider = EnsureArg.IsNotNull(containerRegistryTemplateProvider, nameof(containerRegistryTemplateProvider)) ;
             _schemaImageReference = schemaConfiguration.Value.SchemaImageReference;
         }
 

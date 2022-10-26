@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
@@ -16,19 +17,93 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
 {
     public class JsonSchemaParserTests
     {
-        public static IEnumerable<object[]> GetInvalidJsonSchemaContents()
+        private static readonly JsonSchema _testSchema;
+
+        static JsonSchemaParserTests()
         {
-            yield return new object[] { JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithInvalidPropertyType.schema.json"))).GetAwaiter().GetResult() };
-            yield return new object[] { JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithInvalidType.schema.json"))).GetAwaiter().GetResult() };
-            yield return new object[] { JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithoutPropertyType.schema.json"))).GetAwaiter().GetResult() };
-            yield return new object[] { JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "SchemaWithoutType.schema.json"))).GetAwaiter().GetResult() };
+            _testSchema = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "ValidSchema.schema.json"))).GetAwaiter().GetResult();
+        }
+
+        public static IEnumerable<object[]> GetInvalidJsonSchemaObjects()
+        {
+            yield return new object[]
+            {
+                new JObject
+                {
+                    { "title", "Invalid schema without root type" },
+                    {
+                        "properties", new JObject
+                        {
+                            { "resourceType", new JObject { { "type", "string" } } },
+                            { "id", new JObject { { "type", "string" } } },
+                        }
+                    },
+                },
+            };
+            yield return new object[]
+            {
+                new JObject
+                {
+                    { "title", "Invalid schema without property type" },
+                    { "type", "object" },
+                    {
+                        "properties", new JObject
+                        {
+                            { "resourceType", new JObject { } },
+                            { "id", new JObject { { "type", "string" } } },
+                        }
+                    },
+                },
+            };
+            yield return new object[]
+            {
+                new JObject
+                {
+                    { "title", "Invalid schema root type must be object" },
+                    { "type", "array" },
+                    {
+                        "properties", new JObject
+                        {
+                            { "resourceType", new JObject { { "type", "string" } } },
+                            { "id", new JObject { { "type", "string" } } },
+                        }
+                    },
+                },
+            };
+            yield return new object[]
+            {
+                new JObject
+                {
+                    { "title", "Invalid schema property type must be primitive" },
+                    {
+                        "properties", new JObject
+                        {
+                            { "resourceType", new JObject { { "type", "array" } } },
+                            { "id", new JObject { { "type", "string" } } },
+                        }
+                    },
+                },
+            };
+            yield return new object[]
+            {
+                new JObject
+                {
+                    { "title", "Invalid schema property type must be primitive" },
+                    {
+                        "properties", new JObject
+                        {
+                            { "resourceType", new JObject { { "type", "object" } } },
+                            { "id", new JObject { { "type", "string" } } },
+                        }
+                    },
+                },
+            };
         }
 
         [Fact]
         public void GivenAJsonSchema_WhenParseJSchema_CorrectResultShouldBeReturned()
         {
-            var testSchema = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "ValidSchema.schema.json"))).GetAwaiter().GetResult();
-            var parquetSchemaNode = JsonSchemaParser.ParseJSchema("testType", testSchema);
+            var parquetSchemaNode = JsonSchemaParser.ParseJSchema("testType", _testSchema);
             var expectedSchemaNode = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.ExpectedDataDirectory, "ExpectedValidParquetSchemaNode.json"))).GetAwaiter().GetResult();
 
             Assert.True(JToken.DeepEquals(
@@ -37,11 +112,22 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         }
 
         [Theory]
-        [MemberData(nameof(GetInvalidJsonSchemaContents))]
-        public void GivenAInvalidJsonSchema_WhenParseJSchema_ExceptionsShouldBeThrown(JsonSchema jSchema)
+        [MemberData(nameof(GetInvalidJsonSchemaObjects))]
+        public void GivenAInvalidJsonSchema_WhenParseJSchema_ExceptionsShouldBeThrown(JObject schemaJObject)
         {
+            var jSchema = JsonSchema.FromJsonAsync(schemaJObject.ToString()).GetAwaiter().GetResult();
+
             var schemaParser = new JsonSchemaParser();
             Assert.Throws<GenerateFhirParquetSchemaNodeException>(() => JsonSchemaParser.ParseJSchema("testType", jSchema));
+        }
+
+        [Fact]
+        public void GivenNullParameters_WhenParseJSchema_ExceptionsShouldBeThrown()
+        {
+            Assert.Throws<ArgumentException>(() => JsonSchemaParser.ParseJSchema(string.Empty, _testSchema));
+            Assert.Throws<ArgumentException>(() => JsonSchemaParser.ParseJSchema(" ", _testSchema));
+            Assert.Throws<ArgumentNullException>(() => JsonSchemaParser.ParseJSchema(null, _testSchema));
+            Assert.Throws<ArgumentNullException>(() => JsonSchemaParser.ParseJSchema("testType", null));
         }
     }
 }
