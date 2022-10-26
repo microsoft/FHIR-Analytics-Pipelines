@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 {
@@ -26,6 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
         private readonly ILogger<HealthCheckBackgroundService> _logger;
         private readonly IMetricsLogger _metricsLogger;
         private TimeSpan _checkIntervalInSeconds;
+        private HealthCheckErrorProcessor _healthCheckErrorProcessor;
 
         public HealthCheckBackgroundService(
             IHealthCheckEngine healthCheckEngine,
@@ -42,6 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
             _healthCheckListeners = EnsureArg.IsNotNull(healthCheckListeners, nameof(healthCheckListeners));
             EnsureArg.IsNotNull(healthCheckConfiguration, nameof(healthCheckConfiguration));
 
+            _healthCheckErrorProcessor = new HealthCheckErrorProcessor(_metricsLogger);
             _checkIntervalInSeconds = TimeSpan.FromSeconds(healthCheckConfiguration.Value.HealthCheckTimeIntervalInSeconds);
         }
 
@@ -73,7 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                     // not expected to trigger this exception.
                     _diagnosticLogger.LogError($"Health check service is cancelled. Reason: {e.Message}");
                     _logger.LogInformation(e, $"Health check service is cancelled. Reason: {e.Message}");
-                    _metricsLogger.LogTotalErrorsMetrics(ErrorType.HealthCheckError, $"Health check service is cancelled. Reason: {e.Message}", Operations.HealthCheck);
+                    _healthCheckErrorProcessor.Process(e, $"Health check service is cancelled.");
                     await delayTask;
                     throw;
                 }
@@ -81,7 +84,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                 {
                     _diagnosticLogger.LogError($"Unknown exception occured in health check. {e.Message}");
                     _logger.LogError(e, $"Unhandled exception occured in health check. {e.Message}");
-                    _metricsLogger.LogTotalErrorsMetrics(ErrorType.HealthCheckError, $"Unhandled exception occured in health check.", Operations.HealthCheck);
+                    _healthCheckErrorProcessor.Process(e, $"Unhandled exception occured in health check.");
                     await delayTask;
                 }
             }
