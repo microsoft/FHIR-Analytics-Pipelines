@@ -23,16 +23,16 @@
 
     1. **TryAcquireLeaseAsync**: try to acquire lease, return true if lease is acquired, otherwise return false, will throw unexpected or cancellation exception.
     2. **ProcessInternalAsync**: This is the internal processing function, it triggers two long-running tasks, if one of the task completed, will cancel the other one.
-       1. **LoopToRenewLeaseAsync**, A while-loop to renew lease, stop and return if cancelled or any exception, should not throw any exception
-       2. **LoopToCheckAndUpdateTriggerEntityAsync**: a while-loop to check and update trigger entity, return true if The job has been scheduled to end, otherwise return false, It stops only when the job is scheduled to end or is cancelled by the caller.
-          1. Execute **CheckAndUpdateTriggerEntityAsync** at regular intervals. **CheckAndUpdateTriggerEntityAsync** will not catch and handle any exception, all the exceptions thrown.
+       1. **RenewLeaseAsync**, A while-loop to renew lease, stop and return if cancelled or any exception, should not throw any exception
+       2. **CheckAndUpdateTriggerEntityAsync**: a while-loop to check and update trigger entity, return true if The job has been scheduled to end, otherwise return false, It stops only when the job is scheduled to end or is cancelled by the caller.
+          1. Execute **CheckAndUpdateTriggerEntityInternalAsync** at regular intervals. **CheckAndUpdateTriggerEntityInternalAsync** will not catch and handle any exception, all the exceptions thrown.
              1. Get `CurrentTriggerEntity` at first
              2. Check the `GetCurrentTriggerEntity`'s status
                 1. If trigger status is `New` then **EnqueueOrchestratorJobAsync**
                 2. If trigger status is `Running` then **CheckAndUpdateOrchestratorJobStatusAsync**
                 3. If trigger status is `Compelete` then **CreateNextTriggerAsync**
                 4. If trigger status is `Failed` or `Cancelled` then log a error message.
-          2. Catch any exception thrown by **CheckAndUpdateTriggerEntityAsync**, log a error message for it and continue the loop body.
+          2. Catch any exception thrown by **CheckAndUpdateTriggerEntityInternalAsync**, log a error message for it and continue the loop body.
 
 ## Test Cases
 

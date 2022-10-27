@@ -30,12 +30,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly byte _queueType;
         private readonly DateTimeOffset? _startTime;
         private readonly DateTimeOffset? _endTime;
+        private readonly string _schedulerCronExpression;
         private readonly ILogger<SchedulerService> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly Guid _instanceGuid;
 
         // See https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression
-        private readonly CrontabSchedule _crontabSchedule;
+        private readonly Lazy<CrontabSchedule> _crontabSchedule;
 
         public SchedulerService(
             IQueueClient queueClient,
@@ -58,8 +59,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 throw new ConfigurationErrorException("The start time should be less than the end time.");
             }
 
-            _crontabSchedule = CrontabSchedule.Parse(jobConfiguration.Value.SchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
-
+            _schedulerCronExpression = EnsureArg.IsNotEmptyOrWhiteSpace(jobConfiguration.Value.SchedulerCronExpression, nameof(jobConfiguration.Value.SchedulerCronExpression));
+            _crontabSchedule = new Lazy<CrontabSchedule>(CreateCrontabSchedule);
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             _instanceGuid = Guid.NewGuid();
@@ -80,11 +81,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _diagnosticLogger.LogInformation($"Scheduler instance {_instanceGuid} starts running.");
             _logger.LogInformation($"Scheduler instance {_instanceGuid} starts running.");
 
+            using CancellationTokenSource delayTaskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            CancellationToken delayTaskCancellationToken = delayTaskCancellationTokenSource.Token;
+
             bool scheduledToEnd = false;
             while (!scheduledToEnd && !cancellationToken.IsCancellationRequested)
             {
                 // delay task should stop without throwing exception when is cancellation requested.
-                Task delayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), cancellationToken).ContinueWith(_ => { });
+                Task delayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), delayTaskCancellationToken).ContinueWith(_ => { });
 
                 try
                 {
@@ -103,28 +107,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         }
                     }
                 }
+                catch (OperationCanceledException)
+                {
+                    delayTaskCancellationTokenSource.Cancel();
+                    _diagnosticLogger.LogError($"Scheduler service {_instanceGuid} is cancelled.");
+                    _logger.LogError($"Scheduler service {_instanceGuid} is cancelled.");
+                }
                 catch (Exception ex)
                 {
-                    // if cancelled, the exception will be caught here and exit while loop as cancellationToken.IsCancellationRequested is true
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
-                        _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
-                    }
+                    delayTaskCancellationTokenSource.Cancel();
+                    _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
+                    _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
                 }
 
-                if (!scheduledToEnd && !cancellationToken.IsCancellationRequested)
-                {
-                    await delayTask;
-                }
+                await delayTask;
 
                 LastHeartbeat = DateTimeOffset.UtcNow;
-            }
-
-            if (cancellationToken.IsCancellationRequested)
-            {
-                _diagnosticLogger.LogError($"Scheduler service {_instanceGuid} is cancelled.");
-                _logger.LogError($"Scheduler service {_instanceGuid} is cancelled.");
             }
 
             _diagnosticLogger.LogInformation($"Scheduler instance {_instanceGuid} stops running.");
@@ -138,7 +136,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>return true if lease is acquired, otherwise return false, will throw unexpected or cancellation exception.</returns>
         private async Task<bool> TryAcquireLeaseAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Scheduler instance {_instanceGuid} starts to acquires lease.");
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} starts to acquire lease.");
 
             // try to get trigger lease entity
             TriggerLeaseEntity triggerLeaseEntity = await _metadataStore.GetTriggerLeaseEntityAsync(_queueType, cancellationToken);
@@ -169,7 +167,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             triggerLeaseEntity.WorkingInstanceGuid = _instanceGuid;
             triggerLeaseEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
 
-            // if the existing lease is timeout, and there are two instances try to acquire the lease and update the entity, only one will success, and the failed one will return false. 
+            // if the existing lease is timeout, and there are two instances try to acquire the lease and update the entity, only one will success, and the failed one will return false.
             bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(triggerLeaseEntity, cancellationToken);
             _logger.LogInformation(isSucceeded
                 ? $"Scheduler instance {_instanceGuid} acquires lease successfully."
@@ -191,13 +189,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             CancellationToken runningCancellationToken = runningCancellationTokenSource.Token;
 
             // renew lease task will complete if cancelled or any exception
-            Task renewLeaseTask = LoopToRenewLeaseAsync(runningCancellationToken);
+            Task renewLeaseTask = RenewLeaseAsync(runningCancellationToken);
 
             // process trigger task will complete if cancelled or the job has been scheduled to end.
-            Task<bool> processTriggerTask = LoopToCheckAndUpdateTriggerEntityAsync(runningCancellationToken);
+            Task<bool> processTriggerTask = CheckAndUpdateTriggerEntityAsync(runningCancellationToken);
 
             // if one of these two tasks returns, should cancel the other one.
-            await Task.WhenAny(renewLeaseTask, processTriggerTask);
+            Task finishedTask = await Task.WhenAny(renewLeaseTask, processTriggerTask);
+
+            if (finishedTask == renewLeaseTask)
+            {
+                _logger.LogInformation($"scheduler instance {_instanceGuid} stops to check and update trigger entity as it failed to renew lease.");
+            }
 
             runningCancellationTokenSource.Cancel();
 
@@ -237,33 +240,32 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns>return true if The job has been scheduled to end, otherwise return false</returns>
-        private async Task<bool> LoopToCheckAndUpdateTriggerEntityAsync(CancellationToken cancellationToken)
+        private async Task<bool> CheckAndUpdateTriggerEntityAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation($"scheduler instance {_instanceGuid} starts to check and update trigger entity in loop.");
-
+            using CancellationTokenSource delayTaskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            CancellationToken delayTaskCancellationToken = delayTaskCancellationTokenSource.Token;
             bool scheduledToEnd = false;
             while (!scheduledToEnd && !cancellationToken.IsCancellationRequested)
             {
-                Task intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), cancellationToken).ContinueWith(_ => { });
+                Task intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServicePullingIntervalInSeconds), delayTaskCancellationToken).ContinueWith(_ => { });
 
                 try
                 {
-                    scheduledToEnd = await CheckAndUpdateTriggerEntityAsync(cancellationToken);
+                    scheduledToEnd = await CheckAndUpdateTriggerEntityInternalAsync(cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    delayTaskCancellationTokenSource.Cancel();
                 }
                 catch (Exception ex)
                 {
-                    // if cancelled, the exception will be caught here and exit while loop as cancellationToken.IsCancellationRequested is true
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
-                        _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
-                    }
+                    delayTaskCancellationTokenSource.Cancel();
+                    _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
+                    _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
                 }
 
-                if (!scheduledToEnd && !cancellationToken.IsCancellationRequested)
-                {
-                    await intervalDelayTask;
-                }
+                await intervalDelayTask;
 
                 LastHeartbeat = DateTimeOffset.UtcNow;
             }
@@ -278,7 +280,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns>return true if The job has been scheduled to end, otherwise return false</returns>
-        private async Task<bool> CheckAndUpdateTriggerEntityAsync(CancellationToken cancellationToken)
+        private async Task<bool> CheckAndUpdateTriggerEntityInternalAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation($"scheduler instance {_instanceGuid} starts to check and update trigger entity.");
 
@@ -471,15 +473,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             if (lastTriggerEndTime != null)
             {
                 DateTime nextOccurrenceTime =
-                    _crontabSchedule.GetNextOccurrence(((DateTimeOffset)lastTriggerEndTime).DateTime);
-                nextOccurrenceTime = DateTime.SpecifyKind(nextOccurrenceTime, DateTimeKind.Utc);
-                DateTimeOffset nextOccurrenceOffsetTime = nextOccurrenceTime;
+                    _crontabSchedule.Value.GetNextOccurrence(((DateTimeOffset)lastTriggerEndTime).DateTime);
+                DateTimeOffset nextOccurrenceOffsetTime = DateTime.SpecifyKind(nextOccurrenceTime, DateTimeKind.Utc);
                 if (nextOccurrenceOffsetTime > nextTriggerEndTime)
                 {
                     return null;
                 }
 
-                // TODO: remove this line for refine later
                 nextTriggerEndTime = nextOccurrenceOffsetTime;
             }
 
@@ -494,35 +494,37 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <summary>
         /// A while-loop to renew lease, stop and return if cancelled or any exception, should not throw any exception
         /// </summary>
-        private async Task LoopToRenewLeaseAsync(CancellationToken cancellationToken)
+        private async Task RenewLeaseAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation($"scheduler instance {_instanceGuid} starts to renew lease in loop.");
-            bool stopRenew = false;
-            while (!stopRenew && !cancellationToken.IsCancellationRequested)
+            using CancellationTokenSource delayTaskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            CancellationToken delayTaskCancellationToken = delayTaskCancellationTokenSource.Token;
+            while (!cancellationToken.IsCancellationRequested)
             {
+                Task intervalDelayTask =
+                    Task.Delay(TimeSpan.FromSeconds(SchedulerServiceLeaseRefreshIntervalInSeconds), delayTaskCancellationToken).ContinueWith(_ => { });
                 try
                 {
-                    // if cancelled, also stop delay task
-                    Task intervalDelayTask = Task.Delay(TimeSpan.FromSeconds(SchedulerServiceLeaseRefreshIntervalInSeconds), cancellationToken);
-
                     // if renew lease successfully, then delay some time to renew again
                     // if fail to renew lease, then stop renew and return
                     // if there is an exception while renewing lease, then stop renew and return
                     // if cancelled, the cancel exception will be caught and then stop renew and return.
                     bool isSucceeded = await TryRenewLeaseInternalAsync(cancellationToken);
-                    if (isSucceeded)
+                    if (!isSucceeded)
                     {
+                        delayTaskCancellationTokenSource.Cancel();
                         await intervalDelayTask;
+                        break;
                     }
-                    else
-                    {
-                        stopRenew = true;
-                    }
+
+                    await intervalDelayTask;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogInformation(ex, $"scheduler instance {_instanceGuid} fails to renew lease.");
-                    stopRenew = true;
+                    delayTaskCancellationTokenSource.Cancel();
+                    await intervalDelayTask;
+                    break;
                 }
             }
 
@@ -560,6 +562,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _logger.LogInformation($"scheduler instance {_instanceGuid} renews lease successfully.");
             return true;
+        }
+
+        private CrontabSchedule CreateCrontabSchedule()
+        {
+            return CrontabSchedule.Parse(_schedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
         }
     }
 }

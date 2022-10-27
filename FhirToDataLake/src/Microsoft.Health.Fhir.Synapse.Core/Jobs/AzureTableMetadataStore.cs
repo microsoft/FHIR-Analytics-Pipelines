@@ -104,7 +104,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.UpdateEntityPreconditionFailedErrorCode)
             {
-                _logger.LogInformation("Failed to update entity, the etag is not satisfied.");
+                _logger.LogInformation("Failed to update entity, Etag precondition failed.");
                 return false;
             }
         }
