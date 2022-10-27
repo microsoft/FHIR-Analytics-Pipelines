@@ -203,7 +203,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (finishedTask == renewLeaseTask)
             {
-                _logger.LogInformation($"scheduler instance {_instanceGuid} stops to check and update trigger entity as it failed to renew lease.");
+                _logger.LogInformation($"Scheduler instance {_instanceGuid} stops to check and update trigger entity as it failed to renew lease.");
             }
 
             runningCancellationTokenSource.Cancel();
@@ -246,7 +246,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>return true if The job has been scheduled to end, otherwise return false</returns>
         private async Task<bool> CheckAndUpdateTriggerEntityAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"scheduler instance {_instanceGuid} starts to check and update trigger entity in loop.");
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} starts to check and update trigger entity in loop.");
             using CancellationTokenSource delayTaskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             CancellationToken delayTaskCancellationToken = delayTaskCancellationTokenSource.Token;
             bool scheduledToEnd = false;
@@ -278,7 +278,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 LastHeartbeat = DateTimeOffset.UtcNow;
             }
 
-            _logger.LogInformation($"scheduler instance {_instanceGuid} stops to check and update trigger entity in loop.");
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} stops to check and update trigger entity in loop.");
 
             return scheduledToEnd;
         }
@@ -290,7 +290,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>return true if The job has been scheduled to end, otherwise return false</returns>
         private async Task<bool> CheckAndUpdateTriggerEntityInternalAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"scheduler instance {_instanceGuid} starts to check and update trigger entity.");
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} starts to check and update trigger entity.");
 
             CurrentTriggerEntity currentTriggerEntity = await _metadataStore.GetCurrentTriggerEntityAsync(_queueType, cancellationToken) ??
                                                         await CreateInitialTriggerEntity(cancellationToken);
@@ -319,7 +319,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
             }
 
-            _logger.LogInformation($"scheduler instance {_instanceGuid} checks and updates trigger entity successfully.");
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} checks and updates trigger entity successfully.");
 
             return scheduledToEnd;
         }
@@ -504,7 +504,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         private async Task RenewLeaseAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"scheduler instance {_instanceGuid} starts to renew lease in loop.");
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} starts to renew lease in loop.");
             using CancellationTokenSource delayTaskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             CancellationToken delayTaskCancellationToken = delayTaskCancellationTokenSource.Token;
             while (!cancellationToken.IsCancellationRequested)
@@ -529,14 +529,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogInformation(ex, $"scheduler instance {_instanceGuid} fails to renew lease.");
+                    _logger.LogInformation(ex, $"Scheduler instance {_instanceGuid} fails to renew lease.");
                     delayTaskCancellationTokenSource.Cancel();
                     await intervalDelayTask;
                     break;
                 }
             }
 
-            _logger.LogInformation($"scheduler instance {_instanceGuid} stops to renew lease in loop.");
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} stops to renew lease in loop.");
         }
 
         /// <summary>
@@ -552,13 +552,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (triggerLeaseEntity == null)
             {
-                _logger.LogInformation($"scheduler instance {_instanceGuid} fails to renew lease, the retrieved lease trigger entity is null.");
+                _logger.LogInformation($"Scheduler instance {_instanceGuid} fails to renew lease, the retrieved lease trigger entity is null.");
                 return false;
             }
 
             if (triggerLeaseEntity.WorkingInstanceGuid != _instanceGuid)
             {
-                _logger.LogInformation($"scheduler instance {_instanceGuid} Fails to renew lease, the retrieved lease trigger entity's working instance {triggerLeaseEntity.WorkingInstanceGuid} doesn't match.");
+                _logger.LogInformation($"Scheduler instance {_instanceGuid} Fails to renew lease, the retrieved lease trigger entity's working instance {triggerLeaseEntity.WorkingInstanceGuid} doesn't match.");
                 return false;
             }
 
@@ -568,7 +568,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 triggerLeaseEntity,
                 cancellationToken: cancellationToken);
 
-            _logger.LogInformation($"scheduler instance {_instanceGuid} renews lease successfully.");
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} renews lease successfully.");
             return true;
         }
 
