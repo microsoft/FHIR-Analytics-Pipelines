@@ -13,7 +13,6 @@ using Azure;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
@@ -84,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 SchedulerCronExpression = schedulerCronExpression,
             };
 
-            Assert.Throws<NCrontab.CrontabException>(
+            Assert.Throws<CrontabException>(
                 () => new SchedulerService(new MockQueueClient(), new MockMetadataStore(), Options.Create(jobConfig), _diagnosticLogger, _nullSchedulerServiceLogger));
         }
 
@@ -111,39 +110,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Exception exception = Record.Exception(() => new SchedulerService(new MockQueueClient(), new MockMetadataStore(), Options.Create(jobConfig), _diagnosticLogger, _nullSchedulerServiceLogger));
 
             Assert.Null(exception);
-        }
-
-        [Fact]
-        public void GivenStartTimeGreaterOrEqualEndTime_WhenInitialize_ExceptionShouldBeThrown()
-        {
-            DateTime dateTime = new DateTime(2022, 1, 1);
-            JobConfiguration jobConfig1 = new JobConfiguration
-            {
-                QueueType = QueueType.FhirToDataLake,
-                TableUrl = StorageEmulatorConnectionString,
-                SchedulerCronExpression = TestSchedulerCronExpression,
-                JobInfoTableName = TestJobInfoTableName,
-                MetadataTableName = TestMetadataTableName,
-                JobInfoQueueName = TestJobInfoQueueName,
-                StartTime = dateTime,
-                EndTime = dateTime,
-            };
-            Assert.Throws<ConfigurationErrorException>(
-                () => new SchedulerService(new MockQueueClient(), new MockMetadataStore(), Options.Create(jobConfig1), _diagnosticLogger, _nullSchedulerServiceLogger));
-
-            JobConfiguration jobConfig2 = new JobConfiguration
-            {
-                QueueType = QueueType.FhirToDataLake,
-                TableUrl = StorageEmulatorConnectionString,
-                SchedulerCronExpression = TestSchedulerCronExpression,
-                JobInfoTableName = TestJobInfoTableName,
-                MetadataTableName = TestMetadataTableName,
-                JobInfoQueueName = TestJobInfoQueueName,
-                StartTime = dateTime,
-                EndTime = dateTime.AddMinutes(-1),
-            };
-            Assert.Throws<ConfigurationErrorException>(
-                () => new SchedulerService(new MockQueueClient(), new MockMetadataStore(), Options.Create(jobConfig2), _diagnosticLogger, _nullSchedulerServiceLogger));
         }
 
         #endregion
@@ -244,7 +210,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             MockQueueClient queueClient = new MockQueueClient();
             MockMetadataStore brokenMetadataStore = new MockMetadataStore
             {
-                GetTriggerLeaseEntityFunc = (metadataStore, queueType, _) => null,
+                GetTriggerLeaseEntityFunc = (_, _, _) => null,
             };
 
             SchedulerService schedulerService =

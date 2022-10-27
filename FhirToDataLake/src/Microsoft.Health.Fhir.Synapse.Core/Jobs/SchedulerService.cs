@@ -49,6 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             _queueType = (byte)jobConfiguration.Value.QueueType;
 
+            // if both startTime and endTime are specified, add validation on ConfiguraionValidatorV1 to make sure startTime is larger than endTime.
             _startTime = jobConfiguration.Value.StartTime;
             _endTime = jobConfiguration.Value.EndTime;
 
