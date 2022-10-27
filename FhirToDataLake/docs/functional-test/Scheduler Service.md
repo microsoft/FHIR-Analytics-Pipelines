@@ -43,7 +43,6 @@
       1. If the `schedulerCronExpression` is null, should throw `ArgumentNullException`.
       2. If the `schedulerCronExpression` is invalid string, should throw `CrontabException`.
       3. If the `StartTime` and `EndTime` are null, no exception should be thrown.
-      4. If the `StartTime` is equal or less than `EndTime`, should throw `ConfigurationErrorException`.
 
 - RunAsync  
   
