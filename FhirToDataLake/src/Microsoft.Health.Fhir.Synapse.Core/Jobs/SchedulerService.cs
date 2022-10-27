@@ -12,7 +12,6 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
@@ -30,13 +29,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly byte _queueType;
         private readonly DateTimeOffset? _startTime;
         private readonly DateTimeOffset? _endTime;
-        private readonly string _schedulerCronExpression;
         private readonly ILogger<SchedulerService> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly Guid _instanceGuid;
 
         // See https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression
-        private readonly Lazy<CrontabSchedule> _crontabSchedule;
+        private readonly CrontabSchedule _crontabSchedule;
 
         public SchedulerService(
             IQueueClient queueClient,
@@ -54,13 +52,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _startTime = jobConfiguration.Value.StartTime;
             _endTime = jobConfiguration.Value.EndTime;
 
-            if (_startTime != null && _endTime != null && _startTime >= _endTime)
-            {
-                throw new ConfigurationErrorException("The start time should be less than the end time.");
-            }
-
-            _schedulerCronExpression = EnsureArg.IsNotEmptyOrWhiteSpace(jobConfiguration.Value.SchedulerCronExpression, nameof(jobConfiguration.Value.SchedulerCronExpression));
-            _crontabSchedule = new Lazy<CrontabSchedule>(CreateCrontabSchedule);
+            // add validation on ConfiguraionValidatorV1 to make sure the SchedulerCronExpression is valid.
+            _crontabSchedule = CrontabSchedule.Parse(jobConfiguration.Value.SchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             _instanceGuid = Guid.NewGuid();
@@ -481,7 +474,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             if (lastTriggerEndTime != null)
             {
                 DateTime nextOccurrenceTime =
-                    _crontabSchedule.Value.GetNextOccurrence(((DateTimeOffset)lastTriggerEndTime).DateTime);
+                    _crontabSchedule.GetNextOccurrence(((DateTimeOffset)lastTriggerEndTime).DateTime);
                 DateTimeOffset nextOccurrenceOffsetTime = DateTime.SpecifyKind(nextOccurrenceTime, DateTimeKind.Utc);
                 if (nextOccurrenceOffsetTime > nextTriggerEndTime)
                 {
@@ -570,11 +563,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _logger.LogInformation($"Scheduler instance {_instanceGuid} renews lease successfully.");
             return true;
-        }
-
-        private CrontabSchedule CreateCrontabSchedule()
-        {
-            return CrontabSchedule.Parse(_schedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
         }
     }
 }

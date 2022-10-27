@@ -8,6 +8,7 @@ using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
+using NCrontab;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValidators
 {
@@ -96,6 +97,12 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
             if (jobConfiguration.StartTime != null && jobConfiguration.EndTime != null && jobConfiguration.StartTime >= jobConfiguration.EndTime)
             {
                 throw new ConfigurationErrorException("The start time should be less than the end time.");
+            }
+
+            CrontabSchedule crontabSchedule = CrontabSchedule.TryParse(jobConfiguration.SchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
+            if (crontabSchedule == null)
+            {
+                throw new ConfigurationErrorException("The scheduler crontab expression is invalid.");
             }
 
             FilterLocation filterLocation;
