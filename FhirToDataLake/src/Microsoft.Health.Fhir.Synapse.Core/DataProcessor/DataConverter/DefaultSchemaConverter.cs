@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using EnsureThat;
@@ -52,20 +53,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{schemaType}'.");
             }
 
+            var nodePath = new Stack<string>();
+            nodePath.Push(schemaType);
+
             var processedJsonData = inputData.Values
-                .Select(json => ProcessStructObject(json, schema))
+                .Select(json => ProcessStructObject(json, schema, nodePath))
                 .Where(processedResult => processedResult != null);
 
+            nodePath.Pop();
             return new JsonBatchData(processedJsonData);
         }
 
-        private JObject ProcessStructObject(JToken structItem, FhirParquetSchemaNode schemaNode)
+        private JObject ProcessStructObject(JToken structItem, FhirParquetSchemaNode schemaNode, Stack<string> nodePath)
         {
             if (structItem is not JObject fhirJObject)
             {
-                _diagnosticLogger.LogError($"Current FHIR object is not a valid JObject: {schemaNode.GetNodePath()}.");
-                _logger.LogInformation($"Current FHIR object is not a valid JObject: {schemaNode.GetNodePath()}.");
-                throw new ParquetDataProcessorException($"Current FHIR object is not a valid JObject: {schemaNode.GetNodePath()}.");
+                _diagnosticLogger.LogError($"Current FHIR object is not a valid JObject: {string.Join('.', nodePath)}.");
+                _logger.LogInformation($"Current FHIR object is not a valid JObject: {string.Join('.', nodePath)}.");
+                throw new ParquetDataProcessorException($"Current FHIR object is not a valid JObject: {string.Join('.', nodePath)}.");
             }
 
             var processedObject = new JObject();
@@ -74,6 +79,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             {
                 var subObject = subItem.Value;
                 var subObjectKey = subItem.Key;
+                nodePath.Push(subObjectKey);
 
                 // Process choice type FHIR resource.
                 if (schemaNode.ContainsChoiceDataType(subObjectKey))
@@ -83,13 +89,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
                     if (!schemaNode.SubNodes[choiceTypeName].SubNodes.ContainsKey(choiceTypeDataType))
                     {
-                        _diagnosticLogger.LogError($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {schemaNode.GetNodePath()}.");
-                        _logger.LogInformation($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {schemaNode.GetNodePath()}.");
-                        throw new ParquetDataProcessorException($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {schemaNode.GetNodePath()}.");
+                        _diagnosticLogger.LogError($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {string.Join('.', nodePath)}.");
+                        _logger.LogInformation($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {string.Join('.', nodePath)}.");
+                        throw new ParquetDataProcessorException($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {string.Join('.', nodePath)}.");
                     }
 
                     var dataTypeNode = schemaNode.SubNodes[choiceTypeName].SubNodes[choiceTypeDataType];
-                    processedObject.Add(choiceTypeName, ProcessChoiceTypeObject(subObject, dataTypeNode, choiceTypeDataType));
+                    processedObject.Add(choiceTypeName, ProcessChoiceTypeObject(subObject, dataTypeNode, choiceTypeDataType, nodePath));
                 }
                 else
                 {
@@ -104,31 +110,33 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                     if (subNode.IsRepeated)
                     {
                         // Process array FHIR resource.
-                        processedObject.Add(subObjectKey, ProcessArrayObject(subObject, subNode));
+                        processedObject.Add(subObjectKey, ProcessArrayObject(subObject, subNode, nodePath));
                     }
                     else if (subNode.IsLeaf)
                     {
                         // Process leaf FHIR resource.
-                        processedObject.Add(subObjectKey, ProcessLeafObject(subObject, subNode));
+                        processedObject.Add(subObjectKey, ProcessLeafObject(subObject, subNode, nodePath));
                     }
                     else
                     {
                         // Process struct FHIR resource.
-                        processedObject.Add(subObjectKey, ProcessStructObject(subObject, subNode));
+                        processedObject.Add(subObjectKey, ProcessStructObject(subObject, subNode, nodePath));
                     }
                 }
+
+                nodePath.Pop();
             }
 
             return processedObject;
         }
 
-        private JArray ProcessArrayObject(JToken arrayItem, FhirParquetSchemaNode schemaNode)
+        private JArray ProcessArrayObject(JToken arrayItem, FhirParquetSchemaNode schemaNode, Stack<string> nodePath)
         {
             if (arrayItem is not JArray fhirArrayObject)
             {
-                _diagnosticLogger.LogError($"Current FHIR object is not a valid JArray: {schemaNode.GetNodePath()}.");
-                _logger.LogInformation($"Current FHIR object is not a valid JArray: {schemaNode.GetNodePath()}.");
-                throw new ParquetDataProcessorException($"Current FHIR object is not a valid JArray: {schemaNode.GetNodePath()}.");
+                _diagnosticLogger.LogError($"Current FHIR object is not a valid JArray: {string.Join('.', nodePath)}.");
+                _logger.LogInformation($"Current FHIR object is not a valid JArray: {string.Join('.', nodePath)}.");
+                throw new ParquetDataProcessorException($"Current FHIR object is not a valid JArray: {string.Join('.', nodePath)}.");
             }
 
             var arrayObject = new JArray();
@@ -136,18 +144,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             {
                 if (schemaNode.IsLeaf)
                 {
-                    arrayObject.Add(ProcessLeafObject(item, schemaNode));
+                    arrayObject.Add(ProcessLeafObject(item, schemaNode, nodePath));
                 }
                 else
                 {
-                    arrayObject.Add(ProcessStructObject(item, schemaNode));
+                    arrayObject.Add(ProcessStructObject(item, schemaNode, nodePath));
                 }
             }
 
             return arrayObject;
         }
 
-        private JValue ProcessLeafObject(JToken fhirObject, FhirParquetSchemaNode schemaNode)
+        private JValue ProcessLeafObject(JToken fhirObject, FhirParquetSchemaNode schemaNode, Stack<string> nodePath)
         {
             if (schemaNode.Type == FhirParquetSchemaConstants.JsonStringType)
             {
@@ -156,24 +164,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             if (fhirObject is not JValue fhirLeafObject)
             {
-                _diagnosticLogger.LogError($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
-                _logger.LogInformation($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
-                throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
+                _diagnosticLogger.LogError($"Invalid data: complex object found in leaf schema node {string.Join('.', nodePath)}.");
+                _logger.LogInformation($"Invalid data: complex object found in leaf schema node {string.Join('.', nodePath)}.");
+                throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {string.Join('.', nodePath)}.");
             }
 
             return fhirLeafObject;
         }
 
-        private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirParquetSchemaNode schemaNode, string schemaNodeKey)
+        private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirParquetSchemaNode schemaNode, string schemaNodeKey, Stack<string> nodePath)
         {
             var choiceRootObject = new JObject();
             if (schemaNode.IsLeaf)
             {
-                choiceRootObject.Add(schemaNodeKey, ProcessLeafObject(fhirObject, schemaNode));
+                choiceRootObject.Add(schemaNodeKey, ProcessLeafObject(fhirObject, schemaNode, nodePath));
             }
             else
             {
-                choiceRootObject.Add(schemaNodeKey, ProcessStructObject(fhirObject, schemaNode));
+                choiceRootObject.Add(schemaNodeKey, ProcessStructObject(fhirObject, schemaNode, nodePath));
             }
 
             return choiceRootObject;

@@ -40,6 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
                     },
                 },
             };
+
             yield return new object[]
             {
                 new JObject
@@ -55,6 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
                     },
                 },
             };
+
             yield return new object[]
             {
                 new JObject
@@ -70,6 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
                     },
                 },
             };
+
             yield return new object[]
             {
                 new JObject

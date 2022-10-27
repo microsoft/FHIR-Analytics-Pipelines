@@ -14,8 +14,11 @@ using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConverter
@@ -37,6 +40,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
             _testDefaultConverter = new DefaultSchemaConverter(schemaManager, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
             _testPatient = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson")).First();
+        }
+
+        public static IEnumerable<object[]> GetInvalidSchemaContents()
+        {
+            // yield return new object[] { File.ReadAllText(Path.Join(TestUtils.TestInvalidSchemaDirectoryPath, "Invalid_schema_invalid_subnodes.json")) };
+            // yield return new object[] { File.ReadAllText(Path.Join(TestUtils.TestInvalidSchemaDirectoryPath, "Invalid_schema_no_subnodes.json")) };
+            // yield return new object[] { File.ReadAllText(Path.Join(TestUtils.TestInvalidSchemaDirectoryPath, "Invalid_schema_property_type_not_match1.json")) };
+            // yield return new object[] { File.ReadAllText(Path.Join(TestUtils.TestInvalidSchemaDirectoryPath, "Invalid_schema_property_type_not_match2.json")) };
+            // yield return new object[] { File.ReadAllText(Path.Join(TestUtils.TestInvalidSchemaDirectoryPath, "Invalid_schema_property_type_not_match3.json")) };
+            // yield return new object[] { File.ReadAllText(Path.Join(TestUtils.TestInvalidSchemaDirectoryPath, "Invalid_schema_property_type_not_match4.json")) };
+            yield return new object[] { File.ReadAllText(Path.Join(TestUtils.TestInvalidSchemaDirectoryPath, "Invalid_schema_repeated_not_match1.json")) };
+            yield return new object[] { File.ReadAllText(Path.Join(TestUtils.TestInvalidSchemaDirectoryPath, "Invalid_schema_repeated_not_match2.json")) };
         }
 
         [Fact]
@@ -311,8 +326,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                     "Observation"));
         }
 
+        [Theory]
+        [MemberData(nameof(GetInvalidSchemaContents))]
+        public void GivenInvalidSchema_WhenConvert_ExceptionShouldBeThrown(string invalidSchemaContent)
+        {
+            var schemaNode = JsonConvert.DeserializeObject<FhirParquetSchemaNode>(invalidSchemaContent);
+            var schemaManager = CreateMockSchemaManager(schemaNode);
+            var testConverter = new DefaultSchemaConverter(schemaManager, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
+
+            Assert.Throws<ParquetDataProcessorException>(()
+                => testConverter.Convert(CreateTestJsonBatchData(_testPatient), "Patient").Values.Count());
+        }
+
         [Fact]
-        public void GivenInvalidData_WhenConvert_ExceptionShouldBeReturned()
+        public void GivenInvalidData_WhenConvert_ExceptionShouldBeThrown()
         {
             var invalidFieldData = new JObject
             {
@@ -330,6 +357,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         {
             var testData = new List<JObject>() { testJObjectData };
             return new JsonBatchData(testData);
+        }
+
+        private static IFhirSchemaManager<FhirParquetSchemaNode> CreateMockSchemaManager(FhirParquetSchemaNode schemaNode)
+        {
+            var mockSchemaManager = Substitute.For<IFhirSchemaManager<FhirParquetSchemaNode>>();
+            mockSchemaManager.GetSchema(Arg.Any<string>()).Returns(schemaNode);
+
+            return mockSchemaManager;
         }
     }
 }
