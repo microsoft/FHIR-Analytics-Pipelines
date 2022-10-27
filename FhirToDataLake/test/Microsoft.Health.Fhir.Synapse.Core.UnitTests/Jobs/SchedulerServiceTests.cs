@@ -114,7 +114,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
-        public void GivenStartTimeGreaterOrEqaulEndTime_WhenInitialize_ExceptionShouldBeThrown()
+        public void GivenStartTimeGreaterOrEqualEndTime_WhenInitialize_ExceptionShouldBeThrown()
         {
             DateTime dateTime = new DateTime(2022, 1, 1);
             JobConfiguration jobConfig1 = new JobConfiguration

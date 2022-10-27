@@ -104,6 +104,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         if (leaseAcquired)
                         {
                             scheduledToEnd = await ProcessInternalAsync(cancellationToken);
+                            if (scheduledToEnd)
+                            {
+                                delayTaskCancellationTokenSource.Cancel();
+                            }
                         }
                     }
                 }
@@ -253,6 +257,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 try
                 {
                     scheduledToEnd = await CheckAndUpdateTriggerEntityInternalAsync(cancellationToken);
+                    if (scheduledToEnd)
+                    {
+                        delayTaskCancellationTokenSource.Cancel();
+                    }
                 }
                 catch (OperationCanceledException)
                 {
