@@ -20,11 +20,5 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// </summary>
         [JsonProperty("filterImageReference")]
         public string FilterImageReference { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Filter configuration file name in Image.
-        /// </summary>
-        [JsonProperty("filterConfigurationFileName")]
-        public string FilterConfigurationFileName { get; set; } = "filterConfiguration.json";
     }
 }

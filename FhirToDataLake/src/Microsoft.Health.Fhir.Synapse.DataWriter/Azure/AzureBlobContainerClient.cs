@@ -106,12 +106,21 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                         // Check null again to avoid duplicate initialization.
                         if (_blobContainerClient is null)
                         {
-                            var externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
-                            _blobContainerClient = new BlobContainerClient(
-                                _storageUri,
-                                externalTokenCredential);
+                            try
+                            {
+                                var externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
+                                var tempBlobContainerClient = new BlobContainerClient(
+                                    _storageUri,
+                                    externalTokenCredential);
 
-                            InitializeBlobContainerClient(_blobContainerClient);
+                                InitializeBlobContainerClient(tempBlobContainerClient);
+                                _blobContainerClient = tempBlobContainerClient;
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogInformation(ex, $"Initialize blob container client failed: {ex}");
+                                throw;
+                            }
                         }
                     }
                 }
@@ -130,9 +139,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 {
                     lock (_dataLakeFileSystemClientLock)
                     {
-                        _dataLakeFileSystemClient ??= new DataLakeFileSystemClient(
-                            _storageUri,
-                            _credentialProvider.GetCredential(TokenCredentialTypes.External));
+                        if (_dataLakeFileSystemClient is null)
+                        {
+                            _dataLakeFileSystemClient ??= new DataLakeFileSystemClient(
+                                _storageUri,
+                                _credentialProvider.GetCredential(TokenCredentialTypes.External));
+                        }
                     }
                 }
 
@@ -146,6 +158,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             try
             {
                 blobContainerClient.CreateIfNotExists();
+                _logger.LogInformation($"Create container {blobContainerClient.Name} successfully.");
             }
             catch (Exception ex)
             {
