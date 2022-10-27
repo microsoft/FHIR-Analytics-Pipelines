@@ -29,7 +29,14 @@ namespace Microsoft.Health.Parquet.UnitTests
 
         public static IEnumerable<object[]> GetInvalidSchemaContents()
         {
-            yield return new object[] { File.ReadAllText("./TestData/TestSchema/Invalid_schema_no_subnode.json") };
+            yield return new object[] { File.ReadAllText("./TestData/TestSchema/Invalid_schema_no_subnodes.json") };
+            yield return new object[] { File.ReadAllText("./TestData/TestSchema/Invalid_schema_invalid_subnodes.json") };
+            yield return new object[] { File.ReadAllText("./TestData/TestSchema/Invalid_schema_repeated_not_match1.json") };
+            yield return new object[] { File.ReadAllText("./TestData/TestSchema/Invalid_schema_repeated_not_match2.json") };
+            yield return new object[] { File.ReadAllText("./TestData/TestSchema/Invalid_schema_property_type_not_match1.json") };
+            yield return new object[] { File.ReadAllText("./TestData/TestSchema/Invalid_schema_property_type_not_match2.json") };
+            yield return new object[] { File.ReadAllText("./TestData/TestSchema/Invalid_schema_property_type_not_match3.json") };
+            yield return new object[] { File.ReadAllText("./TestData/TestSchema/Invalid_schema_property_type_not_match4.json") };
         }
 
         [Theory]
@@ -37,7 +44,7 @@ namespace Microsoft.Health.Parquet.UnitTests
         [InlineData("")]
         [InlineData(" ")]
         [InlineData(null)]
-        public void GivenInvalidSchemaContent_WhenInitializeSchemaSet_ExceptionShouldBeThrown(string invalidSchema)
+        public void GivenInvalidSchema_WhenInitializeSchemaSet_ExceptionShouldBeThrown(string invalidSchema)
         {
             var invalidSchemaMap = new Dictionary<string, string> { { PatientResourceType, invalidSchema } };
             var exception = Assert.Throws<ParquetException>(() => ParquetConverter.CreateWithSchemaSet(invalidSchemaMap));
@@ -102,7 +109,7 @@ namespace Microsoft.Health.Parquet.UnitTests
 
         [Theory]
         [MemberData(nameof(GetInvalidSchemaContents))]
-        public void GivenInvalidSchema_WhenConvertingToParquet_ExceptionShouldBeThrown(string invalidSchema)
+        public void GivenInvalidSchemaContents_WhenConvertingToParquet_ExceptionShouldBeThrown(string invalidSchema)
         {
             var validSchemaMap = new Dictionary<string, string> { { PatientResourceType, invalidSchema } };
             var parquetConverter = ParquetConverter.CreateWithSchemaSet(validSchemaMap);
