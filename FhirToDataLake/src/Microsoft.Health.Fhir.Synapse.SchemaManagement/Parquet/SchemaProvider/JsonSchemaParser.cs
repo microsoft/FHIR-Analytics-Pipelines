@@ -76,6 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                 Name = propertyName,
                 Type = propertyType,
                 Depth = curDepth,
+                IsLeaf = true,
                 NodePaths = new List<string>(curFhirPath),
             };
         }

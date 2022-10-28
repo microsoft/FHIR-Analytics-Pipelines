@@ -109,6 +109,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
             var parquetSchemaNode = JsonSchemaParser.ParseJSchema("testType", _testSchema);
             var expectedSchemaNode = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.ExpectedDataDirectory, "ExpectedValidParquetSchemaNode.json"))).GetAwaiter().GetResult();
 
+            var parquetSchemaContent = JsonConvert.SerializeObject(parquetSchemaNode);
+            var expectedSchemaContent = JsonConvert.SerializeObject(expectedSchemaNode);
+
             Assert.True(JToken.DeepEquals(
                 JObject.Parse(JsonConvert.SerializeObject(parquetSchemaNode)),
                 JObject.Parse(JsonConvert.SerializeObject(expectedSchemaNode))));
