@@ -9,13 +9,19 @@ This library works for both Windows and Linux platforms and will be published as
 The native parquet library has dependencies on Arrow, Parquet and json-cpp libraries. All dependencies are managed with the vcpkg tool.
 By using the vcpkg [manifest mode](https://vcpkg.readthedocs.io/en/latest/users/manifests/), the dependencies can be easily installed by integrating with CMake:
 
-Build command for linux:
+First load submodules using command:
+
+```
+git submodule update --init --recursive
+```
+
+Build command for **linux**:
 ```bash
 cmake -B build -S . -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 ```
 
-Build command for windows:
+Build command for **windows**:
 ```powershell
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release

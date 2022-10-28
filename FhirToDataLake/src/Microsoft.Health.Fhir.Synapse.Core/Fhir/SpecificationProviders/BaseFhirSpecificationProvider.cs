@@ -34,14 +34,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         private readonly Dictionary<string, HashSet<string>> _compartmentResourceTypesLookup;
 
         /// <summary>
-        /// The FHIR server supported search parameters for each resource type, extracted from FHIR server metadata.
+        /// Capability data.
         /// </summary>
-        private readonly Dictionary<string, HashSet<string>> _resourceTypeSearchParametersLookup;
-
-        /// <summary>
-        /// {resourceType}_{searchParameter} to search parameter id defined by
-        /// </summary>
-        private readonly Dictionary<string, string> _searchParameterIdLookup;
+        private readonly Lazy<FhirCapabilityData> _capabilityData;
 
         public BaseFhirSpecificationProvider(
             IFhirDataClient dataClient,
@@ -53,8 +48,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _compartmentResourceTypesLookup = BuildCompartmentResourceTypesLookup();
-
-            (_resourceTypeSearchParametersLookup, _searchParameterIdLookup) = BuildSearchParametersLookup();
+            _capabilityData = new Lazy<FhirCapabilityData>(() => BuildFhirCapabilityData());
         }
 
         public abstract IEnumerable<string> GetAllResourceTypes();
@@ -89,13 +83,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 throw new FhirSpecificationProviderException($"The input {resourceType} isn't a valid resource type.");
             }
 
-            if (!_resourceTypeSearchParametersLookup.ContainsKey(resourceType))
+            if (!_capabilityData.Value.ResourceTypeSearchParametersLookup.ContainsKey(resourceType))
             {
                 _logger.LogInformation($"There is no search parameter defined for resource type {resourceType}.");
                 return new HashSet<string>();
             }
 
-            return _resourceTypeSearchParametersLookup[resourceType];
+            return _capabilityData.Value.ResourceTypeSearchParametersLookup[resourceType];
         }
 
         protected virtual Dictionary<string, HashSet<string>> BuildCompartmentResourceTypesLookup()
@@ -128,8 +122,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         /// <summary>
         /// Retrieve Fhir server metadata and build _resourceTypeSearchParametersLookup based on it.
         /// </summary>
-        /// <returns>The search parameters look up result.</returns>
-        protected virtual Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>> BuildSearchParametersLookup()
+        /// <returns>The capability data look up result.</returns>
+        protected virtual FhirCapabilityData BuildFhirCapabilityData()
         {
             var metadataOptions = new MetadataOptions();
 
@@ -144,7 +138,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 throw new FhirSpecificationProviderException($"Failed to request Fhir server metadata.", exception);
             }
 
-            return BuildSearchParametersLookupFromMetadata(metaData);
+            return BuildCapabilityDataFromMetadata(metaData);
         }
 
         protected virtual string SearchParameterKey(string resourceType, string searchParameter) => $"{resourceType}_{searchParameter}";
@@ -161,7 +155,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
         }
 
-        protected abstract Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>> BuildSearchParametersLookupFromMetadata(string metaData);
+        protected abstract FhirCapabilityData BuildCapabilityDataFromMetadata(string metaData);
 
         protected abstract Dictionary<string, HashSet<string>> BuildCompartmentResourceTypesLookupFromCompartmentContext(string compartmentContext, string compartmentFile);
 

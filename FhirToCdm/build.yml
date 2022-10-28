@@ -28,7 +28,7 @@ steps:
   displayName: Run Engine Core Tests
   inputs:
     command: test
-    projects: '**/*Test/*.csproj'
+    projects: '**/Microsoft.Health.Fhir.*Test/*.csproj'
     arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
 
 - task: PublishTestResults@2

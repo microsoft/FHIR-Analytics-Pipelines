@@ -28,14 +28,14 @@ namespace Microsoft.Health.Parquet
         {
             switch (status)
             {
-                case 10001:
-                    return "Input json is invalid.";
-                case 10002:
-                    return "Write to parquet failed.";
-                case 11001:
-                    return "Parse given schema failed.";
-                case 11002:
-                    return "Target schema is not found.";
+                case ParquetConverterErrorCodes.ReadInputJsonError:
+                    return Resources.ReadInputJsonError;
+                case ParquetConverterErrorCodes.WriteToParquetError:
+                    return Resources.WriteToParquetError;
+                case ParquetConverterErrorCodes.ParseParquetSchemaError:
+                    return Resources.ParseParquetSchemaError;
+                case ParquetConverterErrorCodes.SchemaNotFound:
+                    return Resources.SchemaNotFound;
                 default:
                     return "Unknown error.";
             }
