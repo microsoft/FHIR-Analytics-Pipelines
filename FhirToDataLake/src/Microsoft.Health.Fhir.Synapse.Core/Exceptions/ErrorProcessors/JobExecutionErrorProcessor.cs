@@ -24,7 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors
 
         public void Process(Exception ex, string message = "")
         {
-            message += ex.Message;
+            message = string.Format("{0} Reason:{1}", message, ex.Message);
             switch (ex)
             {
                 case FhirSearchException:

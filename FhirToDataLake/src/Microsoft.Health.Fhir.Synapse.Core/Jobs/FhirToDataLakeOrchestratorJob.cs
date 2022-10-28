@@ -154,13 +154,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 return JsonConvert.SerializeObject(_result);
             }
-            catch (TaskCanceledException taskCanceledEx)
-            {
-                _diagnosticLogger.LogError("FhirToDataLake job is canceled.");
-                _logger.LogInformation(taskCanceledEx, "FhirToDataLake orchestrator job {0} is canceled.", _jobInfo.Id);
-                _jobExecutionErrorProcessor.Process(taskCanceledEx, "FhirToDataLake orchestrator job is canceled.");
-                throw new RetriableJobException("Job is cancelled.", taskCanceledEx);
-            }
             catch (OperationCanceledException operationCanceledEx)
             {
                 _diagnosticLogger.LogError("FhirToDataLake job is canceled.");

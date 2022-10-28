@@ -34,7 +34,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly Guid _instanceGuid;
         private readonly JobConfiguration _jobConfiguration;
         private readonly IDiagnosticLogger _diagnosticLogger;
-        private readonly IMetricsLogger _metricsLogger;
         private readonly SchedulerServiceErrorProcessor _schedulerServiceErrorProcessor;
 
         // See https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression
@@ -52,7 +51,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
-            _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
 
             _jobConfiguration = jobConfiguration.Value;
             _queueType = (byte)jobConfiguration.Value.QueueType;
@@ -60,7 +58,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _instanceGuid = Guid.NewGuid();
-            _schedulerServiceErrorProcessor = new SchedulerServiceErrorProcessor(_metricsLogger);
+            _schedulerServiceErrorProcessor = new SchedulerServiceErrorProcessor(metricsLogger);
         }
 
         public DateTimeOffset LastHeartbeat { get; set; } = DateTimeOffset.UtcNow;
