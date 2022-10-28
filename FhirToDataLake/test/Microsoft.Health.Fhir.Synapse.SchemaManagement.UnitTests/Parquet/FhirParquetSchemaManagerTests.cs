@@ -4,12 +4,18 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
+using Newtonsoft.Json;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
@@ -128,6 +134,31 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         {
             var schemaTypes = _testParquetSchemaManagerWithoutCustomizedSchema.GetSchemaTypes(invalidResourceType);
             Assert.Empty(schemaTypes);
+        }
+
+        [Fact]
+        public static void GivenInvalidSchema_WhenGetSchemas_ExceptionShouldBeThrown()
+        {
+            var schemaConfigurationOption = Options.Create(new SchemaConfiguration());
+
+            var schemaManager = new FhirParquetSchemaManager(
+                schemaConfigurationOption,
+                ParquetSchemaProviderDelegateWithInvalidSchema,
+                _diagnosticLogger,
+                _nullLogger);
+
+            Assert.Throws<GenerateFhirParquetSchemaNodeException>(() => schemaManager.GetAllSchemaContent());
+        }
+
+        public static IParquetSchemaProvider ParquetSchemaProviderDelegateWithInvalidSchema(string placeHolderName)
+        {
+            var invalidParquetSchemaContent = File.ReadAllText(TestUtils.ExampleInvalidParquetSchemaFilePath);
+            var invalidParquetSchemaNode = JsonConvert.DeserializeObject<FhirParquetSchemaNode>(invalidParquetSchemaContent);
+
+            var mockSchemaProvider = Substitute.For<IParquetSchemaProvider>();
+            mockSchemaProvider.GetSchemasAsync().Returns(new Dictionary<string, FhirParquetSchemaNode> { { "testType", invalidParquetSchemaNode } });
+
+            return mockSchemaProvider;
         }
     }
 }
