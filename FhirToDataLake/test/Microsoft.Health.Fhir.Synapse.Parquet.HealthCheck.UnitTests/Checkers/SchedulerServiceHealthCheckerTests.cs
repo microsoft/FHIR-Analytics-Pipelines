@@ -20,6 +20,13 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
 
         [Fact]
+        public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new SchedulerServiceHealthChecker(null, _diagnosticLogger, new NullLogger<SchedulerServiceHealthChecker>()));
+        }
+
+        [Fact]
         public async Task When_SchedulerService_IsActive_HealthCheck_Succeeds()
         {
             var schedulerService = Substitute.For<ISchedulerService>();

@@ -41,6 +41,13 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         }
 
         [Fact]
+        public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new AzureBlobStorageHealthChecker(null, null, null, _diagnosticLogger, new NullLogger<AzureBlobStorageHealthChecker>()));
+        }
+
+        [Fact]
         public async Task When_BlobClient_CanReadWriteABlob_HealthCheck_Succeeds()
         {
             IAzureBlobContainerClient blobContainerClient = Substitute.For<IAzureBlobContainerClient>();

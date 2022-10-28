@@ -77,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                     retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                     onRetry: (exception, timeSpan, retryCount, context) =>
                     {
-                        _logger.LogWarning(exception, "Failed to get template collection from {Image}. Retry {RetryCount}.", schemaImageReference, retryCount);
+                        _logger.LogInformation(exception, "Failed to get template collection from {Image}. Retry {RetryCount}.", schemaImageReference, retryCount);
                     })
                   .ExecuteAsync(() => provider.GetTemplateCollectionAsync(cancellationToken));
             }
