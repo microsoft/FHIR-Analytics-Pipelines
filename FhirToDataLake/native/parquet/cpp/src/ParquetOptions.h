@@ -2,15 +2,15 @@
 #include <arrow/json/api.h>
 #include <parquet/arrow/reader.h>
 
-struct ParquetOptions
+namespace ParquetOptions
 {
-    bool UseThreads = true;
+    const bool UseThreads = true;
 
-    int BlockSize = 1 << 30;
+    const int BlockSize = 1 << 30;
     
-    arrow::json::UnexpectedFieldBehavior UnexpectedFieldBehavior = arrow::json::UnexpectedFieldBehavior::Ignore;
+    const arrow::json::UnexpectedFieldBehavior UnexpectedFieldBehavior = arrow::json::UnexpectedFieldBehavior::Ignore;
 
-    int WriteBatchSize = 100;
+    const int WriteBatchSize = 100;
 
-    arrow::Compression::type Compression = arrow::Compression::SNAPPY;
+    const arrow::Compression::type Compression = arrow::Compression::SNAPPY;
 };
