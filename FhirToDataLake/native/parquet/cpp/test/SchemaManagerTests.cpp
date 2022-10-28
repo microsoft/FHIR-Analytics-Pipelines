@@ -60,7 +60,7 @@ TEST (SchemaTest, AddAndGetEmptySchemaContent)
     EXPECT_TRUE(emptySchema == nullptr);
 }
 
-TEST (SchemaTest,  AddAndGetNoneJsonSchemaContent)
+TEST (SchemaTest, AddAndGetNoneJsonSchemaContent)
 {
     SchemaManager schemaManager;
     string schemaKey = "Broken";
@@ -72,7 +72,7 @@ TEST (SchemaTest,  AddAndGetNoneJsonSchemaContent)
     EXPECT_TRUE(brokenSchema == nullptr);
 }
 
-TEST (SchemaTest,  AddAndGetEmptyOrWhiteSpaceSchemaKey)
+TEST (SchemaTest, AddAndGetEmptyOrWhiteSpaceSchemaKey)
 {
     SchemaManager schemaManager;
     string mockSchema = "{\"Name\": \"Organization\", \"NodePaths\": [\"Organization\"], \"SubNodes\": { \"id\": {\"Name\":\"id\", \"Depth\": 1, \"Type\": \"id\", \"IsLeaf\": true, \"IsRepeated\": false}}, \"Type\": \"Organization\", \"IsRepeated\": false}";
@@ -84,7 +84,7 @@ TEST (SchemaTest,  AddAndGetEmptyOrWhiteSpaceSchemaKey)
 }
 
 
-TEST (SchemaTest,  CheckStringIsEmptyOrWhiteSpace)
+TEST (SchemaTest, CheckStringIsEmptyOrWhiteSpace)
 {
     EXPECT_TRUE(IsEmptyOrWhitespace(string("")));
     EXPECT_TRUE(IsEmptyOrWhitespace(string(" ")));
