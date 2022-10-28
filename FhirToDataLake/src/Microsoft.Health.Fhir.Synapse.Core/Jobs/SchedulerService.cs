@@ -113,7 +113,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 catch (Exception ex)
                 {
-                    delayTaskCancellationTokenSource.Cancel();
                     _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
                     _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
                 }
@@ -262,7 +261,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 catch (Exception ex)
                 {
-                    delayTaskCancellationTokenSource.Cancel();
+                    // don't exist the while-loop, and retry next time
                     _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
                     _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
                 }
@@ -501,7 +500,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _logger.LogInformation($"Scheduler instance {_instanceGuid} starts to renew lease in loop.");
             using CancellationTokenSource delayTaskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             CancellationToken delayTaskCancellationToken = delayTaskCancellationTokenSource.Token;
-            while (!cancellationToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested && !delayTaskCancellationToken.IsCancellationRequested)
             {
                 Task intervalDelayTask =
                     Task.Delay(TimeSpan.FromSeconds(SchedulerServiceLeaseRefreshIntervalInSeconds), delayTaskCancellationToken).ContinueWith(_ => { });
@@ -515,19 +514,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     if (!isSucceeded)
                     {
                         delayTaskCancellationTokenSource.Cancel();
-                        await intervalDelayTask;
-                        break;
                     }
-
-                    await intervalDelayTask;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogInformation(ex, $"Scheduler instance {_instanceGuid} fails to renew lease.");
                     delayTaskCancellationTokenSource.Cancel();
-                    await intervalDelayTask;
-                    break;
+                    _logger.LogInformation(ex, $"Scheduler instance {_instanceGuid} fails to renew lease.");
                 }
+
+                await intervalDelayTask;
             }
 
             _logger.LogInformation($"Scheduler instance {_instanceGuid} stops to renew lease in loop.");
@@ -558,12 +553,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             triggerLeaseEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
 
-            await _metadataStore.TryUpdateEntityAsync(
+            bool isSuccess = await _metadataStore.TryUpdateEntityAsync(
                 triggerLeaseEntity,
                 cancellationToken: cancellationToken);
 
             _logger.LogInformation($"Scheduler instance {_instanceGuid} renews lease successfully.");
-            return true;
+            return isSuccess;
         }
     }
 }
