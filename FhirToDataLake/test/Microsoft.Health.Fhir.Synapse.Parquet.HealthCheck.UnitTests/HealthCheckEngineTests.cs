@@ -120,7 +120,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
             healthCheckConfiguration.HealthCheckTimeoutInSeconds = 1;
 
             var mockTimeOutHealthChecker = new MockTimeoutHealthChecker(new DiagnosticLogger() ,new NullLogger<MockTimeoutHealthChecker>());
-            var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, mockTimeOutHealthChecker};
+            var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, mockTimeOutHealthChecker };
             var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiguration));
 
             var healthStatus = await healthCheckEngine.CheckHealthAsync();
