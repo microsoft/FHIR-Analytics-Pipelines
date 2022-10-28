@@ -168,7 +168,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(triggerLeaseEntity, cancellationToken);
             _logger.LogInformation(isSucceeded
                 ? $"Scheduler instance {_instanceGuid} acquires lease successfully."
-                : $"Scheduler instance {_instanceGuid} fails to acquire lease, failed to update lease trigger entity.");
+                : $"Scheduler instance {_instanceGuid} fails to acquire lease, failed to update lease trigger entity: {triggerLeaseEntity}.");
 
             return isSucceeded;
         }
@@ -312,7 +312,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
             }
 
-            _logger.LogInformation($"Scheduler instance {_instanceGuid} checks and updates trigger entity successfully.");
+            _logger.LogInformation($"Scheduler instance {_instanceGuid} finishes checking and updating trigger entity.");
 
             return scheduledToEnd;
         }
@@ -344,7 +344,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _logger.LogInformation(isSucceeded
                 ? $"Enqueue orchestrator job for trigger sequence id {currentTriggerEntity.TriggerSequenceId}, the orchestrator job id is {currentTriggerEntity.OrchestratorJobId}."
-                : $"Failed to enqueue orchestrator job for trigger sequence id {currentTriggerEntity.TriggerSequenceId}, the etag is not satisfied.");
+                : $"Failed to enqueue orchestrator job for trigger sequence id {currentTriggerEntity.TriggerSequenceId}, failed to update current trigger entity.");
         }
 
         private async Task CheckAndUpdateOrchestratorJobStatusAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
@@ -381,7 +381,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (needUpdateTriggerEntity)
             {
-                await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
+                bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
+                _logger.LogInformation(isSucceeded
+                    ? $"Update current trigger entity successfully: {currentTriggerEntity}."
+                    : $"Failed to update current trigger entity, Etag precondition failed: {currentTriggerEntity}.");
             }
         }
 
@@ -411,10 +414,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 currentTriggerEntity.TriggerStartTime = nextTriggerStartTime;
                 currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerEndTime;
 
-                await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
-
-                _logger.LogInformation(
-                    $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table.");
+                bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
+                _logger.LogInformation(isSucceeded
+                    ? $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table."
+                    : $"Failed to update new trigger with sequence id {currentTriggerEntity.TriggerSequenceId}, Etag precondition failed: {currentTriggerEntity}.");
             }
 
             return false;
@@ -553,12 +556,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             triggerLeaseEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
 
-            bool isSuccess = await _metadataStore.TryUpdateEntityAsync(
+            bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(
                 triggerLeaseEntity,
                 cancellationToken: cancellationToken);
 
-            _logger.LogInformation($"Scheduler instance {_instanceGuid} renews lease successfully.");
-            return isSuccess;
+            _logger.LogInformation(isSucceeded
+                ? $"Scheduler instance {_instanceGuid} renews lease successfully."
+                : $"Scheduler instance {_instanceGuid} fails to renew lease, failed to update lease trigger entity: {triggerLeaseEntity}.");
+            
+            return isSucceeded;
         }
     }
 }
