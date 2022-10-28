@@ -95,7 +95,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     RowKey = TableKeyProvider.CompartmentRowKey(patients[0]),
                     VersionId = 3,
                 };
-                await metadataStore.AddEntityAsync(previousPatientInfo);
+                await metadataStore.TryAddEntityAsync(previousPatientInfo);
                 var result = await VerifyCommonOrchestratorJobAsync(patientCnt, 4, filterScope: FilterScope.Group, metadataStore: metadataStore);
 
                 // verify patient version for group scope

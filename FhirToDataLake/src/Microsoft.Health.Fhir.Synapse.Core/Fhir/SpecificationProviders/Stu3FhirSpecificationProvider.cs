@@ -32,7 +32,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             return Stu3FhirModelInfo.IsKnownResource(resourceType);
         }
 
-        protected override Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>> BuildSearchParametersLookupFromMetadata(string metaData)
+        protected override FhirCapabilityData BuildCapabilityDataFromMetadata(string metaData)
         {
             throw new NotImplementedException();
         }

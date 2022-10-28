@@ -8,6 +8,7 @@ using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
+using NCrontab;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValidators
 {
@@ -93,6 +94,17 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
                 throw new ConfigurationErrorException("Max queued job count per orchestration job should be greater than 0.");
             }
 
+            if (jobConfiguration.StartTime != null && jobConfiguration.EndTime != null && jobConfiguration.StartTime >= jobConfiguration.EndTime)
+            {
+                throw new ConfigurationErrorException("The start time should be less than the end time.");
+            }
+
+            CrontabSchedule crontabSchedule = CrontabSchedule.TryParse(jobConfiguration.SchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
+            if (crontabSchedule == null)
+            {
+                throw new ConfigurationErrorException("The scheduler crontab expression is invalid.");
+            }
+
             FilterLocation filterLocation;
             try
             {
@@ -114,11 +126,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
                 }
 
                 ValidateUtility.ValidateImageReference(filterLocation.FilterImageReference);
-
-                if (string.IsNullOrWhiteSpace(filterLocation.FilterConfigurationFileName))
-                {
-                    throw new ConfigurationErrorException($"Filter configuration file name can not be empty when external filter configuration is enable.");
-                }
             }
             else
             {
