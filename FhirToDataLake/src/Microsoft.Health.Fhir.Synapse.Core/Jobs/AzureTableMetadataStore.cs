@@ -49,10 +49,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<TriggerLeaseEntity> GetTriggerLeaseEntityAsync(byte queueType, CancellationToken cancellationToken = default)
         {
-            return (await _metadataTableClient.GetEntityAsync<TriggerLeaseEntity>(
-                TableKeyProvider.LeasePartitionKey(queueType),
-                TableKeyProvider.LeaseRowKey(queueType),
-                cancellationToken: cancellationToken)).Value;
+            TriggerLeaseEntity entity = null;
+            try
+            {
+                entity = await _metadataTableClient.GetEntityAsync<TriggerLeaseEntity>(
+                    TableKeyProvider.LeasePartitionKey(queueType),
+                    TableKeyProvider.LeaseRowKey(queueType),
+                    cancellationToken: cancellationToken);
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
+            {
+                _logger.LogInformation("The trigger lease entity doesn't exist.");
+            }
+
+            // don't catch other exceptions, the caller should handle it
+            return entity;
         }
 
         public bool IsInitialized()
@@ -67,17 +78,35 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return _isInitialized;
         }
 
-        public async Task<Response> AddEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default)
+        public async Task<bool> TryAddEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default)
         {
-            return await _metadataTableClient.AddEntityAsync(tableEntity, cancellationToken);
+            try
+            {
+                await _metadataTableClient.AddEntityAsync(tableEntity, cancellationToken);
+                return true;
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode)
+            {
+                _logger.LogInformation("Failed to add entity, the entity already exists.");
+                return false;
+            }
         }
 
-        public async Task<Response> UpdateEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default)
+        public async Task<bool> TryUpdateEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default)
         {
-            return await _metadataTableClient.UpdateEntityAsync(
-                tableEntity,
-                tableEntity.ETag,
-                cancellationToken: cancellationToken);
+            try
+            {
+                await _metadataTableClient.UpdateEntityAsync(
+                    tableEntity,
+                    tableEntity.ETag,
+                    cancellationToken: cancellationToken);
+                return true;
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.UpdateEntityPreconditionFailedErrorCode)
+            {
+                _logger.LogInformation("Failed to update entity, Etag precondition failed.");
+                return false;
+            }
         }
 
         public async Task<CurrentTriggerEntity> GetCurrentTriggerEntityAsync(byte queueType, CancellationToken cancellationToken = default)
@@ -85,32 +114,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             CurrentTriggerEntity entity = null;
             try
             {
-                var response = await _metadataTableClient.GetEntityAsync<CurrentTriggerEntity>(
+                Response<CurrentTriggerEntity> response = await _metadataTableClient.GetEntityAsync<CurrentTriggerEntity>(
                     TableKeyProvider.TriggerPartitionKey(queueType),
                     TableKeyProvider.TriggerRowKey(queueType),
                     cancellationToken: cancellationToken);
 
-                // Todo: test behavior if status is not 200.
-                if (response.GetRawResponse().Status == 200)
-                {
-                    entity = response.Value;
-                }
-                else
-                {
-                    _logger.LogInformation($"Failed to get current trigger entity from table, status {response.GetRawResponse().Status}");
-                }
+                entity = response.Value;
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
             {
                 _logger.LogInformation(ex, "The current trigger doesn't exist, will create a new one.");
             }
-            catch (Exception ex)
-            {
-                // any exceptions while getting entity will log a error and try next time
-                _logger.LogError(ex, $"Failed to get current trigger entity from table, exception: {ex.Message}");
-                throw;
-            }
 
+            // don't catch other exceptions, the caller should handle it
             return entity;
         }
 
