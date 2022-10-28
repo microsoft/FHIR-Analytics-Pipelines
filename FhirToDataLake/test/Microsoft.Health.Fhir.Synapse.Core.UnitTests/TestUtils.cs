@@ -91,6 +91,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             var fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestParquetSchemaProviderDelegate,
+                _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)

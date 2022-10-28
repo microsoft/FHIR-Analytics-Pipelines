@@ -4,9 +4,11 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Xunit;
 
@@ -16,6 +18,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
     {
         private static readonly FhirParquetSchemaManager _testParquetSchemaManagerWithoutCustomizedSchema;
         private static readonly FhirParquetSchemaManager _testParquetSchemaManagerWithCustomizedSchema;
+
+        private static readonly ILogger<FhirParquetSchemaManager> _nullLogger;
+        private static readonly IDiagnosticLogger _diagnosticLogger;
 
         static FhirParquetSchemaManagerTests()
         {
@@ -27,24 +32,29 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
                 SchemaImageReference = TestUtils.MockSchemaImageReference,
             });
 
-            _testParquetSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithoutCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
-            _testParquetSchemaManagerWithCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
+            _nullLogger = NullLogger<FhirParquetSchemaManager>.Instance;
+            _diagnosticLogger = new DiagnosticLogger();
+
+            _testParquetSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithoutCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, _nullLogger);
+            _testParquetSchemaManagerWithCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, _nullLogger);
         }
 
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             var schemaConfigurationOption = Options.Create(new SchemaConfiguration());
-            var loggerInstance = NullLogger<FhirParquetSchemaManager>.Instance;
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirParquetSchemaManager(null, TestUtils.TestParquetSchemaProviderDelegate, loggerInstance));
+                () => new FhirParquetSchemaManager(null, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, _nullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirParquetSchemaManager(schemaConfigurationOption, null, loggerInstance));
+                () => new FhirParquetSchemaManager(schemaConfigurationOption, null, _diagnosticLogger, _nullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.TestParquetSchemaProviderDelegate, null));
+                () => new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.TestParquetSchemaProviderDelegate, null, _nullLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, null));
         }
 
         [InlineData("Patient", 24)]

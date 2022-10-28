@@ -28,4 +28,15 @@
     <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Core.UnitTests\Microsoft.Health.Fhir.Synapse.Core.UnitTests.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestData\ParquetSchema\Observation.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\ParquetSchema\Patient.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\ParquetSchema\Patient_customized.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

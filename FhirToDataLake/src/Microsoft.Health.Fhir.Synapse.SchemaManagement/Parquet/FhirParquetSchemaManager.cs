@@ -9,6 +9,8 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
@@ -17,6 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
     {
         private readonly ParquetSchemaProviderDelegate _schemaProviderDelegate;
         private readonly bool _enableCustomizedSchema;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<FhirParquetSchemaManager> _logger;
 
         private readonly object _schemaTypesMaplock = new object();
@@ -27,11 +30,13 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         public FhirParquetSchemaManager(
             IOptions<SchemaConfiguration> schemaConfiguration,
             ParquetSchemaProviderDelegate parquetSchemaDelegate,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<FhirParquetSchemaManager> logger)
         {
             EnsureArg.IsNotNull(schemaConfiguration, nameof(schemaConfiguration));
 
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _schemaProviderDelegate = EnsureArg.IsNotNull(parquetSchemaDelegate, nameof(parquetSchemaDelegate));
             _enableCustomizedSchema = schemaConfiguration.Value.EnableCustomizedSchema;
         }
@@ -122,6 +127,18 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 
                 _logger.LogInformation($"{resourceCustomizedSchemaNodesMap.Count} resource customized schemas have been loaded.");
                 resourceSchemaNodesMap = resourceSchemaNodesMap.Concat(resourceCustomizedSchemaNodesMap).ToDictionary(x => x.Key, x => x.Value);
+            }
+
+            // Validate Parquet schema nodes
+            foreach (var schemaNodeItem in resourceSchemaNodesMap)
+            {
+                string error = string.Empty;
+                if (!FhirParquetSchemaValidator.Validate(schemaNodeItem.Key, schemaNodeItem.Value, ref error))
+                {
+                    _diagnosticLogger.LogError($"Validate Parquet schema node failed. Reason: {error}.");
+                    _logger.LogInformation($"Validate Parquet schema node failed. Reason: {error}.");
+                    throw new GenerateFhirParquetSchemaNodeException($"Validate Parquet schema node failed. Reason: {error}.");
+                }
             }
 
             return resourceSchemaNodesMap;
