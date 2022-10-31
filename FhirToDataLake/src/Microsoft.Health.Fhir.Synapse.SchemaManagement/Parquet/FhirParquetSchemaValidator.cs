@@ -12,9 +12,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
     {
         public static bool Validate(string schemaKey, FhirParquetSchemaNode rootNode, ref string error)
         {
-            if (schemaKey == null)
+            if (string.IsNullOrWhiteSpace(schemaKey))
             {
-                error = "The schema key cannot be null.";
+                error = "The schema key cannot be null or empty.";
                 return false;
             }
 

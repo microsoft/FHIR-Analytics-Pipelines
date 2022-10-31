@@ -31,12 +31,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
         static DefaultSchemaConverterTests()
         {
-            var schemaConfigurationOption = Options.Create(new SchemaConfiguration());
-
             var schemaManager = new FhirParquetSchemaManager(
-                schemaConfigurationOption,
+                Options.Create(new SchemaConfiguration()),
                 TestUtils.TestParquetSchemaProviderDelegate,
-                new DiagnosticLogger(),
+                _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
             _testDefaultConverter = new DefaultSchemaConverter(schemaManager, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
@@ -47,6 +45,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         {
             yield return new object[] { File.ReadAllText(Path.Join(TestUtils.TestInvalidSchemaDirectoryPath, "Invalid_schema_repeated_not_match1.json")) };
             yield return new object[] { File.ReadAllText(Path.Join(TestUtils.TestInvalidSchemaDirectoryPath, "Invalid_schema_repeated_not_match2.json")) };
+        }
+
+        [Fact]
+        public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
+        {
+            var schemaManager = new FhirParquetSchemaManager(
+                Options.Create(new SchemaConfiguration()),
+                TestUtils.TestParquetSchemaProviderDelegate,
+                _diagnosticLogger,
+                NullLogger<FhirParquetSchemaManager>.Instance);
+
+            Assert.Throws<ArgumentNullException>(
+                () => new DefaultSchemaConverter(null, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new DefaultSchemaConverter(schemaManager, null, NullLogger<DefaultSchemaConverter>.Instance));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new DefaultSchemaConverter(schemaManager, _diagnosticLogger, null));
         }
 
         [Fact]
@@ -308,17 +325,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public void GivenNullschema_WhenConvert_ExceptionShouldBeReturned()
+        public void GivenNullSchema_WhenConvert_ExceptionShouldBeReturned()
         {
             Assert.Throws<ArgumentNullException>(
-                () => _testDefaultConverter.Convert(
-                    CreateTestJsonBatchData(_testPatient),
-                    null));
+                () => _testDefaultConverter.Convert(CreateTestJsonBatchData(_testPatient), null));
 
             Assert.Throws<ArgumentNullException>(
-                () => _testDefaultConverter.Convert(
-                    null,
-                    "Observation"));
+                () => _testDefaultConverter.Convert(null, "Observation"));
+        }
+
+        [Fact]
+        public void GivenNoExistSchema_WhenConvert_ExceptionShouldBeReturned()
+        {
+            Assert.Throws<ParquetDataProcessorException>(
+                () => _testDefaultConverter.Convert(CreateTestJsonBatchData(_testPatient), "No_Exist_Schema"));
         }
 
         [Theory]

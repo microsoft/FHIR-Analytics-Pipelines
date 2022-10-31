@@ -95,7 +95,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public void GivenInvalidResourceType_WhenPreprocess_ExceptionShouldBeThrown()
+        public void GivenInvalidResourceType_WhenConvert_ExceptionShouldBeThrown()
         {
             var testData = File.ReadLines(Path.Join(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson"))
                     .Select(dataContent => JObject.Parse(dataContent));

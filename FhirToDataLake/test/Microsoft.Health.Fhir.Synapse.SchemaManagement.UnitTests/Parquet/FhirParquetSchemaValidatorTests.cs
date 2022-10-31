@@ -82,14 +82,17 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
             Assert.Equal("The schema node 'testType' cannot be null.", error);
         }
 
-        [Fact]
-        public void GivenNullSchemaKey_WhenValidate_FalseShouldBeReturned()
+        [Theory]
+        [InlineData("")]
+        [InlineData(" ")]
+        [InlineData(null)]
+        public void GivenInvalidSchemaKey_WhenValidate_FalseShouldBeReturned(string invalidSchemaKey)
         {
             var schemaContent = File.ReadAllText(Path.Join(TestUtils.ExampleParquetSchemaDirectory, "Patient.json"));
             var schemaNode = JsonConvert.DeserializeObject<FhirParquetSchemaNode>(schemaContent);
             string error = string.Empty;
-            Assert.False(FhirParquetSchemaValidator.Validate(null, schemaNode, ref error));
-            Assert.Equal("The schema key cannot be null.", error);
+            Assert.False(FhirParquetSchemaValidator.Validate(invalidSchemaKey, schemaNode, ref error));
+            Assert.Equal("The schema key cannot be null or empty.", error);
         }
     }
 }
