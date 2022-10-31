@@ -24,12 +24,12 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             ILogger<BaseHealthChecker> logger)
         {
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
-            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            Logger = EnsureArg.IsNotNull(logger, nameof(logger));
             Name = EnsureArg.IsNotNullOrWhiteSpace(healthCheckName, nameof(healthCheckName));
             IsCritical = isCritical;
         }
 
-        protected readonly ILogger<BaseHealthChecker> _logger;
+        protected ILogger<BaseHealthChecker> Logger { get; }
 
         public string Name { get; set; }
 
@@ -51,18 +51,18 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
                 };
 
                 _diagnosticLogger.LogError($"Unknown exception occured in health check component {Name}. {e.Message}");
-                _logger.LogInformation(e, $"Unhandled exception occured in health check component {Name}. {e.Message}");
+                Logger.LogInformation(e, $"Unhandled exception occured in health check component {Name}. {e.Message}");
             }
 
             if (healthCheckResult.Status is HealthCheckStatus.UNHEALTHY)
             {
                 _diagnosticLogger.LogWarning($"Health check component {Name} is unhealthy. Failed reason: {healthCheckResult.ErrorMessage}");
-                _logger.LogInformation($"Health check component {Name} is unhealthy. Failed reason: {healthCheckResult.ErrorMessage}");
+                Logger.LogInformation($"Health check component {Name} is unhealthy. Failed reason: {healthCheckResult.ErrorMessage}");
             }
             else
             {
                 _diagnosticLogger.LogInformation($"Health check component {Name} is healthy");
-                _logger.LogInformation($"Health check component {Name} is healthy");
+                Logger.LogInformation($"Health check component {Name} is healthy");
             }
 
             return healthCheckResult;

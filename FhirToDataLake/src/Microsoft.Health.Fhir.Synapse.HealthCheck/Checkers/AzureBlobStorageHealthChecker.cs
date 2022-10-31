@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
-                _logger.LogInformation(e, $"Health check component {HealthCheckTypes.AzureBlobStorageCanReadWrite}: write content to storage account failed: {e}.");
+                Logger.LogInformation(e, $"Health check component {HealthCheckTypes.AzureBlobStorageCanReadWrite}: write content to storage account failed: {e}.");
 
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = $"Write content to blob failed. {e.Message}";
@@ -81,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
-                _logger.LogInformation(e, $"Health check component {HealthCheckTypes.AzureBlobStorageCanReadWrite}: read content from storage account failed: {e}.");
+                Logger.LogInformation(e, $"Health check component {HealthCheckTypes.AzureBlobStorageCanReadWrite}: read content from storage account failed: {e}.");
 
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = $"Read content from blob failed. {e.Message}";
@@ -96,7 +96,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
-                _logger.LogInformation(e, $"Health check component {HealthCheckTypes.AzureBlobStorageCanReadWrite}: check hierachical namespace enabled in storage account failed: {e}.");
+                Logger.LogInformation(e, $"Health check component {HealthCheckTypes.AzureBlobStorageCanReadWrite}: check hierachical namespace enabled in storage account failed: {e}.");
 
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = $"Check hierachical namespace enabled in storage account failed. {e.Message}";
