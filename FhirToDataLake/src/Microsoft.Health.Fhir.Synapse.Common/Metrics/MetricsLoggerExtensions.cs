@@ -27,9 +27,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
             metricsLogger.LogMetrics(new ProcessLatencyMetric(), value);
         }
 
-        public static void LogHealthStatusMetric(this IMetricsLogger metricsLogger, double value)
+        public static void LogHealthStatusMetric(this IMetricsLogger metricsLogger, string component, bool isDiagnostic, double value)
         {
-            metricsLogger.LogMetrics(new HealthStatusMetric(), value);
+            metricsLogger.LogMetrics(new HealthStatusMetric(component, isDiagnostic), value);
         }
     }
 }

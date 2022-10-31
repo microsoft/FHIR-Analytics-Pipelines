@@ -75,7 +75,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _diagnosticLogger.LogInformation($"Scheduler instance {_instanceGuid} starts running.");
             _logger.LogInformation($"Scheduler instance {_instanceGuid} starts running.");
 
-            using CancellationTokenSource delayTaskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            using var delayTaskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             CancellationToken delayTaskCancellationToken = delayTaskCancellationTokenSource.Token;
 
             bool scheduledToEnd = false;
@@ -182,7 +182,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             _logger.LogInformation($"Scheduler instance {_instanceGuid} starts internal processing.");
 
-            using CancellationTokenSource runningCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            using var runningCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             CancellationToken runningCancellationToken = runningCancellationTokenSource.Token;
 
             // renew lease task will complete if cancelled or any exception
@@ -215,7 +215,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>return true if add entity successfully, return false if the entity already exists.</returns>
         private async Task<bool> CreateInitialTriggerLeaseEntityAsync(CancellationToken cancellationToken)
         {
-            TriggerLeaseEntity initialTriggerLeaseEntity = new TriggerLeaseEntity
+            var initialTriggerLeaseEntity = new TriggerLeaseEntity
             {
                 PartitionKey = TableKeyProvider.LeasePartitionKey(_queueType),
                 RowKey = TableKeyProvider.LeaseRowKey(_queueType),
@@ -240,7 +240,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private async Task<bool> CheckAndUpdateTriggerEntityAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Scheduler instance {_instanceGuid} starts to check and update trigger entity in loop.");
-            using CancellationTokenSource delayTaskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            using var delayTaskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             CancellationToken delayTaskCancellationToken = delayTaskCancellationTokenSource.Token;
             bool scheduledToEnd = false;
             while (!scheduledToEnd && !cancellationToken.IsCancellationRequested)
@@ -320,7 +320,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private async Task EnqueueOrchestratorJobAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
         {
             // enqueue a orchestrator job for this trigger
-            FhirToDataLakeOrchestratorJobInputData orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
+            var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
                 TriggerSequenceId = currentTriggerEntity.TriggerSequenceId,
@@ -430,7 +430,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>The created trigger entity</returns>
         private async Task<CurrentTriggerEntity> CreateInitialTriggerEntity(CancellationToken cancellationToken)
         {
-            CurrentTriggerEntity initialTriggerEntity = new ()
+            var initialTriggerEntity = new CurrentTriggerEntity
             {
                 PartitionKey = TableKeyProvider.TriggerPartitionKey(_queueType),
                 RowKey = TableKeyProvider.TriggerPartitionKey(_queueType),
@@ -501,7 +501,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private async Task RenewLeaseAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Scheduler instance {_instanceGuid} starts to renew lease in loop.");
-            using CancellationTokenSource delayTaskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            using var delayTaskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             CancellationToken delayTaskCancellationToken = delayTaskCancellationTokenSource.Token;
             while (!cancellationToken.IsCancellationRequested && !delayTaskCancellationToken.IsCancellationRequested)
             {

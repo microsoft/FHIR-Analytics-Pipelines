@@ -139,9 +139,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         {
             string serverUrl = _dataSource.FhirServerUrl;
 
-            Uri baseUri = new Uri(serverUrl);
+            var baseUri = new Uri(serverUrl);
 
-            Uri uri = new Uri(baseUri, fhirApiOptions.RelativeUri());
+            var uri = new Uri(baseUri, fhirApiOptions.RelativeUri());
 
             // the query parameters is null for metadata
             if (fhirApiOptions.QueryParameters == null)
@@ -154,7 +154,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             // add shared parameters _count
             List<KeyValuePair<string, string>> queryParameters = new List<KeyValuePair<string, string>>
             {
-                new (FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
             };
 
             return uri.AddQueryString(queryParameters);
@@ -164,7 +164,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         {
             try
             {
-                HttpRequestMessage searchRequest = new HttpRequestMessage(HttpMethod.Get, uri);
+                var searchRequest = new HttpRequestMessage(HttpMethod.Get, uri);
                 if (accessToken != null)
                 {
                     // Currently we support accessing FHIR server endpoints with Managed Identity.
@@ -244,7 +244,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         {
             try
             {
-                HttpRequestMessage searchRequest = new HttpRequestMessage(HttpMethod.Get, uri);
+                var searchRequest = new HttpRequestMessage(HttpMethod.Get, uri);
 
                 HttpResponseMessage response = _httpClient.Send(searchRequest);
                 response.EnsureSuccessStatusCode();
@@ -252,7 +252,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
                 Stream stream = response.Content.ReadAsStream();
                 stream.Seek(0, SeekOrigin.Begin);
-                StreamReader reader = new StreamReader(stream);
+                var reader = new StreamReader(stream);
                 return reader.ReadToEnd();
             }
             catch (HttpRequestException ex)

@@ -40,13 +40,13 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            HealthCheckResult healthCheckResult = new HealthCheckResult(_name, false);
+            var healthCheckResult = new HealthCheckResult(_name, false);
 
             try
             {
-                ImageInfo imageInfo = ImageInfo.CreateFromImageReference(_imageReference);
+                var imageInfo = ImageInfo.CreateFromImageReference(_imageReference);
                 string accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
-                AzureContainerRegistryClient acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrClientCredentials(accessToken));
+                var acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrClientCredentials(accessToken));
 
                 // Ensure we can read from acr.
                 await acrClient.Manifests.GetAsync(imageInfo.ImageName, imageInfo.Label, MediatypeV2Manifest, cancellationToken);

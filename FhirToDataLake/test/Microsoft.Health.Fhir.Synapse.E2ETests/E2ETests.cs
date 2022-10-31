@@ -144,7 +144,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             try
             {
                 // Run e2e
-                using CancellationTokenSource tokenSource = new CancellationTokenSource();
+                using var tokenSource = new CancellationTokenSource();
                 IHost host = CreateHostBuilder(configuration).Build();
                 Task hostRunTask = host.RunAsync(tokenSource.Token);
 
@@ -213,7 +213,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             try
             {
                 // Run e2e
-                using CancellationTokenSource tokenSource = new CancellationTokenSource();
+                using var tokenSource = new CancellationTokenSource();
                 IHost host = CreateHostBuilder(configuration).Build();
                 Task hostRunTask = host.RunAsync(tokenSource.Token);
 
@@ -295,7 +295,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             try
             {
                 // Run e2e
-                using CancellationTokenSource tokenSource = new CancellationTokenSource();
+                using var tokenSource = new CancellationTokenSource();
                 IHost host = CreateHostBuilder(configuration).Build();
                 Task hostRunTask = host.RunAsync(tokenSource.Token);
 
@@ -366,7 +366,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             try
             {
                 // trigger first time, only the resources imported before end time are synced.
-                using CancellationTokenSource tokenSource = new CancellationTokenSource();
+                using var tokenSource = new CancellationTokenSource();
                 IHost host = CreateHostBuilder(configuration).Build();
                 Task hostRunTask = host.RunAsync(tokenSource.Token);
 
@@ -394,7 +394,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 endTime = DateTimeOffset.Parse(
                     configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"]);
 
-                using CancellationTokenSource tokenSource2 = new CancellationTokenSource();
+                using var tokenSource2 = new CancellationTokenSource();
                 IHost host2 = CreateHostBuilder(configuration).Build();
                 Task hostRunTask2 = host2.RunAsync(tokenSource2.Token);
 
@@ -452,7 +452,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
             // Make sure the container is deleted before running the tests
             Assert.False(await _blobContainerClient.ExistsAsync());
-            AzureTableClientFactory azureTableClientFactory = new AzureTableClientFactory(
+            var azureTableClientFactory = new AzureTableClientFactory(
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
 
             _metadataStore = new AzureTableMetadataStore(azureTableClientFactory, jobConfig, new NullLogger<AzureTableMetadataStore>());
@@ -512,8 +512,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
             // check result
             string fileName = Path.Combine(ExpectedDataFolder, expectedResultFile);
-            FhirToDataLakeOrchestratorJobResult expectedResult = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(File.ReadAllText(fileName));
-            FhirToDataLakeOrchestratorJobResult result = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
+            var expectedResult = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(File.ReadAllText(fileName));
+            var result = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
 
             Assert.NotNull(expectedResult);
             Assert.NotNull(result);

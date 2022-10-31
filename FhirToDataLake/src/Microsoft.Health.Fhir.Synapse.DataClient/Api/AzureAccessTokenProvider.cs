@@ -23,7 +23,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<AzureAccessTokenProvider> _logger;
         private readonly TokenCredential _tokenCredential;
-        private ConcurrentDictionary<string, AccessToken> _accessTokenDic = new ();
+        private ConcurrentDictionary<string, AccessToken> _accessTokenDic =
+            new ConcurrentDictionary<string, AccessToken>();
         private const int _tokenExpireInterval = 5;
 
         public AzureAccessTokenProvider(TokenCredential tokenCredential, IDiagnosticLogger diagnosticLogger, ILogger<AzureAccessTokenProvider> logger)

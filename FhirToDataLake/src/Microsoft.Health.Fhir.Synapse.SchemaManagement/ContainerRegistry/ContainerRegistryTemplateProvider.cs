@@ -37,8 +37,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             _diagnosticLogger = diagnosticLogger;
             _logger = logger;
 
-            MemoryCache templateCollectionCache = new MemoryCache(new MemoryCacheOptions() { SizeLimit = 100000000 });
-            TemplateCollectionConfiguration config = new TemplateCollectionConfiguration();
+            var templateCollectionCache = new MemoryCache(new MemoryCacheOptions() { SizeLimit = 100000000 });
+            var config = new TemplateCollectionConfiguration();
             _templateCollectionProviderFactory = new TemplateCollectionProviderFactory(templateCollectionCache, Options.Create(config));
         }
 

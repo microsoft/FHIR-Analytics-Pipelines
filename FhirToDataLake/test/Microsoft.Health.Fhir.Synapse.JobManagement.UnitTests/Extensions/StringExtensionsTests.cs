@@ -10,9 +10,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
 {
     public class StringExtensionsTests
     {
-        public static IEnumerable<object[]> NullOrEmptyInput()
+        public static IEnumerable<object[]> EmptyInput()
         {
-            yield return new object[] { null, null };
             yield return new object[] { string.Empty, string.Empty };
         }
 
@@ -28,12 +27,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
             yield return new object[] { "input string", "another string" };
         }
 
-        [Theory]
-        [MemberData(nameof(NullOrEmptyInput))]
-        public void GivenNullOrEmptyString_WhenComputeHash_ThenTheInputShouldBeReturn(string inputStr, string expectedHash)
+        [Fact]
+        public void GivenEmptyString_WhenComputeHash_ThenTheInputShouldBeReturn()
         {
-            string? hash = inputStr.ComputeHash();
-            Assert.Equal(expectedHash, hash);
+            string hash = string.Empty.ComputeHash();
+            Assert.Equal(string.Empty, hash);
         }
 
         [Fact]

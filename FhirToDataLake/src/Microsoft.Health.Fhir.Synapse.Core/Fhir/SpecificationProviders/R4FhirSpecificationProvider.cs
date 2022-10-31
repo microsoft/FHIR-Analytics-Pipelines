@@ -21,20 +21,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
     // TODO: Maybe we can get all FHIR specification directly through 'metadata' API. Thus we can remove the hard dependency with FHIR libs (which targets specific version)
     public class R4FhirSpecificationProvider : BaseFhirSpecificationProvider
     {
-        /// <summary>
-        /// Download from http://hl7.org/fhir/R4/compartmentdefinition-patient.json
-        /// </summary>
-        protected override IEnumerable<string> _compartmentEmbeddedFiles { get; } = new List<string> { "Specifications.R4.compartmentdefinition-patient.json" };
-
-        /// <summary>
-        /// Download from http://hl7.org/fhir/R4/search-parameters.json, which is defined in http://hl7.org/fhir/R4/searchparameter-registry.html
-        /// </summary>
-        protected override string _searchParameterEmbeddedFile { get; } = "Specifications.R4.search-parameters.json";
-
         public R4FhirSpecificationProvider(IFhirDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R4FhirSpecificationProvider> logger)
             : base(dataClient, diagnosticLogger, logger)
         {
         }
+
+        /// <summary>
+        /// Download from http://hl7.org/fhir/R4/compartmentdefinition-patient.json
+        /// </summary>
+        protected override IEnumerable<string> CompartmentEmbeddedFiles { get; } = new List<string> { "Specifications.R4.compartmentdefinition-patient.json" };
+
+        /// <summary>
+        /// Download from http://hl7.org/fhir/R4/search-parameters.json, which is defined in http://hl7.org/fhir/R4/searchparameter-registry.html
+        /// </summary>
+        protected override string SearchParameterEmbeddedFile { get; } = "Specifications.R4.search-parameters.json";
 
         public override IEnumerable<string> GetAllResourceTypes()
         {
@@ -53,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
         protected override Dictionary<string, HashSet<string>> BuildCompartmentResourceTypesLookupFromCompartmentContext(string compartmentContext, string compartmentFile)
         {
-            FhirJsonParser parser = new FhirJsonParser();
+            var parser = new FhirJsonParser();
             Dictionary<string, HashSet<string>> compartmentResourceTypesLookup = new Dictionary<string, HashSet<string>>();
 
             CompartmentDefinition compartment;
@@ -92,7 +92,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
         protected override FhirCapabilityData BuildCapabilityDataFromMetadata(string metaData)
         {
-            FhirJsonParser parser = new FhirJsonParser();
+            var parser = new FhirJsonParser();
 
             CapabilityStatement capabilityStatement;
             try
@@ -157,15 +157,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             string bundleContext;
             try
             {
-                bundleContext = LoadEmbeddedSpecification(_searchParameterEmbeddedFile);
+                bundleContext = LoadEmbeddedSpecification(SearchParameterEmbeddedFile);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Read search parameter file \"{_searchParameterEmbeddedFile}\" failed. Reason: {ex.Message}.");
-                throw new FhirSpecificationProviderException($"Read search parameter file \"{_searchParameterEmbeddedFile}\" failed. Reason: {ex.Message}.", ex);
+                _logger.LogError(ex, $"Read search parameter file \"{SearchParameterEmbeddedFile}\" failed. Reason: {ex.Message}.");
+                throw new FhirSpecificationProviderException($"Read search parameter file \"{SearchParameterEmbeddedFile}\" failed. Reason: {ex.Message}.", ex);
             }
 
-            FhirJsonParser parser = new FhirJsonParser();
+            var parser = new FhirJsonParser();
             Bundle bundle;
             try
             {
@@ -173,15 +173,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"Failed to parse parameter bundle from file {_searchParameterEmbeddedFile}. Reason: {exception.Message}.");
-                throw new FhirSpecificationProviderException($"Failed to parse parameter bundle from file {_searchParameterEmbeddedFile}.", exception);
+                _logger.LogError(exception, $"Failed to parse parameter bundle from file {SearchParameterEmbeddedFile}. Reason: {exception.Message}.");
+                throw new FhirSpecificationProviderException($"Failed to parse parameter bundle from file {SearchParameterEmbeddedFile}.", exception);
             }
 
             Dictionary<string, SearchParameter> searchParameterDefinition = new Dictionary<string, SearchParameter>();
             if (bundle.Entry == null)
             {
-                _logger.LogError($"Failed to build SearchParameterDefinitionLookup from file {_searchParameterEmbeddedFile}, the bundle entry is null.");
-                throw new FhirSpecificationProviderException($"Failed to build SearchParameterDefinitionLookup from file {_searchParameterEmbeddedFile}, the bundle entry is null.");
+                _logger.LogError($"Failed to build SearchParameterDefinitionLookup from file {SearchParameterEmbeddedFile}, the bundle entry is null.");
+                throw new FhirSpecificationProviderException($"Failed to build SearchParameterDefinitionLookup from file {SearchParameterEmbeddedFile}, the bundle entry is null.");
             }
 
             foreach (SearchParameter searchParameter in bundle.Entry.Select(entryComponent => (SearchParameter)entryComponent.Resource))
@@ -201,8 +201,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 if (searchParameterDefinition.ContainsKey(searchParameter.Url))
                 {
                     _logger.LogError(
-                        $"Failed to build SearchParameterDefinitionLookup from file {_searchParameterEmbeddedFile}, there are more than one search parameter definition for {searchParameter.Id} (url: {searchParameter.Url}).");
-                    throw new FhirSpecificationProviderException($"Failed to build SearchParameterDefinitionLookup from file {_searchParameterEmbeddedFile}, there are more than one search parameter definition for {searchParameter.Id} (url: {searchParameter.Url}).");
+                        $"Failed to build SearchParameterDefinitionLookup from file {SearchParameterEmbeddedFile}, there are more than one search parameter definition for {searchParameter.Id} (url: {searchParameter.Url}).");
+                    throw new FhirSpecificationProviderException($"Failed to build SearchParameterDefinitionLookup from file {SearchParameterEmbeddedFile}, there are more than one search parameter definition for {searchParameter.Id} (url: {searchParameter.Url}).");
                 }
 
                 searchParameterDefinition[searchParameter.Url] = searchParameter;

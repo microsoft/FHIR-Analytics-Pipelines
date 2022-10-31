@@ -24,11 +24,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
         {
             string bundleContent = GetBundleFromFile(filePath);
 
-            FhirServerConfiguration fhirConfiguration = new FhirServerConfiguration()
+            var fhirConfiguration = new FhirServerConfiguration()
             {
                 Version = FhirVersion.R4,
             };
-            FhirSerializer fhirSerializer = new FhirSerializer(Options.Create(fhirConfiguration));
+            var fhirSerializer = new FhirSerializer(Options.Create(fhirConfiguration));
 
             return fhirSerializer.DeserializeToElement(bundleContent);
         }

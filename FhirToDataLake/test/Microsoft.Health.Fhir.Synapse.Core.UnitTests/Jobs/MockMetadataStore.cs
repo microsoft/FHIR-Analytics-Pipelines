@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 return Task.FromResult(false);
             }
 
-            ITableEntity entity = tableEntity.CloneObject() as ITableEntity;
+            var entity = tableEntity.CloneObject() as ITableEntity;
             entity.ETag = new ETag(Guid.NewGuid().ToString());
 
             _entities[key] = entity;
@@ -53,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 return Task.FromResult(false);
             }
 
-            ITableEntity entity = tableEntity.CloneObject() as ITableEntity;
+            var entity = tableEntity.CloneObject() as ITableEntity;
             entity.ETag = new ETag(Guid.NewGuid().ToString());
 
             _entities[key] = entity;
@@ -102,7 +102,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             throw new NotImplementedException();
         }
 
-        private Tuple<string, string> CurrentTriggerEntityKey(byte queueType) => 
+        private Tuple<string, string> CurrentTriggerEntityKey(byte queueType) =>
             new Tuple<string, string>(TableKeyProvider.TriggerPartitionKey(queueType), TableKeyProvider.TriggerRowKey(queueType));
 
         private Tuple<string, string> TriggerLeaseEntityKey(byte queueType) =>

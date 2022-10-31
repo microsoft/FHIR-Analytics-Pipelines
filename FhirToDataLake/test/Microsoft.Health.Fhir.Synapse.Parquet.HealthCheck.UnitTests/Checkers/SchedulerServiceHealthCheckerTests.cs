@@ -22,9 +22,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         [Fact]
         public async Task When_SchedulerService_IsActive_HealthCheck_Succeeds()
         {
-            ISchedulerService schedulerService = Substitute.For<ISchedulerService>();
+            var schedulerService = Substitute.For<ISchedulerService>();
             schedulerService.LastHeartbeat.Returns(DateTimeOffset.UtcNow);
-            SchedulerServiceHealthChecker schedulerServiceHealthChecker = new SchedulerServiceHealthChecker(
+            var schedulerServiceHealthChecker = new SchedulerServiceHealthChecker(
                 schedulerService,
                 _diagnosticLogger,
                 new NullLogger<SchedulerServiceHealthChecker>());
@@ -37,9 +37,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         [Fact]
         public async Task When_SchedulerService_IsInactive_HealthCheck_Fails()
         {
-            ISchedulerService schedulerService = Substitute.For<ISchedulerService>();
+            var schedulerService = Substitute.For<ISchedulerService>();
             schedulerService.LastHeartbeat.Returns(DateTimeOffset.UtcNow.AddMinutes(-5));
-            SchedulerServiceHealthChecker schedulerServiceHealthChecker = new SchedulerServiceHealthChecker(
+            var schedulerServiceHealthChecker = new SchedulerServiceHealthChecker(
                 schedulerService,
                 _diagnosticLogger,
                 new NullLogger<SchedulerServiceHealthChecker>());

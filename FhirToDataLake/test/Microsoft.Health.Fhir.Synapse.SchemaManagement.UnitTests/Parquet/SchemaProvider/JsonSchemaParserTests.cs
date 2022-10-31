@@ -41,7 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [MemberData(nameof(GetInvalidJsonSchemaContents))]
         public void GivenAInvalidJsonSchema_WhenParseJSchema_ExceptionsShouldBeThrown(JsonSchema jSchema)
         {
-            JsonSchemaParser schemaParser = new JsonSchemaParser();
+            var schemaParser = new JsonSchemaParser();
             Assert.Throws<GenerateFhirParquetSchemaNodeException>(() => JsonSchemaParser.ParseJSchema("testType", jSchema));
         }
     }

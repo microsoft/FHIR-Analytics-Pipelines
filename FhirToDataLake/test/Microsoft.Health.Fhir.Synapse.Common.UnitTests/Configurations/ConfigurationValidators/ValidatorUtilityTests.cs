@@ -85,7 +85,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Configurations.Configur
         [Fact]
         public void GivenInvalidFilterConfiguration_WhenValidate_ExceptionShouldBeThrown()
         {
-            FilterConfiguration config = new FilterConfiguration()
+            var config = new FilterConfiguration()
             {
                 FilterScope = FilterScope.Group,
                 GroupId = string.Empty,

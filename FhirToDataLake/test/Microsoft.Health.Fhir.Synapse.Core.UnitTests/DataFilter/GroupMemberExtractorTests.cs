@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         public GroupMemberExtractorTests()
         {
-            IFhirDataClient dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IFhirDataClient>();
 
             dataClient.SearchAsync(new ResourceIdSearchOptions("Group", _sampleGroupId, null), _noneCancellationToken)
                 .ReturnsForAnyArgs(x =>
@@ -75,7 +75,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                     return bundle;
                 });
 
-            FhirServerConfiguration fhirServerConfig = new FhirServerConfiguration
+            var fhirServerConfig = new FhirServerConfiguration
             {
                 ServerUrl = "https://example.com",
                 Authentication = AuthenticationType.None,
@@ -92,7 +92,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             Assert.Throws<ArgumentNullException>(
                 () => new GroupMemberExtractor(null, _referenceParser, _diagnosticLogger, _nullGroupMemberExtractorLogger));
 
-            IFhirDataClient dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IFhirDataClient>();
             Assert.Throws<ArgumentNullException>(
                 () => new GroupMemberExtractor(dataClient, null, _diagnosticLogger, _nullGroupMemberExtractorLogger));
         }
@@ -167,7 +167,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 int year,
                 int numberOfResources)
         {
-            DateTimeOffset dateTimeOffset = new DateTimeOffset(new DateTime(year, 1, 1));
+            var dateTimeOffset = new DateTimeOffset(new DateTime(year, 1, 1));
             HashSet<string> resultPatientIds = await _groupMemberExtractor.GetGroupPatientsAsync(
                 _sampleGroupId,
                 null,
@@ -180,7 +180,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [Fact]
         public async Task GivenNoFoundGroupId_WhenGetGroupPatients_ExceptionShouldBeThrown()
         {
-            GroupMemberExtractorException exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_notFoundGroupId, null, _triggerTime, _noneCancellationToken));
+            var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_notFoundGroupId, null, _triggerTime, _noneCancellationToken));
             Assert.StartsWith($"Failed to extract group members. Reason: Group {_notFoundGroupId} is not found.", exception.Message);
         }
 
@@ -190,21 +190,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("  ")]
         public async Task GivenNullOrWhiteSpaceGroupId_WhenGetGroupPatients_ExceptionShouldBeThrown(string groupId)
         {
-            GroupMemberExtractorException exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(groupId, null, _triggerTime, _noneCancellationToken));
+            var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(groupId, null, _triggerTime, _noneCancellationToken));
             Assert.Equal($"Failed to extract group members. Reason: The input group id is null or white space.", exception.Message);
         }
 
         [Fact]
         public async Task GivenInvalidBundle_WhenGetGroupPatients_ExceptionShouldBeThrown()
         {
-            GroupMemberExtractorException exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_invalidBundle, null, _triggerTime, _noneCancellationToken));
+            var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_invalidBundle, null, _triggerTime, _noneCancellationToken));
             Assert.StartsWith($"Failed to extract group members. Reason: Failed to parse fhir 'Group' bundle ", exception.Message);
         }
 
         [Fact]
         public async Task GivenInvalidGroupBundle_WhenGetGroupPatients_ExceptionShouldBeThrown()
         {
-            GroupMemberExtractorException exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_invalidGroup, null, _triggerTime, _noneCancellationToken));
+            var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_invalidGroup, null, _triggerTime, _noneCancellationToken));
             Assert.StartsWith($"Failed to extract group members. Reason: There are invalid group entries returned: ", exception.Message);
         }
 

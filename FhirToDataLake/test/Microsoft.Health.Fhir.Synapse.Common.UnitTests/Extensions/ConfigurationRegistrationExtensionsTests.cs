@@ -55,22 +55,22 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             Dictionary<string, string> config = new Dictionary<string, string>(TestValidConfiguration);
             config[configKey] = configValue;
 
-            ConfigurationBuilder builder = new ConfigurationBuilder();
+            var builder = new ConfigurationBuilder();
             builder.AddInMemoryCollection(config);
-            ServiceCollection serviceCollection = new ServiceCollection();
+            var serviceCollection = new ServiceCollection();
 
-            ConfigurationErrorException exception = Assert.Throws<ConfigurationErrorException>(() => serviceCollection.AddConfiguration(builder.Build()));
+            var exception = Assert.Throws<ConfigurationErrorException>(() => serviceCollection.AddConfiguration(builder.Build()));
             Assert.StartsWith(expectedMessageStart, exception.Message);
         }
 
         [Fact]
         public void GivenValidServiceCollectionConfiguration_WhenValidate_NoExceptionShouldBeThrown()
         {
-            ConfigurationBuilder builder = new ConfigurationBuilder();
+            var builder = new ConfigurationBuilder();
             builder.AddInMemoryCollection(TestValidConfiguration);
             IConfigurationRoot config = builder.Build();
 
-            ServiceCollection serviceCollection = new ServiceCollection();
+            var serviceCollection = new ServiceCollection();
             Exception exception = Record.Exception(() => serviceCollection.AddConfiguration(config));
             Assert.Null(exception);
         }

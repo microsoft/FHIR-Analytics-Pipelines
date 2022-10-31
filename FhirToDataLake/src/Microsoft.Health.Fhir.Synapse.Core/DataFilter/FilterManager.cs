@@ -115,7 +115,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                         // otherwise, the request url is "https://{fhirURL}/Patient/{patientId}/*?_type={nonFilterTypes}"
                         if (!string.IsNullOrWhiteSpace(typeString) || !string.IsNullOrWhiteSpace(filterString))
                         {
-                            parameters = new List<KeyValuePair<string, string>> { new (FhirApiConstants.TypeKey, string.Join(',', nonFilterTypes)) };
+                            parameters = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>(FhirApiConstants.TypeKey, string.Join(',', nonFilterTypes)) };
                         }
 
                         typeFilters.Add(new TypeFilter(FhirConstants.AllResource, parameters));

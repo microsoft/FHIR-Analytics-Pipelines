@@ -34,11 +34,11 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 
         public async Task<OverallHealthStatus> CheckHealthAsync(CancellationToken cancellationToken = default)
         {
-            OverallHealthStatus healthStatus = new OverallHealthStatus();
+            var healthStatus = new OverallHealthStatus();
             List<Task<HealthCheckResult>> tasks = new List<Task<HealthCheckResult>>();
 
             // healthCheckToken will be canceled if health check timeout or cancellationToken is canceled.
-            using CancellationTokenSource healthCheckToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            using var healthCheckToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             healthCheckToken.CancelAfter(_healthCheckTimeoutInSeconds);
 
             foreach (IHealthChecker healthChecker in _healthCheckers)

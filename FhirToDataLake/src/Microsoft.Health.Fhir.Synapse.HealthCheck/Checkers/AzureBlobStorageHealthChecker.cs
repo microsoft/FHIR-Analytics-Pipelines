@@ -4,8 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -53,7 +51,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            HealthCheckResult healthCheckResult = new HealthCheckResult(HealthCheckTypes.AzureBlobStorageCanReadWrite);
+            var healthCheckResult = new HealthCheckResult(HealthCheckTypes.AzureBlobStorageCanReadWrite);
             string blobPath = $"{_sourceFolderName}/{HealthCheckBlobPrefix}";
 
             try
@@ -116,7 +114,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
         private async Task UploadToBlobAsync(string uploadedContent, string blobPath, CancellationToken cancellationToken)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(uploadedContent);
-            using MemoryStream stream = new (bytes);
+            using var stream = new MemoryStream(bytes);
             await _blobContainerClient.UpdateBlobAsync(blobPath, stream, cancellationToken);
         }
 
@@ -124,7 +122,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
         {
             using Stream resultStream = await _blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);
             resultStream.Position = 0;
-            using StreamReader reader = new (resultStream, Encoding.UTF8);
+            using var reader = new StreamReader(resultStream, Encoding.UTF8);
             return reader.ReadToEnd();
         }
     }

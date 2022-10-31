@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         public R4ReferenceParserTests()
         {
-            FhirServerConfiguration fhirServerConfig = new FhirServerConfiguration
+            var fhirServerConfig = new FhirServerConfiguration
             {
                 ServerUrl = _serverUrl,
                 Authentication = AuthenticationType.None,
@@ -51,7 +51,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("   ")]
         public void GivenNullOrWhiteSpaceReference_WhenParseReference_ExceptionShouldBeThrown(string reference)
         {
-            ReferenceParseException exception = Assert.Throws<ReferenceParseException>(() => _referenceParser.Parse(reference));
+            var exception = Assert.Throws<ReferenceParseException>(() => _referenceParser.Parse(reference));
             Assert.Equal("The reference string is null or white space.", exception.Message);
         }
 
@@ -71,15 +71,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [Fact]
         public void GivenDataSourceServerUrlEndsWithSlash_WhenParseReference_ParsedReferenceShouldBeReturned()
         {
-            FhirServerConfiguration fhirServerConfig = new FhirServerConfiguration
+            var fhirServerConfig = new FhirServerConfiguration
             {
                 ServerUrl = "https://example.com/",
                 Authentication = AuthenticationType.None,
             };
 
             IOptions<FhirServerConfiguration> fhirServerOption = Options.Create(fhirServerConfig);
-            FhirApiDataSource dataSource = new FhirApiDataSource(fhirServerOption);
-            R4ReferenceParser referenceParser = new R4ReferenceParser(dataSource, _nullR4ReferenceParserLogger);
+            var dataSource = new FhirApiDataSource(fhirServerOption);
+            var referenceParser = new R4ReferenceParser(dataSource, _nullR4ReferenceParserLogger);
 
             FhirReference fhirReference = referenceParser.Parse("https://example.com/Patient/123/_history/2");
             Assert.NotNull(fhirReference);
@@ -97,7 +97,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("#p1")]
         public void GivenInvalidReference_WhenParseReference_ExceptionShouldBeThrown(string reference)
         {
-            ReferenceParseException exception = Assert.Throws<ReferenceParseException>(() => _referenceParser.Parse(reference));
+            var exception = Assert.Throws<ReferenceParseException>(() => _referenceParser.Parse(reference));
             Assert.Equal($"Fail to parse reference {reference}.", exception.Message);
         }
 
@@ -106,7 +106,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("http://fhir.hl7.org/svc/StructureDefinition/c8973a22-2b5b-4e76-9c66-00639c99e61b")]
         public void GivenExternalAbsoluteURL_WhenParseReference_ExceptionShouldBeThrown(string reference)
         {
-            ReferenceParseException exception = Assert.Throws<ReferenceParseException>(() => _referenceParser.Parse(reference));
+            var exception = Assert.Throws<ReferenceParseException>(() => _referenceParser.Parse(reference));
             Assert.Equal($"The reference {reference} is an absolute URL pointing to an external resource.", exception.Message);
         }
     }

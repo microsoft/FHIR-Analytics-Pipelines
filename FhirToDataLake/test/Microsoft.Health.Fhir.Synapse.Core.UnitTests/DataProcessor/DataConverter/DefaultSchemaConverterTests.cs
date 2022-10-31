@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         {
             IOptions<SchemaConfiguration> schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
-            FhirParquetSchemaManager schemaManager = new FhirParquetSchemaManager(
+            var schemaManager = new FhirParquetSchemaManager(
                 schemaConfigurationOption,
                 TestUtils.TestParquetSchemaProviderDelegate,
                 NullLogger<FhirParquetSchemaManager>.Instance);
@@ -54,7 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public void GivenAValidStructData_WhenConvert_CorrectResultShouldBeReturned()
         {
-            JObject rawStructFormatData = new JObject
+            var rawStructFormatData = new JObject
             {
                 {
                     "text", new JObject
@@ -66,7 +66,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
             };
 
             // Expected struct format fields are same with raw struct format fields.
-            JObject expectedStructFormatResult = new JObject
+            var expectedStructFormatResult = new JObject
             {
                 {
                     "text", new JObject
@@ -86,7 +86,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public void GivenAValidArrayData_WhenConvert_CorrectResultShouldBeReturned()
         {
-            JObject rawArrayFormatData = new JObject
+            var rawArrayFormatData = new JObject
             {
                 {
                     "name", new JArray
@@ -107,7 +107,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
             };
 
             // Expected array format fields are same with raw array format fields.
-            JObject expectedArrayFormatResult = new JObject
+            var expectedArrayFormatResult = new JObject
             {
                 {
                     "name", new JArray
@@ -136,7 +136,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public void GivenAValidDataWithDeepArrayField_WhenConvert_DeepFieldsShouldBeWrappedIntoJsonString()
         {
-            JObject rawDeepFieldsData = new JObject
+            var rawDeepFieldsData = new JObject
             {
                 {
                     "contact", new JArray
@@ -166,7 +166,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 },
             };
 
-            JObject expectedJsonStringFieldsResult = new JObject
+            var expectedJsonStringFieldsResult = new JObject
             {
                 {
                     "contact", new JArray
@@ -198,7 +198,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public void GivenAValidDataWithDeepStructField_WhenConvert_DeepFieldsShouldBeWrappedIntoJsonString()
         {
-            JObject rawDeepFieldsData = new JObject
+            var rawDeepFieldsData = new JObject
             {
                 {
                     "contact", new JArray
@@ -228,7 +228,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 },
             };
 
-            JObject expectedJsonStringFieldsResult = new JObject
+            var expectedJsonStringFieldsResult = new JObject
             {
                 {
                     "contact", new JArray
@@ -260,13 +260,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public void GivenAValidPrimitiveChoiceTypeData_WhenConvert_CorrectResultShouldBeReturned()
         {
-            JObject rawPrimitiveChoiceTypeData = new JObject
+            var rawPrimitiveChoiceTypeData = new JObject
             {
                 { "effectiveDateTime", "1905-08-23" },
             };
 
             // Primitive choice data type
-            JObject expectedPrimitiveChoiceTypeResult = new JObject
+            var expectedPrimitiveChoiceTypeResult = new JObject
             {
                 { "effective", new JObject { { "dateTime", "1905-08-23" } } },
             };
@@ -280,13 +280,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public void GivenAValidStructChoiceTypeData_WhenConvert_CorrectResultShouldBeReturned()
         {
-            JObject rawStructChoiceTypeData = new JObject
+            var rawStructChoiceTypeData = new JObject
             {
                 { "effectivePeriod", new JObject { { "start", "1905-08-23" } } },
             };
 
             // Struct choice data type
-            JObject expectedStructChoiceTypeResult = new JObject
+            var expectedStructChoiceTypeResult = new JObject
             {
                 { "effective", new JObject { { "period", new JObject { { "start", "1905-08-23" } } } } },
             };
@@ -314,7 +314,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public void GivenInvalidData_WhenConvert_ExceptionShouldBeReturned()
         {
-            JObject invalidFieldData = new JObject
+            var invalidFieldData = new JObject
             {
                 { "name", "Invalid data fields, should be array." },
             };

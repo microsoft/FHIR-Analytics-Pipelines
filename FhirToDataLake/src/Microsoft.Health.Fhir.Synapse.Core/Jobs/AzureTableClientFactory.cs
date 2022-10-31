@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 tableName);
             }
 
-            Uri tableUri = new Uri(_tableUrl);
+            var tableUri = new Uri(_tableUrl);
             TokenCredential tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             return new TableClient(

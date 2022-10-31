@@ -19,14 +19,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
     public abstract class BaseFhirSpecificationProvider : IFhirSpecificationProvider
     {
         private readonly IFhirDataClient _dataClient;
-        protected readonly IDiagnosticLogger _diagnosticLogger;
-        protected readonly ILogger _logger;
-
-        protected static readonly IEnumerable<string> ExcludeTypes = new List<string> { FhirConstants.StructureDefinition };
-
-        protected abstract IEnumerable<string> _compartmentEmbeddedFiles { get; }
-
-        protected abstract string _searchParameterEmbeddedFile { get; }
 
         /// <summary>
         /// The resource types of each compartment type, extracted from _compartmentFiles
@@ -37,6 +29,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         /// Capability data.
         /// </summary>
         private readonly Lazy<FhirCapabilityData> _capabilityData;
+
+        protected readonly IDiagnosticLogger _diagnosticLogger;
+        protected readonly ILogger _logger;
+
+        protected static readonly IEnumerable<string> ExcludeTypes = new List<string> { FhirConstants.StructureDefinition };
 
         public BaseFhirSpecificationProvider(
             IFhirDataClient dataClient,
@@ -50,6 +47,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             _compartmentResourceTypesLookup = BuildCompartmentResourceTypesLookup();
             _capabilityData = new Lazy<FhirCapabilityData>(() => BuildFhirCapabilityData());
         }
+
+        protected abstract IEnumerable<string> CompartmentEmbeddedFiles { get; }
+
+        protected abstract string SearchParameterEmbeddedFile { get; }
 
         public abstract IEnumerable<string> GetAllResourceTypes();
 
@@ -96,7 +97,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         {
             Dictionary<string, HashSet<string>> compartmentResourceTypesLookup = new Dictionary<string, HashSet<string>>();
 
-            foreach (string compartmentFile in _compartmentEmbeddedFiles)
+            foreach (string compartmentFile in CompartmentEmbeddedFiles)
             {
                 string compartmentContext;
                 try
@@ -125,7 +126,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         /// <returns>The capability data look up result.</returns>
         protected virtual FhirCapabilityData BuildFhirCapabilityData()
         {
-            MetadataOptions metadataOptions = new MetadataOptions();
+            var metadataOptions = new MetadataOptions();
 
             string metaData;
             try
@@ -146,10 +147,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         protected string LoadEmbeddedSpecification(string specificationName)
         {
             // Dictionary<string, string> embeddedSchema = new Dictionary<string, string>();
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            var executingAssembly = Assembly.GetExecutingAssembly();
             string specificationKey = string.Format("{0}.{1}", executingAssembly.GetName().Name, specificationName);
             using (Stream stream = executingAssembly.GetManifestResourceStream(specificationKey))
-            using (StreamReader reader = new StreamReader(stream))
+            using (var reader = new StreamReader(stream))
             {
                 return reader.ReadToEnd();
             }

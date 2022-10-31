@@ -69,7 +69,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 throw new ParquetDataProcessorException($"Current FHIR object is not a valid JObject: {schemaNode.GetNodePath()}.");
             }
 
-            JObject processedObject = new JObject();
+            var processedObject = new JObject();
 
             foreach (KeyValuePair<string, JToken> subItem in fhirJObject)
             {
@@ -131,7 +131,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 throw new ParquetDataProcessorException($"Current FHIR object is not a valid JArray: {schemaNode.GetNodePath()}.");
             }
 
-            JArray arrayObject = new JArray();
+            var arrayObject = new JArray();
             foreach (JToken item in fhirArrayObject)
             {
                 if (schemaNode.IsLeaf)
@@ -166,7 +166,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
         private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirParquetSchemaNode schemaNode)
         {
-            JObject choiceRootObject = new JObject();
+            var choiceRootObject = new JObject();
             if (schemaNode.IsLeaf)
             {
                 choiceRootObject.Add(schemaNode.Name, ProcessLeafObject(fhirObject, schemaNode));

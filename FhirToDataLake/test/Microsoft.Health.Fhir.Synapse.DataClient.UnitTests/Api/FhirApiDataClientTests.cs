@@ -26,7 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
     public class FhirApiDataClientTests
     {
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
-        private readonly MockTokenCredentialProvider _mockTokenCredentialProvider = new ();
+        private readonly MockTokenCredentialProvider _mockTokenCredentialProvider = new MockTokenCredentialProvider();
         private readonly NullLogger<FhirApiDataClient> _nullFhirApiDataClientLogger =
             NullLogger<FhirApiDataClient>.Instance;
 
@@ -42,14 +42,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             Assert.Throws<ArgumentNullException>(
                 () => new FhirApiDataClient(null, null, null, null, null));
 
-            FhirServerConfiguration fhirServerConfiguration = new FhirServerConfiguration()
+            var fhirServerConfiguration = new FhirServerConfiguration()
             {
                 ServerUrl = FhirServerUri,
             };
 
-            FhirApiDataSource dataSource = new FhirApiDataSource(Options.Create(fhirServerConfiguration));
+            var dataSource = new FhirApiDataSource(Options.Create(fhirServerConfiguration));
 
-            HttpClient httpClient = new HttpClient(new MockHttpMessageHandler(new Dictionary<string, HttpResponseMessage>()));
+            var httpClient = new HttpClient(new MockHttpMessageHandler(new Dictionary<string, HttpResponseMessage>()));
 
             Assert.Throws<ArgumentNullException>(
                 () => new FhirApiDataClient(null, httpClient, _mockTokenCredentialProvider, _diagnosticLogger, _nullFhirApiDataClientLogger));
@@ -69,7 +69,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         {
             FhirApiDataClient client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
 
-            MetadataOptions metadataOption = new MetadataOptions();
+            var metadataOption = new MetadataOptions();
             string metaData = client.Search(metadataOption);
 
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile), metaData);
@@ -80,7 +80,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         {
             FhirApiDataClient client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
 
-            MetadataOptions metadataOption = new MetadataOptions();
+            var metadataOption = new MetadataOptions();
             string metaData = await client.SearchAsync(metadataOption);
 
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile), metaData);
@@ -90,7 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         public void GivenSearchOptionRequiredAccessToken_WhenSearchFhirDataSync_ExceptionShouldBeThrown()
         {
             FhirApiDataClient client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
-            BaseSearchOptions searchOptions = new BaseSearchOptions("Patient", null);
+            var searchOptions = new BaseSearchOptions("Patient", null);
             Assert.Throws<FhirSearchException>(() => client.Search(searchOptions));
         }
 
@@ -108,11 +108,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             // First batch
             List<KeyValuePair<string, string>> queryParameters = new List<KeyValuePair<string, string>>
             {
-                new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
-                new (FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
             };
 
-            BaseSearchOptions searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
+            var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
             string bundle1 = await client.SearchAsync(searchOptions);
 
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
@@ -141,11 +141,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             // First batch
             List<KeyValuePair<string, string>> queryParameters = new List<KeyValuePair<string, string>>
             {
-                new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
-                new (FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
             };
 
-            BaseSearchOptions searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
+            var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
             string bundle1 = await client.SearchAsync(searchOptions);
 
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
@@ -165,7 +165,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         public async Task GivenNullQueryParameters_WhenSearchFhirData_CorrectBatchDataShouldBeReturned()
         {
             FhirApiDataClient client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
-            BaseSearchOptions searchOptions = new BaseSearchOptions(SampleResourceType, null);
+            var searchOptions = new BaseSearchOptions(SampleResourceType, null);
             string bundle1 = await client.SearchAsync(searchOptions);
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
         }
@@ -178,13 +178,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             FhirApiDataClient client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
             List<KeyValuePair<string, string>> queryParameters = new List<KeyValuePair<string, string>>
             {
-                new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse("2021-07-07T12:00:00+08:00").ToInstantString()}"),
-                new (FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
-                new (FhirApiConstants.ContinuationKey, string.Empty),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse("2021-07-07T12:00:00+08:00").ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, string.Empty),
             };
-            BaseSearchOptions searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
+            var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
 
-            FhirSearchException exception = await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchOptions));
+            var exception = await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchOptions));
             Assert.IsType<HttpRequestException>(exception.InnerException);
         }
 
@@ -194,11 +194,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             FhirApiDataClient client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
             List<KeyValuePair<string, string>> queryParameters = new List<KeyValuePair<string, string>>
             {
-                new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
-                new (FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
-                new (FhirApiConstants.ContinuationKey, string.Empty),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.ContinuationKey, string.Empty),
             };
-            BaseSearchOptions searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
+            var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
 
             await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchOptions));
         }
@@ -208,7 +208,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         {
             FhirApiDataClient client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
 
-            ResourceIdSearchOptions searchOptions = new ResourceIdSearchOptions("MedicationRequest", "3123", null);
+            var searchOptions = new ResourceIdSearchOptions("MedicationRequest", "3123", null);
             string bundle1 = await client.SearchAsync(searchOptions);
 
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
@@ -220,10 +220,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             FhirApiDataClient client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
             List<KeyValuePair<string, string>> queryParameters = new List<KeyValuePair<string, string>>
             {
-                new (FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
-                new (FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
             };
-            CompartmentSearchOptions searchOptions = new CompartmentSearchOptions("Patient", "347", "*", queryParameters);
+            var searchOptions = new CompartmentSearchOptions("Patient", "347", "*", queryParameters);
             string bundle1 = await client.SearchAsync(searchOptions);
 
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
@@ -261,22 +261,22 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 
             dataSource ??= CreateFhirApiDataSource(fhirServerUrl, AuthenticationType.ManagedIdentity);
 
-            HttpClient httpClient = new HttpClient(new MockHttpMessageHandler(requestMap));
+            var httpClient = new HttpClient(new MockHttpMessageHandler(requestMap));
 
-            FhirApiDataClient dataClient = new FhirApiDataClient(dataSource, httpClient, mockProvider, _diagnosticLogger, _nullFhirApiDataClientLogger);
+            var dataClient = new FhirApiDataClient(dataSource, httpClient, mockProvider, _diagnosticLogger, _nullFhirApiDataClientLogger);
             return dataClient;
         }
 
         private IFhirApiDataSource CreateFhirApiDataSource(string fhirServerUrl, AuthenticationType authenticationType)
         {
-            FhirServerConfiguration fhirServerConfig = new FhirServerConfiguration
+            var fhirServerConfig = new FhirServerConfiguration
             {
                 ServerUrl = fhirServerUrl,
                 Authentication = authenticationType,
             };
 
             IOptions<FhirServerConfiguration> fhirServerOption = Options.Create(fhirServerConfig);
-            FhirApiDataSource dataSource = new FhirApiDataSource(fhirServerOption);
+            var dataSource = new FhirApiDataSource(fhirServerOption);
 
             return dataSource;
         }
@@ -285,7 +285,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             string body,
             HttpStatusCode code = HttpStatusCode.OK)
         {
-            HttpResponseMessage response = new HttpResponseMessage(code);
+            var response = new HttpResponseMessage(code);
             response.Content = new StringContent(body);
             return response;
         }

@@ -53,8 +53,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 return new AzureBlobContainerClient(_externalConnectionString, containerName, _diagnosticLogger, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
             }
 
-            Uri storageUri = new Uri(storeUrl);
-            Uri containerUrl = new Uri(storageUri, containerName);
+            var storageUri = new Uri(storeUrl);
+            var containerUrl = new Uri(storageUri, containerName);
 
             return new AzureBlobContainerClient(
                 containerUrl,

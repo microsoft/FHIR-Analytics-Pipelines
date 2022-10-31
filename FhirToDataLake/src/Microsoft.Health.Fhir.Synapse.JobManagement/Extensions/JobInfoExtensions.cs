@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
         {
             string? partitionKey = AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId);
             string? rowKey = AzureStorageKeyProvider.JobInfoRowKey(jobInfo.GroupId, jobInfo.Id);
-            TableEntity jobInfoEntity = new TableEntity(partitionKey, rowKey)
+            var jobInfoEntity = new TableEntity(partitionKey, rowKey)
             {
                 { JobInfoEntityProperties.Id, jobInfo.Id },
                 { JobInfoEntityProperties.QueueType, (int)jobInfo.QueueType },
@@ -54,7 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
         public static TJobInfo ToJobInfo<TJobInfo>(this TableEntity entity)
             where TJobInfo : AzureStorageJobInfo, new()
         {
-            TJobInfo jobInfo = new TJobInfo
+            var jobInfo = new TJobInfo
             {
                 Id = (long)entity[JobInfoEntityProperties.Id],
                 QueueType = Convert.ToByte(entity[JobInfoEntityProperties.QueueType]),

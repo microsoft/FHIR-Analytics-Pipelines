@@ -105,7 +105,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             try
             {
-                FhirToDataLakeOrchestratorJobInputData inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
+                var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
                     FhirToDataLakeOrchestratorJobResult currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
@@ -141,7 +141,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             try
             {
-                FhirToDataLakeProcessingJobInputData inputData = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(jobInfo.Definition);
+                var inputData = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Processing })
                 {
                     return new FhirToDataLakeProcessingJob(

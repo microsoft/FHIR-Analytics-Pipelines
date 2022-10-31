@@ -16,7 +16,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
     public abstract class BaseHealthChecker : IHealthChecker
     {
         private readonly IDiagnosticLogger _diagnosticLogger;
-        protected readonly ILogger<BaseHealthChecker> _logger;
 
         protected BaseHealthChecker(
             string healthCheckName,
@@ -29,6 +28,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             Name = EnsureArg.IsNotNullOrWhiteSpace(healthCheckName, nameof(healthCheckName));
             IsCritical = isCritical;
         }
+
+        protected readonly ILogger<BaseHealthChecker> _logger;
 
         public string Name { get; set; }
 

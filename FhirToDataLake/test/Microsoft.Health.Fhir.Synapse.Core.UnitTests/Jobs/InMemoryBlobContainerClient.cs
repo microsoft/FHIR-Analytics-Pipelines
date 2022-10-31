@@ -21,9 +21,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
     public class InMemoryBlobContainerClient : IAzureBlobContainerClient
     {
-        private ConcurrentDictionary<string, Stream> _blobStore = new ();
-        private ConcurrentDictionary<string, Tuple<string, DateTimeOffset>> _blobLeaseStore = new ();
-        private readonly object _leaseLock = new ();
+        private ConcurrentDictionary<string, Stream> _blobStore = new ConcurrentDictionary<string, Stream>();
+        private ConcurrentDictionary<string, Tuple<string, DateTimeOffset>> _blobLeaseStore =
+            new ConcurrentDictionary<string, Tuple<string, DateTimeOffset>>();
+        private readonly object _leaseLock = new object();
 
         public async Task<T> GetValue<T>(string objectName)
         {
@@ -34,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
 
             stream.Position = 0;
-            using StreamReader streamReader = new StreamReader(stream);
+            using var streamReader = new StreamReader(stream);
             string content = streamReader.ReadToEnd();
             return JsonConvert.DeserializeObject<T>(content);
         }
@@ -64,7 +65,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 return Task.FromResult(value);
             }
 
-            MemoryStream valueCopy = new MemoryStream();
+            var valueCopy = new MemoryStream();
             value.CopyTo(valueCopy);
             value.Position = 0;
             valueCopy.Position = 0;

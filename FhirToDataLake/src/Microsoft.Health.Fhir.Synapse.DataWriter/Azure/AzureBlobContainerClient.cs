@@ -32,7 +32,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<AzureBlobContainerClient> _logger;
 
-        private readonly object _blobContainerClientLock = new object ();
+        private readonly object _blobContainerClientLock = new object();
         private readonly object _dataLakeFileSystemClientLock = new object();
         private BlobContainerClient _blobContainerClient;
         private DataLakeFileSystemClient _dataLakeFileSystemClient;
@@ -83,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             _diagnosticLogger = diagnosticLogger;
             _logger = logger;
 
-            BlobContainerClient blobContainerClient = new BlobContainerClient(
+            var blobContainerClient = new BlobContainerClient(
                 connectionString,
                 containerName);
             InitializeBlobContainerClient(blobContainerClient);
@@ -110,7 +110,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                             try
                             {
                                 TokenCredential externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
-                                BlobContainerClient tempBlobContainerClient = new BlobContainerClient(
+                                var tempBlobContainerClient = new BlobContainerClient(
                                     _storageUri,
                                     externalTokenCredential);
 
@@ -210,7 +210,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             BlobClient blobClient = BlobContainerClient.GetBlobClient(blobName);
             try
             {
-                MemoryStream stream = new MemoryStream();
+                var stream = new MemoryStream();
                 await blobClient.DownloadToAsync(stream, cancellationToken);
                 stream.Seek(0, SeekOrigin.Begin);
                 return stream;

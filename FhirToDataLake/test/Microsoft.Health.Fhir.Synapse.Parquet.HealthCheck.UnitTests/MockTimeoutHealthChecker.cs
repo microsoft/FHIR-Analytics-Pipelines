@@ -22,7 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
 
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            HealthCheckResult result = new HealthCheckResult("MockTimeout", true);
+            var result = new HealthCheckResult("MockTimeout", true);
             try
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(1500), cancellationToken);

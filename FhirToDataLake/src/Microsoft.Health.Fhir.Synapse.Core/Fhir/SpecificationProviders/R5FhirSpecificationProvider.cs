@@ -23,12 +23,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         /// <summary>
         /// Download from https://hl7.org/fhir/5.0.0-snapshot1/compartmentdefinition-patient.json.html
         /// </summary>
-        protected override IEnumerable<string> _compartmentEmbeddedFiles { get; } = new List<string> { "Specifications.R5.compartmentdefinition-patient.json" };
+        protected override IEnumerable<string> CompartmentEmbeddedFiles { get; } = new List<string> { "Specifications.R5.compartmentdefinition-patient.json" };
 
         /// <summary>
         /// Download from https://hl7.org/fhir/5.0.0-snapshot1/search-parameters.json, which is defined in https://hl7.org/fhir/5.0.0-snapshot1/searchparameter.html
         /// </summary>
-        protected override string _searchParameterEmbeddedFile { get; } = "Specifications.R5.search-parameters.json";
+        protected override string SearchParameterEmbeddedFile { get; } = "Specifications.R5.search-parameters.json";
 
 
         public R5FhirSpecificationProvider(IFhirDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R5FhirSpecificationProvider> logger)
@@ -53,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
         protected override Dictionary<string, HashSet<string>> BuildCompartmentResourceTypesLookupFromCompartmentContext(string compartmentContext, string compartmentFile)
         {
-            FhirJsonParser parser = new FhirJsonParser();
+            var parser = new FhirJsonParser();
             Dictionary<string, HashSet<string>> compartmentResourceTypesLookup = new Dictionary<string, HashSet<string>>();
 
             CompartmentDefinition compartment;
@@ -92,7 +92,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
         protected override FhirCapabilityData BuildCapabilityDataFromMetadata(string metaData)
         {
-            FhirJsonParser parser = new FhirJsonParser();
+            var parser = new FhirJsonParser();
 
             CapabilityStatement capabilityStatement;
             try

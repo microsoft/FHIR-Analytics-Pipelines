@@ -36,7 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         {
             List<Dictionary<string, Template>> testSchemaTemplateCollections = TestUtils.GetSchemaTemplateCollections("Schema/Patient.schema.json", File.ReadAllBytes(TestUtils.TestJsonSchemaFilePath));
 
-            AcrCustomizedSchemaProvider schemaProvider = new AcrCustomizedSchemaProvider(
+            var schemaProvider = new AcrCustomizedSchemaProvider(
                 TestUtils.GetMockAcrTemplateProvider(testSchemaTemplateCollections),
                 Options.Create(_schemaConfigurationWithCustomizedSchema),
                 new DiagnosticLogger(),
@@ -53,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         public static async void GivenImageReference_WhenGetSchemaWithInvalidTemplateProvider_CorrectResultShouldBeReturned(string schemaKey)
         {
             List<Dictionary<string, Template>> testSchemaTemplateCollections = TestUtils.GetSchemaTemplateCollections(schemaKey, File.ReadAllBytes(TestUtils.TestJsonSchemaFilePath));
-            AcrCustomizedSchemaProvider schemaProvider = new AcrCustomizedSchemaProvider(
+            var schemaProvider = new AcrCustomizedSchemaProvider(
                 TestUtils.GetMockAcrTemplateProvider(testSchemaTemplateCollections),
                 Options.Create(_schemaConfigurationWithCustomizedSchema),
                 new DiagnosticLogger(),

@@ -20,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Extensions
         /// <returns>new Uri with expected query string.</returns>
         public static Uri AddQueryString(this Uri uri, IEnumerable<KeyValuePair<string, string>> parameters)
         {
-            UriBuilder uriBuilder = new UriBuilder(uri);
+            var uriBuilder = new UriBuilder(uri);
             NameValueCollection query = HttpUtility.ParseQueryString(uriBuilder.Query);
             foreach (KeyValuePair<string, string> parameter in parameters)
             {

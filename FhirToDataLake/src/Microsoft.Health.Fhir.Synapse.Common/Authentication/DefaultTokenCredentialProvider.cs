@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Authentication
 
         public TokenCredential GetCredential(TokenCredentialTypes type)
         {
-            DefaultAzureCredential credential = new DefaultAzureCredential();
+            var credential = new DefaultAzureCredential();
 
             _logger.LogInformation($"Get {type} token credential successfully.");
 

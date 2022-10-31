@@ -130,12 +130,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 throw new GroupMemberExtractorException("Failed to extract group members. Reason: The input group id is null or white space.");
             }
 
-            ResourceIdSearchOptions searchOptions = new ResourceIdSearchOptions(nameof(ResourceType.Group), groupId, queryParameters);
+            var searchOptions = new ResourceIdSearchOptions(nameof(ResourceType.Group), groupId, queryParameters);
 
             // If there is an exception thrown while requesting group resource, do nothing about it and the job will crash.
             string fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
 
-            FhirJsonParser parser = new FhirJsonParser();
+            var parser = new FhirJsonParser();
             Bundle bundle;
             try
             {
@@ -192,9 +192,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 throw new GroupMemberExtractorException($"Failed to extract group members. Reason: The resource of Group {groupId} is null.");
             }
 
-            Group groupResource = (Group)bundle.Entry[0].Resource;
+            var groupResource = (Group)bundle.Entry[0].Resource;
 
-            FhirDateTime fhirGroupMembershipTime = new FhirDateTime(groupMembershipTime);
+            var fhirGroupMembershipTime = new FhirDateTime(groupMembershipTime);
             foreach (Group.MemberComponent member in groupResource.Member)
             {
                 // only take the member who is active and it is in this group at fhirGroupMembershipTime

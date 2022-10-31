@@ -213,7 +213,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     nextJobEnd = _inputData.DataEndTime;
                 }
 
-                FhirToDataLakeProcessingJobInputData input = new FhirToDataLakeProcessingJobInputData
+                var input = new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
                     ProcessingJobSequenceId = _result.CreatedJobCount,
@@ -236,7 +236,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 List<PatientWrapper> selectedPatients = toBeProcessedPatients.Skip(_result.NextPatientIndex)
                     .Take(NumberOfPatientsPerProcessingJob).ToList();
-                FhirToDataLakeProcessingJobInputData input = new FhirToDataLakeProcessingJobInputData
+                var input = new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
                     ProcessingJobSequenceId = _result.CreatedJobCount,
@@ -300,7 +300,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
             {
-                new (FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
             };
 
             if (start != null)
@@ -308,7 +308,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{((DateTimeOffset)start).ToInstantString()}"));
             }
 
-            BaseSearchOptions searchOptions = new BaseSearchOptions(null, parameters);
+            var searchOptions = new BaseSearchOptions(null, parameters);
 
             List<KeyValuePair<string, string>> sharedQueryParameters = new List<KeyValuePair<string, string>>(searchOptions.QueryParameters);
 
@@ -377,7 +377,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         await CommitJobData(latestJobInfo.Id, cancellationToken);
                         if (latestJobInfo.Result != null)
                         {
-                            FhirToDataLakeProcessingJobResult processingJobResult =
+                            var processingJobResult =
                                 JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(latestJobInfo.Result);
                             _result.TotalResourceCounts =
                                 _result.TotalResourceCounts.ConcatDictionaryCount(processingJobResult.SearchCount);

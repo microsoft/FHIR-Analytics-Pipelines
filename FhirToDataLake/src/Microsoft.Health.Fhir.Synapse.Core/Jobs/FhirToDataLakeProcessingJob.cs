@@ -192,7 +192,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             // the resource type and customized parameters of each filter will be set later.
             List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
             {
-                new (FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
             };
 
             if (_inputData.DataStartTime != null)
@@ -202,7 +202,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     $"ge{((DateTimeOffset)_inputData.DataStartTime).ToInstantString()}"));
             }
 
-            BaseSearchOptions searchOption = new BaseSearchOptions(null, parameters);
+            var searchOption = new BaseSearchOptions(null, parameters);
 
             // retrieve resources for all the type filters.
             await ProcessFiltersAsync(progress, searchOption, cancellationToken);
@@ -279,7 +279,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     : _inputData.DataStartTime;
                 List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
                             {
-                                new (FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
+                                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
                             };
 
                 if (startDateTime != null)
@@ -291,7 +291,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // create initial compartment search option for this patient,
                 // the resource type and customized parameters of each filter will be set later.
-                CompartmentSearchOptions searchOption = new CompartmentSearchOptions(
+                var searchOption = new CompartmentSearchOptions(
                     FhirConstants.PatientResource,
                     patientId,
                     null,
@@ -349,7 +349,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async Task<JObject> GetPatientResource(string patientId, CancellationToken cancellationToken)
         {
-            ResourceIdSearchOptions patientSearchOption = new ResourceIdSearchOptions(
+            var patientSearchOption = new ResourceIdSearchOptions(
                 FhirConstants.PatientResource,
                 patientId,
                 null);
@@ -541,13 +541,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 foreach ((string resourceType, List<JObject> resources) in _cacheResult.Resources)
                 {
-                    JsonBatchData batchData = new JsonBatchData(resources);
+                    var batchData = new JsonBatchData(resources);
 
                     List<string> schemaTypes = _fhirSchemaManager.GetSchemaTypes(resourceType);
                     foreach (string schemaType in schemaTypes)
                     {
                         // Convert grouped data to parquet stream
-                        ProcessParameters processParameters = new ProcessParameters(schemaType, resourceType);
+                        var processParameters = new ProcessParameters(schemaType, resourceType);
                         StreamBatchData parquetStream = await _parquetDataProcessor.ProcessAsync(batchData, processParameters, cancellationToken);
                         int skippedCount = batchData.Values.Count() - parquetStream.BatchSize;
 

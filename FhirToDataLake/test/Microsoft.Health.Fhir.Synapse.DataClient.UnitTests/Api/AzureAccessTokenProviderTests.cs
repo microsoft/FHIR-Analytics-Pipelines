@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [InlineData("    ")]
         public async Task GivenAnInvalidResourceUrl_WhenGetAccessToken_ArgumentExceptionShouldBeThrown(string resourceUrl)
         {
-            AzureAccessTokenProvider accessTokenProvider = new AzureAccessTokenProvider(new MockTokenCredential(), _diagnosticLogger, new NullLogger<AzureAccessTokenProvider>());
+            var accessTokenProvider = new AzureAccessTokenProvider(new MockTokenCredential(), _diagnosticLogger, new NullLogger<AzureAccessTokenProvider>());
 
             _ = await Assert.ThrowsAsync<ArgumentException>(() => accessTokenProvider.GetAccessTokenAsync(resourceUrl));
         }
@@ -32,7 +32,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [InlineData(null)]
         public async Task GivenANullResourceUrl_WhenGetAccessToken_ArgumentNullExceptionShouldBeThrown(string resourceUrl)
         {
-            AzureAccessTokenProvider accessTokenProvider = new AzureAccessTokenProvider(new MockTokenCredential(), _diagnosticLogger, new NullLogger<AzureAccessTokenProvider>());
+            var accessTokenProvider = new AzureAccessTokenProvider(new MockTokenCredential(), _diagnosticLogger, new NullLogger<AzureAccessTokenProvider>());
 
             _ = await Assert.ThrowsAsync<ArgumentNullException>(() => accessTokenProvider.GetAccessTokenAsync(resourceUrl));
         }
@@ -41,7 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         public async Task GivenAResourceUrl_WhenGetAccessToken_CachedAccessTokenWillBeReturnedIfNotExpired()
         {
             string resourceUrl = "http://test";
-            AzureAccessTokenProvider accessTokenProvider = new AzureAccessTokenProvider(new MockTimeBasedTokenCredential(), _diagnosticLogger, new NullLogger<AzureAccessTokenProvider>());
+            var accessTokenProvider = new AzureAccessTokenProvider(new MockTimeBasedTokenCredential(), _diagnosticLogger, new NullLogger<AzureAccessTokenProvider>());
 
             string accessToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
             Thread.Sleep(2000);

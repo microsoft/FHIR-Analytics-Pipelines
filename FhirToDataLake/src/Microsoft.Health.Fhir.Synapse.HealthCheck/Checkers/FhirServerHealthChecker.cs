@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            HealthCheckResult healthCheckResult = new HealthCheckResult(HealthCheckTypes.FhirServiceCanRead);
+            var healthCheckResult = new HealthCheckResult(HealthCheckTypes.FhirServiceCanRead);
 
             try
             {

@@ -10,7 +10,6 @@ using Hl7.Fhir.ElementModel;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Xunit;
@@ -79,21 +78,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         public void GivenAnEmptyElementDataList_WhenConvertToJObjects_EmptyBatchDataShouldReturn()
         {
             List<ITypedElement> elements = new List<ITypedElement>();
-            JsonBatchData jsonBatchData = elements.ToJsonBatchData();
+            var jsonBatchData = elements.ToJsonBatchData();
             Assert.Empty(jsonBatchData.Values);
 
             IEnumerable<ITypedElement> nullElements = null;
-            JsonBatchData jsonBatchData2 = nullElements.ToJsonBatchData();
+            var jsonBatchData2 = nullElements.ToJsonBatchData();
             Assert.Null(jsonBatchData2);
         }
 
         private ITypedElement GetTestElement(string fileName)
         {
-            FhirServerConfiguration fhirConfiguration = new FhirServerConfiguration()
+            var fhirConfiguration = new FhirServerConfiguration()
             {
                 Version = FhirVersion.R4,
             };
-            FhirSerializer fhirParser = new FhirSerializer(Options.Create(fhirConfiguration));
+            var fhirParser = new FhirSerializer(Options.Create(fhirConfiguration));
             return fhirParser.DeserializeToElement(File.ReadAllText(fileName));
         }
     }

@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
 
         public static IContainerRegistryTokenProvider GetMockAcrTokenProvider(string accessToken)
         {
-            IContainerRegistryTokenProvider tokenProvider = Substitute.For<IContainerRegistryTokenProvider>();
+            var tokenProvider = Substitute.For<IContainerRegistryTokenProvider>();
 
             tokenProvider.GetTokenAsync(default, default).ReturnsForAnyArgs($"Basic {accessToken}");
             return tokenProvider;
@@ -41,7 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
 
         public static IContainerRegistryTemplateProvider GetMockAcrTemplateProvider(List<Dictionary<string, Template>> templateCollections)
         {
-            IContainerRegistryTemplateProvider templateProvider = Substitute.For<IContainerRegistryTemplateProvider>();
+            var templateProvider = Substitute.For<IContainerRegistryTemplateProvider>();
             templateProvider.GetTemplateCollectionAsync(default, default).ReturnsForAnyArgs(templateCollections);
             return templateProvider;
         }

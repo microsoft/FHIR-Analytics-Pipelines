@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
         public static IContainerRegistryTokenProvider GetMockAcrTokenProvider(string accessToken)
         {
-            IContainerRegistryTokenProvider tokenProvider = Substitute.For<IContainerRegistryTokenProvider>();
+            var tokenProvider = Substitute.For<IContainerRegistryTokenProvider>();
 
             tokenProvider.GetTokenAsync(default, default).ReturnsForAnyArgs($"Basic {accessToken}");
             return tokenProvider;
@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
         public static async Task GenerateImageAsync(ImageInfo imageInfo, string accessToken, string templateFilePath)
         {
-            AzureContainerRegistryClient acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrBasicToken(accessToken));
+            var acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrBasicToken(accessToken));
 
             int schemaV2 = 2;
             string mediatypeV2Manifest = "application/vnd.docker.distribution.manifest.v2+json";
@@ -47,7 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
             // Upload config blob
             byte[] originalConfigBytes = Encoding.UTF8.GetBytes(emptyConfigStr);
-            using MemoryStream originalConfigStream = new MemoryStream(originalConfigBytes);
+            using var originalConfigStream = new MemoryStream(originalConfigBytes);
             string originalConfigDigest = ComputeDigest(originalConfigStream);
             await UploadBlob(acrClient, originalConfigStream, imageInfo.ImageName, originalConfigDigest);
 
@@ -55,7 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             List<Descriptor> layers = new List<Descriptor>();
 
             using FileStream fileStream = File.OpenRead(templateFilePath);
-            using MemoryStream byteStream = new MemoryStream();
+            using var byteStream = new MemoryStream();
             fileStream.CopyTo(byteStream);
             long blobLength = byteStream.Length;
             string blobDigest = ComputeDigest(byteStream);
@@ -63,7 +63,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             layers.Add(new Descriptor("application/vnd.oci.image.layer.v1.tar", blobLength, blobDigest));
 
             // Push manifest
-            V2Manifest v2Manifest = new V2Manifest(schemaV2, mediatypeV2Manifest, new Descriptor(mediatypeV1Manifest, originalConfigBytes.Length, originalConfigDigest), layers);
+            var v2Manifest = new V2Manifest(schemaV2, mediatypeV2Manifest, new Descriptor(mediatypeV1Manifest, originalConfigBytes.Length, originalConfigDigest), layers);
             await acrClient.Manifests.CreateAsync(imageInfo.ImageName, imageInfo.Tag, v2Manifest);
         }
 
@@ -78,9 +78,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         private static string ComputeDigest(Stream s)
         {
             s.Position = 0;
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
-            using (SHA256 hash = SHA256.Create())
+            using (var hash = SHA256.Create())
             {
                 byte[] result = hash.ComputeHash(s);
                 foreach (byte b in result)
