@@ -12,7 +12,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
 {
     public class FhirToDataLakeAzureStorageJobInfo : AzureStorageJobInfo
     {
-        private readonly DateTimeOffset _fakeDataEndTime = new DateTimeOffset(2022,1,1,0,0,0, TimeSpan.Zero);
+        private readonly DateTimeOffset _fakeDataEndTime = DateTimeOffset.MinValue;
 
         public override string JobIdentifier()
         {
