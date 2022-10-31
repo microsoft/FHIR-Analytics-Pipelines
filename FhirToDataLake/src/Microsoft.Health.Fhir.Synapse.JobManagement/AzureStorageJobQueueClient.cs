@@ -74,7 +74,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         // 3. if one of the steps fails, will continue to process it when re-enqueue.
         // 4. if there are multi jobs to be enqueued, all the job will operate in one transaction
         // TODO: The parameter forceOneActiveJobGroup and isCompleted are ignored for now
-        // Note: We don't allow the definitions to be enqueued partial overlap in different calls,  which means wo don't allow the first time to enqueue "job1" and "job2", and the second time to only enqueue "job1", or enqueue "job1" and "job3", or enqueue "job1", "job2" and "job3"
+        // Note: We don't allow the definitions to be enqueued partial overlap in different calls,  which means we don't allow the first time to enqueue "job1" and "job2", and the second time to only enqueue "job1", or enqueue "job1" and "job3", or enqueue "job1", "job2" and "job3"
         public async Task<IEnumerable<JobInfo>> EnqueueAsync(
             byte queueType,
             string[] definitions,
@@ -241,7 +241,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                         jobLockEntity[JobLockEntityProperties.JobMessageId] = response.Value.MessageId;
                     }
 
-                    _logger.LogInformation($"[Enqueue] Send messages for jobs {string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())} successfully.");
+                    _logger.LogInformation($"[Enqueue] Send queue message for jobs {string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())} successfully.");
 
                     // step 7: update message id and message pop receipt to job lock entity
                     // if enqueue concurrently, it is possible that
