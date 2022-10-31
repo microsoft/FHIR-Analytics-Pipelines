@@ -39,7 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [Fact]
         public void GivenValidString_WhenComputeHash_ThenTheHashStringShouldBeReturn()
         {
-            var inputStr = "input string";
+            const string inputStr = "input string";
             var hash = inputStr.ComputeHash();
             Assert.NotEmpty(hash);
         }
@@ -47,10 +47,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [Fact]
         public void GivenTwoSameStrings_WhenComputeHash_ThenTheHashStringsShouldBeTheSame()
         {
-            var inputStr1 = "same input string";
+            const string inputStr1 = "same input string";
             var hash1 = inputStr1.ComputeHash();
 
-            var inputStr2 = "same input string";
+            const string inputStr2 = "same input string";
             var hash2 = inputStr2.ComputeHash();
             Assert.Equal(hash1, hash2);
         }

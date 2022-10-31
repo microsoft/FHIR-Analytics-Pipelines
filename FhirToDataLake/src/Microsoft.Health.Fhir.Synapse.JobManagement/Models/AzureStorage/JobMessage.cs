@@ -32,6 +32,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage
             return JsonConvert.SerializeObject(this);
         }
 
+        /// <summary>
+        /// Parse string to JobMessage
+        /// </summary>
+        /// <param name="text">the string to be parsed</param>
+        /// <returns>JobMessage, return null if error</returns>
         public static JobMessage? Parse(string text)
         {
             try

@@ -18,8 +18,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage
 
         public ETag ETag { get; set; }
 
-        public string JobInfoEntityPartitionKey { get; set; }
+        public string JobInfoEntityPartitionKey { get; set; } = string.Empty;
 
-        public string JobInfoEntityRowKey { get; set; }
+        public string JobInfoEntityRowKey { get; set; } = string.Empty;
     }
 }

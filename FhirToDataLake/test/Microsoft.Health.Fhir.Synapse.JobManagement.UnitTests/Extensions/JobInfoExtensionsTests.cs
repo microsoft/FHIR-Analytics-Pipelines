@@ -25,18 +25,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [Fact]
         public void GivenDefaultJobInfo_WhenToTableEntity_ThenTheCorrectTableEntityShouldBeReturned()
         {
-            var jobInfo = new FhirToDataLakeAzureStorageJobInfo();
-            var tableEntity = jobInfo.ToTableEntity();
-            Assert.NotNull(tableEntity);
-            Assert.Null(jobInfo.Status);
-            Assert.Equal((int)JobStatus.Created, (int)tableEntity[JobInfoEntityProperties.Status]);
-            Assert.Null(tableEntity[JobInfoEntityProperties.Definition]);
-            Assert.Null(tableEntity[JobInfoEntityProperties.Result]);
-        }
-
-        [Fact]
-        public void GivenAzureStorageJobInfo_WhenToTableEntity_ThenTheCorrectTableEntityShouldBeReturned()
-        {
             var jobInfo = new AzureStorageJobInfo();
             var tableEntity = jobInfo.ToTableEntity();
             Assert.NotNull(tableEntity);
@@ -49,15 +37,15 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [Fact]
         public void GivenValidJobInfo_WhenToTableEntity_ThenTheCorrectTableEntityShouldBeReturned()
         {
-            var jobInfo = new FhirToDataLakeAzureStorageJobInfo
+            var jobInfo = new AzureStorageJobInfo
             {
                 Id = 1,
                 QueueType = (byte)QueueType.FhirToDataLake,
                 Status = JobStatus.Created,
-                GroupId = 0,
+                GroupId = 123,
                 Definition = "input data string",
-                Result = string.Empty,
-                CancelRequested = false,
+                Result = "result string",
+                CancelRequested = true,
                 CreateDate = DateTime.UtcNow,
                 HeartbeatDateTime = DateTime.UtcNow,
             };
@@ -84,7 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         public void GivenNullTableEntity_WhenToJobInfo_ThenTheExceptionShouldBeThrown()
         {
             TableEntity? jobInfoEntity = null;
-            Assert.Throws<NullReferenceException>(() => jobInfoEntity.ToJobInfo<FhirToDataLakeAzureStorageJobInfo>());
+            Assert.Throws<NullReferenceException>(() => jobInfoEntity.ToJobInfo<AzureStorageJobInfo>());
         }
 
         [Fact]
@@ -92,12 +80,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         {
             var jobInfoEntity = new TableEntity("partitionKey", "rowKey")
             {
-                { JobInfoEntityProperties.Id, 1L },
+                { JobInfoEntityProperties.Id, 101L },
                 { JobInfoEntityProperties.QueueType, (int)QueueType.FhirToDataLake },
-                { JobInfoEntityProperties.Status, (int)JobStatus.Created },
-                { JobInfoEntityProperties.GroupId, 0L },
+                { JobInfoEntityProperties.Status, (int)JobStatus.Running },
+                { JobInfoEntityProperties.GroupId, 1L },
                 { JobInfoEntityProperties.Definition, "input data string" },
-                { JobInfoEntityProperties.Result, string.Empty },
+                { JobInfoEntityProperties.Result, "result string" },
                 { JobInfoEntityProperties.CancelRequested, false },
                 { JobInfoEntityProperties.Version, 0L },
                 { JobInfoEntityProperties.Priority, 0L },
@@ -105,11 +93,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
                 { JobInfoEntityProperties.HeartbeatDateTime, DateTimeOffset.Now },
                 { JobInfoEntityProperties.HeartbeatTimeoutSec, 0L },
             };
-            var jobInfo = jobInfoEntity.ToJobInfo<FhirToDataLakeAzureStorageJobInfo>();
+            var jobInfo = jobInfoEntity.ToJobInfo<AzureStorageJobInfo>();
             Assert.NotNull(jobInfo);
             Assert.Equal((long)jobInfoEntity[JobInfoEntityProperties.Id], jobInfo.Id);
             Assert.Equal((int)jobInfoEntity[JobInfoEntityProperties.QueueType], jobInfo.QueueType);
-            Assert.Equal(JobStatus.Created, jobInfo.Status);
+            Assert.Equal(JobStatus.Running, jobInfo.Status);
             Assert.Equal((long)jobInfoEntity[JobInfoEntityProperties.GroupId], jobInfo.GroupId);
             Assert.Equal(jobInfoEntity[JobInfoEntityProperties.Definition].ToString(), jobInfo.Definition);
             Assert.Equal(jobInfoEntity[JobInfoEntityProperties.Result].ToString(), jobInfo.Result);
