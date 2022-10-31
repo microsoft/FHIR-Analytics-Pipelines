@@ -66,7 +66,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Extensions
             IEnumerable<KeyValuePair<string, string>> parameters,
             string expectedUriValue)
         {
-            var uri = new Uri(uriValue);
+            Uri uri = new Uri(uriValue);
             Uri newUri = uri.AddQueryString(parameters);
             Assert.Equal(expectedUriValue, newUri.ToString());
         }

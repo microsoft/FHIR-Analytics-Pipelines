@@ -286,7 +286,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             // step 2: get jobInfo entity and job lock entity
             (TableEntity jobInfoEntity, TableEntity jobLockEntity) = await AcquireJobEntityByRowKeysAsync(jobMessage.PartitionKey, new List<string> { jobMessage.RowKey, jobMessage.LockRowKey }, cancellationToken);
-            var jobInfo = jobInfoEntity.ToJobInfo<TJobInfo>();
+            TJobInfo jobInfo = jobInfoEntity.ToJobInfo<TJobInfo>();
 
             // step 3: check job status
             // delete this message if job is already completed / failed / cancelled
@@ -331,7 +331,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             jobInfo.Version = DateTimeOffset.UtcNow.Ticks;
             jobInfo.HeartbeatDateTime = DateTime.UtcNow;
             jobInfo.HeartbeatTimeoutSec = heartbeatTimeoutSec;
-            var updatedJobInfoEntity = jobInfo.ToTableEntity();
+            TableEntity updatedJobInfoEntity = jobInfo.ToTableEntity();
 
             // step 7: update message pop receipt to job lock entity
             jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt] = message.PopReceipt;
@@ -367,7 +367,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             TableEntity? jobInfoEntity = jobInfoEntityResponse.Value;
 
             // step 3: convert to job info.
-            var jobInfo = jobInfoEntity.ToJobInfo<TJobInfo>();
+            TJobInfo jobInfo = jobInfoEntity.ToJobInfo<TJobInfo>();
 
             _logger.LogInformation($"Get job {jobId} successfully.");
             return jobInfo;
@@ -380,7 +380,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             ConcurrentBag<JobInfo> result = new ConcurrentBag<JobInfo>();
 
             // https://docs.microsoft.com/en-us/dotnet/api/system.threading.semaphoreslim?view=net-6.0
-            using (var throttler = new SemaphoreSlim(MaxThreadsCountForGettingJob, MaxThreadsCountForGettingJob))
+            using (SemaphoreSlim throttler = new SemaphoreSlim(MaxThreadsCountForGettingJob, MaxThreadsCountForGettingJob))
             {
                 IEnumerable<Task> tasks = jobIds.Select(async id =>
                 {
@@ -583,7 +583,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             // step 4: update status
             // Reference: https://github.com/microsoft/fhir-server/blob/e1117009b6db995672cc4d31457cb3e6f32e19a3/src/Microsoft.Health.Fhir.SqlServer/Features/Schema/Sql/Sprocs/PutJobStatus.sql#L16
-            var jobInfoEntity = ((TJobInfo)jobInfo).ToTableEntity();
+            TableEntity jobInfoEntity = ((TJobInfo)jobInfo).ToTableEntity();
             if ((int)jobInfoEntity[JobInfoEntityProperties.Status] == (int)JobStatus.Failed)
             {
                 jobInfoEntity[JobInfoEntityProperties.Status] = (int)JobStatus.Failed;
@@ -670,7 +670,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 _logger.LogInformation(ex, "Failed to get job id entity, the entity doesn't exist, will create one.");
 
                 // create new entity if not exist
-                var initialJobIdEntity = new JobIdEntity
+                JobIdEntity initialJobIdEntity = new JobIdEntity
                 {
                     PartitionKey = partitionKey,
                     RowKey = rowKey,
@@ -774,7 +774,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         private static IEnumerable<string> SelectPropertiesExceptDefinition()
         {
-            var type = Type.GetType(typeof(JobInfoEntityProperties).FullName);
+            Type? type = Type.GetType(typeof(JobInfoEntityProperties).FullName);
             if (type == null)
             {
                 throw new JobManagementException("Failed to get JobInfoEntity properties, the type is null.");

@@ -32,7 +32,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
             List<string> fhirPath = new List<string>() { resourceType };
 
-            var customizedSchemaNode = new FhirParquetSchemaNode()
+            FhirParquetSchemaNode customizedSchemaNode = new FhirParquetSchemaNode()
             {
                 Name = resourceType,
                 Type = resourceType,

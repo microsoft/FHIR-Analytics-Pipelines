@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         {
             IOptions<SchemaConfiguration> schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
-            var schemaManager = new FhirParquetSchemaManager(
+            FhirParquetSchemaManager schemaManager = new FhirParquetSchemaManager(
                 schemaConfigurationOption,
                 TestUtils.TestParquetSchemaProviderDelegate,
                 NullLogger<FhirParquetSchemaManager>.Instance);
@@ -314,7 +314,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public void GivenInvalidData_WhenConvert_ExceptionShouldBeReturned()
         {
-            var invalidFieldData = new JObject
+            JObject invalidFieldData = new JObject
             {
                 { "name", "Invalid data fields, should be array." },
             };

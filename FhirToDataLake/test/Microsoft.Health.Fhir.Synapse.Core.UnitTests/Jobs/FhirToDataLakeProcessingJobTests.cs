@@ -53,18 +53,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             string containerName = Guid.NewGuid().ToString("N");
 
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.System,
                 RequiredTypes = "Patient",
             };
 
-            var blobClient = new InMemoryBlobContainerClient();
+            InMemoryBlobContainerClient blobClient = new InMemoryBlobContainerClient();
 
             FhirToDataLakeProcessingJob job = GetFhirToDataLakeProcessingJob(1L, GetInputData(), TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile1), containerName, blobClient, filterConfiguration);
 
             string resultString = await job.ExecuteAsync(progress, CancellationToken.None);
-            var result = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(resultString);
+            FhirToDataLakeProcessingJobResult result = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(resultString);
 
             Assert.NotNull(result);
             Assert.Equal(3, result.SearchCount["Patient"]);
@@ -74,7 +74,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(3, result.ProcessedCountInTotal);
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));
-            var progressForContext = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(progressResult);
+            FhirToDataLakeProcessingJobResult progressForContext = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(progressResult);
             Assert.NotNull(progressForContext);
             Assert.Equal(progressForContext.SearchCount["Patient"], result.SearchCount["Patient"]);
             Assert.Equal(progressForContext.ProcessedCount["Patient"], result.ProcessedCount["Patient"]);
@@ -101,13 +101,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             string containerName = Guid.NewGuid().ToString("N");
 
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.System,
                 RequiredTypes = "Patient",
             };
 
-            var blobClient = new InMemoryBlobContainerClient();
+            InMemoryBlobContainerClient blobClient = new InMemoryBlobContainerClient();
 
             FhirToDataLakeProcessingJob job = GetFhirToDataLakeProcessingJob(1L, GetInputData(), invalidBundle, containerName, blobClient, filterConfiguration);
 
@@ -137,7 +137,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private static IFhirDataClient GetMockFhirDataClient(string firstBundle)
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            IFhirDataClient dataClient = Substitute.For<IFhirDataClient>();
 
             // Get bundle from next link
             string nextBundle = TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile2);
@@ -147,19 +147,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private static IFhirDataWriter GetDataWriter(string containerName, IAzureBlobContainerClient blobClient)
         {
-            var mockFactory = Substitute.For<IAzureBlobContainerClientFactory>();
+            IAzureBlobContainerClientFactory mockFactory = Substitute.For<IAzureBlobContainerClientFactory>();
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
 
-            var storageConfig = new DataLakeStoreConfiguration
+            DataLakeStoreConfiguration storageConfig = new DataLakeStoreConfiguration
             {
                 StorageUrl = TestBlobEndpoint,
             };
-            var jobConfig = new JobConfiguration
+            JobConfiguration jobConfig = new JobConfiguration
             {
                 ContainerName = containerName,
             };
 
-            var dataSink = new AzureBlobDataSink(Options.Create(storageConfig), Options.Create(jobConfig));
+            AzureBlobDataSink dataSink = new AzureBlobDataSink(Options.Create(storageConfig), Options.Create(jobConfig));
             return new AzureBlobDataWriter(mockFactory, dataSink, new NullLogger<AzureBlobDataWriter>());
         }
 
@@ -167,11 +167,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             IOptions<SchemaConfiguration> schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
-            var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
+            FhirParquetSchemaManager fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, NullLogger<FhirParquetSchemaManager>.Instance);
             IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
-            var defaultConverter = new DefaultSchemaConverter(fhirSchemaManager, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
-            var fhirConverter = new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), schemaConfigurationOption, _diagnosticLogger, NullLogger<CustomSchemaConverter>.Instance);
+            DefaultSchemaConverter defaultConverter = new DefaultSchemaConverter(fhirSchemaManager, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
+            CustomSchemaConverter fhirConverter = new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), schemaConfigurationOption, _diagnosticLogger, NullLogger<CustomSchemaConverter>.Instance);
 
             return new ParquetDataProcessor(
                 fhirSchemaManager,
@@ -196,7 +196,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static IFilterManager GetFilterManager(FilterConfiguration filterConfiguration)
         {
             filterConfiguration ??= new FilterConfiguration();
-            var filterManager = Substitute.For<IFilterManager>();
+            IFilterManager filterManager = Substitute.For<IFilterManager>();
             filterManager.GetTypeFiltersAsync(default).Returns(TestResourceTypeFilters);
             filterManager.GetFilterScopeAsync(default).Returns(filterConfiguration.FilterScope);
             filterManager.GetGroupIdAsync(default).Returns(filterConfiguration.GroupId);
@@ -205,7 +205,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private static IGroupMemberExtractor GetGroupMemberExtractor()
         {
-            var groupMemberExtractor = Substitute.For<IGroupMemberExtractor>();
+            IGroupMemberExtractor groupMemberExtractor = Substitute.For<IGroupMemberExtractor>();
             HashSet<string> patients = new HashSet<string> { "patientId1", "patientId2" };
             groupMemberExtractor.GetGroupPatientsAsync(default, default, default, default).ReturnsForAnyArgs(patients);
             return groupMemberExtractor;
@@ -213,7 +213,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private FhirToDataLakeProcessingJobInputData GetInputData()
         {
-            var inputData = new FhirToDataLakeProcessingJobInputData
+            FhirToDataLakeProcessingJobInputData inputData = new FhirToDataLakeProcessingJobInputData
             {
                 JobType = JobType.Processing,
                 TriggerSequenceId = 0L,

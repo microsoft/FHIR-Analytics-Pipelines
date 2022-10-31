@@ -69,7 +69,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
                     try
                     {
-                        var baseUri = new Uri(reference.Substring(0, resourceTypeStartIndex), UriKind.RelativeOrAbsolute);
+                        Uri baseUri = new Uri(reference.Substring(0, resourceTypeStartIndex), UriKind.RelativeOrAbsolute);
                         if (baseUri.IsAbsoluteUri)
                         {
                             if (baseUri.AbsoluteUri == _dataSource.FhirServerUrl)

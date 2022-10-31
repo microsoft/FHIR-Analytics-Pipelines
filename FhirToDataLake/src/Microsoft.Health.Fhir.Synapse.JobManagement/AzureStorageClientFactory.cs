@@ -82,7 +82,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 return new TableClient(_internalConnectionString, _tableName);
             }
 
-            var tableUri = new Uri(_tableUrl);
+            Uri tableUri = new Uri(_tableUrl);
             TokenCredential? tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             return new TableClient(
@@ -104,7 +104,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 return new QueueClient(_internalConnectionString, _queueName);
             }
 
-            var queueUri = new Uri($"{_queueUrl}{_queueName}");
+            Uri queueUri = new Uri($"{_queueUrl}{_queueName}");
             TokenCredential? tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             return new QueueClient(

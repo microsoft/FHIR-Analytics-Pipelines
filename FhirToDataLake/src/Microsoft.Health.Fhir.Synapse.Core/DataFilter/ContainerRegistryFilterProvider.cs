@@ -76,7 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             try
             {
                 AcrClient client = new AcrClient(imageInfo.Registry, accessToken);
-                var filterConfigurationProvider = new OciArtifactProvider(imageInfo, client);
+                OciArtifactProvider filterConfigurationProvider = new OciArtifactProvider(imageInfo, client);
                 ArtifactImage acrImage = await Policy
                   .Handle<TemplateManagementException>()
                   .WaitAndRetryAsync(
@@ -100,7 +100,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                         throw new ContainerRegistryFilterException(message);
                     }
 
-                    using var blobStream = new MemoryStream(acrImage.Blobs[i].Content);
+                    using MemoryStream blobStream = new MemoryStream(acrImage.Blobs[i].Content);
                     Dictionary<string, byte[]> blobsDict = StreamUtility.DecompressFromTarGz(blobStream);
                     if (!blobsDict.Keys.Contains(ConfigName))
                     {
@@ -117,7 +117,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                             throw new ContainerRegistryFilterException(message);
                         }
 
-                        using var config = new MemoryStream(blobsDict[ConfigName]);
+                        using MemoryStream config = new MemoryStream(blobsDict[ConfigName]);
                         config.Position = 0;
                         using (StreamReader reader = new StreamReader(config))
                         {

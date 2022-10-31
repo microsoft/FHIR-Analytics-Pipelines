@@ -125,7 +125,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         /// <returns>The capability data look up result.</returns>
         protected virtual FhirCapabilityData BuildFhirCapabilityData()
         {
-            var metadataOptions = new MetadataOptions();
+            MetadataOptions metadataOptions = new MetadataOptions();
 
             string metaData;
             try
@@ -146,7 +146,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         protected string LoadEmbeddedSpecification(string specificationName)
         {
             // Dictionary<string, string> embeddedSchema = new Dictionary<string, string>();
-            var executingAssembly = Assembly.GetExecutingAssembly();
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
             string specificationKey = string.Format("{0}.{1}", executingAssembly.GetName().Name, specificationName);
             using (Stream stream = executingAssembly.GetManifestResourceStream(specificationKey))
             using (StreamReader reader = new StreamReader(stream))

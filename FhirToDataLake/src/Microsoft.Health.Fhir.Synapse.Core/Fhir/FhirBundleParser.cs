@@ -17,7 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
     {
         public static IEnumerable<JObject> ExtractResourcesFromBundle(JObject bundle)
         {
-            var entries = bundle?.GetValue(FhirBundleConstants.EntryKey) as JArray;
+            JArray entries = bundle?.GetValue(FhirBundleConstants.EntryKey) as JArray;
             List<JObject> resources = entries?
                 .Select(entry => (entry as JObject)?.GetValue(FhirBundleConstants.EntryResourceKey) as JObject)
                 .ToList();
@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 
         public static string ExtractContinuationToken(JObject bundle)
         {
-            var links = bundle?.GetValue(FhirBundleConstants.LinkKey) as JArray;
+            JArray links = bundle?.GetValue(FhirBundleConstants.LinkKey) as JArray;
             if (links != null)
             {
                 foreach (JToken link in links)
@@ -53,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 
         public static int ExtractVersionId(JObject bundle)
         {
-            var meta = bundle?.GetValue(FhirBundleConstants.MetaKey) as JObject;
+            JObject meta = bundle?.GetValue(FhirBundleConstants.MetaKey) as JObject;
             int? versionId = meta?.GetValue(FhirBundleConstants.VersionIdKey)?.Value<int>();
             return versionId ?? 0;
         }

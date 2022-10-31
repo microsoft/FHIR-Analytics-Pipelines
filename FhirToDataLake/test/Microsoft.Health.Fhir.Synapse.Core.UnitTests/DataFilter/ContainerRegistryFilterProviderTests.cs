@@ -50,7 +50,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             ImageInfo imageInfo = ImageInfo.CreateFromImageReference(_testImageReference);
             await ContainerRegistryTestUtils.GenerateImageAsync(imageInfo, _testContainerRegistryAccessToken, TestUtils.TestFilterTarGzPath);
 
-            var containerRegistryFilterProvider = new ContainerRegistryFilterProvider(
+            ContainerRegistryFilterProvider containerRegistryFilterProvider = new ContainerRegistryFilterProvider(
                 Options.Create(new FilterLocation()
                 {
                     EnableExternalFilter = true,
@@ -72,7 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         {
             Skip.If(_testImageReference == null);
 
-            var containerRegistryFilterProvider = new ContainerRegistryFilterProvider(
+            ContainerRegistryFilterProvider containerRegistryFilterProvider = new ContainerRegistryFilterProvider(
                 Options.Create(new FilterLocation()
                 {
                     EnableExternalFilter = true,

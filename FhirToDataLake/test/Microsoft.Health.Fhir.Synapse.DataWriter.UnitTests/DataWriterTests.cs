@@ -41,21 +41,21 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         [Fact]
         public async Task GivenAValidParameter_WhenWritingToBlob_CorrectContentShouldBeWritten()
         {
-            var stream = new MemoryStream();
+            MemoryStream stream = new MemoryStream();
             byte[] bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
             await stream.WriteAsync(bytes, 0, bytes.Length);
             stream.Position = 0;
             const long jobId = 1L;
             int partIndex = 1;
             AzureBlobDataWriter dataWriter = GetLocalDataWriter();
-            var streamData = new StreamBatchData(stream, 1, TestResourceType);
+            StreamBatchData streamData = new StreamBatchData(stream, 1, TestResourceType);
             await dataWriter.WriteAsync(streamData, jobId, partIndex, _testDate);
 
             IAzureBlobContainerClient containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), _diagnosticLogger, new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
             Stream blobStream = await containerClient.GetBlobAsync($"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet");
             Assert.NotNull(blobStream);
 
-            var resultStream = new MemoryStream();
+            MemoryStream resultStream = new MemoryStream();
             await blobStream.CopyToAsync(resultStream);
             Assert.Equal(bytes, resultStream.ToArray());
         }
@@ -64,7 +64,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         public async Task GivenAnInvalidInputStreamData_WhenWritingToBlob_ExceptionShouldBeThrown()
         {
             AzureBlobDataWriter dataWriter = GetLocalDataWriter();
-            var streamData = new StreamBatchData(null, 0, TestResourceType);
+            StreamBatchData streamData = new StreamBatchData(null, 0, TestResourceType);
             await Assert.ThrowsAsync<ArgumentNullException>(() => dataWriter.WriteAsync(streamData, 0L, 0, _testDate));
         }
 
@@ -79,7 +79,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         [Fact]
         public async Task GivenEmptyFolder_WhenCleanJobData_ThenShouldNoExceptionBeThrown()
         {
-            var blobClient = new InMemoryBlobContainerClient();
+            InMemoryBlobContainerClient blobClient = new InMemoryBlobContainerClient();
 
             const long jobId = 1L;
             AzureBlobDataWriter dataWriter = GetInMemoryDataWriter(blobClient);
@@ -91,9 +91,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         [Fact]
         public async Task GivenExistingJobData_WhenCleanJobData_ThenTheDataShouldBeDeleted()
         {
-            var blobClient = new InMemoryBlobContainerClient();
+            InMemoryBlobContainerClient blobClient = new InMemoryBlobContainerClient();
 
-            var stream = new MemoryStream();
+            MemoryStream stream = new MemoryStream();
             byte[] bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
             await stream.WriteAsync(bytes, 0, bytes.Length);
             stream.Position = 0;
@@ -115,9 +115,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         [Fact]
         public async Task GivenValidData_WhenCommitData_ThenTheDataShouldBeCommitted()
         {
-            var blobClient = new InMemoryBlobContainerClient();
+            InMemoryBlobContainerClient blobClient = new InMemoryBlobContainerClient();
 
-            var stream = new MemoryStream();
+            MemoryStream stream = new MemoryStream();
             byte[] bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
             await stream.WriteAsync(bytes, 0, bytes.Length);
             stream.Position = 0;
@@ -141,12 +141,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
 
         private static IDataSink GetBrokenDataSink()
         {
-            var jobConfig = new JobConfiguration
+            JobConfiguration jobConfig = new JobConfiguration
             {
                 ContainerName = TestContainerName,
             };
 
-            var storageConfig = new DataLakeStoreConfiguration
+            DataLakeStoreConfiguration storageConfig = new DataLakeStoreConfiguration
             {
                 StorageUrl = TestStorageUrl,
             };
@@ -158,12 +158,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
 
         private static IDataSink GetLocalDataSink()
         {
-            var jobConfig = new JobConfiguration
+            JobConfiguration jobConfig = new JobConfiguration
             {
                 ContainerName = TestContainerName,
             };
 
-            var storageConfig = new DataLakeStoreConfiguration
+            DataLakeStoreConfiguration storageConfig = new DataLakeStoreConfiguration
             {
                 StorageUrl = LocalTestStorageUrl,
             };
@@ -187,7 +187,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
 
         private static AzureBlobDataWriter GetInMemoryDataWriter(IAzureBlobContainerClient blobClient)
         {
-            var mockFactory = Substitute.For<IAzureBlobContainerClientFactory>();
+            IAzureBlobContainerClientFactory mockFactory = Substitute.For<IAzureBlobContainerClientFactory>();
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
 
             return new AzureBlobDataWriter(

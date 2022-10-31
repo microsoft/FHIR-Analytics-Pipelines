@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
         protected override Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            var healthCheckResult = new HealthCheckResult(HealthCheckTypes.SchedulerServiceIsActive, true);
+            HealthCheckResult healthCheckResult = new HealthCheckResult(HealthCheckTypes.SchedulerServiceIsActive, true);
 
             if (_schedulerService.LastHeartbeat.AddSeconds(_schedulerServiceInActiveTimeInterval) < DateTimeOffset.UtcNow)
             {

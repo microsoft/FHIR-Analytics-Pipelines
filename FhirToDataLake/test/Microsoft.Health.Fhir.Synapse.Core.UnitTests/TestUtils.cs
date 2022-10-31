@@ -42,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         {
             // Date formatted strings are not parsed to a date type and are read as strings,
             // to prevent output from being affected by time zone.
-            var serializerSettings = new JsonSerializerSettings { DateParseHandling = DateParseHandling.None };
+            JsonSerializerSettings serializerSettings = new JsonSerializerSettings { DateParseHandling = DateParseHandling.None };
 
             foreach (string line in File.ReadAllLines(filePath))
             {
@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
             Dictionary<string, Template> templateCollection = TemplateLayerParser.ParseToTemplates(templateContents);
 
-            var templateProvider = Substitute.For<IContainerRegistryTemplateProvider>();
+            IContainerRegistryTemplateProvider templateProvider = Substitute.For<IContainerRegistryTemplateProvider>();
             templateProvider.GetTemplateCollectionAsync(default, default).ReturnsForAnyArgs(new List<Dictionary<string, Template>> { templateCollection });
             return templateProvider;
         }
@@ -87,7 +87,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
         public static IDataSchemaConverter TestDataSchemaConverterDelegate(string name)
         {
-            var fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
+            FhirParquetSchemaManager fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestParquetSchemaProviderDelegate,
                 NullLogger<FhirParquetSchemaManager>.Instance);

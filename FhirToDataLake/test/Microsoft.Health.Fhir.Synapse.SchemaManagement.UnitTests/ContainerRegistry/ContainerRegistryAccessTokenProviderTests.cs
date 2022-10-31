@@ -64,7 +64,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
             ITokenCredentialProvider tokenProvider = Substitute.For<ITokenCredentialProvider>();
 
             // tokenProvider.GetAccessTokenAsync(default, default).ReturnsForAnyArgs("Bearer test");
-            var httpClient = new HttpClient(new MockHttpMessageHandler(content, statusCode));
+            HttpClient httpClient = new HttpClient(new MockHttpMessageHandler(content, statusCode));
             return new ContainerRegistryAccessTokenProvider(tokenProvider, httpClient, new DiagnosticLogger(), new NullLogger<ContainerRegistryAccessTokenProvider>());
         }
 

@@ -53,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
         protected override Dictionary<string, HashSet<string>> BuildCompartmentResourceTypesLookupFromCompartmentContext(string compartmentContext, string compartmentFile)
         {
-            var parser = new FhirJsonParser();
+            FhirJsonParser parser = new FhirJsonParser();
             Dictionary<string, HashSet<string>> compartmentResourceTypesLookup = new Dictionary<string, HashSet<string>>();
 
             CompartmentDefinition compartment;
@@ -92,7 +92,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
         protected override FhirCapabilityData BuildCapabilityDataFromMetadata(string metaData)
         {
-            var parser = new FhirJsonParser();
+            FhirJsonParser parser = new FhirJsonParser();
 
             CapabilityStatement capabilityStatement;
             try
@@ -165,7 +165,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 throw new FhirSpecificationProviderException($"Read search parameter file \"{_searchParameterEmbeddedFile}\" failed. Reason: {ex.Message}.", ex);
             }
 
-            var parser = new FhirJsonParser();
+            FhirJsonParser parser = new FhirJsonParser();
             Bundle bundle;
             try
             {

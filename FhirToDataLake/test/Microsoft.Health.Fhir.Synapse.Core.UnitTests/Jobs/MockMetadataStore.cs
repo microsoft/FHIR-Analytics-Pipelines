@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 return Task.FromResult(false);
             }
 
-            var entity = tableEntity.CloneObject() as ITableEntity;
+            ITableEntity entity = tableEntity.CloneObject() as ITableEntity;
             entity.ETag = new ETag(Guid.NewGuid().ToString());
 
             _entities[key] = entity;
@@ -53,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 return Task.FromResult(false);
             }
 
-            var entity = tableEntity.CloneObject() as ITableEntity;
+            ITableEntity entity = tableEntity.CloneObject() as ITableEntity;
             entity.ETag = new ETag(Guid.NewGuid().ToString());
 
             _entities[key] = entity;

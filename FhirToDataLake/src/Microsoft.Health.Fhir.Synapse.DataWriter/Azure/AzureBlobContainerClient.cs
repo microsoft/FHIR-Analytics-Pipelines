@@ -83,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             _diagnosticLogger = diagnosticLogger;
             _logger = logger;
 
-            var blobContainerClient = new BlobContainerClient(
+            BlobContainerClient blobContainerClient = new BlobContainerClient(
                 connectionString,
                 containerName);
             InitializeBlobContainerClient(blobContainerClient);
@@ -110,7 +110,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                             try
                             {
                                 TokenCredential externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
-                                var tempBlobContainerClient = new BlobContainerClient(
+                                BlobContainerClient tempBlobContainerClient = new BlobContainerClient(
                                     _storageUri,
                                     externalTokenCredential);
 
@@ -210,7 +210,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             BlobClient blobClient = BlobContainerClient.GetBlobClient(blobName);
             try
             {
-                var stream = new MemoryStream();
+                MemoryStream stream = new MemoryStream();
                 await blobClient.DownloadToAsync(stream, cancellationToken);
                 stream.Seek(0, SeekOrigin.Begin);
                 return stream;

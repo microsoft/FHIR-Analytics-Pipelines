@@ -52,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             {
                 defaultSchemaNodesMap = embeddedSchemas.Select(schemaItem =>
                 {
-                    var schemaNode = JsonConvert.DeserializeObject<FhirParquetSchemaNode>(schemaItem.Value);
+                    FhirParquetSchemaNode schemaNode = JsonConvert.DeserializeObject<FhirParquetSchemaNode>(schemaItem.Value);
                     return new KeyValuePair<string, FhirParquetSchemaNode>(schemaNode.Type, schemaNode);
                 }).ToDictionary(x => x.Key, x => x.Value);
             }
@@ -70,7 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
         {
             Dictionary<string, string> embeddedSchema = new Dictionary<string, string>();
 
-            var executingAssembly = Assembly.GetExecutingAssembly();
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
             string folderName = GetEmbeddedSchemaFolder(executingAssembly, fhirVersion);
             string[] resourceNames = executingAssembly
                 .GetManifestResourceNames()

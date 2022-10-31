@@ -202,7 +202,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     $"ge{((DateTimeOffset)_inputData.DataStartTime).ToInstantString()}"));
             }
 
-            var searchOption = new BaseSearchOptions(null, parameters);
+            BaseSearchOptions searchOption = new BaseSearchOptions(null, parameters);
 
             // retrieve resources for all the type filters.
             await ProcessFiltersAsync(progress, searchOption, cancellationToken);
@@ -291,7 +291,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // create initial compartment search option for this patient,
                 // the resource type and customized parameters of each filter will be set later.
-                var searchOption = new CompartmentSearchOptions(
+                CompartmentSearchOptions searchOption = new CompartmentSearchOptions(
                     FhirConstants.PatientResource,
                     patientId,
                     null,
@@ -349,7 +349,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async Task<JObject> GetPatientResource(string patientId, CancellationToken cancellationToken)
         {
-            var patientSearchOption = new ResourceIdSearchOptions(
+            ResourceIdSearchOptions patientSearchOption = new ResourceIdSearchOptions(
                 FhirConstants.PatientResource,
                 patientId,
                 null);
@@ -541,13 +541,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 foreach ((string resourceType, List<JObject> resources) in _cacheResult.Resources)
                 {
-                    var batchData = new JsonBatchData(resources);
+                    JsonBatchData batchData = new JsonBatchData(resources);
 
                     List<string> schemaTypes = _fhirSchemaManager.GetSchemaTypes(resourceType);
                     foreach (string schemaType in schemaTypes)
                     {
                         // Convert grouped data to parquet stream
-                        var processParameters = new ProcessParameters(schemaType, resourceType);
+                        ProcessParameters processParameters = new ProcessParameters(schemaType, resourceType);
                         StreamBatchData parquetStream = await _parquetDataProcessor.ProcessAsync(batchData, processParameters, cancellationToken);
                         int skippedCount = batchData.Values.Count() - parquetStream.BatchSize;
 

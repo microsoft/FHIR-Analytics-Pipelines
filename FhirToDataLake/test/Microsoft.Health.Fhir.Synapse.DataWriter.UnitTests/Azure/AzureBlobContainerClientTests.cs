@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             // The container doesn't exist at the beginning
-            var blobServiceClient = new BlobServiceClient(ConnectionString);
+            BlobServiceClient blobServiceClient = new BlobServiceClient(ConnectionString);
 
             BlobContainerClient container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
             Assert.False(container.Exists());
@@ -57,7 +57,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             // The container doesn't exist at the beginning
-            var blobServiceClient = new BlobServiceClient(ConnectionString);
+            BlobServiceClient blobServiceClient = new BlobServiceClient(ConnectionString);
 
             BlobContainerClient container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
             Assert.False(container.Exists());
@@ -84,7 +84,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             // The container doesn't exist at the beginning
-            var blobServiceClient = new BlobServiceClient(ConnectionString);
+            BlobServiceClient blobServiceClient = new BlobServiceClient(ConnectionString);
 
             BlobContainerClient container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
             Assert.False(container.Exists());
@@ -140,7 +140,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
                 Assert.True(await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None));
             }
 
-            var blobServiceClient = new BlobServiceClient(ConnectionString);
+            BlobServiceClient blobServiceClient = new BlobServiceClient(ConnectionString);
 
             // delete the created container
             await blobServiceClient.DeleteBlobContainerAsync(uniqueContainerName);
@@ -169,7 +169,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             Assert.False(await blobClient.ExistsAsync());
 
@@ -205,7 +205,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             Assert.False(await blobClient.ExistsAsync());
 
@@ -226,7 +226,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
             Assert.False(await blobClient.ExistsAsync());
@@ -258,7 +258,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
             Assert.False(await blobClient.ExistsAsync());
@@ -296,7 +296,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
 
@@ -333,7 +333,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
 
@@ -377,7 +377,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
 
             string blobContent = "example";
@@ -392,7 +392,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             using Stream downloadStream = await blobProvider.GetBlobAsync(blobName, CancellationToken.None);
 
-            using var reader = new StreamReader(downloadStream);
+            using StreamReader reader = new StreamReader(downloadStream);
             Assert.Equal(blobContent, await reader.ReadToEndAsync());
 
             await blobContainerClient.DeleteAsync();
@@ -406,7 +406,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             Assert.False(await blobClient.ExistsAsync());
 
@@ -425,7 +425,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
             Assert.False(await blobClient.ExistsAsync());
@@ -436,11 +436,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             Assert.True(await blobClient.ExistsAsync());
 
-            using (var stream = new MemoryStream())
+            using (MemoryStream stream = new MemoryStream())
             {
                 Response res = await blobClient.DownloadToAsync(stream);
                 stream.Position = 0;
-                using var reader = new StreamReader(stream);
+                using StreamReader reader = new StreamReader(stream);
                 Assert.Equal(blobContent, await reader.ReadToEndAsync());
             }
 
@@ -451,11 +451,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             Assert.Equal(blobUrl_1, blobUrl_2);
             Assert.True(await blobClient.ExistsAsync());
 
-            using (var stream = new MemoryStream())
+            using (MemoryStream stream = new MemoryStream())
             {
                 Response res = await blobClient.DownloadToAsync(stream);
                 stream.Position = 0;
-                using var reader = new StreamReader(stream);
+                using StreamReader reader = new StreamReader(stream);
                 Assert.Equal(newBlobContent, await reader.ReadToEndAsync());
             }
 
@@ -470,7 +470,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
             Assert.False(await blobClient.ExistsAsync());
@@ -503,7 +503,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             Assert.Null(lease);
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             await blobContainerClient.DeleteIfExistsAsync();
         }
 
@@ -518,7 +518,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             Assert.False(result);
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             await blobContainerClient.DeleteIfExistsAsync();
         }
 
@@ -532,7 +532,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             await Assert.ThrowsAsync<AzureBlobOperationFailedException>(() => blobProvider.RenewLeaseAsync(blobName, null));
 
-            var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
+            BlobContainerClient blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
             await blobContainerClient.DeleteIfExistsAsync();
         }
 

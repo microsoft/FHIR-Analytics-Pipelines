@@ -25,8 +25,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [Fact]
         public void GivenDefaultJobInfo_WhenToTableEntity_ThenTheCorrectTableEntityShouldBeReturned()
         {
-            var jobInfo = new FhirToDataLakeAzureStorageJobInfo();
-            var tableEntity = jobInfo.ToTableEntity();
+            FhirToDataLakeAzureStorageJobInfo jobInfo = new FhirToDataLakeAzureStorageJobInfo();
+            TableEntity tableEntity = jobInfo.ToTableEntity();
             Assert.NotNull(tableEntity);
             Assert.Null(jobInfo.Status);
             Assert.Equal((int)JobStatus.Created, (int)tableEntity[JobInfoEntityProperties.Status]);
@@ -37,8 +37,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [Fact]
         public void GivenAzureStorageJobInfo_WhenToTableEntity_ThenTheCorrectTableEntityShouldBeReturned()
         {
-            var jobInfo = new AzureStorageJobInfo();
-            var tableEntity = jobInfo.ToTableEntity();
+            AzureStorageJobInfo jobInfo = new AzureStorageJobInfo();
+            TableEntity tableEntity = jobInfo.ToTableEntity();
             Assert.NotNull(tableEntity);
             Assert.Null(jobInfo.Status);
             Assert.Equal((int)JobStatus.Created, (int)tableEntity[JobInfoEntityProperties.Status]);
@@ -49,7 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [Fact]
         public void GivenValidJobInfo_WhenToTableEntity_ThenTheCorrectTableEntityShouldBeReturned()
         {
-            var jobInfo = new FhirToDataLakeAzureStorageJobInfo
+            FhirToDataLakeAzureStorageJobInfo jobInfo = new FhirToDataLakeAzureStorageJobInfo
             {
                 Id = 1,
                 QueueType = (byte)QueueType.FhirToDataLake,
@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
                 CreateDate = DateTime.UtcNow,
                 HeartbeatDateTime = DateTime.UtcNow,
             };
-            var tableEntity = jobInfo.ToTableEntity();
+            TableEntity tableEntity = jobInfo.ToTableEntity();
             Assert.NotNull(tableEntity);
             Assert.Equal(jobInfo.Id, (long)tableEntity[JobInfoEntityProperties.Id]);
             Assert.Equal(jobInfo.QueueType, (int)tableEntity[JobInfoEntityProperties.QueueType]);
@@ -90,7 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [Fact]
         public void GivenValidTableEntity_WhenToJobInfo_ThenTheCorrectResultShouldBeReturned()
         {
-            var jobInfoEntity = new TableEntity("partitionKey", "rowKey")
+            TableEntity jobInfoEntity = new TableEntity("partitionKey", "rowKey")
             {
                 { JobInfoEntityProperties.Id, 1L },
                 { JobInfoEntityProperties.QueueType, (int)QueueType.FhirToDataLake },
@@ -105,7 +105,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
                 { JobInfoEntityProperties.HeartbeatDateTime, DateTimeOffset.Now },
                 { JobInfoEntityProperties.HeartbeatTimeoutSec, 0L },
             };
-            var jobInfo = jobInfoEntity.ToJobInfo<FhirToDataLakeAzureStorageJobInfo>();
+            FhirToDataLakeAzureStorageJobInfo jobInfo = jobInfoEntity.ToJobInfo<FhirToDataLakeAzureStorageJobInfo>();
             Assert.NotNull(jobInfo);
             Assert.Equal((long)jobInfoEntity[JobInfoEntityProperties.Id], jobInfo.Id);
             Assert.Equal((int)jobInfoEntity[JobInfoEntityProperties.QueueType], jobInfo.QueueType);

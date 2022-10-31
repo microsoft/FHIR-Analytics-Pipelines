@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
 
             stream.Position = 0;
-            using var streamReader = new StreamReader(stream);
+            using StreamReader streamReader = new StreamReader(stream);
             string content = streamReader.ReadToEnd();
             return JsonConvert.DeserializeObject<T>(content);
         }
@@ -64,7 +64,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 return Task.FromResult(value);
             }
 
-            var valueCopy = new MemoryStream();
+            MemoryStream valueCopy = new MemoryStream();
             value.CopyTo(valueCopy);
             value.Position = 0;
             valueCopy.Position = 0;

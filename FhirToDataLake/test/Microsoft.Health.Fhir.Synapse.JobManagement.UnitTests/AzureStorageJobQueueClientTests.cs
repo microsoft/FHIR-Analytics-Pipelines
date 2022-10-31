@@ -84,7 +84,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             _azureJobInfoTableClient.Delete();
             _azureJobMessageQueueClient.DeleteIfExists();
 
-            var azureStorageClientFactory = new AzureStorageClientFactory(
+            AzureStorageClientFactory azureStorageClientFactory = new AzureStorageClientFactory(
                 TestJobInfoTableName,
                 TestJobInfoQueueName,
                 new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
@@ -474,7 +474,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 (await _azureStorageJobQueueClient.GetJobByIdAsync(queueType, (long)jobInfoEntity[JobInfoEntityProperties.Id], false, CancellationToken.None)).Status);
 
             // job1 is cancelled
-            var exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
+            JobManagementException? exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
                 await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
             Assert.EndsWith("the job status is Cancelled.", exception.Message);
 
@@ -558,7 +558,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             const byte queueType = (byte)TestQueueType.GivenJobsWithSameDefinition_WhenEnqueueInABatch_ThenTheExceptionShouldBeThrown;
 
-            var exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
+            JobManagementException? exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
                 await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1", "job1" },
@@ -804,7 +804,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             await CheckJob(jobInfo, jobLockEntity);
 
             // the first message is invalid
-            var exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
+            JobManagementException? exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
                 await _azureStorageJobQueueClient.DequeueAsync(jobInfo.QueueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
             Assert.EndsWith("the message id is inconsistent with the one in the table entity.", exception.Message);
 
@@ -922,7 +922,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             jobInfo.Status = JobStatus.Completed;
 
-            var jobInfoEntity = ((AzureStorageJobInfo)jobInfo).ToTableEntity();
+            TableEntity jobInfoEntity = ((AzureStorageJobInfo)jobInfo).ToTableEntity();
             await _azureJobInfoTableClient.UpdateEntityAsync(jobInfoEntity, ETag.All, cancellationToken: CancellationToken.None);
 
             jobInfo =
@@ -941,7 +941,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             await Task.Delay(TimeSpan.FromSeconds(HeartbeatTimeoutSec));
 
-            var exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
+            JobManagementException? exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
                 await _azureStorageJobQueueClient.DequeueAsync(jobInfo.QueueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None));
             Assert.EndsWith("the job status is Completed.", exception.Message);
 
@@ -1199,7 +1199,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             JobInfo? jobInfo1 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
 
-            var jobInfoEntity = ((FhirToDataLakeAzureStorageJobInfo)jobInfo1).ToTableEntity();
+            TableEntity jobInfoEntity = ((FhirToDataLakeAzureStorageJobInfo)jobInfo1).ToTableEntity();
 
             TableEntity? jobLockEntity = (await _azureJobInfoTableClient.GetEntityAsync<TableEntity>(
                 jobInfoEntity.PartitionKey,
@@ -1214,7 +1214,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 cancellationToken: CancellationToken.None);
 
             // keep alive should throw exception
-            var exception = await Assert.ThrowsAsync<RequestFailedException>(async () => await _azureStorageJobQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
+            RequestFailedException? exception = await Assert.ThrowsAsync<RequestFailedException>(async () => await _azureStorageJobQueueClient.KeepAliveJobAsync(jobInfo1, CancellationToken.None));
             Assert.Equal("PopReceiptMismatch", exception.ErrorCode);
 
             // the message is still invisible
@@ -1254,7 +1254,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
         private async Task<Tuple<JobInfo, TableEntity>> EnqueueStepBySteps(long jobId, byte queueType, int steps)
         {
-            var jobInfo = new FhirToDataLakeAzureStorageJobInfo()
+            FhirToDataLakeAzureStorageJobInfo jobInfo = new FhirToDataLakeAzureStorageJobInfo()
             {
                 Id = jobId,
                 QueueType = queueType,
@@ -1266,8 +1266,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 CreateDate = DateTime.UtcNow,
                 HeartbeatDateTime = DateTime.UtcNow,
             };
-            var jobInfoEntity = jobInfo.ToTableEntity();
-            var jobLockEntity = new TableEntity(jobInfoEntity.PartitionKey, AzureStorageKeyProvider.JobLockRowKey(jobInfo.JobIdentifier()))
+            TableEntity jobInfoEntity = jobInfo.ToTableEntity();
+            TableEntity jobLockEntity = new TableEntity(jobInfoEntity.PartitionKey, AzureStorageKeyProvider.JobLockRowKey(jobInfo.JobIdentifier()))
             {
                 { JobLockEntityProperties.JobInfoEntityRowKey, jobInfoEntity.RowKey },
             };
@@ -1285,7 +1285,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 return new Tuple<JobInfo, TableEntity>(jobInfo, jobLockEntity);
             }
 
-            var reverseIndexEntity2 = new JobReverseIndexEntity
+            JobReverseIndexEntity reverseIndexEntity2 = new JobReverseIndexEntity
             {
                 PartitionKey = AzureStorageKeyProvider.JobReverseIndexPartitionKey(queueType, (long)jobInfoEntity[JobInfoEntityProperties.Id]),
                 RowKey = AzureStorageKeyProvider.JobReverseIndexRowKey(queueType, (long)jobInfoEntity[JobInfoEntityProperties.Id]),

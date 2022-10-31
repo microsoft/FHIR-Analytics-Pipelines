@@ -32,9 +32,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         public FilterManagerTests()
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            IFhirDataClient dataClient = Substitute.For<IFhirDataClient>();
 
-            var metadataOptions = new MetadataOptions();
+            MetadataOptions metadataOptions = new MetadataOptions();
             dataClient.Search(metadataOptions)
                 .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile));
 
@@ -63,14 +63,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("Patient,Patient", 1)]
         public async Task GivenValidTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForSystem_ThenTheTypeFiltersForEachResourceTypesAreReturnedAsync(string typeString, int resourceTypeCount)
         {
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.System,
                 RequiredTypes = typeString,
                 TypeFilters = null,
             };
 
-            var filterManager = new FilterManager(
+            FilterManager filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
@@ -92,14 +92,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("  ")]
         public async Task GivenNullOrWhiteSpaceTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForGroup_ThenOneTypeFilterAreReturnedAsync(string typeString)
         {
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.Group,
                 RequiredTypes = typeString,
                 TypeFilters = null,
             };
 
-            var filterManager = new FilterManager(
+            FilterManager filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
@@ -117,14 +117,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("Patient,Patient", "Patient")] // *?_type=Patient
         public async Task GivenValidTypeStringAndNullTypeFilters_WhenCreateTypeFiltersForGroup_ThenOneTypeFilterAreReturnedAsync(string typeString, string expectedTypes)
         {
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.Group,
                 RequiredTypes = typeString,
                 TypeFilters = null,
             };
 
-            var filterManager = new FilterManager(
+            FilterManager filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
@@ -141,14 +141,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [Fact]
         public async Task GivenEmptyStringTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturnedAsync()
         {
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.System,
                 RequiredTypes = "Patient",
                 TypeFilters = string.Empty,
             };
 
-            var filterManager = new FilterManager(
+            FilterManager filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
@@ -166,14 +166,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("  ")]
         public async Task GivenNullOrWhiteSpaceTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturnedAsync(string filterString)
         {
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.System,
                 RequiredTypes = "Patient",
                 TypeFilters = filterString,
             };
 
-            var filterManager = new FilterManager(
+            FilterManager filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
@@ -200,14 +200,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         public async Task GivenInvalidTypeString_WhenParseType_ExceptionShouldBeThrownAsync(FilterScope filterScope, string typeString)
         {
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = filterScope,
                 RequiredTypes = typeString,
                 TypeFilters = null,
             };
 
-            var manager = new FilterManager(
+            FilterManager manager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
@@ -222,14 +222,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         {
             const FilterScope filterScope = (FilterScope)2;
 
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = filterScope,
                 RequiredTypes = null,
                 TypeFilters = null,
             };
 
-            var manager = new FilterManager(
+            FilterManager manager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
@@ -244,13 +244,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         {
             const string type = "Condition,MedicationRequest";
             const string typeFilter = "MedicationRequest?status=active,MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z";
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.Group,
                 RequiredTypes = type,
                 TypeFilters = typeFilter,
             };
-            var filterManager = new FilterManager(
+            FilterManager filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
@@ -284,14 +284,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             const string type = "Condition,MedicationRequest";
             const string typeFilter = "MedicationRequest?status=active,MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z";
 
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.System,
                 RequiredTypes = type,
                 TypeFilters = typeFilter,
             };
 
-            var filterManager = new FilterManager(
+            FilterManager filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
@@ -339,14 +339,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("Observation", "Observation?patient.identifier=http://example.com/fhir/identifier/mrn|123456")]
         public async Task GivenValidTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturnedAsync(string type, string typeFilter)
         {
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.System,
                 RequiredTypes = type,
                 TypeFilters = typeFilter,
             };
 
-            var filterManager = new FilterManager(
+            FilterManager filterManager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
@@ -365,14 +365,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("Patient", "P?gender=female")]
         public async Task GivenTypeFilterNotInType_WhenParseTypeFilter_ExceptionShouldBeThrownAsync(string type, string typeFilter)
         {
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.System,
                 RequiredTypes = type,
                 TypeFilters = typeFilter,
             };
 
-            var manager = new FilterManager(
+            FilterManager manager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
@@ -410,14 +410,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("MedicationRequest", "MedicationRequest?_include=MedicationRequest:patient")]
         public async Task GivenInvalidTypeFilter_WhenParseTypeFilter_ExceptionShouldBeThrownAsync(string type, string typeFilter)
         {
-            var filterConfiguration = new FilterConfiguration
+            FilterConfiguration filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.System,
                 RequiredTypes = type,
                 TypeFilters = typeFilter,
             };
 
-            var manager = new FilterManager(
+            FilterManager manager = new FilterManager(
                 new LocalFilterProvider(Options.Create(filterConfiguration)),
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,

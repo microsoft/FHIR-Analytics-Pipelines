@@ -108,14 +108,14 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
 
         private async Task<string> ExchangeAcrRefreshToken(string registryServer, string aadToken, CancellationToken cancellationToken)
         {
-            var registryUri = new Uri($"https://{registryServer}");
-            var exchangeUri = new Uri(registryUri, ExchangeAcrRefreshTokenUrl);
+            Uri registryUri = new Uri($"https://{registryServer}");
+            Uri exchangeUri = new Uri(registryUri, ExchangeAcrRefreshTokenUrl);
 
             List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>();
             parameters.Add(new KeyValuePair<string, string>("grant_type", "access_token"));
             parameters.Add(new KeyValuePair<string, string>("service", registryUri.Host));
             parameters.Add(new KeyValuePair<string, string>("access_token", aadToken));
-            using var request = new HttpRequestMessage(HttpMethod.Post, exchangeUri)
+            using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, exchangeUri)
             {
                 Content = new FormUrlEncodedContent(parameters),
             };
@@ -156,8 +156,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
 
         private async Task<string> GetAcrAccessToken(string registryServer, string refreshToken, CancellationToken cancellationToken)
         {
-            var registryUri = new Uri($"https://{registryServer}");
-            var accessTokenUri = new Uri(registryUri, GetAcrAccessTokenUrl);
+            Uri registryUri = new Uri($"https://{registryServer}");
+            Uri accessTokenUri = new Uri(registryUri, GetAcrAccessTokenUrl);
 
             List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>();
             parameters.Add(new KeyValuePair<string, string>("grant_type", "refresh_token"));
@@ -166,7 +166,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
 
             // Add scope for AcrPull role (granted at registry level).
             parameters.Add(new KeyValuePair<string, string>("scope", "repository:*:pull"));
-            using var request = new HttpRequestMessage(HttpMethod.Post, accessTokenUri)
+            using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, accessTokenUri)
             {
                 Content = new FormUrlEncodedContent(parameters),
             };

@@ -22,9 +22,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
                 return input;
             }
 
-            var sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
 
-            using (var hash = SHA256.Create())
+            using (SHA256 hash = SHA256.Create())
             {
                 byte[]? result = hash.ComputeHash(Encoding.UTF8.GetBytes(input));
                 foreach (byte b in result)

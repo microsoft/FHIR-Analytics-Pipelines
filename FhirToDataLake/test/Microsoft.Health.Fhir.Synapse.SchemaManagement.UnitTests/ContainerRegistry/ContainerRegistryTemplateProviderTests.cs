@@ -49,7 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
             ImageInfo imageInfo = ImageInfo.CreateFromImageReference(_testImageReference);
             await ContainerRegistryTestUtils.GenerateImageAsync(imageInfo, _testContainerRegistryAccessToken, TestUtils.TestTemplateTarGzPath);
 
-            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
+            ContainerRegistryTemplateProvider containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
                 _testTokenProvider,
                 new DiagnosticLogger(),
                 new NullLogger<ContainerRegistryTemplateProvider>());
@@ -63,7 +63,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         {
             Skip.If(_testImageReference == null);
 
-            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
+            ContainerRegistryTemplateProvider containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
                 TestUtils.GetMockAcrTokenProvider("invalid token"),
                 new DiagnosticLogger(),
                 new NullLogger<ContainerRegistryTemplateProvider>());

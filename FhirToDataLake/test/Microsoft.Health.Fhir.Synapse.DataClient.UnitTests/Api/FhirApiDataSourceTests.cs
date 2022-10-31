@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         public void GivenNullServerUrl_WhenInitialize_ArgumentNullExceptionShouldBeThrown()
         {
             // ServerUrl is string.empty
-            var fhirServerConfig = new FhirServerConfiguration
+            FhirServerConfiguration fhirServerConfig = new FhirServerConfiguration
             {
                 ServerUrl = null,
             };
@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         public void GivenEmptyServerUrl_WhenInitialize_ArgumentExceptionShouldBeThrown()
         {
             // ServerUrl is string.empty
-            var fhirServerConfig = new FhirServerConfiguration();
+            FhirServerConfiguration fhirServerConfig = new FhirServerConfiguration();
             Assert.Throws<ArgumentException>(() => new FhirApiDataSource(Options.Create(fhirServerConfig)));
 
             fhirServerConfig.ServerUrl = string.Empty;
@@ -47,11 +47,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [InlineData("https://example.com/", "https://example.com/")]
         public void GivenServerUrl_WhenInitialize_ServerUrlShouldBeEndsWithSlash(string serverUrl, string expectedServerUrl)
         {
-            var fhirServerConfig = new FhirServerConfiguration
+            FhirServerConfiguration fhirServerConfig = new FhirServerConfiguration
             {
                 ServerUrl = serverUrl,
             };
-            var dataSource = new FhirApiDataSource(Options.Create(fhirServerConfig));
+            FhirApiDataSource dataSource = new FhirApiDataSource(Options.Create(fhirServerConfig));
 
             Assert.Equal(expectedServerUrl, dataSource.FhirServerUrl);
         }
