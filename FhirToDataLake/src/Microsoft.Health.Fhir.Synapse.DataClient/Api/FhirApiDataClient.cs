@@ -214,13 +214,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                         _logger.LogInformation(hrEx, "Failed to search from FHIR server: FHIR server {0} is not found.", _dataSource.FhirServerUrl);
                         break;
                     default:
-                        _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: Status code: {0}.", hrEx.StatusCode));
-                        _logger.LogInformation(hrEx, "Failed to search from FHIR server: Status code: {0}.", hrEx.StatusCode);
+                        _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: Status code: {0}. Reason: {1}", hrEx.StatusCode, hrEx.Message));
+                        _logger.LogInformation(hrEx, "Failed to search from FHIR server: Status code: {0}. Reason: {1}", hrEx.StatusCode, hrEx.Message);
                         break;
                 }
 
                 throw new FhirSearchException(
-                    string.Format(Resource.FhirSearchFailed, uri),
+                    string.Format(Resource.FhirSearchFailed, uri) + $"Reason:{hrEx.Message}",
                     hrEx);
             }
             catch (BrokenCircuitException bcEx)
@@ -229,7 +229,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 _logger.LogInformation(bcEx, "Broken circuit while searching from FHIR server. Reason: {0}", bcEx.Message);
 
                 throw new FhirSearchException(
-                    string.Format(Resource.FhirSearchFailed, uri),
+                    string.Format(Resource.FhirSearchFailed, uri) + $"Reason:{bcEx.Message}",
                     bcEx);
             }
             catch (Exception ex)
@@ -268,13 +268,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                         _logger.LogInformation(ex, "Failed to search from FHIR server: FHIR server {0} is not found.", _dataSource.FhirServerUrl);
                         break;
                     default:
-                        _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: Status code: {0}.", ex.StatusCode));
-                        _logger.LogInformation(ex, "Failed to search from FHIR server: Status code: {0}.", ex.StatusCode);
+                        _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: Status code: {0}. Reason: {1}", ex.StatusCode, ex.Message));
+                        _logger.LogInformation(ex, "Failed to search from FHIR server: Status code: {0}. Reason: {1}", ex.StatusCode, ex.Message);
                         break;
                 }
 
                 throw new FhirSearchException(
-                    string.Format(Resource.FhirSearchFailed, uri),
+                    string.Format(Resource.FhirSearchFailed, uri) + $"Reason:{ex.Message}",
                     ex);
             }
             catch (Exception ex)

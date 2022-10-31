@@ -13,7 +13,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// The timeout to use for a single health check
         /// </summary>
         [JsonProperty("healthCheckTimeoutInSeconds")]
-        public int HealthCheckTimeoutInSeconds { get; set; } = 60;
+        public int HealthCheckTimeoutInSeconds { get; set; } = 100;
 
         /// <summary>
         /// Time interval for health check.
