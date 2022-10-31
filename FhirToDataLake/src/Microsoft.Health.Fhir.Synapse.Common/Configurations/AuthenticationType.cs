@@ -7,10 +7,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 {
     public enum AuthenticationType
     {
-        // Access resource with managed identity
+        /// <summary>
+        /// Access resource with managed identity
+        /// </summary>
         ManagedIdentity,
 
-        // Access resource with no authentication
+        /// <summary>
+        /// Access resource with no authentication
+        /// </summary>
         None,
     }
 }

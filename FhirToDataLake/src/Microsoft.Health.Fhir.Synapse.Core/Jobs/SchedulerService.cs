@@ -563,7 +563,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _logger.LogInformation(isSucceeded
                 ? $"Scheduler instance {_instanceGuid} renews lease successfully."
                 : $"Scheduler instance {_instanceGuid} fails to renew lease, failed to update lease trigger entity: {triggerLeaseEntity}.");
-            
             return isSucceeded;
         }
     }

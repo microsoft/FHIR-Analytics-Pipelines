@@ -22,8 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
     public class InMemoryBlobContainerClient : IAzureBlobContainerClient
     {
         private ConcurrentDictionary<string, Stream> _blobStore = new ConcurrentDictionary<string, Stream>();
-        private ConcurrentDictionary<string, Tuple<string, DateTimeOffset>> _blobLeaseStore =
-            new ConcurrentDictionary<string, Tuple<string, DateTimeOffset>>();
+        private ConcurrentDictionary<string, Tuple<string, DateTimeOffset>> _blobLeaseStore = new ConcurrentDictionary<string, Tuple<string, DateTimeOffset>>();
         private readonly object _leaseLock = new object();
 
         public async Task<T> GetValue<T>(string objectName)

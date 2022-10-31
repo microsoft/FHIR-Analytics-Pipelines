@@ -68,6 +68,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         /// </summary>
         /// <param name="connectionString">Storage connection string.</param>
         /// <param name="containerName">Container name.</param>
+        /// <param name="diagnosticLogger">diagnostic logger</param>
         /// <param name="logger">logger.</param>
         public AzureBlobContainerClient(
             string connectionString,

@@ -20,6 +20,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 {
     public class R5FhirSpecificationProvider : BaseFhirSpecificationProvider
     {
+        public R5FhirSpecificationProvider(IFhirDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R5FhirSpecificationProvider> logger)
+            : base(dataClient, diagnosticLogger, logger)
+        {
+        }
+
         /// <summary>
         /// Download from https://hl7.org/fhir/5.0.0-snapshot1/compartmentdefinition-patient.json.html
         /// </summary>
@@ -29,12 +34,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         /// Download from https://hl7.org/fhir/5.0.0-snapshot1/search-parameters.json, which is defined in https://hl7.org/fhir/5.0.0-snapshot1/searchparameter.html
         /// </summary>
         protected override string SearchParameterEmbeddedFile { get; } = "Specifications.R5.search-parameters.json";
-
-
-        public R5FhirSpecificationProvider(IFhirDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R5FhirSpecificationProvider> logger)
-            : base(dataClient, diagnosticLogger, logger)
-        {
-        }
 
         public override IEnumerable<string> GetAllResourceTypes()
         {

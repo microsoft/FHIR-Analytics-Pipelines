@@ -63,8 +63,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
         /// Image reference pattern: <registry>/<name>@<digest> or <registry>/<name>:<tag>
         /// E.g. testacr.azurecr.io/templatetest@sha256:412ea84f1bb1a9d98345efb7b427ba89616ec29ac332d543eff9a2161ca12a58
         /// </summary>
-        /// <param name="imageReference">Image reference.</param>
-        /// <exception cref="ConfigurationErrorException">Throw ConfigurationErrorException if imageReference is invalid</exception>
+        /// <param name="imageReference">Image reference</param>
+        /// <exception cref="ConfigurationErrorException">Throw ConfigurationErrorException if imageReference is invalid.</exception>
         public static void ValidateImageReference(string imageReference)
         {
             int registryDelimiterPosition = imageReference.IndexOf(ConfigurationConstants.ImageRegistryDelimiter, StringComparison.InvariantCultureIgnoreCase);

@@ -56,7 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             _jobConfigOption = Options.Create(jobConfig);
         }
 
-        #region Initialize Test
+        // Initialize Test
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
@@ -112,10 +112,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Null(exception);
         }
 
-        #endregion
-
-        #region Check Storage
-
+        // Check Storage
         [Fact]
         public async Task GivenUninitializedStorage_WhenRunAsync_WaitUntilStorageInitialized()
         {
@@ -171,9 +168,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
         }
 
-        #endregion
-
-        #region Acauire Lease
+        // Acquire Lease
         [Fact]
         public async Task GivenBrokenMetadataStoreThrowExceptionWhenGetTriggerLeaseEntity_WhenTryAcquireLeaseAsync_ThenNoExceptionShouldBeThrown()
         {
@@ -503,10 +498,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.NotEqual(oldGuid, triggerLeaseEntity1.WorkingInstanceGuid);
         }
 
-        #endregion
-
-        #region Renew Lease
-
+        // Renew Lease
         [Fact]
         public async Task GivenLongRunningSchedulerService_WhenRunAsync_ThenTheLeaseShouldBeRenewed()
         {
@@ -589,10 +581,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await task;
         }
 
-        #endregion
-
-        #region Enqueue Orchestrator Job
-
+        // Enqueue Orchestrator Job
         [Fact]
         public async Task GivenNewJob_WhenRunAsync_ThenTheInitialTriggerEntityShouldBeCreatedAndEnqueueOrchestratorJob()
         {
@@ -797,10 +786,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await task;
         }
 
-        #endregion
-
-        #region Complete Trigger
-
+        // Complete Trigger
         [Fact]
         public async Task GivenCompletedTrigger_WhenRunAsync_ThenShouldCreateAndEnqueueTheNextTrigger()
         {
@@ -919,10 +905,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(endTime, currentTriggerEntity.TriggerEndTime);
         }
 
-        #endregion
-
-        #region Functional Test
-
+        // Functional Test
         [Fact]
         public async Task GivenValidTrigger_WhenRunAsync_ThenTheTriggerShouldBeProcessed()
         {
@@ -1214,10 +1197,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.True(triggerLeaseEntity2.HeartbeatDateTime > triggerLeaseEntity.HeartbeatDateTime);
         }
 
-        #endregion
-
-        #region Cancellation Request
-
+        // Cancellation Request
         [Fact]
         public async Task GivenCancelRequest_WhenStartToRun_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
@@ -1371,7 +1351,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.True(elapsedSeconds < schedulerService.SchedulerServicePullingIntervalInSeconds);
             Assert.True(elapsedSeconds < schedulerService.SchedulerServiceLeaseRefreshIntervalInSeconds);
         }
-
-        #endregion
     }
 }
