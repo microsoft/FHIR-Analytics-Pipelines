@@ -690,7 +690,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
             catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateOrDeleteMessageNotFoundErrorCode) || IsSpecifiedErrorCode(ex, AzureStorageErrorCode.PopReceiptMismatchErrorCode))
             {
-                _logger.LogInformation(ex, $"[CompleteJob] Failed to delete message for job {jobInfo.Id}, the job message with the specified pop receipt is not found, the job is {Enum.GetName(typeof(JobStatus),jobInfo.Status)}.");
+                _logger.LogInformation(ex, $"[CompleteJob] Failed to delete message for job {jobInfo.Id}, the job message with the specified pop receipt is not found, the job is {Enum.GetName(typeof(JobStatus), jobInfo.Status)}.");
             }
 
             // step 7: cancel group jobs if requested

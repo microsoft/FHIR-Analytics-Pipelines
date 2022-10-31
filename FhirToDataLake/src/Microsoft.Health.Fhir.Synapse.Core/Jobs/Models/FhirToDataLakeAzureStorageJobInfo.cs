@@ -18,13 +18,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         // as the data end time is related to the trigger created time, and may be different if there are two instances try to create a new trigger simultaneously
         public override string JobIdentifier()
         {
+            string result = (TryParseAsFhirToDataLakeOrchestratorJobInputData() ??
+                             TryParseAsFhirToDataLakeProcessingJobInputData()) ?? Definition.ComputeHash();
+
+            return result.ComputeHash();
+        }
+
+        private string TryParseAsFhirToDataLakeOrchestratorJobInputData()
+        {
             try
             {
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(Definition);
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
                     inputData.DataEndTime = _fakeDataEndTime;
-                    return JsonConvert.SerializeObject(inputData).ComputeHash();
+                    return JsonConvert.SerializeObject(inputData);
                 }
             }
             catch (Exception)
@@ -32,13 +40,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 // ignored
             }
 
+            return null;
+        }
+
+        private string TryParseAsFhirToDataLakeProcessingJobInputData()
+        {
             try
             {
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(Definition);
                 if (inputData is { JobType: JobType.Processing })
                 {
                     inputData.DataEndTime = _fakeDataEndTime;
-                    return JsonConvert.SerializeObject(inputData).ComputeHash();
+                    return JsonConvert.SerializeObject(inputData);
                 }
             }
             catch (Exception)
@@ -46,7 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 // ignored
             }
 
-            return Definition.ComputeHash();
+            return null;
         }
     }
 }
