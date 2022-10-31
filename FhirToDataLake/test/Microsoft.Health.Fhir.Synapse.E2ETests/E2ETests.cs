@@ -455,7 +455,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             _queueClientFactory = new AzureStorageClientFactory(
                 jobInfoTableName,
                 jobInfoQueueName,
-                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
+                new NullLogger<AzureStorageClientFactory>());
 
             _queueClient = new AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>(
                 _queueClientFactory,

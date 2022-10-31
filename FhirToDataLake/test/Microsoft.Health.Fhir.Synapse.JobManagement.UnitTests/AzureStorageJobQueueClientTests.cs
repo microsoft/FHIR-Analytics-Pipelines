@@ -109,7 +109,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             var azureStorageClientFactory = new AzureStorageClientFactory(
                 TestJobInfoTableName,
                 TestJobInfoQueueName,
-                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
+                new NullLogger<AzureStorageClientFactory>());
 
             _azureStorageJobQueueClient = new AzureStorageJobQueueClient<AzureStorageJobInfo>(
                 azureStorageClientFactory,
@@ -139,7 +140,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 var azureStorageClientFactory = new AzureStorageClientFactory(
                     tableName,
                     queueName,
-                    new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
+                    new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
+                    new NullLogger<AzureStorageClientFactory>());
 
                 // create a AzureStorageJobQueueClient
                 AzureStorageJobQueueClient<AzureStorageJobInfo> azureStorageJobQueueClient =
@@ -181,7 +183,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 var azureStorageClientFactory = new AzureStorageClientFactory(
                     tableName,
                     queueName,
-                    new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
+                    new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), 
+                    new NullLogger<AzureStorageClientFactory>());
 
                 // create a AzureStorageJobQueueClient
                 AzureStorageJobQueueClient<AzureStorageJobInfo> azureStorageJobQueueClient =
