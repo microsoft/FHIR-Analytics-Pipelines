@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -30,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         private readonly string _imageReference;
         private readonly IContainerRegistryTokenProvider _containerRegistryTokenProvider;
         private readonly ILogger<ContainerRegistryFilterProvider> _logger;
-        private const string _configName = "filterConfiguration.json";
+        private const string ConfigName = "filterConfiguration.json";
         private readonly IDiagnosticLogger _diagnosticLogger;
 
         public ContainerRegistryFilterProvider(
@@ -56,27 +57,27 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (ImageReferenceException ex)
             {
-                var message = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Failed to parse filter image reference {0}.", _imageReference);
+                string message = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Failed to parse filter image reference {0}.", _imageReference);
                 _diagnosticLogger.LogError(message);
                 _logger.LogInformation(ex, message);
                 throw new ContainerRegistryFilterException(message, ex);
             }
             catch (Exception ex)
             {
-                var message = string.Format("Failed to fetch filter configuration from image reference {_imageReference}. Reason: Unhandled exception while parsing image reference {_imageReference}.", _imageReference);
+                string message = string.Format("Failed to fetch filter configuration from image reference {_imageReference}. Reason: Unhandled exception while parsing image reference {_imageReference}.", _imageReference);
 
                 _diagnosticLogger.LogError(message);
                 _logger.LogError(ex, message);
                 throw;
             }
 
-            var accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
+            string accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
 
             try
             {
-                AcrClient client = new AcrClient(imageInfo.Registry, accessToken);
+                var client = new AcrClient(imageInfo.Registry, accessToken);
                 var filterConfigurationProvider = new OciArtifactProvider(imageInfo, client);
-                var acrImage = await Policy
+                ArtifactImage acrImage = await Policy
                   .Handle<TemplateManagementException>()
                   .WaitAndRetryAsync(
                     3,
@@ -87,12 +88,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     })
                   .ExecuteAsync(() => filterConfigurationProvider.GetOciArtifactAsync(cancellationToken));
 
-                var blobsSize = acrImage.Blobs.Count;
-                for (var i = blobsSize - 1; i >= 0; i--)
+                int blobsSize = acrImage.Blobs.Count;
+                for (int i = blobsSize - 1; i >= 0; i--)
                 {
                     if (CheckConfigurationCollectionIsTooLarge(acrImage.Blobs[i].Content.LongLength))
                     {
-                        var message = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Configuration collection is too large.", _imageReference);
+                        string message = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Configuration collection is too large.", _imageReference);
 
                         _diagnosticLogger.LogError(message);
                         _logger.LogInformation(message);
@@ -100,25 +101,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     }
 
                     using var blobStream = new MemoryStream(acrImage.Blobs[i].Content);
-                    var blobsDict = StreamUtility.DecompressFromTarGz(blobStream);
-                    if (!blobsDict.Keys.Contains(_configName))
+                    Dictionary<string, byte[]> blobsDict = StreamUtility.DecompressFromTarGz(blobStream);
+                    if (!blobsDict.Keys.Contains(ConfigName))
                     {
                         continue;
                     }
                     else
                     {
-                        if (CheckConfigurationIsTooLarge(blobsDict[_configName].LongLength))
+                        if (CheckConfigurationIsTooLarge(blobsDict[ConfigName].LongLength))
                         {
-                            var message = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Configuration file is too large.", _imageReference);
+                            string message = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Configuration file is too large.", _imageReference);
 
                             _diagnosticLogger.LogError(message);
                             _logger.LogInformation(message);
                             throw new ContainerRegistryFilterException(message);
                         }
 
-                        using var config = new MemoryStream(blobsDict[_configName]);
+                        using var config = new MemoryStream(blobsDict[ConfigName]);
                         config.Position = 0;
-                        using (StreamReader reader = new StreamReader(config))
+                        using (var reader = new StreamReader(config))
                         {
                             string configurationContent = await reader.ReadToEndAsync();
                             try
@@ -127,7 +128,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                             }
                             catch (Exception ex)
                             {
-                                var message = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Invalid filter format.", _imageReference);
+                                string message = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Invalid filter format.", _imageReference);
 
                                 _diagnosticLogger.LogError(message);
                                 _logger.LogInformation(ex, message);
@@ -137,7 +138,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     }
                 }
 
-                var failedMessage = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1} not found.", _imageReference, _configName);
+                string failedMessage = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: {1} not found.", _imageReference, ConfigName);
 
                 _diagnosticLogger.LogError(failedMessage);
                 _logger.LogInformation(failedMessage);
@@ -145,7 +146,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (ContainerRegistryAuthenticationException authEx)
             {
-                var message = string.Format("Failed to access container registry: {0}. Authentication failed.", _imageReference);
+                string message = string.Format("Failed to access container registry: {0}. Authentication failed.", _imageReference);
 
                 _diagnosticLogger.LogError(message);
                 _logger.LogInformation(authEx, message);
@@ -153,7 +154,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (TemplateManagementException ex)
             {
-                var message = string.Format("Failed to fetch filter configuration from image reference {0}.", _imageReference);
+                string message = string.Format("Failed to fetch filter configuration from image reference {0}.", _imageReference);
 
                 _diagnosticLogger.LogError(message);
                 _logger.LogInformation(ex, message);
@@ -165,7 +166,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (Exception ex)
             {
-                var message = string.Format("Unhandled exception while fetching filter configuration from image reference {0}.", _imageReference);
+                string message = string.Format("Unhandled exception while fetching filter configuration from image reference {0}.", _imageReference);
 
                 _diagnosticLogger.LogError(message);
                 _logger.LogError(ex, message);

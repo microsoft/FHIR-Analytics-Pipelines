@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -22,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 
             services.AddSingleton<IHealthChecker, AzureBlobStorageHealthChecker>();
 
-            var schemaConfiguration = services
+            SchemaConfiguration schemaConfiguration = services
                     .BuildServiceProvider()
                     .GetRequiredService<IOptions<SchemaConfiguration>>()
                     .Value;
@@ -32,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                 services.AddSingleton<IHealthChecker, SchemaAzureContainerRegistryHealthChecker>();
             }
 
-            var filterLocation = services
+            FilterLocation filterLocation = services
                     .BuildServiceProvider()
                     .GetRequiredService<IOptions<FilterLocation>>()
                     .Value;

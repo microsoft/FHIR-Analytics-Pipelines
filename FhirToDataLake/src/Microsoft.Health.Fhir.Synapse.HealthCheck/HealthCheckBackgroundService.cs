@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 {
@@ -50,21 +51,25 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
             while (!cancellationToken.IsCancellationRequested)
             {
                 // Delay interval time.
-                var delayTask = Task.Delay(_checkIntervalInSeconds, cancellationToken);
+                Task delayTask = Task.Delay(_checkIntervalInSeconds, cancellationToken);
                 try
                 {
                     _diagnosticLogger.LogInformation("Starting to perform health checks");
                     _logger.LogInformation("Starting to perform health checks");
 
                     // Perform health check.
-                    var healthStatus = await _healthCheckEngine.CheckHealthAsync(cancellationToken);
+                    OverallHealthStatus healthStatus = await _healthCheckEngine.CheckHealthAsync(cancellationToken);
 
-                    _diagnosticLogger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}.");
-                    _logger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}.");
+                    _diagnosticLogger.LogInformation($"Finished health checks: {string.Join(',', healthStatus.HealthCheckResults.Select(x => string.Format("{0}:{1}", x.Name, x.Status)))}.");
+                    _logger.LogInformation($"Finished health checks: {string.Join(',', healthStatus.HealthCheckResults.Select(x => string.Format("{0}:{1}", x.Name, x.Status)))}.");
 
                     // Todo: Send notification to mediator and remove listeners here.
-                    var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
-                    _metricsLogger.LogHealthStatusMetric(healthStatus.Status == Models.HealthCheckStatus.HEALTHY ? 1 : 0);
+                    List<Task> listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
+                    foreach (HealthCheckResult component in healthStatus.HealthCheckResults)
+                    {
+                        _metricsLogger.LogHealthStatusMetric(component.Name, !component.IsCritical, component.Status == Models.HealthCheckStatus.HEALTHY ? 1 : 0);
+                    }
+
                     await Task.WhenAll(listenerTasks);
                     await delayTask;
                 }

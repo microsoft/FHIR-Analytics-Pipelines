@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Azure.Core;
 using Azure.Data.Tables;
 using Azure.Storage.Queues;
 using EnsureThat;
@@ -10,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.JobManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.JobManagement
 {
@@ -94,7 +94,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             var tableUri = new Uri(_tableUrl);
-            var tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
+            TokenCredential? tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             _logger.LogInformation($"Initializes azure storage table client using the specified URL {tableUri} and token credential.");
             return new TableClient(
@@ -119,7 +119,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             var queueUri = new Uri($"{_queueUrl}{_queueName}");
-            var tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
+            TokenCredential? tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             _logger.LogInformation($"Initializes azure storage queue client using the specified URL {queueUri} and token credential.");
             return new QueueClient(

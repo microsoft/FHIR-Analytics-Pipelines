@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -27,9 +28,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [Fact]
         public void GivenAJsonSchema_WhenParseJSchema_CorrectResultShouldBeReturned()
         {
-            var testSchema = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "ValidSchema.schema.json"))).GetAwaiter().GetResult();
-            var parquetSchemaNode = JsonSchemaParser.ParseJSchema("testType", testSchema);
-            var expectedSchemaNode = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.ExpectedDataDirectory, "ExpectedValidParquetSchemaNode.json"))).GetAwaiter().GetResult();
+            JsonSchema testSchema = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.CustomizedTestSchemaDirectory, "ValidSchema.schema.json"))).GetAwaiter().GetResult();
+            FhirParquetSchemaNode parquetSchemaNode = JsonSchemaParser.ParseJSchema("testType", testSchema);
+            JsonSchema expectedSchemaNode = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.ExpectedDataDirectory, "ExpectedValidParquetSchemaNode.json"))).GetAwaiter().GetResult();
 
             Assert.True(JToken.DeepEquals(
                 JObject.Parse(JsonConvert.SerializeObject(parquetSchemaNode)),

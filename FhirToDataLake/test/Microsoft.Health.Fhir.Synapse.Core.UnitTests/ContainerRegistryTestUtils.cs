@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
         public static async Task GenerateImageAsync(ImageInfo imageInfo, string accessToken, string templateFilePath)
         {
-            AzureContainerRegistryClient acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrBasicToken(accessToken));
+            var acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrBasicToken(accessToken));
 
             int schemaV2 = 2;
             string mediatypeV2Manifest = "application/vnd.docker.distribution.manifest.v2+json";
@@ -55,9 +55,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             List<Descriptor> layers = new List<Descriptor>();
 
             using FileStream fileStream = File.OpenRead(templateFilePath);
-            using MemoryStream byteStream = new MemoryStream();
+            using var byteStream = new MemoryStream();
             fileStream.CopyTo(byteStream);
-            var blobLength = byteStream.Length;
+            long blobLength = byteStream.Length;
             string blobDigest = ComputeDigest(byteStream);
             await UploadBlob(acrClient, byteStream, imageInfo.ImageName, blobDigest);
             layers.Add(new Descriptor("application/vnd.oci.image.layer.v1.tar", blobLength, blobDigest));
@@ -70,15 +70,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         private static async Task UploadBlob(AzureContainerRegistryClient acrClient, Stream stream, string repository, string digest)
         {
             stream.Position = 0;
-            var uploadInfo = await acrClient.Blob.StartUploadAsync(repository);
-            var uploadedLayer = await acrClient.Blob.UploadAsync(stream, uploadInfo.Location);
+            BlobStartUploadHeaders uploadInfo = await acrClient.Blob.StartUploadAsync(repository);
+            BlobUploadHeaders uploadedLayer = await acrClient.Blob.UploadAsync(stream, uploadInfo.Location);
             await acrClient.Blob.EndUploadAsync(digest, uploadedLayer.Location);
         }
 
         private static string ComputeDigest(Stream s)
         {
             s.Position = 0;
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             using (var hash = SHA256.Create())
             {

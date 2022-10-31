@@ -19,7 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
         /// <returns>The last updated timestamp of the resource.</returns>
         public static DateTimeOffset? GetLastUpdated(this JObject resource)
         {
-            var result =
+            string result =
                 (resource.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<string>(FhirBundleConstants.LastUpdatedKey);
             if (result == null)
             {

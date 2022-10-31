@@ -79,12 +79,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (_metadataStore.IsInitialized())
             {
-                var taskFactoryFuncs =
+                Func<JobInfo, IJob>[] taskFactoryFuncs =
                     new Func<JobInfo, IJob>[] { CreateProcessingTask, CreateOrchestratorTask };
 
-                foreach (var factoryFunc in taskFactoryFuncs)
+                foreach (Func<JobInfo, IJob> factoryFunc in taskFactoryFuncs)
                 {
-                    var job = factoryFunc(jobInfo);
+                    IJob job = factoryFunc(jobInfo);
                     if (job != null)
                     {
                         return job;
@@ -108,7 +108,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
-                    var currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
+                    FhirToDataLakeOrchestratorJobResult currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
                         ? new FhirToDataLakeOrchestratorJobResult()
                         : JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
 

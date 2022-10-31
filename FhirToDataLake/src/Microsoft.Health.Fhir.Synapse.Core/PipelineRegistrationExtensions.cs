@@ -41,7 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
             services.AddSingleton<IGroupMemberExtractor, GroupMemberExtractor>();
 
-            var filterLocation = services
+            FilterLocation filterLocation = services
                     .BuildServiceProvider()
                     .GetRequiredService<IOptions<FilterLocation>>()
                     .Value;
@@ -88,7 +88,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
         public static IServiceCollection AddFhirSpecificationProvider(this IServiceCollection services)
         {
-            var fhirServerConfiguration = services
+            FhirServerConfiguration fhirServerConfiguration = services
                 .BuildServiceProvider()
                 .GetRequiredService<IOptions<FhirServerConfiguration>>()
                 .Value;
