@@ -58,7 +58,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
         {
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
-                .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
+                .CircuitBreakerAsync(40, TimeSpan.FromSeconds(30));
         }
 
         private static IAsyncPolicy<HttpResponseMessage> GetTimeoutPolicy(double seconds = 60)
