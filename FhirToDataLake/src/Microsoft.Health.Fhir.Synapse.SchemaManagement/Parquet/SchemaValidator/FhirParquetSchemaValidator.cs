@@ -6,19 +6,26 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
+namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaValidator
 {
     public class FhirParquetSchemaValidator
     {
-        public static bool Validate(string schemaKey, FhirParquetSchemaNode rootNode, ref string error)
+        public static ValidationResult Validate(string schemaKey, FhirParquetSchemaNode rootNode)
         {
+            bool success;
+            string error = string.Empty;
+
             if (string.IsNullOrWhiteSpace(schemaKey))
             {
+                success = false;
                 error = "The schema key cannot be null or empty.";
-                return false;
+            }
+            else
+            {
+                success = ValidateInternal(schemaKey, rootNode, new Stack<string>(), ref error);
             }
 
-            return ValidateInternal(schemaKey, rootNode, new Stack<string>(), ref error);
+            return new ValidationResult() { Success = success, ErrorMessage = error };
         }
 
         private static bool ValidateInternal(string schemaKey, FhirParquetSchemaNode schemaNode, Stack<string> nodePath, ref string error)

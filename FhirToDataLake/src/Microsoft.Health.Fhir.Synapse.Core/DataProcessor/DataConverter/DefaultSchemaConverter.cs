@@ -63,9 +63,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             if (structItem is not JObject fhirJObject)
             {
-                _diagnosticLogger.LogError($"Current FHIR object is not a valid JObject: {structItem}.");
-                _logger.LogInformation($"Current FHIR object is not a valid JObject: {structItem}.");
-                throw new ParquetDataProcessorException($"Current FHIR object is not a valid JObject: {structItem}.");
+                _diagnosticLogger.LogError($"Current FHIR object is not a valid JObject: {structItem.Path}.");
+                _logger.LogInformation($"Current FHIR object is not a valid JObject: {structItem.Path}.");
+                throw new ParquetDataProcessorException($"Current FHIR object is not a valid JObject: {structItem.Path}.");
             }
 
             var processedObject = new JObject();
@@ -83,9 +83,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
                     if (!schemaNode.SubNodes[choiceTypeName].SubNodes.ContainsKey(choiceTypeDataType))
                     {
-                        _diagnosticLogger.LogError($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {subObject}.");
-                        _logger.LogInformation($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {subObject}.");
-                        throw new ParquetDataProcessorException($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {subObject}.");
+                        _diagnosticLogger.LogError($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {subObject.Path}.");
+                        _logger.LogInformation($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {subObject.Path}.");
+                        throw new ParquetDataProcessorException($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {subObject.Path}.");
                     }
 
                     var dataTypeNode = schemaNode.SubNodes[choiceTypeName].SubNodes[choiceTypeDataType];
@@ -156,9 +156,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             if (fhirObject is not JValue fhirLeafObject)
             {
-                _diagnosticLogger.LogError($"Invalid data: complex object found in leaf schema node {fhirObject}.");
-                _logger.LogInformation($"Invalid data: complex object found in leaf schema node {fhirObject}.");
-                throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {fhirObject}.");
+                _diagnosticLogger.LogError($"Invalid data: complex object found in leaf schema node {fhirObject.Path}.");
+                _logger.LogInformation($"Invalid data: complex object found in leaf schema node {fhirObject.Path}.");
+                throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {fhirObject.Path}.");
             }
 
             return fhirLeafObject;

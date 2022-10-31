@@ -6,12 +6,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using EnsureThat;
+using Hl7.Fhir.Utility;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaValidator;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 {
@@ -132,12 +134,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             // Validate Parquet schema nodes
             foreach (var schemaNodeItem in resourceSchemaNodesMap)
             {
-                string error = string.Empty;
-                if (!FhirParquetSchemaValidator.Validate(schemaNodeItem.Key, schemaNodeItem.Value, ref error))
+                ValidationResult validateResult = FhirParquetSchemaValidator.Validate(schemaNodeItem.Key, schemaNodeItem.Value);
+                if (!validateResult.Success)
                 {
-                    _diagnosticLogger.LogError($"Validate Parquet schema node failed. Reason: {error}.");
-                    _logger.LogInformation($"Validate Parquet schema node failed. Reason: {error}.");
-                    throw new GenerateFhirParquetSchemaNodeException($"Validate Parquet schema node failed. Reason: {error}.");
+                    _diagnosticLogger.LogError($"Validate Parquet schema node failed. Reason: {validateResult.ErrorMessage}.");
+                    _logger.LogInformation($"Validate Parquet schema node failed. Reason: {validateResult.ErrorMessage}.");
+                    throw new GenerateFhirParquetSchemaNodeException($"Validate Parquet schema node failed. Reason: {validateResult.ErrorMessage}.");
                 }
             }
 
