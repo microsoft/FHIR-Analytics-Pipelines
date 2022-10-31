@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Web;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
@@ -17,7 +18,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         public static IEnumerable<JObject> ExtractResourcesFromBundle(JObject bundle)
         {
             var entries = bundle?.GetValue(FhirBundleConstants.EntryKey) as JArray;
-            var resources = entries?
+            List<JObject> resources = entries?
                 .Select(entry => (entry as JObject)?.GetValue(FhirBundleConstants.EntryResourceKey) as JObject)
                 .ToList();
             return resources ?? new List<JObject>();
@@ -25,7 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 
         public static IEnumerable<JObject> GetOperationOutcomes(IEnumerable<JObject> resources)
         {
-            var operationOutcomes = resources.Where(x =>
+            List<JObject> operationOutcomes = resources.Where(x =>
                 x?.GetValue(FhirBundleConstants.ResourceTypeKey)?.ToString() ==
                 FhirBundleConstants.OperationOutcomeKey).ToList();
             return operationOutcomes ?? new List<JObject>();
@@ -36,12 +37,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
             var links = bundle?.GetValue(FhirBundleConstants.LinkKey) as JArray;
             if (links != null)
             {
-                foreach (var link in links)
+                foreach (JToken link in links)
                 {
-                    var linkRelation = (link as JObject)?.GetValue(FhirBundleConstants.LinkRelationKey)?.Value<string>();
+                    string linkRelation = (link as JObject)?.GetValue(FhirBundleConstants.LinkRelationKey)?.Value<string>();
                     if (string.Equals(linkRelation, FhirBundleConstants.NextLinkValue, StringComparison.OrdinalIgnoreCase))
                     {
-                        var nextLink = (link as JObject)?.GetValue(FhirBundleConstants.LinkUrlKey)?.Value<string>();
+                        string nextLink = (link as JObject)?.GetValue(FhirBundleConstants.LinkUrlKey)?.Value<string>();
                         return ParseContinuationToken(nextLink);
                     }
                 }
@@ -53,7 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         public static int ExtractVersionId(JObject bundle)
         {
             var meta = bundle?.GetValue(FhirBundleConstants.MetaKey) as JObject;
-            var versionId = meta?.GetValue(FhirBundleConstants.VersionIdKey)?.Value<int>();
+            int? versionId = meta?.GetValue(FhirBundleConstants.VersionIdKey)?.Value<int>();
             return versionId ?? 0;
         }
 
@@ -64,7 +65,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
                 return nextUrl;
             }
 
-            var parameters = HttpUtility.ParseQueryString(nextUrl);
+            NameValueCollection parameters = HttpUtility.ParseQueryString(nextUrl);
             return parameters.Get(FhirApiConstants.ContinuationKey);
         }
     }

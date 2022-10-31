@@ -18,10 +18,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [Fact]
         public void GivenAnEmptyBundle_WhenParsingBundle_EmptyResultShouldBeReturned()
         {
-            var bundle = TestDataProvider.GetBundleJsonFromFile(TestDataConstants.EmptyBundleFile);
+            JObject bundle = TestDataProvider.GetBundleJsonFromFile(TestDataConstants.EmptyBundleFile);
 
-            var resources = FhirBundleParser.ExtractResourcesFromBundle(bundle);
-            var continuationToken = FhirBundleParser.ExtractContinuationToken(bundle);
+            IEnumerable<JObject> resources = FhirBundleParser.ExtractResourcesFromBundle(bundle);
+            string continuationToken = FhirBundleParser.ExtractContinuationToken(bundle);
 
             Assert.Empty(resources);
             Assert.Null(continuationToken);
@@ -32,8 +32,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         {
             JObject bundle = null;
 
-            var resources = FhirBundleParser.ExtractResourcesFromBundle(bundle);
-            var continuationToken = FhirBundleParser.ExtractContinuationToken(bundle);
+            IEnumerable<JObject> resources = FhirBundleParser.ExtractResourcesFromBundle(bundle);
+            string continuationToken = FhirBundleParser.ExtractContinuationToken(bundle);
             Assert.Empty(resources);
             Assert.Null(continuationToken);
         }
@@ -41,10 +41,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [Fact]
         public void GivenAValidBundle_WhenParsingBundle_CorrectResultShouldBeReturned()
         {
-            var bundle = TestDataProvider.GetBundleJsonFromFile(TestDataConstants.BundleFile1);
+            JObject bundle = TestDataProvider.GetBundleJsonFromFile(TestDataConstants.BundleFile1);
 
-            var resources = FhirBundleParser.ExtractResourcesFromBundle(bundle);
-            var continuationToken = FhirBundleParser.ExtractContinuationToken(bundle);
+            IEnumerable<JObject> resources = FhirBundleParser.ExtractResourcesFromBundle(bundle);
+            string continuationToken = FhirBundleParser.ExtractContinuationToken(bundle);
 
             Assert.Equal(2, resources.Count());
             Assert.Equal("Y29udGludWF0aW9udG9rZW4=", continuationToken);
@@ -53,14 +53,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [Fact]
         public void GivenValidOperationOutcomeResources_WhenGetOperationOutcomes_EmptyResultShouldBeReturned()
         {
-            var jObj1 = JObject.Parse("{\"resourceType\":\"OperationOutcome\"}");
-            var jObj2 = JObject.Parse(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidResponseFile));
-            var input = new List<JObject> { jObj1, jObj2 };
-            var results = FhirBundleParser.GetOperationOutcomes(input);
+            JObject jObj1 = JObject.Parse("{\"resourceType\":\"OperationOutcome\"}");
+            JObject jObj2 = JObject.Parse(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidResponseFile));
+            List<JObject> input = new List<JObject> { jObj1, jObj2 };
+            IEnumerable<JObject> results = FhirBundleParser.GetOperationOutcomes(input);
             Assert.Equal(2, results.Count());
 
             input.Add(JObject.Parse("{\"resourceType\":\"Patient\"}"));
-            var updatedResults = FhirBundleParser.GetOperationOutcomes(input);
+            IEnumerable<JObject> updatedResults = FhirBundleParser.GetOperationOutcomes(input);
             Assert.Equal(2, updatedResults.Count());
 
             Assert.Equal(results.ToString(), updatedResults.ToString());
@@ -69,8 +69,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [Fact]
         public void GivenEmptyResources_WhenGetOperationOutcomes_EmptyResultShouldBeReturned()
         {
-            var input = new List<JObject>();
-            var results = FhirBundleParser.GetOperationOutcomes(input);
+            List<JObject> input = new List<JObject>();
+            IEnumerable<JObject> results = FhirBundleParser.GetOperationOutcomes(input);
             Assert.Empty(results);
 
             input.Add(null);
@@ -87,21 +87,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [Fact]
         public void GivenInvalidOperationOutcomeResources_WhenGetOperationOutcomes_EmptyResultShouldBeReturned()
         {
-            var jObj1 = JObject.Parse("{\"a\":1}");
-            var jObj2 = JObject.Parse("{\"resourceType\":\"Patient\"}");
-            var jObj3 = JObject.Parse("{\"resourceType\":\"operationOutcome\"}");
+            JObject jObj1 = JObject.Parse("{\"a\":1}");
+            JObject jObj2 = JObject.Parse("{\"resourceType\":\"Patient\"}");
+            JObject jObj3 = JObject.Parse("{\"resourceType\":\"operationOutcome\"}");
 
-            var input = new List<JObject> { jObj1, jObj2, jObj3 };
-            var results = FhirBundleParser.GetOperationOutcomes(input);
+            List<JObject> input = new List<JObject> { jObj1, jObj2, jObj3 };
+            IEnumerable<JObject> results = FhirBundleParser.GetOperationOutcomes(input);
             Assert.Empty(results);
         }
 
         [Fact]
         public void GivenAValidBundle_WithNoNextLink_WhenParsingBatchData_CorrectResultShouldBeReturned()
         {
-            var bundle = TestDataProvider.GetBundleJsonFromFile(TestDataConstants.BundleFile2);
-            var resources = FhirBundleParser.ExtractResourcesFromBundle(bundle);
-            var continuationToken = FhirBundleParser.ExtractContinuationToken(bundle);
+            JObject bundle = TestDataProvider.GetBundleJsonFromFile(TestDataConstants.BundleFile2);
+            IEnumerable<JObject> resources = FhirBundleParser.ExtractResourcesFromBundle(bundle);
+            string continuationToken = FhirBundleParser.ExtractContinuationToken(bundle);
 
             Assert.Single(resources);
             Assert.Null(continuationToken);

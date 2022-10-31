@@ -14,6 +14,7 @@ using EnsureThat;
 using FhirR4::Hl7.Fhir.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient;
@@ -74,7 +75,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 
             groupsAlreadyChecked.Add(groupId);
 
-            var groupMembers = await GetGroupMembersAsync(
+            List<Tuple<string, string>> groupMembers = await GetGroupMembersAsync(
                 groupId,
                 queryParameters,
                 groupMembershipTime,
@@ -82,9 +83,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 cancellationToken);
 
             // hashset is used to deduplicate patients
-            var patientIds = new HashSet<string>();
+            HashSet<string> patientIds = new HashSet<string>();
 
-            foreach (var (resourceType, resourceId) in groupMembers)
+            foreach ((string resourceType, string resourceId) in groupMembers)
             {
                 // Only Patient resources and their compartment resources are exported. All other resource types are ignored.
                 // Nested Group resources are checked to see if they contain other Patients.
@@ -132,7 +133,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             var searchOptions = new ResourceIdSearchOptions(nameof(ResourceType.Group), groupId, queryParameters);
 
             // If there is an exception thrown while requesting group resource, do nothing about it and the job will crash.
-            var fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
+            string fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
 
             var parser = new FhirJsonParser();
             Bundle bundle;
@@ -147,7 +148,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 throw new GroupMemberExtractorException($"Failed to extract group members. Reason: Failed to parse fhir 'Group' bundle {groupId}.", exception);
             }
 
-            var members = new List<Tuple<string, string>>();
+            List<Tuple<string, string>> members = new List<Tuple<string, string>>();
 
             if (bundle.Entry == null || !bundle.Entry.Any())
             {
@@ -165,7 +166,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
 
             // OperationOutcome
-            var invalidEntries = bundle.Entry.Where(entry => entry.Resource.TypeName != FhirConstants.GroupResource);
+            IEnumerable<Bundle.EntryComponent> invalidEntries = bundle.Entry.Where(entry => entry.Resource.TypeName != FhirConstants.GroupResource);
             if (invalidEntries.Any())
             {
                 _diagnosticLogger.LogError($"Failed to extract group members. Reason: There are invalid group entries returned: {string.Join(',', invalidEntries.ToString())}.");
@@ -194,7 +195,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             var groupResource = (Group)bundle.Entry[0].Resource;
 
             var fhirGroupMembershipTime = new FhirDateTime(groupMembershipTime);
-            foreach (var member in groupResource.Member)
+            foreach (Group.MemberComponent member in groupResource.Member)
             {
                 // only take the member who is active and it is in this group at fhirGroupMembershipTime
                 if (member.Inactive is null or false
@@ -205,7 +206,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 {
                     try
                     {
-                        var fhirReference = _referenceParser.Parse(reference: member.Entity?.Reference);
+                        FhirReference fhirReference = _referenceParser.Parse(reference: member.Entity?.Reference);
                         members.Add(Tuple.Create(fhirReference.ResourceType, fhirReference.ResourceId));
                     }
                     catch (Exception ex)

@@ -134,7 +134,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
         private Uri CreateSearchUri(BaseFhirApiOptions fhirApiOptions)
         {
-            var serverUrl = _dataSource.FhirServerUrl;
+            string serverUrl = _dataSource.FhirServerUrl;
 
             var baseUri = new Uri(serverUrl);
 
@@ -149,9 +149,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             uri = uri.AddQueryString(fhirApiOptions.QueryParameters);
 
             // add shared parameters _count
-            var queryParameters = new List<KeyValuePair<string, string>>
+            List<KeyValuePair<string, string>> queryParameters = new List<KeyValuePair<string, string>>
             {
-                new (FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
             };
 
             return uri.AddQueryString(queryParameters);
@@ -229,9 +229,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 response.EnsureSuccessStatusCode();
                 _logger.LogInformation("Successfully retrieved result for url: '{url}'.", uri);
 
-                var stream = response.Content.ReadAsStream();
+                Stream stream = response.Content.ReadAsStream();
                 stream.Seek(0, SeekOrigin.Begin);
-                StreamReader reader = new StreamReader(stream);
+                var reader = new StreamReader(stream);
                 return reader.ReadToEnd();
             }
             catch (HttpRequestException ex)

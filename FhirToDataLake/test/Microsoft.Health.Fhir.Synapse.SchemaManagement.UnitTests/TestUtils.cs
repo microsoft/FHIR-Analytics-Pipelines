@@ -53,15 +53,15 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
 
         public static List<Dictionary<string, Template>> GetSchemaTemplateCollections(string schemaKey, byte[] schemaContent)
         {
-            var schemaContents = new Dictionary<string, byte[]> { { schemaKey, schemaContent } };
+            Dictionary<string, byte[]> schemaContents = new Dictionary<string, byte[]> { { schemaKey, schemaContent } };
 
-            var templateCollection = TemplateLayerParser.ParseToTemplates(schemaContents);
+            Dictionary<string, Template> templateCollection = TemplateLayerParser.ParseToTemplates(schemaContents);
             return new List<Dictionary<string, Template>> { templateCollection };
         }
 
         public static IParquetSchemaProvider TestParquetSchemaProviderDelegate(string name)
         {
-            var testSchemaTemplateCollections = GetSchemaTemplateCollections("Schema/Patient.schema.json", File.ReadAllBytes(TestJsonSchemaFilePath));
+            List<Dictionary<string, Template>> testSchemaTemplateCollections = GetSchemaTemplateCollections("Schema/Patient.schema.json", File.ReadAllBytes(TestJsonSchemaFilePath));
 
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
             {
@@ -72,7 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
             }
             else
             {
-                var schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
+                IOptions<SchemaConfiguration> schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
                 {
                     EnableCustomizedSchema = true,
                     SchemaImageReference = MockSchemaImageReference,

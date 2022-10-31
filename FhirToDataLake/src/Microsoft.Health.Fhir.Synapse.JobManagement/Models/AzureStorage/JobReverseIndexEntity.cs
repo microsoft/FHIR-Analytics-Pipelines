@@ -10,16 +10,16 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage
 {
     public class JobReverseIndexEntity : ITableEntity
     {
-        public string PartitionKey { get; set; }
+        public string PartitionKey { get; set; } = string.Empty;
 
-        public string RowKey { get; set; }
+        public string RowKey { get; set; } = string.Empty;
 
         public DateTimeOffset? Timestamp { get; set; }
 
         public ETag ETag { get; set; }
 
-        public string JobInfoEntityPartitionKey { get; set; }
+        public string JobInfoEntityPartitionKey { get; set; } = string.Empty;
 
-        public string JobInfoEntityRowKey { get; set; }
+        public string JobInfoEntityRowKey { get; set; } = string.Empty;
     }
 }

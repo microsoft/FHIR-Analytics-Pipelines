@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -25,7 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
         static CustomSchemaConverterTests()
         {
-            var schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
+            IOptions<SchemaConfiguration> schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
             {
                 EnableCustomizedSchema = true,
                 SchemaImageReference = "testacr.azurecr.io/customizedtemplate:default",
@@ -37,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 new DiagnosticLogger(),
                 NullLogger<CustomSchemaConverter>.Instance);
 
-            var testDataContent = File.ReadLines(Path.Join(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson"))
+            IEnumerable<JObject> testDataContent = File.ReadLines(Path.Join(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson"))
                         .Select(dataContent => JObject.Parse(dataContent));
 
             _testData = new JsonBatchData(testDataContent);
@@ -46,9 +47,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public void GivenAValidJsonBatchData_WhenConvert_CorrectResultShouldBeReturned()
         {
-            var result = _testFhirConverter.Convert(_testData, "Patient").Values.ToList();
+            List<JObject> result = _testFhirConverter.Convert(_testData, "Patient").Values.ToList();
 
-            var expectedResult = File.ReadLines(Path.Join(TestUtils.ExpectTestDataFolder, "CustomizedSchema/Expected_basic_patient.ndjson"))
+            List<JObject> expectedResult = File.ReadLines(Path.Join(TestUtils.ExpectTestDataFolder, "CustomizedSchema/Expected_basic_patient.ndjson"))
                         .Select(dataContent => JObject.Parse(dataContent)).ToList();
 
             Assert.Equal(expectedResult.Count, result.Count);
@@ -77,7 +78,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public void GivenInvalidResourceType_WhenPreprocess_ExceptionShouldBeThrown()
         {
-            var testData = File.ReadLines(Path.Join(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson"))
+            IEnumerable<JObject> testData = File.ReadLines(Path.Join(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson"))
                     .Select(dataContent => JObject.Parse(dataContent));
 
             Assert.Throws<ParquetDataProcessorException>(() => _testFhirConverter.Convert(new JsonBatchData(testData), "Invalid resource type"));

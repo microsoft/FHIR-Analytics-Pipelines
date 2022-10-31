@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
             services.AddSingleton<IFhirApiDataSource, FhirApiDataSource>();
             services.AddSingleton<IFhirDataClient, FhirApiDataClient>();
 
-            var fhirServerConfiguration = services
+            FhirServerConfiguration fhirServerConfiguration = services
                 .BuildServiceProvider()
                 .GetRequiredService<IOptions<FhirServerConfiguration>>()
                 .Value;

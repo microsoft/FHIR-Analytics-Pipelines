@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Files.DataLake.Models;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
@@ -50,10 +51,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             EnsureArg.IsNotNull(data, nameof(data));
 
-            var schemaType = data.SchemaType;
+            string schemaType = data.SchemaType;
 
-            var blobName = GetDataFileName(dateTime, schemaType, jobId, partId);
-            var blobUrl = await _containerClient.UpdateBlobAsync(blobName, data.Value, cancellationToken);
+            string blobName = GetDataFileName(dateTime, schemaType, jobId, partId);
+            string blobUrl = await _containerClient.UpdateBlobAsync(blobName, data.Value, cancellationToken);
 
             _logger.LogInformation($"Write stream batch data to {blobUrl} successfully.");
 
@@ -76,30 +77,30 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         // Then rename the source directory to target directory.
         public async Task CommitJobDataAsync(long jobId, CancellationToken cancellationToken = default)
         {
-            var sourceDirectory = $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}";
-            var directoryPairs = new List<Tuple<string, string>>();
+            string sourceDirectory = $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}";
+            List<Tuple<string, string>> directoryPairs = new List<Tuple<string, string>>();
 
-            await foreach (var path in _containerClient.ListPathsAsync(sourceDirectory, cancellationToken))
+            await foreach (PathItem path in _containerClient.ListPathsAsync(sourceDirectory, cancellationToken))
             {
                 if (path.IsDirectory == true)
                 {
                     // Record all directories that need to commit.
-                    var match = _stagingDataFolderRegex.Match(path.Name);
+                    Match match = _stagingDataFolderRegex.Match(path.Name);
                     if (match.Success)
                     {
-                        var destination = $"{AzureStorageConstants.ResultFolderName}/{match.Groups["partition"].Value}/{jobId:d20}";
+                        string destination = $"{AzureStorageConstants.ResultFolderName}/{match.Groups["partition"].Value}/{jobId:d20}";
                         directoryPairs.Add(new Tuple<string, string>(path.Name, destination));
                     }
                 }
             }
 
             // move directories from staging to result folder.
-            var moveTasks = new List<Task>();
-            foreach (var pair in directoryPairs)
+            List<Task> moveTasks = new List<Task>();
+            foreach (Tuple<string, string> pair in directoryPairs)
             {
                 if (moveTasks.Count >= StageFolderConcurrency)
                 {
-                    var completedTask = await Task.WhenAny(moveTasks);
+                    Task completedTask = await Task.WhenAny(moveTasks);
                     await completedTask;
                     moveTasks.Remove(completedTask);
                 }
@@ -115,7 +116,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         public async Task<bool> TryCleanJobDataAsync(long jobId, CancellationToken cancellationToken = default)
         {
-            var sourceDirectory = $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}";
+            string sourceDirectory = $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}";
             try
             {
                 await _containerClient.DeleteDirectoryIfExistsAsync(sourceDirectory, cancellationToken);
@@ -135,7 +136,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             long jobId,
             int partId)
         {
-            var dateTimeKey = dateTime.ToString(DateKeyFormat);
+            string dateTimeKey = dateTime.ToString(DateKeyFormat);
 
             return $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/{schemaType}/{dateTimeKey}/{schemaType}_{partId:d10}.parquet";
         }

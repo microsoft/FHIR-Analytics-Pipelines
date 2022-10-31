@@ -40,12 +40,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [Fact]
         public async Task GivenAResourceUrl_WhenGetAccessToken_CachedAccessTokenWillBeReturnedIfNotExpired()
         {
-            var resourceUrl = "http://test";
+            string resourceUrl = "http://test";
             var accessTokenProvider = new AzureAccessTokenProvider(new MockTimeBasedTokenCredential(), _diagnosticLogger, new NullLogger<AzureAccessTokenProvider>());
 
-            var accessToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
+            string accessToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
             Thread.Sleep(2000);
-            var cachedToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
+            string cachedToken = await accessTokenProvider.GetAccessTokenAsync(resourceUrl);
             Assert.Equal(accessToken, cachedToken);
         }
     }

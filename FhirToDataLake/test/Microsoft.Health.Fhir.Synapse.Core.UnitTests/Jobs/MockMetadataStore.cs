@@ -102,7 +102,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             throw new NotImplementedException();
         }
 
-        private Tuple<string, string> CurrentTriggerEntityKey(byte queueType) => 
+        private Tuple<string, string> CurrentTriggerEntityKey(byte queueType) =>
             new Tuple<string, string>(TableKeyProvider.TriggerPartitionKey(queueType), TableKeyProvider.TriggerRowKey(queueType));
 
         private Tuple<string, string> TriggerLeaseEntityKey(byte queueType) =>

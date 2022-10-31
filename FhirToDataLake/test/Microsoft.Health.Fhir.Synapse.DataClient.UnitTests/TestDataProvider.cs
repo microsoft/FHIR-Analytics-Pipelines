@@ -22,7 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
 
         public static ITypedElement GetBundleElementFromFile(string filePath)
         {
-            var bundleContent = GetBundleFromFile(filePath);
+            string bundleContent = GetBundleFromFile(filePath);
 
             var fhirConfiguration = new FhirServerConfiguration()
             {
@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
 
         public static JObject GetBundleJsonFromFile(string filePath)
         {
-            var bundleContent = GetBundleFromFile(filePath);
+            string bundleContent = GetBundleFromFile(filePath);
 
             return JObject.Parse(bundleContent);
         }
