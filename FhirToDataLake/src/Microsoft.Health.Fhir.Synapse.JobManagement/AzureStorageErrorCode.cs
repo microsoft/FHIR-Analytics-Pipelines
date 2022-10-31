@@ -18,6 +18,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         public const string PropertyValueTooLargeErrorCode = "PropertyValueTooLarge";
         public const string InvalidDuplicateRowErrorCode = "InvalidDuplicateRow";
         public const string UpdateOrDeleteMessageNotFoundErrorCode = "MessageNotFound";
+        public const string PopReceiptMismatchErrorCode = "PopReceiptMismatch";
         public const string NoAuthenticationInformationErrorCode = "NoAuthenticationInformation";
         public const string InvalidAuthenticationInfoErrorCode = "InvalidAuthenticationInfo";
         public const string AuthenticationFailedErrorCode = "AuthenticationFailed";

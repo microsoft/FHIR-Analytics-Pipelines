@@ -503,12 +503,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
                 _logger.LogInformation($"[KeepAliveJob] Update message visibility timeout for job {jobInfo.Id} successfully.");
             }
-            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateOrDeleteMessageNotFoundErrorCode))
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateOrDeleteMessageNotFoundErrorCode) || IsSpecifiedErrorCode(ex, AzureStorageErrorCode.PopReceiptMismatchErrorCode))
             {
                 // the message does not exists or pop receipt does not match
-
                 // Note: there are two error codes defined: 404 "MessageNotFound" and 400 "PopReceiptMismatch" in https://learn.microsoft.com/en-us/rest/api/storageservices/Queue-Service-Error-Codes?redirectedfrom=MSDN
                 // However, the doc says that "If a message with a matching pop receipt isn't found, the service returns error code 404 (Not Found). This error occurs in the previously listed cases in which the pop receipt is no longer valid." That means the queue service would return 400 when pop receipt is not in correct format, and return 404 when the pop receipt was of the correct format but the service did not find the message id with that receipt
+                // It throws 404 in local machine, while throw 400 in Pipeline
                 // https://social.msdn.microsoft.com/Forums/azure/en-US/aab37e27-2f04-47db-9e1d-66fd224ac925/handling-queue-message-deletion-error?forum=windowsazuredata
                 // http://www.tiernok.com/posts/real-world-azure-queue-popreceiptmismatch.html
                 _logger.LogInformation($"[KeepAliveJob] Failed to keep alive for job {jobInfo.Id}, the job message with the specified pop receipt is not found, the job is {Enum.GetName(typeof(JobStatus), jobInfo.Status)}.");
@@ -688,7 +688,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 await _azureJobMessageQueueClient.DeleteMessageAsync(jobLockEntity.GetString(JobLockEntityProperties.JobMessageId), jobLockEntity.GetString(JobLockEntityProperties.JobMessagePopReceipt), cancellationToken: cancellationToken);
                 _logger.LogInformation($"[CompleteJob] Delete message for job {jobInfo.Id} successfully.");
             }
-            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateOrDeleteMessageNotFoundErrorCode))
+            catch (RequestFailedException ex) when (IsSpecifiedErrorCode(ex, AzureStorageErrorCode.UpdateOrDeleteMessageNotFoundErrorCode) || IsSpecifiedErrorCode(ex, AzureStorageErrorCode.PopReceiptMismatchErrorCode))
             {
                 _logger.LogInformation(ex, $"[CompleteJob] Failed to delete message for job {jobInfo.Id}, the job message with the specified pop receipt is not found, the job is {Enum.GetName(typeof(JobStatus),jobInfo.Status)}.");
             }
