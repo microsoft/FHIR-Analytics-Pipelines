@@ -49,17 +49,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 throw new ReferenceParseException("The reference string is null or white space.");
             }
 
-            var match = ReferenceRegex.Match(reference);
+            Match match = ReferenceRegex.Match(reference);
 
             if (match.Success)
             {
-                var resourceTypeInString = match.Groups[ResourceTypeCapture].Value;
+                string resourceTypeInString = match.Groups[ResourceTypeCapture].Value;
 
                 if (R4FhirModelInfo.IsKnownResource(resourceTypeInString))
                 {
-                    var resourceId = match.Groups[ResourceIdCapture].Value;
+                    string resourceId = match.Groups[ResourceIdCapture].Value;
 
-                    var resourceTypeStartIndex = match.Groups[ResourceTypeCapture].Index;
+                    int resourceTypeStartIndex = match.Groups[ResourceTypeCapture].Index;
 
                     if (resourceTypeStartIndex == 0)
                     {

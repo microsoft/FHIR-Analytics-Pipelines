@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Azure.Core;
 using Azure.Data.Tables;
 using Azure.Storage.Queues;
 using EnsureThat;
@@ -82,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             var tableUri = new Uri(_tableUrl);
-            var tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
+            TokenCredential? tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             return new TableClient(
                 tableUri,
@@ -104,7 +105,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             var queueUri = new Uri($"{_queueUrl}{_queueName}");
-            var tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
+            TokenCredential? tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             return new QueueClient(
                 queueUri,

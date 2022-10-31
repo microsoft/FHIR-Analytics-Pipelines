@@ -54,7 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         protected override Dictionary<string, HashSet<string>> BuildCompartmentResourceTypesLookupFromCompartmentContext(string compartmentContext, string compartmentFile)
         {
             var parser = new FhirJsonParser();
-            var compartmentResourceTypesLookup = new Dictionary<string, HashSet<string>>();
+            Dictionary<string, HashSet<string>> compartmentResourceTypesLookup = new Dictionary<string, HashSet<string>>();
 
             CompartmentDefinition compartment;
 
@@ -68,10 +68,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 throw new FhirSpecificationProviderException($"Failed to parse compartment definition from file {compartmentFile}.", exception);
             }
 
-            var compartmentType = compartment.Code?.ToString();
+            string compartmentType = compartment.Code?.ToString();
             if (IsValidCompartmentType(compartmentType))
             {
-                var resourceTypes = compartment.Resource?.Where(x => x.Param.Any()).Select(x => x.Code?.ToString()).ToHashSet();
+                HashSet<string> resourceTypes = compartment.Resource?.Where(x => x.Param.Any()).Select(x => x.Code?.ToString()).ToHashSet();
                 if (resourceTypes == null)
                 {
                     _logger.LogInformation($"There is not any resource type defined for compartment type {compartmentType} in file {compartmentFile}");
@@ -106,10 +106,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 throw new FhirSpecificationProviderException($"Failed to parse capability statement from FHIR server metadata.", exception);
             }
 
-            var searchParameters = new Dictionary<string, HashSet<string>>();
-            var searchParameterIds = new Dictionary<string, string>();
+            Dictionary<string, HashSet<string>> searchParameters = new Dictionary<string, HashSet<string>>();
+            Dictionary<string, string> searchParameterIds = new Dictionary<string, string>();
 
-            var rest = capabilityStatement?.Rest;
+            List<CapabilityStatement.RestComponent> rest = capabilityStatement?.Rest;
             if (rest == null || !rest.Any())
             {
                 _diagnosticLogger.LogError($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");
@@ -117,7 +117,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 throw new FhirSpecificationProviderException($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");
             }
 
-            var resources = rest.First().Resource;
+            List<CapabilityStatement.ResourceComponent> resources = rest.First().Resource;
 
             if (resources == null || !resources.Any())
             {
@@ -126,9 +126,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 throw new FhirSpecificationProviderException($"Failed to build SearchParametersLookup: the resource in capabilityStatement is null.");
             }
 
-            foreach (var resource in resources)
+            foreach (CapabilityStatement.ResourceComponent resource in resources)
             {
-                var type = resource.Type?.ToString();
+                string type = resource.Type?.ToString();
                 if (!string.IsNullOrEmpty(type))
                 {
                     searchParameters[type] = resource.SearchParam.Select(x => x.Name).ToHashSet();

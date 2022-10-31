@@ -54,7 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
             var healthCheckResult = new HealthCheckResult(HealthCheckTypes.AzureBlobStorageCanReadWrite);
-            var blobPath = $"{_sourceFolderName}/{HealthCheckBlobPrefix}";
+            string blobPath = $"{_sourceFolderName}/{HealthCheckBlobPrefix}";
 
             try
             {
@@ -122,7 +122,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
         private async Task<string> DownloadFromBlobAsync(string blobPath, CancellationToken cancellationToken)
         {
-            using var resultStream = await _blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);
+            using Stream resultStream = await _blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);
             resultStream.Position = 0;
             using StreamReader reader = new (resultStream, Encoding.UTF8);
             return reader.ReadToEnd();

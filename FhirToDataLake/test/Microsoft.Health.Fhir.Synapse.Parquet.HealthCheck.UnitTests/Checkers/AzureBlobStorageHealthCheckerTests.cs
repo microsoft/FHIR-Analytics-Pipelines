@@ -59,7 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 _diagnosticLogger,
                 new NullLogger<AzureBlobStorageHealthChecker>());
 
-            var result = await storageAccountHealthChecker.PerformHealthCheckAsync();
+            HealthCheckResult result = await storageAccountHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.HEALTHY, result.Status);
             Assert.False(result.IsCritical);
         }
@@ -82,7 +82,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 _diagnosticLogger,
                 new NullLogger<AzureBlobStorageHealthChecker>());
 
-            var result = await storageAccountHealthChecker.PerformHealthCheckAsync();
+            HealthCheckResult result = await storageAccountHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.UNHEALTHY, result.Status);
             Assert.False(result.IsCritical);
         }
@@ -101,7 +101,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 _diagnosticLogger,
                 new NullLogger<AzureBlobStorageHealthChecker>());
 
-            var result = await storageAccountHealthChecker.PerformHealthCheckAsync();
+            HealthCheckResult result = await storageAccountHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.UNHEALTHY, result.Status);
             Assert.False(result.IsCritical);
         }

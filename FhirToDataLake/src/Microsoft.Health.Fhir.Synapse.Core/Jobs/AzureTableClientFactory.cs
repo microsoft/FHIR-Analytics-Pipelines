@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Azure.Core;
 using Azure.Data.Tables;
 using EnsureThat;
 using Microsoft.Extensions.Options;
@@ -61,7 +62,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
 
             var tableUri = new Uri(_tableUrl);
-            var tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
+            TokenCredential tokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.Internal);
 
             return new TableClient(
                 tableUri,

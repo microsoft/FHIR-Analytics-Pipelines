@@ -27,7 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         public ContainerRegistryFilterProviderTests()
         {
-            var testContainerRegistryServer = Environment.GetEnvironmentVariable("TestContainerRegistryServer");
+            string testContainerRegistryServer = Environment.GetEnvironmentVariable("TestContainerRegistryServer");
             if (testContainerRegistryServer == null)
             {
                 return;
@@ -35,8 +35,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             _testImageReference = $"{testContainerRegistryServer}/synapsetestfilter:latest";
 
-            var testContainerRegistryUsername = Environment.GetEnvironmentVariable("TestContainerRegistryServer")?.Split('.')[0];
-            var testContainerRegistryPassword = Environment.GetEnvironmentVariable("TestContainerRegistryPassword");
+            string testContainerRegistryUsername = Environment.GetEnvironmentVariable("TestContainerRegistryServer")?.Split('.')[0];
+            string testContainerRegistryPassword = Environment.GetEnvironmentVariable("TestContainerRegistryPassword");
 
             _testContainerRegistryAccessToken = ContainerRegistryTestUtils.GetAcrAccessToken(testContainerRegistryUsername, testContainerRegistryPassword);
             _testTokenProvider = ContainerRegistryTestUtils.GetMockAcrTokenProvider(_testContainerRegistryAccessToken);
@@ -59,7 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 _testTokenProvider,
                 _diagnosticLogger,
                 new NullLogger<ContainerRegistryFilterProvider>());
-            var filterConfiguration = await containerRegistryFilterProvider.GetFilterAsync(CancellationToken.None);
+            FilterConfiguration filterConfiguration = await containerRegistryFilterProvider.GetFilterAsync(CancellationToken.None);
 
             Assert.Equal(Common.Models.Jobs.FilterScope.System, filterConfiguration.FilterScope);
             Assert.Equal("test", filterConfiguration.TypeFilters);

@@ -94,9 +94,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
         protected virtual Dictionary<string, HashSet<string>> BuildCompartmentResourceTypesLookup()
         {
-            var compartmentResourceTypesLookup = new Dictionary<string, HashSet<string>>();
+            Dictionary<string, HashSet<string>> compartmentResourceTypesLookup = new Dictionary<string, HashSet<string>>();
 
-            foreach (var compartmentFile in _compartmentEmbeddedFiles)
+            foreach (string compartmentFile in _compartmentEmbeddedFiles)
             {
                 string compartmentContext;
                 try
@@ -109,8 +109,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                     throw new FhirSpecificationProviderException($"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.", ex);
                 }
 
-                var subCompartmentResourceTypesLookup = BuildCompartmentResourceTypesLookupFromCompartmentContext(compartmentContext, compartmentFile);
-                foreach (var item in subCompartmentResourceTypesLookup)
+                Dictionary<string, HashSet<string>> subCompartmentResourceTypesLookup = BuildCompartmentResourceTypesLookupFromCompartmentContext(compartmentContext, compartmentFile);
+                foreach (KeyValuePair<string, HashSet<string>> item in subCompartmentResourceTypesLookup)
                 {
                     compartmentResourceTypesLookup.Add(item.Key, item.Value);
                 }

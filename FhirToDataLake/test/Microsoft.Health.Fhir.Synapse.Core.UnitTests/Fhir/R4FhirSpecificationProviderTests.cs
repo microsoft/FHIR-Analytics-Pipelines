@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
@@ -80,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [Fact]
         public void WhenGetAllResourceTypes_TheResourcesTypeShouldBeReturned()
         {
-            var types = _r4FhirSpecificationProvider.GetAllResourceTypes().ToList();
+            List<string> types = _r4FhirSpecificationProvider.GetAllResourceTypes().ToList();
             Assert.Equal(145, types.Count);
         }
 
@@ -89,7 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [InlineData("Account")]
         public void GivenValidResourceType_WhenCheckIsFhirResourceType_TrueShouldBeReturned(string type)
         {
-            var isValid = _r4FhirSpecificationProvider.IsValidFhirResourceType(type);
+            bool isValid = _r4FhirSpecificationProvider.IsValidFhirResourceType(type);
             Assert.True(isValid);
         }
 
@@ -103,14 +104,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [InlineData("Patient ")]
         public void GivenInvalidResourceType_WhenCheckIsFhirResourceType_FalseShouldBeReturned(string type)
         {
-            var isValid = _r4FhirSpecificationProvider.IsValidFhirResourceType(type);
+            bool isValid = _r4FhirSpecificationProvider.IsValidFhirResourceType(type);
             Assert.False(isValid);
         }
 
         [Fact]
         public void GivenValidCompartmentType_WhenGetCompartmentResourceTypes_ResourceTypesShouldBeReturned()
         {
-            var types = _r4FhirSpecificationProvider.GetCompartmentResourceTypes("Patient");
+            IEnumerable<string> types = _r4FhirSpecificationProvider.GetCompartmentResourceTypes("Patient");
             Assert.Equal(66, types.Count());
         }
 
@@ -136,7 +137,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
             string type,
             int cnt)
         {
-            var parameters = _r4FhirSpecificationProvider.GetSearchParametersByResourceType(type).ToList();
+            List<string> parameters = _r4FhirSpecificationProvider.GetSearchParametersByResourceType(type).ToList();
             Assert.NotEmpty(parameters);
             Assert.Equal(cnt, parameters.Count);
             Assert.Contains("_id", parameters);

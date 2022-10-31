@@ -17,7 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenANewKey_WhenAddToDictionary_TheKeyValuePairShouldBeAddedToDictionary()
         {
-            var dic = new Dictionary<string, int> { { _key, 1 } };
+            Dictionary<string, int> dic = new Dictionary<string, int> { { _key, 1 } };
             dic = dic.AddToDictionary("b", 2);
             Assert.Equal(2, dic.Count);
             Assert.True(dic.ContainsKey(_key));
@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenAnExistingKey_WhenAddToDictionary_TheValueShouldBeAddedToDictionary()
         {
-            var dic = new Dictionary<string, int> { { _key, 1 } };
+            Dictionary<string, int> dic = new Dictionary<string, int> { { _key, 1 } };
             dic = dic.AddToDictionary(_key, 2);
             Assert.Single(dic);
             Assert.True(dic.ContainsKey(_key));
@@ -39,7 +39,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenEmptyDictionary_WhenAddToDictionary_TheKeyValuePairShouldBeAddedToDictionary()
         {
-            var dic = new Dictionary<string, int>();
+            Dictionary<string, int> dic = new Dictionary<string, int>();
             dic = dic.AddToDictionary(_key, 1);
             Assert.Single(dic);
             Assert.True(dic.ContainsKey(_key));
@@ -49,7 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenSameKeyMultiTimes_WhenAddToDictionary_TheValuePairShouldBeAddedToDictionary()
         {
-            var dic = new Dictionary<string, int> { { _key, 1 } };
+            Dictionary<string, int> dic = new Dictionary<string, int> { { _key, 1 } };
             dic = dic.AddToDictionary(_key, 1);
             Assert.Single(dic);
             Assert.True(dic.ContainsKey(_key));
@@ -76,7 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenNullOrEmptyKey_WhenAddToDictionary_ExceptionShouldBeThrown()
         {
-            var dic = new Dictionary<string, int>();
+            Dictionary<string, int> dic = new Dictionary<string, int>();
             Assert.Throws<ArgumentNullException>(() => dic.AddToDictionary(null, 1));
             Assert.Throws<ArgumentException>(() => dic.AddToDictionary(string.Empty, 1));
         }
@@ -84,8 +84,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenValidDictionary_WhenConcatDictionaryCount_TheDictionaryShouldBeConcatCorrectly()
         {
-            var dic1 = new Dictionary<string, int> { { "key1", 1 }, { "key2", 2 } };
-            var dic2 = new Dictionary<string, int> { { "key2", 3 }, { "key3", 4 } };
+            Dictionary<string, int> dic1 = new Dictionary<string, int> { { "key1", 1 }, { "key2", 2 } };
+            Dictionary<string, int> dic2 = new Dictionary<string, int> { { "key2", 3 }, { "key3", 4 } };
             dic1 = dic1.ConcatDictionaryCount(dic2);
 
             Assert.Equal(3, dic1.Count);
@@ -100,13 +100,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenEmptyDictionary_WhenConcatDictionaryCount_TheDictionaryShouldNoChange()
         {
-            var dic1 = new Dictionary<string, int> { { "key1", 1 }, { "key2", 2 } };
-            var dic2 = new Dictionary<string, int>();
-            var dic = dic1.ConcatDictionaryCount(dic2);
+            Dictionary<string, int> dic1 = new Dictionary<string, int> { { "key1", 1 }, { "key2", 2 } };
+            Dictionary<string, int> dic2 = new Dictionary<string, int>();
+            Dictionary<string, int> dic = dic1.ConcatDictionaryCount(dic2);
 
             Assert.Equal(dic1.Count, dic.Count);
 
-            foreach (var (key, value) in dic)
+            foreach ((string key, int value) in dic)
             {
                 Assert.True(dic1.ContainsKey(key));
                 Assert.Equal(dic1[key], dic[key]);
@@ -116,7 +116,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenNullDictionary_WhenConcatDictionaryCount_ExceptionShouldBeThrown()
         {
-            var dic1 = new Dictionary<string, int>();
+            Dictionary<string, int> dic1 = new Dictionary<string, int>();
             Assert.Throws<ArgumentNullException>(() => dic1.ConcatDictionaryCount(null));
 
             Dictionary<string, int> dic2 = null;

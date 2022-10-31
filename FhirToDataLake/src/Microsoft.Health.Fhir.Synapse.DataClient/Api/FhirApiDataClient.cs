@@ -137,7 +137,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
         private Uri CreateSearchUri(BaseFhirApiOptions fhirApiOptions)
         {
-            var serverUrl = _dataSource.FhirServerUrl;
+            string serverUrl = _dataSource.FhirServerUrl;
 
             var baseUri = new Uri(serverUrl);
 
@@ -152,7 +152,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             uri = uri.AddQueryString(fhirApiOptions.QueryParameters);
 
             // add shared parameters _count
-            var queryParameters = new List<KeyValuePair<string, string>>
+            List<KeyValuePair<string, string>> queryParameters = new List<KeyValuePair<string, string>>
             {
                 new (FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
             };
@@ -176,8 +176,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                     searchRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
                 }
 
-                var retryCount = 0;
-                var retry = true;
+                int retryCount = 0;
+                bool retry = true;
                 HttpResponseMessage response = await _httpClient.SendAsync(searchRequest, cancellationToken);
                 while (retry)
                 {
@@ -250,7 +250,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 response.EnsureSuccessStatusCode();
                 _logger.LogInformation("Successfully retrieved result for url: '{url}'.", uri);
 
-                var stream = response.Content.ReadAsStream();
+                Stream stream = response.Content.ReadAsStream();
                 stream.Seek(0, SeekOrigin.Begin);
                 StreamReader reader = new StreamReader(stream);
                 return reader.ReadToEnd();

@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             try
             {
                 var imageInfo = ImageInfo.CreateFromImageReference(_imageReference);
-                var accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
+                string accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
                 var acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrClientCredentials(accessToken));
 
                 // Ensure we can read from acr.

@@ -26,8 +26,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
 
             using (var hash = SHA256.Create())
             {
-                var result = hash.ComputeHash(Encoding.UTF8.GetBytes(input));
-                foreach (var b in result)
+                byte[]? result = hash.ComputeHash(Encoding.UTF8.GetBytes(input));
+                foreach (byte b in result)
                 {
                     sb.Append(b.ToString("x2"));
                 }

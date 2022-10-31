@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
     {
         public static async Task Main(string[] args)
         {
-            var host = CreateHostBuilder(args).Build();
+            IHost host = CreateHostBuilder(args).Build();
             await host.RunAsync();
         }
 

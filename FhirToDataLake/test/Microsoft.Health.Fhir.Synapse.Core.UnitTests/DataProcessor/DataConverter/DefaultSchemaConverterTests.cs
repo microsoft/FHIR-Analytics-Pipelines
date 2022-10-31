@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
         static DefaultSchemaConverterTests()
         {
-            var schemaConfigurationOption = Options.Create(new SchemaConfiguration());
+            IOptions<SchemaConfiguration> schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
             var schemaManager = new FhirParquetSchemaManager(
                 schemaConfigurationOption,
@@ -42,11 +42,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public void GivenAValidBasicSchema_WhenConvert_CorrectResultShouldBeReturned()
         {
-            var result = _testDefaultConverter.Convert(
+            JsonBatchData result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(_testPatient),
                 "Patient");
 
-            var expectedResult = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Processed_Patient.ndjson"));
+            IEnumerable<JObject> expectedResult = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Processed_Patient.ndjson"));
 
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedResult.First()));
         }
@@ -77,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 },
             };
 
-            var result = _testDefaultConverter.Convert(
+            JsonBatchData result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(rawStructFormatData),
                 "Patient");
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedStructFormatResult));
@@ -127,7 +127,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 },
             };
 
-            var result = _testDefaultConverter.Convert(
+            JsonBatchData result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(rawArrayFormatData),
                 "Patient");
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedArrayFormatResult));
@@ -189,7 +189,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 },
             };
 
-            var result = _testDefaultConverter.Convert(
+            JsonBatchData result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(rawDeepFieldsData),
                 "Patient");
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedJsonStringFieldsResult));
@@ -251,7 +251,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 },
             };
 
-            var result = _testDefaultConverter.Convert(
+            JsonBatchData result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(rawDeepFieldsData),
                 "Patient");
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedJsonStringFieldsResult));
@@ -271,7 +271,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 { "effective", new JObject { { "dateTime", "1905-08-23" } } },
             };
 
-            var result = _testDefaultConverter.Convert(
+            JsonBatchData result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(rawPrimitiveChoiceTypeData),
                 "Observation");
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedPrimitiveChoiceTypeResult));
@@ -291,7 +291,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 { "effective", new JObject { { "period", new JObject { { "start", "1905-08-23" } } } } },
             };
 
-            var result = _testDefaultConverter.Convert(
+            JsonBatchData result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(rawStructChoiceTypeData),
                 "Observation");
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedStructChoiceTypeResult));
@@ -328,7 +328,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
         private static JsonBatchData CreateTestJsonBatchData(JObject testJObjectData)
         {
-            var testData = new List<JObject>() { testJObjectData };
+            List<JObject> testData = new List<JObject>() { testJObjectData };
             return new JsonBatchData(testData);
         }
     }

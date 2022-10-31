@@ -67,7 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
         /// <exception cref="ConfigurationErrorException">Throw ConfigurationErrorException if imageReference is invalid</exception>
         public static void ValidateImageReference(string imageReference)
         {
-            var registryDelimiterPosition = imageReference.IndexOf(ConfigurationConstants.ImageRegistryDelimiter, StringComparison.InvariantCultureIgnoreCase);
+            int registryDelimiterPosition = imageReference.IndexOf(ConfigurationConstants.ImageRegistryDelimiter, StringComparison.InvariantCultureIgnoreCase);
             if (registryDelimiterPosition <= 0 || registryDelimiterPosition == imageReference.Length - 1)
             {
                 throw new ConfigurationErrorException("Customized schema image format is invalid: registry server is missing.");
@@ -101,7 +101,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
 
         private static Tuple<string, string> ParseImageMeta(string input, char delimiter)
         {
-            var index = input.IndexOf(delimiter, StringComparison.InvariantCultureIgnoreCase);
+            int index = input.IndexOf(delimiter, StringComparison.InvariantCultureIgnoreCase);
             return new Tuple<string, string>(input[0..index], input[(index + 1) ..]);
         }
 

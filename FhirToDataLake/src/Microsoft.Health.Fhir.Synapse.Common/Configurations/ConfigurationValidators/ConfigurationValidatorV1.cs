@@ -37,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
 
             if (string.IsNullOrWhiteSpace(fhirServerConfiguration.ServerUrl))
             {
-                throw new ConfigurationErrorException($"Fhir server url can not be empty.");
+                throw new ConfigurationErrorException("Fhir server url can not be empty.");
             }
 
             if (!ConfigurationConstants.SupportedFhirVersions.Contains(fhirServerConfiguration.Version))
@@ -66,22 +66,22 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
 
             if (string.IsNullOrWhiteSpace(jobConfiguration.TableUrl))
             {
-                throw new ConfigurationErrorException($"Table Url can not be empty.");
+                throw new ConfigurationErrorException("Table Url can not be empty.");
             }
 
             if (string.IsNullOrWhiteSpace(jobConfiguration.QueueUrl))
             {
-                throw new ConfigurationErrorException($"Queue Url can not be empty.");
+                throw new ConfigurationErrorException("Queue Url can not be empty.");
             }
 
             if (string.IsNullOrWhiteSpace(jobConfiguration.SchedulerCronExpression))
             {
-                throw new ConfigurationErrorException($"Scheduler crontab expression can not be empty.");
+                throw new ConfigurationErrorException("Scheduler crontab expression can not be empty.");
             }
 
             if (string.IsNullOrWhiteSpace(jobConfiguration.ContainerName))
             {
-                throw new ConfigurationErrorException($"Target azure container name can not be empty.");
+                throw new ConfigurationErrorException("Target azure container name can not be empty.");
             }
 
             if (jobConfiguration.MaxRunningJobCount < 1)
@@ -122,7 +122,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
             {
                 if (string.IsNullOrWhiteSpace(filterLocation.FilterImageReference))
                 {
-                    throw new ConfigurationErrorException($"Filter image reference can not be empty when external filter configuration is enable.");
+                    throw new ConfigurationErrorException("Filter image reference can not be empty when external filter configuration is enable.");
                 }
 
                 ValidateUtility.ValidateImageReference(filterLocation.FilterImageReference);
@@ -145,14 +145,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
                 ValidateUtility.ValidateFilterConfiguration(filterConfiguration);
             }
 
-            var storeConfiguration = services
+            DataLakeStoreConfiguration storeConfiguration = services
                 .BuildServiceProvider()
                 .GetRequiredService<IOptions<DataLakeStoreConfiguration>>()
                 .Value;
 
             if (string.IsNullOrWhiteSpace(storeConfiguration.StorageUrl))
             {
-                throw new ConfigurationErrorException($"Target azure storage url can not be empty.");
+                throw new ConfigurationErrorException("Target azure storage url can not be empty.");
             }
 
             SchemaConfiguration schemaConfiguration;
@@ -172,7 +172,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
             {
                 if (string.IsNullOrWhiteSpace(schemaConfiguration.SchemaImageReference))
                 {
-                    throw new ConfigurationErrorException($"Customized schema image reference can not be empty when customized schema is enable.");
+                    throw new ConfigurationErrorException("Customized schema image reference can not be empty when customized schema is enable.");
                 }
                 else
                 {
@@ -183,7 +183,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
             {
                 if (!string.IsNullOrWhiteSpace(schemaConfiguration.SchemaImageReference))
                 {
-                    throw new ConfigurationErrorException($"Found the schema image reference but customized schema is disable.");
+                    throw new ConfigurationErrorException("Found the schema image reference but customized schema is disable.");
                 }
             }
 

@@ -111,7 +111,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             var registryUri = new Uri($"https://{registryServer}");
             var exchangeUri = new Uri(registryUri, ExchangeAcrRefreshTokenUrl);
 
-            var parameters = new List<KeyValuePair<string, string>>();
+            List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>();
             parameters.Add(new KeyValuePair<string, string>("grant_type", "access_token"));
             parameters.Add(new KeyValuePair<string, string>("service", registryUri.Host));
             parameters.Add(new KeyValuePair<string, string>("access_token", aadToken));
@@ -120,7 +120,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                 Content = new FormUrlEncodedContent(parameters),
             };
 
-            var refreshTokenResponse = await SendRequestAsync(request, cancellationToken);
+            HttpResponseMessage refreshTokenResponse = await SendRequestAsync(request, cancellationToken);
             if (!refreshTokenResponse.IsSuccessStatusCode)
             {
                 switch (refreshTokenResponse.StatusCode)
@@ -140,7 +140,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                 }
             }
 
-            var refreshTokenText = await refreshTokenResponse.Content.ReadAsStringAsync(cancellationToken);
+            string refreshTokenText = await refreshTokenResponse.Content.ReadAsStringAsync(cancellationToken);
             dynamic refreshTokenJson = JsonConvert.DeserializeObject(refreshTokenText);
             string refreshToken = (string)refreshTokenJson.refresh_token;
             if (string.IsNullOrEmpty(refreshToken))
@@ -159,7 +159,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             var registryUri = new Uri($"https://{registryServer}");
             var accessTokenUri = new Uri(registryUri, GetAcrAccessTokenUrl);
 
-            var parameters = new List<KeyValuePair<string, string>>();
+            List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>();
             parameters.Add(new KeyValuePair<string, string>("grant_type", "refresh_token"));
             parameters.Add(new KeyValuePair<string, string>("service", registryUri.Host));
             parameters.Add(new KeyValuePair<string, string>("refresh_token", refreshToken));
@@ -171,7 +171,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                 Content = new FormUrlEncodedContent(parameters),
             };
 
-            var accessTokenResponse = await SendRequestAsync(request, cancellationToken);
+            HttpResponseMessage accessTokenResponse = await SendRequestAsync(request, cancellationToken);
             if (!accessTokenResponse.IsSuccessStatusCode)
             {
                 switch (accessTokenResponse.StatusCode)
@@ -191,7 +191,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                 }
             }
 
-            var accessTokenText = await accessTokenResponse.Content.ReadAsStringAsync(cancellationToken);
+            string accessTokenText = await accessTokenResponse.Content.ReadAsStringAsync(cancellationToken);
             dynamic accessTokenJson = JsonConvert.DeserializeObject(accessTokenText);
             string accessToken = accessTokenJson.access_token;
             if (string.IsNullOrEmpty(accessToken))
