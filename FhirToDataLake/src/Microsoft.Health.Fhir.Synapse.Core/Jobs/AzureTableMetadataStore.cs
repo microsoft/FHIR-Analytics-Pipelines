@@ -42,7 +42,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             EnsureArg.IsNotNullOrWhiteSpace(config.Value.MetadataTableName, nameof(config.Value.MetadataTableName));
 
             _metadataTableClient = azureTableClientFactory.Create(config.Value.MetadataTableName);
-            _metadataTableClient.CreateIfNotExists();
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             _isInitialized = false;
         }
