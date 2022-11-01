@@ -13,6 +13,8 @@ using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
+using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
+using Microsoft.Health.Fhir.Synapse.JobManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.JobManagement;
 
@@ -60,6 +62,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core
             services.AddFhirSpecificationProvider();
 
             services.AddSchemaConverters();
+
+            services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>();
 
             return services;
         }

@@ -16,13 +16,13 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Extensions
         /// Convert job info to table entity
         /// </summary>
         /// <typeparam name="TJobInfo">The job info type</typeparam>
-        /// <param name="jobInfo">The job info.</param>
+        /// <param name="jobInfo">The job info</param>
         /// <returns>Table entity of job info</returns>
         public static TableEntity ToTableEntity<TJobInfo>(this TJobInfo jobInfo)
             where TJobInfo : AzureStorageJobInfo, new()
         {
-            string? partitionKey = AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId);
-            string? rowKey = AzureStorageKeyProvider.JobInfoRowKey(jobInfo.GroupId, jobInfo.Id);
+            string partitionKey = AzureStorageKeyProvider.JobInfoPartitionKey(jobInfo.QueueType, jobInfo.GroupId);
+            string rowKey = AzureStorageKeyProvider.JobInfoRowKey(jobInfo.GroupId, jobInfo.Id);
             var jobInfoEntity = new TableEntity(partitionKey, rowKey)
             {
                 { JobInfoEntityProperties.Id, jobInfo.Id },

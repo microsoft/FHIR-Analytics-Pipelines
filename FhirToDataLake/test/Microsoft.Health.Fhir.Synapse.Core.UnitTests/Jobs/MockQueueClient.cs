@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.JobManagement;
-using JobStatus = Microsoft.Health.JobManagement.JobStatus;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
@@ -111,7 +110,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     continue;
                 }
 
-                result.Add(new JobInfo()
+                result.Add(new JobInfo
                 {
                     Definition = definition,
                     Id = _largestId,
@@ -129,7 +128,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public Task<IEnumerable<JobInfo>> GetJobByGroupIdAsync(byte queueType, long groupId, bool returnDefinition, CancellationToken cancellationToken)
         {
             IEnumerable<JobInfo> result = _jobInfos.Where(t => t.GroupId == groupId);
-            return Task.FromResult<IEnumerable<JobInfo>>(result);
+            return Task.FromResult(result);
         }
 
         public Task<JobInfo> GetJobByIdAsync(byte queueType, long jobId, bool returnDefinition, CancellationToken cancellationToken)
@@ -151,7 +150,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
 
             IEnumerable<JobInfo> result = _jobInfos.Where(t => jobIds.Contains(t.Id));
-            return Task.FromResult<IEnumerable<JobInfo>>(result);
+            return Task.FromResult(result);
         }
 
         public bool IsInitialized()

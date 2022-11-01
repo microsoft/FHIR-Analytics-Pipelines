@@ -42,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         public async Task GivenAValidParameter_WhenWritingToBlob_CorrectContentShouldBeWritten()
         {
             var stream = new MemoryStream();
-            byte[] bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
+            byte[] bytes = { 1, 2, 3, 4, 5, 6 };
             await stream.WriteAsync(bytes, 0, bytes.Length);
             stream.Position = 0;
             const long jobId = 1L;
@@ -94,7 +94,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             var blobClient = new InMemoryBlobContainerClient();
 
             var stream = new MemoryStream();
-            byte[] bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
+            byte[] bytes = { 1, 2, 3, 4, 5, 6 };
             await stream.WriteAsync(bytes, 0, bytes.Length);
             stream.Position = 0;
             const long jobId = 1L;
@@ -118,7 +118,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             var blobClient = new InMemoryBlobContainerClient();
 
             var stream = new MemoryStream();
-            byte[] bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
+            byte[] bytes = { 1, 2, 3, 4, 5, 6 };
             await stream.WriteAsync(bytes, 0, bytes.Length);
             stream.Position = 0;
             const long jobId = 1L;

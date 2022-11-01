@@ -24,7 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
         public static void Main()
         {
             IHost host = new HostBuilder()
-                .ConfigureAppConfiguration((builder) =>
+                .ConfigureAppConfiguration(builder =>
                 {
                     builder.AddJsonFile("appsettings.json");
                 })

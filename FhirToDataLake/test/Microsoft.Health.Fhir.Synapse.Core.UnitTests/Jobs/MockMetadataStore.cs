@@ -11,7 +11,6 @@ using Azure;
 using Azure.Data.Tables;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
-using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {

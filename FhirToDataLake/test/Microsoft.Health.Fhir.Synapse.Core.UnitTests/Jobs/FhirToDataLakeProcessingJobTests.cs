@@ -46,7 +46,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public async Task GivenValidDataClient_WhenExecute_ThenTheDataShouldBeSavedToBlob()
         {
             string progressResult = null;
-            Progress<string> progress = new Progress<string>((r) =>
+            Progress<string> progress = new Progress<string>(r =>
             {
                 progressResult = r;
             });
@@ -94,7 +94,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public async Task GivenInvalidSearchBundle_WhenExecuteTask_ExceptionShouldBeThrown(string invalidBundle)
         {
             string progressResult = null;
-            Progress<string> progress = new Progress<string>((r) =>
+            Progress<string> progress = new Progress<string>(r =>
             {
                 progressResult = r;
             });

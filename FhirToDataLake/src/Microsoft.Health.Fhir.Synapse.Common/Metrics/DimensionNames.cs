@@ -10,22 +10,22 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         /// <summary>
         /// A metric dimension for a specific metric name.
         /// </summary>
-        public static string Name => nameof(DimensionNames.Name);
+        public static string Name => nameof(Name);
 
         /// <summary>
         /// A metric dimension for the detail component.
         /// </summary>
-        public static string Component => nameof(DimensionNames.Component);
+        public static string Component => nameof(Component);
 
         /// <summary>
         /// An metric dimension for category
         /// </summary>
-        public static string Category => nameof(DimensionNames.Category);
+        public static string Category => nameof(Category);
 
         /// <summary>
         /// A metric dimension for a error type.
         /// </summary>
-        public static string ErrorType => nameof(DimensionNames.ErrorType);
+        public static string ErrorType => nameof(ErrorType);
 
         /// <summary>
         /// A metric dimension that represents the reason that caused the metric to be emitted.
@@ -35,11 +35,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         /// <summary>
         /// A metric dimension that represents the metric if for internal diagnostic.
         /// </summary>
-        public static string IsDiagnostic => nameof(DimensionNames.IsDiagnostic);
+        public static string IsDiagnostic => nameof(IsDiagnostic);
 
         /// <summary>
         /// A metric dimension that represents stage of synapse pipeline.
         /// </summary>
-        public static string Operation => nameof(DimensionNames.Operation);
+        public static string Operation => nameof(Operation);
     }
 }

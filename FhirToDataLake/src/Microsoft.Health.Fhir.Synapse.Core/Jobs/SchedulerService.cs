@@ -53,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             _queueType = (byte)jobConfiguration.Value.QueueType;
 
-            // if both startTime and endTime are specified, add validation on ConfiguraionValidatorV1 to make sure startTime is larger than endTime.
+            // if both startTime and endTime are specified, add validation on ConfigurationValidatorV1 to make sure startTime is larger than endTime.
             _startTime = jobConfiguration.Value.StartTime;
             _endTime = jobConfiguration.Value.EndTime;
 
@@ -472,8 +472,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// So the nextTriggerEndTime is set JobEndTimeLatencyInMinutes earlier than the current timestamp.
         /// If Job end time is specified and earlier than the nextTriggerEndTime, will set the nextTriggerEndTime to the specified job end time.
         /// For initial load job, lastTriggerEndTime is null;
-        /// For incremental job, lastTriggerEndTime is the end time of the last trigger, we also check the nextoccurrence time.
-        /// If nextoccurrence time comes after nextTriggerEndTime, will return null and skip this iteration.
+        /// For incremental job, lastTriggerEndTime is the end time of the last trigger, we also check the next occurrence time.
+        /// If next occurrence time comes after nextTriggerEndTime, will return null and skip this iteration.
         /// </summary>
         /// <param name="lastTriggerEndTime">the end time of the last trigger</param>
         /// <returns>the end time of the next trigger, return null if it is not yet the next occurrence time</returns>

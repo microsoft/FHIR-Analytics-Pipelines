@@ -19,7 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage
         public ETag ETag { get; set; }
 
         /// <summary>
-        /// Next Job id.
+        /// Next job id.
         /// </summary>
         public long NextJobId { get; set; }
     }

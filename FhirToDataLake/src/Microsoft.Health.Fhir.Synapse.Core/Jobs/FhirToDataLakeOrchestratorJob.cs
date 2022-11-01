@@ -30,7 +30,6 @@ using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using JobStatus = Microsoft.Health.JobManagement.JobStatus;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
@@ -91,7 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation($"Start executing FhirToDataLake job.");
+            _diagnosticLogger.LogInformation("Start executing FhirToDataLake job.");
             _logger.LogInformation($"Start executing FhirToDataLake orchestrator job {_jobInfo.Id}.");
 
             try
@@ -117,7 +116,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         await WaitRunningJobComplete(progress, cancellationToken);
                     }
 
-                    string[] jobDefinitions = new[] { JsonConvert.SerializeObject(input) };
+                    string[] jobDefinitions = { JsonConvert.SerializeObject(input) };
                     IEnumerable<JobInfo> jobInfos = await _queueClient.EnqueueAsync(
                         _jobInfo.QueueType,
                         jobDefinitions,

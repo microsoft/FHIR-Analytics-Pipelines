@@ -35,7 +35,6 @@ using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.JobManagement;
-using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.Tool;
 using Microsoft.Health.JobManagement;
@@ -460,7 +459,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             _queueClientFactory = new AzureStorageClientFactory(
                 jobInfoTableName,
                 jobInfoQueueName,
-                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
+                new NullLogger<AzureStorageClientFactory>());
 
             _queueClient = new AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>(
                 _queueClientFactory,
