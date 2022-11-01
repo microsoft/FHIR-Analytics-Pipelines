@@ -59,7 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 CreateDate = DateTime.UtcNow,
                 HeartbeatDateTime = DateTime.UtcNow,
             };
-            Assert.Equal(jobInfo1.JobIdentifier(),jobInfo2.JobIdentifier());
+            Assert.Equal(jobInfo1.JobIdentifier(), jobInfo2.JobIdentifier());
         }
     }
 }
