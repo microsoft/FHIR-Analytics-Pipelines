@@ -27,7 +27,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         public const string TestDataFolder = "./TestData";
         public const string ExpectTestDataFolder = TestDataFolder + "/Expected";
-        public const string TestNativeSchemaDirectoryPath = TestDataFolder + "/schemas";
+        public const string TestNormalSchemaDirectoryPath = TestDataFolder + "/Schema";
+        public const string TestInvalidSchemaDirectoryPath = TestDataFolder + "/InvalidSchema";
         public const string TestCustomizedSchemaDirectoryPath = TestDataFolder + "/CustomizedSchema";
         public const string TestFilterTarGzPath = TestDataFolder + "/filter.tar.gz";
 
@@ -90,6 +91,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             var fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestParquetSchemaProviderDelegate,
+                _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)

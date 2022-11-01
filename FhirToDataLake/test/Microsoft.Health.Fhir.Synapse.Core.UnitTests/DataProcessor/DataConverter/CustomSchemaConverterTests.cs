@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -23,10 +24,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
     {
         private static readonly CustomSchemaConverter _testFhirConverter;
         private static readonly JsonBatchData _testData;
+        private static readonly IOptions<SchemaConfiguration> _testSchemaConfigurationOption;
+        private static readonly IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+        private static readonly ILogger<CustomSchemaConverter> _nullLogger = NullLogger<CustomSchemaConverter>.Instance;
 
         static CustomSchemaConverterTests()
         {
-            IOptions<SchemaConfiguration> schemaConfigurationOptionWithCustomizedSchema = Options.Create(new SchemaConfiguration()
+            _testSchemaConfigurationOption = Options.Create(new SchemaConfiguration()
             {
                 EnableCustomizedSchema = true,
                 SchemaImageReference = "testacr.azurecr.io/customizedtemplate:default",
@@ -34,14 +38,30 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
             _testFhirConverter = new CustomSchemaConverter(
                 TestUtils.GetMockAcrTemplateProvider(),
-                schemaConfigurationOptionWithCustomizedSchema,
-                new DiagnosticLogger(),
-                NullLogger<CustomSchemaConverter>.Instance);
+                _testSchemaConfigurationOption,
+                _diagnosticLogger,
+                _nullLogger);
 
             IEnumerable<JObject> testDataContent = File.ReadLines(Path.Join(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson"))
                         .Select(dataContent => JObject.Parse(dataContent));
 
             _testData = new JsonBatchData(testDataContent);
+        }
+
+        [Fact]
+        public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new CustomSchemaConverter(null, _testSchemaConfigurationOption, _diagnosticLogger, _nullLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), null, _diagnosticLogger, _nullLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), _testSchemaConfigurationOption, null, _nullLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), _testSchemaConfigurationOption, _diagnosticLogger, null));
         }
 
         [Fact]
@@ -76,7 +96,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         }
 
         [Fact]
-        public void GivenInvalidResourceType_WhenPreprocess_ExceptionShouldBeThrown()
+        public void GivenInvalidResourceType_WhenConvert_ExceptionShouldBeThrown()
         {
             IEnumerable<JObject> testData = File.ReadLines(Path.Join(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson"))
                     .Select(dataContent => JObject.Parse(dataContent));

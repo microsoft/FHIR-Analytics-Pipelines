@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -26,6 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
     public class ParquetDataProcessorTests
     {
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+        private static ILogger<ParquetDataProcessor> _processorNullLogger = NullLogger<ParquetDataProcessor>.Instance;
         private static readonly IFhirSchemaManager<FhirParquetSchemaNode> _testDefaultFhirSchemaManager;
         private static readonly ParquetDataProcessor _testParquetDataProcessorWithoutCustomizedSchema;
         private static readonly ParquetDataProcessor _testParquetDataProcessorWithCustomizedSchema;
@@ -35,15 +37,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
         static ParquetDataProcessorTests()
         {
+            ILogger<FhirParquetSchemaManager> fhirSchemaManagerNullLogger = NullLogger<FhirParquetSchemaManager>.Instance;
+
             var fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestUtils.TestParquetSchemaProviderDelegate,
-                NullLogger<FhirParquetSchemaManager>.Instance);
+                _diagnosticLogger,
+                fhirSchemaManagerNullLogger);
 
             var fhirSchemaManagerWithCustomizedSchema = new FhirParquetSchemaManager(
                 Options.Create(TestUtils.TestCustomSchemaConfiguration),
                 TestUtils.TestParquetSchemaProviderDelegate,
-                NullLogger<FhirParquetSchemaManager>.Instance);
+                _diagnosticLogger,
+                fhirSchemaManagerNullLogger);
 
             IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
@@ -54,14 +60,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
                 arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
                 _diagnosticLogger,
-                NullLogger<ParquetDataProcessor>.Instance);
+                _processorNullLogger);
 
             _testParquetDataProcessorWithCustomizedSchema = new ParquetDataProcessor(
                 fhirSchemaManagerWithCustomizedSchema,
                 arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
                 _diagnosticLogger,
-                NullLogger<ParquetDataProcessor>.Instance);
+                _processorNullLogger);
 
             _testPatient = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson")).First();
             _testPatients = new List<JObject> { _testPatient, _testPatient };
@@ -70,26 +76,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
-            var fhirSchemaManager = new FhirParquetSchemaManager(
-                Options.Create(new SchemaConfiguration()),
-                TestUtils.TestParquetSchemaProviderDelegate,
-                NullLogger<FhirParquetSchemaManager>.Instance);
-
             IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
-            NullLogger<ParquetDataProcessor> loggerInstance = NullLogger<ParquetDataProcessor>.Instance;
+            Assert.Throws<ArgumentNullException>(
+                () => new ParquetDataProcessor(null, arrowConfigurationOptions, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, _processorNullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(null, arrowConfigurationOptions, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, loggerInstance));
+                () => new ParquetDataProcessor(_testDefaultFhirSchemaManager, null, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, _processorNullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(fhirSchemaManager, null, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, loggerInstance));
+                () => new ParquetDataProcessor(_testDefaultFhirSchemaManager, arrowConfigurationOptions, null, _diagnosticLogger, _processorNullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(fhirSchemaManager, arrowConfigurationOptions, null, _diagnosticLogger, loggerInstance));
-
-            Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(fhirSchemaManager, arrowConfigurationOptions, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, null));
+                () => new ParquetDataProcessor(_testDefaultFhirSchemaManager, arrowConfigurationOptions, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, null));
         }
 
         [Fact]
@@ -183,7 +182,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
                 arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
                 _diagnosticLogger,
-                NullLogger<ParquetDataProcessor>.Instance);
+                _processorNullLogger);
 
             var jsonBatchData = new JsonBatchData(testData);
 
@@ -211,7 +210,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
                 arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
                 _diagnosticLogger,
-                NullLogger<ParquetDataProcessor>.Instance);
+                _processorNullLogger);
 
             List<JObject> testData = new List<JObject>(_testPatients);
             var jsonBatchData = new JsonBatchData(testData);

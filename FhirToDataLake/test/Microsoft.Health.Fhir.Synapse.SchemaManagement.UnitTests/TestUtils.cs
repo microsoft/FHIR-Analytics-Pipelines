@@ -26,6 +26,11 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
 
         public const string ExpectedDataDirectory = TestDataDirectory + "/Expected";
         public const string CustomizedTestSchemaDirectory = TestDataDirectory + "/CustomizedSchema";
+        public const string InvalidParquetSchemaDirectory = TestDataDirectory + "/InvalidParquetSchema";
+        public const string ExampleInvalidParquetSchemaFilePath = InvalidParquetSchemaDirectory + "/Invalid_schema_no_subnodes.json";
+
+        public const string ExampleParquetSchemaDirectory = TestDataDirectory + "/ParquetSchema";
+
         public const string TestJsonSchemaFilePath = CustomizedTestSchemaDirectory + "/ValidSchema.schema.json";
         public const string TestTemplateTarGzPath = TestDataDirectory + "/TemplateTest.tar.gz";
 

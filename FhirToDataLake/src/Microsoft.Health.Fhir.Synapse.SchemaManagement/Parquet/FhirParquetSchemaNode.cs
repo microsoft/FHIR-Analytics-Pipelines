@@ -22,7 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         /// Gets a value indicating whether current FHIR schema node is leaf node.
         /// A leaf node should not have subNodes, and its type should be "JSONSTRING" or normal primitive types.
         /// </summary>
-        public bool IsLeaf => SubNodes == null;
+        public bool IsLeaf { get; set; }
 
         /// <summary>
         /// Gets or sets subnodes under the current FHIR schema node, node that have subnodes should not be leaf node.
