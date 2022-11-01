@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
                     metricsLogger.LogMetrics(new TotalErrorsMetric(false, ErrorType.SchedulerServiceError, message, Operations.RunSchedulerService), 1);
                     break;
                 case nameof(Operations.HealthCheck):
-                    metricsLogger.LogMetrics(new TotalErrorsMetric(false, ErrorType.HealthCheckError, message, Operations.HealthCheck), 1);
+                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.HealthCheckError, message, Operations.HealthCheck), 1);
                     break;
                 case nameof(Operations.CreateJob):
                     metricsLogger.LogMetrics(new TotalErrorsMetric(false, ErrorType.CreateJobError, message, Operations.CreateJob), 1);
