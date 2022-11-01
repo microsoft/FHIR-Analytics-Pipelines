@@ -5,6 +5,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -22,12 +23,13 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
     public class SchemaAzureContainerRegistryHealthCheckerTests
     {
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+        private static ILogger<SchemaAzureContainerRegistryHealthChecker> _logger = new NullLogger<SchemaAzureContainerRegistryHealthChecker>();
 
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new SchemaAzureContainerRegistryHealthChecker(null, null, _diagnosticLogger, new NullLogger<SchemaAzureContainerRegistryHealthChecker>()));
+                () => new SchemaAzureContainerRegistryHealthChecker(null, null, _diagnosticLogger, _logger));
         }
 
         [Fact]
@@ -40,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
 
             IContainerRegistryTokenProvider tokenProvider = Substitute.For<IContainerRegistryTokenProvider>();
 
-            var schemaACRHealthChecker = new SchemaAzureContainerRegistryHealthChecker(Options.Create(schemaConfiguration), tokenProvider, _diagnosticLogger,  new NullLogger<SchemaAzureContainerRegistryHealthChecker>());
+            var schemaACRHealthChecker = new SchemaAzureContainerRegistryHealthChecker(Options.Create(schemaConfiguration), tokenProvider, _diagnosticLogger, _logger);
             var result = await schemaACRHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.UNHEALTHY, result.Status);
             Assert.False(result.IsCritical);
@@ -56,7 +58,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
 
             IContainerRegistryTokenProvider tokenProvider = Substitute.For<IContainerRegistryTokenProvider>();
 
-            var schemaACRHealthChecker = new SchemaAzureContainerRegistryHealthChecker(Options.Create(schemaConfiguration), tokenProvider, _diagnosticLogger, new NullLogger<SchemaAzureContainerRegistryHealthChecker>());
+            var schemaACRHealthChecker = new SchemaAzureContainerRegistryHealthChecker(Options.Create(schemaConfiguration), tokenProvider, _diagnosticLogger, _logger);
             var result = await schemaACRHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.UNHEALTHY, result.Status);
             Assert.False(result.IsCritical);
@@ -81,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 SchemaImageReference = testImageReference,
             };
 
-            var schemaACRHealthChecker = new SchemaAzureContainerRegistryHealthChecker(Options.Create(schemaConfiguration), testTokenProvider, _diagnosticLogger, new NullLogger<SchemaAzureContainerRegistryHealthChecker>());
+            var schemaACRHealthChecker = new SchemaAzureContainerRegistryHealthChecker(Options.Create(schemaConfiguration), testTokenProvider, _diagnosticLogger, _logger);
 
             try
             {

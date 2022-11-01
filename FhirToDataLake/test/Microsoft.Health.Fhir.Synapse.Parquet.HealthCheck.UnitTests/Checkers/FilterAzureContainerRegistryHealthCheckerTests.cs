@@ -5,6 +5,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -22,12 +23,13 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
     public class FilterAzureContainerRegistryHealthCheckerTests
     {
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+        private static ILogger<FilterAzureContainerRegistryHealthChecker> _logger = new NullLogger<FilterAzureContainerRegistryHealthChecker>();
 
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new FilterAzureContainerRegistryHealthChecker(null, null, _diagnosticLogger, new NullLogger<FilterAzureContainerRegistryHealthChecker>()));
+                () => new FilterAzureContainerRegistryHealthChecker(null, null, _diagnosticLogger, _logger));
         }
 
         [Fact]
@@ -40,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
 
             IContainerRegistryTokenProvider tokenProvider = Substitute.For<IContainerRegistryTokenProvider>();
 
-            var filterACRHealthChecker = new FilterAzureContainerRegistryHealthChecker(Options.Create(filterLocation), tokenProvider, _diagnosticLogger,  new NullLogger<FilterAzureContainerRegistryHealthChecker>());
+            var filterACRHealthChecker = new FilterAzureContainerRegistryHealthChecker(Options.Create(filterLocation), tokenProvider, _diagnosticLogger, _logger);
             var result = await filterACRHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.UNHEALTHY, result.Status);
             Assert.False(result.IsCritical);
@@ -56,7 +58,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
 
             IContainerRegistryTokenProvider tokenProvider = Substitute.For<IContainerRegistryTokenProvider>();
 
-            var filterACRHealthChecker = new FilterAzureContainerRegistryHealthChecker(Options.Create(filterLocation), tokenProvider, _diagnosticLogger, new NullLogger<FilterAzureContainerRegistryHealthChecker>());
+            var filterACRHealthChecker = new FilterAzureContainerRegistryHealthChecker(Options.Create(filterLocation), tokenProvider, _diagnosticLogger, _logger);
             var result = await filterACRHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.UNHEALTHY, result.Status);
             Assert.False(result.IsCritical);
@@ -81,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 FilterImageReference = testImageReference,
             };
 
-            var filterACRHealthChecker = new FilterAzureContainerRegistryHealthChecker(Options.Create(filterLocation), testTokenProvider, _diagnosticLogger, new NullLogger<FilterAzureContainerRegistryHealthChecker>());
+            var filterACRHealthChecker = new FilterAzureContainerRegistryHealthChecker(Options.Create(filterLocation), testTokenProvider, _diagnosticLogger, _logger);
 
             try
             {
