@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             if (_schedulerService.LastHeartbeat.AddSeconds(_schedulerServiceInActiveTimeInterval) < DateTimeOffset.UtcNow)
             {
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
-                healthCheckResult.ErrorMessage = $"Scheduler service is inactive.";
+                healthCheckResult.ErrorMessage = "Scheduler service is inactive.";
             }
 
             return Task.FromResult(healthCheckResult);

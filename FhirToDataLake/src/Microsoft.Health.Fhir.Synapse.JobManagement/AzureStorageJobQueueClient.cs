@@ -395,7 +395,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 jobReverseIndexEntity.JobInfoEntityRowKey,
                 selectedProperties,
                 cancellationToken);
-            TableEntity? jobInfoEntity = jobInfoEntityResponse.Value;
+            TableEntity jobInfoEntity = jobInfoEntityResponse.Value;
 
             // step 3: convert to job info.
             var jobInfo = jobInfoEntity.ToJobInfo<TJobInfo>();
@@ -872,7 +872,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 throw new JobManagementException("Failed to get JobInfoEntity properties, the type is null.");
             }
 
-            string[] tableEntityProperties = new[] { "PartitionKey", "RowKey", "Timestamp", "ETag" };
+            string[] tableEntityProperties = { "PartitionKey", "RowKey", "Timestamp", "ETag" };
             return tableEntityProperties.Concat(type.GetFields().Select(p => p.Name).Except(new List<string> { JobInfoEntityProperties.Definition }));
         }
 

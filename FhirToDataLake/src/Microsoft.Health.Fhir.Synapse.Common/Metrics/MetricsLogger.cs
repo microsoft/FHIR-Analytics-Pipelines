@@ -20,9 +20,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         public void LogMetrics(Metrics metrics, double metricsValue)
         {
             _logger.LogInformation(
-                $"Log Metrics \r\n " +
+                "Log Metrics \r\n " +
                 $"{metrics.Name} : {metricsValue} \r\n " +
-                $"Dimensions: \r\n" +
+                "Dimensions: \r\n" +
                 string.Join("\r\n", metrics.Dimensions.Select(x => string.Join(":", x.Key, x.Value.ToString()))));
         }
     }

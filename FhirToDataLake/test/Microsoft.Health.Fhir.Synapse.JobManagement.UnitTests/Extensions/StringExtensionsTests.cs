@@ -57,8 +57,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [MemberData(nameof(DifferentInputs))]
         public void GivenDifferentStrings_WhenComputeHash_ThenTheHashStringsShouldBeDifferent(string inputStr1, string inputStr2)
         {
-            string? hash1 = inputStr1.ComputeHash();
-            string? hash2 = inputStr2.ComputeHash();
+            string hash1 = inputStr1.ComputeHash();
+            string hash2 = inputStr2.ComputeHash();
             Assert.NotEqual(hash1, hash2);
         }
     }

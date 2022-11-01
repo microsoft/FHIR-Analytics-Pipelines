@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             {
                 if (!_accessTokenDic.TryGetValue(resourceUrl, out AccessToken accessToken) || string.IsNullOrEmpty(accessToken.Token) || accessToken.ExpiresOn < DateTime.UtcNow.AddMinutes(TokenExpireInterval))
                 {
-                    string[] scopes = new string[] { resourceUrl.TrimEnd('/') + "/.default" };
+                    string[] scopes = { resourceUrl.TrimEnd('/') + "/.default" };
                     accessToken = await _tokenCredential.GetTokenAsync(new TokenRequestContext(scopes), cancellationToken);
                     _accessTokenDic.AddOrUpdate(resourceUrl, accessToken, (key, value) => accessToken);
                 }

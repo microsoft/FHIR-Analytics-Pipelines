@@ -116,7 +116,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public async Task GivenABrokenDataClient_WhenExecute_ThenRetriableJobExceptionShouldBeThrown()
         {
             string progressResult = null;
-            Progress<string> progress = new Progress<string>((r) =>
+            Progress<string> progress = new Progress<string>(r =>
             {
                 progressResult = r;
             });
@@ -167,7 +167,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             IMetadataStore metadataStore = null)
         {
             string progressResult = null;
-            Progress<string> progress = new Progress<string>((r) =>
+            Progress<string> progress = new Progress<string>(r =>
             {
                 progressResult = r;
             });
@@ -201,7 +201,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 {
                     if (i <= resumeFrom)
                     {
-                        var processingInput = new FhirToDataLakeProcessingJobInputData()
+                        var processingInput = new FhirToDataLakeProcessingJobInputData
                         {
                             JobType = JobType.Processing,
                             ProcessingJobSequenceId = i,
@@ -460,7 +460,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static async Task CreateBlobForProcessingJob(long jobId, DateTime dateTime, bool isCompleted, IAzureBlobContainerClient blobClient)
         {
             var stream = new MemoryStream();
-            byte[] bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
+            byte[] bytes = { 1, 2, 3, 4, 5, 6 };
             await stream.WriteAsync(bytes, 0, bytes.Length);
             stream.Position = 0;
             int partId = 0;

@@ -22,7 +22,6 @@ using Microsoft.Health.JobManagement;
 using NCrontab;
 using Newtonsoft.Json;
 using Xunit;
-using JobStatus = Microsoft.Health.JobManagement.JobStatus;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
@@ -830,7 +829,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             CrontabSchedule crontabSchedule = CrontabSchedule.Parse(_jobConfigOption.Value.SchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
 
             DateTime nextOccurrenceTime =
-                crontabSchedule.GetNextOccurrence(((DateTimeOffset)lastTriggerEndTime).DateTime);
+                crontabSchedule.GetNextOccurrence(lastTriggerEndTime.DateTime);
             nextOccurrenceTime = DateTime.SpecifyKind(nextOccurrenceTime, DateTimeKind.Utc);
             DateTimeOffset nextOccurrenceOffsetTime = nextOccurrenceTime;
 

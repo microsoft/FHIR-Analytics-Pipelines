@@ -102,7 +102,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
         private static Tuple<string, string> ParseImageMeta(string input, char delimiter)
         {
             int index = input.IndexOf(delimiter, StringComparison.InvariantCultureIgnoreCase);
-            return new Tuple<string, string>(input[0..index], input[(index + 1) ..]);
+            return new Tuple<string, string>(input[..index], input[(index + 1) ..]);
         }
 
         private static void ValidateImageName(string imageName)

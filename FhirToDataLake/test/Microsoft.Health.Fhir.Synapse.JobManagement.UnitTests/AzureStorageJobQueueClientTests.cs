@@ -15,7 +15,6 @@ using Microsoft.Health.Fhir.Synapse.JobManagement.Models.AzureStorage;
 using Microsoft.Health.JobManagement;
 using NSubstitute;
 using Xunit;
-using JobStatus = Microsoft.Health.JobManagement.JobStatus;
 
 namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 {
@@ -286,7 +285,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                     azureStorageClientFactory,
                     _nullAzureStorageJobQueueClientLogger);
 
-            string[] definitions = new[] { "job1" };
+            string[] definitions = { "job1" };
 
             await Assert.ThrowsAsync<JobManagementException>(async () =>
                 await azureStorageJobQueueClient.EnqueueAsync(0, definitions, null, false, false, CancellationToken.None));
@@ -302,7 +301,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             const byte queueType = (byte)TestQueueType.GivenLargeSizeJob_WhenEnqueueJobs_ThenTheExceptionShouldBeThrown;
 
-            string[] definitions = new[] { new string('a', 1024 * 1024 * 8) };
+            string[] definitions = { new string('a', 1024 * 1024 * 8) };
 
             Exception exception = await Assert.ThrowsAsync<JobManagementException>(async () =>
                 await _azureStorageJobQueueClient.EnqueueAsync(
@@ -334,7 +333,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             const byte queueType = (byte)TestQueueType.GivenNewJobs_WhenEnqueueJobs_ThenCreatedJobsShouldBeReturned;
 
-            string[] definitions = new[] { "job1", "job2" };
+            string[] definitions = { "job1", "job2" };
             List<JobInfo> jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 definitions,
@@ -393,8 +392,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             const byte queueType = (byte)TestQueueType
                 .GivenJobsWithSameDefinition_WhenEnqueueConcurrently_ThenOnlyOneJobShouldBeEnqueued;
 
-            List<Task<IEnumerable<JobInfo>>>? tasks = new List<Task<IEnumerable<JobInfo>>>();
-            Task<IEnumerable<JobInfo>>? task1 = _azureStorageJobQueueClient.EnqueueAsync(
+            List<Task<IEnumerable<JobInfo>>> tasks = new List<Task<IEnumerable<JobInfo>>>();
+            Task<IEnumerable<JobInfo>> task1 = _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1" },
                 null,
@@ -402,7 +401,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 false,
                 CancellationToken.None);
 
-            Task<IEnumerable<JobInfo>>? task2 = _azureStorageJobQueueClient.EnqueueAsync(
+            Task<IEnumerable<JobInfo>> task2 = _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1" },
                 null,
@@ -471,7 +470,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             const byte queueType = (byte)TestQueueType.GivenCreatedJob_WhenEnqueueJobAgain_ThenTheExistingOneShouldBeReturned;
 
             string[] definitions = { "job1", "job2" };
-            List<JobInfo>? jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
+            List<JobInfo> jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 definitions,
                 0,
@@ -482,7 +481,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             // check job info
             Assert.Equal(2, jobInfos.Count);
 
-            JobInfo? jobInfo =
+            JobInfo jobInfo =
                 await _azureStorageJobQueueClient.GetJobByIdAsync(
                     queueType,
                     jobInfos.First().Id,
@@ -500,7 +499,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 CancellationToken.None)).ToList();
 
             Assert.Equal(2, jobInfos.Count);
-            List<long>? ids = new List<long> { jobInfos.First().Id, jobInfos.Last().Id };
+            List<long> ids = new List<long> { jobInfos.First().Id, jobInfos.Last().Id };
             Assert.Contains(jobInfo.Id, ids);
             IEnumerable<JobInfo> retrievedJobInfos = await _azureStorageJobQueueClient.GetJobByGroupIdAsync(queueType, 0, true, CancellationToken.None);
             Assert.Equal(2, retrievedJobInfos.Count());
@@ -513,7 +512,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             const byte queueType = (byte)TestQueueType.GivenRunningJob_WhenEnqueueJobAgain_ThenTheExistingOneShouldBeReturned;
 
-            List<JobInfo>? jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
+            List<JobInfo> jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1" },
                 null,
@@ -523,7 +522,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             Assert.Single(jobInfos);
 
-            JobInfo? jobInfo1 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            JobInfo jobInfo1 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
 
             Assert.Equal(JobStatus.Running, jobInfo1.Status);
 
@@ -539,7 +538,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Equal(jobInfo1.Id, jobInfos.First().Id);
 
             // jobInfo1 should be the same as jobInfo2
-            JobInfo? jobInfo2 =
+            JobInfo jobInfo2 =
                 await _azureStorageJobQueueClient.GetJobByIdAsync(queueType, jobInfo1.Id, false, CancellationToken.None);
 
             Assert.Equal(JobStatus.Running, jobInfo2.Status);
@@ -558,7 +557,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             const byte queueType = (byte)TestQueueType.GivenFinishedJob_WhenEnqueueJobAgain_ThenTheExistingOneShouldBeReturned;
 
-            List<JobInfo>? jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
+            List<JobInfo> jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1", "job2", "job3" },
                 null,
@@ -568,9 +567,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             Assert.Equal(3, jobInfos.Count);
 
-            JobInfo? jobInfo1 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
-            JobInfo? jobInfo2 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
-            JobInfo? jobInfo3 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            JobInfo jobInfo1 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            JobInfo jobInfo2 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            JobInfo jobInfo3 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
 
             Assert.Equal(JobStatus.Running, jobInfo1.Status);
             Assert.Equal(JobStatus.Running, jobInfo2.Status);
@@ -603,13 +602,13 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Contains(jobInfo2.Id, jobIds);
             Assert.Contains(jobInfo3.Id, jobIds);
 
-            JobInfo? newJobInfo1 =
+            JobInfo newJobInfo1 =
                 await _azureStorageJobQueueClient.GetJobByIdAsync(queueType, jobInfo1.Id, false, CancellationToken.None);
             Assert.Equal(jobInfo1.Status, newJobInfo1.Status);
-            JobInfo? newJobInfo2 =
+            JobInfo newJobInfo2 =
                 await _azureStorageJobQueueClient.GetJobByIdAsync(queueType, jobInfo2.Id, false, CancellationToken.None);
             Assert.Equal(jobInfo2.Status, newJobInfo2.Status);
-            JobInfo? newJobInfo3 =
+            JobInfo newJobInfo3 =
                 await _azureStorageJobQueueClient.GetJobByIdAsync(queueType, jobInfo3.Id, false, CancellationToken.None);
             Assert.Equal(jobInfo3.Status, newJobInfo3.Status);
 
@@ -636,7 +635,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             (JobInfo? jobInfo, TableEntity? jobLockEntity) = await EnqueueStepBySteps(1001, queueType, 1);
 
             // enqueue job1 again
-            List<JobInfo>? jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
+            List<JobInfo> jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1001", },
                 null,
@@ -651,7 +650,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             Assert.Null(jobLockEntity[JobLockEntityProperties.JobMessagePopReceipt]);
 
             await CheckJob(jobInfo, jobLockEntity);
-            JobInfo? dequeuedJobInfo =
+            JobInfo dequeuedJobInfo =
                 await _azureStorageJobQueueClient.DequeueAsync(jobInfo.QueueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             Assert.Equal(jobInfo.Id, dequeuedJobInfo.Id);
             await CleanStorage();
@@ -854,7 +853,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             const byte queueType = (byte)TestQueueType.GivenJobsEnqueue_WhenDequeueConcurrently_ThenCorrectResultShouldBeReturned;
 
-            List<JobInfo>? jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
+            List<JobInfo> jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1" },
                 null,
@@ -862,7 +861,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 false,
                 CancellationToken.None)).ToList();
 
-            List<Task<JobInfo>>? tasks = new List<Task<JobInfo>>
+            List<Task<JobInfo>> tasks = new List<Task<JobInfo>>
             {
                 _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None),
                 _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None),
@@ -894,7 +893,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             };
 
             result = await Task.WhenAll(tasks);
-            List<string>? definitions = new List<string> { result[0].Definition, result[1].Definition };
+            List<string> definitions = new List<string> { result[0].Definition, result[1].Definition };
 
             Assert.Contains("job2", definitions);
             Assert.Contains("job3", definitions);
@@ -907,7 +906,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             const byte queueType = (byte)TestQueueType.GivenFinishedJobs_WhenDequeue_ThenNoResultShouldBeReturned;
 
             // enqueue jobs
-            List<JobInfo>? jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
+            List<JobInfo> jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1", "job2", "job3" },
                 null,
@@ -916,7 +915,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 CancellationToken.None)).ToList();
             Assert.Equal(3, jobInfos.Count);
 
-            JobInfo? jobInfo =
+            JobInfo jobInfo =
                 await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             jobInfo.Status = JobStatus.Completed;
 
@@ -965,7 +964,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             const byte queueType = (byte)TestQueueType.GivenJobCancelRequested_WhenDequeue_ThenTheJobShouldBeReturned;
 
             // enqueue jobs
-            List<JobInfo>? jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
+            List<JobInfo> jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1" },
                 null,
@@ -974,7 +973,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 CancellationToken.None)).ToList();
             Assert.Single(jobInfos);
 
-            JobInfo? jobInfo =
+            JobInfo jobInfo =
                 await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
 
             // cancel running job, only cancelRequest is set to true
@@ -1001,7 +1000,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             _ = await EnqueueStepBySteps(1, queueType, 3);
 
-            JobInfo? jobInfo = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            JobInfo jobInfo = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             Assert.Null(jobInfo);
         }
 
@@ -1067,7 +1066,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             const byte queueType = (byte)TestQueueType.GivenJobId_WhenGetJobById_ThenTheJobShouldBeReturned;
 
             // enqueue jobs
-            List<JobInfo>? jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
+            List<JobInfo> jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1" },
                 null,
@@ -1076,7 +1075,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 CancellationToken.None)).ToList();
             Assert.Single(jobInfos);
 
-            JobInfo? jobInfo1 =
+            JobInfo jobInfo1 =
                 await _azureStorageJobQueueClient.GetJobByIdAsync(queueType, jobInfos.First().Id, true, CancellationToken.None);
             Assert.Equal("job1", jobInfo1.Definition);
             Assert.Equal(jobInfos.First().Id, jobInfo1.Id);
@@ -1153,7 +1152,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             const byte queueType = (byte)TestQueueType.GivenJobsEnqueue_WhenGetJobsByIds_ThenTheJobsShouldBeReturned;
 
             // enqueue jobs
-            List<JobInfo>? jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
+            List<JobInfo> jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1", "job2", "job3" },
                 null,
@@ -1162,14 +1161,14 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 CancellationToken.None)).ToList();
             Assert.Equal(3, jobInfos.Count);
 
-            List<JobInfo>? retrievedJobInfos = (await _azureStorageJobQueueClient.GetJobsByIdsAsync(
+            List<JobInfo> retrievedJobInfos = (await _azureStorageJobQueueClient.GetJobsByIdsAsync(
                 queueType,
                 new[] { jobInfos[0].Id, jobInfos[2].Id },
                 false,
                 CancellationToken.None)).ToList();
 
             Assert.Equal(2, retrievedJobInfos.Count);
-            List<long>? ids = new List<long> { retrievedJobInfos[0].Id, retrievedJobInfos[1].Id };
+            List<long> ids = new List<long> { retrievedJobInfos[0].Id, retrievedJobInfos[1].Id };
             Assert.Contains(jobInfos[0].Id, ids);
             Assert.Contains(jobInfos[2].Id, ids);
         }
@@ -1219,12 +1218,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 false,
                 CancellationToken.None);
 
-            List<JobInfo>? retrievedJobInfos =
+            List<JobInfo> retrievedJobInfos =
                 (await _azureStorageJobQueueClient.GetJobByGroupIdAsync(queueType, 2, true, CancellationToken.None))
                 .ToList();
 
             Assert.Equal(2, retrievedJobInfos.Count);
-            List<string>? definitions = new List<string>
+            List<string> definitions = new List<string>
                 { retrievedJobInfos.First().Definition, retrievedJobInfos.Last().Definition };
             Assert.Contains("job4", definitions);
             Assert.Contains("job5", definitions);
@@ -1467,7 +1466,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             const byte queueType = (byte)TestQueueType.GivenJobsWithDifferentStatus_WhenCancelJobByGroupId_ThenTheStatusShouldBeSetCorrectly;
 
             // enqueue jobs
-            List<JobInfo>? jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
+            List<JobInfo> jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1", "job2", "job3", "job4" },
                 1,
@@ -1475,9 +1474,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 false,
                 CancellationToken.None)).ToList();
 
-            JobInfo? jobInfo1 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
-            JobInfo? jobInfo2 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
-            JobInfo? jobInfo3 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            JobInfo jobInfo1 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            JobInfo jobInfo2 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            JobInfo jobInfo3 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             jobInfo2.Status = JobStatus.Failed;
             await _azureStorageJobQueueClient.CompleteJobAsync(jobInfo2, false, CancellationToken.None);
 
@@ -1486,7 +1485,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             await _azureStorageJobQueueClient.CancelJobByGroupIdAsync(queueType, 1, CancellationToken.None);
 
-            List<JobInfo>? retrievedJobInfos = (await _azureStorageJobQueueClient.GetJobsByIdsAsync(queueType, jobInfos.Select(j => j.Id).ToArray(), false, CancellationToken.None)).ToList();
+            List<JobInfo> retrievedJobInfos = (await _azureStorageJobQueueClient.GetJobsByIdsAsync(queueType, jobInfos.Select(j => j.Id).ToArray(), false, CancellationToken.None)).ToList();
 
             Assert.Empty(retrievedJobInfos.Where(j => !j.CancelRequested));
 
@@ -1579,7 +1578,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             const byte queueType = (byte)TestQueueType.GivenJobsWithDifferentStatus_WhenCancelJobById_ThenTheStatusShouldBeSetCorrectly;
 
             // enqueue jobs
-            List<JobInfo>? jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
+            List<JobInfo> jobInfos = (await _azureStorageJobQueueClient.EnqueueAsync(
                 queueType,
                 new[] { "job1", "job2", "job3", "job4" },
                 1,
@@ -1587,9 +1586,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
                 false,
                 CancellationToken.None)).ToList();
 
-            JobInfo? jobInfo1 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
-            JobInfo? jobInfo2 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
-            JobInfo? jobInfo3 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            JobInfo jobInfo1 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            JobInfo jobInfo2 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
+            JobInfo jobInfo3 = await _azureStorageJobQueueClient.DequeueAsync(queueType, TestWorkerName, HeartbeatTimeoutSec, CancellationToken.None);
             jobInfo2.Status = JobStatus.Failed;
             await _azureStorageJobQueueClient.CompleteJobAsync(jobInfo2, false, CancellationToken.None);
 
@@ -1601,7 +1600,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
             await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobInfos[2].Id, CancellationToken.None);
             await _azureStorageJobQueueClient.CancelJobByIdAsync(queueType, jobInfos[3].Id, CancellationToken.None);
 
-            List<JobInfo>? retrievedJobInfos = (await _azureStorageJobQueueClient.GetJobsByIdsAsync(queueType, jobInfos.Select(j => j.Id).ToArray(), false, CancellationToken.None)).ToList();
+            List<JobInfo> retrievedJobInfos = (await _azureStorageJobQueueClient.GetJobsByIdsAsync(queueType, jobInfos.Select(j => j.Id).ToArray(), false, CancellationToken.None)).ToList();
 
             Assert.Empty(retrievedJobInfos.Where(j => !j.CancelRequested));
 
@@ -1742,7 +1741,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
         private async Task<Tuple<JobInfo, TableEntity>> EnqueueStepBySteps(long jobId, byte queueType, int steps)
         {
-            var jobInfo = new AzureStorageJobInfo()
+            var jobInfo = new AzureStorageJobInfo
             {
                 Id = jobId,
                 QueueType = queueType,
@@ -1794,7 +1793,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
         private async Task CheckJob(JobInfo jobInfo, TableEntity? jobLockEntity = null)
         {
-            JobInfo? retrievedJobInfo =
+            JobInfo retrievedJobInfo =
                 await _azureStorageJobQueueClient.GetJobByIdAsync(
                     jobInfo.QueueType,
                     jobInfo.Id,
@@ -1805,8 +1804,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests
 
             // check table entity
             // job reverse index entity should exist
-            string? reversePartitionKey = AzureStorageKeyProvider.JobReverseIndexPartitionKey(jobInfo.QueueType, retrievedJobInfo.Id);
-            string? reverseRowKey = AzureStorageKeyProvider.JobReverseIndexRowKey(jobInfo.QueueType, retrievedJobInfo.Id);
+            string reversePartitionKey = AzureStorageKeyProvider.JobReverseIndexPartitionKey(jobInfo.QueueType, retrievedJobInfo.Id);
+            string reverseRowKey = AzureStorageKeyProvider.JobReverseIndexRowKey(jobInfo.QueueType, retrievedJobInfo.Id);
             JobReverseIndexEntity? reverseIndexEntity = (await _azureJobInfoTableClient.GetEntityAsync<JobReverseIndexEntity>(reversePartitionKey, reverseRowKey)).Value;
             Assert.NotNull(reverseIndexEntity);
 
