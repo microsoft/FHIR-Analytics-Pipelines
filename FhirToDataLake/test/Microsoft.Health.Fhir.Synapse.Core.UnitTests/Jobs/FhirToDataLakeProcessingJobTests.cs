@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
@@ -130,6 +131,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFhirSchemaManager(),
                 GetGroupMemberExtractor(),
                 GetFilterManager(filterConfiguration),
+                new MetricsLogger(new NullLogger<MetricsLogger>()),
                 _diagnosticLogger,
                 new NullLogger<FhirToDataLakeProcessingJob>());
         }

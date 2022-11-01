@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
+using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.JobManagement;
@@ -31,6 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly DateTimeOffset? _endTime;
         private readonly ILogger<SchedulerService> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
+        private readonly IMetricsLogger _metricsLogger;
         private readonly Guid _instanceGuid;
 
         // See https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression
@@ -40,6 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IQueueClient queueClient,
             IMetadataStore metadataStore,
             IOptions<JobConfiguration> jobConfiguration,
+            IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
             ILogger<SchedulerService> logger)
         {
@@ -58,6 +62,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             _instanceGuid = Guid.NewGuid();
+            _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
         }
 
         public DateTimeOffset LastHeartbeat { get; set; } = DateTimeOffset.UtcNow;
@@ -105,16 +110,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         }
                     }
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException ex)
                 {
                     delayTaskCancellationTokenSource.Cancel();
                     _diagnosticLogger.LogError($"Scheduler service {_instanceGuid} is cancelled.");
                     _logger.LogError($"Scheduler service {_instanceGuid} is cancelled.");
+                    _metricsLogger.LogTotalErrorsMetrics(ex, $"Scheduler service {_instanceGuid} is cancelled.", Operations.RunSchedulerService);
                 }
                 catch (Exception ex)
                 {
                     _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
                     _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
+                    _metricsLogger.LogTotalErrorsMetrics(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.", Operations.RunSchedulerService);
                 }
 
                 await delayTask;
@@ -150,7 +157,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (triggerLeaseEntity == null)
             {
-                _logger.LogError($"Scheduler instance {_instanceGuid} fails to acquire lease, failed to get trigger lease entity.");
+                _logger.LogInformation($"Scheduler instance {_instanceGuid} fails to acquire lease, failed to get trigger lease entity.");
                 return false;
             }
 
@@ -264,6 +271,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     // don't exist the while-loop, and retry next time
                     _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
                     _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
+                    _metricsLogger.LogTotalErrorsMetrics(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.", Operations.RunSchedulerService);
                 }
 
                 await intervalDelayTask;
@@ -307,7 +315,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     case TriggerStatus.Failed:
                     case TriggerStatus.Cancelled:
                         // if the current trigger is cancelled/failed, do noting and keep running, this case should not happen
-                        _logger.LogError("Trigger Status is cancelled or failed.");
+                        _logger.LogInformation("Trigger Status is cancelled or failed.");
                         break;
                 }
             }
@@ -368,11 +376,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     break;
                 case JobStatus.Failed:
                     currentTriggerEntity.TriggerStatus = TriggerStatus.Failed;
-                    _logger.LogError($"The orchestrator job of trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is failed.");
+                    _logger.LogInformation($"The orchestrator job of trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is failed.");
                     break;
                 case JobStatus.Cancelled:
                     currentTriggerEntity.TriggerStatus = TriggerStatus.Cancelled;
-                    _logger.LogError($"The orchestrator job trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is cancelled.");
+                    _logger.LogInformation($"The orchestrator job trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is cancelled.");
                     break;
                 default:
                     needUpdateTriggerEntity = false;

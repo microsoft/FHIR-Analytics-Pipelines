@@ -12,6 +12,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
+using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
@@ -130,6 +131,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
+                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create orchestrator job. Reason: {e.Message}", Operations.CreateJob);
                 _logger.LogInformation(e, "Failed to create orchestrator job.");
                 return null;
             }
@@ -153,12 +155,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _fhirSchemaManager,
                         _groupMemberExtractor,
                         _filterManager,
+                        _metricsLogger,
                         _diagnosticLogger,
                         _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>());
                 }
             }
             catch (Exception e)
             {
+                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create processing job. Reason: {e.Message}", Operations.CreateJob);
                 _logger.LogInformation(e, "Failed to create processing job.");
                 return null;
             }
