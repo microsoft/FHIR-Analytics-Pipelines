@@ -518,7 +518,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             using var tokenSource = new CancellationTokenSource();
             Task task = schedulerService.RunAsync(tokenSource.Token);
-            await Task.Delay(TimeSpan.FromMilliseconds(100));
+            await Task.Delay(TimeSpan.FromMilliseconds(100), CancellationToken.None);
             TriggerLeaseEntity triggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(triggerLeaseEntity);
 
@@ -551,7 +551,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             using var tokenSource = new CancellationTokenSource();
             Task task = schedulerService.RunAsync(tokenSource.Token);
-            await Task.Delay(TimeSpan.FromMilliseconds(100));
+            await Task.Delay(TimeSpan.FromMilliseconds(100), CancellationToken.None);
             TriggerLeaseEntity triggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(triggerLeaseEntity);
             Guid oldGuid = triggerLeaseEntity.WorkingInstanceGuid;
@@ -565,7 +565,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // add the initial trigger entity to table
             await metadataStore.TryUpdateEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
-            await Task.Delay(TimeSpan.FromSeconds(3));
+            await Task.Delay(TimeSpan.FromSeconds(3), CancellationToken.None);
             TriggerLeaseEntity newTriggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.True(newTriggerLeaseEntity.HeartbeatDateTime > oldHeartBeat);
             Assert.Equal(triggerLeaseEntity.HeartbeatDateTime, newTriggerLeaseEntity.HeartbeatDateTime);
@@ -573,7 +573,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(triggerLeaseEntity.WorkingInstanceGuid, newTriggerLeaseEntity.WorkingInstanceGuid);
 
             // the scheduler service acquire lease again
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
 
             newTriggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.True(newTriggerLeaseEntity.HeartbeatDateTime > triggerLeaseEntity.HeartbeatDateTime);
@@ -687,7 +687,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             using var tokenSource1 = new CancellationTokenSource();
             Task task1 = schedulerService1.RunAsync(tokenSource1.Token);
 
-            await Task.Delay(TimeSpan.FromMilliseconds(100));
+            await Task.Delay(TimeSpan.FromMilliseconds(100), CancellationToken.None);
 
             // the current trigger status is new.
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
@@ -712,7 +712,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Task task2 = schedulerService2.RunAsync(tokenSource2.Token);
 
             // wait for service 2 acquires lease
-            await Task.Delay(TimeSpan.FromSeconds(4));
+            await Task.Delay(TimeSpan.FromSeconds(4), CancellationToken.None);
 
             // the current trigger status is running.
             currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
@@ -773,7 +773,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             using var tokenSource = new CancellationTokenSource();
             Task task = schedulerService.RunAsync(tokenSource.Token);
 
-            await Task.Delay(TimeSpan.FromMilliseconds(100));
+            await Task.Delay(TimeSpan.FromMilliseconds(100), CancellationToken.None);
 
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
@@ -824,7 +824,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             DateTimeOffset endTime = DateTimeOffset.UtcNow.AddMinutes(-1 * JobConfigurationConstants.JobQueryLatencyInMinutes);
 
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
 
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Equal(triggerEntity.TriggerSequenceId + 1, currentTriggerEntity.TriggerSequenceId);
@@ -1002,7 +1002,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Null(currentTriggerEntity.TriggerStartTime);
 
             // the job is dequeued
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
             JobInfo jobInfo = await queueClient.DequeueAsync(
                 (byte)QueueType.FhirToDataLake,
                 TestWorkerName,
@@ -1013,7 +1013,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             jobInfo.Status = JobStatus.Completed;
             await queueClient.CompleteJobAsync(jobInfo, false, CancellationToken.None);
 
-            await Task.Delay(TimeSpan.FromSeconds(4));
+            await Task.Delay(TimeSpan.FromSeconds(4), CancellationToken.None);
 
             tokenSource1.Cancel();
             await task1;
@@ -1028,7 +1028,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             using var tokenSource2 = new CancellationTokenSource();
             Task task2 = schedulerService.RunAsync(tokenSource2.Token);
 
-            await Task.Delay(TimeSpan.FromMilliseconds(100));
+            await Task.Delay(TimeSpan.FromMilliseconds(100), CancellationToken.None);
 
             // resume trigger
             currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
@@ -1046,7 +1046,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             jobInfo.Status = JobStatus.Completed;
             await queueClient.CompleteJobAsync(jobInfo, false, CancellationToken.None);
 
-            await Task.Delay(TimeSpan.FromSeconds(4));
+            await Task.Delay(TimeSpan.FromSeconds(4), CancellationToken.None);
 
             currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
@@ -1532,7 +1532,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(lastTriggerEndTime, currentTriggerEntity.TriggerStartTime);
 
             // the second trigger end time should be set to the latest Occurrences time
-            Assert.True(currentTriggerEntity.TriggerEndTime >= startTime);
+            Assert.True(currentTriggerEntity.TriggerEndTime >= lastTriggerEndTime);
             Assert.True(currentTriggerEntity.TriggerEndTime <= endTime);
             CrontabSchedule crontabSchedule = CrontabSchedule.Parse(TestSchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
             IEnumerable<DateTime> result = crontabSchedule.GetNextOccurrences(startTime.DateTime, endTime.DateTime);
