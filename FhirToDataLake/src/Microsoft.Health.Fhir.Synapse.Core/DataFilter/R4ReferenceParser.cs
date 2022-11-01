@@ -10,7 +10,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
@@ -30,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         private static readonly string ResourceTypesPattern = string.Join('|', R4FhirModelInfo.SupportedResources);
         private static readonly string ReferenceCaptureRegexPattern = $@"(?<{ResourceTypeCapture}>{ResourceTypesPattern})\/(?<{ResourceIdCapture}>[A-Za-z0-9\-\.]{{1,64}})(\/_history\/[A-Za-z0-9\-\.]{{1,64}})?";
 
-        private static readonly Regex ReferenceRegex = new (
+        private static readonly Regex ReferenceRegex = new Regex(
             ReferenceCaptureRegexPattern,
             RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
@@ -50,17 +49,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 throw new ReferenceParseException("The reference string is null or white space.");
             }
 
-            var match = ReferenceRegex.Match(reference);
+            Match match = ReferenceRegex.Match(reference);
 
             if (match.Success)
             {
-                var resourceTypeInString = match.Groups[ResourceTypeCapture].Value;
+                string resourceTypeInString = match.Groups[ResourceTypeCapture].Value;
 
                 if (R4FhirModelInfo.IsKnownResource(resourceTypeInString))
                 {
-                    var resourceId = match.Groups[ResourceIdCapture].Value;
+                    string resourceId = match.Groups[ResourceIdCapture].Value;
 
-                    var resourceTypeStartIndex = match.Groups[ResourceTypeCapture].Index;
+                    int resourceTypeStartIndex = match.Groups[ResourceTypeCapture].Index;
 
                     if (resourceTypeStartIndex == 0)
                     {

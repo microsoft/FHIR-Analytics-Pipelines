@@ -22,7 +22,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
             EnsureArg.IsNotNull(dic1, nameof(dic1));
             EnsureArg.IsNotNull(dic2, nameof(dic2));
 
-            foreach (var (type, count) in dic2)
+            foreach ((string type, int count) in dic2)
             {
                 dic1 = dic1.AddToDictionary(type, count);
             }

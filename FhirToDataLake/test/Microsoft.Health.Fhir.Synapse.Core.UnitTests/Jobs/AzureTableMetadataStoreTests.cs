@@ -25,16 +25,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private readonly NullLogger<AzureTableMetadataStore> _nullAzureTableMetadataStoreLogger =
             NullLogger<AzureTableMetadataStore>.Instance;
 
-        private const byte QueueTypeByte = (byte) QueueType.FhirToDataLake;
+        private const byte QueueTypeByte = (byte)QueueType.FhirToDataLake;
 
         [Fact]
-        public async Task GivenEmptyTable_WhenGetTriggerLeaseEntity_ThenTheExceptionShouldBeThrown()
+        public async Task GivenEmptyTable_WhenGetTriggerLeaseEntity_ThenFalseWillBeReturned()
         {
-            var metadataStore = CreateUniqueMetadataStore();
+            IMetadataStore metadataStore = CreateUniqueMetadataStore();
             try
             {
-                var exception = await Assert.ThrowsAsync<RequestFailedException>(async () => await metadataStore.GetTriggerLeaseEntityAsync(QueueTypeByte, CancellationToken.None));
-                Assert.Equal("ResourceNotFound", exception.ErrorCode);
+                TriggerLeaseEntity entity = await metadataStore.GetTriggerLeaseEntityAsync(QueueTypeByte, CancellationToken.None);
+                Assert.Null(entity);
             }
             finally
             {
@@ -45,10 +45,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenEmptyTable_WhenCurrentTriggerEntity_ThenNullWillBeReturned()
         {
-            var metadataStore = CreateUniqueMetadataStore();
+            IMetadataStore metadataStore = CreateUniqueMetadataStore();
             try
             {
-                var entity = await metadataStore.GetCurrentTriggerEntityAsync(QueueTypeByte, CancellationToken.None);
+                CurrentTriggerEntity entity = await metadataStore.GetCurrentTriggerEntityAsync(QueueTypeByte, CancellationToken.None);
                 Assert.Null(entity);
             }
             finally
@@ -60,7 +60,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCurrentTriggerEntity_WhenGetCurrentTriggerEntity_ThenTheEntityShouldBeReturned()
         {
-            var metadataStore = CreateUniqueMetadataStore();
+            IMetadataStore metadataStore = CreateUniqueMetadataStore();
             try
             {
                 var entity = new CurrentTriggerEntity
@@ -73,10 +73,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     TriggerSequenceId = 0,
                 };
 
-                var response = await metadataStore.AddEntityAsync(entity);
-                Assert.Equal(204, response.Status);
+                bool isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
 
-                var retrievedEntity = await metadataStore.GetCurrentTriggerEntityAsync(QueueTypeByte, CancellationToken.None);
+                CurrentTriggerEntity retrievedEntity = await metadataStore.GetCurrentTriggerEntityAsync(QueueTypeByte, CancellationToken.None);
                 Assert.NotNull(retrievedEntity);
                 Assert.Equal(entity.PartitionKey, retrievedEntity.PartitionKey);
                 Assert.Equal(entity.RowKey, retrievedEntity.RowKey);
@@ -92,7 +92,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenEmptyTable_WhenCompartmentInfoEntity_ThenTheExceptionShouldBeThrown()
         {
-            var metadataStore = CreateUniqueMetadataStore();
+            IMetadataStore metadataStore = CreateUniqueMetadataStore();
             try
             {
                 var exception = await Assert.ThrowsAsync<RequestFailedException>(async () => await metadataStore.GetCompartmentInfoEntityAsync(QueueTypeByte, "fakepatientid", CancellationToken.None));
@@ -107,10 +107,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCompartmentInfoEntity_WhenGetCompartmentInfoEntity_ThenTheEntityShouldBeReturned()
         {
-            var metadataStore = CreateUniqueMetadataStore();
+            IMetadataStore metadataStore = CreateUniqueMetadataStore();
             try
             {
-                var patientId = "fakepatientId";
+                string patientId = "fakepatientId";
                 var entity = new CompartmentInfoEntity
                 {
                     PartitionKey = TableKeyProvider.CompartmentPartitionKey(QueueTypeByte),
@@ -118,10 +118,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     VersionId = 1,
                 };
 
-                var response = await metadataStore.AddEntityAsync(entity);
-                Assert.Equal(204, response.Status);
+                bool isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
 
-                var retrievedEntity = await metadataStore.GetCompartmentInfoEntityAsync(QueueTypeByte, patientId, CancellationToken.None);
+                CompartmentInfoEntity retrievedEntity = await metadataStore.GetCompartmentInfoEntityAsync(QueueTypeByte, patientId, CancellationToken.None);
                 Assert.NotNull(retrievedEntity);
                 Assert.Equal(entity.PartitionKey, retrievedEntity.PartitionKey);
                 Assert.Equal(entity.RowKey, retrievedEntity.RowKey);
@@ -136,7 +136,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenEmptyTable_WhenAddEntity_ThenTheEntityShouldBeAdded()
         {
-            var metadataStore = CreateUniqueMetadataStore();
+            IMetadataStore metadataStore = CreateUniqueMetadataStore();
             try
             {
                 var instanceGuid = Guid.NewGuid();
@@ -148,9 +148,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     HeartbeatDateTime = DateTimeOffset.UtcNow,
                 };
 
-                var response = await metadataStore.AddEntityAsync(entity);
-                Assert.Equal(204, response.Status);
-                var retrievedEntity =
+                bool isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
+                TriggerLeaseEntity retrievedEntity =
                     await metadataStore.GetTriggerLeaseEntityAsync(QueueTypeByte, CancellationToken.None);
                 Assert.NotNull(retrievedEntity);
                 Assert.Equal(entity.PartitionKey, retrievedEntity.PartitionKey);
@@ -164,9 +164,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
-        public async Task GivenExistingEntity_WhenAddSameEntityAgain_ThenTheExceptionShouldBeThrown()
+        public async Task GivenExistingEntity_WhenAddSameEntityAgain_ThenFalseShouldBeReturned()
         {
-            var metadataStore = CreateUniqueMetadataStore();
+            IMetadataStore metadataStore = CreateUniqueMetadataStore();
             try
             {
                 var instanceGuid = Guid.NewGuid();
@@ -178,8 +178,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     HeartbeatDateTime = DateTimeOffset.UtcNow,
                 };
 
-                var response = await metadataStore.AddEntityAsync(entity);
-                Assert.Equal(204, response.Status);
+                bool isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
 
                 var instanceGuid2 = Guid.NewGuid();
                 var entity2 = new TriggerLeaseEntity
@@ -189,8 +189,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     WorkingInstanceGuid = instanceGuid2,
                     HeartbeatDateTime = DateTimeOffset.UtcNow,
                 };
-                var exception = await Assert.ThrowsAsync<RequestFailedException>(async () => await metadataStore.AddEntityAsync(entity2));
-                Assert.Equal("EntityAlreadyExists", exception.ErrorCode);
+
+                isSucceeded = await metadataStore.TryAddEntityAsync(entity2);
+                Assert.False(isSucceeded);
             }
             finally
             {
@@ -201,7 +202,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenExistingEntity_WhenUpdateEntity_ThenTheEntityShouldBeUpdated()
         {
-            var metadataStore = CreateUniqueMetadataStore();
+            IMetadataStore metadataStore = CreateUniqueMetadataStore();
             try
             {
                 var instanceGuid = Guid.NewGuid();
@@ -213,23 +214,66 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     HeartbeatDateTime = DateTimeOffset.UtcNow,
                 };
 
-                var response = await metadataStore.AddEntityAsync(entity);
-                Assert.Equal(204, response.Status);
-                var retrievedEntity =
+                bool isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
+                TriggerLeaseEntity retrievedEntity =
                     await metadataStore.GetTriggerLeaseEntityAsync(QueueTypeByte, CancellationToken.None);
                 Assert.NotNull(retrievedEntity);
                 Assert.Equal(instanceGuid, retrievedEntity.WorkingInstanceGuid);
                 var instanceGuid2 = Guid.NewGuid();
                 retrievedEntity.WorkingInstanceGuid = instanceGuid2;
                 retrievedEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
-                response = await metadataStore.UpdateEntityAsync(retrievedEntity);
-                Assert.Equal(204, response.Status);
-                var retrievedEntity2 =
+                isSucceeded = await metadataStore.TryUpdateEntityAsync(retrievedEntity);
+                Assert.True(isSucceeded);
+                TriggerLeaseEntity retrievedEntity2 =
+                    await metadataStore.GetTriggerLeaseEntityAsync(QueueTypeByte, CancellationToken.None);
+                Assert.NotNull(retrievedEntity2);
+                Assert.Equal(instanceGuid2, retrievedEntity2.WorkingInstanceGuid);
+                Assert.True(retrievedEntity2.Timestamp > retrievedEntity.Timestamp);
+            }
+            finally
+            {
+                await metadataStore.DeleteMetadataTableAsync();
+            }
+        }
+
+        [Fact]
+        public async Task GivenOldEntity_WhenUpdateEntity_ThenFalseShouldBeReturned()
+        {
+            IMetadataStore metadataStore = CreateUniqueMetadataStore();
+            try
+            {
+                var instanceGuid = Guid.NewGuid();
+                var entity = new TriggerLeaseEntity
+                {
+                    PartitionKey = TableKeyProvider.LeasePartitionKey(QueueTypeByte),
+                    RowKey = TableKeyProvider.LeaseRowKey(QueueTypeByte),
+                    WorkingInstanceGuid = instanceGuid,
+                    HeartbeatDateTime = DateTimeOffset.UtcNow,
+                };
+
+                bool isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
+                TriggerLeaseEntity retrievedEntity =
+                    await metadataStore.GetTriggerLeaseEntityAsync(QueueTypeByte, CancellationToken.None);
+                Assert.NotNull(retrievedEntity);
+                Assert.Equal(instanceGuid, retrievedEntity.WorkingInstanceGuid);
+                var instanceGuid2 = Guid.NewGuid();
+                retrievedEntity.WorkingInstanceGuid = instanceGuid2;
+                retrievedEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
+                isSucceeded = await metadataStore.TryUpdateEntityAsync(retrievedEntity);
+                Assert.True(isSucceeded);
+                TriggerLeaseEntity retrievedEntity2 =
                     await metadataStore.GetTriggerLeaseEntityAsync(QueueTypeByte, CancellationToken.None);
                 Assert.NotNull(retrievedEntity2);
                 Assert.Equal(instanceGuid2, retrievedEntity2.WorkingInstanceGuid);
                 Assert.True(retrievedEntity2.Timestamp > retrievedEntity.Timestamp);
 
+                // fail to update entity with old etag
+                retrievedEntity.WorkingInstanceGuid = instanceGuid;
+                retrievedEntity.HeartbeatDateTime = DateTimeOffset.UtcNow;
+                isSucceeded = await metadataStore.TryUpdateEntityAsync(retrievedEntity);
+                Assert.False(isSucceeded);
             }
             finally
             {
@@ -240,10 +284,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCompartmentInfoEntities_WhenGetPatientVersionsByPatientHashList_ThenTheResultShouldBeReturned()
         {
-            var metadataStore = CreateUniqueMetadataStore();
+            IMetadataStore metadataStore = CreateUniqueMetadataStore();
             try
             {
-                var patientId1 = "patientId1";
+                string patientId1 = "patientId1";
                 var entity = new CompartmentInfoEntity
                 {
                     PartitionKey = TableKeyProvider.CompartmentPartitionKey(QueueTypeByte),
@@ -251,10 +295,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     VersionId = 1,
                 };
 
-                var response = await metadataStore.AddEntityAsync(entity);
-                Assert.Equal(204, response.Status);
+                bool isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
 
-                var patientId2 = "patientId2";
+                string patientId2 = "patientId2";
                 entity = new CompartmentInfoEntity
                 {
                     PartitionKey = TableKeyProvider.CompartmentPartitionKey(QueueTypeByte),
@@ -262,12 +306,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     VersionId = 1,
                 };
 
-                response = await metadataStore.AddEntityAsync(entity);
-                Assert.Equal(204, response.Status);
+                isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
 
-                var patientHashList = new List<string>
+                List<string> patientHashList = new List<string>
                     { TableKeyProvider.CompartmentRowKey(patientId1) };
-                var patientVersions = await metadataStore.GetPatientVersionsAsync(QueueTypeByte, patientHashList, CancellationToken.None);
+                Dictionary<string, long> patientVersions = await metadataStore.GetPatientVersionsAsync(QueueTypeByte, patientHashList, CancellationToken.None);
                 Assert.Single(patientVersions);
                 Assert.True(patientVersions.ContainsKey(TableKeyProvider.CompartmentRowKey(patientId1)));
                 Assert.Equal(1, patientVersions[TableKeyProvider.CompartmentRowKey(patientId1)]);
@@ -281,10 +325,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCompartmentInfoEntities_WhenGetPatientVersions_ThenTheResultShouldBeReturned()
         {
-            var metadataStore = CreateUniqueMetadataStore();
+            IMetadataStore metadataStore = CreateUniqueMetadataStore();
             try
             {
-                var patientId1 = "patientId1";
+                string patientId1 = "patientId1";
                 var entity = new CompartmentInfoEntity
                 {
                     PartitionKey = TableKeyProvider.CompartmentPartitionKey(QueueTypeByte),
@@ -292,10 +336,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     VersionId = 1,
                 };
 
-                var response = await metadataStore.AddEntityAsync(entity);
-                Assert.Equal(204, response.Status);
+                bool isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
 
-                var patientId2 = "patientId2";
+                string patientId2 = "patientId2";
                 entity = new CompartmentInfoEntity
                 {
                     PartitionKey = TableKeyProvider.CompartmentPartitionKey(QueueTypeByte),
@@ -303,10 +347,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     VersionId = 1,
                 };
 
-                response = await metadataStore.AddEntityAsync(entity);
-                Assert.Equal(204, response.Status);
+                isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
 
-                var patientVersions = await metadataStore.GetPatientVersionsAsync(QueueTypeByte,  CancellationToken.None);
+                Dictionary<string, long> patientVersions = await metadataStore.GetPatientVersionsAsync(QueueTypeByte,  CancellationToken.None);
                 Assert.Equal(2, patientVersions.Count);
                 Assert.True(patientVersions.ContainsKey(TableKeyProvider.CompartmentRowKey(patientId1)));
                 Assert.True(patientVersions.ContainsKey(TableKeyProvider.CompartmentRowKey(patientId1)));
@@ -322,10 +366,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCompartmentInfoEntities_WhenUpdateGetPatientVersions_ThenTheEntitiesShouldBeUpdated()
         {
-            var metadataStore = CreateUniqueMetadataStore();
+            IMetadataStore metadataStore = CreateUniqueMetadataStore();
             try
             {
-                var patientId1 = "patientId1";
+                string patientId1 = "patientId1";
                 var entity = new CompartmentInfoEntity
                 {
                     PartitionKey = TableKeyProvider.CompartmentPartitionKey(QueueTypeByte),
@@ -333,10 +377,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     VersionId = 1,
                 };
 
-                var response = await metadataStore.AddEntityAsync(entity);
-                Assert.Equal(204, response.Status);
+                bool isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
 
-                var patientId2 = "patientId2";
+                string patientId2 = "patientId2";
                 entity = new CompartmentInfoEntity
                 {
                     PartitionKey = TableKeyProvider.CompartmentPartitionKey(QueueTypeByte),
@@ -344,13 +388,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     VersionId = 1,
                 };
 
-                response = await metadataStore.AddEntityAsync(entity);
-                Assert.Equal(204, response.Status);
+                isSucceeded = await metadataStore.TryAddEntityAsync(entity);
+                Assert.True(isSucceeded);
 
-                var updatedPatientVersions = new Dictionary<string, long> { { TableKeyProvider.CompartmentRowKey(patientId1), 2 } };
+                Dictionary<string, long> updatedPatientVersions = new Dictionary<string, long> { { TableKeyProvider.CompartmentRowKey(patientId1), 2 } };
                 await metadataStore.UpdatePatientVersionsAsync(QueueTypeByte, updatedPatientVersions);
 
-                var patientVersions = await metadataStore.GetPatientVersionsAsync(QueueTypeByte, CancellationToken.None);
+                Dictionary<string, long> patientVersions = await metadataStore.GetPatientVersionsAsync(QueueTypeByte, CancellationToken.None);
                 Assert.Equal(2, patientVersions.Count);
                 Assert.True(patientVersions.ContainsKey(TableKeyProvider.CompartmentRowKey(patientId1)));
                 Assert.True(patientVersions.ContainsKey(TableKeyProvider.CompartmentRowKey(patientId1)));
@@ -365,8 +409,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private IMetadataStore CreateUniqueMetadataStore()
         {
-            var uniqueName = Guid.NewGuid().ToString("N");
-            var jobConfig = Options.Create(new JobConfiguration
+            string uniqueName = Guid.NewGuid().ToString("N");
+            IOptions<JobConfiguration> jobConfig = Options.Create(new JobConfiguration
             {
                 JobInfoTableName = $"jobinfotable{uniqueName}",
                 MetadataTableName = $"metadatatable{uniqueName}",

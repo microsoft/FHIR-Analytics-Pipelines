@@ -8,6 +8,7 @@ using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
+using NCrontab;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValidators
 {
@@ -36,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
 
             if (string.IsNullOrWhiteSpace(fhirServerConfiguration.ServerUrl))
             {
-                throw new ConfigurationErrorException($"Fhir server url can not be empty.");
+                throw new ConfigurationErrorException("Fhir server url can not be empty.");
             }
 
             if (!ConfigurationConstants.SupportedFhirVersions.Contains(fhirServerConfiguration.Version))
@@ -65,22 +66,22 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
 
             if (string.IsNullOrWhiteSpace(jobConfiguration.TableUrl))
             {
-                throw new ConfigurationErrorException($"Table Url can not be empty.");
+                throw new ConfigurationErrorException("Table Url can not be empty.");
             }
 
             if (string.IsNullOrWhiteSpace(jobConfiguration.QueueUrl))
             {
-                throw new ConfigurationErrorException($"Queue Url can not be empty.");
+                throw new ConfigurationErrorException("Queue Url can not be empty.");
             }
 
             if (string.IsNullOrWhiteSpace(jobConfiguration.SchedulerCronExpression))
             {
-                throw new ConfigurationErrorException($"Scheduler crontab expression can not be empty.");
+                throw new ConfigurationErrorException("Scheduler crontab expression can not be empty.");
             }
 
             if (string.IsNullOrWhiteSpace(jobConfiguration.ContainerName))
             {
-                throw new ConfigurationErrorException($"Target azure container name can not be empty.");
+                throw new ConfigurationErrorException("Target azure container name can not be empty.");
             }
 
             if (jobConfiguration.MaxRunningJobCount < 1)
@@ -91,6 +92,17 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
             if (jobConfiguration.MaxQueuedJobCountPerOrchestration < 1)
             {
                 throw new ConfigurationErrorException("Max queued job count per orchestration job should be greater than 0.");
+            }
+
+            if (jobConfiguration.StartTime != null && jobConfiguration.EndTime != null && jobConfiguration.StartTime >= jobConfiguration.EndTime)
+            {
+                throw new ConfigurationErrorException("The start time should be less than the end time.");
+            }
+
+            CrontabSchedule crontabSchedule = CrontabSchedule.TryParse(jobConfiguration.SchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
+            if (crontabSchedule == null)
+            {
+                throw new ConfigurationErrorException("The scheduler crontab expression is invalid.");
             }
 
             FilterLocation filterLocation;
@@ -110,15 +122,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
             {
                 if (string.IsNullOrWhiteSpace(filterLocation.FilterImageReference))
                 {
-                    throw new ConfigurationErrorException($"Filter image reference can not be empty when external filter configuration is enable.");
+                    throw new ConfigurationErrorException("Filter image reference can not be empty when external filter configuration is enable.");
                 }
 
                 ValidateUtility.ValidateImageReference(filterLocation.FilterImageReference);
-
-                if (string.IsNullOrWhiteSpace(filterLocation.FilterConfigurationFileName))
-                {
-                    throw new ConfigurationErrorException($"Filter configuration file name can not be empty when external filter configuration is enable.");
-                }
             }
             else
             {
@@ -138,14 +145,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
                 ValidateUtility.ValidateFilterConfiguration(filterConfiguration);
             }
 
-            var storeConfiguration = services
+            DataLakeStoreConfiguration storeConfiguration = services
                 .BuildServiceProvider()
                 .GetRequiredService<IOptions<DataLakeStoreConfiguration>>()
                 .Value;
 
             if (string.IsNullOrWhiteSpace(storeConfiguration.StorageUrl))
             {
-                throw new ConfigurationErrorException($"Target azure storage url can not be empty.");
+                throw new ConfigurationErrorException("Target azure storage url can not be empty.");
             }
 
             SchemaConfiguration schemaConfiguration;
@@ -165,7 +172,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
             {
                 if (string.IsNullOrWhiteSpace(schemaConfiguration.SchemaImageReference))
                 {
-                    throw new ConfigurationErrorException($"Customized schema image reference can not be empty when customized schema is enable.");
+                    throw new ConfigurationErrorException("Customized schema image reference can not be empty when customized schema is enable.");
                 }
                 else
                 {
@@ -176,7 +183,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
             {
                 if (!string.IsNullOrWhiteSpace(schemaConfiguration.SchemaImageReference))
                 {
-                    throw new ConfigurationErrorException($"Found the schema image reference but customized schema is disable.");
+                    throw new ConfigurationErrorException("Found the schema image reference but customized schema is disable.");
                 }
             }
 

@@ -3,10 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Xunit;
 
@@ -31,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [Theory]
         public static async void GivenSchemaDirectory_WhenGetSchema_CorrectResultShouldBeReturned(string schemaType, int propertyCount)
         {
-            var defaultSchemas = await _testLocalDefaultSchemaProvider.GetSchemasAsync();
+            Dictionary<string, FhirParquetSchemaNode> defaultSchemas = await _testLocalDefaultSchemaProvider.GetSchemasAsync();
 
             Assert.Equal(145, defaultSchemas.Count);
 

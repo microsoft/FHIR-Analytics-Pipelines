@@ -4,8 +4,10 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using DotLiquid;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.UnitTests;
@@ -24,7 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
 
         public ContainerRegistryTemplateProviderTests()
         {
-            var testContainerRegistryServer = Environment.GetEnvironmentVariable("TestContainerRegistryServer");
+            string testContainerRegistryServer = Environment.GetEnvironmentVariable("TestContainerRegistryServer");
             if (testContainerRegistryServer == null)
             {
                 return;
@@ -32,8 +34,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
 
             _testImageReference = $"{testContainerRegistryServer}/synapsetesttemplates:latest";
 
-            var testContainerRegistryUsername = Environment.GetEnvironmentVariable("TestContainerRegistryServer")?.Split('.')[0];
-            var testContainerRegistryPassword = Environment.GetEnvironmentVariable("TestContainerRegistryPassword");
+            string testContainerRegistryUsername = Environment.GetEnvironmentVariable("TestContainerRegistryServer")?.Split('.')[0];
+            string testContainerRegistryPassword = Environment.GetEnvironmentVariable("TestContainerRegistryPassword");
 
             _testContainerRegistryAccessToken = TestUtils.GetAcrAccessToken(testContainerRegistryUsername, testContainerRegistryPassword);
             _testTokenProvider = TestUtils.GetMockAcrTokenProvider(_testContainerRegistryAccessToken);
@@ -44,14 +46,14 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         {
             Skip.If(_testImageReference == null);
 
-            ImageInfo imageInfo = ImageInfo.CreateFromImageReference(_testImageReference);
+            var imageInfo = ImageInfo.CreateFromImageReference(_testImageReference);
             await ContainerRegistryTestUtils.GenerateImageAsync(imageInfo, _testContainerRegistryAccessToken, TestUtils.TestTemplateTarGzPath);
 
             var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
                 _testTokenProvider,
                 new DiagnosticLogger(),
                 new NullLogger<ContainerRegistryTemplateProvider>());
-            var templateCollection = await containerRegistryTemplateProvider.GetTemplateCollectionAsync(_testImageReference, CancellationToken.None);
+            List<Dictionary<string, Template>> templateCollection = await containerRegistryTemplateProvider.GetTemplateCollectionAsync(_testImageReference, CancellationToken.None);
 
             Assert.NotEmpty(templateCollection);
         }

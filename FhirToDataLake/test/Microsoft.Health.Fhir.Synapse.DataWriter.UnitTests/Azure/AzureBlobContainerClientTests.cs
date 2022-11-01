@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Files.DataLake.Models;
@@ -30,12 +31,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public void CreateBlobProvider_ContainerShouldBeCreated()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             // The container doesn't exist at the beginning
             var blobServiceClient = new BlobServiceClient(ConnectionString);
 
-            var container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
+            BlobContainerClient container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
             Assert.False(container.Exists());
 
             _ = GetTestBlobProvider(ConnectionString, uniqueContainerName);
@@ -53,12 +54,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public void CreateBlobProvider_WhenContainerExists_NoExceptionshouldBeThrown()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             // The container doesn't exist at the beginning
             var blobServiceClient = new BlobServiceClient(ConnectionString);
 
-            var container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
+            BlobContainerClient container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
             Assert.False(container.Exists());
 
             // create the container
@@ -80,12 +81,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public void CreateTwoBlobProviders_NoExceptionshouldBeThrown()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             // The container doesn't exist at the beginning
             var blobServiceClient = new BlobServiceClient(ConnectionString);
 
-            var container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
+            BlobContainerClient container = blobServiceClient.GetBlobContainerClient(uniqueContainerName);
             Assert.False(container.Exists());
 
             _ = GetTestBlobProvider(ConnectionString, uniqueContainerName);
@@ -108,33 +109,33 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public void GivenInvalidConnectionString_WhenCreateBlobProvider_ExceptionShouldBeThrown()
         {
-            var errorFormatConncetionString = "invalidstring";
+            string errorFormatConncetionString = "invalidstring";
             Assert.Throws<FormatException>(() => GetTestBlobProvider(errorFormatConncetionString, errorFormatConncetionString));
 
-            var emptyConncetionString = string.Empty;
+            string emptyConncetionString = string.Empty;
             Assert.Throws<ArgumentNullException>(() => GetTestBlobProvider(emptyConncetionString, emptyConncetionString));
 
-            var invalidAccountConncetionString = "DefaultEndpointsProtocol=https;AccountName=fakeaccountname;AccountKey=nbmHd6Y4U3qVgko7VFeFJEfHjX6dNFHUrqT+Kr0fXjwrEIDIv189v+iOljnQ1IYYK95Q2DoPK9KoDyy/T3yt3Q==;EndpointSuffix=core.windows.net";
+            string invalidAccountConncetionString = "DefaultEndpointsProtocol=https;AccountName=fakeaccountname;AccountKey=nbmHd6Y4U3qVgko7VFeFJEfHjX6dNFHUrqT+Kr0fXjwrEIDIv189v+iOljnQ1IYYK95Q2DoPK9KoDyy/T3yt3Q==;EndpointSuffix=core.windows.net";
             Assert.Throws<AzureBlobOperationFailedException>(() => GetTestBlobProvider(invalidAccountConncetionString, invalidAccountConncetionString));
         }
 
         [Fact]
         public void GivenEmptyContainerName_WhenCreateBlobProvider_ExceptionShouldBeThrown()
         {
-            var emptyConatinerName = string.Empty;
+            string emptyConatinerName = string.Empty;
             Assert.Throws<AzureBlobOperationFailedException>(() => GetTestBlobProvider(ConnectionString, emptyConatinerName));
         }
 
         [Fact]
         public async void AccessBlobProvider_WhenContainerNoExists_ExceptionShouldBeThrown()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
             // call function of blobProvider
-            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes("example")))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("example")))
             {
                 Assert.True(await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None));
             }
@@ -145,13 +146,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             await blobServiceClient.DeleteBlobContainerAsync(uniqueContainerName);
 
             // call CreateBlobAsync() after the container is deleted by others
-            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes("new example")))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("new example")))
             {
                 await Assert.ThrowsAsync<AzureBlobOperationFailedException>(() => blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None));
             }
 
             // call UploadStreamToBlobAsync()after the container is deleted by others
-            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes("new example")))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("new example")))
             {
                 await Assert.ThrowsAsync<AzureBlobOperationFailedException>(() => blobProvider.UpdateBlobAsync(blobName, stream, CancellationToken.None));
             }
@@ -163,26 +164,26 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void DeleteExistingBlob_TrueShouldReturn()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
             var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
-            var blobClient = blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             Assert.False(await blobClient.ExistsAsync());
 
             // create a new blob
-            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes("example")))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("example")))
             {
-                var result = await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None);
+                bool result = await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None);
 
                 Assert.True(result);
                 Assert.True(await blobClient.ExistsAsync());
             }
 
             // delete the blob
-            var isDeleted = await blobProvider.DeleteBlobAsync(blobName, cancellationToken: CancellationToken.None);
+            bool isDeleted = await blobProvider.DeleteBlobAsync(blobName, cancellationToken: CancellationToken.None);
 
             Assert.True(isDeleted);
             Assert.False(await blobClient.ExistsAsync());
@@ -199,17 +200,17 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void DeleteNoExistingBlob_FalseShouldReturn()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
             var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
-            var blobClient = blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             Assert.False(await blobClient.ExistsAsync());
 
             // delete the blob
-            var isDeleted = await blobProvider.DeleteBlobAsync(blobName, cancellationToken: CancellationToken.None);
+            bool isDeleted = await blobProvider.DeleteBlobAsync(blobName, cancellationToken: CancellationToken.None);
 
             Assert.False(isDeleted);
             Assert.False(await blobClient.ExistsAsync());
@@ -220,28 +221,28 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void CreateNewBlobTwice_FalseShouldReturn()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
             var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
-            var blobClient = blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
             Assert.False(await blobClient.ExistsAsync());
 
             // create a new blob
-            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes("example")))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("example")))
             {
-                var isCreated = await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None);
+                bool isCreated = await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None);
                 Assert.True(isCreated);
                 Assert.True(await blobClient.ExistsAsync());
             }
 
             // create the blob again
-            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes("new example")))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("new example")))
             {
-                var isCreated = await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None);
+                bool isCreated = await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None);
                 Assert.False(isCreated);
                 Assert.True(await blobClient.ExistsAsync());
             }
@@ -252,34 +253,34 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void CreateDeletedBlob_TrueShouldReturn()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
             var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
-            var blobClient = blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
             Assert.False(await blobClient.ExistsAsync());
 
             // create a new blob
-            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes("example")))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("example")))
             {
-                var isCreated = await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None);
+                bool isCreated = await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None);
                 Assert.True(isCreated);
                 Assert.True(await blobClient.ExistsAsync());
             }
 
             // delete the blob
-            var isDeleted = await blobProvider.DeleteBlobAsync(blobName, cancellationToken: CancellationToken.None);
+            bool isDeleted = await blobProvider.DeleteBlobAsync(blobName, cancellationToken: CancellationToken.None);
 
             Assert.True(isDeleted);
             Assert.False(await blobClient.ExistsAsync());
 
             // create the blob again
-            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes("new example")))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("new example")))
             {
-                var isCreated = await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None);
+                bool isCreated = await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None);
                 Assert.True(isCreated);
                 Assert.True(await blobClient.ExistsAsync());
             }
@@ -290,17 +291,17 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void CreateLargeNewBlobTwice_TrueShouldReturnForTheFirstCompleted_And_FalseShouldReturnForTheSecondOne()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
             var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
-            var blobClient = blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
 
-            using MemoryStream sourceStream = new MemoryStream();
-            using StreamWriter writer = new StreamWriter(sourceStream);
+            using var sourceStream = new MemoryStream();
+            using var writer = new StreamWriter(sourceStream);
 
             int lineNumber = (1024 * 1024) + 3;
             while (lineNumber-- > 0)
@@ -314,11 +315,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             Assert.False(await blobClient.ExistsAsync());
 
-            var task_1 = blobProvider.CreateBlobAsync(blobName, sourceStream, CancellationToken.None);
-            var task_2 = blobProvider.CreateBlobAsync(blobName, sourceStream, CancellationToken.None);
+            Task<bool> task_1 = blobProvider.CreateBlobAsync(blobName, sourceStream, CancellationToken.None);
+            Task<bool> task_2 = blobProvider.CreateBlobAsync(blobName, sourceStream, CancellationToken.None);
 
-            var isCreated_1 = await task_1;
-            var isCreated_2 = await task_2;
+            bool isCreated_1 = await task_1;
+            bool isCreated_2 = await task_2;
             Assert.True(isCreated_1 ^ isCreated_2);
 
             await blobContainerClient.DeleteAsync();
@@ -327,19 +328,19 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void CreateLargeNewBlobTwice_AtTheSameTime_TrueShouldReturnForTheFirstCompleted_And_FalseShouldReturnForTheSecondOne()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
             var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
-            var blobClient = blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
 
             Assert.False(await blobClient.ExistsAsync());
 
-            using MemoryStream sourceStream_1 = new MemoryStream();
-            using StreamWriter writer = new StreamWriter(sourceStream_1);
+            using var sourceStream_1 = new MemoryStream();
+            using var writer = new StreamWriter(sourceStream_1);
 
             int lineNumber = (1024 * 1024) + 3;
             while (lineNumber-- > 0)
@@ -351,16 +352,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             sourceStream_1.Position = 0;
 
-            using MemoryStream sourceStream_2 = new MemoryStream();
+            using var sourceStream_2 = new MemoryStream();
             await sourceStream_1.CopyToAsync(sourceStream_2);
 
             sourceStream_1.Position = 0;
             sourceStream_2.Position = 0;
 
-            var task_1 = blobProvider.CreateBlobAsync(blobName, sourceStream_1, CancellationToken.None);
-            var task_2 = blobProvider.CreateBlobAsync(blobName, sourceStream_2, CancellationToken.None);
+            Task<bool> task_1 = blobProvider.CreateBlobAsync(blobName, sourceStream_1, CancellationToken.None);
+            Task<bool> task_2 = blobProvider.CreateBlobAsync(blobName, sourceStream_2, CancellationToken.None);
 
-            var isCreateds = await Task.WhenAll(task_1, task_2);
+            bool[] isCreateds = await Task.WhenAll(task_1, task_2);
 
             Assert.True(await blobClient.ExistsAsync());
             Assert.True(isCreateds[0] ^ isCreateds[1]);
@@ -371,20 +372,20 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void DownloadBlob_StreamShouldReturn()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
             var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
-            var blobClient = blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
 
             string blobContent = "example";
 
             // create a new blob
-            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(blobContent)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(blobContent)))
             {
-                var isCreated = await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None);
+                bool isCreated = await blobProvider.CreateBlobAsync(blobName, stream, CancellationToken.None);
                 Assert.True(isCreated);
                 Assert.True(await blobClient.ExistsAsync());
             }
@@ -400,13 +401,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void DownloadNoExistingBlob_StreamShouldReturn()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
             var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
-            var blobClient = blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             Assert.False(await blobClient.ExistsAsync());
 
             using Stream downloadStream = await blobProvider.GetBlobAsync(blobName, CancellationToken.None);
@@ -419,25 +420,25 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void UpdateStreamToBlob_TheBlobShouldBeOverwriten()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
             var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
-            var blobClient = blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
             Assert.False(await blobClient.ExistsAsync());
 
             // create a new blob
             string blobContent = "example";
-            var blobUrl_1 = await blobProvider.UpdateBlobAsync(blobName, new MemoryStream(Encoding.ASCII.GetBytes(blobContent)), CancellationToken.None);
+            string blobUrl_1 = await blobProvider.UpdateBlobAsync(blobName, new MemoryStream(Encoding.ASCII.GetBytes(blobContent)), CancellationToken.None);
 
             Assert.True(await blobClient.ExistsAsync());
 
             using (var stream = new MemoryStream())
             {
-                var res = await blobClient.DownloadToAsync(stream);
+                Response res = await blobClient.DownloadToAsync(stream);
                 stream.Position = 0;
                 using var reader = new StreamReader(stream);
                 Assert.Equal(blobContent, await reader.ReadToEndAsync());
@@ -445,14 +446,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             // upload to a existing blob
             string newBlobContent = "new example";
-            var blobUrl_2 = await blobProvider.UpdateBlobAsync(blobName, new MemoryStream(Encoding.ASCII.GetBytes(newBlobContent)), CancellationToken.None);
+            string blobUrl_2 = await blobProvider.UpdateBlobAsync(blobName, new MemoryStream(Encoding.ASCII.GetBytes(newBlobContent)), CancellationToken.None);
 
             Assert.Equal(blobUrl_1, blobUrl_2);
             Assert.True(await blobClient.ExistsAsync());
 
             using (var stream = new MemoryStream())
             {
-                var res = await blobClient.DownloadToAsync(stream);
+                Response res = await blobClient.DownloadToAsync(stream);
                 stream.Position = 0;
                 using var reader = new StreamReader(stream);
                 Assert.Equal(newBlobContent, await reader.ReadToEndAsync());
@@ -464,28 +465,28 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void AcquireLease_WhenALeaseExists_ExceptionShouldBeThrown()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
 
             var blobContainerClient = new BlobContainerClient(ConnectionString, uniqueContainerName);
-            var blobClient = blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
             Assert.False(await blobClient.ExistsAsync());
 
             // create a new blob
             string blobContent = "example";
-            var blobUrl_1 = await blobProvider.CreateBlobAsync(blobName, new MemoryStream(Encoding.ASCII.GetBytes(blobContent)), CancellationToken.None);
+            bool blobUrl_1 = await blobProvider.CreateBlobAsync(blobName, new MemoryStream(Encoding.ASCII.GetBytes(blobContent)), CancellationToken.None);
             Assert.True(await blobClient.ExistsAsync());
 
-            var lease = await blobProvider.AcquireLeaseAsync(blobName, null, TimeSpan.FromSeconds(30));
+            string lease = await blobProvider.AcquireLeaseAsync(blobName, null, TimeSpan.FromSeconds(30));
             Assert.NotNull(lease);
 
-            var lease2 = await blobProvider.AcquireLeaseAsync(blobName, null, TimeSpan.FromSeconds(30));
+            string lease2 = await blobProvider.AcquireLeaseAsync(blobName, null, TimeSpan.FromSeconds(30));
             Assert.Null(lease2);
 
-            var lease3 = await blobProvider.AcquireLeaseAsync(blobName, lease, TimeSpan.FromSeconds(30));
+            string lease3 = await blobProvider.AcquireLeaseAsync(blobName, lease, TimeSpan.FromSeconds(30));
             Assert.Equal(lease, lease3);
 
             await blobContainerClient.DeleteAsync();
@@ -494,11 +495,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void AcquireLease_WhenBlobNotExists_NoLeaseShouldReturn()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
-            var lease = await blobProvider.AcquireLeaseAsync(blobName, null, TimeSpan.FromSeconds(30));
+            string lease = await blobProvider.AcquireLeaseAsync(blobName, null, TimeSpan.FromSeconds(30));
 
             Assert.Null(lease);
 
@@ -509,11 +510,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void ReleaseLease_WhenBlobNotExists_NoLeaseShouldReturn()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
-            var result = await blobProvider.ReleaseLeaseAsync(blobName, null);
+            bool result = await blobProvider.ReleaseLeaseAsync(blobName, null);
 
             Assert.False(result);
 
@@ -524,7 +525,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [Fact]
         public async void RenewLease_WhenBlobNotExists_NoLeaseShouldReturn()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
 
             AzureBlobContainerClient blobProvider = GetTestBlobProvider(ConnectionString, uniqueContainerName);
             string blobName = Guid.NewGuid().ToString("N");
@@ -538,16 +539,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [SkippableFact]
         public async Task GivenANotExistingDirectoryName_WhenDeleteIfExists_NoExceptionShouldBeThrown()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
             Skip.If(adlsClient == null);
 
-            var blobContainerClient = GetBlobContainerClient(uniqueContainerName);
+            BlobContainerClient blobContainerClient = GetBlobContainerClient(uniqueContainerName);
             await blobContainerClient.CreateIfNotExistsAsync();
 
             try
             {
-                var exception = await Record.ExceptionAsync(async () => await adlsClient.DeleteDirectoryIfExistsAsync("foldernotexist"));
+                Exception exception = await Record.ExceptionAsync(async () => await adlsClient.DeleteDirectoryIfExistsAsync("foldernotexist"));
                 Assert.Null(exception);
             }
             finally
@@ -559,18 +560,18 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [SkippableFact]
         public async Task GivenAValidDirectoryName_WhenDeleteIfExists_DirectoryAndBlobsShouldBeDeleted()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
             Skip.If(adlsClient == null);
 
-            var blobContainerClient = GetBlobContainerClient(uniqueContainerName);
+            BlobContainerClient blobContainerClient = GetBlobContainerClient(uniqueContainerName);
             await blobContainerClient.CreateIfNotExistsAsync();
 
             try
             {
-                var blobName = "foo/bar1/1.txt";
+                string blobName = "foo/bar1/1.txt";
                 await blobContainerClient.UploadBlobAsync(blobName, new MemoryStream(new byte[] { 1, 2, 3 }));
-                var blobClient = blobContainerClient.GetBlobClient(blobName);
+                BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
                 Assert.True(await blobClient.ExistsAsync());
                 await adlsClient.DeleteDirectoryIfExistsAsync("foo/bar1");
                 Assert.False(await blobClient.ExistsAsync());
@@ -584,17 +585,17 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [SkippableFact]
         public async Task GivenANotExistingDirectoryName_WhenListPaths_NoPathShouldBeReturned()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
             Skip.If(adlsClient == null);
 
-            var blobContainerClient = GetBlobContainerClient(uniqueContainerName);
+            BlobContainerClient blobContainerClient = GetBlobContainerClient(uniqueContainerName);
             await blobContainerClient.CreateIfNotExistsAsync();
 
             try
             {
-                var paths = new List<PathItem>();
-                await foreach (var item in adlsClient.ListPathsAsync(uniqueContainerName))
+                List<PathItem> paths = new List<PathItem>();
+                await foreach (PathItem item in adlsClient.ListPathsAsync(uniqueContainerName))
                 {
                     paths.Add(item);
                 }
@@ -610,25 +611,25 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [SkippableFact]
         public async Task GivenAValidDirectoryName_WhenListPaths_AllPathsShouldBeReturned()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
             Skip.If(adlsClient == null);
 
-            var blobContainerClient = GetBlobContainerClient(uniqueContainerName);
+            BlobContainerClient blobContainerClient = GetBlobContainerClient(uniqueContainerName);
             await blobContainerClient.CreateIfNotExistsAsync();
 
             try
             {
                 // Set up directory info
-                var blobList = new List<string> { "foo/bar/1.txt", "foo/bar1/1.txt", "foo/bar2/2.txt", "foo/bar2/2.1.txt", "foo/bar3/3.txt" };
-                var expectedResult = new HashSet<string> { "foo/bar", "foo/bar1", "foo/bar2", "foo/bar3", "foo/bar/1.txt", "foo/bar1/1.txt", "foo/bar2/2.txt", "foo/bar2/2.1.txt", "foo/bar3/3.txt" };
-                foreach (var blob in blobList)
+                List<string> blobList = new List<string> { "foo/bar/1.txt", "foo/bar1/1.txt", "foo/bar2/2.txt", "foo/bar2/2.1.txt", "foo/bar3/3.txt" };
+                HashSet<string> expectedResult = new HashSet<string> { "foo/bar", "foo/bar1", "foo/bar2", "foo/bar3", "foo/bar/1.txt", "foo/bar1/1.txt", "foo/bar2/2.txt", "foo/bar2/2.1.txt", "foo/bar3/3.txt" };
+                foreach (string blob in blobList)
                 {
                     await blobContainerClient.UploadBlobAsync(blob, new MemoryStream(new byte[] { 1, 2, 3 }));
                 }
 
-                var paths = new List<PathItem>();
-                await foreach (var item in adlsClient.ListPathsAsync("foo"))
+                List<PathItem> paths = new List<PathItem>();
+                await foreach (PathItem item in adlsClient.ListPathsAsync("foo"))
                 {
                     paths.Add(item);
                 }
@@ -644,11 +645,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [SkippableFact]
         public async Task GivenANotExistingDirectoryName_WhenMoveDirectory_ExceptionShouldBeThrown()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
             Skip.If(adlsClient == null);
 
-            var blobContainerClient = GetBlobContainerClient(uniqueContainerName);
+            BlobContainerClient blobContainerClient = GetBlobContainerClient(uniqueContainerName);
             await blobContainerClient.CreateIfNotExistsAsync();
 
             try
@@ -664,27 +665,27 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         [SkippableFact]
         public async Task GivenADirectoryName_WhenMoveDirectories_AllSubDirectoriesShouldBeMoved()
         {
-            var uniqueContainerName = Guid.NewGuid().ToString("N");
+            string uniqueContainerName = Guid.NewGuid().ToString("N");
             AzureBlobContainerClient adlsClient = GetTestAdlsGen2Client(uniqueContainerName);
             Skip.If(adlsClient == null);
 
-            var blobContainerClient = GetBlobContainerClient(uniqueContainerName);
+            BlobContainerClient blobContainerClient = GetBlobContainerClient(uniqueContainerName);
             await blobContainerClient.CreateIfNotExistsAsync();
 
             try
             {
                 // Set up directory info
-                var blobList = new List<string> { "foo/bar/1.txt", "foo/bar1/1.txt", "foo/bar2/2.txt", "foo/bar2/2.1.txt", "foo/bar3/3.txt" };
-                var expectedBlobs = new List<string> { "boo/bar/1.txt", "boo/bar1/1.txt", "boo/bar2/2.txt", "boo/bar2/2.1.txt", "boo/bar3/3.txt" };
-                foreach (var blob in blobList)
+                List<string> blobList = new List<string> { "foo/bar/1.txt", "foo/bar1/1.txt", "foo/bar2/2.txt", "foo/bar2/2.1.txt", "foo/bar3/3.txt" };
+                List<string> expectedBlobs = new List<string> { "boo/bar/1.txt", "boo/bar1/1.txt", "boo/bar2/2.txt", "boo/bar2/2.1.txt", "boo/bar3/3.txt" };
+                foreach (string blob in blobList)
                 {
                     await blobContainerClient.UploadBlobAsync(blob, new MemoryStream(new byte[] { 1, 2, 3 }));
                 }
 
                 await adlsClient.MoveDirectoryAsync("foo", "boo");
-                foreach (var expectedBlob in expectedBlobs)
+                foreach (string expectedBlob in expectedBlobs)
                 {
-                    var blob = blobContainerClient.GetBlobClient(expectedBlob);
+                    BlobClient blob = blobContainerClient.GetBlobClient(expectedBlob);
                     Assert.True(await blob.ExistsAsync());
                 }
             }
@@ -703,7 +704,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         // Some operations like GetSubDirectories and MoveDirectory is not supported in Azure Storage Emulator.
         private static AzureBlobContainerClient GetTestAdlsGen2Client(string containerName)
         {
-            var storageUrl = GetAdlsGen2StoreUrl();
+            string storageUrl = GetAdlsGen2StoreUrl();
             if (string.IsNullOrEmpty(storageUrl))
             {
                 return null;
@@ -714,7 +715,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
         private static BlobContainerClient GetBlobContainerClient(string containerName)
         {
-            var storageUrl = GetAdlsGen2StoreUrl();
+            string storageUrl = GetAdlsGen2StoreUrl();
             if (string.IsNullOrEmpty(storageUrl))
             {
                 return null;

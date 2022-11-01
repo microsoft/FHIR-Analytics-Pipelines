@@ -44,6 +44,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
+                Logger.LogInformation(e, $"Health check component {HealthCheckTypes.FhirServiceCanRead}: read FHIR server failed: {e}.");
+
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = "Read from FHIR server failed." + e.Message;
                 return healthCheckResult;

@@ -101,8 +101,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     throw new OperationCanceledException();
                 }
 
-                var filterScope = await _filterManager.GetFilterScopeAsync(cancellationToken);
-                var inputs = filterScope switch
+                FilterScope filterScope = await _filterManager.GetFilterScopeAsync(cancellationToken);
+                IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> inputs = filterScope switch
                 {
                     FilterScope.System => GetInputsAsyncForSystem(cancellationToken),
                     FilterScope.Group => GetInputsAsyncForGroup(cancellationToken),
@@ -110,22 +110,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         $"The filterScope {filterScope} isn't supported now.")
                 };
 
-                await foreach (var input in inputs.WithCancellation(cancellationToken))
+                await foreach (FhirToDataLakeProcessingJobInputData input in inputs.WithCancellation(cancellationToken))
                 {
                     while (_result.RunningJobIds.Count >= _maxJobCountInRunningPool)
                     {
                         await WaitRunningJobComplete(progress, cancellationToken);
                     }
 
-                    var jobDefinitions = new[] { JsonConvert.SerializeObject(input) };
-                    var jobInfos = await _queueClient.EnqueueAsync(
+                    string[] jobDefinitions = new[] { JsonConvert.SerializeObject(input) };
+                    IEnumerable<JobInfo> jobInfos = await _queueClient.EnqueueAsync(
                         _jobInfo.QueueType,
                         jobDefinitions,
                         _jobInfo.GroupId,
                         false,
                         false,
                         cancellationToken);
-                    var newJobId = jobInfos.First().Id;
+                    long newJobId = jobInfos.First().Id;
                     _result.CreatedJobCount++;
                     _result.RunningJobIds.Add(newJobId);
 
@@ -189,7 +189,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var interval = TimeSpan.FromSeconds(IncrementalOrchestrationIntervalInSeconds);
+            TimeSpan interval = TimeSpan.FromSeconds(IncrementalOrchestrationIntervalInSeconds);
 
             if (_inputData.DataStartTime == null || ((DateTimeOffset)_inputData.DataStartTime).AddMinutes(60) < _inputData.DataEndTime)
             {
@@ -198,7 +198,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             while (_result.NextJobTimestamp == null || _result.NextJobTimestamp < _inputData.DataEndTime)
             {
-                var nextResourceTimestamp =
+                DateTimeOffset? nextResourceTimestamp =
                     await GetNextTimestamp(_result.NextJobTimestamp ?? _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
                 if (nextResourceTimestamp == null)
                 {
@@ -206,7 +206,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     break;
                 }
 
-                var nextJobEnd = (DateTimeOffset)nextResourceTimestamp + interval;
+                DateTimeOffset nextJobEnd = (DateTimeOffset)nextResourceTimestamp + interval;
                 if (nextJobEnd > _inputData.DataEndTime)
                 {
                     nextJobEnd = _inputData.DataEndTime;
@@ -229,11 +229,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForGroup([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             // for group scope, extract patient list from group at first
-            var toBeProcessedPatients = await GetToBeProcessedPatientsAsync(cancellationToken);
+            List<PatientWrapper> toBeProcessedPatients = await GetToBeProcessedPatientsAsync(cancellationToken);
 
             while (_result.NextPatientIndex < toBeProcessedPatients.Count)
             {
-                var selectedPatients = toBeProcessedPatients.Skip(_result.NextPatientIndex)
+                List<PatientWrapper> selectedPatients = toBeProcessedPatients.Skip(_result.NextPatientIndex)
                     .Take(NumberOfPatientsPerProcessingJob).ToList();
                 var input = new FhirToDataLakeProcessingJobInputData
                 {
@@ -252,14 +252,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async Task<List<PatientWrapper>> GetToBeProcessedPatientsAsync(CancellationToken cancellationToken)
         {
-            var groupID = await _filterManager.GetGroupIdAsync(cancellationToken);
+            string groupID = await _filterManager.GetGroupIdAsync(cancellationToken);
 
             // extract patient ids from group
             _logger.LogInformation($"Start extracting patients from group '{groupID}'.");
 
             // For now, the queryParameters is always null.
             // This parameter will be used when we enable filter groups in the future.
-            var patientsHash = (await _groupMemberExtractor.GetGroupPatientsAsync(
+            HashSet<string> patientsHash = (await _groupMemberExtractor.GetGroupPatientsAsync(
                 groupID,
                 null,
                 _inputData.DataEndTime,
@@ -278,7 +278,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             // set the version id for processed patient
             // the processed patients is empty at the beginning , and will be updated when completing a successful job.
-            var toBeProcessedPatients = patientsHash.Select(patientHash =>
+            List<PatientWrapper> toBeProcessedPatients = patientsHash.Select(patientHash =>
                 new PatientWrapper(
                     patientHash,
                     processedPatientVersions.ContainsKey(patientHash) ? processedPatientVersions[patientHash] : 0)).ToList();
@@ -295,11 +295,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         // get the lastUpdated timestamp of next resource for next processing job
         private async Task<DateTimeOffset?> GetNextTimestamp(DateTimeOffset? start, DateTimeOffset end, CancellationToken cancellationToken)
         {
-            var typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
+            List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
 
-            var parameters = new List<KeyValuePair<string, string>>
+            List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
             {
-                new (FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
             };
 
             if (start != null)
@@ -309,19 +309,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             var searchOptions = new BaseSearchOptions(null, parameters);
 
-            var sharedQueryParameters = new List<KeyValuePair<string, string>>(searchOptions.QueryParameters);
+            List<KeyValuePair<string, string>> sharedQueryParameters = new List<KeyValuePair<string, string>>(searchOptions.QueryParameters);
 
             DateTimeOffset? nexTimeOffset = null;
-            foreach (var typeFilter in typeFilters)
+            foreach (TypeFilter typeFilter in typeFilters)
             {
                 searchOptions.ResourceType = typeFilter.ResourceType;
                 searchOptions.QueryParameters = new List<KeyValuePair<string, string>>(sharedQueryParameters);
-                foreach (var parameter in typeFilter.Parameters)
+                foreach (KeyValuePair<string, string> parameter in typeFilter.Parameters)
                 {
                     searchOptions.QueryParameters.Add(parameter);
                 }
 
-                var fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
+                string fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
 
                 // Parse bundle result.
                 JObject fhirBundleObject;
@@ -331,7 +331,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 catch (JsonReaderException exception)
                 {
-                    var reason = string.Format(
+                    string reason = string.Format(
                             "Failed to parse fhir search result for '{0}' with search parameters '{1}'.",
                             searchOptions.ResourceType,
                             string.Join(", ", searchOptions.QueryParameters.Select(parameter => $"{parameter.Key}: {parameter.Value}")));
@@ -341,7 +341,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     throw new FhirDataParseException(reason, exception);
                 }
 
-                var fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject).ToList();
+                List<JObject> fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject).ToList();
 
                 if (fhirResources.Any() && fhirResources.First().GetLastUpdated() != null)
                 {
@@ -357,12 +357,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async Task WaitRunningJobComplete(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            var completedJobIds = new HashSet<long>();
-            var runningJobs = new List<JobInfo>();
+            HashSet<long> completedJobIds = new HashSet<long>();
+            List<JobInfo> runningJobs = new List<JobInfo>();
 
             runningJobs.AddRange(await _queueClient.GetJobsByIdsAsync(_jobInfo.QueueType, _result.RunningJobIds.ToArray(), false, cancellationToken));
 
-            foreach (var latestJobInfo in runningJobs)
+            foreach (JobInfo latestJobInfo in runningJobs)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {

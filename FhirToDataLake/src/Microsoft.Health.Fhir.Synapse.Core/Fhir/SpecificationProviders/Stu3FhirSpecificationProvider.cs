@@ -18,9 +18,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         {
         }
 
-        protected override IEnumerable<string> _compartmentEmbeddedFiles { get; } = null;
+        protected override IEnumerable<string> CompartmentEmbeddedFiles { get; } = null;
 
-        protected override string _searchParameterEmbeddedFile { get; } = null;
+        protected override string SearchParameterEmbeddedFile { get; } = null;
 
         public override IEnumerable<string> GetAllResourceTypes()
         {
@@ -32,7 +32,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             return Stu3FhirModelInfo.IsKnownResource(resourceType);
         }
 
-        protected override Tuple<Dictionary<string, HashSet<string>>, Dictionary<string, string>> BuildSearchParametersLookupFromMetadata(string metaData)
+        protected override FhirCapabilityData BuildCapabilityDataFromMetadata(string metaData)
         {
             throw new NotImplementedException();
         }

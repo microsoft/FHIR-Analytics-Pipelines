@@ -13,7 +13,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Microsoft.Health.Fhir.TemplateManagement.Models;
 using Xunit;
 
@@ -28,7 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         public ContainerRegistryFilterProviderTests()
         {
-            var testContainerRegistryServer = Environment.GetEnvironmentVariable("TestContainerRegistryServer");
+            string testContainerRegistryServer = Environment.GetEnvironmentVariable("TestContainerRegistryServer");
             if (testContainerRegistryServer == null)
             {
                 return;
@@ -36,8 +35,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
             _testImageReference = $"{testContainerRegistryServer}/synapsetestfilter:latest";
 
-            var testContainerRegistryUsername = Environment.GetEnvironmentVariable("TestContainerRegistryServer")?.Split('.')[0];
-            var testContainerRegistryPassword = Environment.GetEnvironmentVariable("TestContainerRegistryPassword");
+            string testContainerRegistryUsername = Environment.GetEnvironmentVariable("TestContainerRegistryServer")?.Split('.')[0];
+            string testContainerRegistryPassword = Environment.GetEnvironmentVariable("TestContainerRegistryPassword");
 
             _testContainerRegistryAccessToken = ContainerRegistryTestUtils.GetAcrAccessToken(testContainerRegistryUsername, testContainerRegistryPassword);
             _testTokenProvider = ContainerRegistryTestUtils.GetMockAcrTokenProvider(_testContainerRegistryAccessToken);
@@ -48,7 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         {
             Skip.If(_testImageReference == null);
 
-            ImageInfo imageInfo = ImageInfo.CreateFromImageReference(_testImageReference);
+            var imageInfo = ImageInfo.CreateFromImageReference(_testImageReference);
             await ContainerRegistryTestUtils.GenerateImageAsync(imageInfo, _testContainerRegistryAccessToken, TestUtils.TestFilterTarGzPath);
 
             var containerRegistryFilterProvider = new ContainerRegistryFilterProvider(
@@ -60,7 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 _testTokenProvider,
                 _diagnosticLogger,
                 new NullLogger<ContainerRegistryFilterProvider>());
-            var filterConfiguration = await containerRegistryFilterProvider.GetFilterAsync(CancellationToken.None);
+            FilterConfiguration filterConfiguration = await containerRegistryFilterProvider.GetFilterAsync(CancellationToken.None);
 
             Assert.Equal(Common.Models.Jobs.FilterScope.System, filterConfiguration.FilterScope);
             Assert.Equal("test", filterConfiguration.TypeFilters);
