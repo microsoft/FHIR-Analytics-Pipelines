@@ -272,7 +272,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
                     _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
                     _metricsLogger.LogTotalErrorsMetrics(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.", Operations.RunSchedulerService);
-
                 }
 
                 await intervalDelayTask;
@@ -530,7 +529,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 catch (Exception ex)
                 {
-
                     delayTaskCancellationTokenSource.Cancel();
                     _logger.LogInformation(ex, $"Scheduler instance {_instanceGuid} fails to renew lease.");
                 }
