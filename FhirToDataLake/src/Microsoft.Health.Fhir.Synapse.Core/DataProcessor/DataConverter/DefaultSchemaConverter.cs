@@ -53,7 +53,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             }
 
             var processedJsonData = inputData.Values
-                .Select(json => ProcessStructObject(json, schema))
+                .Select(json =>
+                {
+                    if (json == null)
+                    {
+                        _diagnosticLogger.LogError($"The input FHIR data is null for schema type '{schemaType}'.");
+                        _logger.LogInformation($"The input FHIR data is null for schema type '{schemaType}'.");
+                        throw new ParquetDataProcessorException($"The input FHIR data is null for schema type '{schemaType}'.");
+                    }
+
+                    return ProcessStructObject(json, schema);
+                })
                 .Where(processedResult => processedResult != null);
 
             return new JsonBatchData(processedJsonData);
@@ -70,10 +80,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             var processedObject = new JObject();
 
-            foreach (var subItem in fhirJObject)
+            foreach (var subItem in fhirJObject.Properties())
             {
                 var subObject = subItem.Value;
-                var subObjectKey = subItem.Key;
+                var subObjectKey = subItem.Name;
 
                 // Process choice type FHIR resource.
                 if (schemaNode.ContainsChoiceDataType(subObjectKey))

@@ -47,6 +47,276 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
             yield return new object[] { File.ReadAllText(Path.Join(TestUtils.TestInvalidSchemaDirectoryPath, "Invalid_schema_repeated_not_match2.json")) };
         }
 
+        public static IEnumerable<object[]> GetValidDataContents()
+        {
+            yield return new object[]
+            {
+                "Patient",
+
+                // Struct data.
+                new JObject
+                {
+                    {
+                        "text", new JObject
+                        {
+                            { "status", "generated" },
+                            { "div", "Test div in text" },
+                        }
+                    },
+                },
+
+                // Expected struct format fields are same with raw struct format fields.
+                new JObject
+                {
+                    {
+                        "text", new JObject
+                        {
+                            { "status", "generated" },
+                            { "div", "Test div in text" },
+                        }
+                    },
+                },
+            };
+
+            yield return new object[]
+            {
+                "Patient",
+
+                // Array data.
+                new JObject
+                {
+                    {
+                        "name", new JArray
+                        {
+                            new JObject
+                            {
+                                { "use", "official" },
+                                { "family", "Chalmers" },
+                                { "given", new JArray { "Peter", "James" } },
+                            },
+                            new JObject
+                            {
+                                { "use", "maiden" },
+                                { "given", new JArray { "Jim" } },
+                            },
+                        }
+                    },
+                },
+
+                // Expected array format fields are same with raw array format fields.
+                new JObject
+                {
+                    {
+                        "name", new JArray
+                        {
+                            new JObject
+                            {
+                                { "use", "official" },
+                                { "family", "Chalmers" },
+                                { "given", new JArray { "Peter", "James" } },
+                            },
+                            new JObject
+                            {
+                                { "use", "maiden" },
+                                { "given", new JArray { "Jim" } },
+                            },
+                        }
+                    },
+                },
+            };
+
+            yield return new object[]
+            {
+                "Patient",
+
+                // Data with deep array field
+                new JObject
+                {
+                    {
+                        "contact", new JArray
+                        {
+                            new JObject
+                            {
+                                {
+                                    "relationship", new JArray
+                                    {
+                                        new JObject
+                                        {
+                                            {
+                                                "coding", new JArray
+                                                {
+                                                    new JObject
+                                                    {
+                                                        { "system", "http://terminology.hl7.org/CodeSystem/v2-0131" },
+                                                        { "code", "E" },
+                                                    },
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
+                new JObject
+                {
+                    {
+                        "contact", new JArray
+                        {
+                            new JObject
+                            {
+                                {
+                                    "relationship", new JArray
+                                    {
+                                        new JObject
+                                        {
+                                            {
+                                                "coding", "[{\"system\":\"http://terminology.hl7.org/CodeSystem/v2-0131\",\"code\":\"E\"}]"
+                                            },
+                                        },
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
+            };
+
+            yield return new object[]
+            {
+                "Patient",
+
+                // Data with deep fields
+                new JObject
+                {
+                    {
+                        "contact", new JArray
+                        {
+                            new JObject
+                            {
+                                {
+                                    "relationship", new JArray
+                                    {
+                                        new JObject
+                                        {
+                                            {
+                                                "coding", new JArray
+                                                {
+                                                    new JObject
+                                                    {
+                                                        { "system", "http://terminology.hl7.org/CodeSystem/v2-0131" },
+                                                        { "code", "E" },
+                                                    },
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
+
+                new JObject
+                {
+                    {
+                        "contact", new JArray
+                        {
+                            new JObject
+                            {
+                                {
+                                    "relationship", new JArray
+                                    {
+                                        new JObject
+                                        {
+                                            {
+                                                "coding", "[{\"system\":\"http://terminology.hl7.org/CodeSystem/v2-0131\",\"code\":\"E\"}]"
+                                            },
+                                        },
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
+            };
+
+            yield return new object[]
+            {
+                "Observation",
+
+                // Data with primitive choice type
+                new JObject
+                {
+                    { "effectiveDateTime", "1905-08-23" },
+                },
+
+                // Primitive choice data type
+                new JObject
+                {
+                    { "effective", new JObject { { "dateTime", "1905-08-23" } } },
+                },
+            };
+
+            yield return new object[]
+            {
+                "Observation",
+
+                // Data with struct choice type
+                new JObject
+                {
+                    { "effectivePeriod", new JObject { { "start", "1905-08-23" } } },
+                },
+
+                // Struct choice data type
+                new JObject
+                {
+                    { "effective", new JObject { { "period", new JObject { { "start", "1905-08-23" } } } } },
+                },
+            };
+        }
+
+        public static IEnumerable<object[]> GetInvalidDataContents()
+        {
+            yield return new object[]
+            {
+                "Patient",
+                new JObject
+                {
+                    { "name", "Invalid data fields, should be array." },
+                },
+            };
+
+            yield return new object[]
+            {
+                "Patient",
+                new JObject
+                {
+                    {
+                        "text", null
+                    },
+                },
+            };
+
+            yield return new object[]
+            {
+                "Patient",
+                new JObject
+                {
+                    {
+                        "name", new JArray { null }
+                    },
+                },
+            };
+
+            yield return new object[]
+            {
+                "Patient",
+                null,
+            };
+        }
+
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
@@ -78,250 +348,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedResult.First()));
         }
 
-        [Fact]
-        public void GivenAValidStructData_WhenConvert_CorrectResultShouldBeReturned()
+        [Theory]
+        [MemberData(nameof(GetValidDataContents))]
+        public void GivenAValidData_WhenConvert_CorrectResultShouldBeReturned(string schemaType, JObject inputObject, JObject expectedObject)
         {
-            JObject rawStructFormatData = new JObject
-            {
-                {
-                    "text", new JObject
-                    {
-                        { "status", "generated" },
-                        { "div", "Test div in text" },
-                    }
-                },
-            };
-
-            // Expected struct format fields are same with raw struct format fields.
-            JObject expectedStructFormatResult = new JObject
-            {
-                {
-                    "text", new JObject
-                    {
-                        { "status", "generated" },
-                        { "div", "Test div in text" },
-                    }
-                },
-            };
-
-            var result = _testDefaultConverter.Convert(
-                CreateTestJsonBatchData(rawStructFormatData),
-                "Patient");
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedStructFormatResult));
-        }
-
-        [Fact]
-        public void GivenAValidArrayData_WhenConvert_CorrectResultShouldBeReturned()
-        {
-            JObject rawArrayFormatData = new JObject
-            {
-                {
-                    "name", new JArray
-                    {
-                        new JObject
-                        {
-                            { "use", "official" },
-                            { "family", "Chalmers" },
-                            { "given", new JArray { "Peter", "James" } },
-                        },
-                        new JObject
-                        {
-                            { "use", "maiden" },
-                            { "given", new JArray { "Jim" } },
-                        },
-                    }
-                },
-            };
-
-            // Expected array format fields are same with raw array format fields.
-            JObject expectedArrayFormatResult = new JObject
-            {
-                {
-                    "name", new JArray
-                    {
-                        new JObject
-                        {
-                            { "use", "official" },
-                            { "family", "Chalmers" },
-                            { "given", new JArray { "Peter", "James" } },
-                        },
-                        new JObject
-                        {
-                            { "use", "maiden" },
-                            { "given", new JArray { "Jim" } },
-                        },
-                    }
-                },
-            };
-
-            var result = _testDefaultConverter.Convert(
-                CreateTestJsonBatchData(rawArrayFormatData),
-                "Patient");
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedArrayFormatResult));
-        }
-
-        [Fact]
-        public void GivenAValidDataWithDeepArrayField_WhenConvert_DeepFieldsShouldBeWrappedIntoJsonString()
-        {
-            JObject rawDeepFieldsData = new JObject
-            {
-                {
-                    "contact", new JArray
-                    {
-                        new JObject
-                        {
-                            {
-                                "relationship", new JArray
-                                {
-                                    new JObject
-                                    {
-                                        {
-                                            "coding", new JArray
-                                            {
-                                                new JObject
-                                                {
-                                                    { "system", "http://terminology.hl7.org/CodeSystem/v2-0131" },
-                                                    { "code", "E" },
-                                                },
-                                            }
-                                        },
-                                    },
-                                }
-                            },
-                        },
-                    }
-                },
-            };
-
-            JObject expectedJsonStringFieldsResult = new JObject
-            {
-                {
-                    "contact", new JArray
-                    {
-                        new JObject
-                        {
-                            {
-                                "relationship", new JArray
-                                {
-                                    new JObject
-                                    {
-                                        {
-                                            "coding", "[{\"system\":\"http://terminology.hl7.org/CodeSystem/v2-0131\",\"code\":\"E\"}]"
-                                        },
-                                    },
-                                }
-                            },
-                        },
-                    }
-                },
-            };
-
-            var result = _testDefaultConverter.Convert(
-                CreateTestJsonBatchData(rawDeepFieldsData),
-                "Patient");
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedJsonStringFieldsResult));
-        }
-
-        [Fact]
-        public void GivenAValidDataWithDeepStructField_WhenConvert_DeepFieldsShouldBeWrappedIntoJsonString()
-        {
-            JObject rawDeepFieldsData = new JObject
-            {
-                {
-                    "contact", new JArray
-                    {
-                        new JObject
-                        {
-                            {
-                                "relationship", new JArray
-                                {
-                                    new JObject
-                                    {
-                                        {
-                                            "coding", new JArray
-                                            {
-                                                new JObject
-                                                {
-                                                    { "system", "http://terminology.hl7.org/CodeSystem/v2-0131" },
-                                                    { "code", "E" },
-                                                },
-                                            }
-                                        },
-                                    },
-                                }
-                            },
-                        },
-                    }
-                },
-            };
-
-            JObject expectedJsonStringFieldsResult = new JObject
-            {
-                {
-                    "contact", new JArray
-                    {
-                        new JObject
-                        {
-                            {
-                                "relationship", new JArray
-                                {
-                                    new JObject
-                                    {
-                                        {
-                                            "coding", "[{\"system\":\"http://terminology.hl7.org/CodeSystem/v2-0131\",\"code\":\"E\"}]"
-                                        },
-                                    },
-                                }
-                            },
-                        },
-                    }
-                },
-            };
-
-            var result = _testDefaultConverter.Convert(
-                CreateTestJsonBatchData(rawDeepFieldsData),
-                "Patient");
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedJsonStringFieldsResult));
-        }
-
-        [Fact]
-        public void GivenAValidPrimitiveChoiceTypeData_WhenConvert_CorrectResultShouldBeReturned()
-        {
-            JObject rawPrimitiveChoiceTypeData = new JObject
-            {
-                { "effectiveDateTime", "1905-08-23" },
-            };
-
-            // Primitive choice data type
-            JObject expectedPrimitiveChoiceTypeResult = new JObject
-            {
-                { "effective", new JObject { { "dateTime", "1905-08-23" } } },
-            };
-
-            var result = _testDefaultConverter.Convert(
-                CreateTestJsonBatchData(rawPrimitiveChoiceTypeData),
-                "Observation");
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedPrimitiveChoiceTypeResult));
-        }
-
-        [Fact]
-        public void GivenAValidStructChoiceTypeData_WhenConvert_CorrectResultShouldBeReturned()
-        {
-            JObject rawStructChoiceTypeData = new JObject
-            {
-                { "effectivePeriod", new JObject { { "start", "1905-08-23" } } },
-            };
-
-            // Struct choice data type
-            JObject expectedStructChoiceTypeResult = new JObject
-            {
-                { "effective", new JObject { { "period", new JObject { { "start", "1905-08-23" } } } } },
-            };
-
-            var result = _testDefaultConverter.Convert(
-                CreateTestJsonBatchData(rawStructChoiceTypeData),
-                "Observation");
-            Assert.True(JToken.DeepEquals(result.Values.First(), expectedStructChoiceTypeResult));
+            var result = _testDefaultConverter.Convert(CreateTestJsonBatchData(inputObject), schemaType);
+            Assert.True(JToken.DeepEquals(result.Values.First(), expectedObject));
         }
 
         [Fact]
@@ -353,19 +385,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 => testConverter.Convert(CreateTestJsonBatchData(_testPatient), "Patient").Values.Count());
         }
 
-        [Fact]
-        public void GivenInvalidData_WhenConvert_ExceptionShouldBeThrown()
+        [Theory]
+        [MemberData(nameof(GetInvalidDataContents))]
+        public void GivenInvalidData_WhenConvert_ExceptionShouldBeThrown(string schemaType, JObject inputObject)
         {
-            var invalidFieldData = new JObject
-            {
-                { "name", "Invalid data fields, should be array." },
-            };
-
             Assert.Throws<ParquetDataProcessorException>(()
-                => _testDefaultConverter.Convert(CreateTestJsonBatchData(invalidFieldData), "Patient").Values.Count());
-
-            Assert.Throws<ParquetDataProcessorException>(()
-                => _testDefaultConverter.Convert(CreateTestJsonBatchData(null), "Patient").Values.Count());
+                => _testDefaultConverter.Convert(CreateTestJsonBatchData(inputObject), schemaType).Values.Count());
         }
 
         private static JsonBatchData CreateTestJsonBatchData(JObject testJObjectData)
