@@ -104,7 +104,15 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             finally
             {
-                await _blobContainerClient.DeleteDirectoryIfExistsAsync(string.Format(HealthCheckFolderFormat, _instanceId), cancellationToken);
+                try
+                {
+                    await _blobContainerClient.DeleteDirectoryIfExistsAsync(string.Format(HealthCheckFolderFormat, _instanceId), cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    // failed to clean health check folder (appens when delete failed), will not impact check result.
+                    Logger.LogInformation(ex, $"Failed to delete the directory {string.Format(HealthCheckFolderFormat, _instanceId)}.");
+                }
             }
 
             healthCheckResult.Status = HealthCheckStatus.HEALTHY;
