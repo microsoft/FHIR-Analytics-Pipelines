@@ -586,7 +586,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                         .AddSchema()
                         .AddMetricsLogger()
                         .AddDiagnosticLogger()
-                        .AddJobExecutionErrorProcessor()
                         .AddHostedService<SynapseLinkService>());
     }
 }

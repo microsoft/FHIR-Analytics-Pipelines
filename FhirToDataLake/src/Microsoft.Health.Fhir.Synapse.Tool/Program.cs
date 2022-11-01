@@ -42,7 +42,6 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
                         .AddHealthCheckService()
                         .AddMetricsLogger()
                         .AddDiagnosticLogger()
-                        .AddJobExecutionErrorProcessor()
                         .AddHostedService<SynapseLinkService>()
                         .AddApplicationInsightsTelemetryWorkerService());
     }

@@ -18,7 +18,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
-using Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -152,7 +151,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetMetaDataStore(),
                 10,
                 new MetricsLogger(new NullLogger<MetricsLogger>()),
-                new JobExecutionErrorProcessor(new MetricsLogger(new NullLogger<MetricsLogger>())),
                 _diagnosticLogger,
                 new NullLogger<FhirToDataLakeOrchestratorJob>());
 
@@ -272,7 +270,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 metadataStore ?? GetMetaDataStore(),
                 concurrentCount,
                 new MetricsLogger(new NullLogger<MetricsLogger>()),
-                new JobExecutionErrorProcessor(new MetricsLogger(new NullLogger<MetricsLogger>())),
                 _diagnosticLogger,
                 new NullLogger<FhirToDataLakeOrchestratorJob>())
             {

@@ -12,7 +12,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
-using Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors;
+using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
@@ -41,8 +41,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly int _maxJobCountInRunningPool;
         private readonly ILogger<AzureStorageJobFactory> _logger;
         private readonly IMetricsLogger _metricsLogger;
-        private readonly IJobExecutionErrorProcessor _jobExecutionErrorProcessor;
-        private readonly JobFactoryErrorProcessor _jobFactoryErrorProcessor;
 
         public AzureStorageJobFactory(
             IQueueClient queueClient,
@@ -54,7 +52,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFilterManager filterManager,
             IMetadataStore metadataStore,
             IOptions<JobConfiguration> jobConfiguration,
-            IJobExecutionErrorProcessor jobExecutionErrorProcessor,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
             ILoggerFactory loggerFactory)
@@ -68,7 +65,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
-            _jobExecutionErrorProcessor = EnsureArg.IsNotNull(jobExecutionErrorProcessor, nameof(jobExecutionErrorProcessor));
 
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             _maxJobCountInRunningPool = jobConfiguration.Value.MaxQueuedJobCountPerOrchestration;
@@ -76,7 +72,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _loggerFactory = EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
             _logger = _loggerFactory.CreateLogger<AzureStorageJobFactory>();
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
-            _jobFactoryErrorProcessor = new JobFactoryErrorProcessor(_metricsLogger);
         }
 
         public IJob Create(JobInfo jobInfo)
@@ -130,14 +125,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _metadataStore,
                         _maxJobCountInRunningPool,
                         _metricsLogger,
-                        _jobExecutionErrorProcessor,
                         _diagnosticLogger,
                         _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>());
                 }
             }
             catch (Exception e)
             {
-                _jobFactoryErrorProcessor.Process(e, $"Failed to create orchestrator job.");
+                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create orchestrator job. Reason: {e.Message}", Operations.CreateJob);
                 _logger.LogInformation(e, "Failed to create orchestrator job.");
                 return null;
             }
@@ -161,14 +155,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _fhirSchemaManager,
                         _groupMemberExtractor,
                         _filterManager,
-                        _jobExecutionErrorProcessor,
+                        _metricsLogger,
                         _diagnosticLogger,
                         _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>());
                 }
             }
             catch (Exception e)
             {
-                _jobFactoryErrorProcessor.Process(e, $"Failed to create processing job.");
+                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create processing job. Reason: {e.Message}", Operations.CreateJob);
                 _logger.LogInformation(e, "Failed to create processing job.");
                 return null;
             }

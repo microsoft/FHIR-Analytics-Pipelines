@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
-using Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors;
+using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.JobManagement;
@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly Guid _instanceGuid;
         private readonly JobConfiguration _jobConfiguration;
         private readonly IDiagnosticLogger _diagnosticLogger;
-        private readonly SchedulerServiceErrorProcessor _schedulerServiceErrorProcessor;
+        private readonly IMetricsLogger _metricsLogger;
 
         // See https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression
         private readonly CrontabSchedule _crontabSchedule;
@@ -49,6 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
+            _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
@@ -58,7 +59,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _instanceGuid = Guid.NewGuid();
-            _schedulerServiceErrorProcessor = new SchedulerServiceErrorProcessor(metricsLogger);
         }
 
         public DateTimeOffset LastHeartbeat { get; set; } = DateTimeOffset.UtcNow;
@@ -108,7 +108,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             {
                                 _diagnosticLogger.LogError("Internal error occurred in scheduler service, will retry later.");
                                 _logger.LogError(ex, "Failed to pull and update trigger, will retry later.");
-                                _schedulerServiceErrorProcessor.Process(ex, "Failed to pull and update trigger.");
+                                _metricsLogger.LogTotalErrorsMetrics(ex, $"Failed to pull and update trigger. Reason: {ex.Message}", Operations.RunSchedulerService);
                             }
                         }
                     }
@@ -120,7 +120,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     _diagnosticLogger.LogError($"Internal error occurred in scheduler service, will retry later.");
                     _logger.LogError(ex, $"There is an exception thrown while processing current trigger, will retry later. Reason {ex.Message};");
-                    _schedulerServiceErrorProcessor.Process(ex, "There is an exception thrown while processing current trigger.");
+                    _metricsLogger.LogTotalErrorsMetrics(ex, $"There is an exception thrown while processing current trigger. Reason: {ex.Message}", Operations.RunSchedulerService);
                 }
             }
 
@@ -176,7 +176,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogError(
                     ex,
                     $"Unhandled exception while acquiring lease. Reason: {ex.Message}.");
-                _schedulerServiceErrorProcessor.Process(ex, "Unhandled exception while acquiring lease.");
+                _metricsLogger.LogTotalErrorsMetrics(ex, $"Unhandled exception while acquiring lease. Reason: {ex.Message}", Operations.RunSchedulerService);
                 return false;
             }
 
@@ -360,7 +360,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (RequestFailedException ex)
             {
                 _logger.LogError(ex, $"Failed to add trigger entity to table. Reason: {ex.Message}");
-                _schedulerServiceErrorProcessor.Process(ex, "Failed to add trigger entity to table.");
+                _metricsLogger.LogTotalErrorsMetrics(ex, $"Failed to add trigger entity to table. Reason: {ex.Message}", Operations.RunSchedulerService);
                 throw;
             }
 
@@ -419,7 +419,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, $"Failed to renew lease for working instance {_instanceGuid}.");
-                    _schedulerServiceErrorProcessor.Process(ex, $"Failed to renew lease for working instance {_instanceGuid}.");
+                    _metricsLogger.LogTotalErrorsMetrics(ex, $"Failed to renew lease for working instance {_instanceGuid}. Reason: {ex.Message}", Operations.RunSchedulerService);
                 }
 
                 if (!cancellationToken.IsCancellationRequested)

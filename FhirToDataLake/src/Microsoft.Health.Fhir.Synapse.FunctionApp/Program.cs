@@ -42,7 +42,6 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
                         .AddSchema()
                         .AddMetricsLogger()
                         .AddDiagnosticLogger()
-                        .AddJobExecutionErrorProcessor()
                         .AddHealthCheckService();
                 })
                 .Build();

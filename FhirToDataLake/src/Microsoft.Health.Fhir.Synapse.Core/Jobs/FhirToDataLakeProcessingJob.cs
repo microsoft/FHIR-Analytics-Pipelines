@@ -12,13 +12,13 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.Core.Exceptions.ErrorProcessors;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -45,9 +45,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly IFilterManager _filterManager;
+        private readonly IMetricsLogger _metricsLogger;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<FhirToDataLakeProcessingJob> _logger;
-        private readonly IJobExecutionErrorProcessor _jobExecutionErrorProcessor;
 
         private readonly long _jobId;
 
@@ -71,7 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             IGroupMemberExtractor groupMemberExtractor,
             IFilterManager filterManager,
-            IJobExecutionErrorProcessor jobExecutionErrorProcessor,
+            IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
             ILogger<FhirToDataLakeProcessingJob> logger)
         {
@@ -84,9 +84,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
+            _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
-            _jobExecutionErrorProcessor = EnsureArg.IsNotNull(jobExecutionErrorProcessor, nameof(jobExecutionErrorProcessor));
         }
 
         // the processing job status is never set to failed or cancelled.
@@ -149,7 +149,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (OperationCanceledException operationCanceledEx)
             {
                 _logger.LogInformation(operationCanceledEx, "Processing job {0} is canceled.", _jobId);
-                _jobExecutionErrorProcessor.Process(operationCanceledEx, "Processing job is canceled.");
+                _metricsLogger.LogTotalErrorsMetrics(operationCanceledEx, $"Processing job is canceled. Reason: {operationCanceledEx.Message}", Operations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Processing job is canceled.", operationCanceledEx);
@@ -158,7 +158,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // always throw RetriableJobException
                 _logger.LogInformation(retriableJobEx, "Error in processing job {0}. Reason : {1}", _jobId, retriableJobEx.Message);
-                _jobExecutionErrorProcessor.Process(retriableJobEx, "Error in processing job.");
+                _metricsLogger.LogTotalErrorsMetrics(retriableJobEx, $"Error in processing job. Reason: {retriableJobEx.Message}", Operations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw;
@@ -167,7 +167,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Customer exceptions.
                 _logger.LogInformation(synapsePipelineEx, "Error in data processing job {0}. Reason:{1}", _jobId, synapsePipelineEx.Message);
-                _jobExecutionErrorProcessor.Process(synapsePipelineEx, "Error in processing job.");
+                _metricsLogger.LogTotalErrorsMetrics(synapsePipelineEx, $"Error in processing job. Reason: {synapsePipelineEx.Message}", Operations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Error in data processing job.", synapsePipelineEx);
@@ -176,7 +176,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Unhandled exceptions.
                 _logger.LogError(ex, "Unhandled error occurred in data processing job {0}. Reason : {1}", _jobId, ex.Message);
-                _jobExecutionErrorProcessor.Process(ex, "Unhandled error occurred in data processing job.");
+                _metricsLogger.LogTotalErrorsMetrics(ex, $"Unhandled error occurred in data processing job. Reason: {ex.Message}", Operations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Unhandled error occurred in data processing job.", ex);
