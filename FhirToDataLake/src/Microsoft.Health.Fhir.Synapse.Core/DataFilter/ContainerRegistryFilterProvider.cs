@@ -83,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                     onRetry: (exception, timeSpan, retryCount, context) =>
                     {
-                        _logger.LogWarning(exception, "Failed to get image {Image} from Container Registry. Retry {RetryCount}.", _imageReference, retryCount);
+                        _logger.LogInformation(exception, "Failed to get image {Image} from Container Registry. Retry {RetryCount}.", _imageReference, retryCount);
                     })
                   .ExecuteAsync(() => filterConfigurationProvider.GetOciArtifactAsync(cancellationToken));
 

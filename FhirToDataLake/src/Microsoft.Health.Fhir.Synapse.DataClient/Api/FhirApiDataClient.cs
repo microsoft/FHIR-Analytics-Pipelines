@@ -220,7 +220,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 }
 
                 throw new FhirSearchException(
-                    string.Format(Resource.FhirSearchFailed, uri) + $"Reason:{hrEx.Message}",
+                    string.Format(Resource.FhirSearchFailed, uri, hrEx.Message),
                     hrEx);
             }
             catch (BrokenCircuitException bcEx)
@@ -229,7 +229,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 _logger.LogInformation(bcEx, "Broken circuit while searching from FHIR server. Reason: {0}", bcEx.Message);
 
                 throw new FhirSearchException(
-                    string.Format(Resource.FhirSearchFailed, uri) + $"Reason:{bcEx.Message}",
+                    string.Format(Resource.FhirSearchFailed, uri, bcEx.Message),
                     bcEx);
             }
             catch (Exception ex)
@@ -274,7 +274,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 }
 
                 throw new FhirSearchException(
-                    string.Format(Resource.FhirSearchFailed, uri) + $"Reason:{ex.Message}",
+                    string.Format(Resource.FhirSearchFailed, uri, ex.Message),
                     ex);
             }
             catch (Exception ex)
