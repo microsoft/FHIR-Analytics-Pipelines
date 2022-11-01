@@ -483,7 +483,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // if the version does not match, means there are more than one running jobs for it, only the last one keep alive
             if ((long)jobInfoEntity[JobInfoEntityProperties.Version] != jobInfo.Version)
             {
-                _logger.LogError($"[KeepAliveJob] Job {jobInfo.Id} precondition failed, version does not match.");
+                _logger.LogInformation($"[KeepAliveJob] Job {jobInfo.Id} precondition failed, version does not match.");
 
                 throw new JobNotExistException($"Job {jobInfo.Id} precondition failed, version does not match.");
             }
@@ -640,7 +640,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             // step 2: check version
             if ((long)retrievedJobInfoEntity[JobInfoEntityProperties.Version] != jobInfo.Version)
             {
-                _logger.LogError($"[CompleteJob] Job {jobInfo.Id} precondition failed, version does not match.");
+                _logger.LogInformation($"[CompleteJob] Job {jobInfo.Id} precondition failed, version does not match.");
                 throw new JobNotExistException($"Job {jobInfo.Id} precondition failed, version does not match.");
             }
 
