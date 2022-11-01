@@ -111,7 +111,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
                 catch (Exception ex)
                 {
                     // failed to clean health check folder (appens when delete failed), will not impact check result.
-                    _logger.LogInformation(ex, $"Failed to delete the directory {string.Format(HealthCheckFolderFormat, _instanceId)}.");
+                    Logger.LogInformation(ex, $"Failed to delete the directory {string.Format(HealthCheckFolderFormat, _instanceId)}.");
                 }
             }
 
