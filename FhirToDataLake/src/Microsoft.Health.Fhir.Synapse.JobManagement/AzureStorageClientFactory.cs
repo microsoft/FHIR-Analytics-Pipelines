@@ -20,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         private readonly string _tableName;
         private readonly string _queueUrl;
         private readonly string _queueName;
-        private readonly string _internalConnectionString;
+        private readonly string? _internalConnectionString;
 
         public AzureStorageClientFactory(
             IOptions<JobConfiguration> jobConfiguration,
@@ -34,25 +34,28 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             _internalConnectionString = storageConfiguration.Value.InternalStorageConnectionString;
             _credentialProvider = EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
 
-            if (string.IsNullOrEmpty(_internalConnectionString))
+            if (string.IsNullOrWhiteSpace(_internalConnectionString))
             {
-                _tableUrl = EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration?.Value?.TableUrl, nameof(jobConfiguration.Value.TableUrl));
-                EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration?.Value?.QueueUrl, nameof(jobConfiguration.Value.QueueUrl));
+                _tableUrl = EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration.Value.TableUrl, nameof(jobConfiguration.Value.TableUrl));
+                EnsureArg.IsNotNullOrWhiteSpace(jobConfiguration.Value.QueueUrl, nameof(jobConfiguration.Value.QueueUrl));
 
-                if (jobConfiguration.Value.QueueUrl != ConfigurationConstants.StorageEmulatorConnectionString)
+                _queueUrl = jobConfiguration.Value.QueueUrl;
+
+                if (!IsStorageEmulatorConnectionString(_queueUrl) && !_queueUrl.EndsWith("/"))
                 {
                     // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
                     // Otherwise the relative part will be omitted when creating new Uri with queue name. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
-                    _queueUrl = jobConfiguration.Value.QueueUrl.EndsWith("/") ? jobConfiguration.Value.QueueUrl : $"{jobConfiguration.Value.QueueUrl}/";
-                }
-                else
-                {
-                    _queueUrl = jobConfiguration.Value.QueueUrl;
+                    _queueUrl += "/";
                 }
             }
-
+            else
+            {
+                _tableUrl = string.Empty;
+                _queueUrl = string.Empty;
+            }
         }
 
+        // For local test
         public AzureStorageClientFactory(
             string tableName,
             string queueName,
@@ -71,12 +74,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         public TableClient CreateTableClient()
         {
             // Create client for local emulator.
-            if (string.Equals(_tableUrl, ConfigurationConstants.StorageEmulatorConnectionString, StringComparison.OrdinalIgnoreCase))
+            if (IsStorageEmulatorConnectionString(_tableUrl))
             {
                 return new TableClient(_tableUrl, _tableName);
             }
 
-            if (!string.IsNullOrEmpty(_internalConnectionString))
+            if (!string.IsNullOrWhiteSpace(_internalConnectionString))
             {
                 return new TableClient(_internalConnectionString, _tableName);
             }
@@ -93,12 +96,12 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         public QueueClient CreateQueueClient()
         {
             // Create client for local emulator.
-            if (string.Equals(_queueUrl, ConfigurationConstants.StorageEmulatorConnectionString, StringComparison.OrdinalIgnoreCase))
+            if (IsStorageEmulatorConnectionString(_queueUrl))
             {
                 return new QueueClient(_queueUrl, _queueName);
             }
 
-            if (!string.IsNullOrEmpty(_internalConnectionString))
+            if (!string.IsNullOrWhiteSpace(_internalConnectionString))
             {
                 return new QueueClient(_internalConnectionString, _queueName);
             }
@@ -110,5 +113,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
                 queueUri,
                 tokenCredential);
         }
+
+        private static bool IsStorageEmulatorConnectionString(string str) => string.Equals(
+            str,
+            ConfigurationConstants.StorageEmulatorConnectionString,
+            StringComparison.OrdinalIgnoreCase);
     }
 }

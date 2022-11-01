@@ -44,7 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _logger.LogInformation("Job manager starts running.");
 
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var scheduleTask = _scheduler.RunAsync(cancellationTokenSource.Token);
+            Task scheduleTask = _scheduler.RunAsync(cancellationTokenSource.Token);
 
             // TODO: the max running job count need to be decided after performance test
             _jobHosting.MaxRunningJobCount = (short)_jobConfiguration.MaxRunningJobCount;

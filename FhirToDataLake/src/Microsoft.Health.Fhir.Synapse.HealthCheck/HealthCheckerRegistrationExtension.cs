@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 
             services.AddSingleton<IHealthChecker, AzureBlobStorageHealthChecker>();
 
-            var schemaConfiguration = services
+            SchemaConfiguration schemaConfiguration = services
                     .BuildServiceProvider()
                     .GetRequiredService<IOptions<SchemaConfiguration>>()
                     .Value;
@@ -31,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                 services.AddSingleton<IHealthChecker, SchemaAzureContainerRegistryHealthChecker>();
             }
 
-            var filterLocation = services
+            FilterLocation filterLocation = services
                     .BuildServiceProvider()
                     .GetRequiredService<IOptions<FilterLocation>>()
                     .Value;

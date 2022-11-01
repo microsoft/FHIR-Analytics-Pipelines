@@ -34,25 +34,25 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
 
         private const string TestResourceType = "Patient";
 
-        private readonly DateTime _testDate = new (2021, 10, 1);
+        private readonly DateTime _testDate = new DateTime(2021, 10, 1);
 
-        private static readonly StorageConfiguration _storageConfiguration = new ();
+        private static readonly StorageConfiguration _storageConfiguration = new StorageConfiguration();
 
         [Fact]
         public async Task GivenAValidParameter_WhenWritingToBlob_CorrectContentShouldBeWritten()
         {
             var stream = new MemoryStream();
-            var bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
+            byte[] bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
             await stream.WriteAsync(bytes, 0, bytes.Length);
             stream.Position = 0;
             const long jobId = 1L;
-            var partIndex = 1;
-            var dataWriter = GetLocalDataWriter();
+            int partIndex = 1;
+            AzureBlobDataWriter dataWriter = GetLocalDataWriter();
             var streamData = new StreamBatchData(stream, 1, TestResourceType);
             await dataWriter.WriteAsync(streamData, jobId, partIndex, _testDate);
 
-            var containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), _diagnosticLogger, new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
-            var blobStream = await containerClient.GetBlobAsync($"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet");
+            IAzureBlobContainerClient containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), _diagnosticLogger, new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
+            Stream blobStream = await containerClient.GetBlobAsync($"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet");
             Assert.NotNull(blobStream);
 
             var resultStream = new MemoryStream();
@@ -63,7 +63,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         [Fact]
         public async Task GivenAnInvalidInputStreamData_WhenWritingToBlob_ExceptionShouldBeThrown()
         {
-            var dataWriter = GetLocalDataWriter();
+            AzureBlobDataWriter dataWriter = GetLocalDataWriter();
             var streamData = new StreamBatchData(null, 0, TestResourceType);
             await Assert.ThrowsAsync<ArgumentNullException>(() => dataWriter.WriteAsync(streamData, 0L, 0, _testDate));
         }
@@ -71,7 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         [Fact]
         public async void GivenAnInvalidBlobContainerClient_WhenCommitTheData_ExceptionShouldBeThrown()
         {
-            var invalidContainerDataWriter = GetBrokenDataWriter();
+            AzureBlobDataWriter invalidContainerDataWriter = GetBrokenDataWriter();
 
             await Assert.ThrowsAsync<AzureBlobOperationFailedException>(() => invalidContainerDataWriter.CommitJobDataAsync(00));
         }
@@ -82,9 +82,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             var blobClient = new InMemoryBlobContainerClient();
 
             const long jobId = 1L;
-            var dataWriter = GetInMemoryDataWriter(blobClient);
+            AzureBlobDataWriter dataWriter = GetInMemoryDataWriter(blobClient);
 
-            var result = await dataWriter.TryCleanJobDataAsync(jobId, CancellationToken.None);
+            bool result = await dataWriter.TryCleanJobDataAsync(jobId, CancellationToken.None);
             Assert.True(result);
         }
 
@@ -94,19 +94,19 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             var blobClient = new InMemoryBlobContainerClient();
 
             var stream = new MemoryStream();
-            var bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
+            byte[] bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
             await stream.WriteAsync(bytes, 0, bytes.Length);
             stream.Position = 0;
             const long jobId = 1L;
-            var partIndex = 1;
-            var dataWriter = GetInMemoryDataWriter(blobClient);
+            int partIndex = 1;
+            AzureBlobDataWriter dataWriter = GetInMemoryDataWriter(blobClient);
 
-            var blobName = $"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet";
+            string blobName = $"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet";
             await blobClient.CreateBlobAsync(blobName, stream, CancellationToken.None);
-            var blobExists = await blobClient.BlobExistsAsync(blobName, CancellationToken.None);
+            bool blobExists = await blobClient.BlobExistsAsync(blobName, CancellationToken.None);
             Assert.True(blobExists);
 
-            var result = await dataWriter.TryCleanJobDataAsync(jobId, CancellationToken.None);
+            bool result = await dataWriter.TryCleanJobDataAsync(jobId, CancellationToken.None);
             Assert.True(result);
             blobExists = await blobClient.BlobExistsAsync(blobName, CancellationToken.None);
             Assert.False(blobExists);
@@ -118,23 +118,23 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             var blobClient = new InMemoryBlobContainerClient();
 
             var stream = new MemoryStream();
-            var bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
+            byte[] bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
             await stream.WriteAsync(bytes, 0, bytes.Length);
             stream.Position = 0;
             const long jobId = 1L;
-            var partIndex = 1;
-            var dataWriter = GetInMemoryDataWriter(blobClient);
+            int partIndex = 1;
+            AzureBlobDataWriter dataWriter = GetInMemoryDataWriter(blobClient);
 
-            var blobName = $"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet";
+            string blobName = $"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet";
             await blobClient.CreateBlobAsync(blobName, stream, CancellationToken.None);
-            var blobExists = await blobClient.BlobExistsAsync(blobName, CancellationToken.None);
+            bool blobExists = await blobClient.BlobExistsAsync(blobName, CancellationToken.None);
             Assert.True(blobExists);
 
-            var exception = await Record.ExceptionAsync(async () => await dataWriter.CommitJobDataAsync(jobId, CancellationToken.None));
+            Exception exception = await Record.ExceptionAsync(async () => await dataWriter.CommitJobDataAsync(jobId, CancellationToken.None));
             Assert.Null(exception);
             blobExists = await blobClient.BlobExistsAsync(blobName, CancellationToken.None);
             Assert.False(blobExists);
-            var expectedBlobName = $"result/Patient/2021/10/01/{jobId:d20}/Patient_{partIndex:d10}.parquet";
+            string expectedBlobName = $"result/Patient/2021/10/01/{jobId:d20}/Patient_{partIndex:d10}.parquet";
             blobExists = await blobClient.BlobExistsAsync(expectedBlobName, CancellationToken.None);
             Assert.True(blobExists);
         }

@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
         [MemberData(nameof(GetInvalidServiceConfiguration))]
         public void GivenInvalidServiceCollectionConfiguration_WhenValidate_ExceptionShouldBeThrown(string configKey, string configValue, string expectedMessageStart)
         {
-            var config = new Dictionary<string, string>(TestValidConfiguration);
+            Dictionary<string, string> config = new Dictionary<string, string>(TestValidConfiguration);
             config[configKey] = configValue;
 
             var builder = new ConfigurationBuilder();
@@ -67,10 +68,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
         {
             var builder = new ConfigurationBuilder();
             builder.AddInMemoryCollection(TestValidConfiguration);
-            var config = builder.Build();
+            IConfigurationRoot config = builder.Build();
 
             var serviceCollection = new ServiceCollection();
-            var exception = Record.Exception(() => serviceCollection.AddConfiguration(config));
+            Exception exception = Record.Exception(() => serviceCollection.AddConfiguration(config));
             Assert.Null(exception);
         }
 

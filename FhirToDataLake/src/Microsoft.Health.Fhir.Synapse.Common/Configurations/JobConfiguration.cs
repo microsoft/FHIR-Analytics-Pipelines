@@ -76,8 +76,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         /// <summary>
         /// Max running job count in an instance.
         /// </summary>
-        [JsonProperty("maxRunningJobCount ")]
-        public int MaxRunningJobCount { get; set; } = 10;
+        [JsonProperty("maxRunningJobCount")]
+        public int MaxRunningJobCount { get; set; } = 3;
 
         /// <summary>
         /// Max queued job count per orchestration job.

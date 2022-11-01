@@ -19,7 +19,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         public void GivenNullJobInfo_WhenToTableEntity_ThenTheExceptionShouldBeThrown()
         {
             AzureStorageJobInfo? jobInfo = null;
+#pragma warning disable CS8631
             Assert.Throws<NullReferenceException>(() => jobInfo.ToTableEntity());
+#pragma warning restore CS8631
         }
 
         [Fact]
@@ -84,7 +86,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         public void GivenNullTableEntity_WhenToJobInfo_ThenTheExceptionShouldBeThrown()
         {
             TableEntity? jobInfoEntity = null;
+#pragma warning disable CS8604
             Assert.Throws<NullReferenceException>(() => jobInfoEntity.ToJobInfo<FhirToDataLakeAzureStorageJobInfo>());
+#pragma warning restore CS8604
         }
 
         [Fact]

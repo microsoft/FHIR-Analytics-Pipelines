@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using EnsureThat;
@@ -44,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             cancellationToken.ThrowIfCancellationRequested();
 
             // Get FHIR schema for the input data.
-            var schema = _fhirSchemaManager.GetSchema(schemaType);
+            FhirParquetSchemaNode schema = _fhirSchemaManager.GetSchema(schemaType);
             if (schema == null)
             {
                 _diagnosticLogger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
@@ -52,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{schemaType}'.");
             }
 
-            var processedJsonData = inputData.Values
+            IEnumerable<JObject> processedJsonData = inputData.Values
                 .Select(json => ProcessStructObject(json, schema))
                 .Where(processedResult => processedResult != null);
 
@@ -70,15 +71,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             var processedObject = new JObject();
 
-            foreach (var subItem in fhirJObject)
+            foreach (KeyValuePair<string, JToken> subItem in fhirJObject)
             {
-                var subObject = subItem.Value;
+                JToken subObject = subItem.Value;
 
                 // Process choice type FHIR resource.
                 if (schemaNode.ContainsChoiceDataType(subItem.Key))
                 {
-                    var choiceTypeName = schemaNode.ChoiceTypeNodes[subItem.Key].Item1;
-                    var choiceTypeDataType = schemaNode.ChoiceTypeNodes[subItem.Key].Item2;
+                    string choiceTypeName = schemaNode.ChoiceTypeNodes[subItem.Key].Item1;
+                    string choiceTypeDataType = schemaNode.ChoiceTypeNodes[subItem.Key].Item2;
 
                     if (!schemaNode.SubNodes[choiceTypeName].SubNodes.ContainsKey(choiceTypeDataType))
                     {
@@ -87,7 +88,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                         throw new ParquetDataProcessorException($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {schemaNode.GetNodePath()}.");
                     }
 
-                    var dataTypeNode = schemaNode.SubNodes[choiceTypeName].SubNodes[choiceTypeDataType];
+                    FhirParquetSchemaNode dataTypeNode = schemaNode.SubNodes[choiceTypeName].SubNodes[choiceTypeDataType];
                     processedObject.Add(choiceTypeName, ProcessChoiceTypeObject(subObject, dataTypeNode));
                 }
                 else
@@ -98,7 +99,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                         continue;
                     }
 
-                    var subNode = schemaNode.SubNodes[subItem.Key];
+                    FhirParquetSchemaNode subNode = schemaNode.SubNodes[subItem.Key];
 
                     if (subNode.IsRepeated)
                     {
@@ -131,7 +132,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             }
 
             var arrayObject = new JArray();
-            foreach (var item in fhirArrayObject)
+            foreach (JToken item in fhirArrayObject)
             {
                 if (schemaNode.IsLeaf)
                 {
