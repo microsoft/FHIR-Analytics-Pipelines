@@ -1513,7 +1513,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 CancellationToken.None);
 
             await Task.Delay(TimeSpan.FromSeconds(6), CancellationToken.None);
-            startTime = DateTimeOffset.UtcNow.AddMinutes(-1 * JobConfigurationConstants.JobQueryLatencyInMinutes);
 
             currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
@@ -1532,11 +1531,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(lastTriggerEndTime, currentTriggerEntity.TriggerStartTime);
 
             // the second trigger end time should be set to the latest Occurrences time
-            Assert.True(currentTriggerEntity.TriggerEndTime >= lastTriggerEndTime);
+            Assert.True(currentTriggerEntity.TriggerEndTime > lastTriggerEndTime);
             Assert.True(currentTriggerEntity.TriggerEndTime <= endTime);
+
             CrontabSchedule crontabSchedule = CrontabSchedule.Parse(TestSchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
-            IEnumerable<DateTime> result = crontabSchedule.GetNextOccurrences(startTime.DateTime, endTime.DateTime);
+            IEnumerable<DateTime> result = crontabSchedule.GetNextOccurrences(lastTriggerEndTime.DateTime, endTime.DateTime);
             Assert.Contains(currentTriggerEntity.TriggerEndTime.DateTime, result);
+
+            // not next occurrence time
+            DateTimeOffset nextOccurrenceTime = crontabSchedule.GetNextOccurrence(lastTriggerEndTime.DateTime);
+            Assert.True(currentTriggerEntity.TriggerEndTime > nextOccurrenceTime);
 
             tokenSource.Cancel();
             await task;
