@@ -35,14 +35,5 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
         /// Gets or sets node path for current FHIR schema node.
         /// </summary>
         public List<string> NodePaths { get; set; }
-
-        /// <summary>
-        /// Get path for current FHIR schema node.
-        /// </summary>
-        /// <returns>Node path string for current FHIR schema node.</returns>
-        public string GetNodePath()
-        {
-            return string.Join('.', this.NodePaths);
-        }
     }
 }

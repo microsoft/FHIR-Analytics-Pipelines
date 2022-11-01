@@ -9,8 +9,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Data.Tables;
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Queues;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,7 +35,6 @@ using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.JobManagement;
-using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.Tool;
 using Microsoft.Health.JobManagement;
@@ -65,7 +68,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         public E2ETests(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
-            var storageUri = Environment.GetEnvironmentVariable("dataLakeStore:storageUrl");
+            string storageUri = Environment.GetEnvironmentVariable("dataLakeStore:storageUrl");
             if (!string.IsNullOrWhiteSpace(storageUri))
             {
                 _testOutputHelper.WriteLine($"Using custom data lake storage uri {storageUri}");
@@ -77,7 +80,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         public void GivenInvalidFilterScope_WhenBuildHost_ExceptionShouldBeThrown()
         {
             Environment.SetEnvironmentVariable("filter:filterScope", "Unsupported");
-            var configuration = new ConfigurationBuilder()
+            IConfigurationRoot configuration = new ConfigurationBuilder()
                 .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
@@ -93,7 +96,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Environment.SetEnvironmentVariable("filter:filterScope", "Group");
             Environment.SetEnvironmentVariable("filter:groupId", groupId);
 
-            var configuration = new ConfigurationBuilder()
+            IConfigurationRoot configuration = new ConfigurationBuilder()
                 .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
@@ -111,11 +114,11 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Environment.SetEnvironmentVariable("filter:filterScope", "System");
             Environment.SetEnvironmentVariable("filter:groupId", groupId);
 
-            var configuration = new ConfigurationBuilder()
+            IConfigurationRoot configuration = new ConfigurationBuilder()
                 .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
-            var exception = Record.Exception(() => CreateHostBuilder(configuration).Build());
+            Exception exception = Record.Exception(() => CreateHostBuilder(configuration).Build());
             Assert.Null(exception);
         }
 
@@ -130,19 +133,19 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Environment.SetEnvironmentVariable("filter:requiredTypes", "Patient,Observation");
             Environment.SetEnvironmentVariable("filter:typeFilters", string.Empty);
 
-            var configuration = new ConfigurationBuilder()
+            IConfigurationRoot configuration = new ConfigurationBuilder()
                 .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
 
-            var endTime = DateTimeOffset.Parse(configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"]);
+            DateTimeOffset endTime = DateTimeOffset.Parse(configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"]);
 
             try
             {
                 // Run e2e
                 using var tokenSource = new CancellationTokenSource();
-                var host = CreateHostBuilder(configuration).Build();
-                var hostRunTask = host.RunAsync(tokenSource.Token);
+                IHost host = CreateHostBuilder(configuration).Build();
+                Task hostRunTask = host.RunAsync(tokenSource.Token);
 
                 CurrentTriggerEntity triggerEntity;
                 while (true)
@@ -171,10 +174,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 Assert.Equal(TriggerStatus.Completed, triggerEntity.TriggerStatus);
                 Assert.Equal(0, triggerEntity.TriggerSequenceId);
 
-                var orchestratorJobId = triggerEntity.OrchestratorJobId;
+                long orchestratorJobId = triggerEntity.OrchestratorJobId;
 
                 // Check job status
-                var jobInfo = await _queueClient.GetJobByIdAsync(QueueTypeByte, orchestratorJobId, true, CancellationToken.None);
+                JobInfo jobInfo = await _queueClient.GetJobByIdAsync(QueueTypeByte, orchestratorJobId, true, CancellationToken.None);
                 CheckJobStatus(jobInfo, "SystemScope_Patient_Observation.json");
 
                 // Check result files
@@ -199,19 +202,19 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Environment.SetEnvironmentVariable("filter:requiredTypes", string.Empty);
             Environment.SetEnvironmentVariable("filter:typeFilters", string.Empty);
 
-            var configuration = new ConfigurationBuilder()
+            IConfigurationRoot configuration = new ConfigurationBuilder()
                 .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
 
-            var endTime = DateTimeOffset.Parse(configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"]);
+            DateTimeOffset endTime = DateTimeOffset.Parse(configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"]);
 
             try
             {
                 // Run e2e
                 using var tokenSource = new CancellationTokenSource();
-                var host = CreateHostBuilder(configuration).Build();
-                var hostRunTask = host.RunAsync(tokenSource.Token);
+                IHost host = CreateHostBuilder(configuration).Build();
+                Task hostRunTask = host.RunAsync(tokenSource.Token);
 
                 CurrentTriggerEntity triggerEntity;
                 while (true)
@@ -246,17 +249,17 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 Assert.Equal(TriggerStatus.Completed, triggerEntity.TriggerStatus);
                 Assert.Equal(0, triggerEntity.TriggerSequenceId);
 
-                var orchestratorJobId = triggerEntity.OrchestratorJobId;
+                long orchestratorJobId = triggerEntity.OrchestratorJobId;
 
                 // Check job status
-                var jobInfo =
+                JobInfo jobInfo =
                     await _queueClient.GetJobByIdAsync(QueueTypeByte, orchestratorJobId, true, CancellationToken.None);
                 CheckJobStatus(jobInfo, "GroupScope_OnePatient_All.json");
 
                 // Check result files
                 Assert.Equal(16, await GetResultFileCount(_blobContainerClient, "result"));
 
-                var patientVersions =
+                Dictionary<string, long> patientVersions =
                     await _metadataStore.GetPatientVersionsAsync(QueueTypeByte, CancellationToken.None);
 
                 Assert.Single(patientVersions);
@@ -281,19 +284,19 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             // this group includes all the 80 patients
             Environment.SetEnvironmentVariable("filter:groupId", "72d653ce-2dbb-4432-bfa0-9ac47d0e0a2c");
 
-            var configuration = new ConfigurationBuilder()
+            IConfigurationRoot configuration = new ConfigurationBuilder()
                 .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
 
-            var endTime = DateTimeOffset.Parse(configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"]);
+            DateTimeOffset endTime = DateTimeOffset.Parse(configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"]);
 
             try
             {
                 // Run e2e
                 using var tokenSource = new CancellationTokenSource();
-                var host = CreateHostBuilder(configuration).Build();
-                var hostRunTask = host.RunAsync(tokenSource.Token);
+                IHost host = CreateHostBuilder(configuration).Build();
+                Task hostRunTask = host.RunAsync(tokenSource.Token);
 
                 CurrentTriggerEntity triggerEntity = await WaitJobCompleted(endTime);
 
@@ -305,10 +308,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 Assert.Equal(TriggerStatus.Completed, triggerEntity.TriggerStatus);
                 Assert.Equal(0, triggerEntity.TriggerSequenceId);
 
-                var orchestratorJobId = triggerEntity.OrchestratorJobId;
+                long orchestratorJobId = triggerEntity.OrchestratorJobId;
 
                 // Check job status
-                var jobInfo = await _queueClient.GetJobByIdAsync(QueueTypeByte, orchestratorJobId, true, CancellationToken.None);
+                JobInfo jobInfo = await _queueClient.GetJobByIdAsync(QueueTypeByte, orchestratorJobId, true, CancellationToken.None);
                 CheckJobStatus(jobInfo, "GroupScope_AllPatient_Filters.json");
 
                 // Check result files
@@ -317,11 +320,11 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 Assert.Equal(1, await GetResultFileCount(_blobContainerClient, "result/MedicationRequest/2022/07/01"));
 
                 // Check patient version
-                var patientVersions =
+                Dictionary<string, long> patientVersions =
                     await _metadataStore.GetPatientVersionsAsync(QueueTypeByte, CancellationToken.None);
 
                 Assert.Equal(80, patientVersions.Count);
-                foreach (var kv in patientVersions)
+                foreach (KeyValuePair<string, long> kv in patientVersions)
                 {
                     Assert.Equal(1, kv.Value);
                 }
@@ -346,7 +349,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             // this group includes all the 80 patients
             Environment.SetEnvironmentVariable("filter:groupId", "72d653ce-2dbb-4432-bfa0-9ac47d0e0a2c");
 
-            var configuration = new ConfigurationBuilder()
+            IConfigurationRoot configuration = new ConfigurationBuilder()
                 .AddJsonFile(TestConfigurationPath)
                 .AddEnvironmentVariables()
                 .Build();
@@ -357,16 +360,16 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             // set schedulerCronExpression, so there are three triggers
             configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["schedulerCronExpression"] = "0 0 0 * * *";
 
-            var endTime = DateTimeOffset.Parse(configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"]);
+            DateTimeOffset endTime = DateTimeOffset.Parse(configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"]);
 
             try
             {
                 // trigger first time, only the resources imported before end time are synced.
                 using var tokenSource = new CancellationTokenSource();
-                var host = CreateHostBuilder(configuration).Build();
-                var hostRunTask = host.RunAsync(tokenSource.Token);
+                IHost host = CreateHostBuilder(configuration).Build();
+                Task hostRunTask = host.RunAsync(tokenSource.Token);
 
-                var triggerEntity = await WaitJobCompleted(endTime);
+                CurrentTriggerEntity triggerEntity = await WaitJobCompleted(endTime);
 
                 tokenSource.Cancel();
                 await hostRunTask;
@@ -376,10 +379,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 Assert.Equal(TriggerStatus.Completed, triggerEntity.TriggerStatus);
                 Assert.Equal(0, triggerEntity.TriggerSequenceId);
 
-                var orchestratorJobId = triggerEntity.OrchestratorJobId;
+                long orchestratorJobId = triggerEntity.OrchestratorJobId;
 
                 // Check job status
-                var jobInfo = await _queueClient.GetJobByIdAsync(QueueTypeByte, orchestratorJobId, true, CancellationToken.None);
+                JobInfo jobInfo = await _queueClient.GetJobByIdAsync(QueueTypeByte, orchestratorJobId, true, CancellationToken.None);
                 CheckJobStatus(jobInfo, "GroupScope_AllPatient_Filters_part1.json");
 
                 // modify the job end time to fake incremental sync.
@@ -391,8 +394,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                     configuration.GetSection(ConfigurationConstants.JobConfigurationKey)["endTime"]);
 
                 using var tokenSource2 = new CancellationTokenSource();
-                var host2 = CreateHostBuilder(configuration).Build();
-                var hostRunTask2 = host2.RunAsync(tokenSource2.Token);
+                IHost host2 = CreateHostBuilder(configuration).Build();
+                Task hostRunTask2 = host2.RunAsync(tokenSource2.Token);
 
                 triggerEntity = await WaitJobCompleted(endTime);
 
@@ -416,11 +419,11 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 Assert.Equal(2, await GetResultFileCount(_blobContainerClient, "result/MedicationRequest"));
 
                 // check patient version
-                var patientVersions =
+                Dictionary<string, long> patientVersions =
                     await _metadataStore.GetPatientVersionsAsync(QueueTypeByte, CancellationToken.None);
 
                 Assert.Equal(80, patientVersions.Count);
-                foreach (var kv in patientVersions)
+                foreach (KeyValuePair<string, long> kv in patientVersions)
                 {
                     Assert.Equal(1, kv.Value);
                 }
@@ -433,13 +436,13 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
         private async Task InitializeUniqueStorage()
         {
-            var uniqueName = Guid.NewGuid().ToString("N");
-            var jobInfoTableName = $"jobinfotable{uniqueName}";
-            var jobInfoQueueName = $"jobinfoqueue{uniqueName}";
-            var metadataTableName = $"metadatatable{uniqueName}";
+            string uniqueName = Guid.NewGuid().ToString("N");
+            string jobInfoTableName = $"jobinfotable{uniqueName}";
+            string jobInfoQueueName = $"jobinfoqueue{uniqueName}";
+            string metadataTableName = $"metadatatable{uniqueName}";
 
             _blobContainerClient = _blobServiceClient.GetBlobContainerClient(uniqueName);
-            var jobConfig = Options.Create(new JobConfiguration
+            IOptions<JobConfiguration> jobConfig = Options.Create(new JobConfiguration
             {
                 JobInfoTableName = jobInfoTableName,
                 MetadataTableName = metadataTableName,
@@ -456,7 +459,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             _queueClientFactory = new AzureStorageClientFactory(
                 jobInfoTableName,
                 jobInfoQueueName,
-                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()));
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
+                new NullLogger<AzureStorageClientFactory>());
 
             _queueClient = new AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>(
                 _queueClientFactory,
@@ -476,7 +480,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 await Task.Delay(TimeSpan.FromSeconds(10), CancellationToken.None);
                 try
                 {
-                    var triggerEntity = await _metadataStore.GetCurrentTriggerEntityAsync(QueueTypeByte, CancellationToken.None);
+                    CurrentTriggerEntity triggerEntity = await _metadataStore.GetCurrentTriggerEntityAsync(QueueTypeByte, CancellationToken.None);
                     if (triggerEntity.TriggerStatus == TriggerStatus.Completed &&
                         triggerEntity.TriggerEndTime >= configurationEndTime)
                     {
@@ -494,8 +498,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         {
             await _blobContainerClient.DeleteIfExistsAsync();
             await _metadataStore.DeleteMetadataTableAsync();
-            var jobInfoTableClient = _queueClientFactory.CreateTableClient();
-            var jobInfoQueueClient = _queueClientFactory.CreateQueueClient();
+            TableClient jobInfoTableClient = _queueClientFactory.CreateTableClient();
+            QueueClient jobInfoQueueClient = _queueClientFactory.CreateQueueClient();
             await jobInfoQueueClient.DeleteIfExistsAsync();
             await jobInfoTableClient.DeleteAsync();
         }
@@ -507,7 +511,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Assert.False(jobInfo.CancelRequested);
 
             // check result
-            var fileName = Path.Combine(ExpectedDataFolder, expectedResultFile);
+            string fileName = Path.Combine(ExpectedDataFolder, expectedResultFile);
             var expectedResult = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(File.ReadAllText(fileName));
             var result = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
 
@@ -524,10 +528,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
 
         private async Task<int> GetResultFileCount(BlobContainerClient blobContainerClient, string filePrefix)
         {
-            var resultFileCount = 0;
-            await foreach (var page in blobContainerClient.GetBlobsByHierarchyAsync(prefix: filePrefix).AsPages())
+            int resultFileCount = 0;
+            await foreach (Page<BlobHierarchyItem> page in blobContainerClient.GetBlobsByHierarchyAsync(prefix: filePrefix).AsPages())
             {
-                foreach (var blobItem in page.Values)
+                foreach (BlobHierarchyItem blobItem in page.Values)
                 {
                     _testOutputHelper.WriteLine($"Getting result file {blobItem.Blob.Name}.");
 
@@ -561,7 +565,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 return false;
             }
 
-            foreach (var pair in actualDictionary)
+            foreach (KeyValuePair<string, int> pair in actualDictionary)
             {
                 if (expectedDictionary[pair.Key] != pair.Value)
                 {

@@ -32,7 +32,6 @@ shared_ptr<arrow::Field> GeneratePrimitiveField(const string& fieldName, const J
     
     // otherwise, it's string field.
     return arrow::field(fieldName, arrow::utf8());
-    
 }
 
 shared_ptr<arrow::Field> GenerateListField(const string& fieldName, const Json::Value& node)
@@ -63,20 +62,21 @@ vector<shared_ptr<arrow::Field>> GenerateSchemaFields(const Json::Value& node)
         return result;
     }
 
-    for (auto itr = subNodes.begin(); itr != subNodes.end(); itr ++)
+    for (auto const& fieldName : subNodes.getMemberNames())
     {
-        const Json::Value current = *itr;
-        if (current["IsRepeated"].asBool())
+        const Json::Value subNode = subNodes[fieldName];
+        
+        if (subNode["IsRepeated"].asBool())
         {
-            result.push_back(GenerateListField(current["Name"].asString(), current));
+            result.push_back(GenerateListField(fieldName, subNode));
         }
-        else if (current["IsLeaf"].asBool())
+        else if (subNode["IsLeaf"].asBool())
         {
-            result.push_back(GeneratePrimitiveField(current["Name"].asString(), current));
+            result.push_back(GeneratePrimitiveField(fieldName, subNode));
         }
         else
         {
-            result.push_back(GenerateStructField(current["Name"].asString(), current));
+            result.push_back(GenerateStructField(fieldName, subNode));
         }
     }
 
@@ -100,6 +100,11 @@ shared_ptr<arrow::Schema> SchemaManager::GetSchema(const string& schemaKey)
 // Return 0 if operation succeeds.
 int SchemaManager::AddSchema(const string& schemaKey, const string& schemaJson)
 {
+    if (IsEmptyOrWhitespace(schemaKey) || IsEmptyOrWhitespace(schemaJson))
+    {
+        return ParseParquetSchemaError;
+    }
+
     Json::Value root;
     if (!LoadJson(schemaJson, &root))
     {
@@ -115,4 +120,11 @@ int SchemaManager::AddSchema(const string& schemaKey, const string& schemaJson)
     {
         return ParseParquetSchemaError;
     }
+}
+
+bool IsEmptyOrWhitespace(const std::string& str) {
+    return str.empty()
+        || std::all_of(str.begin(), str.end(), [](char c) {
+        return std::isspace(static_cast<unsigned char>(c));
+    });
 }

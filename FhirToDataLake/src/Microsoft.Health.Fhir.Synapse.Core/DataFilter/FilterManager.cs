@@ -83,20 +83,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             string typeString,
             string filterString)
         {
-            var requiredTypes = ParseType(filterScope, typeString).ToHashSet();
-            var typeFilters = ParseTypeFilter(filterString).ToList();
+            HashSet<string> requiredTypes = ParseType(filterScope, typeString).ToHashSet();
+            List<TypeFilter> typeFilters = ParseTypeFilter(filterString).ToList();
 
             ValidateTypeFilters(requiredTypes, typeFilters);
 
             // Generate base type filters for the types without typeFilters,
             // so dataClient can handle all the cases with a unify interface.
-            var filteredTypes = new HashSet<string>();
-            foreach (var filter in typeFilters)
+            HashSet<string> filteredTypes = new HashSet<string>();
+            foreach (TypeFilter filter in typeFilters)
             {
                 filteredTypes.Add(filter.ResourceType);
             }
 
-            var nonFilterTypes = requiredTypes.Where(x => !filteredTypes.Contains(x)).ToList();
+            List<string> nonFilterTypes = requiredTypes.Where(x => !filteredTypes.Contains(x)).ToList();
 
             if (nonFilterTypes.Any())
             {
@@ -115,7 +115,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                         // otherwise, the request url is "https://{fhirURL}/Patient/{patientId}/*?_type={nonFilterTypes}"
                         if (!string.IsNullOrWhiteSpace(typeString) || !string.IsNullOrWhiteSpace(filterString))
                         {
-                            parameters = new List<KeyValuePair<string, string>> { new (FhirApiConstants.TypeKey, string.Join(',', nonFilterTypes)) };
+                            parameters = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>(FhirApiConstants.TypeKey, string.Join(',', nonFilterTypes)) };
                         }
 
                         typeFilters.Add(new TypeFilter(FhirConstants.AllResource, parameters));
@@ -141,7 +141,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         /// <returns>a list of resource type.</returns>
         private IEnumerable<string> ParseType(FilterScope filterScope, string typeString)
         {
-            var supportedResourceTypes = filterScope switch
+            HashSet<string> supportedResourceTypes = filterScope switch
             {
                 FilterScope.System => _fhirSpecificationProvider.GetAllResourceTypes().ToHashSet(),
                 FilterScope.Group => _fhirSpecificationProvider.GetCompartmentResourceTypes(FhirConstants.PatientResource).ToHashSet(),
@@ -155,10 +155,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
 
             // TODO: trim space for each type?
-            var types = typeString.Split(',').ToHashSet();
+            HashSet<string> types = typeString.Split(',').ToHashSet();
 
             // validate if invalid Fhir resource types
-            var invalidFhirResourceTypes =
+            List<string> invalidFhirResourceTypes =
                 types.Where(type => !_fhirSpecificationProvider.IsValidFhirResourceType(type)).ToList();
             if (invalidFhirResourceTypes.Any())
             {
@@ -169,7 +169,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
 
             // validate if unsupported resource types
-            var unsupportedTypes = types.Where(type => !supportedResourceTypes.Contains(type)).ToList();
+            List<string> unsupportedTypes = types.Where(type => !supportedResourceTypes.Contains(type)).ToList();
             if (unsupportedTypes.Any())
             {
                 _diagnosticLogger.LogError($"The required resource types \"{string.Join(',', unsupportedTypes)}\" aren't supported for scope {filterScope}.");
@@ -188,7 +188,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         /// <returns>A list of <see cref="TypeFilter"/></returns>
         private IEnumerable<TypeFilter> ParseTypeFilter(string filterString)
         {
-            var filters = new List<TypeFilter>();
+            List<TypeFilter> filters = new List<TypeFilter>();
 
             if (string.IsNullOrWhiteSpace(filterString))
             {
@@ -196,13 +196,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 return filters;
             }
 
-            var filterArray = filterString.Split(",");
+            string[] filterArray = filterString.Split(",");
 
             // the filter format sample is
             // "MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z"
-            foreach (var filter in filterArray)
+            foreach (string filter in filterArray)
             {
-                var parameterIndex = filter.IndexOf("?", StringComparison.Ordinal);
+                int parameterIndex = filter.IndexOf("?", StringComparison.Ordinal);
 
                 if (parameterIndex <= 0 || parameterIndex == filter.Length - 1)
                 {
@@ -212,14 +212,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                         $"The typeFilter segment '{filter}' could not be parsed.");
                 }
 
-                var filterType = filter.Substring(0, parameterIndex);
+                string filterType = filter.Substring(0, parameterIndex);
 
-                var filterParameters = filter.Substring(parameterIndex + 1).Split("&");
-                var parameterTupleList = new List<KeyValuePair<string, string>>();
+                string[] filterParameters = filter.Substring(parameterIndex + 1).Split("&");
+                List<KeyValuePair<string, string>> parameterTupleList = new List<KeyValuePair<string, string>>();
 
-                foreach (var parameter in filterParameters)
+                foreach (string parameter in filterParameters)
                 {
-                    var keyValue = parameter.Split("=");
+                    string[] keyValue = parameter.Split("=");
 
                     if (keyValue.Length != 2)
                     {
@@ -248,7 +248,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             EnsureArg.IsNotNull(requiredTypes, nameof(requiredTypes));
             EnsureArg.IsNotNull(typeFilters, nameof(typeFilters));
 
-            foreach (var typeFilter in typeFilters)
+            foreach (TypeFilter typeFilter in typeFilters)
             {
                 // The resource type in typeFilter should be in the required types.
                 if (!requiredTypes.Contains(typeFilter.ResourceType))
@@ -259,12 +259,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                 }
 
                 // Validate search parameters
-                var supportedSearchParam = _fhirSpecificationProvider
+                HashSet<string> supportedSearchParam = _fhirSpecificationProvider
                     .GetSearchParametersByResourceType(typeFilter.ResourceType).ToHashSet();
-                foreach (var (param, _) in typeFilter.Parameters)
+                foreach ((string param, string _) in typeFilter.Parameters)
                 {
-                    var splitParams = param.Split(':', '.');
-                    var paramName = splitParams[0];
+                    string[] splitParams = param.Split(':', '.');
+                    string paramName = splitParams[0];
 
                     // the parameter name should be the supported parameter of this resource type.
                     if (paramName != "_has" && !supportedSearchParam.Contains(paramName))

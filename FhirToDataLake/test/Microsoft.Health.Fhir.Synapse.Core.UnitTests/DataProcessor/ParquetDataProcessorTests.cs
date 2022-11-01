@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -26,6 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
     public class ParquetDataProcessorTests
     {
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+        private static ILogger<ParquetDataProcessor> _processorNullLogger = NullLogger<ParquetDataProcessor>.Instance;
         private static readonly IFhirSchemaManager<FhirParquetSchemaNode> _testDefaultFhirSchemaManager;
         private static readonly ParquetDataProcessor _testParquetDataProcessorWithoutCustomizedSchema;
         private static readonly ParquetDataProcessor _testParquetDataProcessorWithCustomizedSchema;
@@ -35,17 +37,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
         static ParquetDataProcessorTests()
         {
+            ILogger<FhirParquetSchemaManager> fhirSchemaManagerNullLogger = NullLogger<FhirParquetSchemaManager>.Instance;
+
             var fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestUtils.TestParquetSchemaProviderDelegate,
-                NullLogger<FhirParquetSchemaManager>.Instance);
+                _diagnosticLogger,
+                fhirSchemaManagerNullLogger);
 
             var fhirSchemaManagerWithCustomizedSchema = new FhirParquetSchemaManager(
                 Options.Create(TestUtils.TestCustomSchemaConfiguration),
                 TestUtils.TestParquetSchemaProviderDelegate,
-                NullLogger<FhirParquetSchemaManager>.Instance);
+                _diagnosticLogger,
+                fhirSchemaManagerNullLogger);
 
-            var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
+            IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             _testDefaultFhirSchemaManager = fhirSchemaManagerWithoutCustomizedSchema;
 
@@ -54,14 +60,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
                 arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
                 _diagnosticLogger,
-                NullLogger<ParquetDataProcessor>.Instance);
+                _processorNullLogger);
 
             _testParquetDataProcessorWithCustomizedSchema = new ParquetDataProcessor(
                 fhirSchemaManagerWithCustomizedSchema,
                 arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
                 _diagnosticLogger,
-                NullLogger<ParquetDataProcessor>.Instance);
+                _processorNullLogger);
 
             _testPatient = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson")).First();
             _testPatients = new List<JObject> { _testPatient, _testPatient };
@@ -70,26 +76,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
-            var fhirSchemaManager = new FhirParquetSchemaManager(
-                Options.Create(new SchemaConfiguration()),
-                TestUtils.TestParquetSchemaProviderDelegate,
-                NullLogger<FhirParquetSchemaManager>.Instance);
-
-            var arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
-
-            var loggerInstance = NullLogger<ParquetDataProcessor>.Instance;
+            IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(null, arrowConfigurationOptions, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, loggerInstance));
+                () => new ParquetDataProcessor(null, arrowConfigurationOptions, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, _processorNullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(fhirSchemaManager, null, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, loggerInstance));
+                () => new ParquetDataProcessor(_testDefaultFhirSchemaManager, null, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, _processorNullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(fhirSchemaManager, arrowConfigurationOptions, null, _diagnosticLogger, loggerInstance));
+                () => new ParquetDataProcessor(_testDefaultFhirSchemaManager, arrowConfigurationOptions, null, _diagnosticLogger, _processorNullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(fhirSchemaManager, arrowConfigurationOptions, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, null));
+                () => new ParquetDataProcessor(_testDefaultFhirSchemaManager, arrowConfigurationOptions, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, null));
         }
 
         [Fact]
@@ -97,12 +96,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         {
             var jsonBatchData = new JsonBatchData(_testPatients);
 
-            var resultBatchData = await _testParquetDataProcessorWithoutCustomizedSchema.ProcessAsync(jsonBatchData, new ProcessParameters("Patient", "Patient"));
+            StreamBatchData resultBatchData = await _testParquetDataProcessorWithoutCustomizedSchema.ProcessAsync(jsonBatchData, new ProcessParameters("Patient", "Patient"));
 
             var resultStream = new MemoryStream();
             resultBatchData.Value.CopyTo(resultStream);
 
-            var expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Patient.parquet"));
+            MemoryStream expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Patient.parquet"));
 
             Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
         }
@@ -110,14 +109,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         [Fact]
         public async Task GivenAValidInputData_WhenProcessWithCustomizedSchema_CorrectResultShouldBeReturned()
         {
-            var resultBatchData = await _testParquetDataProcessorWithCustomizedSchema.ProcessAsync(
+            StreamBatchData resultBatchData = await _testParquetDataProcessorWithCustomizedSchema.ProcessAsync(
                 new JsonBatchData(_testPatients),
                 new ProcessParameters($"Patient{FhirParquetSchemaConstants.CustomizedSchemaSuffix}", "Patient"));
 
             var resultStream = new MemoryStream();
             resultBatchData.Value.CopyTo(resultStream);
 
-            var expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Patient_Customized.parquet"));
+            MemoryStream expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Patient_Customized.parquet"));
 
             Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
         }
@@ -126,19 +125,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         [Fact]
         public async Task GivenAValidMultipleLargeInputData_WhenProcess_CorrectResultShouldBeReturned()
         {
-            var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Large_Patient.ndjson"));
+            IEnumerable<JObject> largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Large_Patient.ndjson"));
 
             // Maximum row number for arrow cpp parser is 100000 for a block, see https://github.com/apache/arrow/blob/42a9b32141c3c5a7178bef6644872d14f3051ce6/cpp/src/arrow/json/parser.h#L51
-            var largeTestData = Enumerable.Repeat(largePatientSingleSet, 10).SelectMany(x => x);
+            IEnumerable<JObject> largeTestData = Enumerable.Repeat(largePatientSingleSet, 10).SelectMany(x => x);
 
             var jsonBatchData = new JsonBatchData(largeTestData);
 
-            var resultBatchData = await _testParquetDataProcessorWithoutCustomizedSchema.ProcessAsync(jsonBatchData, new ProcessParameters("Patient", "Patient"));
+            StreamBatchData resultBatchData = await _testParquetDataProcessorWithoutCustomizedSchema.ProcessAsync(jsonBatchData, new ProcessParameters("Patient", "Patient"));
 
             var resultStream = new MemoryStream();
             resultBatchData.Value.CopyTo(resultStream);
 
-            var expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Patient_MultipleLargeSize.parquet"));
+            MemoryStream expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Patient_MultipleLargeSize.parquet"));
 
             Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
         }
@@ -147,16 +146,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         [Fact]
         public async Task GivenAValidLargeInputData_WhenProcess_CorrectResultShouldBeReturned()
         {
-            var largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Large_Patient.ndjson"));
+            IEnumerable<JObject> largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Large_Patient.ndjson"));
 
             var jsonBatchData = new JsonBatchData(largePatientSingleSet);
 
-            var resultBatchData = await _testParquetDataProcessorWithoutCustomizedSchema.ProcessAsync(jsonBatchData, new ProcessParameters("Patient", "Patient"));
+            StreamBatchData resultBatchData = await _testParquetDataProcessorWithoutCustomizedSchema.ProcessAsync(jsonBatchData, new ProcessParameters("Patient", "Patient"));
 
             var resultStream = new MemoryStream();
             resultBatchData.Value.CopyTo(resultStream);
 
-            var expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Patient_LargeSize.parquet"));
+            MemoryStream expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Patient_LargeSize.parquet"));
 
             Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
         }
@@ -170,10 +169,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
                 { "id", "example" },
             };
 
-            var testData = new List<JObject>(_testPatients) { shortPatientData };
+            List<JObject> testData = new List<JObject>(_testPatients) { shortPatientData };
 
             // Set BlockSize small here, only shortPatientData can be retained an be converting to parquet result.
-            var arrowConfigurationOptions = Options.Create(new ArrowConfiguration()
+            IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration()
             {
                 ReadOptions = new ArrowReadOptionsConfiguration() { BlockSize = 50 },
             });
@@ -183,16 +182,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
                 arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
                 _diagnosticLogger,
-                NullLogger<ParquetDataProcessor>.Instance);
+                _processorNullLogger);
 
             var jsonBatchData = new JsonBatchData(testData);
 
-            var resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("Patient", "Patient"));
+            StreamBatchData resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("Patient", "Patient"));
 
             var resultStream = new MemoryStream();
             resultBatchData.Value.CopyTo(resultStream);
 
-            var expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Patient_IgnoreLargeLength.parquet"));
+            MemoryStream expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Patient_IgnoreLargeLength.parquet"));
 
             Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
         }
@@ -201,7 +200,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
         public async Task GivenDataAllRecordsLengthLargerThanBlockSize_WhenProcess_NullResultShouldReturned()
         {
             // Set BlockSize small here, only shortPatientData can be retained an be converting to parquet result.
-            var arrowConfigurationOptions = Options.Create(new ArrowConfiguration()
+            IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration()
             {
                 ReadOptions = new ArrowReadOptionsConfiguration() { BlockSize = 50 },
             });
@@ -211,9 +210,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
                 arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
                 _diagnosticLogger,
-                NullLogger<ParquetDataProcessor>.Instance);
+                _processorNullLogger);
 
-            var testData = new List<JObject>(_testPatients);
+            List<JObject> testData = new List<JObject>(_testPatients);
             var jsonBatchData = new JsonBatchData(testData);
 
             StreamBatchData result = await parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("Patient", "Patient"));

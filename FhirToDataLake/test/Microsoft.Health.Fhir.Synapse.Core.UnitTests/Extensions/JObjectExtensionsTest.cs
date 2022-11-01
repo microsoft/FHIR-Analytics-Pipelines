@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.IO;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
@@ -19,9 +20,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenAJObject_WhenGetLastUpdated_CorrectResultShouldReturn()
         {
-            var testJObject = GetTestJObject(SamplePatientFileName);
+            JObject testJObject = GetTestJObject(SamplePatientFileName);
 
-            var date = testJObject.GetLastUpdated();
+            DateTimeOffset? date = testJObject.GetLastUpdated();
             Assert.NotNull(date);
 
             Assert.Equal(2012, date.Value.Year);
@@ -32,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenAJObjectWithoutLastUpdated_WhenGetLastUpdated_ExceptionShouldBeThrown()
         {
-            var testJObject = GetTestJObject(NoMetaSamplePatientFileName);
+            JObject testJObject = GetTestJObject(NoMetaSamplePatientFileName);
 
             Assert.Throws<FhirDataParseException>(() => testJObject.GetLastUpdated());
         }

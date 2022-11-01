@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValidators;
@@ -84,7 +85,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Configurations.Configur
         [Fact]
         public void GivenInvalidFilterConfiguration_WhenValidate_ExceptionShouldBeThrown()
         {
-            var config = new FilterConfiguration()
+            var config = new FilterConfiguration
             {
                 FilterScope = FilterScope.Group,
                 GroupId = string.Empty,
@@ -104,7 +105,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Configurations.Configur
         [MemberData(nameof(GetValidTableOrQueueName))]
         public void GivenValidAgentName_WhenValidate_NoExceptionShouldBeThrown(string name)
         {
-            var exception = Record.Exception(() => ValidateUtility.ValidateQueueOrTableName(name));
+            Exception exception = Record.Exception(() => ValidateUtility.ValidateQueueOrTableName(name));
             Assert.Null(exception);
         }
 
@@ -119,7 +120,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Configurations.Configur
         [MemberData(nameof(GetValidImageReference))]
         public void GivenValidImageReference_WhenValidate_NoExceptionShouldBeThrown(string imageReference)
         {
-            var exception = Record.Exception(() => ValidateUtility.ValidateImageReference(imageReference));
+            Exception exception = Record.Exception(() => ValidateUtility.ValidateImageReference(imageReference));
             Assert.Null(exception);
         }
     }

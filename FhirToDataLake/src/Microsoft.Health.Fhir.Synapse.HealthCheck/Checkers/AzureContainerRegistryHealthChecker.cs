@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             try
             {
                 var imageInfo = ImageInfo.CreateFromImageReference(_imageReference);
-                var accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
+                string accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
                 var acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrClientCredentials(accessToken));
 
                 // Ensure we can read from acr.
@@ -53,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
-                _logger.LogInformation(e, $"Health check component {_name}: read ACR {_imageReference} failed: {e}.");
+                Logger.LogInformation(e, $"Health check component {_name}: read ACR {_imageReference} failed: {e}.");
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = $"Read from acr failed. {e.Message}";
                 return healthCheckResult;

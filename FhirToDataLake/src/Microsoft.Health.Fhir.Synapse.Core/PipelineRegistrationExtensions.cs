@@ -13,6 +13,8 @@ using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
+using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
+using Microsoft.Health.Fhir.Synapse.JobManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.JobManagement;
 
@@ -39,7 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
             services.AddSingleton<IGroupMemberExtractor, GroupMemberExtractor>();
 
-            var filterLocation = services
+            FilterLocation filterLocation = services
                     .BuildServiceProvider()
                     .GetRequiredService<IOptions<FilterLocation>>()
                     .Value;
@@ -60,6 +62,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core
             services.AddFhirSpecificationProvider();
 
             services.AddSchemaConverters();
+
+            services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>();
 
             return services;
         }
@@ -84,7 +88,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
         public static IServiceCollection AddFhirSpecificationProvider(this IServiceCollection services)
         {
-            var fhirServerConfiguration = services
+            FhirServerConfiguration fhirServerConfiguration = services
                 .BuildServiceProvider()
                 .GetRequiredService<IOptions<FhirServerConfiguration>>()
                 .Value;

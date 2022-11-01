@@ -27,7 +27,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         public const string TestDataFolder = "./TestData";
         public const string ExpectTestDataFolder = TestDataFolder + "/Expected";
-        public const string TestNativeSchemaDirectoryPath = TestDataFolder + "/schemas";
+        public const string TestNormalSchemaDirectoryPath = TestDataFolder + "/Schema";
+        public const string TestInvalidSchemaDirectoryPath = TestDataFolder + "/InvalidSchema";
         public const string TestCustomizedSchemaDirectoryPath = TestDataFolder + "/CustomizedSchema";
         public const string TestFilterTarGzPath = TestDataFolder + "/filter.tar.gz";
 
@@ -44,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             // to prevent output from being affected by time zone.
             var serializerSettings = new JsonSerializerSettings { DateParseHandling = DateParseHandling.None };
 
-            foreach (var line in File.ReadAllLines(filePath))
+            foreach (string line in File.ReadAllLines(filePath))
             {
                 yield return JsonConvert.DeserializeObject<JObject>(line, serializerSettings);
             }
@@ -52,14 +53,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
         public static IContainerRegistryTemplateProvider GetMockAcrTemplateProvider()
         {
-            var templateContents = Directory.GetFiles(TestCustomizedSchemaDirectoryPath, "*", SearchOption.AllDirectories)
+            Dictionary<string, byte[]> templateContents = Directory.GetFiles(TestCustomizedSchemaDirectoryPath, "*", SearchOption.AllDirectories)
                 .Select(filePath =>
                 {
-                    var templateContent = File.ReadAllBytes(filePath);
+                    byte[] templateContent = File.ReadAllBytes(filePath);
                     return new KeyValuePair<string, byte[]>(Path.GetRelativePath(TestCustomizedSchemaDirectoryPath, filePath), templateContent);
                 }).ToDictionary(x => x.Key, x => x.Value);
 
-            var templateCollection = TemplateLayerParser.ParseToTemplates(templateContents);
+            Dictionary<string, Template> templateCollection = TemplateLayerParser.ParseToTemplates(templateContents);
 
             var templateProvider = Substitute.For<IContainerRegistryTemplateProvider>();
             templateProvider.GetTemplateCollectionAsync(default, default).ReturnsForAnyArgs(new List<Dictionary<string, Template>> { templateCollection });
@@ -90,6 +91,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             var fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestParquetSchemaProviderDelegate,
+                _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)

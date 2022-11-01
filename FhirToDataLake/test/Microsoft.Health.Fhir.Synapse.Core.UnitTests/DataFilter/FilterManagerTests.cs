@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
@@ -43,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
-            var fhilterConfigurationOption = Options.Create(new FilterConfiguration());
+            IOptions<FilterConfiguration> fhilterConfigurationOption = Options.Create(new FilterConfiguration());
 
             Assert.Throws<ArgumentNullException>(
                 () => new FilterManager(null, _testFhirSpecificationProvider, _diagnosticLogger, _nullFilterManagerLogger));
@@ -74,11 +76,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 _diagnosticLogger,
                 _nullFilterManagerLogger);
 
-            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
+            List<TypeFilter> typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.NotNull(typeFilters);
             Assert.Equal(resourceTypeCount, typeFilters.Count());
-            foreach (var typeFilter in typeFilters)
+            foreach (TypeFilter typeFilter in typeFilters)
             {
                 Assert.Empty(typeFilter.Parameters);
             }
@@ -102,7 +104,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
                 _nullFilterManagerLogger);
-            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
+            List<TypeFilter> typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.Single(typeFilters);
             Assert.Equal("*", typeFilters[0].ResourceType);
@@ -127,7 +129,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
                 _nullFilterManagerLogger);
-            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
+            List<TypeFilter> typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.Single(typeFilters);
             Assert.Equal("*", typeFilters[0].ResourceType);
@@ -151,7 +153,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
                 _nullFilterManagerLogger);
-            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
+            List<TypeFilter> typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.Single(typeFilters);
             Assert.Equal("Patient", typeFilters[0].ResourceType);
@@ -176,7 +178,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
                 _nullFilterManagerLogger);
-            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
+            List<TypeFilter> typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.Single(typeFilters);
             Assert.Equal("Patient", typeFilters[0].ResourceType);
@@ -253,7 +255,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
                 _nullFilterManagerLogger);
-            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
+            List<TypeFilter> typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.NotNull(typeFilters);
             Assert.Equal(3, typeFilters.Count());
@@ -294,7 +296,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
                 _nullFilterManagerLogger);
-            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
+            List<TypeFilter> typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
             Assert.NotNull(typeFilters);
             Assert.Equal(3, typeFilters.Count());
@@ -349,9 +351,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 _testFhirSpecificationProvider,
                 _diagnosticLogger,
                 _nullFilterManagerLogger);
-            var typeFilters = await filterManager.GetTypeFiltersAsync(default);
+            List<TypeFilter> typeFilters = await filterManager.GetTypeFiltersAsync(default);
 
-            var expectedTypes = type.Split(',');
+            string[] expectedTypes = type.Split(',');
 
             Assert.NotNull(typeFilters);
 

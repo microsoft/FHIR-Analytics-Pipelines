@@ -4,8 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -54,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
             var healthCheckResult = new HealthCheckResult(HealthCheckTypes.AzureBlobStorageCanReadWrite);
-            var blobPath = $"{_sourceFolderName}/{HealthCheckBlobPrefix}";
+            string blobPath = $"{_sourceFolderName}/{HealthCheckBlobPrefix}";
 
             try
             {
@@ -63,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
-                _logger.LogInformation(e, $"Health check component {HealthCheckTypes.AzureBlobStorageCanReadWrite}: write content to storage account failed: {e}.");
+                Logger.LogInformation(e, $"Health check component {HealthCheckTypes.AzureBlobStorageCanReadWrite}: write content to storage account failed: {e}.");
 
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = $"Write content to blob failed. {e.Message}";
@@ -83,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
-                _logger.LogInformation(e, $"Health check component {HealthCheckTypes.AzureBlobStorageCanReadWrite}: read content from storage account failed: {e}.");
+                Logger.LogInformation(e, $"Health check component {HealthCheckTypes.AzureBlobStorageCanReadWrite}: read content from storage account failed: {e}.");
 
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = $"Read content from blob failed. {e.Message}";
@@ -98,7 +96,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
-                _logger.LogInformation(e, $"Health check component {HealthCheckTypes.AzureBlobStorageCanReadWrite}: check hierachical namespace enabled in storage account failed: {e}.");
+                Logger.LogInformation(e, $"Health check component {HealthCheckTypes.AzureBlobStorageCanReadWrite}: check hierachical namespace enabled in storage account failed: {e}.");
 
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = $"Check hierachical namespace enabled in storage account failed. {e.Message}";
@@ -106,7 +104,15 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             finally
             {
-                await _blobContainerClient.DeleteDirectoryIfExistsAsync(string.Format(HealthCheckFolderFormat, _instanceId), cancellationToken);
+                try
+                {
+                    await _blobContainerClient.DeleteDirectoryIfExistsAsync(string.Format(HealthCheckFolderFormat, _instanceId), cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    // failed to clean health check folder (appens when delete failed), will not impact check result.
+                    Logger.LogInformation(ex, $"Failed to delete the directory {string.Format(HealthCheckFolderFormat, _instanceId)}.");
+                }
             }
 
             healthCheckResult.Status = HealthCheckStatus.HEALTHY;
@@ -116,15 +122,15 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
         private async Task UploadToBlobAsync(string uploadedContent, string blobPath, CancellationToken cancellationToken)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(uploadedContent);
-            using MemoryStream stream = new (bytes);
+            using var stream = new MemoryStream(bytes);
             await _blobContainerClient.UpdateBlobAsync(blobPath, stream, cancellationToken);
         }
 
         private async Task<string> DownloadFromBlobAsync(string blobPath, CancellationToken cancellationToken)
         {
-            using var resultStream = await _blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);
+            using Stream resultStream = await _blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);
             resultStream.Position = 0;
-            using StreamReader reader = new (resultStream, Encoding.UTF8);
+            using var reader = new StreamReader(resultStream, Encoding.UTF8);
             return reader.ReadToEnd();
         }
     }

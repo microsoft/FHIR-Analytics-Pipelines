@@ -12,7 +12,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow
     /// </summary>
     public enum CompressionOptions
     {
+        /// <summary>
+        /// UNCOMPRESSED
+        /// </summary>
         UNCOMPRESSED,
+
+        /// <summary>
+        /// SNAPPY
+        /// </summary>
         SNAPPY,
     }
 

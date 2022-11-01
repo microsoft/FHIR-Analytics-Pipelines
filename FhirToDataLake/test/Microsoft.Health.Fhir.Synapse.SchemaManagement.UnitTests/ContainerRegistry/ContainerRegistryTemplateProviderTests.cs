@@ -4,8 +4,11 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using DotLiquid;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.UnitTests;
@@ -22,9 +25,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         private readonly string _testContainerRegistryAccessToken;
         private readonly IContainerRegistryTokenProvider _testTokenProvider;
 
+        private readonly IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+        private readonly ILogger<ContainerRegistryTemplateProvider> _nullLogger = new NullLogger<ContainerRegistryTemplateProvider>();
+
         public ContainerRegistryTemplateProviderTests()
         {
-            var testContainerRegistryServer = Environment.GetEnvironmentVariable("TestContainerRegistryServer");
+            string testContainerRegistryServer = Environment.GetEnvironmentVariable("TestContainerRegistryServer");
             if (testContainerRegistryServer == null)
             {
                 return;
@@ -32,11 +38,24 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
 
             _testImageReference = $"{testContainerRegistryServer}/synapsetesttemplates:latest";
 
-            var testContainerRegistryUsername = Environment.GetEnvironmentVariable("TestContainerRegistryServer")?.Split('.')[0];
-            var testContainerRegistryPassword = Environment.GetEnvironmentVariable("TestContainerRegistryPassword");
+            string testContainerRegistryUsername = Environment.GetEnvironmentVariable("TestContainerRegistryServer")?.Split('.')[0];
+            string testContainerRegistryPassword = Environment.GetEnvironmentVariable("TestContainerRegistryPassword");
 
             _testContainerRegistryAccessToken = TestUtils.GetAcrAccessToken(testContainerRegistryUsername, testContainerRegistryPassword);
             _testTokenProvider = TestUtils.GetMockAcrTokenProvider(_testContainerRegistryAccessToken);
+        }
+
+        [Fact]
+        public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new ContainerRegistryTemplateProvider(null, _diagnosticLogger, _nullLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new ContainerRegistryTemplateProvider(_testTokenProvider, null, _nullLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new ContainerRegistryTemplateProvider(_testTokenProvider, _diagnosticLogger, null));
         }
 
         [SkippableFact]
@@ -44,16 +63,27 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         {
             Skip.If(_testImageReference == null);
 
-            ImageInfo imageInfo = ImageInfo.CreateFromImageReference(_testImageReference);
+            var imageInfo = ImageInfo.CreateFromImageReference(_testImageReference);
             await ContainerRegistryTestUtils.GenerateImageAsync(imageInfo, _testContainerRegistryAccessToken, TestUtils.TestTemplateTarGzPath);
 
-            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
-                _testTokenProvider,
-                new DiagnosticLogger(),
-                new NullLogger<ContainerRegistryTemplateProvider>());
-            var templateCollection = await containerRegistryTemplateProvider.GetTemplateCollectionAsync(_testImageReference, CancellationToken.None);
+            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(_testTokenProvider, _diagnosticLogger, _nullLogger);
+            List<Dictionary<string, Template>> templateCollection = await containerRegistryTemplateProvider.GetTemplateCollectionAsync(_testImageReference, CancellationToken.None);
 
             Assert.NotEmpty(templateCollection);
+        }
+
+        [SkippableTheory]
+        [InlineData("")]
+        [InlineData(" ")]
+        [InlineData("Invalid reference")]
+        [InlineData(null)]
+        public async Task GivenInvalidSchemaReference_WhenFetchingTemplates_CorrectTemplateCollectionsShouldBeReturned(string imageReference)
+        {
+            Skip.If(_testImageReference == null);
+
+            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(_testTokenProvider, _diagnosticLogger, _nullLogger);
+            await Assert.ThrowsAsync<ContainerRegistrySchemaException>(
+                () => containerRegistryTemplateProvider.GetTemplateCollectionAsync(imageReference, CancellationToken.None));
         }
 
         [SkippableFact]
@@ -61,11 +91,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         {
             Skip.If(_testImageReference == null);
 
-            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(
-                TestUtils.GetMockAcrTokenProvider("invalid token"),
-                new DiagnosticLogger(),
-                new NullLogger<ContainerRegistryTemplateProvider>());
-
+            var containerRegistryTemplateProvider = new ContainerRegistryTemplateProvider(TestUtils.GetMockAcrTokenProvider("invalid token"), _diagnosticLogger, _nullLogger);
             await Assert.ThrowsAsync<ContainerRegistrySchemaException>(
                 () => containerRegistryTemplateProvider.GetTemplateCollectionAsync(_testImageReference, CancellationToken.None));
         }

@@ -36,12 +36,10 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             ILogger<LocalDefaultSchemaProvider> logger)
         {
             EnsureArg.IsNotNull(fhirServerConfiguration, nameof(fhirServerConfiguration));
-            EnsureArg.IsNotNull(logger, nameof(logger));
-            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
 
-            _fhirVersion = fhirServerConfiguration.Value.Version;
-            _diagnosticLogger = diagnosticLogger;
-            _logger = logger;
+            _fhirVersion = EnsureArg.EnumIsDefined(fhirServerConfiguration.Value.Version, nameof(fhirServerConfiguration.Value.Version));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         public Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default)
@@ -72,15 +70,15 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
             var executingAssembly = Assembly.GetExecutingAssembly();
             string folderName = GetEmbeddedSchemaFolder(executingAssembly, fhirVersion);
-            var resourceNames = executingAssembly
+            string[] resourceNames = executingAssembly
                 .GetManifestResourceNames()
                 .Where(r => r.StartsWith(folderName) && r.EndsWith(".json"))
                 .ToArray();
 
-            foreach (var name in resourceNames)
+            foreach (string name in resourceNames)
             {
                 using (Stream stream = executingAssembly.GetManifestResourceStream(name))
-                using (StreamReader reader = new StreamReader(stream))
+                using (var reader = new StreamReader(stream))
                 {
                     embeddedSchema.Add(name, reader.ReadToEnd());
                 }

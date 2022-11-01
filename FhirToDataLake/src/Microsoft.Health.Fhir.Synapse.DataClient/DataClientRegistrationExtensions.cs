@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
             services.AddSingleton<IFhirApiDataSource, FhirApiDataSource>();
             services.AddSingleton<IFhirDataClient, FhirApiDataClient>();
 
-            var fhirServerConfiguration = services
+            FhirServerConfiguration fhirServerConfiguration = services
                 .BuildServiceProvider()
                 .GetRequiredService<IOptions<FhirServerConfiguration>>()
                 .Value;
@@ -43,7 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
                 .Or<TimeoutRejectedException>()
-                .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                .OrResult(msg => msg.StatusCode == HttpStatusCode.TooManyRequests)
                 .WaitAndRetryAsync(
                     5,
                     retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
@@ -58,7 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
         {
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
-                .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
+                .CircuitBreakerAsync(40, TimeSpan.FromSeconds(30));
         }
 
         private static IAsyncPolicy<HttpResponseMessage> GetTimeoutPolicy(double seconds = 60)

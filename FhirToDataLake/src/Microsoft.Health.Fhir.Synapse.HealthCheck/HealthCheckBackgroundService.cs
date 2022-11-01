@@ -15,6 +15,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
+using Microsoft.Health.Fhir.Synapse.Core.Extensions;
+using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 {
@@ -50,29 +52,34 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
             while (!cancellationToken.IsCancellationRequested)
             {
                 // Delay interval time.
-                var delayTask = Task.Delay(_checkIntervalInSeconds, cancellationToken);
+                Task delayTask = Task.Delay(_checkIntervalInSeconds, cancellationToken);
                 try
                 {
                     _diagnosticLogger.LogInformation("Starting to perform health checks");
                     _logger.LogInformation("Starting to perform health checks");
 
                     // Perform health check.
-                    var healthStatus = await _healthCheckEngine.CheckHealthAsync(cancellationToken);
+                    OverallHealthStatus healthStatus = await _healthCheckEngine.CheckHealthAsync(cancellationToken);
 
-                    _diagnosticLogger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}.");
-                    _logger.LogInformation($"Finished health checks: ${string.Join(',', healthStatus.HealthCheckResults.Select(x => x.Name))}.");
+                    _diagnosticLogger.LogInformation($"Finished health checks: {string.Join(',', healthStatus.HealthCheckResults.Select(x => string.Format("{0}:{1}", x.Name, x.Status)))}.");
+                    _logger.LogInformation($"Finished health checks: {string.Join(',', healthStatus.HealthCheckResults.Select(x => string.Format("{0}:{1}", x.Name, x.Status)))}.");
 
                     // Todo: Send notification to mediator and remove listeners here.
-                    var listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
-                    _metricsLogger.LogHealthStatusMetric(healthStatus.Status == Models.HealthCheckStatus.HEALTHY ? 1 : 0);
+                    List<Task> listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
+                    foreach (HealthCheckResult component in healthStatus.HealthCheckResults)
+                    {
+                        _metricsLogger.LogHealthStatusMetric(component.Name, !component.IsCritical, component.Status == Models.HealthCheckStatus.HEALTHY ? 1 : 0);
+                    }
+
                     await Task.WhenAll(listenerTasks);
                     await delayTask;
                 }
                 catch (OperationCanceledException e)
                 {
                     // not expected to trigger this exception.
-                    _diagnosticLogger.LogError($"Health check service is cancelled. {e.Message}");
-                    _logger.LogInformation(e, $"Health check service is cancelled. {e.Message}");
+                    _diagnosticLogger.LogError($"Health check service is cancelled. Reason: {e.Message}");
+                    _logger.LogInformation(e, $"Health check service is cancelled. Reason: {e.Message}");
+                    _metricsLogger.LogTotalErrorsMetrics(e, $"Health check service is cancelled. Reason: {e.Message}", Operations.HealthCheck);
                     await delayTask;
                     throw;
                 }
@@ -80,6 +87,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                 {
                     _diagnosticLogger.LogError($"Unknown exception occured in health check. {e.Message}");
                     _logger.LogError(e, $"Unhandled exception occured in health check. {e.Message}");
+                    _metricsLogger.LogTotalErrorsMetrics(e, $"Unhandled exception occured in health check. {e.Message}", Operations.HealthCheck);
                     await delayTask;
                 }
             }

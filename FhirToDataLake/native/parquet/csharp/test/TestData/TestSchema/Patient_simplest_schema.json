@@ -1,0 +1,42 @@
+{
+  "SubNodes": {
+    "resourceType": {
+      "IsLeaf": true
+    },
+    "id": {
+      "IsLeaf": true
+    },
+    "name": {
+      "IsRepeated": true,
+      "SubNodes": {
+        "use": {
+          "IsLeaf": true
+        },
+        "family": {
+          "IsLeaf": true
+        },
+        "given": {
+          "IsRepeated": true,
+          "IsLeaf": true
+        }
+      }
+    },
+    "gender": {
+      "IsLeaf": true
+    },
+    "birthDate": {
+      "IsLeaf": true
+    },
+    "deceasedBoolean": {
+      "Type": "boolean",
+      "IsLeaf": true
+    },
+    "managingOrganization": {
+      "SubNodes": {
+        "reference": {
+          "IsLeaf": true
+        }
+      }
+    }
+  }
+}

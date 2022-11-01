@@ -9,13 +9,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.JobManagement;
-using JobStatus = Microsoft.Health.JobManagement.JobStatus;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
     public class MockQueueClient : IQueueClient
     {
-        private List<JobInfo> jobInfos = new List<JobInfo>();
+        private List<JobInfo> _jobInfos = new List<JobInfo>();
         private long _largestId = 1;
 
         public Action EnqueueFaultAction { get; set; }
@@ -28,13 +27,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         public Func<MockQueueClient, long, CancellationToken, JobInfo> GetJobByIdFunc { get; set; }
 
-        public List<JobInfo> JobInfos => jobInfos;
+        public List<JobInfo> JobInfos => _jobInfos;
 
         public bool Initialized { get; set; } = true;
 
         public Task CancelJobByGroupIdAsync(byte queueType, long groupId, CancellationToken cancellationToken)
         {
-            foreach (JobInfo jobInfo in jobInfos.Where(t => t.GroupId == groupId))
+            foreach (JobInfo jobInfo in _jobInfos.Where(t => t.GroupId == groupId))
             {
                 if (jobInfo.Status == JobStatus.Created)
                 {
@@ -52,7 +51,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         public Task CancelJobByIdAsync(byte queueType, long jobId, CancellationToken cancellationToken)
         {
-            foreach (JobInfo jobInfo in jobInfos.Where(t => t.Id == jobId))
+            foreach (JobInfo jobInfo in _jobInfos.Where(t => t.Id == jobId))
             {
                 if (jobInfo.Status == JobStatus.Created)
                 {
@@ -72,7 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             CompleteFaultAction?.Invoke();
 
-            JobInfo jobInfoStore = jobInfos.FirstOrDefault(t => t.Id == jobInfo.Id);
+            JobInfo jobInfoStore = _jobInfos.FirstOrDefault(t => t.Id == jobInfo.Id);
             jobInfoStore.Status = jobInfo.Status;
             jobInfoStore.Result = jobInfo.Result;
 
@@ -86,7 +85,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             DequeueFaultAction?.Invoke();
 
-            JobInfo job = jobInfos.FirstOrDefault(t => t.Status == JobStatus.Created || (t.Status == JobStatus.Running && (DateTime.Now - t.HeartbeatDateTime) > TimeSpan.FromSeconds(heartbeatTimeoutSec)));
+            JobInfo job = _jobInfos.FirstOrDefault(t => t.Status == JobStatus.Created || (t.Status == JobStatus.Running && (DateTime.Now - t.HeartbeatDateTime) > TimeSpan.FromSeconds(heartbeatTimeoutSec)));
             if (job != null)
             {
                 job.Status = JobStatus.Running;
@@ -105,13 +104,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             long gId = groupId ?? _largestId++;
             foreach (string definition in definitions)
             {
-                if (jobInfos.Any(t => t.Definition.Equals(definition)))
+                if (_jobInfos.Any(t => t.Definition.Equals(definition)))
                 {
-                    result.Add(jobInfos.First(t => t.Definition.Equals(definition)));
+                    result.Add(_jobInfos.First(t => t.Definition.Equals(definition)));
                     continue;
                 }
 
-                result.Add(new JobInfo()
+                result.Add(new JobInfo
                 {
                     Definition = definition,
                     Id = _largestId,
@@ -122,14 +121,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 _largestId++;
             }
 
-            jobInfos.AddRange(result);
+            _jobInfos.AddRange(result);
             return Task.FromResult<IEnumerable<JobInfo>>(result);
         }
 
         public Task<IEnumerable<JobInfo>> GetJobByGroupIdAsync(byte queueType, long groupId, bool returnDefinition, CancellationToken cancellationToken)
         {
-            IEnumerable<JobInfo> result = jobInfos.Where(t => t.GroupId == groupId);
-            return Task.FromResult<IEnumerable<JobInfo>>(result);
+            IEnumerable<JobInfo> result = _jobInfos.Where(t => t.GroupId == groupId);
+            return Task.FromResult(result);
         }
 
         public Task<JobInfo> GetJobByIdAsync(byte queueType, long jobId, bool returnDefinition, CancellationToken cancellationToken)
@@ -139,7 +138,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 return Task.FromResult(GetJobByIdFunc(this, jobId, cancellationToken));
             }
 
-            JobInfo result = jobInfos.FirstOrDefault(t => t.Id == jobId);
+            JobInfo result = _jobInfos.FirstOrDefault(t => t.Id == jobId);
             return Task.FromResult(result);
         }
 
@@ -150,8 +149,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 return Task.FromResult(jobIds.Select(jobId => GetJobByIdFunc(this, jobId, cancellationToken)));
             }
 
-            IEnumerable<JobInfo> result = jobInfos.Where(t => jobIds.Contains(t.Id));
-            return Task.FromResult<IEnumerable<JobInfo>>(result);
+            IEnumerable<JobInfo> result = _jobInfos.Where(t => jobIds.Contains(t.Id));
+            return Task.FromResult(result);
         }
 
         public bool IsInitialized()
@@ -163,7 +162,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             HeartbeatFaultAction?.Invoke();
 
-            JobInfo job = jobInfos.FirstOrDefault(t => t.Id == jobInfo.Id);
+            JobInfo job = _jobInfos.FirstOrDefault(t => t.Id == jobInfo.Id);
             if (job == null)
             {
                 throw new JobNotExistException("not exist");

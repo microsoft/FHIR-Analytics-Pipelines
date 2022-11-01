@@ -20,7 +20,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Exceptions
         public SynapsePipelineExternalException(string message, Exception inner)
             : base(message, inner)
         {
-
         }
     }
 }

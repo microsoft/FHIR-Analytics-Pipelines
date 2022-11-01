@@ -42,17 +42,27 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             EnsureArg.IsNotNullOrWhiteSpace(config.Value.MetadataTableName, nameof(config.Value.MetadataTableName));
 
             _metadataTableClient = azureTableClientFactory.Create(config.Value.MetadataTableName);
-            _metadataTableClient.CreateIfNotExists();
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             _isInitialized = false;
         }
 
         public async Task<TriggerLeaseEntity> GetTriggerLeaseEntityAsync(byte queueType, CancellationToken cancellationToken = default)
         {
-            return (await _metadataTableClient.GetEntityAsync<TriggerLeaseEntity>(
-                TableKeyProvider.LeasePartitionKey(queueType),
-                TableKeyProvider.LeaseRowKey(queueType),
-                cancellationToken: cancellationToken)).Value;
+            TriggerLeaseEntity entity = null;
+            try
+            {
+                entity = await _metadataTableClient.GetEntityAsync<TriggerLeaseEntity>(
+                    TableKeyProvider.LeasePartitionKey(queueType),
+                    TableKeyProvider.LeaseRowKey(queueType),
+                    cancellationToken: cancellationToken);
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
+            {
+                _logger.LogInformation("The trigger lease entity doesn't exist.");
+            }
+
+            // don't catch other exceptions, the caller should handle it
+            return entity;
         }
 
         public bool IsInitialized()
@@ -67,17 +77,35 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return _isInitialized;
         }
 
-        public async Task<Response> AddEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default)
+        public async Task<bool> TryAddEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default)
         {
-            return await _metadataTableClient.AddEntityAsync(tableEntity, cancellationToken);
+            try
+            {
+                await _metadataTableClient.AddEntityAsync(tableEntity, cancellationToken);
+                return true;
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.AddEntityAlreadyExistsErrorCode)
+            {
+                _logger.LogInformation("Failed to add entity, the entity already exists.");
+                return false;
+            }
         }
 
-        public async Task<Response> UpdateEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default)
+        public async Task<bool> TryUpdateEntityAsync(ITableEntity tableEntity, CancellationToken cancellationToken = default)
         {
-            return await _metadataTableClient.UpdateEntityAsync(
-                tableEntity,
-                tableEntity.ETag,
-                cancellationToken: cancellationToken);
+            try
+            {
+                await _metadataTableClient.UpdateEntityAsync(
+                    tableEntity,
+                    tableEntity.ETag,
+                    cancellationToken: cancellationToken);
+                return true;
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.UpdateEntityPreconditionFailedErrorCode)
+            {
+                _logger.LogInformation("Failed to update entity, Etag precondition failed.");
+                return false;
+            }
         }
 
         public async Task<CurrentTriggerEntity> GetCurrentTriggerEntityAsync(byte queueType, CancellationToken cancellationToken = default)
@@ -85,32 +113,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             CurrentTriggerEntity entity = null;
             try
             {
-                var response = await _metadataTableClient.GetEntityAsync<CurrentTriggerEntity>(
+                Response<CurrentTriggerEntity> response = await _metadataTableClient.GetEntityAsync<CurrentTriggerEntity>(
                     TableKeyProvider.TriggerPartitionKey(queueType),
                     TableKeyProvider.TriggerRowKey(queueType),
                     cancellationToken: cancellationToken);
 
-                // Todo: test behavior if status is not 200.
-                if (response.GetRawResponse().Status == 200)
-                {
-                    entity = response.Value;
-                }
-                else
-                {
-                    _logger.LogInformation($"Failed to get current trigger entity from table, status {response.GetRawResponse().Status}");
-                }
+                entity = response.Value;
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
             {
                 _logger.LogInformation(ex, "The current trigger doesn't exist, will create a new one.");
             }
-            catch (Exception ex)
-            {
-                // any exceptions while getting entity will log a error and try next time
-                _logger.LogError(ex, $"Failed to get current trigger entity from table, exception: {ex.Message}");
-                throw;
-            }
 
+            // don't catch other exceptions, the caller should handle it
             return entity;
         }
 
@@ -121,19 +136,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<Dictionary<string, long>> GetPatientVersionsAsync(byte queueType, List<string> patientsHash, CancellationToken cancellationToken = default)
         {
-            var pk = TableKeyProvider.CompartmentPartitionKey(queueType);
-            var patientVersions = new Dictionary<string, long>();
+            string pk = TableKeyProvider.CompartmentPartitionKey(queueType);
+            Dictionary<string, long> patientVersions = new Dictionary<string, long>();
 
-            for (var i = 0; i < patientsHash.Count; i += MaxCountOfQueryEntities)
+            for (int i = 0; i < patientsHash.Count; i += MaxCountOfQueryEntities)
             {
-                var selectedPatients = patientsHash.Skip(i).Take(MaxCountOfQueryEntities).ToList();
-                var jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
+                List<string> selectedPatients = patientsHash.Skip(i).Take(MaxCountOfQueryEntities).ToList();
+                AsyncPageable<CompartmentInfoEntity> jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
                         filter: TransactionGetByKeys(pk, selectedPatients),
                         cancellationToken: cancellationToken);
 
-                await foreach (var pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
+                await foreach (Page<CompartmentInfoEntity> pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
                 {
-                    foreach (var entity in pageResult.Values)
+                    foreach (CompartmentInfoEntity entity in pageResult.Values)
                     {
                         patientVersions[entity.RowKey] = entity.VersionId;
                     }
@@ -145,14 +160,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<Dictionary<string, long>> GetPatientVersionsAsync(byte queueType, CancellationToken cancellationToken = default)
         {
-            var patientVersions = new Dictionary<string, long>();
-            var jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
+            Dictionary<string, long> patientVersions = new Dictionary<string, long>();
+            AsyncPageable<CompartmentInfoEntity> jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
                 filter: $"PartitionKey eq '{TableKeyProvider.CompartmentPartitionKey(queueType)}'",
                 cancellationToken: cancellationToken);
 
-            await foreach (var pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
+            await foreach (Page<CompartmentInfoEntity> pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
             {
-                foreach (var entity in pageResult.Values)
+                foreach (CompartmentInfoEntity entity in pageResult.Values)
                 {
                     patientVersions[entity.RowKey] = entity.VersionId;
                 }
@@ -163,7 +178,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task UpdatePatientVersionsAsync(byte queueType, Dictionary<string, long> patientVersions, CancellationToken cancellationToken = default)
         {
-            var transactionActions = patientVersions
+            List<TableTransactionAction> transactionActions = patientVersions
                 .Select(patientVersion => new TableTransactionAction(TableTransactionActionType.UpsertReplace, new CompartmentInfoEntity
                 {
                     PartitionKey = TableKeyProvider.CompartmentPartitionKey(queueType),
@@ -171,9 +186,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     VersionId = patientVersion.Value,
                 })).ToList();
 
-            for (var i = 0; i < patientVersions.Count; i += MaxCountOfTransactionEntities)
+            for (int i = 0; i < patientVersions.Count; i += MaxCountOfTransactionEntities)
             {
-                var selectedTransactionActions = transactionActions.Skip(i).Take(MaxCountOfTransactionEntities).ToList();
+                List<TableTransactionAction> selectedTransactionActions = transactionActions.Skip(i).Take(MaxCountOfTransactionEntities).ToList();
                 if (selectedTransactionActions.Any())
                 {
                     await _metadataTableClient.SubmitTransactionAsync(selectedTransactionActions, cancellationToken);

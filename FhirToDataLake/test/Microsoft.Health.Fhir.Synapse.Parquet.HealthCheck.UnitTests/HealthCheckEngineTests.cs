@@ -80,9 +80,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
             var healthCheckConfiduration = new HealthCheckConfiguration();
             var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiduration));
 
-            var healthStatus = await healthCheckEngine.CheckHealthAsync();
-            var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
-            var expectedResult = JsonSerializer.Deserialize<List<HealthCheckResult>>(File.ReadAllText("TestData/result.txt"));
+            OverallHealthStatus healthStatus = await healthCheckEngine.CheckHealthAsync();
+            IOrderedEnumerable<HealthCheckResult> sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
+            List<HealthCheckResult> expectedResult = JsonSerializer.Deserialize<List<HealthCheckResult>>(File.ReadAllText("TestData/result.txt"));
             Assert.Collection(
                 sortedHealthCheckResults,
                 p =>
@@ -119,12 +119,12 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
             var healthCheckConfiguration = new HealthCheckConfiguration();
             healthCheckConfiguration.HealthCheckTimeoutInSeconds = 1;
 
-            var mockTimeOutHealthChecker = new MockTimeoutHealthChecker(new DiagnosticLogger() ,new NullLogger<MockTimeoutHealthChecker>());
-            var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, mockTimeOutHealthChecker };
+            var mockTimeOutHealthChecker = new MockTimeoutHealthChecker(new DiagnosticLogger(), new NullLogger<MockTimeoutHealthChecker>());
+            List<IHealthChecker> healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, mockTimeOutHealthChecker };
             var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiguration));
 
-            var healthStatus = await healthCheckEngine.CheckHealthAsync();
-            var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
+            OverallHealthStatus healthStatus = await healthCheckEngine.CheckHealthAsync();
+            IOrderedEnumerable<HealthCheckResult> sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
             Assert.Collection(
                 sortedHealthCheckResults,
                 p =>

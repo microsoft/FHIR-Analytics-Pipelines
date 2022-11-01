@@ -45,8 +45,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             EnsureArg.IsNotNull(schemaConfiguration, nameof(schemaConfiguration));
 
-            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _containerRegistryTemplateProvider = EnsureArg.IsNotNull(containerRegistryTemplateProvider, nameof(containerRegistryTemplateProvider));
             _schemaImageReference = schemaConfiguration.Value.SchemaImageReference;
 
@@ -85,9 +85,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             if (string.IsNullOrWhiteSpace(_schemaImageReference))
             {
-                _diagnosticLogger.LogError($"Schema image reference is empty or null.");
-                _logger.LogInformation($"Schema image reference is empty or null.");
-                throw new ParquetDataProcessorException($"Schema image reference is empty or null.");
+                _diagnosticLogger.LogError("Schema image reference is empty or null.");
+                _logger.LogInformation("Schema image reference is empty or null.");
+                throw new ParquetDataProcessorException("Schema image reference is empty or null.");
             }
 
             List<JObject> processedData;

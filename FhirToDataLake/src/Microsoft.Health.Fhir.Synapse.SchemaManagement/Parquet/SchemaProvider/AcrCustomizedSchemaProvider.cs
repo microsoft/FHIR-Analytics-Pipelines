@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DotLiquid;
+using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Liquid.Converter.Models.Json;
@@ -32,15 +34,17 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             IDiagnosticLogger diagnosticLogger,
             ILogger<AcrCustomizedSchemaProvider> logger)
         {
-            _diagnosticLogger = diagnosticLogger;
-            _logger = logger;
-            _containerRegistryTemplateProvider = containerRegistryTemplateProvider;
+            EnsureArg.IsNotNull(schemaConfiguration, nameof(schemaConfiguration));
+
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _containerRegistryTemplateProvider = EnsureArg.IsNotNull(containerRegistryTemplateProvider, nameof(containerRegistryTemplateProvider)) ;
             _schemaImageReference = schemaConfiguration.Value.SchemaImageReference;
         }
 
         public async Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default)
         {
-            var jsonSchemaCollection = await GetJsonSchemaCollectionAsync(cancellationToken);
+            Dictionary<string, JsonSchema> jsonSchemaCollection = await GetJsonSchemaCollectionAsync(cancellationToken);
 
             return jsonSchemaCollection
                 .Select(x => JsonSchemaParser.ParseJSchema(x.Key, x.Value))
@@ -49,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
         private async Task<Dictionary<string, JsonSchema>> GetJsonSchemaCollectionAsync(CancellationToken cancellationToken)
         {
-            var result = new Dictionary<string, JsonSchema>();
+            Dictionary<string, JsonSchema> result = new Dictionary<string, JsonSchema>();
 
             if (string.IsNullOrWhiteSpace(_schemaImageReference))
             {
@@ -58,15 +62,15 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                 throw new ContainerRegistrySchemaException("Schema image reference is null or empty.");
             }
 
-            var templateCollections = await _containerRegistryTemplateProvider.GetTemplateCollectionAsync(_schemaImageReference, cancellationToken);
+            List<Dictionary<string, Template>> templateCollections = await _containerRegistryTemplateProvider.GetTemplateCollectionAsync(_schemaImageReference, cancellationToken);
 
             // Fetch all files with suffix ".schema.json" as Json schema template.
             // All Json schema files should be in "Schema" directory under the root path of the image.
-            foreach (var templates in templateCollections)
+            foreach (Dictionary<string, Template> templates in templateCollections)
             {
-                foreach (var templateItem in templates)
+                foreach (KeyValuePair<string, Template> templateItem in templates)
                 {
-                    var templatePathSegments = templateItem.Key.Split('/');
+                    string[] templatePathSegments = templateItem.Key.Split('/');
 
                     if (!string.Equals(templatePathSegments[0], FhirParquetSchemaConstants.JsonSchemaTemplateDirectory, StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -87,7 +91,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                     else
                     {
                         // The customized schema keys are like "Patient_Customized", "Observation_Customized"...
-                        var resourceType = templatePathSegments[1].Substring(0, templatePathSegments[1].Length - FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension.Length);
+                        string resourceType = templatePathSegments[1].Substring(0, templatePathSegments[1].Length - FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension.Length);
 
                         if (!(templateItem.Value.Root is JSchemaDocument customizedSchemaDocument) || customizedSchemaDocument.Schema == null)
                         {
