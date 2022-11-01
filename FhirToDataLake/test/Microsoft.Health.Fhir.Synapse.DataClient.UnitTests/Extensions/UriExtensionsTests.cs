@@ -67,7 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Extensions
             string expectedUriValue)
         {
             var uri = new Uri(uriValue);
-            var newUri = uri.AddQueryString(parameters);
+            Uri newUri = uri.AddQueryString(parameters);
             Assert.Equal(expectedUriValue, newUri.ToString());
         }
     }

@@ -159,6 +159,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                         }
                     },
                 },
+
                 new JObject
                 {
                     {
@@ -352,7 +353,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [MemberData(nameof(GetValidDataContents))]
         public void GivenAValidData_WhenConvert_CorrectResultShouldBeReturned(string schemaType, JObject inputObject, JObject expectedObject)
         {
-            var result = _testDefaultConverter.Convert(CreateTestJsonBatchData(inputObject), schemaType);
+            JsonBatchData result = _testDefaultConverter.Convert(CreateTestJsonBatchData(inputObject), schemaType);
             Assert.True(JToken.DeepEquals(result.Values.First(), expectedObject));
         }
 
@@ -395,7 +396,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
         private static JsonBatchData CreateTestJsonBatchData(JObject testJObjectData)
         {
-            var testData = new List<JObject>() { testJObjectData };
+            List<JObject> testData = new List<JObject>() { testJObjectData };
             return new JsonBatchData(testData);
         }
 

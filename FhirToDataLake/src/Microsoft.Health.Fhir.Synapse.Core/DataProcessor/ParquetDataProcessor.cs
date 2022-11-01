@@ -71,7 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
                         // Check null again to avoid duplicate initialization.
                         if (_parquetConverter is null)
                         {
-                            var schemaSet = _fhirSchemaManager.GetAllSchemaContent();
+                            Dictionary<string, string> schemaSet = _fhirSchemaManager.GetAllSchemaContent();
                             _parquetConverter = ParquetConverter.CreateWithSchemaSet(schemaSet);
                             _logger.LogInformation($"ParquetDataProcessor initialized successfully with {schemaSet.Count()} parquet schemas.");
                         }
@@ -103,7 +103,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
                 processedData = _customSchemaConverter.Convert(inputData, processParameters.ResourceType, cancellationToken);
             }
 
-            var inputContent = string.Join(
+            string inputContent = string.Join(
                 Environment.NewLine,
                 processedData.Values.Select(jsonObject => jsonObject.ToString(Formatting.None))
                          .Where(result => CheckBlockSize(processParameters.SchemaType, result)));
@@ -116,7 +116,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
             // Convert JSON data to parquet stream.
             try
             {
-                var resultStream = ParquetConverter.ConvertJsonToParquet(processParameters.SchemaType, inputContent);
+                Stream resultStream = ParquetConverter.ConvertJsonToParquet(processParameters.SchemaType, inputContent);
                 return Task.FromResult(
                     new StreamBatchData(
                         resultStream,
@@ -139,7 +139,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
 
         private MemoryStream TransformJsonDataToStream(string schemaType, IEnumerable<JObject> inputData)
         {
-            var content = string.Join(
+            string content = string.Join(
                 Environment.NewLine,
                 inputData.Select(jsonObject => jsonObject.ToString(Formatting.None))
                          .Where(result => CheckBlockSize(schemaType, result)));

@@ -70,15 +70,15 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
             var executingAssembly = Assembly.GetExecutingAssembly();
             string folderName = GetEmbeddedSchemaFolder(executingAssembly, fhirVersion);
-            var resourceNames = executingAssembly
+            string[] resourceNames = executingAssembly
                 .GetManifestResourceNames()
                 .Where(r => r.StartsWith(folderName) && r.EndsWith(".json"))
                 .ToArray();
 
-            foreach (var name in resourceNames)
+            foreach (string name in resourceNames)
             {
                 using (Stream stream = executingAssembly.GetManifestResourceStream(name))
-                using (StreamReader reader = new StreamReader(stream))
+                using (var reader = new StreamReader(stream))
                 {
                     embeddedSchema.Add(name, reader.ReadToEnd());
                 }

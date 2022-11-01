@@ -114,18 +114,18 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 
         private Dictionary<string, FhirParquetSchemaNode> LoadSchemaMap()
         {
-            var defaultSchemaProvider = _schemaProviderDelegate(FhirParquetSchemaConstants.DefaultSchemaProviderKey);
+            IParquetSchemaProvider defaultSchemaProvider = _schemaProviderDelegate(FhirParquetSchemaConstants.DefaultSchemaProviderKey);
 
             // Get default schema, the default schema keys are resource types, like "Patient", "Encounter".
-            var resourceSchemaNodesMap = defaultSchemaProvider.GetSchemasAsync().Result;
+            Dictionary<string, FhirParquetSchemaNode> resourceSchemaNodesMap = defaultSchemaProvider.GetSchemasAsync().Result;
             _logger.LogInformation($"{resourceSchemaNodesMap.Count} resource default schemas have been loaded.");
 
             if (_enableCustomizedSchema)
             {
-                var customizedSchemaProvider = _schemaProviderDelegate(FhirParquetSchemaConstants.CustomSchemaProviderKey);
+                IParquetSchemaProvider customizedSchemaProvider = _schemaProviderDelegate(FhirParquetSchemaConstants.CustomSchemaProviderKey);
 
                 // Get customized schema, the customized schema keys are resource types with "_customized" suffix, like "Patient_Customized", "Encounter_Customized".
-                var resourceCustomizedSchemaNodesMap = customizedSchemaProvider.GetSchemasAsync().Result;
+                Dictionary<string, FhirParquetSchemaNode> resourceCustomizedSchemaNodesMap = customizedSchemaProvider.GetSchemasAsync().Result;
 
                 _logger.LogInformation($"{resourceCustomizedSchemaNodesMap.Count} resource customized schemas have been loaded.");
                 resourceSchemaNodesMap = resourceSchemaNodesMap.Concat(resourceCustomizedSchemaNodesMap).ToDictionary(x => x.Key, x => x.Value);
@@ -148,11 +148,11 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 
         private static Dictionary<string, List<string>> LoadSchemaTypeMap(Dictionary<string, FhirParquetSchemaNode> schemaMap)
         {
-            var schemaTypesMap = new Dictionary<string, List<string>>();
+            Dictionary<string, List<string>> schemaTypesMap = new Dictionary<string, List<string>>();
 
             // Each resource type may map to multiple output schema types
             // E.g: Schema type list for "Patient" resource can be ["Patient", "Patient_Customized"]
-            foreach (var schemaNodeItem in schemaMap)
+            foreach (KeyValuePair<string, FhirParquetSchemaNode> schemaNodeItem in schemaMap)
             {
                 if (schemaTypesMap.ContainsKey(schemaNodeItem.Value.Type))
                 {

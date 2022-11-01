@@ -36,13 +36,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
 
         public static DateTime? GetLastUpdatedDay(this ITypedElement element)
         {
-            var result = element?.Children(FhirBundleConstants.MetaKey).FirstOrDefault()?.GetPropertyValue(FhirBundleConstants.LastUpdatedKey);
+            object result = element?.Children(FhirBundleConstants.MetaKey).FirstOrDefault()?.GetPropertyValue(FhirBundleConstants.LastUpdatedKey);
             if (result == null)
             {
                 return null;
             }
 
-            var lastUpdateDatetime = DateTimeOffset.Parse(result.ToString());
+            DateTimeOffset lastUpdateDatetime = DateTimeOffset.Parse(result.ToString());
             return new DateTime(lastUpdateDatetime.Year, lastUpdateDatetime.Month, lastUpdateDatetime.Day);
         }
 

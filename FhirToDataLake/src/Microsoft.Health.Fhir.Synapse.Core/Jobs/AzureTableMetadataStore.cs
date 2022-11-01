@@ -137,19 +137,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<Dictionary<string, long>> GetPatientVersionsAsync(byte queueType, List<string> patientsHash, CancellationToken cancellationToken = default)
         {
-            var pk = TableKeyProvider.CompartmentPartitionKey(queueType);
-            var patientVersions = new Dictionary<string, long>();
+            string pk = TableKeyProvider.CompartmentPartitionKey(queueType);
+            Dictionary<string, long> patientVersions = new Dictionary<string, long>();
 
-            for (var i = 0; i < patientsHash.Count; i += MaxCountOfQueryEntities)
+            for (int i = 0; i < patientsHash.Count; i += MaxCountOfQueryEntities)
             {
-                var selectedPatients = patientsHash.Skip(i).Take(MaxCountOfQueryEntities).ToList();
-                var jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
+                List<string> selectedPatients = patientsHash.Skip(i).Take(MaxCountOfQueryEntities).ToList();
+                AsyncPageable<CompartmentInfoEntity> jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
                         filter: TransactionGetByKeys(pk, selectedPatients),
                         cancellationToken: cancellationToken);
 
-                await foreach (var pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
+                await foreach (Page<CompartmentInfoEntity> pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
                 {
-                    foreach (var entity in pageResult.Values)
+                    foreach (CompartmentInfoEntity entity in pageResult.Values)
                     {
                         patientVersions[entity.RowKey] = entity.VersionId;
                     }
@@ -161,14 +161,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<Dictionary<string, long>> GetPatientVersionsAsync(byte queueType, CancellationToken cancellationToken = default)
         {
-            var patientVersions = new Dictionary<string, long>();
-            var jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
+            Dictionary<string, long> patientVersions = new Dictionary<string, long>();
+            AsyncPageable<CompartmentInfoEntity> jobEntityQueryResult = _metadataTableClient.QueryAsync<CompartmentInfoEntity>(
                 filter: $"PartitionKey eq '{TableKeyProvider.CompartmentPartitionKey(queueType)}'",
                 cancellationToken: cancellationToken);
 
-            await foreach (var pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
+            await foreach (Page<CompartmentInfoEntity> pageResult in jobEntityQueryResult.AsPages().WithCancellation(cancellationToken))
             {
-                foreach (var entity in pageResult.Values)
+                foreach (CompartmentInfoEntity entity in pageResult.Values)
                 {
                     patientVersions[entity.RowKey] = entity.VersionId;
                 }
@@ -179,7 +179,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task UpdatePatientVersionsAsync(byte queueType, Dictionary<string, long> patientVersions, CancellationToken cancellationToken = default)
         {
-            var transactionActions = patientVersions
+            List<TableTransactionAction> transactionActions = patientVersions
                 .Select(patientVersion => new TableTransactionAction(TableTransactionActionType.UpsertReplace, new CompartmentInfoEntity
                 {
                     PartitionKey = TableKeyProvider.CompartmentPartitionKey(queueType),
@@ -187,9 +187,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     VersionId = patientVersion.Value,
                 })).ToList();
 
-            for (var i = 0; i < patientVersions.Count; i += MaxCountOfTransactionEntities)
+            for (int i = 0; i < patientVersions.Count; i += MaxCountOfTransactionEntities)
             {
-                var selectedTransactionActions = transactionActions.Skip(i).Take(MaxCountOfTransactionEntities).ToList();
+                List<TableTransactionAction> selectedTransactionActions = transactionActions.Skip(i).Take(MaxCountOfTransactionEntities).ToList();
                 if (selectedTransactionActions.Any())
                 {
                     await _metadataTableClient.SubmitTransactionAsync(selectedTransactionActions, cancellationToken);

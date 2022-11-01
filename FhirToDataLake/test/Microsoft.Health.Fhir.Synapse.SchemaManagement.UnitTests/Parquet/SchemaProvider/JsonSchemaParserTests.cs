@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -106,11 +107,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [Fact]
         public void GivenAJsonSchema_WhenParseJSchema_CorrectResultShouldBeReturned()
         {
-            var parquetSchemaNode = JsonSchemaParser.ParseJSchema("testType", _testSchema);
-            var expectedSchemaNode = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.ExpectedDataDirectory, "ExpectedValidParquetSchemaNode.json"))).GetAwaiter().GetResult();
-
-            var parquetSchemaContent = JsonConvert.SerializeObject(parquetSchemaNode);
-            var expectedSchemaContent = JsonConvert.SerializeObject(expectedSchemaNode);
+            FhirParquetSchemaNode parquetSchemaNode = JsonSchemaParser.ParseJSchema("testType", _testSchema);
+            JsonSchema expectedSchemaNode = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.ExpectedDataDirectory, "ExpectedValidParquetSchemaNode.json"))).GetAwaiter().GetResult();
 
             Assert.True(JToken.DeepEquals(
                 JObject.Parse(JsonConvert.SerializeObject(parquetSchemaNode)),
@@ -121,7 +119,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [MemberData(nameof(GetInvalidJsonSchemaObjects))]
         public void GivenAInvalidJsonSchema_WhenParseJSchema_ExceptionsShouldBeThrown(JObject schemaJObject)
         {
-            var jSchema = JsonSchema.FromJsonAsync(schemaJObject.ToString()).GetAwaiter().GetResult();
+            JsonSchema jSchema = JsonSchema.FromJsonAsync(schemaJObject.ToString()).GetAwaiter().GetResult();
 
             var schemaParser = new JsonSchemaParser();
             Assert.Throws<GenerateFhirParquetSchemaNodeException>(() => JsonSchemaParser.ParseJSchema("testType", jSchema));

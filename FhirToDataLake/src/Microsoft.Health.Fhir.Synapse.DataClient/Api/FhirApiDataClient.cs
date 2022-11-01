@@ -32,9 +32,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<FhirApiDataClient> _logger;
 
-        private const int RetryCount = 1;
-        private const int RetryTimeSpan = 5000;
-
         public FhirApiDataClient(
             IFhirApiDataSource dataSource,
             HttpClient httpClient,
@@ -137,7 +134,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
         private Uri CreateSearchUri(BaseFhirApiOptions fhirApiOptions)
         {
-            var serverUrl = _dataSource.FhirServerUrl;
+            string serverUrl = _dataSource.FhirServerUrl;
 
             var baseUri = new Uri(serverUrl);
 
@@ -152,9 +149,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             uri = uri.AddQueryString(fhirApiOptions.QueryParameters);
 
             // add shared parameters _count
-            var queryParameters = new List<KeyValuePair<string, string>>
+            List<KeyValuePair<string, string>> queryParameters = new List<KeyValuePair<string, string>>
             {
-                new (FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
             };
 
             return uri.AddQueryString(queryParameters);
@@ -176,25 +173,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                     searchRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
                 }
 
-                var retryCount = 0;
-                var retry = true;
                 HttpResponseMessage response = await _httpClient.SendAsync(searchRequest, cancellationToken);
-                while (retry)
-                {
-                    // retry for 429 exception
-                    if (retryCount < RetryCount && response.StatusCode == HttpStatusCode.TooManyRequests)
-                    {
-                        _logger.LogInformation("Get response from http request failed due to 429 too many requests, will delay for {0}ms and retry it. Url: '{1}',", RetryTimeSpan, uri);
-                        Thread.Sleep(RetryTimeSpan);
-                        response = await _httpClient.SendAsync(searchRequest, cancellationToken);
-                        retryCount++;
-                    }
-                    else
-                    {
-                        retry = false;
-                    }
-                }
-
                 response.EnsureSuccessStatusCode();
 
                 _logger.LogInformation("Successfully retrieved result for url: '{url}'.", uri);
@@ -250,9 +229,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 response.EnsureSuccessStatusCode();
                 _logger.LogInformation("Successfully retrieved result for url: '{url}'.", uri);
 
-                var stream = response.Content.ReadAsStream();
+                Stream stream = response.Content.ReadAsStream();
                 stream.Seek(0, SeekOrigin.Begin);
-                StreamReader reader = new StreamReader(stream);
+                var reader = new StreamReader(stream);
                 return reader.ReadToEnd();
             }
             catch (HttpRequestException ex)

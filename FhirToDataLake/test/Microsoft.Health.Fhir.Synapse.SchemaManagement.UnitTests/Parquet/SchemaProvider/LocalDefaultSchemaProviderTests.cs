@@ -4,10 +4,12 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Xunit;
 
@@ -70,7 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
                 new DiagnosticLogger(),
                 NullLogger<LocalDefaultSchemaProvider>.Instance);
 
-            var defaultR5Schemas = await schemaProvider.GetSchemasAsync();
+            Dictionary<string, FhirParquetSchemaNode> defaultR5Schemas = await schemaProvider.GetSchemasAsync();
 
             Assert.Equal(151, defaultR5Schemas.Count);
 

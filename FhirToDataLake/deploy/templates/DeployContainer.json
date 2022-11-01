@@ -53,6 +53,13 @@
                 "description": "The name of the container to store job and data."
             }
         },
+        "jobConcurrency": {
+            "type": "string",
+            "defaultValue": "10",
+            "metadata": {
+                "description": "Concurrent jobs exeucting in parallel."
+            }
+        },
         "filterConfigImageReference":{
             "type": "string",
             "defaultValue": "",
@@ -276,6 +283,10 @@
                                 {
                                     "name": "job__metadataTableName",
                                     "value": "[variables('metadataTableName')]"
+                                },
+                                {
+                                    "name": "job__maxRunningJobCount",
+                                    "value": "[parameters('jobConcurrency')]"
                                 },
                                 {
                                     "name": "job__containerName",

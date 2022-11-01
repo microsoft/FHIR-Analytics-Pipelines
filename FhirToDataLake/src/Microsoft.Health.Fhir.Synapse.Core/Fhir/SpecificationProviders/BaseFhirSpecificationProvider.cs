@@ -19,14 +19,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
     public abstract class BaseFhirSpecificationProvider : IFhirSpecificationProvider
     {
         private readonly IFhirDataClient _dataClient;
-        protected readonly IDiagnosticLogger _diagnosticLogger;
-        protected readonly ILogger _logger;
-
-        protected static readonly IEnumerable<string> ExcludeTypes = new List<string> { FhirConstants.StructureDefinition };
-
-        protected abstract IEnumerable<string> _compartmentEmbeddedFiles { get; }
-
-        protected abstract string _searchParameterEmbeddedFile { get; }
 
         /// <summary>
         /// The resource types of each compartment type, extracted from _compartmentFiles
@@ -38,18 +30,28 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         /// </summary>
         private readonly Lazy<FhirCapabilityData> _capabilityData;
 
+        protected static readonly IEnumerable<string> ExcludeTypes = new List<string> { FhirConstants.StructureDefinition };
+
         public BaseFhirSpecificationProvider(
             IFhirDataClient dataClient,
             IDiagnosticLogger diagnosticLogger,
             ILogger logger)
         {
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
-            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
-            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            DiagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            Logger = EnsureArg.IsNotNull(logger, nameof(logger));
 
             _compartmentResourceTypesLookup = BuildCompartmentResourceTypesLookup();
             _capabilityData = new Lazy<FhirCapabilityData>(() => BuildFhirCapabilityData());
         }
+
+        protected IDiagnosticLogger DiagnosticLogger { get; }
+
+        protected ILogger Logger { get; }
+
+        protected abstract IEnumerable<string> CompartmentEmbeddedFiles { get; }
+
+        protected abstract string SearchParameterEmbeddedFile { get; }
 
         public abstract IEnumerable<string> GetAllResourceTypes();
 
@@ -59,15 +61,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         {
             if (!IsValidCompartmentType(compartmentType))
             {
-                _diagnosticLogger.LogError($"The compartment type {compartmentType} isn't a valid compartment type.");
-                _logger.LogInformation($"The compartment type {compartmentType} isn't a valid compartment type.");
+                DiagnosticLogger.LogError($"The compartment type {compartmentType} isn't a valid compartment type.");
+                Logger.LogInformation($"The compartment type {compartmentType} isn't a valid compartment type.");
                 throw new FhirSpecificationProviderException($"The compartment type {compartmentType} isn't a valid compartment type.");
             }
 
             if (!_compartmentResourceTypesLookup.ContainsKey(compartmentType))
             {
-                _diagnosticLogger.LogError($"The compartment type {compartmentType} isn't supported now.");
-                _logger.LogInformation($"The compartment type {compartmentType} isn't supported now.");
+                DiagnosticLogger.LogError($"The compartment type {compartmentType} isn't supported now.");
+                Logger.LogInformation($"The compartment type {compartmentType} isn't supported now.");
                 throw new FhirSpecificationProviderException($"The compartment type {compartmentType} isn't supported now.");
             }
 
@@ -78,14 +80,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         {
             if (!IsValidFhirResourceType(resourceType))
             {
-                _diagnosticLogger.LogError($"The input {resourceType} isn't a valid resource type.");
-                _logger.LogInformation($"The input {resourceType} isn't a valid resource type.");
+                DiagnosticLogger.LogError($"The input {resourceType} isn't a valid resource type.");
+                Logger.LogInformation($"The input {resourceType} isn't a valid resource type.");
                 throw new FhirSpecificationProviderException($"The input {resourceType} isn't a valid resource type.");
             }
 
             if (!_capabilityData.Value.ResourceTypeSearchParametersLookup.ContainsKey(resourceType))
             {
-                _logger.LogInformation($"There is no search parameter defined for resource type {resourceType}.");
+                Logger.LogInformation($"There is no search parameter defined for resource type {resourceType}.");
                 return new HashSet<string>();
             }
 
@@ -94,9 +96,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
         protected virtual Dictionary<string, HashSet<string>> BuildCompartmentResourceTypesLookup()
         {
-            var compartmentResourceTypesLookup = new Dictionary<string, HashSet<string>>();
+            Dictionary<string, HashSet<string>> compartmentResourceTypesLookup = new Dictionary<string, HashSet<string>>();
 
-            foreach (var compartmentFile in _compartmentEmbeddedFiles)
+            foreach (string compartmentFile in CompartmentEmbeddedFiles)
             {
                 string compartmentContext;
                 try
@@ -105,12 +107,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.");
+                    Logger.LogError(ex, $"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.");
                     throw new FhirSpecificationProviderException($"Read compartment file \"{compartmentFile}\" failed. Reason: {ex.Message}.", ex);
                 }
 
-                var subCompartmentResourceTypesLookup = BuildCompartmentResourceTypesLookupFromCompartmentContext(compartmentContext, compartmentFile);
-                foreach (var item in subCompartmentResourceTypesLookup)
+                Dictionary<string, HashSet<string>> subCompartmentResourceTypesLookup = BuildCompartmentResourceTypesLookupFromCompartmentContext(compartmentContext, compartmentFile);
+                foreach (KeyValuePair<string, HashSet<string>> item in subCompartmentResourceTypesLookup)
                 {
                     compartmentResourceTypesLookup.Add(item.Key, item.Value);
                 }
@@ -134,7 +136,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"Failed to request Fhir server metadata. Reason: {exception.Message}.");
+                Logger.LogError(exception, $"Failed to request Fhir server metadata. Reason: {exception.Message}.");
                 throw new FhirSpecificationProviderException($"Failed to request Fhir server metadata.", exception);
             }
 
@@ -149,7 +151,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
             var executingAssembly = Assembly.GetExecutingAssembly();
             string specificationKey = string.Format("{0}.{1}", executingAssembly.GetName().Name, specificationName);
             using (Stream stream = executingAssembly.GetManifestResourceStream(specificationKey))
-            using (StreamReader reader = new StreamReader(stream))
+            using (var reader = new StreamReader(stream))
             {
                 return reader.ReadToEnd();
             }
