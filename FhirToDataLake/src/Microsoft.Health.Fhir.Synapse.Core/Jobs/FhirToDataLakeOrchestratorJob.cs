@@ -429,7 +429,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             else
             {
-                await Task.Delay(TimeSpan.FromSeconds(CheckFrequencyInSeconds), cancellationToken);
+                // await Task.Delay(TimeSpan.FromSeconds(CheckFrequencyInSeconds), cancellationToken);
             }
         }
 

@@ -14,6 +14,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
     public interface IAzureBlobContainerClient
     {
+        public bool IsInitialized();
+
         /// <summary>
         /// Whether a blob exists.
         /// </summary>

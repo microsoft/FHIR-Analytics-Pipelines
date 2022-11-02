@@ -22,5 +22,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         public const string NoAuthenticationInformationErrorCode = "NoAuthenticationInformation";
         public const string InvalidAuthenticationInfoErrorCode = "InvalidAuthenticationInfo";
         public const string AuthenticationFailedErrorCode = "AuthenticationFailed";
+
+        // the error for 403 in doc is "AuthenticationFailed", while it throws "AuthorizationFailure" actually
+        public const string AuthorizationFailureErrorCode = "AuthorizationFailure";
     }
 }

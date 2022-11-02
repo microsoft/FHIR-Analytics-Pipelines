@@ -41,6 +41,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
             services.AddSingleton<IGroupMemberExtractor, GroupMemberExtractor>();
 
+            services.AddSingleton<IExternalDependencyChecker, ExternalDependencyChecker>();
+
             FilterLocation filterLocation = services
                     .BuildServiceProvider()
                     .GetRequiredService<IOptions<FilterLocation>>()
