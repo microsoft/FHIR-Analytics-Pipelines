@@ -1380,19 +1380,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
-        public void GivenLongTimeWindow_WhenGetNextOccurrences_ThenShouldNotTakeLongTime()
-        {
-            CrontabSchedule crontabSchedule = CrontabSchedule.Parse(TestSchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
-            var watch = new Stopwatch();
-            watch.Start();
-
-            // two years, every 2 seconds
-            DateTime result = crontabSchedule.GetNextOccurrences(new DateTime(2020, 1, 1, 1, 1, 0), new DateTime(2022, 1, 1, 1, 1, 0)).LastOrDefault();
-            watch.Stop();
-            Assert.True(watch.ElapsedMilliseconds < 5000);
-        }
-
-        [Fact]
         public async Task GivenInitialJobWithoutEndTime_WhenCreateNextTrigger_ThenTheJobEndTimeShouldBeSetCorrectly()
         {
             var queueClient = new MockQueueClient();
