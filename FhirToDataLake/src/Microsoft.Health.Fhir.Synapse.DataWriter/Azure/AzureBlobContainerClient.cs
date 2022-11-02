@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
+using Microsoft.Health.Fhir.Synapse.JobManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
@@ -44,6 +45,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         /// See https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/storage/Azure.Storage.Common/src/Shared/Constants.cs#L336.
         /// </summary>
         private const string DataLakePathNotFoundErrorCode = "PathNotFound";
+
+        private const int CreateBlobContainerClientRetryIntervalInSeconds = 30;
 
         public AzureBlobContainerClient(
             Uri storageUri,
@@ -108,20 +111,29 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                         // Check null again to avoid duplicate initialization.
                         if (_blobContainerClient is null)
                         {
-                            try
+                            bool retry = true;
+                            while (retry)
                             {
-                                TokenCredential externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
-                                var tempBlobContainerClient = new BlobContainerClient(
-                                    _storageUri,
-                                    externalTokenCredential);
+                                try
+                                {
+                                    TokenCredential externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
+                                    var tempBlobContainerClient = new BlobContainerClient(
+                                        _storageUri,
+                                        externalTokenCredential);
 
-                                InitializeBlobContainerClient(tempBlobContainerClient);
-                                _blobContainerClient = tempBlobContainerClient;
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogInformation(ex, $"Initialize blob container client failed: {ex}");
-                                throw;
+                                    retry = InitializeBlobContainerClient(tempBlobContainerClient);
+                                    _blobContainerClient = tempBlobContainerClient;
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogInformation(ex, "Failed to initialize blob container client.");
+                                    throw;
+                                }
+
+                                if (retry)
+                                {
+                                    Task.Delay(TimeSpan.FromSeconds(CreateBlobContainerClientRetryIntervalInSeconds), CancellationToken.None).Wait();
+                                }
                             }
                         }
                     }
@@ -141,12 +153,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 {
                     lock (_dataLakeFileSystemClientLock)
                     {
-                        if (_dataLakeFileSystemClient is null)
-                        {
-                            _dataLakeFileSystemClient ??= new DataLakeFileSystemClient(
-                                _storageUri,
-                                _credentialProvider.GetCredential(TokenCredentialTypes.External));
-                        }
+                        _dataLakeFileSystemClient ??= new DataLakeFileSystemClient(
+                            _storageUri,
+                            _credentialProvider.GetCredential(TokenCredentialTypes.External));
                     }
                 }
 
@@ -155,19 +164,27 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             set => _dataLakeFileSystemClient = value;
         }
 
-        private void InitializeBlobContainerClient(BlobContainerClient blobContainerClient)
+        private bool InitializeBlobContainerClient(BlobContainerClient blobContainerClient)
         {
             try
             {
                 blobContainerClient.CreateIfNotExists();
                 _logger.LogInformation($"Create container {blobContainerClient.Name} successfully.");
             }
+            catch (RequestFailedException ex) when (IsAuthenticationError(ex))
+            {
+                _diagnosticLogger.LogError($"Create container {blobContainerClient.Name} failed. Reason: {ex.Message}");
+                _logger.LogInformation(ex, $"Failed to create container {blobContainerClient.Name} due to authentication issue.");
+                return true;
+            }
             catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Create container {blobContainerClient.Name} failed. Reason: {ex.Message}");
-                _logger.LogInformation(ex, $"Create container {blobContainerClient.Name} failed. Reason: {ex.Message}");
-                throw new AzureBlobOperationFailedException($"Create container {blobContainerClient.Name} failed.", ex);
+                _logger.LogError(ex, $"Failed to create container {blobContainerClient.Name}.");
+                throw new AzureBlobOperationFailedException($"Failed to create container {blobContainerClient.Name}.", ex);
             }
+
+            return false;
         }
 
         public async Task<bool> BlobExistsAsync(string blobName, CancellationToken cancellationToken = default)
@@ -428,5 +445,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             while (item != null);
         }
+
+        private static bool IsAuthenticationError(RequestFailedException exception) =>
+            string.Equals(exception.ErrorCode, AzureStorageErrorCode.NoAuthenticationInformationErrorCode, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(exception.ErrorCode, AzureStorageErrorCode.InvalidAuthenticationInfoErrorCode, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(exception.ErrorCode, AzureStorageErrorCode.AuthenticationFailedErrorCode, StringComparison.OrdinalIgnoreCase);
     }
 }
