@@ -64,7 +64,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             }
             catch (Exception ex)
             {
-                string message = string.Format("Failed to fetch filter configuration from image reference {_imageReference}. Reason: Unhandled exception while parsing image reference {_imageReference}.", _imageReference);
+                string message = string.Format("Failed to fetch filter configuration from image reference {0}. Reason: Unhandled exception while parsing image reference {0}.", _imageReference);
 
                 _diagnosticLogger.LogError(message);
                 _logger.LogError(ex, message);

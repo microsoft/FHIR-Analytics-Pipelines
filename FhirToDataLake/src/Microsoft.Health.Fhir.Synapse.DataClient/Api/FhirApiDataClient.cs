@@ -75,7 +75,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError(string.Format("Create search Uri failed, Reason: '{reason}'", ex.Message));
+                _diagnosticLogger.LogError(string.Format("Create search Uri failed, Reason: '{0}'", ex.Message));
                 _logger.LogInformation(ex, "Create search Uri failed, Reason: '{reason}'", ex.Message);
                 throw new FhirSearchException("Create search Uri failed", ex);
             }
@@ -98,7 +98,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 }
                 catch (Exception ex)
                 {
-                    _diagnosticLogger.LogError(string.Format("Get fhir server access token failed, Reason: '{reason}'", ex.Message));
+                    _diagnosticLogger.LogError(string.Format("Get fhir server access token failed, Reason: '{0}'", ex.Message));
                     _logger.LogInformation(ex, "Get fhir server access token failed, Reason: '{reason}'", ex.Message);
                     throw new FhirSearchException("Get fhir server access token failed", ex);
                 }
