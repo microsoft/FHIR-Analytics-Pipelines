@@ -472,25 +472,28 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// So the nextTriggerEndTime is set JobEndTimeLatencyInMinutes earlier than the current timestamp.
         /// If Job end time is specified and earlier than the nextTriggerEndTime, will set the nextTriggerEndTime to the specified job end time.
         /// For initial load job, lastTriggerEndTime is null;
-        /// For incremental job, lastTriggerEndTime is the end time of the last trigger, we also check the next occurrence time.
-        /// If next occurrence time comes after nextTriggerEndTime, will return null and skip this iteration.
+        /// For incremental job, lastTriggerEndTime is the end time of the last trigger, we also get all the next occurrence times during lastTriggerEndTime and latency utc now.
+        /// If next occurrence time comes after latency utc now, will return null and skip this iteration.
         /// </summary>
         /// <param name="lastTriggerEndTime">the end time of the last trigger</param>
         /// <returns>the end time of the next trigger, return null if it is not yet the next occurrence time</returns>
         private DateTimeOffset? GetNextTriggerEndTime(DateTimeOffset? lastTriggerEndTime)
         {
+            // Add latency to utc now
             DateTimeOffset nextTriggerEndTime =
                 DateTimeOffset.UtcNow.AddMinutes(-1 * JobConfigurationConstants.JobQueryLatencyInMinutes);
 
+            // set the trigger end time for incremental job
             if (lastTriggerEndTime != null)
             {
-                DateTime nextOccurrenceTime =
-                    _crontabSchedule.GetNextOccurrence(((DateTimeOffset)lastTriggerEndTime).DateTime);
-                DateTimeOffset nextOccurrenceOffsetTime = DateTime.SpecifyKind(nextOccurrenceTime, DateTimeKind.Utc);
-                if (nextOccurrenceOffsetTime > nextTriggerEndTime)
+                // this functions will return times > baseTime and < endTime
+                DateTime nextOccurrenceTime = _crontabSchedule.GetNextOccurrences(((DateTimeOffset)lastTriggerEndTime).DateTime, nextTriggerEndTime.DateTime).LastOrDefault();
+                if (nextOccurrenceTime == default)
                 {
                     return null;
                 }
+
+                DateTimeOffset nextOccurrenceOffsetTime = DateTime.SpecifyKind(nextOccurrenceTime, DateTimeKind.Utc);
 
                 nextTriggerEndTime = nextOccurrenceOffsetTime;
             }
