@@ -24,6 +24,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
     {
         private IHealthChecker _fhirServerHealthChecker;
         private IHealthChecker _azureBlobStorageHealthChecker;
+        private IHealthChecker _schedulerServiceHealthChecker;
+        private IHealthChecker _filterACRHealthChecker;
+        private IHealthChecker _schemaACRHealthChecker;
 
         public HealthCheckEngineTests()
         {
@@ -43,12 +46,37 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
                 {
                     Status = HealthCheckStatus.HEALTHY,
                 });
+
+            _schedulerServiceHealthChecker = Substitute.For<IHealthChecker>();
+            _schedulerServiceHealthChecker.Name.Returns("SchedulerService");
+            _schedulerServiceHealthChecker.PerformHealthCheckAsync(
+                Arg.Any<CancellationToken>()).ReturnsForAnyArgs(
+                new HealthCheckResult("SchedulerService")
+                {
+                    Status = HealthCheckStatus.UNHEALTHY,
+                });
+            _filterACRHealthChecker = Substitute.For<IHealthChecker>();
+            _filterACRHealthChecker.Name.Returns("filterACR");
+            _filterACRHealthChecker.PerformHealthCheckAsync(
+                Arg.Any<CancellationToken>()).ReturnsForAnyArgs(
+                new HealthCheckResult("filterACR")
+                {
+                    Status = HealthCheckStatus.HEALTHY,
+                });
+            _schemaACRHealthChecker = Substitute.For<IHealthChecker>();
+            _schemaACRHealthChecker.Name.Returns("schemaACR");
+            _schemaACRHealthChecker.PerformHealthCheckAsync(
+                Arg.Any<CancellationToken>()).ReturnsForAnyArgs(
+                new HealthCheckResult("schemaACR")
+                {
+                    Status = HealthCheckStatus.UNHEALTHY,
+                });
         }
 
         [Fact]
         public async Task When_All_HealthCheck_Complete_All_AreMaked_WithCorrectStatus()
         {
-            List<IHealthChecker> healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker };
+            var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, _schedulerServiceHealthChecker, _filterACRHealthChecker, _schemaACRHealthChecker };
             var healthCheckConfiduration = new HealthCheckConfiguration();
             var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiduration));
 
@@ -66,6 +94,21 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
                 {
                     Assert.Equal(expectedResult[1].Name, p.Name);
                     Assert.Equal(expectedResult[1].Status, p.Status);
+                },
+                p =>
+                {
+                    Assert.Equal(expectedResult[2].Name, p.Name);
+                    Assert.Equal(expectedResult[2].Status, p.Status);
+                },
+                p =>
+                {
+                    Assert.Equal(expectedResult[3].Name, p.Name);
+                    Assert.Equal(expectedResult[3].Status, p.Status);
+                },
+                p =>
+                {
+                    Assert.Equal(expectedResult[4].Name, p.Name);
+                    Assert.Equal(expectedResult[4].Status, p.Status);
                 });
             Assert.Equal(HealthCheckStatus.HEALTHY, healthStatus.Status);
         }

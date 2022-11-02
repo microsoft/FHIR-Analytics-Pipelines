@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
@@ -23,6 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
     public class AzureBlobStorageHealthCheckerTests
     {
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+        private static ILogger<AzureBlobStorageHealthChecker> _logger = new NullLogger<AzureBlobStorageHealthChecker>();
         private readonly string _healthCheckBlobPrefix = AzureBlobStorageHealthChecker.HealthCheckBlobPrefix;
         private JobConfiguration _jobConfig;
         private DataLakeStoreConfiguration _storeConfig;
@@ -38,6 +40,13 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
             {
                 StorageUrl = "test",
             };
+        }
+
+        [Fact]
+        public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new AzureBlobStorageHealthChecker(null, null, null, _diagnosticLogger, _logger));
         }
 
         [Fact]
@@ -80,7 +89,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 Options.Create(_jobConfig),
                 Options.Create(_storeConfig),
                 _diagnosticLogger,
-                new NullLogger<AzureBlobStorageHealthChecker>());
+                _logger);
 
             HealthCheckResult result = await storageAccountHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.UNHEALTHY, result.Status);
@@ -99,7 +108,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
                 Options.Create(_jobConfig),
                 Options.Create(_storeConfig),
                 _diagnosticLogger,
-                new NullLogger<AzureBlobStorageHealthChecker>());
+                _logger);
 
             HealthCheckResult result = await storageAccountHealthChecker.PerformHealthCheckAsync();
             Assert.Equal(HealthCheckStatus.UNHEALTHY, result.Status);
