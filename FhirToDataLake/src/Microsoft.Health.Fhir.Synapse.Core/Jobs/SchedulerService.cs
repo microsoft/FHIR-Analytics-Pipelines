@@ -487,13 +487,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             if (lastTriggerEndTime != null)
             {
                 // this functions will return times > baseTime and < endTime
-                List<DateTime> nextOccurrenceTimes = _crontabSchedule.GetNextOccurrences(((DateTimeOffset)lastTriggerEndTime).DateTime, nextTriggerEndTime.DateTime).ToList();
-                if (!nextOccurrenceTimes.Any())
+                DateTime nextOccurrenceTime = _crontabSchedule.GetNextOccurrences(((DateTimeOffset)lastTriggerEndTime).DateTime, nextTriggerEndTime.DateTime).LastOrDefault();
+                if (nextOccurrenceTime == default)
                 {
                     return null;
                 }
 
-                DateTimeOffset nextOccurrenceOffsetTime = DateTime.SpecifyKind(nextOccurrenceTimes.Last(), DateTimeKind.Utc);
+                DateTimeOffset nextOccurrenceOffsetTime = DateTime.SpecifyKind(nextOccurrenceTime, DateTimeKind.Utc);
 
                 nextTriggerEndTime = nextOccurrenceOffsetTime;
             }
