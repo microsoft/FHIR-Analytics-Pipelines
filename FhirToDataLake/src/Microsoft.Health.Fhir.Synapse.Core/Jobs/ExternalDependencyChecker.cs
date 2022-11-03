@@ -69,13 +69,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             bool isFhirServerReady = await IsFhirDataClientReady(cancellationToken);
 
             bool isFilterAcrReady = true;
-            if (_filterImageReference != null)
+            if (!string.IsNullOrWhiteSpace(_filterImageReference))
             {
                 isFilterAcrReady = await IsAzureContainerRegistryReady(_filterImageReference, cancellationToken);
             }
 
             bool isSchemaAcrReady = true;
-            if (_schemaImageReference != null)
+            if (!string.IsNullOrWhiteSpace(_schemaImageReference))
             {
                 isSchemaAcrReady = await IsAzureContainerRegistryReady(_schemaImageReference, cancellationToken);
             }
