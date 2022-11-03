@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<ExternalDependencyChecker> _logger;
 
-        private const string MediatypeV2Manifest = "application/vnd.docker.distribution.manifest.v2+json";
+        private const string MediaTypeV2Manifest = "application/vnd.docker.distribution.manifest.v2+json";
 
         public ExternalDependencyChecker(
             IFhirDataClient fhirApiDataClient,
@@ -64,23 +64,31 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<bool> IsExternalDependencyReady(CancellationToken cancellationToken)
         {
-            bool isReady = IsBlobContainerReady();
+            bool isBlobReady = IsBlobContainerReady();
 
-            isReady = isReady && await IsFhirDataClientReady(cancellationToken);
+            bool isFhirServerReady = await IsFhirDataClientReady(cancellationToken);
 
+            bool isFilterAcrReady = true;
             if (_filterImageReference != null)
             {
-                isReady = isReady && await IsAzureContainerRegistryReady(_filterImageReference, cancellationToken);
+                isFilterAcrReady = await IsAzureContainerRegistryReady(_filterImageReference, cancellationToken);
             }
 
+            bool isSchemaAcrReady = true;
             if (_schemaImageReference != null)
             {
-                isReady = isReady && await IsAzureContainerRegistryReady(_filterImageReference, cancellationToken);
+                isSchemaAcrReady = await IsAzureContainerRegistryReady(_filterImageReference, cancellationToken);
             }
 
-            if (!isReady)
+            bool isReady = isBlobReady && isFhirServerReady && isFilterAcrReady && isSchemaAcrReady;
+
+            if (isReady)
             {
-                _logger.LogInformation("The external dependencies are not fully ready.");
+                _logger.LogInformation("[External Dependency Check] The external dependencies are all ready.");
+            }
+            else
+            {
+                _logger.LogInformation("[External Dependency Check] The external dependencies are not fully ready.");
                 _diagnosticLogger.LogError("The external dependencies are not fully ready.");
             }
 
@@ -92,12 +100,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             bool isReady = _blobContainerClient.IsInitialized();
             if (isReady)
             {
-                _logger.LogInformation("Blob storage is initialized.");
-                _diagnosticLogger.LogInformation("Blob storage is initialized.");
+                _logger.LogInformation("[External Dependency Check] Blob storage is initialized.");
             }
             else
             {
-                _logger.LogInformation("Blob storage is not initialized.");
+                _logger.LogInformation("[External Dependency Check] Blob storage is not initialized.");
                 _diagnosticLogger.LogError("Blob storage is not initialized.");
             }
 
@@ -111,12 +118,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Ensure we can search from FHIR server.
                 await _fhirApiDataClient.SearchAsync(searchOptions, cancellationToken);
-                _logger.LogInformation("Fhir server is ready.");
-                _diagnosticLogger.LogInformation("Fhir server is ready.");
+                _logger.LogInformation("[External Dependency Check] Fhir server is ready.");
             }
             catch (Exception ex)
             {
-                _logger.LogInformation(ex, "Fhir server is not accessible.");
+                _logger.LogInformation(ex, "[External Dependency Check] Fhir server is not accessible.");
                 _diagnosticLogger.LogError($"Fhir server is not accessible: {ex.Message}.");
                 return false;
             }
@@ -133,14 +139,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrClientCredentials(accessToken));
 
                 // Ensure we can read from acr.
-                await acrClient.Manifests.GetAsync(imageInfo.ImageName, imageInfo.Label, MediatypeV2Manifest, cancellationToken);
+                await acrClient.Manifests.GetAsync(imageInfo.ImageName, imageInfo.Label, MediaTypeV2Manifest, cancellationToken);
 
-                _logger.LogInformation($"ACR {imageReference} is ready.");
-                _diagnosticLogger.LogInformation($"ACR {imageReference} is ready.");
+                _logger.LogInformation($"[External Dependency Check] ACR {imageReference} is ready.");
             }
             catch (Exception ex)
             {
-                _logger.LogInformation(ex, $"ACR {imageReference} is not accessible.");
+                _logger.LogInformation(ex, $"[External Dependency Check] ACR {imageReference} is not accessible.");
                 _diagnosticLogger.LogError($"ACR {imageReference} is not accessible: {ex.Message}.");
                 return false;
             }
