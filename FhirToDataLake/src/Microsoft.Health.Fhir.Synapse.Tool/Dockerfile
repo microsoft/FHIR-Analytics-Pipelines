@@ -4,7 +4,6 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["NuGet.Config", "."]
-COPY ["Directory.Build.Props", "."]
 COPY ["src/Microsoft.Health.Fhir.Synapse.Tool/Microsoft.Health.Fhir.Synapse.Tool.csproj", "src/Microsoft.Health.Fhir.Synapse.Tool/"]
 COPY ["src/Microsoft.Health.Fhir.Synapse.Common/Microsoft.Health.Fhir.Synapse.Common.csproj", "src/Microsoft.Health.Fhir.Synapse.Common/"]
 COPY ["src/Microsoft.Health.Fhir.Synapse.Core/Microsoft.Health.Fhir.Synapse.Core.csproj", "src/Microsoft.Health.Fhir.Synapse.Core/"]

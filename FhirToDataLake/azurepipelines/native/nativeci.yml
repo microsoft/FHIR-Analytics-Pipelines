@@ -1,5 +1,10 @@
 name: $(Date:yyyyMMdd)$(Rev:.r)
 
+trigger:
+- main
+pr:
+- main
+
 variables:
   major: 1
   minor: 0
@@ -25,6 +30,7 @@ stages:
 
 - stage: Publish Nuget
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
   - job: PackNugets
     pool:
       vmImage: 'ubuntu-latest'
