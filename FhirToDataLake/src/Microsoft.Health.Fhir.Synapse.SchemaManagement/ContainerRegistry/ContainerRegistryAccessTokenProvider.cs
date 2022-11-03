@@ -81,13 +81,19 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                     {
                         _logger.LogInformation(exception, "Get ACR token from {Server} failed. Retry {RetryCount}.", registryServer, retryCount);
                     })
-                  .ExecuteAsync(() => GetAcrAccessTokenWithAadToken(registryServer, aadToken, cancellationToken));
+                  .ExecuteAsync(async () => await GetAcrAccessTokenWithAadToken(registryServer, aadToken, cancellationToken));
             }
             catch (HttpRequestException ex)
             {
                 _diagnosticLogger.LogError("Failed to get ACR access token with AAD access token.");
                 _logger.LogInformation(ex, "Failed to get ACR access token with AAD access token.");
                 throw new ContainerRegistryTokenException("Failed to get ACR access token with AAD access token.", ex);
+            }
+            catch (ContainerRegistryTokenException ex)
+            {
+                _diagnosticLogger.LogError("Failed to get ACR access token with AAD access token.");
+                _logger.LogInformation(ex, "Failed to get ACR access token with AAD access token.");
+                throw;
             }
             catch (Exception ex)
             {

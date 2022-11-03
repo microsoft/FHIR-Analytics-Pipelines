@@ -86,7 +86,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     {
                         _logger.LogInformation(exception, "Failed to get image {Image} from Container Registry. Retry {RetryCount}.", _imageReference, retryCount);
                     })
-                  .ExecuteAsync(() => filterConfigurationProvider.GetOciArtifactAsync(cancellationToken));
+                  .ExecuteAsync(async () => await filterConfigurationProvider.GetOciArtifactAsync(cancellationToken));
 
                 int blobsSize = acrImage.Blobs.Count;
                 for (int i = blobsSize - 1; i >= 0; i--)
