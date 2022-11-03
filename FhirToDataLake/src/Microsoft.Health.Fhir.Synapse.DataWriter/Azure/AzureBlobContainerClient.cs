@@ -162,7 +162,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Create container {blobContainerClient.Name} failed. Reason: {ex.Message}");
-                _logger.LogError(ex, $"Failed to create container {blobContainerClient.Name}.");
+                _logger.LogInformation(ex, $"Failed to create container {blobContainerClient.Name}.");
                 throw new AzureBlobOperationFailedException($"Failed to create container {blobContainerClient.Name}.", ex);
             }
         }
