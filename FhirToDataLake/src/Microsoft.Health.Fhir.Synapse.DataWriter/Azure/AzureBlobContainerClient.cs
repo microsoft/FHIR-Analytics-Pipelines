@@ -120,7 +120,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogInformation(ex, $"Initialize blob container client failed: {ex}");
+                                _logger.LogInformation(ex, "Failed to initialize blob container client.");
                                 throw;
                             }
                         }
@@ -141,12 +141,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 {
                     lock (_dataLakeFileSystemClientLock)
                     {
-                        if (_dataLakeFileSystemClient is null)
-                        {
-                            _dataLakeFileSystemClient ??= new DataLakeFileSystemClient(
-                                _storageUri,
-                                _credentialProvider.GetCredential(TokenCredentialTypes.External));
-                        }
+                        _dataLakeFileSystemClient ??= new DataLakeFileSystemClient(
+                            _storageUri,
+                            _credentialProvider.GetCredential(TokenCredentialTypes.External));
                     }
                 }
 
@@ -165,8 +162,20 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             catch (Exception ex)
             {
                 _diagnosticLogger.LogError($"Create container {blobContainerClient.Name} failed. Reason: {ex.Message}");
-                _logger.LogInformation(ex, $"Create container {blobContainerClient.Name} failed. Reason: {ex.Message}");
-                throw new AzureBlobOperationFailedException($"Create container {blobContainerClient.Name} failed.", ex);
+                _logger.LogInformation(ex, $"Failed to create container {blobContainerClient.Name}.");
+                throw new AzureBlobOperationFailedException($"Failed to create container {blobContainerClient.Name}.", ex);
+            }
+        }
+
+        public bool IsInitialized()
+        {
+            try
+            {
+                return BlobContainerClient != null;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 

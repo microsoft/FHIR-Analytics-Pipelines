@@ -452,7 +452,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             bool isSucceeded = await _metadataStore.TryAddEntityAsync(initialTriggerEntity, cancellationToken);
 
             _logger.LogInformation(isSucceeded
-                ? "Create initial initial trigger entity successfully."
+                ? "Create initial trigger entity successfully."
                 : "Failed to create initial trigger entity, the entity already exists.");
 
             return await _metadataStore.GetCurrentTriggerEntityAsync(_queueType, cancellationToken);

@@ -84,6 +84,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             }
         }
 
+        public bool IsInitialized()
+        {
+            return true;
+        }
+
         public Task<bool> BlobExistsAsync(string blobName, CancellationToken cancellationToken)
         {
             return Task.FromResult(_blobStore.ContainsKey(blobName));
