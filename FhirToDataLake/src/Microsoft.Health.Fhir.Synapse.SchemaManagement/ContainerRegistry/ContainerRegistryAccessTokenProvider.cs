@@ -74,6 +74,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
             {
                 return await Policy
                   .Handle<HttpRequestException>()
+                  .Or<ContainerRegistryTokenException>()
                   .WaitAndRetryAsync(
                     3,
                     retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
