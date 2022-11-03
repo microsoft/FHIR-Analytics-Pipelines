@@ -142,6 +142,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     }
                 }
 
+                _logger.LogInformation($"Orchestrator job {_jobInfo.Id} finished generating and enqueueing processing jobs.");
+
                 while (_result.RunningJobIds.Count > 0)
                 {
                     await CheckRunningJobComplete(progress, cancellationToken);
@@ -371,6 +373,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async Task CheckRunningJobComplete(IProgress<string> progress, CancellationToken cancellationToken)
         {
+            _logger.LogInformation($"Orchestrator job {_jobInfo.Id} starts to check running job status.");
+
             HashSet<long> completedJobIds = new HashSet<long>();
             List<JobInfo> runningJobs = new List<JobInfo>();
 
@@ -442,6 +446,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _result.RunningJobIds.ExceptWith(completedJobIds);
                 progress.Report(JsonConvert.SerializeObject(_result));
             }
+
+            _logger.LogInformation($"Orchestrator job {_jobInfo.Id} finished checking running job status, there are {completedJobIds.Count} jobs completed.");
         }
 
         private async Task CommitJobData(long jobId, CancellationToken cancellationToken)
