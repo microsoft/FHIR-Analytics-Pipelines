@@ -65,5 +65,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// The data size of cache in bytes, will commit the cache to storage it the data size is larger than this value.
         /// </summary>
         public const int DataSizeInBytesPerCommit = 10 * 1024 * 1024;
+
+        /// <summary>
+        /// The running job count threshold to check running job complete
+        /// </summary>
+        public const int CheckRunningJobCompleteRunningJobCountThreshold = 5;
     }
 }

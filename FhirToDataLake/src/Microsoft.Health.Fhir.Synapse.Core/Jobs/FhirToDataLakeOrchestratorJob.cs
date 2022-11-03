@@ -113,7 +113,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     while (_result.RunningJobIds.Count >= _maxJobCountInRunningPool)
                     {
-                        await WaitRunningJobComplete(progress, cancellationToken);
+                        await CheckRunningJobComplete(progress, cancellationToken);
+                        if (_result.RunningJobIds.Count >= _maxJobCountInRunningPool)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(CheckFrequencyInSeconds), cancellationToken);
+                        }
                     }
 
                     string[] jobDefinitions = { JsonConvert.SerializeObject(input) };
@@ -130,11 +134,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     // if enqueue successfully while fails to report result, will re-enqueue and return the existing jobInfo
                     progress.Report(JsonConvert.SerializeObject(_result));
+
+                    if (_result.RunningJobIds.Count >
+                        JobConfigurationConstants.CheckRunningJobCompleteRunningJobCountThreshold)
+                    {
+                        await CheckRunningJobComplete(progress, cancellationToken);
+                    }
                 }
 
                 while (_result.RunningJobIds.Count > 0)
                 {
-                    await WaitRunningJobComplete(progress, cancellationToken);
+                    await CheckRunningJobComplete(progress, cancellationToken);
+                    if (_result.RunningJobIds.Count > 0)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(CheckFrequencyInSeconds), cancellationToken);
+                    }
                 }
 
                 _result.CompleteTime = DateTimeOffset.UtcNow;
@@ -197,8 +211,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             while (_result.NextJobTimestamp == null || _result.NextJobTimestamp < _inputData.DataEndTime)
             {
+                DateTimeOffset? lastEndTime = _result.NextJobTimestamp ?? _inputData.DataStartTime;
                 DateTimeOffset? nextResourceTimestamp =
-                    await GetNextTimestamp(_result.NextJobTimestamp ?? _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
+                    await GetNextTimestamp(lastEndTime, _inputData.DataEndTime, cancellationToken);
                 if (nextResourceTimestamp == null)
                 {
                     _result.NextJobTimestamp = _inputData.DataEndTime;
@@ -217,7 +232,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,
-                    DataStartTime = nextResourceTimestamp,
+                    DataStartTime = lastEndTime,
                     DataEndTime = nextJobEnd,
                 };
                 _result.NextJobTimestamp = nextJobEnd;
@@ -354,7 +369,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return nexTimeOffset;
         }
 
-        private async Task WaitRunningJobComplete(IProgress<string> progress, CancellationToken cancellationToken)
+        private async Task CheckRunningJobComplete(IProgress<string> progress, CancellationToken cancellationToken)
         {
             HashSet<long> completedJobIds = new HashSet<long>();
             List<JobInfo> runningJobs = new List<JobInfo>();
@@ -426,10 +441,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _result.RunningJobIds.ExceptWith(completedJobIds);
                 progress.Report(JsonConvert.SerializeObject(_result));
-            }
-            else
-            {
-                await Task.Delay(TimeSpan.FromSeconds(CheckFrequencyInSeconds), cancellationToken);
             }
         }
 
