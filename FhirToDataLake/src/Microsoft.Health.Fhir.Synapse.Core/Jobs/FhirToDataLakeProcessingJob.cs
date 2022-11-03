@@ -594,7 +594,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // clear cache
                 _cacheResult.ClearCache();
-                _logger.LogInformation($"Commit cache resources successfully for processing job {_inputData.ProcessingJobSequenceId}.");
+                _logger.LogInformation($"Commit cache resources successfully for processing job {_jobId}.");
             }
         }
 
