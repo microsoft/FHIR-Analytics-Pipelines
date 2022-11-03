@@ -9,7 +9,7 @@ variables:
   VCPKG_BINARY_SOURCES: 'clear;nuget,https://microsofthealthoss.pkgs.visualstudio.com/FhirAnalytics/_packaging/VcpkgSource/nuget/v3/index.json,readwrite'
 
 stages:
-- stage: PackNugets
+- stage: Build
   jobs:
   - job: BuildLinuxNuget
     pool:
@@ -23,6 +23,8 @@ stages:
     steps:
     - template: build-windows-native-libs.yml
 
+- stage: Publish Nuget
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   - job: PackNugets
     pool:
       vmImage: 'ubuntu-latest'
