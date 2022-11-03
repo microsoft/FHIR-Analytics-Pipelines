@@ -77,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             bool isSchemaAcrReady = true;
             if (_schemaImageReference != null)
             {
-                isSchemaAcrReady = await IsAzureContainerRegistryReady(_filterImageReference, cancellationToken);
+                isSchemaAcrReady = await IsAzureContainerRegistryReady(_schemaImageReference, cancellationToken);
             }
 
             bool isReady = isBlobReady && isFhirServerReady && isFilterAcrReady && isSchemaAcrReady;
