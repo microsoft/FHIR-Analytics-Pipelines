@@ -548,7 +548,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         StreamBatchData parquetStream = await _parquetDataProcessor.ProcessAsync(batchData, processParameters, cancellationToken);
                         int skippedCount = batchData.Values.Count() - parquetStream.BatchSize;
 
-                        if (parquetStream?.Value?.Length > 0)
+                        if (parquetStream.Value?.Length > 0)
                         {
                             if (!_outputFileIndexMap.ContainsKey(schemaType))
                             {
@@ -558,6 +558,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             // Upload to blob and log result
                             string blobUrl = await _dataWriter.WriteAsync(parquetStream, _jobId, _outputFileIndexMap[schemaType], _inputData.DataEndTime, cancellationToken);
                             _outputFileIndexMap[schemaType] += 1;
+
+                            _result.ProcessedDataSizeInTotal += parquetStream.Value.Length;
 
                             _logger.LogInformation(
                                 "Commit Batch Result: resource type {resourceType}, schemaType {schemaType}, {resourceCount} resources are searched in total. {processedCount} resources are processed. The blob URL is {blobURL}",
@@ -580,7 +582,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             _result.SkippedCount.AddToDictionary(schemaType, skippedCount);
                         _result.ProcessedCount =
                             _result.ProcessedCount.AddToDictionary(schemaType, parquetStream.BatchSize);
-                        _result.ProcessedDataSizeInTotal += parquetStream.Value.Length;
                     }
 
                     _result.SearchCount =
