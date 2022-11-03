@@ -122,7 +122,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception ex)
             {
-                _logger.LogInformation(ex, "[External Dependency Check] Fhir server is not accessible.");
+                _logger.LogInformation($"[External Dependency Check] Fhir server is not accessible: {ex.Message}.");
                 _diagnosticLogger.LogError($"Fhir server is not accessible: {ex.Message}.");
                 return false;
             }
@@ -145,7 +145,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception ex)
             {
-                _logger.LogInformation(ex, $"[External Dependency Check] ACR {imageReference} is not accessible.");
+                _logger.LogInformation($"[External Dependency Check] ACR {imageReference} is not accessible: {ex.Message}.");
                 _diagnosticLogger.LogError($"ACR {imageReference} is not accessible: {ex.Message}.");
                 return false;
             }
