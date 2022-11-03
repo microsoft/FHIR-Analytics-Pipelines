@@ -22,7 +22,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
-using Microsoft.Health.Fhir.Synapse.JobManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
@@ -159,12 +158,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             {
                 blobContainerClient.CreateIfNotExists();
                 _logger.LogInformation($"Create container {blobContainerClient.Name} successfully.");
-            }
-            catch (RequestFailedException ex) when (IsAuthenticationError(ex))
-            {
-                _diagnosticLogger.LogError($"Create container {blobContainerClient.Name} failed. Reason: {ex.Message}");
-                _logger.LogInformation(ex, $"Failed to create container {blobContainerClient.Name} due to authentication issue.");
-                throw;
             }
             catch (Exception ex)
             {
@@ -444,9 +437,5 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             while (item != null);
         }
-
-        private static bool IsAuthenticationError(RequestFailedException exception) =>
-            string.Equals(exception.ErrorCode, AzureStorageErrorCode.AuthorizationFailureErrorCode, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(exception.ErrorCode, AzureStorageErrorCode.AuthenticationFailedErrorCode, StringComparison.OrdinalIgnoreCase);
     }
 }
