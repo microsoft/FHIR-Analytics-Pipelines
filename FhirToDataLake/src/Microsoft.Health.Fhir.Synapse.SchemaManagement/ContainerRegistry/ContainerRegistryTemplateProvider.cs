@@ -82,7 +82,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                     {
                         _logger.LogInformation(exception, "Failed to get template collection from {Image}. Retry {RetryCount}.", schemaImageReference, retryCount);
                     })
-                  .ExecuteAsync(async () => await provider.GetTemplateCollectionAsync(cancellationToken));
+                  .ExecuteAsync(() => provider.GetTemplateCollectionAsync(cancellationToken));
             }
             catch (ContainerRegistryAuthenticationException authEx)
             {

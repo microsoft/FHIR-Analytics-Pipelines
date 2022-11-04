@@ -39,15 +39,16 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
 
         public ContainerRegistryAccessTokenProvider(
             ITokenCredentialProvider tokenCredentialProvider,
-            HttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             IDiagnosticLogger diagnosticLogger,
             ILogger<ContainerRegistryAccessTokenProvider> logger)
         {
             EnsureArg.IsNotNull(tokenCredentialProvider, nameof(tokenCredentialProvider));
+            EnsureArg.IsNotNull(httpClientFactory, nameof(httpClientFactory));
 
-            _client = EnsureArg.IsNotNull(httpClient, nameof(httpClient));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _client = httpClientFactory.CreateClient();
             _aadTokenProvider = new AzureAccessTokenProvider(
                 tokenCredentialProvider.GetCredential(TokenCredentialTypes.External),
                 diagnosticLogger,
@@ -82,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                     {
                         _logger.LogInformation(exception, "Get ACR token from {Server} failed. Retry {RetryCount}.", registryServer, retryCount);
                     })
-                  .ExecuteAsync(async () => await GetAcrAccessTokenWithAadToken(registryServer, aadToken, cancellationToken));
+                .ExecuteAsync(() => GetAcrAccessTokenWithAadToken(registryServer, aadToken, cancellationToken));
             }
             catch (HttpRequestException ex)
             {
