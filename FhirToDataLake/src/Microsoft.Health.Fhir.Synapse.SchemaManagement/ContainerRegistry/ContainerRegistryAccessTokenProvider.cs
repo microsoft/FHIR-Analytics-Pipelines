@@ -83,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry
                     {
                         _logger.LogInformation(exception, "Get ACR token from {Server} failed. Retry {RetryCount}.", registryServer, retryCount);
                     })
-                .ExecuteAsync(() => GetAcrAccessTokenWithAadToken(registryServer, aadToken, cancellationToken));
+                  .ExecuteAsync(() => GetAcrAccessTokenWithAadToken(registryServer, aadToken, cancellationToken));
             }
             catch (HttpRequestException ex)
             {
