@@ -38,10 +38,10 @@
 Param(
     [parameter(Mandatory=$true)]
     [string]$SynapseWorkspaceName,
-    [string]$Database = "dicomdb3",
+    [string]$Database = "dicomdb4",
     [parameter(Mandatory=$true)]
     [string]$StorageName,
-    [string]$Container = "dicom3",
+    [string]$Container = "dicom4",
     [string]$ResultPath = "result",
     [string]$FhirVersion = "DICOM",
     [string]$SqlScriptCollectionPath = "sql",

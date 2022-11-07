@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -82,8 +83,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             foreach (var item in metadataObject)
             {
+                var subNodePair = schemaNode.SubNodes
+                    .Where(x => string.Equals(x.Value.Name, item.Key, StringComparison.OrdinalIgnoreCase))
+                    .FirstOrDefault();
+                var subNodeKeyword = subNodePair.Key;
+                var subNode = subNodePair.Value;
+
                 // Ignore DICOM metadata node if it doesn't exist in schema
-                if (!schemaNode.SubNodes.ContainsKey(item.Key))
+                if (subNodeKeyword == null)
                 {
                     continue;
                 }
@@ -99,12 +106,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                     continue;
                 }
 
-                var subNode = schemaNode.SubNodes[item.Key];
                 var subValueArray = jObject["Value"] as JArray;
 
                 if (subNode.IsRepeated)
                 {
-                    processedObject.Add(subNode.Name, ProcessArrayObject(subValueArray, subNode));
+                    processedObject.Add(subNodeKeyword, ProcessArrayObject(subValueArray, subNode));
                 }
                 else
                 {
@@ -117,11 +123,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                     var singleElement = subValueArray.First;
                     if (subNode.IsLeaf)
                     {
-                        processedObject.Add(subNode.Name, ProcessLeafObject(singleElement, subNode));
+                        processedObject.Add(subNodeKeyword, ProcessLeafObject(singleElement, subNode));
                     }
                     else
                     {
-                        processedObject.Add(subNode.Name, ProcessPnObject(singleElement, subNode));
+                        processedObject.Add(subNodeKeyword, ProcessPnObject(singleElement, subNode));
                     }
                 }
             }
