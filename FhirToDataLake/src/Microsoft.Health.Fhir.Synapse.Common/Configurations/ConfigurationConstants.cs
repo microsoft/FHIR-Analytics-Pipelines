@@ -10,6 +10,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 {
     public static class ConfigurationConstants
     {
+        public const string ConfigVersionKey = "configVersion";
+
         public const string JobConfigurationKey = "job";
 
         public const string FilterConfigurationKey = "filter";
@@ -36,6 +38,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public static readonly Regex ImageNameRegex = new Regex(@"^[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*(\/[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*)*$");
 
         // Currently the pipeline support FHIR R4 and R5 schemas.
-        public static readonly HashSet<FhirVersion> SupportedFhirVersions = new () { FhirVersion.R4, FhirVersion.R5 };
+        public static readonly HashSet<FhirVersion> SupportedFhirVersions = new HashSet<FhirVersion> { FhirVersion.R4, FhirVersion.R5 };
+
+        public const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
     }
 }

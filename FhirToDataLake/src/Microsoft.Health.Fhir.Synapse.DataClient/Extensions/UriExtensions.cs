@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Web;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Extensions
@@ -20,8 +21,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Extensions
         public static Uri AddQueryString(this Uri uri, IEnumerable<KeyValuePair<string, string>> parameters)
         {
             var uriBuilder = new UriBuilder(uri);
-            var query = HttpUtility.ParseQueryString(uriBuilder.Query);
-            foreach (var parameter in parameters)
+            NameValueCollection query = HttpUtility.ParseQueryString(uriBuilder.Query);
+            foreach (KeyValuePair<string, string> parameter in parameters)
             {
                 query.Add(parameter.Key, parameter.Value);
             }

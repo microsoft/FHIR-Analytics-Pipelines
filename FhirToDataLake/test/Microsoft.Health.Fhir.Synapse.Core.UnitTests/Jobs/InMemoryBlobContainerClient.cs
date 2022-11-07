@@ -21,13 +21,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
     public class InMemoryBlobContainerClient : IAzureBlobContainerClient
     {
-        private ConcurrentDictionary<string, Stream> _blobStore = new ();
-        private ConcurrentDictionary<string, Tuple<string, DateTimeOffset>> _blobLeaseStore = new ();
-        private readonly object _leaseLock = new ();
+        private ConcurrentDictionary<string, Stream> _blobStore = new ConcurrentDictionary<string, Stream>();
+        private ConcurrentDictionary<string, Tuple<string, DateTimeOffset>> _blobLeaseStore = new ConcurrentDictionary<string, Tuple<string, DateTimeOffset>>();
+        private readonly object _leaseLock = new object();
 
         public async Task<T> GetValue<T>(string objectName)
         {
-            var stream = await GetBlobAsync(objectName);
+            Stream stream = await GetBlobAsync(objectName);
             if (stream == null)
             {
                 return default(T);
@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             stream.Position = 0;
             using var streamReader = new StreamReader(stream);
-            var content = streamReader.ReadToEnd();
+            string content = streamReader.ReadToEnd();
             return JsonConvert.DeserializeObject<T>(content);
         }
 
@@ -58,7 +58,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             string blobName,
             CancellationToken cancellationToken = default)
         {
-            var value = _blobStore.GetValueOrDefault(blobName);
+            Stream value = _blobStore.GetValueOrDefault(blobName);
             if (value == null)
             {
                 return Task.FromResult(value);
@@ -82,6 +82,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                 return Task.FromResult(false);
             }
+        }
+
+        public bool IsInitialized()
+        {
+            return true;
         }
 
         public Task<bool> BlobExistsAsync(string blobName, CancellationToken cancellationToken)
@@ -136,12 +141,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         public Task MoveDirectoryAsync(string sourceDirectory, string targetDirectory, CancellationToken cancellationToken = default)
         {
-            foreach (var path in _blobStore.Keys)
+            foreach (string path in _blobStore.Keys)
             {
                 if (path.StartsWith(sourceDirectory))
                 {
-                    var childPath = path.Substring(sourceDirectory.Length);
-                    var newPath = $"{targetDirectory}{childPath}";
+                    string childPath = path.Substring(sourceDirectory.Length);
+                    string newPath = $"{targetDirectory}{childPath}";
                     if (_blobStore.Remove(path, out Stream value))
                     {
                         _blobStore[newPath] = value;
@@ -154,7 +159,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         public Task DeleteDirectoryIfExistsAsync(string directory, CancellationToken cancellationToken = default)
         {
-            foreach (var path in _blobStore.Keys)
+            foreach (string path in _blobStore.Keys)
             {
                 if (path.StartsWith(directory) && !string.Equals(directory, path, StringComparison.OrdinalIgnoreCase))
                 {
@@ -167,16 +172,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         public async IAsyncEnumerable<PathItem> ListPathsAsync(string directory, [EnumeratorCancellation]CancellationToken cancellationToken)
         {
-            var directorySet = new HashSet<string>();
-            var result = new List<PathItem>();
-            foreach (var path in _blobStore.Keys)
+            HashSet<string> directorySet = new HashSet<string>();
+            List<PathItem> result = new List<PathItem>();
+            foreach (string path in _blobStore.Keys)
             {
                 if (path.StartsWith(directory) && !string.Equals(directory, path, StringComparison.OrdinalIgnoreCase))
                 {
-                    var pathItem = DataLakeModelFactory.PathItem(path, false, DateTimeOffset.UtcNow, new ETag("test"), 100, string.Empty, string.Empty, string.Empty);
+                    PathItem pathItem = DataLakeModelFactory.PathItem(path, false, DateTimeOffset.UtcNow, new ETag("test"), 100, string.Empty, string.Empty, string.Empty);
                     yield return await Task.FromResult(pathItem);
 
-                    var pathComponents = path.Split('/');
+                    string[] pathComponents = path.Split('/');
                     string baseDir = pathComponents[0];
                     int i = 1;
                     while (i < pathComponents.Length - 1)
@@ -188,7 +193,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                             && !string.Equals(baseDir, path, StringComparison.OrdinalIgnoreCase)
                             && !directorySet.Contains(baseDir))
                         {
-                            var directoryItem = DataLakeModelFactory.PathItem(baseDir, true, DateTimeOffset.UtcNow, new ETag("test"), 100, string.Empty, string.Empty, string.Empty);
+                            PathItem directoryItem = DataLakeModelFactory.PathItem(baseDir, true, DateTimeOffset.UtcNow, new ETag("test"), 100, string.Empty, string.Empty, string.Empty);
                             yield return await Task.FromResult(directoryItem);
                         }
                     }

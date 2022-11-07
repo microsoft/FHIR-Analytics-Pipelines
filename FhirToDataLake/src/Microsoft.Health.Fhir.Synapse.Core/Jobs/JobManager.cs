@@ -18,17 +18,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly JobHosting _jobHosting;
         private readonly ISchedulerService _scheduler;
+        private readonly IExternalDependencyChecker _externalDependencyChecker;
         private readonly JobConfiguration _jobConfiguration;
         private readonly ILogger<JobManager> _logger;
+
+        private const int CheckExternalDependencyIntervalInSeconds = 30;
 
         public JobManager(
             JobHosting jobHosting,
             ISchedulerService schedulerService,
+            IExternalDependencyChecker externalDependencyChecker,
             IOptions<JobConfiguration> jobConfiguration,
             ILogger<JobManager> logger)
         {
             _jobHosting = EnsureArg.IsNotNull(jobHosting, nameof(jobHosting));
             _scheduler = EnsureArg.IsNotNull(schedulerService, nameof(schedulerService));
+            _externalDependencyChecker =
+                EnsureArg.IsNotNull(externalDependencyChecker, nameof(externalDependencyChecker));
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             _jobConfiguration = jobConfiguration.Value;
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
@@ -44,10 +50,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _logger.LogInformation("Job manager starts running.");
 
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var scheduleTask = _scheduler.RunAsync(cancellationTokenSource.Token);
+            Task scheduleTask = _scheduler.RunAsync(cancellationTokenSource.Token);
+
+            // wait until external dependencies are all ready
+            while (!await _externalDependencyChecker.IsExternalDependencyReady(cancellationTokenSource.Token))
+            {
+                await Task.Delay(TimeSpan.FromSeconds(CheckExternalDependencyIntervalInSeconds), cancellationTokenSource.Token);
+            }
 
             // TODO: the max running job count need to be decided after performance test
-            _jobHosting.MaxRunningJobCount = 5;
+            _jobHosting.MaxRunningJobCount = (short)_jobConfiguration.MaxRunningJobCount;
             await _jobHosting.StartAsync((byte)_jobConfiguration.QueueType, Environment.MachineName, cancellationTokenSource);
             await scheduleTask;
         }

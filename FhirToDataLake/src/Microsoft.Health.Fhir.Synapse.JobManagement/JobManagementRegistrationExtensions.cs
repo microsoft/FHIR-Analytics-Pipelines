@@ -4,8 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
-using Microsoft.Health.JobManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.JobManagement
 {
@@ -14,7 +12,6 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         public static IServiceCollection AddJobManagement(this IServiceCollection services)
         {
             services.AddSingleton<IAzureStorageClientFactory, AzureStorageClientFactory>();
-            services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>();
 
             return services;
         }

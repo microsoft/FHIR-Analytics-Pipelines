@@ -38,9 +38,9 @@ _JSON schema file:_
     "title": "Patient customized schema",
     "type": "object",
     "properties": {
-        "resourceType": { type": "string" },
+        "resourceType": { "type": "string" },
         "id": { "type": "string" },
-	"birthPlaceExtension.valueAddress.city": { type": "string" },
+	"birthPlaceExtension.valueAddress.city": { "type": "string" },
 	"birthPlaceExtension.valueAddress.state": { "type": "string" },
 	"birthPlaceExtension.valueAddress.country": { "type": "string" },
 	"birthPlaceExtension.valueAddress.postalCode": { "type": "string" }
@@ -99,13 +99,13 @@ Browse to the scripts folder under this path (..\FhirToDataLake\scripts).
 
 Run the following PowerShell script.
 
-```
-./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName "Synapse name" -Storage "Storage name" -CustomizedSchemaImage "Schema image reference"
+```Powershell
+./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName "Synapse name" -StorageName "Storage name" -CustomizedSchemaImage "Schema image reference"
 ```
 
 _Example:_
 
-```./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName examplesynapse -Storage examplestorage -CustomizedSchemaImage exampleacr.azurecr.io/customizedtemplate:extensiontemplates```
+```./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName examplesynapse -StorageName examplestorage -CustomizedSchemaImage exampleacr.azurecr.io/customizedtemplate:extensiontemplates```
 
 ### 2.	Query customized data in Synapse SQL pool
 

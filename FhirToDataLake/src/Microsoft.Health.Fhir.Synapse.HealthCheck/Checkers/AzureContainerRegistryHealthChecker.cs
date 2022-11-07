@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.ContainerRegistry;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.TemplateManagement.Client;
@@ -27,8 +28,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             string prefix,
             string imageReference,
             IContainerRegistryTokenProvider containerRegistryTokenProvider,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureContainerRegistryHealthChecker> logger)
-            : base(prefix + HealthCheckTypes.AzureContainerRegistryCanRead, false, logger)
+            : base(prefix + HealthCheckTypes.AzureContainerRegistryCanRead, false, diagnosticLogger, logger)
         {
             EnsureArg.IsNotNull(prefix, nameof(prefix));
             _imageReference = EnsureArg.IsNotNull(imageReference, nameof(imageReference));
@@ -43,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             try
             {
                 var imageInfo = ImageInfo.CreateFromImageReference(_imageReference);
-                var accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
+                string accessToken = await _containerRegistryTokenProvider.GetTokenAsync(imageInfo.Registry, cancellationToken);
                 var acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrClientCredentials(accessToken));
 
                 // Ensure we can read from acr.
@@ -51,6 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
+                Logger.LogInformation(e, $"Health check component {_name}: read ACR {_imageReference} failed: {e}.");
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = $"Read from acr failed. {e.Message}";
                 return healthCheckResult;

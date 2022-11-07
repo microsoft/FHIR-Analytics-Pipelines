@@ -8,6 +8,11 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
     public class ErrorType
     {
         /// <summary>
+        /// A metric type for errors that occur when creating job.
+        /// </summary>
+        public static string CreateJobError => nameof(CreateJobError);
+
+        /// <summary>
         /// A metric type for authentication errors
         /// </summary>
         public static string AuthenticationError => nameof(AuthenticationError);
@@ -15,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         /// <summary>
         /// A metric type for FHIR server errors
         /// </summary>
-        public static string ReadFromFhirServerError => nameof(ReadFromFhirServerError);
+        public static string ReadFhirDataError => nameof(ReadFhirDataError);
 
         /// <summary>
         /// A metric type for data lake errors
@@ -31,5 +36,25 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         /// A metric type for errors that occur when loading or parsing the FHIR template json file.
         /// </summary>
         public static string FhirSchemaError => nameof(FhirSchemaError);
+
+        /// <summary>
+        /// A metric type for errors that occur when getting filters.
+        /// </summary>
+        public static string ReadFilterError => nameof(ReadFilterError);
+
+        /// <summary>
+        /// A metric type for errors that occur when job execution failed.
+        /// </summary>
+        public static string JobExecutionError => nameof(JobExecutionError);
+
+        /// <summary>
+        /// A metric type for errors that occur in scheduler service.
+        /// </summary>
+        public static string SchedulerServiceError => nameof(SchedulerServiceError);
+
+        /// <summary>
+        /// A metric type for errors that occur in health check.
+        /// </summary>
+        public static string HealthCheckError => nameof(HealthCheckError);
     }
 }

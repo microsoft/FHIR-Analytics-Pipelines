@@ -3,10 +3,13 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationResolvers;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValidators;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
 {
@@ -16,29 +19,21 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Extensions
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            services.Configure<FhirServerConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options));
-            services.Configure<JobConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.JobConfigurationKey).Bind(options));
-            services.Configure<FilterConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.FilterConfigurationKey).Bind(options));
-            services.Configure<FilterLocation>(options =>
-                configuration.GetSection(ConfigurationConstants.FilterConfigurationKey).Bind(options));
-            services.Configure<DataLakeStoreConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.DataLakeStoreConfigurationKey).Bind(options));
-            services.Configure<ArrowConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.ArrowConfigurationKey).Bind(options));
-            services.Configure<JobSchedulerConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.SchedulerConfigurationKey).Bind(options));
-            services.Configure<SchemaConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey).Bind(options));
-            services.Configure<HealthCheckConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.HealthCheckConfigurationKey).Bind(options));
-            services.Configure<StorageConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.StorageConfigurationKey).Bind(options));
+            string configVersionValue = configuration[ConfigurationConstants.ConfigVersionKey];
+            Enum.TryParse(configVersionValue, out SupportedConfigVersion configVersion);
 
-            // Validates the input configs.
-            services.ValidateConfiguration();
+            switch (configVersion)
+            {
+                // ToDo: refactor resolver and validator when we support multiple configuration versions.
+                case SupportedConfigVersion.V1:
+                    ConfigurationResolverV1.Resolve(services, configuration);
+                    ConfigurationValidatorV1.Validate(services);
+                    break;
+
+                default:
+                    throw new ConfigurationErrorException($"ConfigVersion '{configVersionValue}' is not supported.");
+            }
+
             return services;
         }
     }

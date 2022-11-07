@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using EnsureThat;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using NJsonSchema;
 
@@ -20,6 +21,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
         /// <returns>A FhirParquetSchemaNode instance.</returns>
         public static FhirParquetSchemaNode ParseJSchema(string resourceType, JsonSchema jsonSchema)
         {
+            EnsureArg.IsNotNullOrWhiteSpace(resourceType, nameof(resourceType));
+            EnsureArg.IsNotNull(jsonSchema, nameof(jsonSchema));
+
             if (jsonSchema.Type == JsonObjectType.None || jsonSchema.Type == JsonObjectType.Null)
             {
                 throw new GenerateFhirParquetSchemaNodeException(string.Format("The \"{0}\" customized schema have no \"type\" keyword or \"type\" is null.", resourceType));
@@ -30,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                 throw new GenerateFhirParquetSchemaNodeException(string.Format("The \"{0}\" customized schema type \"{1}\" should be \"object\".", resourceType, jsonSchema.Type));
             }
 
-            var fhirPath = new List<string>() { resourceType };
+            List<string> fhirPath = new List<string>() { resourceType };
 
             var customizedSchemaNode = new FhirParquetSchemaNode()
             {
@@ -41,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                 SubNodes = new Dictionary<string, FhirParquetSchemaNode>(),
             };
 
-            foreach (var property in jsonSchema.Properties)
+            foreach (KeyValuePair<string, JsonSchemaProperty> property in jsonSchema.Properties)
             {
                 fhirPath.Add(property.Key);
 
@@ -72,6 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                 Name = propertyName,
                 Type = propertyType,
                 Depth = curDepth,
+                IsLeaf = true,
                 NodePaths = new List<string>(curFhirPath),
             };
         }

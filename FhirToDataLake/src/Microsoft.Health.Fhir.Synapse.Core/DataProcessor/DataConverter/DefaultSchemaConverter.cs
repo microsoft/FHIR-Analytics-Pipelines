@@ -3,10 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
@@ -19,14 +21,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
     public class DefaultSchemaConverter : IDataSchemaConverter
     {
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<DefaultSchemaConverter> _logger;
 
         public DefaultSchemaConverter(
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<DefaultSchemaConverter> logger)
         {
-            _fhirSchemaManager = fhirSchemaManager;
-            _logger = logger;
+            _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         public JsonBatchData Convert(
@@ -40,15 +45,26 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             cancellationToken.ThrowIfCancellationRequested();
 
             // Get FHIR schema for the input data.
-            var schema = _fhirSchemaManager.GetSchema(schemaType);
+            FhirParquetSchemaNode schema = _fhirSchemaManager.GetSchema(schemaType);
             if (schema == null)
             {
-                _logger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
+                _diagnosticLogger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
+                _logger.LogInformation($"The FHIR schema node could not be found for schema type '{schemaType}'.");
                 throw new ParquetDataProcessorException($"The FHIR schema node could not be found for schema type '{schemaType}'.");
             }
 
-            var processedJsonData = inputData.Values
-                .Select(json => ProcessDicomMetadataObject(json, schema))
+            IEnumerable<JObject> processedJsonData = inputData.Values
+                .Select(json =>
+                {
+                    if (json == null)
+                    {
+                        _diagnosticLogger.LogError($"The input FHIR data is null for schema type '{schemaType}'.");
+                        _logger.LogInformation($"The input FHIR data is null for schema type '{schemaType}'.");
+                        throw new ParquetDataProcessorException($"The input FHIR data is null for schema type '{schemaType}'.");
+                    }
+
+                    return ProcessDicomMetadataObject(json, schema);
+                })
                 .Where(processedResult => processedResult != null);
 
             return new JsonBatchData(processedJsonData);
@@ -58,8 +74,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             if (metadata is not JObject metadataObject)
             {
-                _logger.LogError($"Current DICOM object is not a valid JObject: {schemaNode.GetNodePath()}.");
-                throw new ParquetDataProcessorException($"Current DICOM object is not a valid JObject: {schemaNode.GetNodePath()}.");
+                _logger.LogError($"Current DICOM object is not a valid JObject: {metadata.Path}.");
+                throw new ParquetDataProcessorException($"Current DICOM object is not a valid JObject: {metadata.Path}.");
             }
 
             var processedObject = new JObject();
@@ -117,8 +133,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             if (pnItem is not JObject jObject)
             {
-                _logger.LogError($"Current PN object is not a valid JObject: {schemaNode.GetNodePath()}.");
-                throw new ParquetDataProcessorException($"Current PN object is not a valid JObject: {schemaNode.GetNodePath()}.");
+                _logger.LogError($"Current PN object is not a valid JObject: {pnItem.Path}.");
+                throw new ParquetDataProcessorException($"Current PN object is not a valid JObject: {pnItem.Path}.");
             }
 
             return jObject;
@@ -128,55 +144,58 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             if (structItem is not JObject fhirJObject)
             {
-                _logger.LogError($"Current FHIR object is not a valid JObject: {schemaNode.GetNodePath()}.");
-                throw new ParquetDataProcessorException($"Current FHIR object is not a valid JObject: {schemaNode.GetNodePath()}.");
+                _diagnosticLogger.LogError($"Current FHIR object is not a valid JObject: {structItem.Path}.");
+                _logger.LogInformation($"Current FHIR object is not a valid JObject: {structItem.Path}.");
+                throw new ParquetDataProcessorException($"Current FHIR object is not a valid JObject: {structItem.Path}.");
             }
 
             var processedObject = new JObject();
 
-            foreach (var subItem in fhirJObject)
+            foreach (JProperty subProperty in fhirJObject.Properties())
             {
-                var subObject = subItem.Value;
+                JToken subObject = subProperty.Value;
+                string subObjectKey = subProperty.Name;
 
                 // Process choice type FHIR resource.
-                if (schemaNode.ContainsChoiceDataType(subItem.Key))
+                if (schemaNode.ContainsChoiceDataType(subObjectKey))
                 {
-                    var choiceTypeName = schemaNode.ChoiceTypeNodes[subItem.Key].Item1;
-                    var choiceTypeDataType = schemaNode.ChoiceTypeNodes[subItem.Key].Item2;
+                    string choiceTypeName = schemaNode.ChoiceTypeNodes[subObjectKey].Item1;
+                    string choiceTypeDataType = schemaNode.ChoiceTypeNodes[subObjectKey].Item2;
 
                     if (!schemaNode.SubNodes[choiceTypeName].SubNodes.ContainsKey(choiceTypeDataType))
                     {
-                        _logger.LogError($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {schemaNode.GetNodePath()}.");
-                        throw new ParquetDataProcessorException($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {schemaNode.GetNodePath()}.");
+                        _diagnosticLogger.LogError($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {subObject.Path}.");
+                        _logger.LogInformation($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {subObject.Path}.");
+                        throw new ParquetDataProcessorException($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {subObject.Path}.");
                     }
 
-                    var dataTypeNode = schemaNode.SubNodes[choiceTypeName].SubNodes[choiceTypeDataType];
-                    processedObject.Add(choiceTypeName, ProcessChoiceTypeObject(subObject, dataTypeNode));
+                    FhirParquetSchemaNode dataTypeNode = schemaNode.SubNodes[choiceTypeName].SubNodes[choiceTypeDataType];
+                    processedObject.Add(choiceTypeName, ProcessChoiceTypeObject(subObject, dataTypeNode, choiceTypeDataType));
                 }
                 else
                 {
                     // Ignore FHIR data node if it doesn't exist in schema.
-                    if (schemaNode.SubNodes == null || !schemaNode.SubNodes.ContainsKey(subItem.Key))
+                    if (schemaNode.SubNodes == null || !schemaNode.SubNodes.ContainsKey(subObjectKey))
                     {
                         continue;
                     }
 
-                    var subNode = schemaNode.SubNodes[subItem.Key];
+                    FhirParquetSchemaNode subNode = schemaNode.SubNodes[subObjectKey];
 
                     if (subNode.IsRepeated)
                     {
                         // Process array FHIR resource.
-                        processedObject.Add(subNode.Name, ProcessArrayObject(subObject, subNode));
+                        processedObject.Add(subObjectKey, ProcessArrayObject(subObject, subNode));
                     }
                     else if (subNode.IsLeaf)
                     {
                         // Process leaf FHIR resource.
-                        processedObject.Add(subNode.Name, ProcessLeafObject(subObject, subNode));
+                        processedObject.Add(subObjectKey, ProcessLeafObject(subObject, subNode));
                     }
                     else
                     {
                         // Process struct FHIR resource.
-                        processedObject.Add(subNode.Name, ProcessStructObject(subObject, subNode));
+                        processedObject.Add(subObjectKey, ProcessStructObject(subObject, subNode));
                     }
                 }
             }
@@ -188,12 +207,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             if (arrayItem is not JArray fhirArrayObject)
             {
-                _logger.LogError($"Current FHIR object is not a valid JArray: {schemaNode.GetNodePath()}.");
-                throw new ParquetDataProcessorException($"Current FHIR object is not a valid JArray: {schemaNode.GetNodePath()}.");
+                _diagnosticLogger.LogError($"Current FHIR object is not a valid JArray: {arrayItem.Path}.");
+                _logger.LogInformation($"Current FHIR object is not a valid JArray: {arrayItem.Path}.");
+                throw new ParquetDataProcessorException($"Current FHIR object is not a valid JArray: {arrayItem.Path}.");
             }
 
             var arrayObject = new JArray();
-            foreach (var item in fhirArrayObject)
+            foreach (JToken item in fhirArrayObject)
             {
                 if (schemaNode.IsLeaf)
                 {
@@ -217,24 +237,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             if (fhirObject is not JValue fhirLeafObject)
             {
-                _logger.LogError($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
-                throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {schemaNode.GetNodePath()}.");
+                _diagnosticLogger.LogError($"Invalid data: complex object found in leaf schema node {fhirObject.Path}.");
+                _logger.LogInformation($"Invalid data: complex object found in leaf schema node {fhirObject.Path}.");
+                throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {fhirObject.Path}.");
             }
 
             // Convert every type to string
             return new JValue(fhirLeafObject.ToString());
         }
 
-        private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirParquetSchemaNode schemaNode)
+        private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirParquetSchemaNode schemaNode, string schemaNodeKey)
         {
             var choiceRootObject = new JObject();
             if (schemaNode.IsLeaf)
             {
-                choiceRootObject.Add(schemaNode.Name, ProcessLeafObject(fhirObject, schemaNode));
+                choiceRootObject.Add(schemaNodeKey, ProcessLeafObject(fhirObject, schemaNode));
             }
             else
             {
-                choiceRootObject.Add(schemaNode.Name, ProcessStructObject(fhirObject, schemaNode));
+                choiceRootObject.Add(schemaNodeKey, ProcessStructObject(fhirObject, schemaNode));
             }
 
             return choiceRootObject;

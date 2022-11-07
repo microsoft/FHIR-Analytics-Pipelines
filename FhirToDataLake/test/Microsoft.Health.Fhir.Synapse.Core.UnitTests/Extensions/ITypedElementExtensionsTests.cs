@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Hl7.Fhir.ElementModel;
@@ -33,9 +34,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenATypedElement_WhenGetAPropertyNotExists_NullValueShouldReturn()
         {
-            var testElement = GetTestElement(SamplePatientFileName);
+            ITypedElement testElement = GetTestElement(SamplePatientFileName);
 
-            var value = testElement.GetPropertyValue("abc")?.ToString();
+            string value = testElement.GetPropertyValue("abc")?.ToString();
 
             Assert.Null(value);
         }
@@ -44,9 +45,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [MemberData(nameof(GetPropertyValuePairs))]
         public void GivenATypedElement_WhenGetPropertyValue_CorrectValueShouldReturn(string propertyName, string expectedValue)
         {
-            var testElement = GetTestElement(SamplePatientFileName);
+            ITypedElement testElement = GetTestElement(SamplePatientFileName);
 
-            var value = testElement.GetPropertyValue(propertyName).ToString();
+            string value = testElement.GetPropertyValue(propertyName).ToString();
 
             Assert.Equal(expectedValue, value);
         }
@@ -54,9 +55,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenATypedElement_WhenGetLastUpdatedDay_CorrectResultShouldReturn()
         {
-            var testElement = GetTestElement(SamplePatientFileName);
+            ITypedElement testElement = GetTestElement(SamplePatientFileName);
 
-            var date = testElement.GetLastUpdatedDay();
+            DateTime? date = testElement.GetLastUpdatedDay();
 
             Assert.Equal(2012, date.Value.Year);
             Assert.Equal(6, date.Value.Month);
@@ -66,9 +67,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenATypedElementWithoutLastUpdatedDay_WhenGetLastUpdatedDay_NullShouldReturn()
         {
-            var testElement = GetTestElement(NoMetaSamplePatientFileName);
+            ITypedElement testElement = GetTestElement(NoMetaSamplePatientFileName);
 
-            var date = testElement.GetLastUpdatedDay();
+            DateTime? date = testElement.GetLastUpdatedDay();
 
             Assert.Null(date);
         }
@@ -76,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         [Fact]
         public void GivenAnEmptyElementDataList_WhenConvertToJObjects_EmptyBatchDataShouldReturn()
         {
-            var elements = new List<ITypedElement>();
+            List<ITypedElement> elements = new List<ITypedElement>();
             var jsonBatchData = elements.ToJsonBatchData();
             Assert.Empty(jsonBatchData.Values);
 

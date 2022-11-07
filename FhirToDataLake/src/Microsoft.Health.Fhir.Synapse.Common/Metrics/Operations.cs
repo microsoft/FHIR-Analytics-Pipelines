@@ -13,29 +13,19 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
         public static string CreateJob => nameof(CreateJob);
 
         /// <summary>
-        /// The stage to load FHIR Schema.
+        /// The stage to run job.
         /// </summary>
-        public static string LoadFhirSchema => nameof(LoadFhirSchema);
-
-        /// <summary>
-        /// The stage to load FHIR resource from FHIR server.
-        /// </summary>
-        public static string LoadFhirResources => nameof(LoadFhirResources);
-
-        /// <summary>
-        /// The stage to convert FHIR data to parquet format.
-        /// </summary>
-        public static string ProcessData => nameof(ProcessData);
-
-        /// <summary>
-        /// The stage to upload data to datalake.
-        /// </summary>
-        public static string UploadToDatalake => nameof(UploadToDatalake);
+        public static string RunJob => nameof(RunJob);
 
         /// <summary>
         /// The stage of health check.
         /// </summary>
         public static string HealthCheck => nameof(HealthCheck);
+
+        /// <summary>
+        /// The stage of running scheduler service.
+        /// </summary>
+        public static string RunSchedulerService => nameof(RunSchedulerService);
 
         /// <summary>
         /// The stage of complete job.

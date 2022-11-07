@@ -7,6 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
@@ -14,8 +15,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
 {
     public class MockTimeoutHealthChecker : BaseHealthChecker
     {
-        public MockTimeoutHealthChecker(ILogger<MockTimeoutHealthChecker> logger)
-                : base("MockTimeout", true, logger)
+        public MockTimeoutHealthChecker(IDiagnosticLogger diagnosticLogger, ILogger<MockTimeoutHealthChecker> logger)
+                : base("MockTimeout", true, diagnosticLogger, logger)
         {
         }
 

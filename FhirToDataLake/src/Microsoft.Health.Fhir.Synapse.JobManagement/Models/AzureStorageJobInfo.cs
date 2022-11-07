@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.JobManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.JobManagement.Models
@@ -13,7 +14,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.Models
 
         public virtual string JobIdentifier()
         {
-            throw new NotImplementedException();
+            return Definition.ComputeHash();
         }
     }
 }

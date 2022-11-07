@@ -4,10 +4,11 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
-    public class GroupMemberExtractorException : Exception
+    public class GroupMemberExtractorException : SynapsePipelineExternalException
     {
         public GroupMemberExtractorException(string message)
             : base(message)

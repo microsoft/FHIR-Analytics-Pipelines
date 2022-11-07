@@ -28,4 +28,4 @@ extern "C" EXPORT int RegisterParquetSchema(ParquetWriter* writer, const char* s
 // Convert input json to parquet bytes.
 extern "C" EXPORT int ConvertJsonToParquet(ParquetWriter* writer, const char* schemaKey, const char* inputJson, int inputLength, byte** outputData, int* outputLength, char* errorMessage);
 // Release memory of parquet bytes.
-extern "C" EXPORT int ReleaseUnmanagedData(byte** data);
+extern "C" EXPORT int TryReleaseUnmanagedData(byte** data);

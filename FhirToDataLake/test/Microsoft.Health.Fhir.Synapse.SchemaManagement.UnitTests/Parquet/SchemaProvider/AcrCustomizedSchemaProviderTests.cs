@@ -3,11 +3,18 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using DotLiquid;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
+using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using NJsonSchema;
 using Xunit;
@@ -16,29 +23,48 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
 {
     public class AcrCustomizedSchemaProviderTests
     {
-        private static readonly SchemaConfiguration _schemaConfigurationWithCustomizedSchema;
+        private static readonly IContainerRegistryTemplateProvider _mockContainerRegistryTemplateProvider;
+        private static readonly IOptions<SchemaConfiguration> _schemaConfigurationWithCustomizedSchemaOption;
+        private static readonly ILogger<AcrCustomizedSchemaProvider> _nullLogger;
+        private static readonly IDiagnosticLogger _diagnosticLogger;
 
         static AcrCustomizedSchemaProviderTests()
         {
-            _schemaConfigurationWithCustomizedSchema = new SchemaConfiguration()
+            _diagnosticLogger = new DiagnosticLogger();
+            _nullLogger = NullLogger<AcrCustomizedSchemaProvider>.Instance;
+            _schemaConfigurationWithCustomizedSchemaOption = Options.Create(new SchemaConfiguration()
             {
                 EnableCustomizedSchema = true,
                 SchemaImageReference = TestUtils.MockSchemaImageReference,
-            };
+            });
+
+            var testSchemaTemplateCollections = TestUtils.GetSchemaTemplateCollections("Schema/Patient.schema.json", File.ReadAllBytes(TestUtils.TestJsonSchemaFilePath));
+            _mockContainerRegistryTemplateProvider = TestUtils.GetMockAcrTemplateProvider(testSchemaTemplateCollections);
+        }
+
+        [Fact]
+        public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new AcrCustomizedSchemaProvider(null, _schemaConfigurationWithCustomizedSchemaOption, _diagnosticLogger, _nullLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new AcrCustomizedSchemaProvider(_mockContainerRegistryTemplateProvider, null, _diagnosticLogger, _nullLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new AcrCustomizedSchemaProvider(_mockContainerRegistryTemplateProvider, _schemaConfigurationWithCustomizedSchemaOption, null, _nullLogger));
+
+            Assert.Throws<ArgumentNullException>(
+                () => new AcrCustomizedSchemaProvider(_mockContainerRegistryTemplateProvider, _schemaConfigurationWithCustomizedSchemaOption, _diagnosticLogger, null));
         }
 
         [Fact]
         public static async void GivenImageReference_WhenGetSchemaWithMockTemplateProvider_CorrectResultShouldBeReturned()
         {
-            var testSchemaTemplateCollections = TestUtils.GetSchemaTemplateCollections("Schema/Patient.schema.json", File.ReadAllBytes(TestUtils.TestJsonSchemaFilePath));
+            var schemaProvider = new AcrCustomizedSchemaProvider(_mockContainerRegistryTemplateProvider, _schemaConfigurationWithCustomizedSchemaOption, _diagnosticLogger, _nullLogger);
 
-            var schemaProvider = new AcrCustomizedSchemaProvider(
-                TestUtils.GetMockAcrTemplateProvider(testSchemaTemplateCollections),
-                Options.Create(_schemaConfigurationWithCustomizedSchema),
-                NullLogger<AcrCustomizedSchemaProvider>.Instance);
-
-            var schemaCollections = await schemaProvider.GetSchemasAsync();
-            var expectedSchemaNode = JsonSchemaParser.ParseJSchema("Patient", JsonSchema.FromJsonAsync(File.ReadAllText(TestUtils.TestJsonSchemaFilePath)).GetAwaiter().GetResult());
+            Dictionary<string, FhirParquetSchemaNode> schemaCollections = await schemaProvider.GetSchemasAsync();
+            FhirParquetSchemaNode expectedSchemaNode = JsonSchemaParser.ParseJSchema("Patient", JsonSchema.FromJsonAsync(File.ReadAllText(TestUtils.TestJsonSchemaFilePath)).GetAwaiter().GetResult());
 
             Assert.Equal(expectedSchemaNode.Name, schemaCollections["Patient_Customized"].Name);
         }
@@ -47,11 +73,29 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [InlineData("Schema/subDir/Patient.schema.json")]
         public static async void GivenImageReference_WhenGetSchemaWithInvalidTemplateProvider_CorrectResultShouldBeReturned(string schemaKey)
         {
-            var testSchemaTemplateCollections = TestUtils.GetSchemaTemplateCollections(schemaKey, File.ReadAllBytes(TestUtils.TestJsonSchemaFilePath));
+            List<Dictionary<string, Template>> testSchemaTemplateCollections = TestUtils.GetSchemaTemplateCollections(schemaKey, File.ReadAllBytes(TestUtils.TestJsonSchemaFilePath));
             var schemaProvider = new AcrCustomizedSchemaProvider(
                 TestUtils.GetMockAcrTemplateProvider(testSchemaTemplateCollections),
-                Options.Create(_schemaConfigurationWithCustomizedSchema),
-                NullLogger<AcrCustomizedSchemaProvider>.Instance);
+                _schemaConfigurationWithCustomizedSchemaOption,
+                _diagnosticLogger,
+                _nullLogger);
+
+            await Assert.ThrowsAsync<ContainerRegistrySchemaException>(() => schemaProvider.GetSchemasAsync());
+        }
+
+        [Fact]
+        public static async void GivenNullImageReference_WhenGetSchemaWithInvalidTemplateProvider_ExceptionResultShouldBeThrown()
+        {
+            var schemaConfigurationWithCustomizedSchemaOption = Options.Create(new SchemaConfiguration()
+            {
+                SchemaImageReference = null,
+            });
+
+            var schemaProvider = new AcrCustomizedSchemaProvider(
+                _mockContainerRegistryTemplateProvider,
+                schemaConfigurationWithCustomizedSchemaOption,
+                _diagnosticLogger,
+                _nullLogger);
 
             await Assert.ThrowsAsync<ContainerRegistrySchemaException>(() => schemaProvider.GetSchemasAsync());
         }

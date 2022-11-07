@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 using NSubstitute;
@@ -23,6 +24,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
     {
         private IHealthChecker _fhirServerHealthChecker;
         private IHealthChecker _azureBlobStorageHealthChecker;
+        private IHealthChecker _schedulerServiceHealthChecker;
+        private IHealthChecker _filterACRHealthChecker;
+        private IHealthChecker _schemaACRHealthChecker;
 
         public HealthCheckEngineTests()
         {
@@ -42,18 +46,43 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
                 {
                     Status = HealthCheckStatus.HEALTHY,
                 });
+
+            _schedulerServiceHealthChecker = Substitute.For<IHealthChecker>();
+            _schedulerServiceHealthChecker.Name.Returns("SchedulerService");
+            _schedulerServiceHealthChecker.PerformHealthCheckAsync(
+                Arg.Any<CancellationToken>()).ReturnsForAnyArgs(
+                new HealthCheckResult("SchedulerService")
+                {
+                    Status = HealthCheckStatus.UNHEALTHY,
+                });
+            _filterACRHealthChecker = Substitute.For<IHealthChecker>();
+            _filterACRHealthChecker.Name.Returns("filterACR");
+            _filterACRHealthChecker.PerformHealthCheckAsync(
+                Arg.Any<CancellationToken>()).ReturnsForAnyArgs(
+                new HealthCheckResult("filterACR")
+                {
+                    Status = HealthCheckStatus.HEALTHY,
+                });
+            _schemaACRHealthChecker = Substitute.For<IHealthChecker>();
+            _schemaACRHealthChecker.Name.Returns("schemaACR");
+            _schemaACRHealthChecker.PerformHealthCheckAsync(
+                Arg.Any<CancellationToken>()).ReturnsForAnyArgs(
+                new HealthCheckResult("schemaACR")
+                {
+                    Status = HealthCheckStatus.UNHEALTHY,
+                });
         }
 
         [Fact]
         public async Task When_All_HealthCheck_Complete_All_AreMaked_WithCorrectStatus()
         {
-            var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker };
+            var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, _schedulerServiceHealthChecker, _filterACRHealthChecker, _schemaACRHealthChecker };
             var healthCheckConfiduration = new HealthCheckConfiguration();
-            var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiduration), new NullLogger<HealthCheckEngine>());
+            var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiduration));
 
-            var healthStatus = await healthCheckEngine.CheckHealthAsync();
-            var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
-            var expectedResult = JsonSerializer.Deserialize<List<HealthCheckResult>>(File.ReadAllText("TestData/result.txt"));
+            OverallHealthStatus healthStatus = await healthCheckEngine.CheckHealthAsync();
+            IOrderedEnumerable<HealthCheckResult> sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
+            List<HealthCheckResult> expectedResult = JsonSerializer.Deserialize<List<HealthCheckResult>>(File.ReadAllText("TestData/result.txt"));
             Assert.Collection(
                 sortedHealthCheckResults,
                 p =>
@@ -65,6 +94,21 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
                 {
                     Assert.Equal(expectedResult[1].Name, p.Name);
                     Assert.Equal(expectedResult[1].Status, p.Status);
+                },
+                p =>
+                {
+                    Assert.Equal(expectedResult[2].Name, p.Name);
+                    Assert.Equal(expectedResult[2].Status, p.Status);
+                },
+                p =>
+                {
+                    Assert.Equal(expectedResult[3].Name, p.Name);
+                    Assert.Equal(expectedResult[3].Status, p.Status);
+                },
+                p =>
+                {
+                    Assert.Equal(expectedResult[4].Name, p.Name);
+                    Assert.Equal(expectedResult[4].Status, p.Status);
                 });
             Assert.Equal(HealthCheckStatus.HEALTHY, healthStatus.Status);
         }
@@ -75,12 +119,12 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests
             var healthCheckConfiguration = new HealthCheckConfiguration();
             healthCheckConfiguration.HealthCheckTimeoutInSeconds = 1;
 
-            var mockTimeOutHealthChecker = new MockTimeoutHealthChecker(new NullLogger<MockTimeoutHealthChecker>());
-            var healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, mockTimeOutHealthChecker };
-            var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiguration), new NullLogger<HealthCheckEngine>());
+            var mockTimeOutHealthChecker = new MockTimeoutHealthChecker(new DiagnosticLogger(), new NullLogger<MockTimeoutHealthChecker>());
+            List<IHealthChecker> healthCheckers = new List<IHealthChecker>() { _fhirServerHealthChecker, _azureBlobStorageHealthChecker, mockTimeOutHealthChecker };
+            var healthCheckEngine = new HealthCheckEngine(healthCheckers, Options.Create(healthCheckConfiguration));
 
-            var healthStatus = await healthCheckEngine.CheckHealthAsync();
-            var sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
+            OverallHealthStatus healthStatus = await healthCheckEngine.CheckHealthAsync();
+            IOrderedEnumerable<HealthCheckResult> sortedHealthCheckResults = healthStatus.HealthCheckResults.OrderBy(h => h.Name);
             Assert.Collection(
                 sortedHealthCheckResults,
                 p =>

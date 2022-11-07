@@ -23,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
         [Function("JobManagerFunction")]
         public async Task Run(FunctionContext context)
         {
-            var logger = context.GetLogger("JobManagerFunction");
+            ILogger logger = context.GetLogger("JobManagerFunction");
             logger.LogInformation("C# Timer trigger function executed at: {time}", DateTime.Now);
 
             try

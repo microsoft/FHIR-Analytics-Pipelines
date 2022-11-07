@@ -8,10 +8,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DotLiquid;
+using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Liquid.Converter.Models.Json;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using NJsonSchema;
@@ -21,22 +24,27 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
     public class AcrCustomizedSchemaProvider : IParquetSchemaProvider
     {
         private readonly IContainerRegistryTemplateProvider _containerRegistryTemplateProvider;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<AcrCustomizedSchemaProvider> _logger;
         private readonly string _schemaImageReference;
 
         public AcrCustomizedSchemaProvider(
             IContainerRegistryTemplateProvider containerRegistryTemplateProvider,
             IOptions<SchemaConfiguration> schemaConfiguration,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AcrCustomizedSchemaProvider> logger)
         {
-            _logger = logger;
-            _containerRegistryTemplateProvider = containerRegistryTemplateProvider;
+            EnsureArg.IsNotNull(schemaConfiguration, nameof(schemaConfiguration));
+
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _containerRegistryTemplateProvider = EnsureArg.IsNotNull(containerRegistryTemplateProvider, nameof(containerRegistryTemplateProvider));
             _schemaImageReference = schemaConfiguration.Value.SchemaImageReference;
         }
 
         public async Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default)
         {
-            var jsonSchemaCollection = await GetJsonSchemaCollectionAsync(cancellationToken);
+            Dictionary<string, JsonSchema> jsonSchemaCollection = await GetJsonSchemaCollectionAsync(cancellationToken);
 
             return jsonSchemaCollection
                 .Select(x => JsonSchemaParser.ParseJSchema(x.Key, x.Value))
@@ -45,23 +53,24 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
         private async Task<Dictionary<string, JsonSchema>> GetJsonSchemaCollectionAsync(CancellationToken cancellationToken)
         {
-            var result = new Dictionary<string, JsonSchema>();
+            Dictionary<string, JsonSchema> result = new Dictionary<string, JsonSchema>();
 
             if (string.IsNullOrWhiteSpace(_schemaImageReference))
             {
-                _logger.LogError("Schema image reference is null or empty.");
+                _diagnosticLogger.LogError("Schema image reference is null or empty.");
+                _logger.LogInformation("Schema image reference is null or empty.");
                 throw new ContainerRegistrySchemaException("Schema image reference is null or empty.");
             }
 
-            var templateCollections = await _containerRegistryTemplateProvider.GetTemplateCollectionAsync(_schemaImageReference, cancellationToken);
+            List<Dictionary<string, Template>> templateCollections = await _containerRegistryTemplateProvider.GetTemplateCollectionAsync(_schemaImageReference, cancellationToken);
 
             // Fetch all files with suffix ".schema.json" as Json schema template.
             // All Json schema files should be in "Schema" directory under the root path of the image.
-            foreach (var templates in templateCollections)
+            foreach (Dictionary<string, Template> templates in templateCollections)
             {
-                foreach (var templateItem in templates)
+                foreach (KeyValuePair<string, Template> templateItem in templates)
                 {
-                    var templatePathSegments = templateItem.Key.Split('/');
+                    string[] templatePathSegments = templateItem.Key.Split('/');
 
                     if (!string.Equals(templatePathSegments[0], FhirParquetSchemaConstants.JsonSchemaTemplateDirectory, StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -70,22 +79,24 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
                     if (templatePathSegments.Length != 2)
                     {
-                        _logger.LogError($"All Json schema should be directly in \"Schema\" directory.");
+                        _diagnosticLogger.LogError($"All Json schema should be directly in \"Schema\" directory.");
+                        _logger.LogInformation($"All Json schema should be directly in \"Schema\" directory.");
                         throw new ContainerRegistrySchemaException($"All Json schema should be directly in \"Schema\" directory.");
                     }
 
                     if (!templatePathSegments[1].EndsWith(FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        _logger.LogWarning($"{templatePathSegments[1]} doesn't have {FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension} extension in \"Schema\" directory.");
+                        _logger.LogInformation($"{templatePathSegments[1]} doesn't have {FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension} extension in \"Schema\" directory.");
                     }
                     else
                     {
                         // The customized schema keys are like "Patient_Customized", "Observation_Customized"...
-                        var resourceType = templatePathSegments[1].Substring(0, templatePathSegments[1].Length - FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension.Length);
+                        string resourceType = templatePathSegments[1].Substring(0, templatePathSegments[1].Length - FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension.Length);
 
                         if (!(templateItem.Value.Root is JSchemaDocument customizedSchemaDocument) || customizedSchemaDocument.Schema == null)
                         {
-                            _logger.LogError($"Invalid Json schema template {templateItem.Key}, no JSchema content be found.");
+                            _diagnosticLogger.LogError($"Invalid Json schema template {templateItem.Key}, no JSchema content be found.");
+                            _logger.LogInformation($"Invalid Json schema template {templateItem.Key}, no JSchema content be found.");
                             throw new ContainerRegistrySchemaException($"Invalid Json schema template {templateItem.Key}, no JSchema content be found.");
                         }
 

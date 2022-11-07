@@ -4,10 +4,11 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Exceptions
 {
-    public class FhirSpecificationProviderException : Exception
+    public class FhirSpecificationProviderException : SynapsePipelineExternalException
     {
         public FhirSpecificationProviderException(string message)
             : base(message)

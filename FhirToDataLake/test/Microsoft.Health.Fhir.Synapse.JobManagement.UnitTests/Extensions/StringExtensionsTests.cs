@@ -10,9 +10,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
 {
     public class StringExtensionsTests
     {
-        public static IEnumerable<object[]> NullOrEmptyInput()
+        public static IEnumerable<object[]> EmptyInput()
         {
-            yield return new object[] { null, null };
             yield return new object[] { string.Empty, string.Empty };
         }
 
@@ -28,18 +27,17 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
             yield return new object[] { "input string", "another string" };
         }
 
-        [Theory]
-        [MemberData(nameof(NullOrEmptyInput))]
-        public void GivenNullOrEmptyString_WhenComputeHash_ThenTheInputShouldBeReturn(string inputStr, string expectedHash)
+        [Fact]
+        public void GivenEmptyString_WhenComputeHash_ThenTheInputShouldBeReturn()
         {
-            var hash = inputStr.ComputeHash();
-            Assert.Equal(expectedHash, hash);
+            string hash = string.Empty.ComputeHash();
+            Assert.Equal(string.Empty, hash);
         }
 
         [Fact]
         public void GivenValidString_WhenComputeHash_ThenTheHashStringShouldBeReturn()
         {
-            var inputStr = "input string";
+            const string inputStr = "input string";
             var hash = inputStr.ComputeHash();
             Assert.NotEmpty(hash);
         }
@@ -47,10 +45,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [Fact]
         public void GivenTwoSameStrings_WhenComputeHash_ThenTheHashStringsShouldBeTheSame()
         {
-            var inputStr1 = "same input string";
+            const string inputStr1 = "same input string";
             var hash1 = inputStr1.ComputeHash();
 
-            var inputStr2 = "same input string";
+            const string inputStr2 = "same input string";
             var hash2 = inputStr2.ComputeHash();
             Assert.Equal(hash1, hash2);
         }
@@ -59,8 +57,8 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement.UnitTests.Extensions
         [MemberData(nameof(DifferentInputs))]
         public void GivenDifferentStrings_WhenComputeHash_ThenTheHashStringsShouldBeDifferent(string inputStr1, string inputStr2)
         {
-            var hash1 = inputStr1.ComputeHash();
-            var hash2 = inputStr2.ComputeHash();
+            string hash1 = inputStr1.ComputeHash();
+            string hash2 = inputStr2.ComputeHash();
             Assert.NotEqual(hash1, hash2);
         }
     }
