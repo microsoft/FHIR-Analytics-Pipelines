@@ -109,6 +109,15 @@
             "description": "Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials."
         }
     },
+    "maxInstanceCount": {
+        "type": "int",
+        "defaultValue": 5,
+        "minValue": 1,
+        "maxValue": 30,
+        "metadata": {
+            "description": "Maximum number of replicas running for fhir to datalake running container app."
+        }
+    },
     "storageAccountType": {
         "type": "string",
         "defaultValue": "Standard_LRS",
@@ -302,7 +311,29 @@
           ],
           "scale": {
             "minReplicas": 1,
-            "maxReplicas": 3
+            "maxReplicas": "[parameters('maxInstanceCount')]",
+            "rules": [
+                {
+                "name": "cpu-scaling-rule",
+                "custom": {
+                    "type": "cpu",
+                    "metadata": {
+                        "type": "Utilization",
+                        "value": "70"
+                        }
+                    }
+                },
+                {
+                    "name": "memory-scaling-rule",
+                    "custom": {
+                        "type": "memory",
+                        "metadata": {
+                            "type": "Utilization",
+                            "value": "70"
+                        }
+                    }
+                }
+            ]
           }
         }
       }
