@@ -24,5 +24,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common
         /// Stu3 is not supported.
         /// </summary>
         Stu3,
+
+        /// <summary>
+        /// DICOM
+        /// </summary>
+        DICOM,
     }
 }

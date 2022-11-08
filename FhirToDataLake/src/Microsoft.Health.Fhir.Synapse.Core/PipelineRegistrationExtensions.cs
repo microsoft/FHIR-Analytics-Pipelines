@@ -101,6 +101,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core
                     services.AddSingleton<IFhirSpecificationProvider, R4FhirSpecificationProvider>(); break;
                 case FhirVersion.R5:
                     services.AddSingleton<IFhirSpecificationProvider, R5FhirSpecificationProvider>(); break;
+                case FhirVersion.DICOM:
+                    // TODO DICOM
+                    services.AddSingleton<IFhirSpecificationProvider, R4FhirSpecificationProvider>(); break;
                 default:
                     throw new FhirSpecificationProviderException($"Fhir version {fhirServerConfiguration.Version} is not supported when injecting");
             }

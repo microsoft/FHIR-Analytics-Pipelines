@@ -9,6 +9,7 @@ using System.Linq;
 using DotLiquid;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
@@ -94,10 +95,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
                 _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
+            var fhirServerConfig = new FhirServerConfiguration
+            {
+                Version = FhirVersion.R4,
+            };
+
+            IOptions<FhirServerConfiguration> fhirServerOption = Options.Create(fhirServerConfig);
+
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
             {
                 return new DefaultSchemaConverter(
                     fhirSchemaManagerWithoutCustomizedSchema,
+                    fhirServerOption,
                     _diagnosticLogger,
                     NullLogger<DefaultSchemaConverter>.Instance);
             }

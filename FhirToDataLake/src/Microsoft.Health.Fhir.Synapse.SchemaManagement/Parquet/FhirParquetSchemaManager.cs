@@ -131,6 +131,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             }
 
             // Validate Parquet schema nodes
+            // TODO DICOM
             /*foreach (var schemaNodeItem in resourceSchemaNodesMap)
             {
                 ValidationResult validateResult = FhirParquetSchemaValidator.Validate(schemaNodeItem.Key, schemaNodeItem.Value);

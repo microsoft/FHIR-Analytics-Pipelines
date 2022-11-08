@@ -9,6 +9,9 @@ using System.Linq;
 using System.Threading;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
@@ -22,15 +25,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
     public class DefaultSchemaConverter : IDataSchemaConverter
     {
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly FhirVersion _fhirVersion;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<DefaultSchemaConverter> _logger;
 
         public DefaultSchemaConverter(
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
+            IOptions<FhirServerConfiguration> fhirServerConfiguration,
             IDiagnosticLogger diagnosticLogger,
             ILogger<DefaultSchemaConverter> logger)
         {
             _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            _fhirVersion = EnsureArg.EnumIsDefined(fhirServerConfiguration.Value.Version, nameof(fhirServerConfiguration.Value.Version));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
@@ -64,7 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                         throw new ParquetDataProcessorException($"The input FHIR data is null for schema type '{schemaType}'.");
                     }
 
-                    return ProcessDicomMetadataObject(json, schema);
+                    return _fhirVersion == FhirVersion.DICOM ? ProcessDicomMetadataObject(json, schema) : ProcessStructObject(json, schema);
                 })
                 .Where(processedResult => processedResult != null);
 
@@ -127,7 +133,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                     }
                     else
                     {
-                        processedObject.Add(subNodeKeyword, ProcessPnObject(singleElement, subNode));
+                        processedObject.Add(subNodeKeyword, ProcessDicomPnObject(singleElement, subNode));
                     }
                 }
             }
@@ -135,7 +141,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             return processedObject;
         }
 
-        private JObject ProcessPnObject(JToken pnItem, FhirParquetSchemaNode schemaNode)
+        private JObject ProcessDicomPnObject(JToken pnItem, FhirParquetSchemaNode schemaNode)
         {
             if (pnItem is not JObject jObject)
             {
@@ -227,7 +233,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 }
                 else
                 {
-                    arrayObject.Add(ProcessPnObject(item, schemaNode));
+                    arrayObject.Add(_fhirVersion == FhirVersion.DICOM ? ProcessDicomPnObject(item, schemaNode) : ProcessStructObject(item, schemaNode));
                 }
             }
 
@@ -248,8 +254,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {fhirObject.Path}.");
             }
 
-            // Convert every type to string
-            return new JValue(fhirLeafObject.ToString());
+            // Convert every type to string for DICOM
+            return _fhirVersion == FhirVersion.DICOM ? new JValue(fhirLeafObject.ToString()) : fhirLeafObject;
         }
 
         private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirParquetSchemaNode schemaNode, string schemaNodeKey)

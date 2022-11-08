@@ -23,8 +23,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 {
     public class LocalDefaultSchemaProvider : IParquetSchemaProvider
     {
-        private const string SchemaR4EmbeddedPrefix = "Schemas.dicom";
+        private const string SchemaR4EmbeddedPrefix = "Schemas.R4";
         private const string SchemaR5EmbeddedPrefix = "Schemas.R5";
+        private const string SchemaDicomEmbeddedPrefix = "Schemas.dicom";
 
         private readonly FhirVersion _fhirVersion;
         private readonly IDiagnosticLogger _diagnosticLogger;
@@ -93,6 +94,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             {
                 FhirVersion.R4 => string.Format("{0}.{1}", assembly.GetName().Name, SchemaR4EmbeddedPrefix),
                 FhirVersion.R5 => string.Format("{0}.{1}", assembly.GetName().Name, SchemaR5EmbeddedPrefix),
+                FhirVersion.DICOM => string.Format("{0}.{1}", assembly.GetName().Name, SchemaDicomEmbeddedPrefix),
 
                 // Will not happened because we have validated schema version when initialization.
                 _ => throw new GenerateFhirParquetSchemaNodeException($"Fhir schema version {fhirVersion} is not supported.")
