@@ -53,13 +53,6 @@
                 "description": "The name of the container to store job and data."
             }
         },
-        "jobConcurrency": {
-            "type": "string",
-            "defaultValue": "10",
-            "metadata": {
-                "description": "Concurrent jobs exeucting in parallel."
-            }
-        },
         "filterConfigImageReference":{
             "type": "string",
             "defaultValue": "",
@@ -93,6 +86,24 @@
             "defaultValue": "",
             "metadata": {
                 "description": "For data filtering use. Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. All data of requiredTypes will be exported if not specified. Leave it blank if no filter is applied."
+            }
+        },
+        "customizedSchema":{
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+            true,
+            false
+            ],
+            "metadata": {
+                "description": "Whether to enable customized schema on this pipeline. If enabled, pipeline can generate customized data based on given schemas."
+            }
+        },
+        "concurrency": {
+            "type": "string",
+            "defaultValue": "5",
+            "metadata": {
+                "description": "Job run concurrency."
             }
         },
         "customizedSchemaImageReference":{
@@ -178,7 +189,7 @@
         "metadataTableName": "[concat(variables('pipelineName'), 'metadatatable')]",
         "applicationInsightsName": "[concat('AppInsights-', variables('pipelineName'))]",
         "deployAppInsights": "[parameters('deployAppInsights')]",
-        "resourceTags": {"FhirAnalyticsPipeline": "FhirToDataLake", "FhirSchemaVersion": "v0.4.0"},
+        "resourceTags": {"FhirAnalyticsPipeline": "FhirToDataLake", "FhirSchemaVersion": "v0.5.0"},
         "storageAccountName": "[concat(substring(replace(variables('pipelineName'), '-', ''), 0, min(11, length(replace(variables('pipelineName'), '-', '')))), uniquestring(resourceGroup().id, variables('pipelineName')))]",
         "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
         "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
@@ -251,6 +262,36 @@
             }
         },
         {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "name": "assignFHIRReaderRole",
+            "dependsOn": [
+                "[variables('pipelineName')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.HealthcareApis/services/providers/roleAssignments",
+                            "apiVersion": "2018-09-01-preview",
+                            "name": "[concat(variables('fhirServerName'), '/Microsoft.Authorization/', guid(uniqueString(variables('fhirServerName'), variables('pipelineName'))))]",
+                            "properties": {
+                                "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
+                                "principalId": "[reference(resourceId(variables('resourceGroupName'), 'Microsoft.Web/sites/', variables('pipelineName')), '2020-06-01', 'full').identity.principalId]",
+                                "principalType": "ServicePrincipal"
+                            },
+                            "condition": "[parameters('authentication')]"
+                        }
+                    ]
+                }
+            },
+            "resourceGroup": "[parameters('fhirServerResourceGroupName')]",
+            "subscriptionId": "[parameters('fhirServerSubId')]"
+        },
+        {
             "type": "Microsoft.ContainerInstance/containerGroups",
             "apiVersion": "2021-09-01",
             "name": "[variables('pipelineName')]",
@@ -295,10 +336,6 @@
                                     "value": "[variables('metadataTableName')]"
                                 },
                                 {
-                                    "name": "job__maxRunningJobCount",
-                                    "value": "[parameters('jobConcurrency')]"
-                                },
-                                {
                                     "name": "job__containerName",
                                     "value": "[parameters('containerName')]"
                                 },
@@ -310,6 +347,10 @@
                                     "name": "job__endTime",
                                     "value": "[parameters('dataEnd')]"
                                 },
+                                {
+                                    "name": "job__maxRunningJobCount",
+                                    "value": "[parameters('concurrency')]"
+                                },                                
                                 {
                                     "name": "job__tableUrl",
                                     "value": "[concat('https://', variables('storageAccountName'), '.table.core.windows.net')]"
@@ -348,7 +389,7 @@
                                 },
                                 {
                                     "name": "schema__enableCustomizedSchema",
-                                    "value": "[if(empty(parameters('customizedSchemaImageReference')), 'false', 'true')]"
+                                    "value": "[parameters('customizedSchema')]"
                                 },
                                 {
                                     "name": "schema__schemaImageReference",
@@ -386,5 +427,15 @@
                 "Request_Source": "IbizaWebAppExtensionCreate"
             }
         }
-    ]
+    ],
+    "outputs": {
+        "jobinfoTableUrl": {
+            "type": "string",
+            "value": "[concat('https://', variables('storageAccountName'), '.table.core.windows.net/')]"
+        },
+        "jobinfoTableName": {
+            "type": "string",
+            "value": "[variables('jobInfoTableName')]"
+        }
+    }
 }
