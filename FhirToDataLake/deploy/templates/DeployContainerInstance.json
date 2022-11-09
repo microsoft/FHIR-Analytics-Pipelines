@@ -169,6 +169,7 @@
         }
     },
     "variables": {
+        "resourceGroupName": "[resourceGroup().name]",
         "pipelineName": "[toLower(parameters('pipelineName'))]",
         "jobInfoQueueName": "[concat(variables('pipelineName'), 'jobinfoqueue')]",
         "jobInfoTableName": "[concat(variables('pipelineName'), 'jobinfotable')]",
