@@ -95,17 +95,6 @@
                 "description": "For data filtering use. Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. All data of requiredTypes will be exported if not specified. Leave it blank if no filter is applied."
             }
         },
-        "customizedSchema":{
-            "type": "bool",
-            "defaultValue": false,
-            "allowedValues": [
-            true,
-            false
-            ],
-            "metadata": {
-                "description": "Whether to enable customized schema on this pipeline. If enabled, pipeline can generate customized data based on given schemas."
-            }
-        },
         "customizedSchemaImageReference":{
             "type": "string",
             "defaultValue": "",
@@ -115,7 +104,7 @@
         },
         "image": {
             "type": "string",
-            "defaultValue": "healthplatformregistry.azurecr.io/fhirtodatalaketool:v0.5.0",
+            "defaultValue": "healthplatformregistry.azurecr.io/fhirtodatalaketool:latest",
             "metadata": {
               "description": "Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials."
             }
@@ -338,7 +327,7 @@
                                 },
                                 {
                                     "name": "schema__enableCustomizedSchema",
-                                    "value": "[parameters('customizedSchema')]"
+                                    "value": "[if(empty(parameters('customizedSchemaImageReference')), 'false', 'true')]"
                                 },
                                 {
                                     "name": "schema__schemaImageReference",
