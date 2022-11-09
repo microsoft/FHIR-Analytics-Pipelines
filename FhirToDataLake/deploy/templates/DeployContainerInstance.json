@@ -188,7 +188,8 @@
         ],
         "fhirServerName": "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
         "fhirDataReaderRoleId": "[concat('/subscriptions/', 'cc148bf2-42fb-4913-a3fb-2f284a69eb89', '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
-        "resourceGroupName": "analyticsconnectorperftest"
+        "resourceGroupName": "analyticsconnectorperftest",
+        "subId": "[subscription().subscriptionId]"
     },
     "resources": [
         {
@@ -266,7 +267,7 @@
                             "name": "[concat(variables('fhirServerName'), '/Microsoft.Authorization/', guid(uniqueString(variables('fhirServerName'), variables('pipelineName'))))]",
                             "properties": {
                                 "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
-                                "principalId": "[reference(resourceId(variables('resourceGroupName'), 'Microsoft.Web/sites/', variables('pipelineName')), '2020-06-01', 'full').identity.principalId]",
+                                "principalId": "[reference(resourceId(variables('subId'), variables('resourceGroupName'), 'Microsoft.ContainerInstance/containerGroups/', variables('pipelineName')), '2021-09-01', 'full').identity.principalId]",
                                 "principalType": "ServicePrincipal"
                             },
                             "condition": "[parameters('authentication')]"
