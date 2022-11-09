@@ -187,7 +187,7 @@
             ".",
             "//"
         ],
-        "fhirServerName": "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
+        "fhirServerName": "preftestservices/bulk-50g",
         "fhirDataReaderRoleId": "[concat('/subscriptions/', 'cc148bf2-42fb-4913-a3fb-2f284a69eb89', '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
         "fhirServerResourceGroupName": "analyticsconnectorperftest",
         "subId": "[subscription().subscriptionId]",
@@ -253,7 +253,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-10-01",
-            "name": "assignFHIRReaderRole",
+            "name": "assignFHIRReaderRole]",
             "dependsOn": [
                 "[variables('pipelineName')]"
             ],
