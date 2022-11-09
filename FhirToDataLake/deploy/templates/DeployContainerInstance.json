@@ -253,7 +253,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-10-01",
-            "name": "assignFHIRReaderRole",
+            "name": "[concat('assignFHIRReaderRole', guid(uniqueString(variables('fhirServerName'), variables('pipelineName'))))]",
             "dependsOn": [
                 "[variables('pipelineName')]"
             ],
@@ -266,7 +266,7 @@
                         {
                             "type": "Microsoft.HealthcareApis/services/providers/roleAssignments",
                             "apiVersion": "2018-09-01-preview",
-                            "name": "[concat(variables('fhirServerName'), '/Microsoft.Authorization/', guid(uniqueString(variables('fhirServerName'), variables('pipelineName'))))]",
+                            "name": "[concat(variables('fhirServerName'), guid(uniqueString(variables('fhirServerName'), variables('pipelineName'))))]",
                             "properties": {
                                 "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
                                 "principalId": "[reference(resourceId(variables('subId'), variables('resourceGroupName'), 'Microsoft.ContainerInstance/containerGroups/', variables('pipelineName')), '2021-09-01', 'full').identity.principalId]",
