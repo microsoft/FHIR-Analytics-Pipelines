@@ -188,8 +188,9 @@
         ],
         "fhirServerName": "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
         "fhirDataReaderRoleId": "[concat('/subscriptions/', 'cc148bf2-42fb-4913-a3fb-2f284a69eb89', '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
-        "resourceGroupName": "analyticsconnectorperftest",
-        "subId": "[subscription().subscriptionId]"
+        "fhirServerResourceGroupName": "analyticsconnectorperftest",
+        "subId": "[subscription().subscriptionId]",
+        "fhirServerSubId" : "cc148bf2-42fb-4913-a3fb-2f284a69eb89"
     },
     "resources": [
         {
@@ -275,8 +276,8 @@
                     ]
                 }
             },
-            "resourceGroup": "[parameters('fhirServerResourceGroupName')]",
-            "subscriptionId": "[parameters('fhirServerSubId')]"
+            "resourceGroup": "[variables('fhirServerResourceGroupName')]",
+            "subscriptionId": "[variables('fhirServerSubId')]"
         },
         {
             "type": "Microsoft.ContainerInstance/containerGroups",
