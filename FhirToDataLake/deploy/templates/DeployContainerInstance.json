@@ -155,6 +155,20 @@
             "metadata": {
                 "description": "Location for Application Insights"
             }
+        },
+        "fhirServerSubId": {
+            "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
+            "type": "string",
+            "metadata": {
+                "description": "The sub id of target FHIR server."
+            }
+        },
+        "fhirServerResourceGroupName": {
+            "defaultValue": "analyticsconnectorperftest",
+            "type": "string",
+            "metadata": {
+                "description": "The resource group name of target FHIR server."
+            }
         }
     },
     "variables": {
@@ -172,7 +186,7 @@
         "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
         "restartPolicy": "OnFailure",
         "fhirServerName": "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
-        "fhirDataReaderRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
+        "fhirDataReaderRoleId": "[concat('/subscriptions/', variables('fhirServerSubId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
         "resourceGroupName": "[resourceGroup().name]"
     },
     "resources": [
@@ -259,7 +273,8 @@
                     ]
                 }
             },
-            "resourceGroup": "[parameters('fhirServerResourceGroupName')]"
+            "resourceGroup": "[parameters('fhirServerResourceGroupName')]",
+            "subscriptionId": "[parameters('fhirServerSubId')]"
         },
         {
             "type": "Microsoft.ContainerInstance/containerGroups",
