@@ -71,11 +71,13 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
 
         private ContainerRegistryAccessTokenProvider GetMockAcrTokenProvider(HttpStatusCode statusCode, string content = "")
         {
-            var tokenProvider = Substitute.For<ITokenCredentialProvider>();
-
-            // tokenProvider.GetAccessTokenAsync(default, default).ReturnsForAnyArgs("Bearer test");
+            ITokenCredentialProvider tokenProvider = Substitute.For<ITokenCredentialProvider>();
             var httpClient = new HttpClient(new MockHttpMessageHandler(content, statusCode));
-            return new ContainerRegistryAccessTokenProvider(tokenProvider, httpClient, new DiagnosticLogger(), new NullLogger<ContainerRegistryAccessTokenProvider>());
+
+            IHttpClientFactory httpClientFactory = Substitute.For<IHttpClientFactory>();
+            httpClientFactory.CreateClient().Returns(httpClient);
+
+            return new ContainerRegistryAccessTokenProvider(tokenProvider, httpClientFactory, new DiagnosticLogger(), new NullLogger<ContainerRegistryAccessTokenProvider>());
         }
 
         internal class MockHttpMessageHandler : HttpMessageHandler
