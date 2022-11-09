@@ -253,7 +253,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-10-01",
-            "name": "[concat('assignFHIRReaderRole', guid(uniqueString(variables('fhirServerName'), variables('pipelineName'))))]",
+            "name": "assignFHIRReaderRole",
             "dependsOn": [
                 "[variables('pipelineName')]"
             ],
