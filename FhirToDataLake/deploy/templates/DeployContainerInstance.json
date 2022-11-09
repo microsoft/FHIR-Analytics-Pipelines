@@ -166,20 +166,6 @@
             "metadata": {
                 "description": "Location for Application Insights"
             }
-        },
-        "fhirServerSubId": {
-            "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
-            "type": "string",
-            "metadata": {
-                "description": "The sub id of target FHIR server."
-            }
-        },
-        "fhirServerResourceGroupName": {
-            "defaultValue": "analyticsconnectorperftest",
-            "type": "string",
-            "metadata": {
-                "description": "The resource group name of target FHIR server."
-            }
         }
     },
     "variables": {
@@ -201,8 +187,8 @@
             "//"
         ],
         "fhirServerName": "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
-        "fhirDataReaderRoleId": "[concat('/subscriptions/', parameters('fhirServerSubId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
-        "resourceGroupName": "[resourceGroup().name]"
+        "fhirDataReaderRoleId": "[concat('/subscriptions/', 'cc148bf2-42fb-4913-a3fb-2f284a69eb89', '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
+        "resourceGroupName": "analyticsconnectorperftest"
     },
     "resources": [
         {
@@ -260,36 +246,6 @@
                 "principalId": "[reference(concat('Microsoft.ContainerInstance/containerGroups/', variables('pipelineName')), '2021-09-01', 'full').identity.principalId]",
                 "principalType": "ServicePrincipal"
             }
-        },
-        {
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-10-01",
-            "name": "assignFHIRReaderRole",
-            "dependsOn": [
-                "[variables('pipelineName')]"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "template": {
-                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                    "contentVersion": "1.0.0.0",
-                    "resources": [
-                        {
-                            "type": "Microsoft.HealthcareApis/services/providers/roleAssignments",
-                            "apiVersion": "2018-09-01-preview",
-                            "name": "[concat(variables('fhirServerName'), '/Microsoft.Authorization/', guid(uniqueString(variables('fhirServerName'), variables('pipelineName'))))]",
-                            "properties": {
-                                "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
-                                "principalId": "[reference(resourceId(variables('resourceGroupName'), 'Microsoft.Web/sites/', variables('pipelineName')), '2020-06-01', 'full').identity.principalId]",
-                                "principalType": "ServicePrincipal"
-                            },
-                            "condition": "[parameters('authentication')]"
-                        }
-                    ]
-                }
-            },
-            "resourceGroup": "[parameters('fhirServerResourceGroupName')]",
-            "subscriptionId": "[parameters('fhirServerSubId')]"
         },
         {
             "type": "Microsoft.ContainerInstance/containerGroups",
