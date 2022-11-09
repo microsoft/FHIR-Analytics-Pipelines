@@ -170,7 +170,10 @@
         "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
         "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
         "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
-        "restartPolicy": "OnFailure"
+        "restartPolicy": "OnFailure",
+        "fhirServerName": "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
+        "fhirDataReaderRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
+        "resourceGroupName": "[resourceGroup().name]"
     },
     "resources": [
         {
@@ -228,6 +231,35 @@
                 "principalId": "[reference(concat('Microsoft.ContainerInstance/containerGroups/', variables('pipelineName')), '2021-09-01', 'full').identity.principalId]",
                 "principalType": "ServicePrincipal"
             }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "name": "assignFHIRReaderRole",
+            "dependsOn": [
+                "[variables('pipelineName')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.HealthcareApis/services/providers/roleAssignments",
+                            "apiVersion": "2018-09-01-preview",
+                            "name": "[concat(variables('fhirServerName'), '/Microsoft.Authorization/', guid(uniqueString(variables('fhirServerName'), variables('pipelineName'))))]",
+                            "properties": {
+                                "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
+                                "principalId": "[reference(resourceId(variables('resourceGroupName'), 'Microsoft.Web/sites/', variables('pipelineName')), '2020-06-01', 'full').identity.principalId]",
+                                "principalType": "ServicePrincipal"
+                            },
+                            "condition": "[parameters('authentication')]"
+                        }
+                    ]
+                }
+            },
+            "resourceGroup": "[parameters('fhirServerResourceGroupName')]"
         },
         {
             "type": "Microsoft.ContainerInstance/containerGroups",
