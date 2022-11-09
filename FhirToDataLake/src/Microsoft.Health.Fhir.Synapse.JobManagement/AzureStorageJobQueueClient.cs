@@ -3,7 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+#define Enable_Perf_Metrics
+
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Azure;
 using Azure.Data.Tables;
 using Azure.Storage.Queues;
@@ -80,6 +83,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             bool isCompleted,
             CancellationToken cancellationToken)
         {
+#if Enable_Perf_Metrics
+            var watch = Stopwatch.StartNew();
+#endif
             _logger.LogInformation($"Start to enqueue {definitions.Length} jobs.");
 
             if (definitions.Length > MaxJobsCountForEnqueuingInABatch)
@@ -94,17 +100,17 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             // step 2: generate job info entities and job lock entities batch
             List<TJobInfo> jobInfos = definitions.Select((definition, i) => new TJobInfo
-                {
-                    Id = jobIds[i],
-                    QueueType = queueType,
-                    Status = JobStatus.Created,
-                    GroupId = groupId ?? 0,
-                    Definition = definition,
-                    Result = string.Empty,
-                    CancelRequested = false,
-                    CreateDate = DateTime.UtcNow,
-                    HeartbeatDateTime = DateTime.UtcNow,
-                })
+            {
+                Id = jobIds[i],
+                QueueType = queueType,
+                Status = JobStatus.Created,
+                GroupId = groupId ?? 0,
+                Definition = definition,
+                Result = string.Empty,
+                CancelRequested = false,
+                CreateDate = DateTime.UtcNow,
+                HeartbeatDateTime = DateTime.UtcNow,
+            })
                 .ToList();
 
             List<TableEntity> jobInfoEntities = jobInfos.Select(jobInfo => jobInfo.ToTableEntity()).ToList();
@@ -250,6 +256,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
                 _logger.LogInformation($"Enqueue jobs {string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())} successfully.");
 
+#if Enable_Perf_Metrics
+                watch.Stop();
+                _logger.LogInformation($"[Performance test enqueue] Enqueue time of jobs {string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())}: {watch.ElapsedMilliseconds}");
+#endif
                 return jobInfos;
             }
             catch (Exception ex)
@@ -261,6 +271,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         public async Task<JobInfo> DequeueAsync(byte queueType, string worker, int heartbeatTimeoutSec, CancellationToken cancellationToken)
         {
+#if Enable_Perf_Metrics
+            var watch = Stopwatch.StartNew();
+#endif
             _logger.LogInformation("Start to dequeue.");
 
             // step 1: receive message from message queue
@@ -346,11 +359,19 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             _ = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionUpdateActions, cancellationToken);
 
             _logger.LogInformation($"Dequeue job {jobInfo.Id} Successfully ");
+
+#if Enable_Perf_Metrics
+            watch.Stop();
+            _logger.LogInformation($"[Performance test dequeue] Dequeue time of job {jobInfo.Id}: {watch.ElapsedMilliseconds}");
+#endif
             return jobInfo;
         }
 
         public async Task<JobInfo> GetJobByIdAsync(byte queueType, long jobId, bool returnDefinition, CancellationToken cancellationToken)
         {
+#if Enable_Perf_Metrics
+            var watch = Stopwatch.StartNew();
+#endif
             _logger.LogInformation($"Start to get job {jobId}.");
 
             // step 1: get job reverse index entity
@@ -370,11 +391,19 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             var jobInfo = jobInfoEntity.ToJobInfo<TJobInfo>();
 
             _logger.LogInformation($"Get job {jobId} successfully.");
+
+#if Enable_Perf_Metrics
+            watch.Stop();
+            _logger.LogInformation($"[Performance test getJobById] GetJobById time of job {jobId}: {watch.ElapsedMilliseconds}");
+#endif
             return jobInfo;
         }
 
         public async Task<IEnumerable<JobInfo>> GetJobsByIdsAsync(byte queueType, long[] jobIds, bool returnDefinition, CancellationToken cancellationToken)
         {
+#if Enable_Perf_Metrics
+            var watch = Stopwatch.StartNew();
+#endif
             _logger.LogInformation($"Start to get jobs {string.Join(",", jobIds)}.");
 
             ConcurrentBag<JobInfo> result = new ConcurrentBag<JobInfo>();
@@ -399,6 +428,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             _logger.LogInformation($"Get jobs {string.Join(",", jobIds)} successfully.");
+
+#if Enable_Perf_Metrics
+            watch.Stop();
+            _logger.LogInformation($"[Performance test getJobsByIds] GetJobsByIds time of jobs {string.Join(",", jobIds)}: {watch.ElapsedMilliseconds}");
+#endif
             return result;
         }
 
@@ -426,6 +460,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         public async Task<bool> KeepAliveJobAsync(JobInfo jobInfo, CancellationToken cancellationToken)
         {
+#if Enable_Perf_Metrics
+            var watch = Stopwatch.StartNew();
+#endif
             _logger.LogInformation($"Start to keep alive for job {jobInfo.Id}.");
 
             // step 1: get jobInfo entity and job lock entity
@@ -504,6 +541,10 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             _logger.LogInformation($"Keep alive for job {jobInfo.Id} successfully.");
 
+#if Enable_Perf_Metrics
+            watch.Stop();
+            _logger.LogInformation($"[Performance test keepAliveJob] KeepAliveJob time of job {jobInfo.Id}: {watch.ElapsedMilliseconds}");
+#endif
             return shouldCancel;
         }
 
@@ -566,6 +607,9 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         public async Task CompleteJobAsync(JobInfo jobInfo, bool requestCancellationOnFailure, CancellationToken cancellationToken)
         {
+#if Enable_Perf_Metrics
+            var watch = Stopwatch.StartNew();
+#endif
             _logger.LogInformation($"Start to complete job {jobInfo.Id}.");
 
             // step 1: get jobInfo entity and job lock entity
@@ -627,6 +671,11 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             }
 
             _logger.LogInformation($"Complete job {jobInfo.Id} successfully.");
+
+#if Enable_Perf_Metrics
+            watch.Stop();
+            _logger.LogInformation($"[Performance test completeJob] CompleteJob time of job {jobInfo.Id}: {watch.ElapsedMilliseconds}");
+#endif
         }
 
         private void TryInitialize()

@@ -3,8 +3,11 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+#define Enable_Perf_Metrics
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -115,16 +118,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 switch (filterScope)
                 {
                     case FilterScope.Group:
-                    {
-                        await GroupExecuteAsyncInternal(progress, cancellationToken);
-                        break;
-                    }
+                        {
+                            await GroupExecuteAsyncInternal(progress, cancellationToken);
+                            break;
+                        }
 
                     case FilterScope.System:
-                    {
-                        await SystemExecuteAsyncInternal(progress, cancellationToken);
-                        break;
-                    }
+                        {
+                            await SystemExecuteAsyncInternal(progress, cancellationToken);
+                            break;
+                        }
 
                     default:
                         throw new ConfigurationErrorException(
@@ -317,30 +320,30 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     case FhirConstants.PatientResource:
                         return true;
                     case FhirConstants.AllResource:
-                    {
-                        // all resources are required without any parameters
-                        if (typeFilter.Parameters == null || !typeFilter.Parameters.Any())
                         {
-                            return true;
-                        }
-
-                        foreach ((string param, string value) in typeFilter.Parameters)
-                        {
-                            if (param != FhirApiConstants.TypeKey)
-                            {
-                                continue;
-                            }
-
-                            // if patient is in _type parameter
-                            string[] types = value.Split(',');
-                            if (types.Contains(FhirConstants.PatientResource))
+                            // all resources are required without any parameters
+                            if (typeFilter.Parameters == null || !typeFilter.Parameters.Any())
                             {
                                 return true;
                             }
-                        }
 
-                        break;
-                    }
+                            foreach ((string param, string value) in typeFilter.Parameters)
+                            {
+                                if (param != FhirApiConstants.TypeKey)
+                                {
+                                    continue;
+                                }
+
+                                // if patient is in _type parameter
+                                string[] types = value.Split(',');
+                                if (types.Contains(FhirConstants.PatientResource))
+                                {
+                                    return true;
+                                }
+                            }
+
+                            break;
+                        }
                 }
             }
 
@@ -467,13 +470,29 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         private async Task<SearchResult> ExecuteSearchAsync(BaseSearchOptions searchOptions, CancellationToken cancellationToken)
         {
+#if Enable_Perf_Metrics
+            var watch = Stopwatch.StartNew();
+#endif
             string fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
+
+#if Enable_Perf_Metrics
+            watch.Stop();
+            _result.SearchTime += watch.ElapsedMilliseconds;
+#endif
 
             // Parse bundle result.
             JObject fhirBundleObject;
             try
             {
+#if Enable_Perf_Metrics
+                watch.Restart();
+#endif
                 fhirBundleObject = JObject.Parse(fhirBundleResult);
+
+#if Enable_Perf_Metrics
+                watch.Stop();
+                _result.ParseTime += watch.ElapsedMilliseconds;
+#endif
             }
             catch (Exception exception)
             {
@@ -548,7 +567,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     {
                         // Convert grouped data to parquet stream
                         var processParameters = new ProcessParameters(schemaType, resourceType);
+
+#if Enable_Perf_Metrics
+                        var watch = Stopwatch.StartNew();
+#endif
                         StreamBatchData parquetStream = await _parquetDataProcessor.ProcessAsync(batchData, processParameters, cancellationToken);
+
+#if Enable_Perf_Metrics
+                        watch.Stop();
+                        _result.TransformTime += watch.ElapsedMilliseconds;
+#endif
                         int skippedCount = batchData.Values.Count() - parquetStream.BatchSize;
 
                         if (parquetStream?.Value?.Length > 0)
@@ -558,8 +586,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 _outputFileIndexMap[schemaType] = 0;
                             }
 
+#if Enable_Perf_Metrics
+                            watch.Restart();
+#endif
+
                             // Upload to blob and log result
                             string blobUrl = await _dataWriter.WriteAsync(parquetStream, _jobId, _outputFileIndexMap[schemaType], _inputData.DataEndTime, cancellationToken);
+
+#if Enable_Perf_Metrics
+                            watch.Stop();
+                            _result.UploadTime += watch.ElapsedMilliseconds;
+#endif
                             _outputFileIndexMap[schemaType] += 1;
 
                             _logger.LogInformation(

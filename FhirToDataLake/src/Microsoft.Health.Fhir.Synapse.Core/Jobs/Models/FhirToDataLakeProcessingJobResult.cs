@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+#define Enable_Perf_Metrics
+
 using System;
 using System.Collections.Generic;
 
@@ -19,6 +21,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// Processing job complete time
         /// </summary>
         public DateTimeOffset? ProcessingCompleteTime { get; set; }
+
+#if Enable_Perf_Metrics
+        public double SearchTime { get; set; }
+
+        public double ParseTime { get; set; }
+
+        public double TransformTime { get; set; }
+
+        public double UploadTime { get; set; }
+#endif
 
         /// <summary>
         /// Search count for each resource type.
