@@ -181,14 +181,7 @@
         "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
         "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
         "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
-        "restartPolicy": "OnFailure",
-        "urlSplitDelimiters": [
-            ".",
-            "//"
-        ],
-        "fhirServerName": "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
-        "fhirDataReaderRoleId": "[concat('/subscriptions/', 'cc148bf2-42fb-4913-a3fb-2f284a69eb89', '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
-        "resourceGroupName": "analyticsconnectorperftest"
+        "restartPolicy": "OnFailure"
     },
     "resources": [
         {
