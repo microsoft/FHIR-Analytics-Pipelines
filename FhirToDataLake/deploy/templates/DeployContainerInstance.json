@@ -185,8 +185,12 @@
         "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
         "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
         "restartPolicy": "OnFailure",
+        "urlSplitDelimiters": [
+            ".",
+            "//"
+        ],
         "fhirServerName": "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
-        "fhirDataReaderRoleId": "[concat('/subscriptions/', variables('fhirServerSubId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
+        "fhirDataReaderRoleId": "[concat('/subscriptions/', parameters('fhirServerSubId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
         "resourceGroupName": "[resourceGroup().name]"
     },
     "resources": [
