@@ -54,8 +54,10 @@
         }
     },
     "jobConcurrency": {
-        "type": "string",
-        "defaultValue": "10",
+        "type": "int",
+        "defaultValue": 3,
+        "minValue": 1,
+        "maxValue": 10,
         "metadata": {
             "description": "Concurrent jobs exeucting in parallel."
         }
@@ -104,18 +106,18 @@
     },
     "image": {
         "type": "string",
-        "defaultValue": "healthplatformregistry.azurecr.io/fhirtodatalaketool:v0.5.0",
+        "defaultValue": "healthplatformregistry.azurecr.io/fhirtodatalaketool:latest",
         "metadata": {
             "description": "Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials."
         }
     },
     "maxInstanceCount": {
         "type": "int",
-        "defaultValue": 5,
+        "defaultValue": 10,
         "minValue": 1,
         "maxValue": 30,
         "metadata": {
-            "description": "Maximum number of replicas running for fhir to datalake running container app."
+            "description": "Maximum number of replicas running for fhir to datalake container app."
         }
     },
     "storageAccountType": {
@@ -173,6 +175,7 @@
       "apiVersion": "2021-12-01-preview",
       "name": "[variables('analyticsWorkspaceName')]",
       "location": "[parameters('location')]",
+      "tags": "[variables('resourceTags')]",
       "properties": {
         "sku": {
           "name": "PerGB2018"
@@ -188,6 +191,7 @@
         "[resourceId('Microsoft.OperationalInsights/workspaces', variables('analyticsWorkspaceName'))]"
       ],
       "location": "[parameters('location')]",
+      "tags": "[variables('resourceTags')]",
       "properties": {
         "appLogsConfiguration": {
           "destination": "log-analytics",
@@ -205,10 +209,11 @@
       "dependsOn": [
         "[resourceId('Microsoft.App/managedEnvironments', variables('environmentName'))]"
       ],
-      "location": "[parameters('location')]",
       "identity": {
         "type": "SystemAssigned"
       },
+      "location": "[parameters('location')]",
+      "tags": "[variables('resourceTags')]",
       "properties": {
         "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', variables('environmentName'))]",
         "template": {
@@ -232,7 +237,7 @@
                 },
                 {
                     "name": "job__maxRunningJobCount",
-                    "value": "[parameters('jobConcurrency')]"
+                    "value": "[string(parameters('jobConcurrency'))]"
                 },
                 {
                     "name": "job__containerName",
