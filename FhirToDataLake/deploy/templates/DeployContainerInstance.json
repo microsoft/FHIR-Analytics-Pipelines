@@ -251,34 +251,18 @@
             }
         },
         {
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-10-01",
-            "name": "assignFHIRReaderRole",
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2022-04-01",
+            "name": "[guid(subscription().subscriptionId, variables('fhirServerName'))]",
+            "scope": "/subscriptions/cc148bf2-42fb-4913-a3fb-2f284a69eb89/resourceGroups/analyticsconnectorperftest/providers/Microsoft.HealthcareApis/workspaces/preftestservices/fhirservices/bulk-50g",
             "dependsOn": [
                 "[variables('pipelineName')]"
             ],
             "properties": {
-                "mode": "Incremental",
-                "template": {
-                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                    "contentVersion": "1.0.0.0",
-                    "resources": [
-                        {
-                            "type": "Microsoft.HealthcareApis/services/providers/roleAssignments",
-                            "apiVersion": "2018-09-01-preview",
-                            "name": "[concat(variables('fhirServerName'), '/', guid(uniqueString(variables('fhirServerName'), variables('pipelineName'))))]",
-                            "properties": {
-                                "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
-                                "principalId": "[reference(resourceId(variables('subId'), variables('resourceGroupName'), 'Microsoft.ContainerInstance/containerGroups/', variables('pipelineName')), '2021-09-01', 'full').identity.principalId]",
-                                "principalType": "ServicePrincipal"
-                            },
-                            "condition": "[parameters('authentication')]"
-                        }
-                    ]
-                }
-            },
-            "resourceGroup": "[variables('fhirServerResourceGroupName')]",
-            "subscriptionId": "[variables('fhirServerSubId')]"
+                "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
+                "principalId": "[reference(concat('Microsoft.ContainerInstance/containerGroups/', variables('pipelineName')), '2021-09-01', 'full').identity.principalId]",
+                "principalType": "ServicePrincipal"
+            }
         },
         {
             "type": "Microsoft.ContainerInstance/containerGroups",
