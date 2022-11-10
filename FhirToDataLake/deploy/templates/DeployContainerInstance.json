@@ -284,7 +284,7 @@
               {
                 "type": "Microsoft.Authorization/roleAssignments",
                 "apiVersion": "2022-04-01",
-                "name": "[guid(uniqueString(variables('fhirServerName'), variables('pipelineName)))]",
+                "name": "[guid(uniqueString(variables('fhirServerName'), variables('pipelineName')))]",
                 "scope": "Microsoft.HealthcareApis/workspaces/preftestservices/fhirservices/bulk-50g",
                 "properties": {
                   "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
