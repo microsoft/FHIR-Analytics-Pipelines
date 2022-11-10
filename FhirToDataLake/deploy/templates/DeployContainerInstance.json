@@ -229,6 +229,7 @@
       "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
       "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
       "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
+      "storageTableDataReaderRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '76199698-9eea-4c19-bc75-cec21354c6b6')]",
       "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
       "restartPolicy": "OnFailure",
       "urlSplitDelimiters": [
@@ -243,7 +244,8 @@
       "schemaACRName" : "[split(parameters('customizedSchemaImageReference'), '.')[0]]",
       "fhirDataReaderRoleId": "[concat('/subscriptions/', parameters('fhirServerSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
       "filterACRPullRoleId": "[concat('/subscriptions/', parameters('filterACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
-      "schemaACRPullRoleId": "[concat('/subscriptions/', parameters('schemaACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]"
+      "schemaACRPullRoleId": "[concat('/subscriptions/', parameters('schemaACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
+      "isSameACR": "[equals(variables('filterACRName'), variables('schemaACRName'))]"
     },
     "resources": [
       {
@@ -366,8 +368,8 @@
       {
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2020-10-01",
-        "condition": "[not(empty(parameters('customizedSchemaImageReference')))]",
-        "name": "[guid(uniqueString('customizedSchemaACRRoleAssignment'))]",
+        "condition": "[not(or(empty(parameters('customizedSchemaImageReference')), variables('isSameACR')))]",
+        "name": "[guid(uniqueString('schemaACRRoleAssignment'))]",
         "dependsOn": [
           "[variables('pipelineName')]"
         ],
