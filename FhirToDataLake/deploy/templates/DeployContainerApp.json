@@ -53,7 +53,7 @@
             "description": "The name of the container to store job and data."
         }
     },
-    "jobConcurrency": {
+    "concurrency": {
         "type": "int",
         "defaultValue": 3,
         "minValue": 1,
@@ -97,6 +97,17 @@
             "description": "For data filtering use. Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. All data of requiredTypes will be exported if not specified. Leave it blank if no filter is applied."
         }
     },
+    "customizedSchema": {
+        "defaultValue": false,
+        "allowedValues": [
+          true,
+          false
+        ],
+        "type": "Bool",
+        "metadata": {
+          "description": "Whether to enable customized schema on this pipeline. If enabled, pipeline can generate customized data based on given schemas."
+        }
+      },
     "customizedSchemaImageReference":{
         "type": "string",
         "defaultValue": "",
