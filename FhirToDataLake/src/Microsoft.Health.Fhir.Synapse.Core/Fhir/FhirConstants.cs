@@ -14,5 +14,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         public const string AllResource = "*";
 
         public const string StructureDefinition = "StructureDefinition";
+
+        public const string OperationOutcome = "OperationOutcome";
     }
 }
