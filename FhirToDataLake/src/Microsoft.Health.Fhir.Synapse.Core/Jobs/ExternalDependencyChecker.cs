@@ -113,7 +113,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async Task<bool> IsFhirDataClientReady(CancellationToken cancellationToken)
         {
-            var searchOptions = new BaseSearchOptions("Patient", null);
+            // TODO DICOM: health check
+            /*var searchOptions = new BaseSearchOptions("Patient", null);
             try
             {
                 // Ensure we can search from FHIR server.
@@ -125,7 +126,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogInformation($"[External Dependency Check] Fhir server is not accessible: {ex.Message}.");
                 _diagnosticLogger.LogError($"Fhir server is not accessible: {ex.Message}.");
                 return false;
-            }
+            }*/
 
             return true;
         }

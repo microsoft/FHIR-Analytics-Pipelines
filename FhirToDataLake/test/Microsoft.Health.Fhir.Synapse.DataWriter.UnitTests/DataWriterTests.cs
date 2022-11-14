@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
@@ -176,6 +177,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         private static AzureBlobDataWriter GetLocalDataWriter()
         {
             return new AzureBlobDataWriter(
+                Options.Create(new FhirServerConfiguration { Version = FhirVersion.R4 }),
                 new AzureBlobContainerClientFactory(
                     new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
                     Options.Create(_storageConfiguration),
@@ -191,6 +193,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
 
             return new AzureBlobDataWriter(
+                Options.Create(new FhirServerConfiguration { Version = FhirVersion.R4 }),
                 mockFactory,
                 GetLocalDataSink(),
                 new NullLogger<AzureBlobDataWriter>());
@@ -199,6 +202,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         private static AzureBlobDataWriter GetBrokenDataWriter()
         {
             return new AzureBlobDataWriter(
+                Options.Create(new FhirServerConfiguration { Version = FhirVersion.R4 }),
                 new AzureBlobContainerClientFactory(
                     new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
                     Options.Create(_storageConfiguration),

@@ -69,6 +69,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <summary>
         /// The running job count threshold to check running job complete
         /// </summary>
-        public const int CheckRunningJobCompleteRunningJobCountThreshold = 5;
+        public const int CheckRunningJobCompleteRunningJobCountThreshold = 0;
+
+        public const int DefaultDicomStartOffset = 0;
+
+        public const int DefaultDicomChangeFeedLimit = 100;
     }
 }

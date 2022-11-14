@@ -15,6 +15,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.JobManagement;
+using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.JobManagement;
 
@@ -25,47 +26,70 @@ namespace Microsoft.Health.Fhir.Synapse.Core
         public static IServiceCollection AddJobScheduler(
             this IServiceCollection services)
         {
+            FhirServerConfiguration fhirServerConfiguration = services
+                .BuildServiceProvider()
+                .GetRequiredService<IOptions<FhirServerConfiguration>>()
+                .Value;
+
             services.AddSingleton<JobHosting, JobHosting>();
 
-            services.AddSingleton<IJobFactory, AzureStorageJobFactory>();
+            switch (fhirServerConfiguration.Version)
+            {
+                case FhirVersion.R4:
+                case FhirVersion.R5:
+                case FhirVersion.Stu3:
+                    services.AddSingleton<IJobFactory, AzureStorageJobFactory>();
+
+                    services.AddSingleton<ISchedulerService, SchedulerService>();
+
+                    services.AddSingleton<IGroupMemberExtractor, GroupMemberExtractor>();
+
+                    FilterLocation filterLocation = services
+                    .BuildServiceProvider()
+                    .GetRequiredService<IOptions<FilterLocation>>()
+                    .Value;
+
+                    if (filterLocation.EnableExternalFilter)
+                    {
+                        services.AddSingleton<IFilterProvider, ContainerRegistryFilterProvider>();
+                    }
+                    else
+                    {
+                        services.AddSingleton<IFilterProvider, LocalFilterProvider>();
+                    }
+
+                    services.AddSingleton<IFilterManager, FilterManager>();
+
+                    services.AddSingleton<IReferenceParser, R4ReferenceParser>();
+
+                    services.AddFhirSpecificationProvider();
+
+                    services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>();
+
+                    break;
+                case FhirVersion.DICOM:
+                    services.AddSingleton<IJobFactory, DicomAzureStorageJobFactory>();
+
+                    services.AddSingleton<ISchedulerService, DicomSchedulerService>();
+
+                    services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<AzureStorageJobInfo>>();
+                    break;
+                default:
+                    // TODO DICOM: create a new exception?
+                    throw new FhirSpecificationProviderException($"Fhir version {fhirServerConfiguration.Version} is not supported");
+            }
 
             services.AddSingleton<IAzureTableClientFactory, AzureTableClientFactory>();
 
             services.AddSingleton<JobManager, JobManager>();
 
-            services.AddSingleton<ISchedulerService, SchedulerService>();
-
             services.AddSingleton<IMetadataStore, AzureTableMetadataStore>();
 
             services.AddSingleton<IColumnDataProcessor, ParquetDataProcessor>();
 
-            services.AddSingleton<IGroupMemberExtractor, GroupMemberExtractor>();
-
             services.AddSingleton<IExternalDependencyChecker, ExternalDependencyChecker>();
 
-            FilterLocation filterLocation = services
-                    .BuildServiceProvider()
-                    .GetRequiredService<IOptions<FilterLocation>>()
-                    .Value;
-
-            if (filterLocation.EnableExternalFilter)
-            {
-                services.AddSingleton<IFilterProvider, ContainerRegistryFilterProvider>();
-            }
-            else
-            {
-                services.AddSingleton<IFilterProvider, LocalFilterProvider>();
-            }
-
-            services.AddSingleton<IFilterManager, FilterManager>();
-
-            services.AddSingleton<IReferenceParser, R4ReferenceParser>();
-
-            services.AddFhirSpecificationProvider();
-
             services.AddSchemaConverters();
-
-            services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>();
 
             return services;
         }
@@ -102,8 +126,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core
                 case FhirVersion.R5:
                     services.AddSingleton<IFhirSpecificationProvider, R5FhirSpecificationProvider>(); break;
                 case FhirVersion.DICOM:
-                    // TODO DICOM
-                    services.AddSingleton<IFhirSpecificationProvider, R4FhirSpecificationProvider>(); break;
                 default:
                     throw new FhirSpecificationProviderException($"Fhir version {fhirServerConfiguration.Version} is not supported when injecting");
             }

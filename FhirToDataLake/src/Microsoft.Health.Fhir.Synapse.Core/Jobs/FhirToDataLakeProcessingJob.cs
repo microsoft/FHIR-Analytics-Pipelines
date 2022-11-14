@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -536,19 +535,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 forceCommit)
             {
                 _logger.LogInformation($"commit data: {cacheResourceCount} resources, {_cacheResult.CacheSize} data size.");
-
-                var dicomObjects = new List<JObject>();
-                var files = Directory.EnumerateFiles(@"");
-                foreach (var file in files)
-                {
-                    var content = File.ReadAllText(file);
-                    dicomObjects.Add(JObject.Parse(content));
-                }
-
-                _cacheResult.Resources = new Dictionary<string, List<JObject>>
-                {
-                    { "dicom", dicomObjects },
-                };
 
                 foreach ((string resourceType, List<JObject> resources) in _cacheResult.Resources)
                 {

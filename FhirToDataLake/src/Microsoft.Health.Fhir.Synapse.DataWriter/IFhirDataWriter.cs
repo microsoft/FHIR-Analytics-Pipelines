@@ -28,6 +28,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter
             DateTimeOffset dateTime,
             CancellationToken cancellationToken = default);
 
+        public Task<string> WriteAsync(
+            StreamBatchData data,
+            long jobId,
+            int partId,
+            long offset,
+            CancellationToken cancellationToken = default);
+
         /// <summary>
         /// Commit job data to result folder.
         /// </summary>

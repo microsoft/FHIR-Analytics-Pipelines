@@ -122,17 +122,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 {
                     if (subValueArray.Count > 1)
                     {
-                        _logger.LogError("Multiple values appear in an unique tag.");
-                        throw new ParquetDataProcessorException("Multiple values appear in an unique tag.");
+                        _logger.LogInformation($"Multiple values appear in an unique tag. Keyword: {subNodeKeyword}");
                     }
 
-                    var singleElement = subValueArray.First;
                     if (subNode.IsLeaf)
                     {
+                        var singleElement = subValueArray.ToString();
                         processedObject.Add(subNodeKeyword, ProcessLeafObject(singleElement, subNode));
                     }
                     else
                     {
+                        var singleElement = subValueArray.First;
                         processedObject.Add(subNodeKeyword, ProcessDicomPnObject(singleElement, subNode));
                     }
                 }

@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
@@ -419,6 +420,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private static IFhirDataWriter GetDataWriter(string containerName, IAzureBlobContainerClient blobClient)
         {
+            var fhirServerConfig = new FhirServerConfiguration
+            {
+                Version = FhirVersion.R4,
+            };
+
+            var fhirServerOption = Options.Create(fhirServerConfig);
+
             var mockFactory = Substitute.For<IAzureBlobContainerClientFactory>();
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
 
@@ -432,7 +440,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             var dataSink = new AzureBlobDataSink(Options.Create(storageConfig), Options.Create(jobConfig));
-            return new AzureBlobDataWriter(mockFactory, dataSink, new NullLogger<AzureBlobDataWriter>());
+            return new AzureBlobDataWriter(fhirServerOption, mockFactory, dataSink, new NullLogger<AzureBlobDataWriter>());
         }
 
         private static IFilterManager GetFilterManager(FilterConfiguration filterConfiguration)

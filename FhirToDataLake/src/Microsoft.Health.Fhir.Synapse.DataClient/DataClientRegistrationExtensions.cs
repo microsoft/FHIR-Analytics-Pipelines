@@ -9,8 +9,10 @@ using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
@@ -23,18 +25,41 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
         {
             services.AddSingleton<IFhirApiDataSource, FhirApiDataSource>();
             services.AddSingleton<IFhirDataClient, FhirApiDataClient>();
+            services.AddSingleton<IDicomDataClient, DicomApiDataClient>();
 
             FhirServerConfiguration fhirServerConfiguration = services
                 .BuildServiceProvider()
                 .GetRequiredService<IOptions<FhirServerConfiguration>>()
                 .Value;
-            services.AddHttpClient<IFhirDataClient, FhirApiDataClient>(client =>
+
+            switch (fhirServerConfiguration.Version)
             {
-                client.BaseAddress = new Uri(fhirServerConfiguration.ServerUrl);
-            })
-            .AddPolicyHandler(GetRetryPolicy(services))
-            .AddPolicyHandler(GetTimeoutPolicy())
-            .AddPolicyHandler(GetCircuitBreakerPolicy());
+                case FhirVersion.R4:
+                case FhirVersion.R5:
+                case FhirVersion.Stu3:
+                    services.AddHttpClient<IFhirDataClient, FhirApiDataClient>(client =>
+                    {
+                        client.BaseAddress = new Uri(fhirServerConfiguration.ServerUrl);
+                    })
+                    .AddPolicyHandler(GetRetryPolicy(services))
+                    .AddPolicyHandler(GetTimeoutPolicy())
+                    .AddPolicyHandler(GetCircuitBreakerPolicy());
+
+                    break;
+                case FhirVersion.DICOM:
+                    services.AddHttpClient<IDicomDataClient, DicomApiDataClient>(client =>
+                    {
+                        client.BaseAddress = new Uri(fhirServerConfiguration.ServerUrl);
+                    })
+                    .AddPolicyHandler(GetRetryPolicy(services))
+                    .AddPolicyHandler(GetTimeoutPolicy())
+                    .AddPolicyHandler(GetCircuitBreakerPolicy());
+
+                    break;
+                default:
+                    // TODO DICOM: create a new exception?
+                    throw new FhirSearchException("Fhir version {fhirServerConfiguration.Version} is not supported");
+            }
 
             return services;
         }
