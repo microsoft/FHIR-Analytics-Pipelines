@@ -81,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         public void WhenGetAllResourceTypes_TheResourcesTypeShouldBeReturned()
         {
             List<string> types = _r5FhirSpecificationProvider.GetAllResourceTypes().ToList();
-            Assert.Equal(151, types.Count);
+            Assert.Equal(150, types.Count);
         }
 
         [Theory]
