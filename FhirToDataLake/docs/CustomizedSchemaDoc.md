@@ -3,16 +3,22 @@
 
 When using the FhirToDatalake pipeline, **"Customized Schema"** enable users to sync up FHIR data with user-defined schema.
 
+You need to prepare the customized schemas, push them to Container Registry, then give the image reference when deploying the pipeline.
+
+![image](./assets/customized-schema-parameter.png)
+
+
 ## Prepare the customized schema files
-For each resource types, e.g. Patient, Observation, you need to prepare a **liquid template** and a related **JSON schema** file. 
+For each resource types, E.g. Patient, Observation, you need to prepare a **liquid template** and a related **JSON schema** file if you want to sync up them to datalake with customized schema. 
 
-- The liquid template will be used to convert the raw FHIR JSON data into target structure.
-- The JSON schema will be used to generate the Parquet schema and create table definitions.
+![image](./assets/LiquidDirectory.png)
 
-    ![image](./assets/LiquidDirectory.png)
+- The [liquid template](https://shopify.github.io/liquid/). Be used to convert the raw FHIR JSON data into target structure.
+- The [JSON schema file](https://json-schema.org/). Be used to generate the Parquet schema and create table definitions.
 
-Follow the links for more information about [liquid template](http://dotliquidmarkup.org/) and [JSON schema](https://json-schema.org/learn/getting-started-step-by-step).
+We leverage the [FHIR-Converter](https://github.com/microsoft/FHIR-Converter) to convert the data based on customized schema files, you can find more information on its repository.
 
+The FHIR-Converter project contains a [Template Managenment CLI](FHIR-Converter) tool to managed the liquid templates on the Container Registry, which can be used to push customized schema to ACR as an image.
 
 ### Customized Schema Basic Example
 
