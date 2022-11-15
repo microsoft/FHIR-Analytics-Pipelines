@@ -49,29 +49,13 @@ steps:
     KeyVaultName: $(keyVaultName)
     SecretsFilter: '*'
     RunAsPreJob: false
-    
+
 - task: Docker@2
   displayName: Stop Azurite Emulator
   condition: succeededOrFailed()
   inputs:
     command: stop
     container: azurite-emulator-analytics-ci
-
-- task: PowerShell@2
-  displayName: Build FhirToDataLake Tool Docker Image
-  inputs:
-    targetType: inline
-    workingDirectory: FhirToDataLake
-    script: |
-      docker build -t $(imageName):$(version) -f ./src/Microsoft.Health.Fhir.Synapse.Tool/Dockerfile .
-      docker save $(imageName):$(version) -o $(Build.ArtifactStagingDirectory)/$(imageName).tar
-
-- task: PublishPipelineArtifact@1
-  displayName: Publish FhirToDataLake Tool Image As Artifact
-  inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)/$(imageName).tar'
-    artifact: FhirToDataLakeBuild
-    publishLocation: pipeline
 
 - task: ArchiveFiles@2
   displayName: 'Archive FhirToDataLake Function App'
