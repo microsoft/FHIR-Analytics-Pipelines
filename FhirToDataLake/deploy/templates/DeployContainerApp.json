@@ -393,6 +393,28 @@
             "principalId": "[reference(resourceId('Microsoft.App/containerApps/', variables('pipelineName')), '2022-03-01', 'Full').identity.principalId]",
             "principalType": "ServicePrincipal"
         }
-    }
+    },
+    {
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2020-10-01",
+        "name": "[guid(uniqueString('deployPaaSConnector'))]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+          "[variables('pipelineName')]"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "template": {
+            "$schema": "https://raw.githubusercontent.com/microsoft/FHIR-Analytics-Pipelines/personal/sowu/update-template/FhirToDataLake/deploy/templates/DeployAnalysticsConnector.json",
+            "properties": {
+                "pipelineName": "[variables('pipelineName')]",
+                "fhirServerUrl": "[parameters('fhirServerUrl')]",
+                "storageAccountSubscriptionId": "[variables('subscriptionId')]",
+                "storageAccountResourceGroup": "[variables('resourceGroupName')]",
+                "storageAccountName": "[variables('storageAccountName'))]"
+              }
+          }
+        }
+      }
   ]
 }
