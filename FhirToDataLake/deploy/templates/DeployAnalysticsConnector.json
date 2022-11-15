@@ -150,7 +150,7 @@
       {
         "type": "Microsoft.HealthcareApis/workspaces/analyticsconnectors",
         "apiVersion": "[parameters('apiVersion')]",
-        "name": "[variables('analyticsConnectorName')]",
+        "name": "[concat(variables('analyticsConnectorWorkspaceName'), '/connector/', variables('analyticsConnectorName'))]",
         "location": "[parameters('paasConnectorRegion')]",
         "dependsOn": [
           "[resourceId('Microsoft.HealthcareApis/workspaces', variables('analyticsConnectorWorkspaceName'))]"
