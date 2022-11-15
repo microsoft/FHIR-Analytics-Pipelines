@@ -1,284 +1,284 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-      "paasConnectorRegion": {
-        "defaultValue": "australiacentral",
-        "type": "String"
-      },
-      "apiVersion": {
-        "defaultValue": "2022-10-01-preview",
-        "allowedValues": [
-          "2022-10-01-preview"
-        ],
-        "type": "String"
-      },
-      "pipelineName": {
-        "minLength": 3,
-        "maxLength": 24,
-        "type": "String",
-        "metadata": {
-          "description": "The name of the container instance that you wish to create."
-        }
-      },
-      "fhirServerSubscriptionId": {
-        "type": "String",
-        "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
-        "metadata": {
-          "description": "The subscription ID for fhir server you wish to get data."
-        }
-      },
-      "fhirServerResourceGroupName": {
-        "type": "String",
-        "defaultValue": "analyticsconnectorperftest",
-        "metadata": {
-          "description": "The resource group name for fhir server you wish to get data."
-        }
-      },
-      "fhirServerUrl": {
-        "type": "String",
-        "metadata": {
-          "description": "The fhir server endpoint you wish to get data."
-        }
-      },
-      "filterACRSubscriptionId": {
-        "type": "String",
-        "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
-        "metadata": {
-          "description": "The subscription ID for filter ACR."
-        }
-      },
-      "filterACRResourceGroupName": {
-        "type": "String",
-        "defaultValue": "analyticsconnectorperftest",
-        "metadata": {
-          "description": "The resource group name for filter ACR."
-        }
-      },
-      "filterConfigImageReference": {
-        "defaultValue": "",
-        "type": "String",
-        "metadata": {
-          "description": "Azure Container Registry image reference of filter configuration file."
-        }
-      },
-      "customizedSchema": {
-        "defaultValue": false,
-        "allowedValues": [
-          true,
-          false
-        ],
-        "type": "Bool",
-        "metadata": {
-          "description": "Whether to enable customized schema on this pipeline. If enabled, pipeline can generate customized data based on given schemas."
-        }
-      },
-      "schemaACRSubscriptionId": {
-        "type": "String",
-        "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
-        "metadata": {
-          "description": "The subscription ID for customized schema ACR."
-        }
-      },
-      "schemaACRResourceGroupName": {
-        "type": "String",
-        "defaultValue": "analyticsconnectorperftest",
-        "metadata": {
-          "description": "The resource group name for customized schema ACR."
-        }
-      },
-      "customizedSchemaImageReference": {
-        "defaultValue": "",
-        "type": "String",
-        "metadata": {
-          "description": "The customized schema image reference for the image on Container Registry. Refer https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
-        }
-      },
-      "storageAccountSubscriptionId": {
-        "type": "String",
-        "metadata": {
-          "description": "Storage Account Sub ID"
-        }
-      },
-      "storageAccountResourceGroup": {
-        "type": "String",
-        "metadata": {
-          "description": "Storage Account Resource Group"
-        }
-      },
-      "storageAccountName": {
-        "type": "String",
-        "metadata": {
-          "description": "Storage Account Name"
-        }
-      }
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "paasConnectorRegion": {
+      "defaultValue": "australiacentral",
+      "type": "String"
     },
-    "variables": {
-      "subscriptionId": "[subscription().subscriptionId]",
-      "resourceGroupName": "[resourceGroup().name]",
-      "pipelineName": "[toLower(parameters('pipelineName'))]",
-      "analyticsConnectorWorkspaceName": "[concat(variables('pipelineName'), 'workspace')]",
-      "analyticsConnectorName": "[concat(variables('pipelineName'), 'connector')]",
-      "storageBlobDataContributerRoleId": "[concat('/subscriptions/', parameters('storageAccountSubscriptionId'), 'providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
-      "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
-      "urlSplitDelimiters": [
-        ".",
-        "//"
+    "apiVersion": {
+      "defaultValue": "2022-10-01-preview",
+      "allowedValues": [
+        "2022-10-01-preview"
       ],
-      "fhirServerFullName" : "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
-      "fhirServerWorkspace" : "[split(variables('fhirServerFullName'), '-')[0]]",
-      "fhirServerName": "[substring(variables('fhirServerFullName'),add(length(variables('fhirServerWorkspace')), 1))]",
-      "filterACRName" : "[split(parameters('filterConfigImageReference'),'.')[0]]",
-      "schemaACRName" : "[split(parameters('customizedSchemaImageReference'), '.')[0]]",
-      "fhirDataReaderRoleId": "[concat('/subscriptions/', parameters('fhirServerSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
-      "filterACRPullRoleId": "[concat('/subscriptions/', parameters('filterACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
-      "schemaACRPullRoleId": "[concat('/subscriptions/', parameters('schemaACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
-      "isSameACR": "[equals(variables('filterACRName'), variables('schemaACRName'))]"
+      "type": "String"
     },
-    "resources": [
-      {
-        "type": "Microsoft.HealthcareApis/workspaces",
-        "apiVersion": "[parameters('apiVersion')]",
-        "name": "[variables('analyticsConnectorWorkspaceName')]",
-        "location": "[parameters('paasConnectorRegion')]",
-        "tags": {
-          "environmentName": "testEnv",
-          "test-analyticsconnector-rg": "true"
-        },
-        "properties": {}
-      },
-      {
-        "type": "Microsoft.HealthcareApis/workspaces/analyticsconnectors",
-        "apiVersion": "[parameters('apiVersion')]",
-        "name": "[concat(variables('analyticsConnectorWorkspaceName'), '/', variables('analyticsConnectorName'))]",
-        "location": "[parameters('paasConnectorRegion')]",
-        "dependsOn": [
-          "[resourceId('Microsoft.HealthcareApis/workspaces', variables('analyticsConnectorWorkspaceName'))]"
-        ],
-        "identity": {
-          "type": "SystemAssigned"
-        },
-        "properties": {
-          "dataSourceConfiguration": {
-            "type": "fhirservice",
-            "url": "[parameters('fhirServerUrl')]",
-            "kind": "R4"
-          },
-          "dataMappingConfiguration": {
-            "type": "fhirToParquet",
-            "filterConfigurationReference": "[parameters('filterConfigImageReference')]",
-            "extensionSchemaReference": "[parameters('customizedSchemaImageReference')]"
-          },
-          "dataDestinationConfiguration": {
-            "type": "datalake",
-            "dataLakeName": "[parameters('storageAccountName')]"
-          }
-        }
-      },
-      {
-        "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
-        "apiVersion": "2018-09-01-preview",
-        "name": "[concat(parameters('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(parameters('storageAccountName'), 'connector', 'blob')))]",
-        "dependsOn": [
-          "[resourceId('Microsoft.HealthcareApis/workspaces/', variables('analyticsConnectorWorkspaceName'), '/analyticsconnectors/', variables('analyticsConnectorName'))]"
-        ],
-        "properties": {
-          "roleDefinitionId": "[variables('storageBlobDataContributerRoleId')]",
-          "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/', variables('analyticsConnectorWorkspaceName'), '/analyticsconnectors/', variables('analyticsConnectorName')), '2022-03-01', 'Full').identity.principalId]",
-          "principalType": "ServicePrincipal"
-        }
-      },
-      {
-        "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2020-10-01",
-        "name": "[guid(uniqueString('fhirServerRoleAssignment'))]",
-        "dependsOn": [
-          "[resourceId('Microsoft.HealthcareApis/workspaces/', variables('analyticsConnectorWorkspaceName'), '/analyticsconnectors/', variables('analyticsConnectorName'))]"
-        ],
-        "properties": {
-          "mode": "Incremental",
-          "template": {
-            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-            "contentVersion": "1.0.0.0",
-            "resources": [
-              {
-                "type": "Microsoft.Authorization/roleAssignments",
-                "apiVersion": "2022-04-01",
-                "name": "[guid(uniqueString(variables('fhirServerName'), variables('pipelineName')))]",
-                "scope": "[concat('Microsoft.HealthcareApis/workspaces/', variables('fhirServerWorkspace'), '/fhirservices/', variables('fhirServerName'))]",
-                "properties": {
-                  "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
-                  "principalId": "[reference(resourceId(variables('subscriptionId'), variables('resourceGroupName'), 'Microsoft.HealthcareApis/workspaces/', variables('analyticsConnectorWorkspaceName'), '/analyticsconnectors/', variables('analyticsConnectorName')), '2021-09-01', 'full').identity.principalId]",
-                  "principalType": "ServicePrincipal"
-                }
-              }
-            ]
-          }
-        },
-        "subscriptionId": "[parameters('fhirServerSubscriptionId')]",
-        "resourceGroup": "[parameters('fhirServerResourceGroupName')]"
-      },
-      {
-        "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2020-10-01",
-        "condition": "[not(empty(parameters('filterConfigImageReference')))]",
-        "name": "[guid(uniqueString('filterACRRoleAssignment'))]",
-        "dependsOn": [
-          "[variables('pipelineName')]"
-        ],
-        "properties": {
-          "mode": "Incremental",
-          "template": {
-            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-            "contentVersion": "1.0.0.0",
-            "resources": [
-              {
-                "type": "Microsoft.Authorization/roleAssignments",
-                "apiVersion": "2022-04-01",
-                "name": "[guid(uniqueString(variables('filterConfigImageReference'), variables('pipelineName')))]",
-                "scope": "[concat('Microsoft.ContainerRegistry/registries/', variables('filterACRName'))]",
-                "properties": {
-                  "roleDefinitionId": "[variables('filterACRPullRoleId')]",
-                  "principalId": "[reference(resourceId(variables('subscriptionId'), variables('resourceGroupName'), 'Microsoft.HealthcareApis/workspaces/', variables('analyticsConnectorWorkspaceName'), '/analyticsconnectors/', variables('analyticsConnectorName')), '2021-09-01', 'full').identity.principalId]",
-                  "principalType": "ServicePrincipal"
-                }
-              }
-            ]
-          }
-        },
-        "subscriptionId": "[parameters('filterACRSubscriptionId')]",
-        "resourceGroup": "[parameters('filterACRResourceGroupName')]"
-      },
-      {
-        "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2020-10-01",
-        "condition": "[not(or(empty(parameters('customizedSchemaImageReference')), variables('isSameACR')))]",
-        "name": "[guid(uniqueString('schemaACRRoleAssignment'))]",
-        "dependsOn": [
-          "[variables('pipelineName')]"
-        ],
-        "properties": {
-          "mode": "Incremental",
-          "template": {
-            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-            "contentVersion": "1.0.0.0",
-            "resources": [
-              {
-                "type": "Microsoft.Authorization/roleAssignments",
-                "apiVersion": "2022-04-01",
-                "name": "[guid(uniqueString(parameters('customizedSchemaImageReference'), variables('pipelineName')))]",
-                "scope": "[concat('Microsoft.ContainerRegistry/registries/', variables('schemaACRName'))]",
-                "properties": {
-                  "roleDefinitionId": "[variables('schemaACRPullRoleId')]",
-                  "principalId": "[reference(resourceId(variables('subscriptionId'), variables('resourceGroupName'), 'Microsoft.HealthcareApis/workspaces/', variables('analyticsConnectorWorkspaceName'), '/analyticsconnectors/', variables('analyticsConnectorName')), '2021-09-01', 'full').identity.principalId]",
-                  "principalType": "ServicePrincipal"
-                }
-              }
-            ]
-          }
-        },
-        "subscriptionId": "[parameters('schemaACRSubscriptionId')]",
-        "resourceGroup": "[parameters('schemaACRResourceGroupName')]"
+    "pipelineName": {
+      "minLength": 3,
+      "maxLength": 24,
+      "type": "String",
+      "metadata": {
+        "description": "The name of the container instance that you wish to create."
       }
-    ]
-  }
+    },
+    "fhirServerSubscriptionId": {
+      "type": "String",
+      "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
+      "metadata": {
+        "description": "The subscription ID for fhir server you wish to get data."
+      }
+    },
+    "fhirServerResourceGroupName": {
+      "type": "String",
+      "defaultValue": "analyticsconnectorperftest",
+      "metadata": {
+        "description": "The resource group name for fhir server you wish to get data."
+      }
+    },
+    "fhirServerUrl": {
+      "type": "String",
+      "metadata": {
+        "description": "The fhir server endpoint you wish to get data."
+      }
+    },
+    "filterACRSubscriptionId": {
+      "type": "String",
+      "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
+      "metadata": {
+        "description": "The subscription ID for filter ACR."
+      }
+    },
+    "filterACRResourceGroupName": {
+      "type": "String",
+      "defaultValue": "analyticsconnectorperftest",
+      "metadata": {
+        "description": "The resource group name for filter ACR."
+      }
+    },
+    "filterConfigImageReference": {
+      "defaultValue": "",
+      "type": "String",
+      "metadata": {
+        "description": "Azure Container Registry image reference of filter configuration file."
+      }
+    },
+    "customizedSchema": {
+      "defaultValue": false,
+      "allowedValues": [
+        true,
+        false
+      ],
+      "type": "Bool",
+      "metadata": {
+        "description": "Whether to enable customized schema on this pipeline. If enabled, pipeline can generate customized data based on given schemas."
+      }
+    },
+    "schemaACRSubscriptionId": {
+      "type": "String",
+      "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
+      "metadata": {
+        "description": "The subscription ID for customized schema ACR."
+      }
+    },
+    "schemaACRResourceGroupName": {
+      "type": "String",
+      "defaultValue": "analyticsconnectorperftest",
+      "metadata": {
+        "description": "The resource group name for customized schema ACR."
+      }
+    },
+    "customizedSchemaImageReference": {
+      "defaultValue": "",
+      "type": "String",
+      "metadata": {
+        "description": "The customized schema image reference for the image on Container Registry. Refer https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
+      }
+    },
+    "storageAccountSubscriptionId": {
+      "type": "String",
+      "metadata": {
+        "description": "Storage Account Sub ID"
+      }
+    },
+    "storageAccountResourceGroup": {
+      "type": "String",
+      "metadata": {
+        "description": "Storage Account Resource Group"
+      }
+    },
+    "storageAccountName": {
+      "type": "String",
+      "metadata": {
+        "description": "Storage Account Name"
+      }
+    }
+  },
+  "variables": {
+    "subscriptionId": "[subscription().subscriptionId]",
+    "resourceGroupName": "[resourceGroup().name]",
+    "pipelineName": "[toLower(parameters('pipelineName'))]",
+    "analyticsConnectorWorkspaceName": "[concat(variables('pipelineName'), 'workspace')]",
+    "analyticsConnectorName": "[concat(variables('pipelineName'), 'connector')]",
+    "storageBlobDataContributerRoleId": "[concat('/subscriptions/', parameters('storageAccountSubscriptionId'), 'providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
+    "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
+    "urlSplitDelimiters": [
+      ".",
+      "//"
+    ],
+    "fhirServerFullName" : "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
+    "fhirServerWorkspace" : "[split(variables('fhirServerFullName'), '-')[0]]",
+    "fhirServerName": "[substring(variables('fhirServerFullName'),add(length(variables('fhirServerWorkspace')), 1))]",
+    "filterACRName" : "[split(parameters('filterConfigImageReference'),'.')[0]]",
+    "schemaACRName" : "[split(parameters('customizedSchemaImageReference'), '.')[0]]",
+    "fhirDataReaderRoleId": "[concat('/subscriptions/', parameters('fhirServerSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
+    "filterACRPullRoleId": "[concat('/subscriptions/', parameters('filterACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
+    "schemaACRPullRoleId": "[concat('/subscriptions/', parameters('schemaACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
+    "isSameACR": "[equals(variables('filterACRName'), variables('schemaACRName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.HealthcareApis/workspaces",
+      "apiVersion": "[parameters('apiVersion')]",
+      "name": "[variables('analyticsConnectorWorkspaceName')]",
+      "location": "[parameters('paasConnectorRegion')]",
+      "tags": {
+        "environmentName": "testEnv",
+        "test-analyticsconnector-rg": "true"
+      },
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.HealthcareApis/workspaces/analyticsconnectors",
+      "apiVersion": "[parameters('apiVersion')]",
+      "name": "[concat(variables('analyticsConnectorWorkspaceName'), '/', variables('analyticsConnectorName'))]",
+      "location": "[parameters('paasConnectorRegion')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.HealthcareApis/workspaces', variables('analyticsConnectorWorkspaceName'))]"
+      ],
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "dataSourceConfiguration": {
+          "type": "fhirservice",
+          "url": "[parameters('fhirServerUrl')]",
+          "kind": "R4"
+        },
+        "dataMappingConfiguration": {
+          "type": "fhirToParquet",
+          "filterConfigurationReference": "[parameters('filterConfigImageReference')]",
+          "extensionSchemaReference": "[parameters('customizedSchemaImageReference')]"
+        },
+        "dataDestinationConfiguration": {
+          "type": "datalake",
+          "dataLakeName": "[parameters('storageAccountName')]"
+        }
+      }
+    },
+  {
+      "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+      "apiVersion": "2018-09-01-preview",
+      "name": "[concat(parameters('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(parameters('storageAccountName'), 'connector', 'blob')))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName'))]"
+      ],
+      "properties": {
+        "roleDefinitionId": "[variables('storageBlobDataContributerRoleId')]",
+        "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors/', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName')), '2022-03-01', 'Full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[guid(uniqueString('fhirServerRoleAssignment'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "name": "[guid(uniqueString(variables('fhirServerName'), variables('pipelineName')))]",
+              "scope": "[concat('Microsoft.HealthcareApis/workspaces/', variables('fhirServerWorkspace'), '/fhirservices/', variables('fhirServerName'))]",
+              "properties": {
+                "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
+                "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors/', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName')), '2021-09-01', 'full').identity.principalId]",
+                "principalType": "ServicePrincipal"
+              }
+            }
+          ]
+        }
+      },
+      "subscriptionId": "[parameters('fhirServerSubscriptionId')]",
+      "resourceGroup": "[parameters('fhirServerResourceGroupName')]"
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "condition": "[not(empty(parameters('filterConfigImageReference')))]",
+      "name": "[guid(uniqueString('filterACRRoleAssignment'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "name": "[guid(uniqueString(variables('filterConfigImageReference'), variables('pipelineName')))]",
+              "scope": "[concat('Microsoft.ContainerRegistry/registries/', variables('filterACRName'))]",
+              "properties": {
+                "roleDefinitionId": "[variables('filterACRPullRoleId')]",
+                "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors/', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName')), '2021-09-01', 'full').identity.principalId]",
+                "principalType": "ServicePrincipal"
+              }
+            }
+          ]
+        }
+      },
+      "subscriptionId": "[parameters('filterACRSubscriptionId')]",
+      "resourceGroup": "[parameters('filterACRResourceGroupName')]"
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "condition": "[not(or(empty(parameters('customizedSchemaImageReference')), variables('isSameACR')))]",
+      "name": "[guid(uniqueString('schemaACRRoleAssignment'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "name": "[guid(uniqueString(parameters('customizedSchemaImageReference'), variables('pipelineName')))]",
+              "scope": "[concat('Microsoft.ContainerRegistry/registries/', variables('schemaACRName'))]",
+              "properties": {
+                "roleDefinitionId": "[variables('schemaACRPullRoleId')]",
+                "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors/', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName')), '2021-09-01', 'full').identity.principalId]",
+                "principalType": "ServicePrincipal"
+              }
+            }
+          ]
+        }
+      },
+      "subscriptionId": "[parameters('schemaACRSubscriptionId')]",
+      "resourceGroup": "[parameters('schemaACRResourceGroupName')]"
+    }
+  ]
+}
