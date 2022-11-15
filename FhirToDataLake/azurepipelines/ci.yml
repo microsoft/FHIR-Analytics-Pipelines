@@ -57,16 +57,23 @@ steps:
     command: stop
     container: azurite-emulator-analytics-ci
 
-- task: ArchiveFiles@2
-  displayName: 'Archive FhirToDataLake Function App'
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build FhirToDataLake Function App'
   inputs:
-    rootFolderOrFile: './FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.FunctionApp/bin/$(buildPlatform)/$(buildConfiguration)/net6.0'
-    includeRootFolder: false
-    archiveFile: '$(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
+    command: build
+    projects: FhirToDataLake/**/*.FunctionApp.csproj
+    arguments: '--configuration $(buildConfiguration) -p:Version=$(version)'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: FhirToDataLake/**/*.FunctionApp.csproj
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/FhirToDataLake/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
+    zipAfterPublish: True
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish FhirToDataLake Function App as Artifact'
   inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
-    artifact: FhirToDataLakeBuild
-    publishLocation: pipeline
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/FhirToDataLake'
+    ArtifactName: FhirToDataLakeBuild
