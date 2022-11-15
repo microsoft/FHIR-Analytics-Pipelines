@@ -53,12 +53,14 @@
               "description": "The name of the container to store job and data."
           }
       },
-      "concurrency": {
-          "type": "string",
-          "defaultValue": "3",
-          "metadata": {
-              "description": "Concurrent jobs exeucting in parallel."
-          }
+      "jobConcurrency": {
+        "type": "int",
+        "defaultValue": 3,
+        "minValue": 1,
+        "maxValue": 10,
+        "metadata": {
+            "description": "Concurrent jobs exeucting in parallel."
+        }
       },
       "filterConfigImageReference":{
           "type": "string",
