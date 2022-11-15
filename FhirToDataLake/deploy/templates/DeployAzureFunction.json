@@ -104,13 +104,13 @@
                 "description": "The customized schema image reference on for the image on Container Registry. Refer https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
             }
         },
-        "packageUrl": {
-            "type": "string",
-            "defaultValue": "https://yanhonfunczipwinstorage.blob.core.windows.net/yanhon/Microsoft.Health.Fhir.Synapse.FunctionApp.zip",
-            "metadata": {
-                "description": "The fhir-to-synapse pipeline package url."
-            }
-        },
+      "packageUrl": {
+        "type": "string",
+        "defaultValue": "https://github.com/microsoft/FHIR-Analytics-Pipelines/releases/latest/download/Microsoft.Health.Fhir.Synapse.FunctionApp.zip",
+        "metadata": {
+          "description": "The fhir-to-synapse pipeline package url."
+        }
+      },
         "storageAccountType": {
             "type": "string",
             "defaultValue": "Standard_LRS",
@@ -244,6 +244,7 @@
             },
             "properties": {
                 "name": "[variables('hostingPlanName')]",
+                "reserved": true,
                 "computeMode": "Dynamic"
             }
         },
@@ -256,7 +257,7 @@
             "identity": {
                 "type": "SystemAssigned"
             },
-            "kind": "functionapp",
+            "kind": "functionapp,linux",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
@@ -265,7 +266,7 @@
             "resources": [
                 {
                     "apiVersion": "2020-12-01",
-                    "name": "MSDeploy",
+                    "name": "zipdeploy",
                     "type": "Extensions",
                     "dependsOn": [
                         "[concat('Microsoft.Web/Sites/',variables('functionAppName'))]"
@@ -277,7 +278,9 @@
             ],
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "reserved": true,
                 "siteConfig": {
+                    "linuxFxVersion": "DOTNETCORE|6.0",
                     "use32BitWorkerProcess": false,
                     "appSettings": [
                         {
@@ -303,6 +306,10 @@
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
                             "value": "dotnet-isolated"
+                        },
+                        {
+                            "name": "LD_LIBRARY_PATH",
+                            "value": "/home/site/wwwroot"
                         },
                         {
                             "name": "job__jobInfoQueueName",
