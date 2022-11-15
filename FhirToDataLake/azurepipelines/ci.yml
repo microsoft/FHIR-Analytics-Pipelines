@@ -101,13 +101,13 @@ steps:
   displayName: Publish FhirToDataLake Tool Image As Artifact
   inputs:
     targetPath: '$(Build.ArtifactStagingDirectory)/$(imageName).tar'
-    artifact: FhirToDataLakeImage
+    artifact: FhirToDataLakeBuild
     publishLocation: pipeline
 
 - task: ArchiveFiles@2
   displayName: 'Archive FhirToDataLake Function App'
   inputs:
-    rootFolderOrFile: './FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.FunctionApp/bin/x64/Release/net6.0'
+    rootFolderOrFile: './FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.FunctionApp/bin/$(buildPlatform)/$(buildConfiguration)/net6.0'
     includeRootFolder: false
     archiveFile: '$(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
 
@@ -115,5 +115,5 @@ steps:
   displayName: 'Publish FhirToDataLake Function App as Artifact'
   inputs:
     targetPath: '$(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
-    artifact: FhirToDataLakeFunctionApp
+    artifact: FhirToDataLakeBuild
     publishLocation: pipeline
