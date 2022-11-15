@@ -73,6 +73,21 @@ steps:
     artifact: FhirToDataLakeFunctionApp
     publishLocation: pipeline
 
+- task: ArchiveFiles@2
+  displayName: 'Archive function app'
+  inputs:
+    rootFolderOrFile: './FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.FunctionApp/bin/$(buildPlatform)/$(buildConfiguration)/net6.0'
+    includeRootFolder: false
+    archiveFile: '$(Build.ArtifactStagingDirectory)/FhirToDataLake2/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
+
+
+- task: PublishPipelineArtifact@1
+  displayName: Publish FhirToDataLake Function App as Artifact
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)/FunctionApp2'
+    artifact: FhirToDataLakeFunctionApp2
+    publishLocation: pipeline
+
 - task: PowerShell@2
   displayName: Build FhirToDataLake Tool Docker Image
   inputs:
