@@ -418,10 +418,10 @@
                       "value": "[parameters('fhirServerUrl')]"
                   },
                   "storageAccountSubscriptionId": {
-                      "value": "[variables('subscriptionId')]"
+                      "value": "[subscription().subscriptionId]"
                   },
                   "storageAccountResourceGroup": {
-                      "value": "[variables('resourceGroupName')]"
+                      "value": "[resourceGroup().name]"
                   },
                   "storageAccountName": {
                       "value": "[variables('storageAccountName')]"
