@@ -58,15 +58,33 @@ steps:
     container: azurite-emulator-analytics-ci
 
 - task: DotNetCoreCLI@2
+  displayName: DonNet Publish FhirToDataLake Tool Function App
   inputs:
     command: 'publish'
     publishWebProjects: false
     projects: FhirToDataLake/**/*.FunctionApp.csproj
-    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/FhirToDataLake/FunctionApp'
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/FunctionApp'
     zipAfterPublish: True
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish FhirToDataLake Function App as Artifact'
+- task: PublishPipelineArtifact@1
+  displayName: Publish FhirToDataLake Function App as Artifact
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/FhirToDataLake/FunctionApp'
-    ArtifactName: FhirToDataLakeBuild
+    targetPath: '$(Build.ArtifactStagingDirectory)/FunctionApp'
+    artifact: FhirToDataLakeFunctionApp
+    publishLocation: pipeline
+
+- task: PowerShell@2
+  displayName: Build FhirToDataLake Tool Docker Image
+  inputs:
+    targetType: inline
+    workingDirectory: FhirToDataLake
+    script: |
+      docker build -t $(imageName):$(version) -f ./src/Microsoft.Health.Fhir.Synapse.Tool/Dockerfile .
+      docker save $(imageName):$(version) -o $(Build.ArtifactStagingDirectory)/$(imageName).tar
+
+- task: PublishPipelineArtifact@1
+  displayName: Publish FhirToDataLake Tool Image As Artifact
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)/$(imageName).tar'
+    artifact: FhirToDataLakeImage
+    publishLocation: pipeline
