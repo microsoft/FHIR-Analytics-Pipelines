@@ -184,7 +184,7 @@
       ],
       "properties": {
         "roleDefinitionId": "[variables('storageBlobDataContributerRoleId')]",
-        "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors/', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName')), '2022-03-01', 'Full').identity.principalId]",
+        "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors/', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName')), variables('apiVersion'), 'full').identity.principalId]",
         "principalType": "ServicePrincipal"
       }
     },
@@ -208,7 +208,7 @@
               "scope": "[concat('Microsoft.HealthcareApis/workspaces/', variables('fhirServerWorkspace'), '/fhirservices/', variables('fhirServerName'))]",
               "properties": {
                 "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
-                "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors/', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName')), '2021-09-01', 'full').identity.principalId]",
+                "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors/', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName')), variables('apiVersion'), 'full').identity.principalId]",
                 "principalType": "ServicePrincipal"
               }
             }
@@ -239,7 +239,7 @@
               "scope": "[concat('Microsoft.ContainerRegistry/registries/', variables('filterACRName'))]",
               "properties": {
                 "roleDefinitionId": "[variables('filterACRPullRoleId')]",
-                "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors/', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName')), '2021-09-01', 'full').identity.principalId]",
+                "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors/', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName')), variables('apiVersion'), 'full').identity.principalId]",
                 "principalType": "ServicePrincipal"
               }
             }
@@ -270,7 +270,7 @@
               "scope": "[concat('Microsoft.ContainerRegistry/registries/', variables('schemaACRName'))]",
               "properties": {
                 "roleDefinitionId": "[variables('schemaACRPullRoleId')]",
-                "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors/', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName')), '2021-09-01', 'full').identity.principalId]",
+                "principalId": "[reference(resourceId('Microsoft.HealthcareApis/workspaces/analyticsconnectors/', variables('analyticsConnectorWorkspaceName'), variables('analyticsConnectorName')), variables('apiVersion'), 'full').identity.principalId]",
                 "principalType": "ServicePrincipal"
               }
             }
