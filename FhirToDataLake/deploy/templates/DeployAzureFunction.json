@@ -56,7 +56,7 @@
         "jobConcurrency": {
             "type": "int",
             "defaultValue": 3,
-            "minValue": 1,
+            "minValue": 2,
             "maxValue": 10,
             "metadata": {
                 "description": "Concurrent jobs exeucting in parallel."
@@ -104,13 +104,13 @@
                 "description": "The customized schema image reference on for the image on Container Registry. Refer https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
             }
         },
-      "packageUrl": {
-        "type": "string",
-        "defaultValue": "https://github.com/microsoft/FHIR-Analytics-Pipelines/releases/latest/download/Microsoft.Health.Fhir.Synapse.FunctionApp.zip",
-        "metadata": {
-          "description": "The fhir-to-synapse pipeline package url."
-        }
-      },
+        "packageUrl": {
+            "type": "string",
+            "defaultValue": "https://github.com/microsoft/FHIR-Analytics-Pipelines/releases/latest/download/Microsoft.Health.Fhir.Synapse.FunctionApp.zip",
+            "metadata": {
+            "description": "The fhir-to-synapse pipeline package url."
+            }
+        },
         "storageAccountType": {
             "type": "string",
             "defaultValue": "Standard_LRS",
