@@ -153,8 +153,7 @@
         "name": "[variables('analyticsConnectorName')]",
         "location": "[parameters('paasConnectorRegion')]",
         "dependsOn": [
-          "[resourceId('Microsoft.HealthcareApis/workspaces', variables('analyticsConnectorWorkspaceName'))]",
-          "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+          "[resourceId('Microsoft.HealthcareApis/workspaces', variables('analyticsConnectorWorkspaceName'))]"
         ],
         "identity": {
           "type": "SystemAssigned"
