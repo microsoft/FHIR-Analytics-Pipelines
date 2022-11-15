@@ -69,11 +69,11 @@ steps:
     command: 'publish'
     publishWebProjects: false
     projects: FhirToDataLake/**/*.FunctionApp.csproj
-    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/FhirToDataLake/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/FhirToDataLake/FunctionApp'
     zipAfterPublish: True
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish FhirToDataLake Function App as Artifact'
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/FhirToDataLake'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/FhirToDataLake/FunctionApp'
     ArtifactName: FhirToDataLakeBuild
