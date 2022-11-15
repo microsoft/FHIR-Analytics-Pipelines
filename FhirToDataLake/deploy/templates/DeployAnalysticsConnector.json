@@ -154,7 +154,7 @@
         "location": "[parameters('paasConnectorRegion')]",
         "dependsOn": [
           "[resourceId('Microsoft.HealthcareApis/workspaces', variables('analyticsConnectorWorkspaceName'))]",
-          "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+          "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
         ],
         "identity": {
           "type": "SystemAssigned"
@@ -172,14 +172,14 @@
           },
           "dataDestinationConfiguration": {
             "type": "datalake",
-            "dataLakeName": "[variables('storageAccountName')]"
+            "dataLakeName": "[parameters('storageAccountName')]"
           }
         }
       },
       {
         "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
         "apiVersion": "2018-09-01-preview",
-        "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'), 'connector', 'blob')))]",
+        "name": "[concat(parameters('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(parameters('storageAccountName'), 'connector', 'blob')))]",
         "dependsOn": [
           "[resourceId('Microsoft.HealthcareApis/workspaces/', variables('analyticsConnectorWorkspaceName'), '/analyticsconnectors/', variables('analyticsConnectorName'))]"
         ],
