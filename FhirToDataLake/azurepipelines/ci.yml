@@ -84,7 +84,7 @@ steps:
 - task: PublishPipelineArtifact@1
   displayName: Publish FhirToDataLake Function App as Artifact
   inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)/FunctionApp2'
+    targetPath: '$(Build.ArtifactStagingDirectory)/FhirToDataLake2/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
     artifact: FhirToDataLakeFunctionApp2
     publishLocation: pipeline
 
