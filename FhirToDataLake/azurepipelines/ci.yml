@@ -58,13 +58,6 @@ steps:
     container: azurite-emulator-analytics-ci
 
 - task: DotNetCoreCLI@2
-  displayName: 'dotnet build FhirToDataLake Function App'
-  inputs:
-    command: build
-    projects: FhirToDataLake/**/*.FunctionApp.csproj
-    arguments: '--configuration $(buildConfiguration) -p:Version=$(version)'
-
-- task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
     publishWebProjects: false
