@@ -97,32 +97,23 @@ steps:
       docker build -t $(imageName):$(version) -f ./src/Microsoft.Health.Fhir.Synapse.Tool/Dockerfile .
       docker save $(imageName):$(version) -o $(Build.ArtifactStagingDirectory)/$(imageName).tar
 
-# ref: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-function-app?view=azure-devops#error-publish-using-zip-deploy-option-is-not-supported-for-msbuild-package-type
-- task: MSBuild@1
-  displayName: 'Publish FhirToDataLake Function App'
-  inputs:
-    solution: FhirToDataLake/**/*.FunctionApp.csproj
-    msbuildArchitecture: $(BuildPlatform)
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    msbuildArguments: '-p:DeployOnBuild=true -p:DeployDefaultTarget=WebPublish -p:WebPublishMethod=FileSystem -p:DeleteExistingFiles=True -p:publishUrl=$(Build.SourcesDirectory)/bin/publish/functionapp -p:ApplicationVersion=$(version)'
-
-- task: ArchiveFiles@2
-  displayName: 'Archive FhirToDataLake Function App'
-  inputs:
-    rootFolderOrFile: '$(Build.SourcesDirectory)/bin/publish/functionapp'
-    includeRootFolder: false
-    archiveFile: '$(Build.ArtifactStagingDirectory)/FhirToDataLake/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish FhirToDataLake Function App as Artifact'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/FhirToDataLake'
-    ArtifactName: FhirToDataLakeFunctionApp
-
 - task: PublishPipelineArtifact@1
   displayName: Publish FhirToDataLake Tool Image As Artifact
   inputs:
     targetPath: '$(Build.ArtifactStagingDirectory)/$(imageName).tar'
     artifact: FhirToDataLakeImage
+    publishLocation: pipeline
+
+- task: ArchiveFiles@2
+  displayName: 'Archive FhirToDataLake Function App'
+  inputs:
+    rootFolderOrFile: './FhirToDataLake/src/Microsoft.Health.Fhir.Synapse.FunctionApp/bin/x64/Release/net6.0'
+    includeRootFolder: false
+    archiveFile: '$(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish FhirToDataLake Function App as Artifact'
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)/Microsoft.Health.Fhir.Synapse.FunctionApp.zip'
+    artifact: FhirToDataLakeFunctionApp
     publishLocation: pipeline
