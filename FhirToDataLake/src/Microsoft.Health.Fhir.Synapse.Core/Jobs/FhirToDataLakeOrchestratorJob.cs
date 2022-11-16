@@ -316,7 +316,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
-                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, "1"),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString()),
             };
 
             if (start != null)
