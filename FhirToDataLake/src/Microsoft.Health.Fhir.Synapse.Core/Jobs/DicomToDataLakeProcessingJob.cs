@@ -162,24 +162,28 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             CancellationToken cancellationToken)
         {
             var limit = _inputData.EndOffset - _inputData.StartOffset;
-            var changeFeedOptions = new ChangeFeedOptions(_inputData.StartOffset, limit, false);
-            var metadataList = await _dataClient.GetMetadataAsync(changeFeedOptions, cancellationToken);
 
-            foreach (var metadata in metadataList)
+            if (limit > 0)
             {
-                try
-                {
-                    var metadataObject = (JObject)JArray.Parse(metadata).First();
-                    _cacheResult.Resources[_resourceType].Add(metadataObject);
-                    _cacheResult.CacheSize += metadata.Length * sizeof(char);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogInformation($"Failed to parse DICOM metadata: {ex.Message}");
-                }
-            }
+                var changeFeedOptions = new ChangeFeedOptions(_inputData.StartOffset, limit, false);
+                var metadataList = await _dataClient.GetMetadataAsync(changeFeedOptions, cancellationToken);
 
-            await TryCommitResultAsync(progress, false, cancellationToken);
+                foreach (var metadata in metadataList)
+                {
+                    try
+                    {
+                        var metadataObject = (JObject)JArray.Parse(metadata).First();
+                        _cacheResult.Resources[_resourceType].Add(metadataObject);
+                        _cacheResult.CacheSize += metadata.Length * sizeof(char);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogInformation($"Failed to parse DICOM metadata: {ex.Message}");
+                    }
+                }
+
+                await TryCommitResultAsync(progress, false, cancellationToken);
+            }
         }
 
         /// <summary>

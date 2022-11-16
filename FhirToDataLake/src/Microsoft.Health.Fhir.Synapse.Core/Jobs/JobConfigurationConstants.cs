@@ -71,7 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         public const int CheckRunningJobCompleteRunningJobCountThreshold = 0;
 
-        public const int DefaultDicomStartOffset = 0;
+        public const int DefaultInitialDicomStartOffset = 0;
 
         public const int DefaultDicomChangeFeedLimit = 100;
     }

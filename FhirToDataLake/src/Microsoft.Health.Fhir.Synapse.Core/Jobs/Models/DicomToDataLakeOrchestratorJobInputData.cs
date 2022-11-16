@@ -20,5 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         public long TriggerSequenceId { get; set; }
 
         public long StartOffset { get; set; }
+
+        public long EndOffset { get; set; }
     }
 }

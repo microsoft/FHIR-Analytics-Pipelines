@@ -80,9 +80,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     throw new OperationCanceledException();
                 }
 
-                IAsyncEnumerable<DicomToDataLakeProcessingJobInputData> inputs = GetInputsAsync(cancellationToken);
+                IEnumerable<DicomToDataLakeProcessingJobInputData> inputs = GetInputs();
 
-                await foreach (DicomToDataLakeProcessingJobInputData input in inputs.WithCancellation(cancellationToken))
+                foreach (DicomToDataLakeProcessingJobInputData input in inputs)
                 {
                     while (_result.RunningJobIds.Count >= _maxJobCountInRunningPool)
                     {
@@ -175,13 +175,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
-        private async IAsyncEnumerable<DicomToDataLakeProcessingJobInputData> GetInputsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        private IEnumerable<DicomToDataLakeProcessingJobInputData> GetInputs()
         {
             var currentOffset = _inputData.StartOffset;
-            var latestSequence = await _dataClient.GetLatestSequenceAsync(false, cancellationToken);
-            _result.NextJobOffset = latestSequence + 1;
 
-            while (currentOffset + ChangeFeedLimit <= _result.NextJobOffset)
+            while (currentOffset + ChangeFeedLimit <= _inputData.EndOffset)
             {
                 var input = new DicomToDataLakeProcessingJobInputData
                 {
@@ -196,7 +194,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 yield return input;
             }
 
-            if (currentOffset < _result.NextJobOffset)
+            if (currentOffset < _inputData.EndOffset)
             {
                 var input = new DicomToDataLakeProcessingJobInputData
                 {
@@ -204,7 +202,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     StartOffset = currentOffset,
-                    EndOffset = latestSequence,
+                    EndOffset = _inputData.EndOffset,
                 };
 
                 yield return input;

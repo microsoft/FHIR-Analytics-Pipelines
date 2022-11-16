@@ -25,7 +25,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
         {
             services.AddSingleton<IFhirApiDataSource, FhirApiDataSource>();
             services.AddSingleton<IFhirDataClient, FhirApiDataClient>();
-            services.AddSingleton<IDicomDataClient, DicomApiDataClient>();
 
             FhirServerConfiguration fhirServerConfiguration = services
                 .BuildServiceProvider()
@@ -47,6 +46,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
 
                     break;
                 case FhirVersion.DICOM:
+                    services.AddSingleton<IDicomDataClient, DicomApiDataClient>();
                     services.AddHttpClient<IDicomDataClient, DicomApiDataClient>(client =>
                     {
                         client.BaseAddress = new Uri(fhirServerConfiguration.ServerUrl);

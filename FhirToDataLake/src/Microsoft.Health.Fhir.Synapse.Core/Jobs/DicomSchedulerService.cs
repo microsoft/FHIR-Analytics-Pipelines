@@ -17,6 +17,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
+using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.JobManagement;
 using NCrontab;
 using Newtonsoft.Json;
@@ -28,6 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IQueueClient _queueClient;
 
         private readonly IMetadataStore _metadataStore;
+        private readonly IDicomDataClient _dataClient;
         private readonly byte _queueType;
         private readonly DateTimeOffset? _startTime;
         private readonly DateTimeOffset? _endTime;
@@ -42,6 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public DicomSchedulerService(
             IQueueClient queueClient,
             IMetadataStore metadataStore,
+            IDicomDataClient dataClient,
             IOptions<JobConfiguration> jobConfiguration,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
@@ -49,6 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
+            _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
 
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             _queueType = (byte)jobConfiguration.Value.QueueType;
@@ -73,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public int SchedulerServiceLeaseRefreshIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultSchedulerServiceLeaseRefreshIntervalInSeconds;
 
-        public long StartOffset { get; set; } = JobConfigurationConstants.DefaultDicomStartOffset;
+        public long InitialStartOffset { get; set; } = JobConfigurationConstants.DefaultInitialDicomStartOffset;
 
         // scheduler service is a long running service, it shouldn't stop for any exception.
         // It stops only when the job is scheduled to end or is cancelled.
@@ -330,12 +334,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private async Task EnqueueOrchestratorJobAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
         {
             // enqueue a orchestrator job for this trigger
-            // TODO DICOM: get StartOffset from CurrentTriggerEntity
             var orchestratorDefinition = new DicomToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
                 TriggerSequenceId = currentTriggerEntity.TriggerSequenceId,
-                StartOffset = StartOffset,
+                StartOffset = currentTriggerEntity.StartOffset,
+                EndOffset = currentTriggerEntity.EndOffset,
             };
 
             IEnumerable<JobInfo> jobInfoList = await _queueClient.EnqueueAsync(
@@ -423,6 +427,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 currentTriggerEntity.TriggerStartTime = nextTriggerStartTime;
                 currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerEndTime;
 
+                currentTriggerEntity.StartOffset = currentTriggerEntity.EndOffset;
+                currentTriggerEntity.EndOffset = await _dataClient.GetLatestSequenceAsync(false, cancellationToken);
+
                 bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
                 _logger.LogInformation(isSucceeded
                     ? $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table."
@@ -447,6 +454,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 TriggerEndTime = (DateTimeOffset)GetNextTriggerEndTime(null),
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 0,
+                StartOffset = InitialStartOffset,
+                EndOffset = await _dataClient.GetLatestSequenceAsync(false, cancellationToken),
             };
 
             // add the initial trigger entity to table
