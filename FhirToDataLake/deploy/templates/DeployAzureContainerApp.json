@@ -2,6 +2,35 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "location": {
+        "type": "string",
+        "defaultValue": "East US",
+        "allowedValues": [
+            "Australia East",
+            "Brazil South",
+            "Canada Central",
+            "Central US",
+            "East Asia",
+            "East US",
+            "East US 2",
+            "France Central",
+            "Germany West Central",
+            "Japan East",
+            "Korea Central",
+            "North Central US",
+            "North Europe",
+            "Norway East",
+            "South Africa North",
+            "South Central US",
+            "UK South",
+            "West Europe",
+            "West US",
+            "West US 3"
+        ],
+        "metadata": {
+            "description": "Location for all resources."
+        }
+    },
     "pipelineName": {
         "type": "string",
         "minLength": 3,
@@ -56,7 +85,7 @@
     "jobConcurrency": {
         "type": "int",
         "defaultValue": 3,
-        "minValue": 1,
+        "minValue": 2,
         "maxValue": 10,
         "metadata": {
             "description": "Concurrent jobs exeucting in parallel."
@@ -131,13 +160,6 @@
         "metadata": {
             "description": "Storage Account type"
         }
-    },
-    "location": {
-        "type": "string",
-        "defaultValue": "[resourceGroup().location]",
-        "metadata": {
-            "description": "Location for all resources."
-        }
     }
   },
   "variables": {
@@ -153,6 +175,7 @@
     "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
     "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
     "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
+    "customizedSchemaImageReference": "[toLower(parameters('customizedSchemaImageReference'))]",
     "pipelineContainerName": "fhir-to-datalake"
   },
   "resources": [
@@ -180,7 +203,7 @@
         "sku": {
           "name": "PerGB2018"
         },
-        "retentionInDays": 30
+        "retentionInDays": 60
       }
     },
     {
@@ -289,11 +312,11 @@
                 },
                 {
                     "name": "schema__enableCustomizedSchema",
-                    "value": "[if(empty(parameters('customizedSchemaImageReference')), 'false', 'true')]"
+                    "value": "[if(empty(variables('customizedSchemaImageReference')), 'false', 'true')]"
                 },
                 {
                     "name": "schema__schemaImageReference",
-                    "value": "[parameters('customizedSchemaImageReference')]"
+                    "value": "[variables('customizedSchemaImageReference')]"
                 },
                 {
                     "name": "fhirServer__serverUrl",
@@ -324,7 +347,7 @@
                     "type": "cpu",
                     "metadata": {
                         "type": "Utilization",
-                        "value": "70"
+                        "value": "50"
                         }
                     }
                 },
@@ -334,7 +357,7 @@
                         "type": "memory",
                         "metadata": {
                             "type": "Utilization",
-                            "value": "70"
+                            "value": "50"
                         }
                     }
                 }
