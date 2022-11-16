@@ -175,6 +175,7 @@
     "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
     "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
     "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
+    "customizedSchemaImageReference": "[toLower(parameters('customizedSchemaImageReference'))]",
     "pipelineContainerName": "fhir-to-datalake"
   },
   "resources": [
@@ -311,11 +312,11 @@
                 },
                 {
                     "name": "schema__enableCustomizedSchema",
-                    "value": "[if(empty(parameters('customizedSchemaImageReference')), 'false', 'true')]"
+                    "value": "[if(empty(variables('customizedSchemaImageReference')), 'false', 'true')]"
                 },
                 {
                     "name": "schema__schemaImageReference",
-                    "value": "[parameters('customizedSchemaImageReference')]"
+                    "value": "[variables('customizedSchemaImageReference')]"
                 },
                 {
                     "name": "fhirServer__serverUrl",
