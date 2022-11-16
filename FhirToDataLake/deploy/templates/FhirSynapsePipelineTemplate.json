@@ -53,22 +53,6 @@
                 "description": "The name of the container to store job and data."
             }
         },
-        "jobConcurrency": {
-            "type": "int",
-            "defaultValue": 3,
-            "minValue": 2,
-            "maxValue": 10,
-            "metadata": {
-                "description": "Concurrent jobs executing in parallel."
-            }
-        },
-        "filterConfigImageReference":{
-            "type": "string",
-            "defaultValue": "",
-            "metadata": {
-                "description": "Azure Container Registry image reference of filter configuration file."
-            }
-        },
         "filterScope":{
             "type": "string",
             "defaultValue": "System",
@@ -97,6 +81,17 @@
                 "description": "For data filtering use. Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. All data of requiredTypes will be exported if not specified. Leave it blank if no filter is applied."
             }
         },
+        "customizedSchema":{
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+            true,
+            false
+            ],
+            "metadata": {
+                "description": "Whether to enable customized schema on this pipeline. If enabled, pipeline can generate customized data based on given schemas."
+            }
+        },
         "customizedSchemaImageReference":{
             "type": "string",
             "defaultValue": "",
@@ -106,9 +101,9 @@
         },
         "packageUrl": {
             "type": "string",
-            "defaultValue": "https://github.com/microsoft/FHIR-Analytics-Pipelines/releases/latest/download/Microsoft.Health.Fhir.Synapse.FunctionApp.zip",
+            "defaultValue": "https://fhiranalyticspipeline.blob.core.windows.net/builds/Microsoft.Health.Fhir.Synapse.FunctionApp.zip",
             "metadata": {
-            "description": "The fhir-to-synapse pipeline package url."
+                "description": "The fhir-to-synapse pipeline package url."
             }
         },
         "storageAccountType": {
@@ -161,19 +156,13 @@
     },
     "variables": {
         "appName": "[toLower(parameters('appName'))]",
-        "jobInfoQueueName": "[concat(variables('appName'), 'jobinfoqueue')]",
-        "jobInfoTableName": "[concat(variables('appName'), 'jobinfotable')]",
-        "metadataTableName": "[concat(variables('appName'), 'metadatatable')]",
         "functionAppName": "[variables('appName')]",
         "hostingPlanName": "[variables('appName')]",
         "applicationInsightsName": "[concat('AppInsights-', variables('appName'))]",
         "deployAppInsights": "[parameters('deployAppInsights')]",
-        "resourceTags": {"FhirAnalyticsPipeline": "FhirToDataLake", "FhirSchemaVersion": "v0.5.0"},
+        "resourceTags": {"FhirAnalyticsPipeline": "FhirToDataLake", "FhirSchemaVersion": "v0.4.0"},
         "storageAccountName": "[concat(substring(replace(variables('appName'), '-', ''), 0, min(11, length(replace(variables('appName'), '-', '')))), uniquestring(resourceGroup().id, variables('appName')))]",
-        "storageBlobDataContributorRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
-        "storageQueueDataContributorRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
-        "storageTableDataContributorRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
-        "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]"
+        "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]"
     },
     "resources": [
         {
@@ -193,41 +182,13 @@
         {
             "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
             "apiVersion": "2018-09-01-preview",
-            "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'), variables('functionAppName'), 'blob')))]",
+            "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'), variables('functionAppName'))))]",
             "dependsOn": [
                 "[variables('storageAccountName')]",
                 "[variables('functionAppName')]"
             ],
             "properties": {
-                "roleDefinitionId": "[variables('storageBlobDataContributorRoleId')]",
-                "principalId": "[reference(concat('Microsoft.Web/sites/', variables('functionAppName')), '2020-06-01', 'full').identity.principalId]",
-                "principalType": "ServicePrincipal"
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
-            "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'), variables('functionAppName'), 'queue')))]",
-            "dependsOn": [
-                "[variables('storageAccountName')]",
-                "[variables('functionAppName')]"
-            ],
-            "properties": {
-                "roleDefinitionId": "[variables('storageQueueDataContributorRoleId')]",
-                "principalId": "[reference(concat('Microsoft.Web/sites/', variables('functionAppName')), '2020-06-01', 'full').identity.principalId]",
-                "principalType": "ServicePrincipal"
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
-            "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'), variables('functionAppName'), 'table')))]",
-            "dependsOn": [
-                "[variables('storageAccountName')]",
-                "[variables('functionAppName')]"
-            ],
-            "properties": {
-                "roleDefinitionId": "[variables('storageTableDataContributorRoleId')]",
+                "roleDefinitionId": "[variables('storageBlobDataContributerRoleId')]",
                 "principalId": "[reference(concat('Microsoft.Web/sites/', variables('functionAppName')), '2020-06-01', 'full').identity.principalId]",
                 "principalType": "ServicePrincipal"
             }
@@ -244,7 +205,6 @@
             },
             "properties": {
                 "name": "[variables('hostingPlanName')]",
-                "reserved": true,
                 "computeMode": "Dynamic"
             }
         },
@@ -257,7 +217,7 @@
             "identity": {
                 "type": "SystemAssigned"
             },
-            "kind": "functionapp,linux",
+            "kind": "functionapp",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
@@ -266,7 +226,7 @@
             "resources": [
                 {
                     "apiVersion": "2020-12-01",
-                    "name": "zipdeploy",
+                    "name": "MSDeploy",
                     "type": "Extensions",
                     "dependsOn": [
                         "[concat('Microsoft.Web/Sites/',variables('functionAppName'))]"
@@ -278,9 +238,7 @@
             ],
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-                "reserved": true,
                 "siteConfig": {
-                    "linuxFxVersion": "DOTNETCORE|6.0",
                     "use32BitWorkerProcess": false,
                     "appSettings": [
                         {
@@ -297,7 +255,11 @@
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "~4"
+                            "value": "~2"
+                        },
+                        {
+                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                            "value": "~10"
                         },
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
@@ -306,26 +268,6 @@
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
                             "value": "dotnet-isolated"
-                        },
-                        {
-                            "name": "LD_LIBRARY_PATH",
-                            "value": "/home/site/wwwroot"
-                        },
-                        {
-                            "name": "job__jobInfoQueueName",
-                            "value": "[variables('jobInfoQueueName')]"
-                        },
-                        {
-                            "name": "job__jobInfoTableName",
-                            "value": "[variables('jobInfoTableName')]"
-                        },
-                        {
-                            "name": "job__metadataTableName",
-                            "value": "[variables('metadataTableName')]"
-                        },
-                        {
-                            "name": "job__maxRunningJobCount",
-                            "value": "[string(parameters('jobConcurrency'))]"
                         },
                         {
                             "name": "job__containerName",
@@ -337,31 +279,11 @@
                         },
                         {
                             "name": "job__endTime",
-                            "value": "[parameters('dataEnd')]"
-                        },
-                        {
-                            "name": "job__tableUrl",
-                            "value": "[concat('https://', variables('storageAccountName'), '.table.core.windows.net')]"
-                        },
-                        {
-                            "name": "job__queueUrl",
-                            "value": "[concat('https://', variables('storageAccountName'), '.queue.core.windows.net')]"
-                        },
-                        {
-                            "name": "dataLakeStore__storageUrl",
-                            "value": "[concat('https://', variables('storageAccountName'), '.blob.core.windows.net')]"
+                            "value": "[if(empty(parameters('dataEnd')), json('null'), parameters('dataEnd'))]"
                         },
                         {
                             "name": "filter__filterScope",
                             "value": "[parameters('filterScope')]"
-                        },
-                        {
-                            "name": "filter__enableExternalFilter",
-                            "value": "[if(empty(variables('filterConfigImageReference')), 'false', 'true')]"
-                        },
-                        {
-                            "name": "filter__filterImageReference",
-                            "value": "[variables('filterConfigImageReference')]"
                         },
                         {
                             "name": "filter__groupId",
@@ -377,11 +299,15 @@
                         },
                         {
                             "name": "schema__enableCustomizedSchema",
-                            "value": "[if(empty(parameters('customizedSchemaImageReference')), 'false', 'true')]"
+                            "value": "[parameters('customizedSchema')]"
                         },
                         {
                             "name": "schema__schemaImageReference",
                             "value": "[parameters('customizedSchemaImageReference')]"
+                        },
+                        {
+                            "name": "dataLakeStore__storageUrl",
+                            "value": "[concat('https://', variables('storageAccountName'), '.blob.core.windows.net')]"
                         },
                         {
                             "name": "fhirServer__serverUrl",

@@ -89,7 +89,7 @@ steps:
     container: azurite-emulator-analytics-ci
 
 - task: DotNetCoreCLI@2
-  displayName: DonNet Publish FhirToDataLake Function App
+  displayName: Dotnet Publish FhirToDataLake Function App
   inputs:
     command: 'publish'
     publishWebProjects: false
