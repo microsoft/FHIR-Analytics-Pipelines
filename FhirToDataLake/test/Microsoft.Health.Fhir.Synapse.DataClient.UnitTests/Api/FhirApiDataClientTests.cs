@@ -110,7 +110,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
-                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString()),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString("d")),
             };
 
             var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
@@ -144,7 +144,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
-                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString()),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString("d")),
             };
 
             var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
@@ -224,7 +224,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
-                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString()),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString("d")),
             };
             var searchOptions = new CompartmentSearchOptions("Patient", "347", "*", queryParameters);
             string bundle1 = await client.SearchAsync(searchOptions);

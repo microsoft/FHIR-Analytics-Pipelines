@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
             var queryParameters = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString()),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString("d")),
             };
 
             _searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);

@@ -117,7 +117,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             var queryParameters = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString()),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString("d")),
             };
             var searchOptions = new BaseSearchOptions("Patient", queryParameters);
             try
