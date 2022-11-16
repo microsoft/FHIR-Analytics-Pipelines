@@ -32,8 +32,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 
         protected static readonly IEnumerable<string> ExcludeTypes = new List<string>
         {
-            FhirConstants.StructureDefinition,
-            FhirConstants.OperationOutcome,
+            FhirConstants.StructureDefinitionResource,
+            FhirConstants.OperationOutcomeResource,
         };
 
         public BaseFhirSpecificationProvider(

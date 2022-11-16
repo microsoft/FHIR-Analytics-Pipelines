@@ -85,6 +85,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
             Assert.Equal(144, types.Count);
         }
 
+        [Fact]
+        public void WhenGetAllResourceTypes_ExcludeResourceTypesShouldNotBeReturned()
+        {
+            List<string> types = _r4FhirSpecificationProvider.GetAllResourceTypes().ToList();
+            foreach (string excludeType in TestUtils.ExcludeResourceTypes)
+            {
+                Assert.DoesNotContain(excludeType, types);
+            }
+        }
+
         [Theory]
         [InlineData("Patient")]
         [InlineData("Account")]

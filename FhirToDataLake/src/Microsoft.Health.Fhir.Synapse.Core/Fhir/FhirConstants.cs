@@ -7,14 +7,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
 {
     public static class FhirConstants
     {
+        public const string AllResource = "*";
+
         public const string PatientResource = "Patient";
 
         public const string GroupResource = "Group";
 
-        public const string AllResource = "*";
+        public const string StructureDefinitionResource = "StructureDefinition";
 
-        public const string StructureDefinition = "StructureDefinition";
-
-        public const string OperationOutcome = "OperationOutcome";
+        public const string OperationOutcomeResource = "OperationOutcome";
     }
 }
