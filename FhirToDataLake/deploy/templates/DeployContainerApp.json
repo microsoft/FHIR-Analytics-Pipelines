@@ -467,6 +467,98 @@
           }
       },
       {
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2020-10-01",
+        "name": "[guid(uniqueString('fhirServerRoleAssignmentToContainerApp'))]",
+        "dependsOn": [
+          "[resourceId('Microsoft.App/containerApps', variables('pipelineName'))]"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "resources": [
+              {
+                "type": "Microsoft.Authorization/roleAssignments",
+                "apiVersion": "2022-04-01",
+                "name": "[guid(uniqueString(variables('fhirServerName'), variables('pipelineName')))]",
+                "scope": "[concat('Microsoft.HealthcareApis/workspaces/', variables('fhirServerWorkspace'), '/fhirservices/', variables('fhirServerName'))]",
+                "properties": {
+                  "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
+                  "principalId": "[reference(resourceId('Microsoft.App/containerApps/', variables('pipelineName')), '2022-03-01', 'Full').identity.principalId]",
+                  "principalType": "ServicePrincipal"
+                }
+              }
+            ]
+          }
+        },
+        "subscriptionId": "[parameters('fhirServerSubscriptionId')]",
+        "resourceGroup": "[parameters('fhirServerResourceGroupName')]"
+      },
+      {
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2020-10-01",
+        "condition": "[not(empty(parameters('filterConfigImageReference')))]",
+        "name": "[guid(uniqueString('filterACRRoleAssignment'))]",
+        "dependsOn": [
+          "[resourceId('Microsoft.App/containerApps', variables('pipelineName'))]"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "resources": [
+              {
+                "type": "Microsoft.Authorization/roleAssignments",
+                "apiVersion": "2022-04-01",
+                "name": "[guid(uniqueString(parameters('filterConfigImageReference'), variables('pipelineName')))]",
+                "scope": "[concat('Microsoft.ContainerRegistry/registries/', variables('filterACRName'))]",
+                "properties": {
+                  "roleDefinitionId": "[variables('filterACRPullRoleId')]",
+                  "principalId": "[reference(resourceId('Microsoft.App/containerApps/', variables('pipelineName')), '2022-03-01', 'Full').identity.principalId]",
+                  "principalType": "ServicePrincipal"
+                }
+              }
+            ]
+          }
+        },
+        "subscriptionId": "[parameters('filterACRSubscriptionId')]",
+        "resourceGroup": "[parameters('filterACRResourceGroupName')]"
+      },
+      {
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2020-10-01",
+        "condition": "[not(or(empty(parameters('customizedSchemaImageReference')), variables('isSameACR')))]",
+        "name": "[guid(uniqueString('schemaACRRoleAssignment'))]",
+        "dependsOn": [
+          "[resourceId('Microsoft.App/containerApps', variables('pipelineName'))]"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "resources": [
+              {
+                "type": "Microsoft.Authorization/roleAssignments",
+                "apiVersion": "2022-04-01",
+                "name": "[guid(uniqueString(parameters('customizedSchemaImageReference'), variables('pipelineName')))]",
+                "scope": "[concat('Microsoft.ContainerRegistry/registries/', variables('schemaACRName'))]",
+                "properties": {
+                  "roleDefinitionId": "[variables('schemaACRPullRoleId')]",
+                  "principalId": "[reference(resourceId('Microsoft.App/containerApps/', variables('pipelineName')), '2022-03-01', 'Full').identity.principalId]",
+                  "principalType": "ServicePrincipal"
+                }
+              }
+            ]
+          }
+        },
+        "subscriptionId": "[parameters('schemaACRSubscriptionId')]",
+        "resourceGroup": "[parameters('schemaACRResourceGroupName')]"
+      },
+      {
           "type": "Microsoft.Resources/deployments",
           "apiVersion": "2020-10-01",
           "name": "[guid(uniqueString('deployPaaSConnector'))]",
