@@ -190,6 +190,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiConstants.DefaultPageCount.ToString()),
             };
 
             if (_inputData.DataStartTime != null)
@@ -277,6 +278,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
                             {
                                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
+                                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiConstants.DefaultPageCount.ToString()),
                             };
 
                 if (startDateTime != null)

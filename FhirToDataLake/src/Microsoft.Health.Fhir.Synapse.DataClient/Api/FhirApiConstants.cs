@@ -46,6 +46,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         /// Currently _count is limited to 1000 in FHIR server.
         /// https://docs.microsoft.com/en-us/azure/healthcare-apis/fhir/overview-of-search#search-result-parameters
         /// </summary>
-        public const int PageCount = 1000;
+        public const int DefaultPageCount = 1000;
     }
 }
