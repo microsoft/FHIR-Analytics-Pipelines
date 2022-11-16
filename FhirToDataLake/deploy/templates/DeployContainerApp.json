@@ -10,6 +10,20 @@
               "description": "The name of the container instance that you wish to create."
           }
       },
+      "fhirServerSubscriptionId": {
+        "type": "String",
+        "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
+        "metadata": {
+          "description": "The subscription ID for fhir server you wish to get data."
+        }
+      },
+      "fhirServerResourceGroupName": {
+        "type": "String",
+        "defaultValue": "analyticsconnectorperftest",
+        "metadata": {
+          "description": "The resource group name for fhir server you wish to get data."
+        }
+      },
       "fhirServerUrl": {
           "type": "string",
           "metadata": {
@@ -62,6 +76,20 @@
             "description": "Concurrent jobs exeucting in parallel."
         }
       },
+      "filterACRSubscriptionId": {
+        "type": "String",
+        "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
+        "metadata": {
+          "description": "The subscription ID for filter ACR."
+        }
+      },
+      "filterACRResourceGroupName": {
+        "type": "String",
+        "defaultValue": "analyticsconnectorperftest",
+        "metadata": {
+          "description": "The resource group name for filter ACR."
+        }
+      },
       "filterConfigImageReference":{
           "type": "string",
           "defaultValue": "",
@@ -107,7 +135,21 @@
           "metadata": {
             "description": "Whether to enable customized schema on this pipeline. If enabled, pipeline can generate customized data based on given schemas."
           }
-        },
+      },
+      "schemaACRSubscriptionId": {
+        "type": "String",
+        "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
+        "metadata": {
+          "description": "The subscription ID for customized schema ACR."
+        }
+      },
+      "schemaACRResourceGroupName": {
+        "type": "String",
+        "defaultValue": "analyticsconnectorperftest",
+        "metadata": {
+          "description": "The resource group name for customized schema ACR."
+        }
+      },
       "customizedSchemaImageReference":{
           "type": "string",
           "defaultValue": "",
@@ -147,8 +189,22 @@
           "type": "string",
           "defaultValue": "[resourceGroup().location]",
           "metadata": {
-              "description": "Location for all resources."
+              "description": "Location for container app and storage."
           }
+      },
+      "enablePaaSConnector": {
+        "type": "bool",
+        "defaultValue": false,
+        "metadata": {
+            "description": "Whether to deploy PaaS analytics connector."
+        }
+      },
+      "paasConnectorRegion": {
+        "type": "string",
+        "defaultValue": "australiacentral",
+        "metadata": {
+            "description": "Location for container app and storage."
+        }
       }
     },
     "variables": {
@@ -165,7 +221,20 @@
       "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
       "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
       "customizedSchemaImageReference": "[toLower(parameters('customizedSchemaImageReference'))]",
-      "pipelineContainerName": "fhir-to-datalake"
+      "pipelineContainerName": "fhir-to-datalake",
+      "urlSplitDelimiters": [
+        ".",
+        "//"
+      ],
+      "fhirServerFullName" : "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
+      "fhirServerWorkspace" : "[split(variables('fhirServerFullName'), '-')[0]]",
+      "fhirServerName": "[substring(variables('fhirServerFullName'),add(length(variables('fhirServerWorkspace')), 1))]",
+      "filterACRName" : "[split(variables('filterConfigImageReference'),'.')[0]]",
+      "schemaACRName" : "[split(variables('customizedSchemaImageReference'), '.')[0]]",
+      "fhirDataReaderRoleId": "[concat('/subscriptions/', parameters('fhirServerSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
+      "filterACRPullRoleId": "[concat('/subscriptions/', parameters('filterACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
+      "schemaACRPullRoleId": "[concat('/subscriptions/', parameters('schemaACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
+      "isSameACR": "[equals(variables('filterACRName'), variables('schemaACRName'))]"
     },
     "resources": [
       {
@@ -401,6 +470,7 @@
           "type": "Microsoft.Resources/deployments",
           "apiVersion": "2020-10-01",
           "name": "[guid(uniqueString('deployPaaSConnector'))]",
+          "condition": "[parameters('enablePaaSConnector')]",
           "dependsOn": [
             "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
             "[variables('pipelineName')]"
@@ -410,19 +480,13 @@
             "templateLink": {
                   "uri": "https://raw.githubusercontent.com/microsoft/FHIR-Analytics-Pipelines/personal/sowu/update-template/FhirToDataLake/deploy/templates/DeployAnalysticsConnector.json",
                   "contentVersion": "1.0.0.0"
-                },
+            },
             "parameters": {
                   "pipelineName": {
                       "value": "[variables('pipelineName')]"
                   },
                   "fhirServerUrl": {
                       "value": "[parameters('fhirServerUrl')]"
-                  },
-                  "storageAccountSubscriptionId": {
-                      "value": "[subscription().subscriptionId]"
-                  },
-                  "storageAccountResourceGroup": {
-                      "value": "[resourceGroup().name]"
                   },
                   "storageAccountName": {
                       "value": "[variables('storageAccountName')]"
@@ -432,8 +496,29 @@
                   },
                   "customizedSchemaImageReference": {
                     "value": "[variables('customizedSchemaImageReference')]"
+                  },
+                  "paasConnectorRegion": {
+                    "value": "[parameters('paasConnectorRegion')]"
+                  },
+                  "fhirServerSubscriptionId": {
+                    "value": "[parameters('fhirServerSubscriptionId')]"
+                  },
+                  "fhirServerResourceGroupName": {
+                    "value": "[parameters('fhirServerResourceGroupName')]"
+                  },
+                  "filterACRSubscriptionId": {
+                    "value": "[parameters('filterACRSubscriptionId')]"
+                  },
+                  "filterACRResourceGroupName": {
+                    "value": "[parameters('filterACRResourceGroupName')]"
+                  },
+                  "schemaACRSubscriptionId": {
+                    "value": "[parameters('schemaACRSubscriptionId')]"
+                  },
+                  "schemaACRResourceGroupName": {
+                    "value": "[parameters('schemaACRResourceGroupName')]"
                   }
-                }
+              }
           }
       }
     ]

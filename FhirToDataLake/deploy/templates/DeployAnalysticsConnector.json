@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "paasConnectorRegion": {
-      "defaultValue": "australiacentral",
+      "defaultValue": "centralus",
       "type": "String"
     },
     "apiVersion": {
@@ -18,7 +18,7 @@
       "maxLength": 24,
       "type": "String",
       "metadata": {
-        "description": "The name of the container instance that you wish to create."
+        "description": "The name of the connector prefix that you wish to create."
       }
     },
     "fhirServerSubscriptionId": {
@@ -62,17 +62,6 @@
         "description": "Azure Container Registry image reference of filter configuration file."
       }
     },
-    "customizedSchema": {
-      "defaultValue": false,
-      "allowedValues": [
-        true,
-        false
-      ],
-      "type": "Bool",
-      "metadata": {
-        "description": "Whether to enable customized schema on this pipeline. If enabled, pipeline can generate customized data based on given schemas."
-      }
-    },
     "schemaACRSubscriptionId": {
       "type": "String",
       "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
@@ -94,18 +83,6 @@
         "description": "The customized schema image reference for the image on Container Registry. Refer https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
       }
     },
-    "storageAccountSubscriptionId": {
-      "type": "String",
-      "metadata": {
-        "description": "Storage Account Sub ID"
-      }
-    },
-    "storageAccountResourceGroup": {
-      "type": "String",
-      "metadata": {
-        "description": "Storage Account Resource Group"
-      }
-    },
     "storageAccountName": {
       "type": "String",
       "metadata": {
@@ -119,8 +96,7 @@
     "pipelineName": "[toLower(parameters('pipelineName'))]",
     "analyticsConnectorWorkspaceName": "[concat('paastest', 'workspace')]",
     "analyticsConnectorName": "[concat(variables('pipelineName'), 'connector')]",
-    "storageBlobDataContributerRoleId": "[concat('/subscriptions/', parameters('storageAccountSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
-    "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
+    "storageBlobDataContributerRoleId": "[concat('/subscriptions/', variables('subscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
     "urlSplitDelimiters": [
       ".",
       "//"
@@ -175,7 +151,7 @@
         }
       }
     },
-  {
+    {
       "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
       "apiVersion": "2018-09-01-preview",
       "name": "[concat(parameters('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(parameters('storageAccountName'), 'connector', 'blob')))]",
@@ -235,7 +211,7 @@
             {
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
-              "name": "[guid(uniqueString(variables('filterConfigImageReference'), variables('pipelineName')))]",
+              "name": "[guid(uniqueString(parameters('filterConfigImageReference'), variables('pipelineName')))]",
               "scope": "[concat('Microsoft.ContainerRegistry/registries/', variables('filterACRName'))]",
               "properties": {
                 "roleDefinitionId": "[variables('filterACRPullRoleId')]",
