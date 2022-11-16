@@ -117,7 +117,7 @@
     "subscriptionId": "[subscription().subscriptionId]",
     "resourceGroupName": "[resourceGroup().name]",
     "pipelineName": "[toLower(parameters('pipelineName'))]",
-    "analyticsConnectorWorkspaceName": "[concat(variables('pipelineName'), 'workspace')]",
+    "analyticsConnectorWorkspaceName": "['paastest', 'workspace')]",
     "analyticsConnectorName": "[concat(variables('pipelineName'), 'connector')]",
     "storageBlobDataContributerRoleId": "[concat('/subscriptions/', parameters('storageAccountSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
     "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
