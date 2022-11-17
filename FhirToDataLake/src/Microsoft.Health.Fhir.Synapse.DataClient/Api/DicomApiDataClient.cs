@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Dicom.Client.Models;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
@@ -23,24 +25,45 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
     {
         private readonly HttpClient _httpClient;
         private readonly IDiagnosticLogger _diagnosticLogger;
+        private readonly IAccessTokenProvider _accessTokenProvider;
         private readonly ILogger<DicomApiDataClient> _logger;
 
         public DicomApiDataClient(
             IFhirApiDataSource dataSource,
             HttpClient httpClient,
+            ITokenCredentialProvider tokenCredentialProvider,
             IDiagnosticLogger diagnosticLogger,
             ILogger<DicomApiDataClient> logger)
         {
             EnsureArg.IsNotNull(dataSource, nameof(dataSource));
             EnsureArg.IsNotNullOrEmpty(dataSource.FhirServerUrl, nameof(dataSource.FhirServerUrl));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
+            EnsureArg.IsNotNull(tokenCredentialProvider, nameof(tokenCredentialProvider));
             EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _httpClient = new HttpClient { BaseAddress = new Uri(dataSource.FhirServerUrl) };
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/dicom+json");
+            _accessTokenProvider = new AzureAccessTokenProvider(
+                tokenCredentialProvider.GetCredential(TokenCredentialTypes.External),
+                diagnosticLogger,
+                new Logger<AzureAccessTokenProvider>(new LoggerFactory()));
             _diagnosticLogger = diagnosticLogger;
             _logger = logger;
+
+            string accessToken = null;
+            if (dataSource.Authentication == AuthenticationType.ManagedIdentity)
+            {
+                // Currently we support accessing FHIR server endpoints with Managed Identity.
+                // Obtaining access token against a resource uri only works with Azure API for FHIR now.
+                // To do: add configuration for OSS FHIR server endpoints.
+
+                // The thread-safe AzureServiceTokenProvider class caches the token in memory and retrieves it from Azure AD just before expiration.
+                // https://docs.microsoft.com/en-us/dotnet/api/overview/azure/service-to-service-authentication#using-the-library
+                accessToken = _accessTokenProvider.GetAccessTokenAsync("https://dicom.healthcareapis.azure.com").Result;
+            }
+
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
         }
 
         public async Task<List<string>> GetMetadataAsync(ChangeFeedOptions changeFeedOptions, CancellationToken cancellationToken = default)
@@ -57,7 +80,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         {
             try
             {
-                var response = await _httpClient.GetAsync($"/changefeed/latest?includemetadata={includeMetadata}", cancellationToken);
+                var response = await _httpClient.GetAsync($"/v1/changefeed/latest?includemetadata={includeMetadata}", cancellationToken);
                 var result = await response.Content.ReadAsStringAsync(cancellationToken);
                 var changeFeedEntry = JsonConvert.DeserializeObject<ChangeFeedEntry>(result);
 
@@ -75,7 +98,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         {
             try
             {
-                var response = await _httpClient.GetAsync($"/studies/{studyInstanceUid}/series/{seriesInstanceUid}/instances/{sopInstanceUid}/metadata", cancellationToken);
+                var response = await _httpClient.GetAsync($"/v1/studies/{studyInstanceUid}/series/{seriesInstanceUid}/instances/{sopInstanceUid}/metadata", cancellationToken);
 
                 return await response.Content.ReadAsStringAsync(cancellationToken);
             }
@@ -99,7 +122,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             try
             {
                 var response = await _httpClient.GetAsync(
-                    $"/changefeed?offset={changeFeedOptions.Offset}&limit={changeFeedOptions.Limit}&includeMetadata={changeFeedOptions.IncludeMetadata}",
+                    $"/v1/changefeed?offset={changeFeedOptions.Offset}&limit={changeFeedOptions.Limit}&includeMetadata={changeFeedOptions.IncludeMetadata}",
                     cancellationToken);
 
                 var content = await response.Content.ReadAsStringAsync(cancellationToken);
