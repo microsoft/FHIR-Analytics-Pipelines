@@ -598,6 +598,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _cacheResult.ClearCache();
                 _logger.LogInformation($"Commit cache resources successfully for processing job {_inputData.ProcessingJobSequenceId}.");
             }
+
+            GC.Collect();
         }
 
         /// <summary>
