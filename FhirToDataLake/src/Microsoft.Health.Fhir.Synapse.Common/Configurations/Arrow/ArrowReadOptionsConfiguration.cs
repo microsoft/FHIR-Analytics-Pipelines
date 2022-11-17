@@ -16,6 +16,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow
         /// Single resource larger than 30M will be ignored.
         /// </summary>
         [JsonProperty("blockSize")]
-        public int BlockSize { get; set; } = 30485760;
+        public int BlockSize { get; set; } = 30 << 20;
     }
 }
