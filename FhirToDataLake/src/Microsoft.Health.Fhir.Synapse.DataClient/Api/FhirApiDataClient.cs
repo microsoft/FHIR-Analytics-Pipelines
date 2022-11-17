@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -146,15 +145,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 return uri;
             }
 
-            uri = uri.AddQueryString(fhirApiOptions.QueryParameters);
-
-            // add shared parameters _count
-            List<KeyValuePair<string, string>> queryParameters = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiConstants.PageCount.ToString()),
-            };
-
-            return uri.AddQueryString(queryParameters);
+            return uri.AddQueryString(fhirApiOptions.QueryParameters);
         }
 
         private async Task<string> GetResponseFromHttpRequestAsync(Uri uri, string accessToken = null, CancellationToken cancellationToken = default)

@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
@@ -113,7 +115,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async Task<bool> IsFhirDataClientReady(CancellationToken cancellationToken)
         {
-            var searchOptions = new BaseSearchOptions("Patient", null);
+            var queryParameters = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString("d")),
+            };
+            var searchOptions = new BaseSearchOptions("Patient", queryParameters);
             try
             {
                 // Ensure we can search from FHIR server.
