@@ -548,7 +548,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     {
                         // Convert grouped data to parquet stream
                         var processParameters = new ProcessParameters(schemaType, resourceType);
-                        StreamBatchData parquetStream = await _parquetDataProcessor.ProcessAsync(batchData, processParameters, cancellationToken);
+                        using StreamBatchData parquetStream = await _parquetDataProcessor.ProcessAsync(batchData, processParameters, cancellationToken);
                         int skippedCount = batchData.Values.Count() - parquetStream.BatchSize;
 
                         if (parquetStream?.Value?.Length > 0)

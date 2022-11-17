@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.IO;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Models.Data
@@ -10,7 +11,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Data
     /// <summary>
     /// Batch data serialized to Stream format.
     /// </summary>
-    public class StreamBatchData
+    public class StreamBatchData : IDisposable
     {
         public StreamBatchData(Stream value, int batchSize, string schemaType)
         {
@@ -24,5 +25,15 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Data
         public int BatchSize { get; set; }
 
         public string SchemaType { get; set; }
+
+        public void Dispose()
+        {
+            if (Value != null)
+            {
+                Value.Dispose();
+            }
+
+            GC.SuppressFinalize(this);
+        }
     }
 }
