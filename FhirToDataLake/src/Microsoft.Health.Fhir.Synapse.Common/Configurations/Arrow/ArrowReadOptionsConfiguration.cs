@@ -12,7 +12,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow
         [JsonProperty("useThreads")]
         public bool UseThreads { get; set; } = true;
 
+        /// <summary>
+        /// Single resource larger than 30M will be ignored.
+        /// </summary>
         [JsonProperty("blockSize")]
-        public int BlockSize { get; set; } = 1 << 20;
+        public int BlockSize { get; set; } = 30485760;
     }
 }

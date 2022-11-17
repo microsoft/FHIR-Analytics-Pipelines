@@ -160,6 +160,38 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
         }
 
+        [Theory]
+        [InlineData(9)]
+        [InlineData(20)]
+        [InlineData(29)]
+        public async Task GivenAValidLargeResouces_WhenProcess_CorrectResultShouldBeReturned(int dataSize)
+        {
+            IEnumerable<JObject> largePatientSingleSet = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, $"LargeResource_Group_{dataSize}M.ndjson"));
+
+            var jsonBatchData = new JsonBatchData(largePatientSingleSet);
+
+            IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration()
+            {
+                ReadOptions = new ArrowReadOptionsConfiguration() { BlockSize = 30485760 },
+            });
+
+            var parquetDataProcessor = new ParquetDataProcessor(
+                _testDefaultFhirSchemaManager,
+                arrowConfigurationOptions,
+                TestUtils.TestDataSchemaConverterDelegate,
+                _diagnosticLogger,
+                _processorNullLogger);
+
+            StreamBatchData resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("Group", "Group"));
+
+            var resultStream = new MemoryStream();
+            resultBatchData.Value.CopyTo(resultStream);
+
+            MemoryStream expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, $"Expected_LargeResource_Group_{dataSize}M.parquet"));
+
+            Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
+        }
+
         [Fact]
         public async Task GivenDataWithSomeRecordsLengthLargerThanBlockSize_WhenProcess_LargeRecordsShouldBeIgnored()
         {
