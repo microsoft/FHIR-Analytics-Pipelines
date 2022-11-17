@@ -2,7 +2,7 @@
 
 FHIR to Synapse Sync Agent enables you to perform Analytics and Machine Learning on FHIR data by moving FHIR data to Azure Data Lake in near real time and making it available to a Synapse workspace.
 
-It is an Azure Function that extracts data from a FHIR server using FHIR Resource APIs, converts it to hierarchical Parquet files, and writes it to Azure Data Lake in near real time. This solution also contains a script to create External Tables and Views in Synapse Serverless SQL pool pointing to the Parquet files. For more information about External Tables and Views, see [Data mapping from FHIR to Synapse](Data-Mapping.md).
+It is an [Azure Container App](https://learn.microsoft.com/en-us/azure/container-apps/?ocid=AID3042118) that extracts data from a FHIR server using FHIR Resource APIs, converts it to hierarchical Parquet files, and writes it to Azure Data Lake in near real time. This solution also contains a script to create External Tables and Views in Synapse Serverless SQL pool pointing to the Parquet files. For more information about External Tables and Views, see [Data mapping from FHIR to Synapse](Data-Mapping.md).
 
 This solution enables you to query against the entire FHIR data with tools such as Synapse Studio, SSMS, and Power BI. You can also access the Parquet files directly from a Synapse Spark pool. You should consider this solution if you want to access all of your FHIR data in near real time, and want to defer custom transformation to downstream systems.
 
@@ -17,8 +17,8 @@ This solution enables you to query against the entire FHIR data with tools such 
 
 ### Steps at high level
 
-1. Deploy the pipeline using the given ARM template.
-1. Provide access of the FHIR service to the Azure Function that was deployed in the previous step.
+1. Deploy the pipeline to [Azure Container App](https://learn.microsoft.com/en-us/azure/container-apps/?ocid=AID3042118) using the given ARM template.
+1. Provide access of the FHIR service to the Container App that was deployed in the previous step.
 1. Verify that the data gets copied to the Storage Account. If data is copied to the Storage Account, then the pipeline is working successfully.
 1. Provide access of the Storage Account and the Synapse workspace to your account for running the PowerScript mentioned below.
 1. Provide access of the Storage Account to the Synapse Workspace to access the data from Synapse.
@@ -31,7 +31,7 @@ This solution enables you to query against the entire FHIR data with tools such 
 
 1. To deploy the FHIR Synapse sync pipeline, use the buttons below to deploy through the Azure Portal.
    
-    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2FFHIR-Analytics-Pipelines%2Fmain%2FFhirToDataLake%2Fdeploy%2Ftemplates%2FFhirSynapsePipelineTemplate.json" target="_blank">
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2FFHIR-Analytics-Pipelines%2Fmain%2FFhirToDataLake%2Fdeploy%2Ftemplates%2FDeployAzureContainerApp.json" target="_blank">
         <img src="https://aka.ms/deploytoazurebutton"/>
     </a>
 
@@ -39,45 +39,45 @@ This solution enables you to query against the entire FHIR data with tools such 
 
     The deployment page should open the following form. 
     
-    ![image](./assets/templateParameters_default.png)
+    ![image](./assets/deployContainerAppParameters.png)
 
 2. Fill the form based on the table below and click on **Review and Create** to start the deployment.
 
     |Parameter   | Description   |
     |---|---|
     | Resource Group | Name of the resource group where you want the pipeline related resources to be created. |
-    | App Name  | A name for the Azure Function.  |
-    | Fhir server Url  | The URL of the FHIR server. If the baseUri has relative parts (like http://www.example.org/r4), then the relative part must be terminated with a slash, (like http://www.example.org/r4/). |
+    | Pipeline Name  | A name for the FhirToDatalake pipeline, need to be unique in your subscription.  |
+    | Fhir Server Url  | The URL of the FHIR server. If the baseUri has relative parts (like http://www.example.org/r4), then the relative part must be terminated with a slash, (like http://www.example.org/r4/). |
     | Authentication  |  Whether to access the FHIR server with managed identity authentication. Set it to false if you are using an instance of the FHIR server for Azure with public access. |
-    | Fhir version | Version of the FHIR server. Currently only R4 is supported. |
+    | Fhir Version | Version of the FHIR server. Currently only R4 is supported. |
     | Data Start | Start time stamp of the data to be exported. |
     | Data End | Start time stamp of the data to be exported. Leave it empty if you want to periodically export data in real time.  |
-    | Container name | A name for the Storage Account container to which Parquet files will be written. The Storage Account with autogenerated name will automatically be created during the installation. |
-    | Customized Schema (new) | Whether to enable the customized schema for the pipeline, the ```Customized Schema Image Reference``` need to be provided if this value been set to ```true```. |
+    | Container Name | A name for the Storage Account container to which Parquet files will be written. The Storage Account with autogenerated name will automatically be created during the installation. |
     | Customized Schema Image Reference (new)  | The customized schema image reference for the image on Container Registry. Refer [TemplateManagement](https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md) for how to manage your template images. |
+    | Filter Config Image Reference (new)  | The filter config image reference for the image on Container Registry. Refer [TemplateManagement](https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md) for how to manage your template images. |
     | Filter Scope (new) | For data filtering use. The export scope can be `System` or `Group`. The default value is `System` if no filter is applied.|
     | Group Id (new) | For data filtering use. If the Filter scope is set as `Group`, you need to fill the group Id, otherwise leave it blank.|
     | Required Types (new) | For data filtering use. Specify which types of resources will be included. For example, _type=Patient_ would return only patient resources. All resource types will be exported if not specified. Leave it blank if no filter is applied.|
-    | Type Filters (new) | For data filtering use. Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. All data of requiredTypes will be exported if not specified. Leave it blank if no filter is applied.|
-    | Package url | The build package of the agent. You need not change this. |
-    | Deploy App Insights | Whether to deploy the Application Insights. You can find logs in the deployed application insight resource. You need not change this. |
-    | App Insight Location | The location to deploy the App Insight. You need not change this. |
+    | Type Filters (new) | For data filtering use. Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. All data of requiredTypes will be exported if not specified. Leave it blank if no filter is applied. |
+    | Image | Maximum number of replicas running for pipeline Container App. |
 
-3. Ensure to make note of the names of the _Storage Account_ and the _Azure Function App_ created during the deployment.
+3. Ensure to make note of the names of the _Storage Account_ and the _Azure Container App_ created during the deployment.
 
 4. Refer [here](./Process%20FHIR%20extensions.md) for more information about using **customized schema** to handle [FHIR Extension](https://www.hl7.org/fhir/extensibility.html).
 
 5. Refer [here](./Filter%20FHIR%20data%20in%20pipeline.md) for more information about filtering.
 
-### 2. Provide Access of the FHIR server to the Azure Function
+**_NOTE:_**  You can also deploy the FhirToDatalake pipeline to [Azure Function](https://learn.microsoft.com/en-us/azure/azure-functions/functions-overview), see Deploy To Function for more information.
 
-If you are using the Azure API for FHIR or the FHIR service in Azure Healthcare APIs, assign the **FHIR Data Reader** role to the Azure Function noted above.
+### 2. Provide Access of the FHIR server to the Azure Container App
+
+If you are using the Azure API for FHIR or the FHIR service in Azure Healthcare APIs, assign the **FHIR Data Reader** role to the Azure Container App deployed above.
 
 If you are using the FHIR server for Azure with anonymous access, then you can skip this step.
 
 ### 3. Verify data movement
 
-The Azure Function app deployed previously runs automatically. You'll notice the progress of the Azure Function in the Azure portal. The time taken to write the data to the storage account depends on the amount of data in the FHIR server. After the Azure Function execution is completed, you should have Parquet files in the Storage Account. Browse to the _results_ folder inside the container. You should see folders corresponding to different FHIR resources. Note that you will see folders for only those Resources that are present in your FHIR server. Running the PowerShell script described further below will create folders for other Resources.
+The Azure Container App runs automatically. You'll notice the progress of the Azure Container App in the Azure portal. The time taken to write the data to the storage account depends on the amount of data in the FHIR server. After the Azure Container App execution is completed, you should have Parquet files in the Storage Account. Browse to the _results_ folder inside the container. You should see folders corresponding to different FHIR resources. Note that you will see folders for only those Resources that are present in your FHIR server. Running the PowerShell script described further below will create folders for other Resources.
 
 ![blob result](./assets/ExportedData.png)
 
