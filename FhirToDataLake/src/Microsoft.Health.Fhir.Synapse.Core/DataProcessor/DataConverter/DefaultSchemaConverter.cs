@@ -96,18 +96,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 var subNode = subNodePair.Value;
 
                 // Ignore DICOM metadata node if it doesn't exist in schema
+                // Type SQ is ignored in current schema file
                 if (subNodeKeyword == null)
                 {
                     continue;
                 }
 
                 // Ignore empty tag, BulkDataURI and InlineBinary
-                // Ignore SQ
                 if (item.Value is not JObject jObject ||
                     !jObject.ContainsKey("vr") ||
                     !jObject.ContainsKey("Value") ||
-                    jObject["Value"] is not JArray ||
-                    string.Equals(jObject["vr"].ToString(), "SQ"))
+                    jObject["Value"] is not JArray)
                 {
                     continue;
                 }

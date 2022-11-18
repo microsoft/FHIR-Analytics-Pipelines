@@ -111,9 +111,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 if (path.IsDirectory == true)
                 {
                     // Record all directories that need to commit.
-                    Match match = _dataSourceType == DataSourceType.DICOM ?
-                        _dicomStagingDataFolderRegex.Match(path.Name) :
-                        _stagingDataFolderRegex.Match(path.Name);
+                    Match match = _dataSourceType == DataSourceType.DICOM
+                        ? _dicomStagingDataFolderRegex.Match(path.Name)
+                        : _stagingDataFolderRegex.Match(path.Name);
 
                     if (match.Success)
                     {

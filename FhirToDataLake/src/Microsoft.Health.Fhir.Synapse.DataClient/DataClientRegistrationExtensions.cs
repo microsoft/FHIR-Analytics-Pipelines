@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Polly;
@@ -54,8 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
 
                     break;
                 default:
-                    // TODO DICOM: create a new exception?
-                    throw new FhirSearchException("Fhir version {fhirServerConfiguration.Version} is not supported");
+                    throw new ConfigurationErrorException($"Data source type {dataSourceConfiguration.Type} is not supported");
             }
 
             return services;
