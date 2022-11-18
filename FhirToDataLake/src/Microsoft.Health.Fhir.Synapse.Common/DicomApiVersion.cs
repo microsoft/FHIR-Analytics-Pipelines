@@ -6,23 +6,18 @@
 namespace Microsoft.Health.Fhir.Synapse.Common
 {
     /// <summary>
-    /// Supported fhir versions.
+    /// Supported DICOM Server versions
     /// </summary>
-    public enum FhirVersion
+    public enum DicomApiVersion
     {
         /// <summary>
-        /// R5
+        /// v1
         /// </summary>
-        R5,
+        V1,
 
         /// <summary>
-        /// R4
+        /// v1.0-prerelease
         /// </summary>
-        R4,
-
-        /// <summary>
-        /// Stu3 is not supported.
-        /// </summary>
-        Stu3,
+        V1_0_Prerelease,
     }
 }

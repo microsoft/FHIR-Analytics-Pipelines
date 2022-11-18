@@ -177,7 +177,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         private static AzureBlobDataWriter GetLocalDataWriter()
         {
             return new AzureBlobDataWriter(
-                Options.Create(new FhirServerConfiguration { Version = FhirVersion.R4 }),
+                Options.Create(new DataSourceConfiguration()),
                 new AzureBlobContainerClientFactory(
                     new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
                     Options.Create(_storageConfiguration),
@@ -193,7 +193,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
 
             return new AzureBlobDataWriter(
-                Options.Create(new FhirServerConfiguration { Version = FhirVersion.R4 }),
+                Options.Create(new DataSourceConfiguration()),
                 mockFactory,
                 GetLocalDataSink(),
                 new NullLogger<AzureBlobDataWriter>());
@@ -202,7 +202,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         private static AzureBlobDataWriter GetBrokenDataWriter()
         {
             return new AzureBlobDataWriter(
-                Options.Create(new FhirServerConfiguration { Version = FhirVersion.R4 }),
+                Options.Create(new DataSourceConfiguration()),
                 new AzureBlobContainerClientFactory(
                     new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
                     Options.Create(_storageConfiguration),

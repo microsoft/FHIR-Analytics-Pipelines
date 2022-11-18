@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Newtonsoft.Json;
@@ -27,25 +28,23 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
         private const string SchemaR5EmbeddedPrefix = "Schemas.R5";
         private const string SchemaDicomEmbeddedPrefix = "Schemas.dicom";
 
-        private readonly FhirVersion _fhirVersion;
+        private readonly DataSourceConfiguration _dataSourceConfiguration;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<LocalDefaultSchemaProvider> _logger;
 
         public LocalDefaultSchemaProvider(
-            IOptions<FhirServerConfiguration> fhirServerConfiguration,
+            IOptions<DataSourceConfiguration> dataSourceConfiguration,
             IDiagnosticLogger diagnosticLogger,
             ILogger<LocalDefaultSchemaProvider> logger)
         {
-            EnsureArg.IsNotNull(fhirServerConfiguration, nameof(fhirServerConfiguration));
-
-            _fhirVersion = EnsureArg.EnumIsDefined(fhirServerConfiguration.Value.Version, nameof(fhirServerConfiguration.Value.Version));
+            _dataSourceConfiguration = EnsureArg.IsNotNull(dataSourceConfiguration, nameof(dataSourceConfiguration)).Value;
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         public Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default)
         {
-            Dictionary<string, string> embeddedSchemas = LoadEmbeddedSchema(_fhirVersion);
+            Dictionary<string, string> embeddedSchemas = LoadEmbeddedSchema();
             Dictionary<string, FhirParquetSchemaNode> defaultSchemaNodesMap;
             try
             {
@@ -65,12 +64,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             return Task.FromResult(defaultSchemaNodesMap);
         }
 
-        private static Dictionary<string, string> LoadEmbeddedSchema(FhirVersion fhirVersion)
+        private Dictionary<string, string> LoadEmbeddedSchema()
         {
             Dictionary<string, string> embeddedSchema = new Dictionary<string, string>();
 
             var executingAssembly = Assembly.GetExecutingAssembly();
-            string folderName = GetEmbeddedSchemaFolder(executingAssembly, fhirVersion);
+            string folderName = GetEmbeddedSchemaFolder(executingAssembly);
             string[] resourceNames = executingAssembly
                 .GetManifestResourceNames()
                 .Where(r => r.StartsWith(folderName) && r.EndsWith(".json"))
@@ -88,17 +87,25 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             return embeddedSchema;
         }
 
-        private static string GetEmbeddedSchemaFolder(Assembly assembly, FhirVersion fhirVersion)
+        private string GetEmbeddedSchemaFolder(Assembly assembly)
         {
-            return fhirVersion switch
+            switch (_dataSourceConfiguration.Type)
             {
-                FhirVersion.R4 => string.Format("{0}.{1}", assembly.GetName().Name, SchemaR4EmbeddedPrefix),
-                FhirVersion.R5 => string.Format("{0}.{1}", assembly.GetName().Name, SchemaR5EmbeddedPrefix),
-                FhirVersion.DICOM => string.Format("{0}.{1}", assembly.GetName().Name, SchemaDicomEmbeddedPrefix),
+                case DataSourceType.FHIR:
+                    var fhirVersion = _dataSourceConfiguration.FhirServer.Version;
+                    return fhirVersion switch
+                    {
+                        FhirVersion.R4 => string.Format("{0}.{1}", assembly.GetName().Name, SchemaR4EmbeddedPrefix),
+                        FhirVersion.R5 => string.Format("{0}.{1}", assembly.GetName().Name, SchemaR5EmbeddedPrefix),
 
-                // Will not happened because we have validated schema version when initialization.
-                _ => throw new GenerateFhirParquetSchemaNodeException($"Fhir schema version {fhirVersion} is not supported.")
-            };
+                        // Will not happened because we have validated schema version when initialization.
+                        _ => throw new GenerateFhirParquetSchemaNodeException($"Fhir schema version {fhirVersion} is not supported.")
+                    };
+                case DataSourceType.DICOM:
+                    return string.Format("{0}.{1}", assembly.GetName().Name, SchemaDicomEmbeddedPrefix);
+                default:
+                    throw new ConfigurationErrorException($"Data source type {_dataSourceConfiguration.Type} is not supported");
+            }
         }
     }
 }

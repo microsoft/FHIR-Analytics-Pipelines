@@ -73,7 +73,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
             {
                 return new LocalDefaultSchemaProvider(
-                    Options.Create(new FhirServerConfiguration()),
+                    Options.Create(new DataSourceConfiguration()),
                     _diagnosticLogger,
                     NullLogger<LocalDefaultSchemaProvider>.Instance);
             }
@@ -95,18 +95,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
                 _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
-            var fhirServerConfig = new FhirServerConfiguration
-            {
-                Version = FhirVersion.R4,
-            };
-
-            IOptions<FhirServerConfiguration> fhirServerOption = Options.Create(fhirServerConfig);
-
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
             {
                 return new DefaultSchemaConverter(
                     fhirSchemaManagerWithoutCustomizedSchema,
-                    fhirServerOption,
+                    Options.Create(new DataSourceConfiguration()),
                     _diagnosticLogger,
                     NullLogger<DefaultSchemaConverter>.Instance);
             }

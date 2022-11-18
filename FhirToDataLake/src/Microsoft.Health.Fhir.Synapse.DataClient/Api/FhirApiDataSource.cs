@@ -5,6 +5,7 @@
 
 using EnsureThat;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
@@ -14,16 +15,24 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
     /// </summary>
     public class FhirApiDataSource : IFhirApiDataSource
     {
-        public FhirApiDataSource(IOptions<FhirServerConfiguration> config)
+        public FhirApiDataSource(IOptions<DataSourceConfiguration> config)
         {
             EnsureArg.IsNotNull(config, nameof(config));
-            EnsureArg.IsNotNullOrEmpty(config.Value.ServerUrl, nameof(config.Value.ServerUrl));
+
+            var dataSourceType = config.Value.Type;
+            var serverUrl = dataSourceType == DataSourceType.FHIR
+                ? config.Value.FhirServer.ServerUrl
+                : config.Value.DicomServer.ServerUrl;
+
+            EnsureArg.IsNotNullOrEmpty(serverUrl, nameof(serverUrl));
 
             // If the baseUri has relative parts (like /api), then the relative part must be terminated with a slash (like /api/).
             // Otherwise the relative part will be omitted when creating new search Uris. See https://docs.microsoft.com/en-us/dotnet/api/system.uri.-ctor?view=net-6.0
-            FhirServerUrl = !config.Value.ServerUrl.EndsWith("/") ? $"{config.Value.ServerUrl}/" : config.Value.ServerUrl;
+            FhirServerUrl = !serverUrl.EndsWith("/") ? $"{serverUrl}/" : serverUrl;
 
-            Authentication = config.Value.Authentication;
+            Authentication = dataSourceType == DataSourceType.FHIR
+                ? config.Value.FhirServer.Authentication
+                : config.Value.DicomServer.Authentication;
         }
 
         public string FhirServerUrl { get; }

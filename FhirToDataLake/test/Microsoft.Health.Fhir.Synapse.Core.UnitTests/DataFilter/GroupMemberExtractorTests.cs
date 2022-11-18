@@ -75,13 +75,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                     return bundle;
                 });
 
-            var fhirServerConfig = new FhirServerConfiguration
+            var dataSourceConfiguration = new DataSourceConfiguration
             {
-                ServerUrl = "https://example.com",
-                Authentication = AuthenticationType.None,
+                FhirServer = new FhirServerConfiguration
+                {
+                    ServerUrl = "https://example.com",
+                    Authentication = AuthenticationType.None,
+                },
             };
-            IOptions<FhirServerConfiguration> fhirServerOption = Options.Create(fhirServerConfig);
-            _dataSource = new FhirApiDataSource(fhirServerOption);
+
+            _dataSource = new FhirApiDataSource(Options.Create(dataSourceConfiguration));
             _referenceParser = new R4ReferenceParser(_dataSource, NullLogger<R4ReferenceParser>.Instance);
             _groupMemberExtractor = new GroupMemberExtractor(dataClient, _referenceParser, _diagnosticLogger, _nullGroupMemberExtractorLogger);
         }

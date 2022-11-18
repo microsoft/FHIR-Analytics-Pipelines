@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
@@ -26,18 +27,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core
         public static IServiceCollection AddJobScheduler(
             this IServiceCollection services)
         {
-            FhirServerConfiguration fhirServerConfiguration = services
+            var dataSourceConfiguration = services
                 .BuildServiceProvider()
-                .GetRequiredService<IOptions<FhirServerConfiguration>>()
+                .GetRequiredService<IOptions<DataSourceConfiguration>>()
                 .Value;
 
-            services.AddSingleton<JobHosting, JobHosting>();
-
-            switch (fhirServerConfiguration.Version)
+            switch (dataSourceConfiguration.Type)
             {
-                case FhirVersion.R4:
-                case FhirVersion.R5:
-                case FhirVersion.Stu3:
+                case DataSourceType.FHIR:
                     services.AddSingleton<IJobFactory, AzureStorageJobFactory>();
 
                     services.AddSingleton<ISchedulerService, SchedulerService>();
@@ -67,7 +64,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core
                     services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>();
 
                     break;
-                case FhirVersion.DICOM:
+                case DataSourceType.DICOM:
                     services.AddSingleton<IJobFactory, DicomAzureStorageJobFactory>();
 
                     services.AddSingleton<ISchedulerService, DicomSchedulerService>();
@@ -75,13 +72,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core
                     services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<AzureStorageJobInfo>>();
                     break;
                 default:
-                    // TODO DICOM: create a new exception?
-                    throw new FhirSpecificationProviderException($"Fhir version {fhirServerConfiguration.Version} is not supported");
+                    throw new ConfigurationErrorException($"Data source type {dataSourceConfiguration.Type} is not supported");
             }
 
-            services.AddSingleton<IAzureTableClientFactory, AzureTableClientFactory>();
+            services.AddSingleton<JobHosting, JobHosting>();
 
             services.AddSingleton<JobManager, JobManager>();
+
+            services.AddSingleton<IAzureTableClientFactory, AzureTableClientFactory>();
 
             services.AddSingleton<IMetadataStore, AzureTableMetadataStore>();
 
@@ -114,10 +112,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
         public static IServiceCollection AddFhirSpecificationProvider(this IServiceCollection services)
         {
-            FhirServerConfiguration fhirServerConfiguration = services
+            var dataSourceConfiguration = services
                 .BuildServiceProvider()
-                .GetRequiredService<IOptions<FhirServerConfiguration>>()
+                .GetRequiredService<IOptions<DataSourceConfiguration>>()
                 .Value;
+
+            var fhirServerConfiguration = dataSourceConfiguration.FhirServer;
 
             switch (fhirServerConfiguration.Version)
             {
@@ -125,7 +125,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core
                     services.AddSingleton<IFhirSpecificationProvider, R4FhirSpecificationProvider>(); break;
                 case FhirVersion.R5:
                     services.AddSingleton<IFhirSpecificationProvider, R5FhirSpecificationProvider>(); break;
-                case FhirVersion.DICOM:
                 default:
                     throw new FhirSpecificationProviderException($"Fhir version {fhirServerConfiguration.Version} is not supported when injecting");
             }

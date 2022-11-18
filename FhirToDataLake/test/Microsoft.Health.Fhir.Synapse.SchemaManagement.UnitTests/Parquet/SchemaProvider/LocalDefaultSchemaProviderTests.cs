@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
@@ -22,7 +23,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         static LocalDefaultSchemaProviderTests()
         {
             _testLocalDefaultR4SchemaProvider = new LocalDefaultSchemaProvider(
-                Options.Create(new FhirServerConfiguration()),
+                Options.Create(new DataSourceConfiguration()),
                 new DiagnosticLogger(),
                 NullLogger<LocalDefaultSchemaProvider>.Instance);
         }
@@ -30,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
-            var fhirServerConfigurationOption = Options.Create(new FhirServerConfiguration());
+            var dataSourceOption = Options.Create(new DataSourceConfiguration());
             var diagnosticLogger = new DiagnosticLogger();
             var loggerInstance = NullLogger<LocalDefaultSchemaProvider>.Instance;
 
@@ -38,10 +39,10 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
                 () => new LocalDefaultSchemaProvider(null, diagnosticLogger, loggerInstance));
 
             Assert.Throws<ArgumentNullException>(
-                () => new LocalDefaultSchemaProvider(fhirServerConfigurationOption, null, loggerInstance));
+                () => new LocalDefaultSchemaProvider(dataSourceOption, null, loggerInstance));
 
             Assert.Throws<ArgumentNullException>(
-                () => new LocalDefaultSchemaProvider(fhirServerConfigurationOption, diagnosticLogger, null));
+                () => new LocalDefaultSchemaProvider(dataSourceOption, diagnosticLogger, null));
         }
 
         [InlineData("Patient", 24)]
@@ -67,8 +68,16 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [Theory]
         public static async void GivenSchemaDirectory_WhenGetR5Schema_CorrectResultShouldBeReturned(string schemaType, int propertyCount)
         {
+            var dataSourceConfiguration = new DataSourceConfiguration
+            {
+                FhirServer = new FhirServerConfiguration
+                {
+                    Version = FhirVersion.R5,
+                },
+            };
+
             var schemaProvider = new LocalDefaultSchemaProvider(
-                Options.Create(new FhirServerConfiguration() { Version = Common.FhirVersion.R5 }),
+                Options.Create(dataSourceConfiguration),
                 new DiagnosticLogger(),
                 NullLogger<LocalDefaultSchemaProvider>.Instance);
 

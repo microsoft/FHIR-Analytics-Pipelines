@@ -10,6 +10,7 @@ using System.Text;
 using DotLiquid;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
@@ -71,7 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
             if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
             {
                 return new LocalDefaultSchemaProvider(
-                    Options.Create(new FhirServerConfiguration()),
+                    Options.Create(new DataSourceConfiguration()),
                     new DiagnosticLogger(),
                     NullLogger<LocalDefaultSchemaProvider>.Instance);
             }

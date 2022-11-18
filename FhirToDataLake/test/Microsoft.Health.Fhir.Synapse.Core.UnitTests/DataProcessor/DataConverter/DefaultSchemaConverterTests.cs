@@ -26,9 +26,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 {
     public class DefaultSchemaConverterTests
     {
-        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
-        private static readonly IOptions<FhirServerConfiguration> _fhirServerOption;
+        private static readonly IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private static readonly JObject _testPatient;
+        private static readonly IOptions<DataSourceConfiguration> _dataSourceOption;
         private static readonly DefaultSchemaConverter _testDefaultConverter;
 
         static DefaultSchemaConverterTests()
@@ -39,14 +39,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 _diagnosticLogger,
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
-            var fhirServerConfig = new FhirServerConfiguration
-            {
-                Version = FhirVersion.R4,
-            };
-
-            _fhirServerOption = Options.Create(fhirServerConfig);
-
-            _testDefaultConverter = new DefaultSchemaConverter(schemaManager, _fhirServerOption, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
+            _dataSourceOption = Options.Create(new DataSourceConfiguration());
+            _testDefaultConverter = new DefaultSchemaConverter(schemaManager, _dataSourceOption, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
             _testPatient = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "Basic_Raw_Patient.ndjson")).First();
         }
 
@@ -337,13 +331,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 NullLogger<FhirParquetSchemaManager>.Instance);
 
             Assert.Throws<ArgumentNullException>(
-                () => new DefaultSchemaConverter(null, _fhirServerOption, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance));
+                () => new DefaultSchemaConverter(null, _dataSourceOption, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance));
 
             Assert.Throws<ArgumentNullException>(
-                () => new DefaultSchemaConverter(schemaManager, _fhirServerOption, null, NullLogger<DefaultSchemaConverter>.Instance));
+                () => new DefaultSchemaConverter(schemaManager, _dataSourceOption, null, NullLogger<DefaultSchemaConverter>.Instance));
 
             Assert.Throws<ArgumentNullException>(
-                () => new DefaultSchemaConverter(schemaManager, _fhirServerOption, _diagnosticLogger, null));
+                () => new DefaultSchemaConverter(schemaManager, _dataSourceOption, _diagnosticLogger, null));
         }
 
         [Fact]
@@ -389,7 +383,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         {
             var schemaNode = JsonConvert.DeserializeObject<FhirParquetSchemaNode>(invalidSchemaContent);
             var schemaManager = CreateMockSchemaManager(schemaNode);
-            var testConverter = new DefaultSchemaConverter(schemaManager, _fhirServerOption, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
+            var testConverter = new DefaultSchemaConverter(schemaManager, _dataSourceOption, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
 
             Assert.Throws<ParquetDataProcessorException>(()
                 => testConverter.Convert(CreateTestJsonBatchData(_testPatient), "Patient").Values.Count());

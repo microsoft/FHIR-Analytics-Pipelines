@@ -23,23 +23,26 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         public void GivenNullServerUrl_WhenInitialize_ArgumentNullExceptionShouldBeThrown()
         {
             // ServerUrl is string.empty
-            var fhirServerConfig = new FhirServerConfiguration
+            var dataSourceConfiguration = new DataSourceConfiguration
             {
-                ServerUrl = null,
+                FhirServer = new FhirServerConfiguration
+                {
+                    ServerUrl = null,
+                },
             };
 
-            Assert.Throws<ArgumentNullException>(() => new FhirApiDataSource(Options.Create(fhirServerConfig)));
+            Assert.Throws<ArgumentNullException>(() => new FhirApiDataSource(Options.Create(dataSourceConfiguration)));
         }
 
         [Fact]
         public void GivenEmptyServerUrl_WhenInitialize_ArgumentExceptionShouldBeThrown()
         {
             // ServerUrl is string.empty
-            var fhirServerConfig = new FhirServerConfiguration();
-            Assert.Throws<ArgumentException>(() => new FhirApiDataSource(Options.Create(fhirServerConfig)));
+            var dataSourceConfiguration = new DataSourceConfiguration();
+            Assert.Throws<ArgumentException>(() => new FhirApiDataSource(Options.Create(dataSourceConfiguration)));
 
-            fhirServerConfig.ServerUrl = string.Empty;
-            Assert.Throws<ArgumentException>(() => new FhirApiDataSource(Options.Create(fhirServerConfig)));
+            dataSourceConfiguration.FhirServer.ServerUrl = string.Empty;
+            Assert.Throws<ArgumentException>(() => new FhirApiDataSource(Options.Create(dataSourceConfiguration)));
         }
 
         [Theory]
@@ -47,11 +50,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [InlineData("https://example.com/", "https://example.com/")]
         public void GivenServerUrl_WhenInitialize_ServerUrlShouldBeEndsWithSlash(string serverUrl, string expectedServerUrl)
         {
-            var fhirServerConfig = new FhirServerConfiguration
+            var dataSourceConfiguration = new DataSourceConfiguration
             {
-                ServerUrl = serverUrl,
+                FhirServer = new FhirServerConfiguration
+                {
+                    ServerUrl = serverUrl,
+                },
             };
-            var dataSource = new FhirApiDataSource(Options.Create(fhirServerConfig));
+
+            var dataSource = new FhirApiDataSource(Options.Create(dataSourceConfiguration));
 
             Assert.Equal(expectedServerUrl, dataSource.FhirServerUrl);
         }

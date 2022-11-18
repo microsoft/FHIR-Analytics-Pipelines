@@ -26,30 +26,27 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
             services.AddSingleton<IFhirApiDataSource, FhirApiDataSource>();
             services.AddSingleton<IFhirDataClient, FhirApiDataClient>();
 
-            FhirServerConfiguration fhirServerConfiguration = services
+            var dataSourceConfiguration = services
                 .BuildServiceProvider()
-                .GetRequiredService<IOptions<FhirServerConfiguration>>()
+                .GetRequiredService<IOptions<DataSourceConfiguration>>()
                 .Value;
 
-            switch (fhirServerConfiguration.Version)
+            switch (dataSourceConfiguration.Type)
             {
-                case FhirVersion.R4:
-                case FhirVersion.R5:
-                case FhirVersion.Stu3:
+                case DataSourceType.FHIR:
                     services.AddHttpClient<IFhirDataClient, FhirApiDataClient>(client =>
                     {
-                        client.BaseAddress = new Uri(fhirServerConfiguration.ServerUrl);
+                        client.BaseAddress = new Uri(dataSourceConfiguration.FhirServer.ServerUrl);
                     })
                     .AddPolicyHandler(GetRetryPolicy(services))
                     .AddPolicyHandler(GetTimeoutPolicy())
                     .AddPolicyHandler(GetCircuitBreakerPolicy());
 
                     break;
-                case FhirVersion.DICOM:
-                    services.AddSingleton<IDicomDataClient, DicomApiDataClient>();
+                case DataSourceType.DICOM:
                     services.AddHttpClient<IDicomDataClient, DicomApiDataClient>(client =>
                     {
-                        client.BaseAddress = new Uri(fhirServerConfiguration.ServerUrl);
+                        client.BaseAddress = new Uri(dataSourceConfiguration.DicomServer.ServerUrl);
                     })
                     .AddPolicyHandler(GetRetryPolicy(services))
                     .AddPolicyHandler(GetTimeoutPolicy())
