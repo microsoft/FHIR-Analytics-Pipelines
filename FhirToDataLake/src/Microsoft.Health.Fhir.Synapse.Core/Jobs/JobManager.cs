@@ -43,6 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             _logger.LogInformation("Job manager starts running.");
 
+            GC.AddMemoryPressure(1500000000);
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task scheduleTask = _scheduler.RunAsync(cancellationTokenSource.Token);
 
@@ -50,6 +51,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _jobHosting.MaxRunningJobCount = (short)_jobConfiguration.MaxRunningJobCount;
             await _jobHosting.StartAsync((byte)_jobConfiguration.QueueType, Environment.MachineName, cancellationTokenSource);
             await scheduleTask;
+            GC.RemoveMemoryPressure(1500000000);
         }
     }
 }
