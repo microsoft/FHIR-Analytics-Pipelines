@@ -29,13 +29,12 @@ using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using SharpCompress.Common;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class DicomToDataLakeProcessingJob : IJob
     {
-        private readonly DicomVersion dicomVersion = DicomVersion.V1;
+        private readonly DicomApiVersion dicomVersion = DicomApiVersion.V1;
         private readonly DicomToDataLakeProcessingJobInputData _inputData;
         private readonly IDicomDataClient _dataClient;
         private readonly IFhirDataWriter _dataWriter;

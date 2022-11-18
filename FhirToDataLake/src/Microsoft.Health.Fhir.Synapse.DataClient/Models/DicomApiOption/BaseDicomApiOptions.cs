@@ -12,7 +12,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
     {
         public List<KeyValuePair<string, string>> QueryParameters { get; set; } = null;
 
-        public DicomVersion DicomVersion { get; set; } = DicomVersion.V1;
+        public DicomApiVersion DicomVersion { get; set; } = DicomApiVersion.V1;
 
         public bool IsAccessTokenRequired { get; set; } = false;
 

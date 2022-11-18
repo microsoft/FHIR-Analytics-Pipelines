@@ -34,18 +34,17 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         private readonly Regex _stagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z_]+/\d{4}/\d{2}/\d{2})$");
         private readonly Regex _dicomStagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z_]+/\d+)$");
 
-        private readonly FhirVersion _fhirVersion;
+        private readonly DataSourceType _dataSourceType;
 
         public AzureBlobDataWriter(
-            IOptions<FhirServerConfiguration> fhirServerConfiguration,
+            IOptions<DataSourceConfiguration> dataSourceConfiguration,
             IAzureBlobContainerClientFactory containerClientFactory,
             IDataSink dataSink,
             ILogger<AzureBlobDataWriter> logger)
         {
-            EnsureArg.IsNotNull(fhirServerConfiguration, nameof(fhirServerConfiguration));
             EnsureArg.IsNotNull(containerClientFactory, nameof(containerClientFactory));
 
-            _fhirVersion = EnsureArg.EnumIsDefined(fhirServerConfiguration.Value.Version, nameof(fhirServerConfiguration.Value.Version));
+            _dataSourceType = EnsureArg.EnumIsDefined(dataSourceConfiguration.Value.Type, nameof(dataSourceConfiguration.Value.Type));
             _containerClient = containerClientFactory.Create(dataSink.StorageUrl, dataSink.Location);
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
@@ -112,9 +111,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 if (path.IsDirectory == true)
                 {
                     // Record all directories that need to commit.
-                    Match match = _fhirVersion == FhirVersion.DICOM ?
-                        _dicomStagingDataFolderRegex.Match(path.Name) :
-                        _stagingDataFolderRegex.Match(path.Name);
+                    Match match = _dataSourceType == DataSourceType.DICOM
+                        ? _dicomStagingDataFolderRegex.Match(path.Name)
+                        : _stagingDataFolderRegex.Match(path.Name);
 
                     if (match.Success)
                     {

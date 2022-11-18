@@ -42,12 +42,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             Assert.Throws<ArgumentNullException>(
                 () => new FhirApiDataClient(null, null, null, null, null));
 
-            var fhirServerConfiguration = new FhirServerConfiguration()
+            var dataSourceConfiguration = new DataSourceConfiguration
             {
-                ServerUrl = FhirServerUri,
+                FhirServer = new FhirServerConfiguration
+                {
+                    ServerUrl = FhirServerUri,
+                },
             };
 
-            var dataSource = new FhirApiDataSource(Options.Create(fhirServerConfiguration));
+            var dataSource = new FhirApiDataSource(Options.Create(dataSourceConfiguration));
 
             var httpClient = new HttpClient(new MockHttpMessageHandler(new Dictionary<string, HttpResponseMessage>()));
 
@@ -269,14 +272,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 
         private IFhirApiDataSource CreateFhirApiDataSource(string fhirServerUrl, AuthenticationType authenticationType)
         {
-            var fhirServerConfig = new FhirServerConfiguration
+            var dataSourceConfiguration = new DataSourceConfiguration
             {
-                ServerUrl = fhirServerUrl,
-                Authentication = authenticationType,
+                FhirServer = new FhirServerConfiguration
+                {
+                    ServerUrl = fhirServerUrl,
+                    Authentication = authenticationType,
+                },
             };
 
-            IOptions<FhirServerConfiguration> fhirServerOption = Options.Create(fhirServerConfig);
-            var dataSource = new FhirApiDataSource(fhirServerOption);
+            var dataSource = new FhirApiDataSource(Options.Create(dataSourceConfiguration));
 
             return dataSource;
         }

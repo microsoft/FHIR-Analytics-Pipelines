@@ -38,9 +38,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         /// <summary>
         /// Version dictionary in DICON url.
         /// </summary>
-        public static readonly Dictionary<DicomVersion, string> VersionMap = new Dictionary<DicomVersion, string>()
+        public static readonly Dictionary<DicomApiVersion, string> VersionMap = new Dictionary<DicomApiVersion, string>()
         {
-            { DicomVersion.V1, "v1"},
+            { DicomApiVersion.V1, "v1" },
+            { DicomApiVersion.V1_0_Prerelease, "v1_0_prerelease" },
         };
 
         /// <summary>

@@ -131,8 +131,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             }
 
             // Validate Parquet schema nodes
-            // TODO DICOM: currently the validation is skipped due to type error when IsLeaf = true
-            /*foreach (var schemaNodeItem in resourceSchemaNodesMap)
+            foreach (var schemaNodeItem in resourceSchemaNodesMap)
             {
                 ValidationResult validateResult = FhirParquetSchemaValidator.Validate(schemaNodeItem.Key, schemaNodeItem.Value);
                 if (!validateResult.Success)
@@ -141,7 +140,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
                     _logger.LogInformation($"Validate Parquet schema node failed. Reason: {validateResult.ErrorMessage}.");
                     throw new GenerateFhirParquetSchemaNodeException($"Validate Parquet schema node failed. Reason: {validateResult.ErrorMessage}.");
                 }
-            }*/
+            }
 
             return resourceSchemaNodesMap;
         }

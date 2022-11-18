@@ -12,7 +12,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
     public class ChangeFeedOffsetOptions : BaseDicomApiOptions
     {
         public ChangeFeedOffsetOptions(
-            DicomVersion dicomVersion,
+            DicomApiVersion dicomVersion,
             List<KeyValuePair<string, string>> queryParameters)
         {
             DicomVersion = dicomVersion;

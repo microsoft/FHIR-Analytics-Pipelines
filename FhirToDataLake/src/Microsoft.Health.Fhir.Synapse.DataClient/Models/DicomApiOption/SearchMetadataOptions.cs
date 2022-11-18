@@ -12,7 +12,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
     public class SearchMetadataOptions : BaseDicomApiOptions
     {
         public SearchMetadataOptions(
-            DicomVersion dicomVersion,
+            DicomApiVersion dicomVersion,
             string studyInstanceUid,
             string seriesInstanceUid,
             string sopInstanceUid)

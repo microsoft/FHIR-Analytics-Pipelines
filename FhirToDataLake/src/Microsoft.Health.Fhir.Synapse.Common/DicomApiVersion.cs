@@ -5,11 +5,19 @@
 
 namespace Microsoft.Health.Fhir.Synapse.Common
 {
-    public enum DicomVersion
+    /// <summary>
+    /// Supported DICOM Server versions
+    /// </summary>
+    public enum DicomApiVersion
     {
         /// <summary>
-        /// V1
+        /// v1
         /// </summary>
         V1,
+
+        /// <summary>
+        /// v1.0-prerelease
+        /// </summary>
+        V1_0_Prerelease,
     }
 }

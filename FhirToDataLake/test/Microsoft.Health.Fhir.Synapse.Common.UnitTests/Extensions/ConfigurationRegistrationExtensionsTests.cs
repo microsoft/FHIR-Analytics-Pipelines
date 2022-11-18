@@ -37,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             yield return new object[] { "fhirServer:serverUrl", string.Empty, "Fhir server url can not be empty." };
             yield return new object[] { "job:containerName", string.Empty, "Target azure container name can not be empty." };
             yield return new object[] { "dataLakeStore:storageUrl", string.Empty, "Target azure storage url can not be empty." };
-            yield return new object[] { "fhirServer:version", "invalidVersion", "Failed to parse fhir server configuration" };
+            yield return new object[] { "fhirServer:version", "invalidVersion", "Failed to parse data source configuration" };
             yield return new object[] { "job:startTime", "invalidDataTime", "Failed to parse job configuration" };
             yield return new object[] { "filter:filterScope", "invalidScope", "Failed to parse filter configuration" };
             yield return new object[] { "schema:schemaImageReference", 12345, "Found the schema image reference but customized schema is disable." };

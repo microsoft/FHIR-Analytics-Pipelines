@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class DicomSchedulerService : ISchedulerService
     {
-        private readonly DicomVersion dicomVersion = DicomVersion.V1;
+        private readonly DicomApiVersion dicomVersion = DicomApiVersion.V1;
         private readonly IQueueClient _queueClient;
         private readonly IMetadataStore _metadataStore;
         private readonly IDicomDataClient _dataClient;

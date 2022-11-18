@@ -5,6 +5,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationResolvers
@@ -15,8 +16,22 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationResol
             IServiceCollection services,
             IConfiguration configuration)
         {
-            services.Configure<FhirServerConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options));
+            // Try get DataSourceConfiguration first. If not found, create one from FhirServerConfiguration.
+            if (configuration.GetSection(ConfigurationConstants.DataSourceConfigurationKey).Exists())
+            {
+                services.Configure<DataSourceConfiguration>(options =>
+                    configuration.GetSection(ConfigurationConstants.DataSourceConfigurationKey).Bind(options));
+            }
+            else
+            {
+                services.Configure<DataSourceConfiguration>(options =>
+                    configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options.FhirServer));
+
+                // Configure FhirServerConfiguration as well for backward compatibility
+                services.Configure<FhirServerConfiguration>(options =>
+                    configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options));
+            }
+
             services.Configure<JobConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.JobConfigurationKey).Bind(options));
             services.Configure<FilterConfiguration>(options =>

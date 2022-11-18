@@ -25,18 +25,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
     public class DefaultSchemaConverter : IDataSchemaConverter
     {
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
-        private readonly FhirVersion _fhirVersion;
+        private readonly DataSourceType _dataSourceType;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<DefaultSchemaConverter> _logger;
 
         public DefaultSchemaConverter(
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
-            IOptions<FhirServerConfiguration> fhirServerConfiguration,
+            IOptions<DataSourceConfiguration> dataSourceConfiguration,
             IDiagnosticLogger diagnosticLogger,
             ILogger<DefaultSchemaConverter> logger)
         {
             _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
-            _fhirVersion = EnsureArg.EnumIsDefined(fhirServerConfiguration.Value.Version, nameof(fhirServerConfiguration.Value.Version));
+            _dataSourceType = EnsureArg.EnumIsDefined(dataSourceConfiguration.Value.Type, nameof(dataSourceConfiguration.Value.Type));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
@@ -70,7 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                         throw new ParquetDataProcessorException($"The input FHIR data is null for schema type '{schemaType}'.");
                     }
 
-                    return _fhirVersion == FhirVersion.DICOM ? ProcessDicomMetadataObject(json, schema) : ProcessStructObject(json, schema);
+                    return _dataSourceType == DataSourceType.DICOM ? ProcessDicomMetadataObject(json, schema) : ProcessStructObject(json, schema);
                 })
                 .Where(processedResult => processedResult != null);
 
@@ -96,18 +96,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 var subNode = subNodePair.Value;
 
                 // Ignore DICOM metadata node if it doesn't exist in schema
+                // Type SQ is ignored in current schema file
                 if (subNodeKeyword == null)
                 {
                     continue;
                 }
 
                 // Ignore empty tag, BulkDataURI and InlineBinary
-                // Ignore SQ
                 if (item.Value is not JObject jObject ||
                     !jObject.ContainsKey("vr") ||
                     !jObject.ContainsKey("Value") ||
-                    jObject["Value"] is not JArray ||
-                    string.Equals(jObject["vr"].ToString(), "SQ"))
+                    jObject["Value"] is not JArray)
                 {
                     continue;
                 }
@@ -233,7 +232,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 }
                 else
                 {
-                    arrayObject.Add(_fhirVersion == FhirVersion.DICOM ? ProcessDicomPnObject(item, schemaNode) : ProcessStructObject(item, schemaNode));
+                    arrayObject.Add(_dataSourceType == DataSourceType.DICOM ? ProcessDicomPnObject(item, schemaNode) : ProcessStructObject(item, schemaNode));
                 }
             }
 
@@ -255,7 +254,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             }
 
             // Convert every type to string for DICOM
-            return _fhirVersion == FhirVersion.DICOM ? new JValue(fhirLeafObject.ToString()) : fhirLeafObject;
+            return _dataSourceType == DataSourceType.DICOM ? new JValue(fhirLeafObject.ToString()) : fhirLeafObject;
         }
 
         private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirParquetSchemaNode schemaNode, string schemaNodeKey)

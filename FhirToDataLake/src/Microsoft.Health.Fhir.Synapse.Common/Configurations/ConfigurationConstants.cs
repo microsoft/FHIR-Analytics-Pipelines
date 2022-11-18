@@ -18,6 +18,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 
         public const string FhirServerConfigurationKey = "fhirServer";
 
+        public const string DataSourceConfigurationKey = "dataSource";
+
         public const string DataLakeStoreConfigurationKey = "dataLakeStore";
 
         public const string ArrowConfigurationKey = "arrow";
@@ -38,7 +40,14 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public static readonly Regex ImageNameRegex = new Regex(@"^[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*(\/[a-z0-9]+(([_\.]|_{2}|\-+)[a-z0-9]+)*)*$");
 
         // Currently the pipeline support FHIR R4 and R5 schemas.
-        public static readonly HashSet<FhirVersion> SupportedFhirVersions = new HashSet<FhirVersion> { FhirVersion.R4, FhirVersion.R5, FhirVersion.DICOM };
+        public static readonly HashSet<FhirVersion> SupportedFhirVersions = new HashSet<FhirVersion> { FhirVersion.R4, FhirVersion.R5 };
+
+        // The supported API versions of DICOM Server
+        public static readonly HashSet<DicomApiVersion> SupportedDicomApiVersions = new ()
+        {
+            DicomApiVersion.V1,
+            DicomApiVersion.V1_0_Prerelease,
+        };
 
         public const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
     }

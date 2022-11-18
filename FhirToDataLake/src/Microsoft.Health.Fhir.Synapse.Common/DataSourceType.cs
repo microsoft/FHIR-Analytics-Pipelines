@@ -6,23 +6,18 @@
 namespace Microsoft.Health.Fhir.Synapse.Common
 {
     /// <summary>
-    /// Supported fhir versions.
+    /// Supported data source types
     /// </summary>
-    public enum FhirVersion
+    public enum DataSourceType
     {
         /// <summary>
-        /// R5
+        /// FHIR
         /// </summary>
-        R5,
+        FHIR,
 
         /// <summary>
-        /// R4
+        /// DICOM
         /// </summary>
-        R4,
-
-        /// <summary>
-        /// Stu3 is not supported.
-        /// </summary>
-        Stu3,
+        DICOM,
     }
 }
