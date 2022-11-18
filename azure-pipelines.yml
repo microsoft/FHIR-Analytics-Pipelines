@@ -12,35 +12,58 @@ variables:
   buildConfiguration: 'Release'
   buildPlatform: 'x64'
   major: 0
-  minor: 3
+  minor: 4
   patch: 0
   buildnum: $[counter(format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch']), 1)]
   version: $(major).$(minor).$(patch).$(buildnum)
+  containerInstanceName: testfhirtodatalake
+  synapseWorkspaceName: testcisynapseworkspace
+  storageAccountName: testfhirtodoglaw6s6zpluk
+  imageName: fhirtodatalake
 
 stages:
 - stage: Build
-  pool:
-    vmImage: windows-2019
   jobs:
   - job: BuildFhirToCdm
+    pool:
+      vmImage: 'windows-latest'
     steps:
     - template: FhirToCdm/build.yml
 
   - job: BuildFhirToDataLake
+    pool:
+      vmImage: 'ubuntu-22.04'
     steps:
-    - template: FhirToDataLake/build.yml
+    - template: FhirToDataLake/azurepipelines/ci.yml
+
+- stage: OverallTest
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - job: PrepareTestEnvironment
+    pool:
+      vmImage: 'ubuntu-22.04'
+    steps:
+    - template: FhirToDataLake/azurepipelines/FhirToSynapseTest/set-environment.yml
+
+  - job: RunSynapseE2ETest
+    dependsOn: PrepareTestEnvironment
+    condition: succeeded()
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - template: FhirToDataLake/azurepipelines/FhirToSynapseTest/synapse-e2e-test.yml
 
 - stage: Release
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  condition: succeeded()
   pool:
     vmImage: 'windows-latest'
   jobs:
-  - job: SynapseE2ETest
+  - job: PackNugetPackages
     steps:
-    - template: FhirToDataLake/synapse-e2e-test.yml
+    - template: FhirToDataLake/azurepipelines/pack-nugets.yml
 
   - job: PublishFhirToCdm
-    dependsOn: SynapseE2ETest
+    dependsOn: PackNugetPackages
     condition: succeeded()
     steps:
     - template: FhirToCdm/publish.yml

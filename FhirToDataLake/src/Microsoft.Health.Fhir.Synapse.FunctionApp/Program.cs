@@ -8,9 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
+using Microsoft.Health.Fhir.Synapse.JobManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.FunctionApp
@@ -19,8 +22,8 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
     {
         public static void Main()
         {
-            var host = new HostBuilder()
-                .ConfigureAppConfiguration((builder) =>
+            IHost host = new HostBuilder()
+                .ConfigureAppConfiguration(builder =>
                 {
                     builder.AddJsonFile("appsettings.json");
                 })
@@ -30,10 +33,13 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
                         .AddHttpClient()
                         .AddConfiguration(context.Configuration)
                         .AddJobScheduler()
+                        .AddJobManagement()
                         .AddDataSource()
                         .AddDataWriter()
                         .AddAzure()
-                        .AddSchema();
+                        .AddSchema()
+                        .AddMetricsLogger()
+                        .AddDiagnosticLogger();
                 })
                 .Build();
 

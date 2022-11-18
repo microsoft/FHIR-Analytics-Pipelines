@@ -3,13 +3,14 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using NSubstitute;
@@ -28,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         [Fact]
         public async Task GivenARegistry_WithoutRbacGranted_WhenGetToken_ExceptionShouldBeThrown()
         {
-            var acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.Unauthorized);
+            ContainerRegistryAccessTokenProvider acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.Unauthorized);
 
             await Assert.ThrowsAsync<ContainerRegistryTokenException>(() => acrTokenProvider.GetTokenAsync(RegistryServer, default));
         }
@@ -36,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         [Fact]
         public async Task GivenANotFoundRegistry_WhenGetToken_ExceptionShouldBeThrown()
         {
-            var acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.NotFound);
+            ContainerRegistryAccessTokenProvider acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.NotFound);
             await Assert.ThrowsAsync<ContainerRegistryTokenException>(() => acrTokenProvider.GetTokenAsync(RegistryServer, default));
         }
 
@@ -47,14 +48,23 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         [InlineData("{\"refresh_token\":\"refresh_token_test\", \"access_token\":\"\"}")]
         public async Task GivenAValidRegistry_WhenRefreshTokenIsEmpty_ExceptionShouldBeThrown(string content)
         {
-            var acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.OK, content);
+            ContainerRegistryAccessTokenProvider acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.OK, content);
             await Assert.ThrowsAsync<ContainerRegistryTokenException>(() => acrTokenProvider.GetTokenAsync(RegistryServer, default));
+        }
+
+        [Fact]
+        public async Task GivenInvalidRegistry_WhenRefreshTokenIsEmpty_ExceptionShouldBeThrown()
+        {
+            var acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.OK);
+            await Assert.ThrowsAsync<ArgumentException>(() => acrTokenProvider.GetTokenAsync(string.Empty, default));
+            await Assert.ThrowsAsync<ArgumentException>(() => acrTokenProvider.GetTokenAsync(" ", default));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => acrTokenProvider.GetTokenAsync(null, default));
         }
 
         [Fact]
         public async Task GivenAValidRegistry_WhenGetToken_CorrectResultShouldBeReturned()
         {
-            var acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.OK, "{\"refresh_token\":\"refresh_token_test\", \"access_token\":\"access_token_test\"}");
+            ContainerRegistryAccessTokenProvider acrTokenProvider = GetMockAcrTokenProvider(HttpStatusCode.OK, "{\"refresh_token\":\"refresh_token_test\", \"access_token\":\"access_token_test\"}");
             string accessToken = await acrTokenProvider.GetTokenAsync(RegistryServer, default);
             Assert.Equal("Bearer access_token_test", accessToken);
         }
@@ -62,9 +72,12 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.ContainerRegi
         private ContainerRegistryAccessTokenProvider GetMockAcrTokenProvider(HttpStatusCode statusCode, string content = "")
         {
             ITokenCredentialProvider tokenProvider = Substitute.For<ITokenCredentialProvider>();
-            // tokenProvider.GetAccessTokenAsync(default, default).ReturnsForAnyArgs("Bearer test");
             var httpClient = new HttpClient(new MockHttpMessageHandler(content, statusCode));
-            return new ContainerRegistryAccessTokenProvider(tokenProvider, httpClient, new NullLogger<ContainerRegistryAccessTokenProvider>());
+
+            IHttpClientFactory httpClientFactory = Substitute.For<IHttpClientFactory>();
+            httpClientFactory.CreateClient().Returns(httpClient);
+
+            return new ContainerRegistryAccessTokenProvider(tokenProvider, httpClientFactory, new DiagnosticLogger(), new NullLogger<ContainerRegistryAccessTokenProvider>());
         }
 
         internal class MockHttpMessageHandler : HttpMessageHandler

@@ -25,9 +25,8 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
             [TimerTrigger("0 */5 * * * *", RunOnStartup = false)] MyInfo myTimer,
             FunctionContext context)
         {
-            var logger = context.GetLogger("JobManagerFunction");
+            ILogger logger = context.GetLogger("JobManagerFunction");
             logger.LogInformation("C# Timer trigger function executed at: {time}", DateTime.Now);
-            logger.LogInformation("Next timer schedule at: {time}", myTimer.ScheduleStatus.Next);
 
             try
             {
@@ -36,7 +35,6 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
             catch (Exception exception)
             {
                 logger.LogError(exception, "Function execution failed.");
-                _jobManager.Dispose();
                 throw;
             }
         }

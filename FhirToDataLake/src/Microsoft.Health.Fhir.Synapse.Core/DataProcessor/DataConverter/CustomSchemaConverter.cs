@@ -11,9 +11,11 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Liquid.Converter;
+using Microsoft.Health.Fhir.Liquid.Converter.Exceptions;
 using Microsoft.Health.Fhir.Liquid.Converter.Models;
 using Microsoft.Health.Fhir.Liquid.Converter.Processors;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
@@ -27,24 +29,48 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
     public class CustomSchemaConverter : IDataSchemaConverter
     {
         private readonly JsonProcessor _jsonProcessor;
-        private readonly ITemplateProvider _templateProvider;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<CustomSchemaConverter> _logger;
+        private readonly IContainerRegistryTemplateProvider _containerRegistryTemplateProvider;
+        private readonly string _schemaImageReference;
+
+        private readonly object _templateProviderLock = new object();
+        private ITemplateProvider _templateProvider;
 
         public CustomSchemaConverter(
             IContainerRegistryTemplateProvider containerRegistryTemplateProvider,
             IOptions<SchemaConfiguration> schemaConfiguration,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<CustomSchemaConverter> logger)
         {
-            _logger = logger;
-            if (!string.IsNullOrWhiteSpace(schemaConfiguration.Value.SchemaImageReference))
-            {
-                var templateCollections = containerRegistryTemplateProvider.GetTemplateCollectionAsync(
-                    schemaConfiguration.Value.SchemaImageReference,
-                    CancellationToken.None).Result;
+            EnsureArg.IsNotNull(schemaConfiguration, nameof(schemaConfiguration));
 
-                _jsonProcessor = new JsonProcessor(new ProcessorSettings());
-                _templateProvider = new TemplateProvider(templateCollections);
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _containerRegistryTemplateProvider = EnsureArg.IsNotNull(containerRegistryTemplateProvider, nameof(containerRegistryTemplateProvider));
+            _schemaImageReference = schemaConfiguration.Value.SchemaImageReference;
+
+            _jsonProcessor = new JsonProcessor(new ProcessorSettings());
+        }
+
+        private ITemplateProvider TemplateProvider
+        {
+            get
+            {
+                // Do the lazy initialization.
+                if (_templateProvider is null)
+                {
+                    lock (_templateProviderLock)
+                    {
+                        _templateProvider ??= new TemplateProvider(_containerRegistryTemplateProvider.GetTemplateCollectionAsync(
+                            _schemaImageReference,
+                            CancellationToken.None).Result);
+                    }
+                }
+
+                return _templateProvider;
             }
+            set => _templateProvider = value;
         }
 
         public JsonBatchData Convert(
@@ -57,23 +83,37 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (_templateProvider == null)
+            if (string.IsNullOrWhiteSpace(_schemaImageReference))
             {
-                _logger.LogError($"No valid template provider be found, maybe the schema image reference is empty or null.");
-                throw new ParquetDataProcessorException($"No valid template provider be found, maybe the schema image reference is empty or null.");
+                _diagnosticLogger.LogError("Schema image reference is empty or null.");
+                _logger.LogInformation("Schema image reference is empty or null.");
+                throw new ParquetDataProcessorException("Schema image reference is empty or null.");
             }
 
             List<JObject> processedData;
             try
             {
-                // TODO: Update FHIR-Converter, add an interface to directly convert an Object.
                 processedData = inputData.Values.Select(dataObject
-                    => JObject.Parse(_jsonProcessor.Convert(dataObject.ToString(), resourceType, _templateProvider))).ToList();
+                    => JObject.Parse(_jsonProcessor.Convert(dataObject, resourceType, TemplateProvider))).ToList();
+            }
+            catch (FhirConverterException convertException)
+            {
+                if (convertException.FhirConverterErrorCode == FhirConverterErrorCode.TimeoutError)
+                {
+                    _diagnosticLogger.LogError("Convert data operation timed out.");
+                    _logger.LogInformation(convertException.InnerException, "Convert data operation timed out.");
+                    throw new ParquetDataProcessorException($"Convert customized data for {resourceType} failed.", convertException);
+                }
+
+                _diagnosticLogger.LogError($"Convert data failed. Reason : {convertException.Message}");
+                _logger.LogInformation(convertException, "Convert data failed. Reason : {0}", convertException.Message);
+                throw new ParquetDataProcessorException($"Convert customized data for {resourceType} failed.", convertException);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Convert customized data for {resourceType} failed. " + ex.Message);
-                throw new ParquetDataProcessorException($"Convert customized data for {resourceType} failed.", ex);
+                _diagnosticLogger.LogError($"Unknown exception: Convert customized data for {resourceType} failed. Reason : {ex.Message}");
+                _logger.LogError(ex, "Unhandled exception: convert data process failed.");
+                throw;
             }
 
             return new JsonBatchData(processedData);

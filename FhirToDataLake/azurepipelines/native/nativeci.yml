@@ -1,0 +1,41 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+- main
+pr:
+- main
+
+variables:
+  major: 1
+  minor: 0
+  patch: 0
+  buildnum: $[counter(format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch']), 1)]
+  version: $(major).$(minor).$(patch).$(buildnum)
+  VCPKG_BINARY_SOURCES: 'clear;nuget,https://microsofthealthoss.pkgs.visualstudio.com/FhirAnalytics/_packaging/VcpkgSource/nuget/v3/index.json,readwrite'
+
+stages:
+- stage: Build
+  jobs:
+  - job: BuildLinuxNuget
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: build-linux-native-libs.yml
+
+  - job: BuildWindowsNuget
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - template: build-windows-native-libs.yml
+
+- stage: Publish Nuget
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - job: PackNugets
+    pool:
+      vmImage: 'ubuntu-latest'
+    dependsOn:
+    - BuildLinuxNuget
+    - BuildWindowsNuget
+    steps:
+    - template: pack-nugets.yml

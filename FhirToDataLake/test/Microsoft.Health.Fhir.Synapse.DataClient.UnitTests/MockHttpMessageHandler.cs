@@ -30,14 +30,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
 
             if (request.RequestUri.AbsolutePath != "/metadata")
             {
-                var accessToken = request.Headers.Authorization.Parameter;
+                string accessToken = request.Headers.Authorization.Parameter;
                 if (!string.Equals(accessToken, TestDataConstants.TestAccessToken))
                 {
                     return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized));
                 }
             }
 
-            var urlKey = request.RequestUri.ToString();
+            string urlKey = request.RequestUri.ToString();
             if (_sampleRequests.ContainsKey(urlKey))
             {
                 return Task.FromResult(_sampleRequests[urlKey]);
@@ -50,7 +50,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
         {
             if (request.RequestUri != null)
             {
-                var urlKey = request.RequestUri.ToString();
+                string urlKey = request.RequestUri.ToString();
                 if (_sampleRequests.ContainsKey(urlKey))
                 {
                     return _sampleRequests[urlKey];

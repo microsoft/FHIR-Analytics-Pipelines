@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Extensions
             DateTimeOffset dateTimeOffset,
             string expectedInstantValue)
         {
-            var instantValue = dateTimeOffset.ToInstantString();
+            string instantValue = dateTimeOffset.ToInstantString();
             Assert.Equal(expectedInstantValue, instantValue);
         }
     }

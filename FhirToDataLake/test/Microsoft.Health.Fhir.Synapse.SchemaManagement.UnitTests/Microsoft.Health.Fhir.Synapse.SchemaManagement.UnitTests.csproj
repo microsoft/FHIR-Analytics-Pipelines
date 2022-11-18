@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <Platforms>x64</Platforms>
     <OutputPath>bin\$(Configuration)</OutputPath>
@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageReference Include="NJsonSchema" Version="10.7.2" />
     <PackageReference Include="NSubstitute" Version="4.2.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -24,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Health.Fhir.Synapse.SchemaManagement\Microsoft.Health.Fhir.Synapse.SchemaManagement.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Fhir.Synapse.Core.UnitTests\Microsoft.Health.Fhir.Synapse.Core.UnitTests.csproj" />
   </ItemGroup>
 
 </Project>

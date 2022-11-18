@@ -10,10 +10,19 @@ namespace Microsoft.Health.Fhir.Synapse.Common
     /// </summary>
     public enum FhirVersion
     {
-        // Currently we only support FHIR R4.
+        /// <summary>
+        /// R5
+        /// </summary>
+        R5,
+
+        /// <summary>
+        /// R4
+        /// </summary>
         R4,
 
-        // Stu3 is not supported.
+        /// <summary>
+        /// Stu3 is not supported.
+        /// </summary>
         Stu3,
     }
 }

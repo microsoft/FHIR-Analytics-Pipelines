@@ -10,7 +10,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Exceptions;
 using Newtonsoft.Json;
 
@@ -18,16 +23,28 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 {
     public class LocalDefaultSchemaProvider : IParquetSchemaProvider
     {
+        private const string SchemaR4EmbeddedPrefix = "Schemas.R4";
+        private const string SchemaR5EmbeddedPrefix = "Schemas.R5";
+
+        private readonly FhirVersion _fhirVersion;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<LocalDefaultSchemaProvider> _logger;
 
-        public LocalDefaultSchemaProvider(ILogger<LocalDefaultSchemaProvider> logger)
+        public LocalDefaultSchemaProvider(
+            IOptions<FhirServerConfiguration> fhirServerConfiguration,
+            IDiagnosticLogger diagnosticLogger,
+            ILogger<LocalDefaultSchemaProvider> logger)
         {
-            _logger = logger;
+            EnsureArg.IsNotNull(fhirServerConfiguration, nameof(fhirServerConfiguration));
+
+            _fhirVersion = EnsureArg.EnumIsDefined(fhirServerConfiguration.Value.Version, nameof(fhirServerConfiguration.Value.Version));
+            _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         public Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default)
         {
-            Dictionary<string, string> embeddedSchemas = LoadEmbeddedSchema();
+            Dictionary<string, string> embeddedSchemas = LoadEmbeddedSchema(_fhirVersion);
             Dictionary<string, FhirParquetSchemaNode> defaultSchemaNodesMap;
             try
             {
@@ -39,32 +56,47 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Parse schema file failed. Reason: {ex.Message}.");
+                _diagnosticLogger.LogError($"Parse schema file failed. Reason: {ex.Message}.");
+                _logger.LogInformation(ex, $"Parse schema file failed. Reason: {ex.Message}.");
                 throw new GenerateFhirParquetSchemaNodeException($"Parse schema file failed. Reason: {ex.Message}.", ex);
             }
 
             return Task.FromResult(defaultSchemaNodesMap);
         }
 
-        private Dictionary<string, string> LoadEmbeddedSchema()
+        private static Dictionary<string, string> LoadEmbeddedSchema(FhirVersion fhirVersion)
         {
             Dictionary<string, string> embeddedSchema = new Dictionary<string, string>();
+
             var executingAssembly = Assembly.GetExecutingAssembly();
-            string folderName = string.Format("{0}.Schemas.R4", executingAssembly.GetName().Name);
-            var resourceNames = executingAssembly
+            string folderName = GetEmbeddedSchemaFolder(executingAssembly, fhirVersion);
+            string[] resourceNames = executingAssembly
                 .GetManifestResourceNames()
                 .Where(r => r.StartsWith(folderName) && r.EndsWith(".json"))
                 .ToArray();
-            foreach (var name in resourceNames)
+
+            foreach (string name in resourceNames)
             {
                 using (Stream stream = executingAssembly.GetManifestResourceStream(name))
-                using (StreamReader reader = new StreamReader(stream))
+                using (var reader = new StreamReader(stream))
                 {
                     embeddedSchema.Add(name, reader.ReadToEnd());
                 }
             }
 
             return embeddedSchema;
+        }
+
+        private static string GetEmbeddedSchemaFolder(Assembly assembly, FhirVersion fhirVersion)
+        {
+            return fhirVersion switch
+            {
+                FhirVersion.R4 => string.Format("{0}.{1}", assembly.GetName().Name, SchemaR4EmbeddedPrefix),
+                FhirVersion.R5 => string.Format("{0}.{1}", assembly.GetName().Name, SchemaR5EmbeddedPrefix),
+
+                // Will not happened because we have validated schema version when initialization.
+                _ => throw new GenerateFhirParquetSchemaNodeException($"Fhir schema version {fhirVersion} is not supported.")
+            };
         }
     }
 }

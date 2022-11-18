@@ -5,14 +5,18 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
+using Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
@@ -20,6 +24,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
     [Trait("Category", "DataWriter")]
     public class DataWriterTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+
         private const string LocalTestStorageUrl = "UseDevelopmentStorage=true";
 
         private const string TestStorageUrl = "https://fake.blob.windows.core.net";
@@ -28,44 +34,112 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
 
         private const string TestResourceType = "Patient";
 
-        private readonly DateTime _testDate = new (2021, 10, 1);
+        private readonly DateTime _testDate = new DateTime(2021, 10, 1);
+
+        private static readonly StorageConfiguration _storageConfiguration = new StorageConfiguration();
 
         [Fact]
         public async Task GivenAValidParameter_WhenWritingToBlob_CorrectContentShouldBeWritten()
         {
             var stream = new MemoryStream();
-            var bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
+            byte[] bytes = { 1, 2, 3, 4, 5, 6 };
             await stream.WriteAsync(bytes, 0, bytes.Length);
             stream.Position = 0;
-
-            var dataWriter = GetLocalDataWriter();
+            const long jobId = 1L;
+            int partIndex = 1;
+            AzureBlobDataWriter dataWriter = GetLocalDataWriter();
             var streamData = new StreamBatchData(stream, 1, TestResourceType);
-            await dataWriter.WriteAsync(streamData, "mockJob", 0, 0, _testDate);
+            await dataWriter.WriteAsync(streamData, jobId, partIndex, _testDate);
 
-            var containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
-            var blobStream = await containerClient.GetBlobAsync($"staging/mockJob/Patient/2021/10/01/Patient_0000000000_0000000000.parquet");
+            IAzureBlobContainerClient containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), _diagnosticLogger, new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
+            Stream blobStream = await containerClient.GetBlobAsync($"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet");
             Assert.NotNull(blobStream);
 
             var resultStream = new MemoryStream();
-            blobStream.CopyTo(resultStream);
+            await blobStream.CopyToAsync(resultStream);
             Assert.Equal(bytes, resultStream.ToArray());
         }
 
         [Fact]
         public async Task GivenAnInvalidInputStreamData_WhenWritingToBlob_ExceptionShouldBeThrown()
         {
-            var dataWriter = GetLocalDataWriter();
+            AzureBlobDataWriter dataWriter = GetLocalDataWriter();
             var streamData = new StreamBatchData(null, 0, TestResourceType);
-            await Assert.ThrowsAsync<ArgumentNullException>(() => dataWriter.WriteAsync(streamData, "mockJob", 0, 0, _testDate));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => dataWriter.WriteAsync(streamData, 0L, 0, _testDate));
         }
 
         [Fact]
-        public void GivenAnInvalidBlobContainerClient_WhenCreateDataWriter_ExceptionShouldBeThrown()
+        public async void GivenAnInvalidBlobContainerClient_WhenCommitTheData_ExceptionShouldBeThrown()
         {
-            Assert.Throws<AzureBlobOperationFailedException>(GetDataWriter);
+            AzureBlobDataWriter invalidContainerDataWriter = GetBrokenDataWriter();
+
+            await Assert.ThrowsAsync<AzureBlobOperationFailedException>(() => invalidContainerDataWriter.CommitJobDataAsync(00));
         }
 
-        private IDataSink GetDataSink()
+        [Fact]
+        public async Task GivenEmptyFolder_WhenCleanJobData_ThenShouldNoExceptionBeThrown()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+
+            const long jobId = 1L;
+            AzureBlobDataWriter dataWriter = GetInMemoryDataWriter(blobClient);
+
+            bool result = await dataWriter.TryCleanJobDataAsync(jobId, CancellationToken.None);
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task GivenExistingJobData_WhenCleanJobData_ThenTheDataShouldBeDeleted()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+
+            var stream = new MemoryStream();
+            byte[] bytes = { 1, 2, 3, 4, 5, 6 };
+            await stream.WriteAsync(bytes, 0, bytes.Length);
+            stream.Position = 0;
+            const long jobId = 1L;
+            int partIndex = 1;
+            AzureBlobDataWriter dataWriter = GetInMemoryDataWriter(blobClient);
+
+            string blobName = $"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet";
+            await blobClient.CreateBlobAsync(blobName, stream, CancellationToken.None);
+            bool blobExists = await blobClient.BlobExistsAsync(blobName, CancellationToken.None);
+            Assert.True(blobExists);
+
+            bool result = await dataWriter.TryCleanJobDataAsync(jobId, CancellationToken.None);
+            Assert.True(result);
+            blobExists = await blobClient.BlobExistsAsync(blobName, CancellationToken.None);
+            Assert.False(blobExists);
+        }
+
+        [Fact]
+        public async Task GivenValidData_WhenCommitData_ThenTheDataShouldBeCommitted()
+        {
+            var blobClient = new InMemoryBlobContainerClient();
+
+            var stream = new MemoryStream();
+            byte[] bytes = { 1, 2, 3, 4, 5, 6 };
+            await stream.WriteAsync(bytes, 0, bytes.Length);
+            stream.Position = 0;
+            const long jobId = 1L;
+            int partIndex = 1;
+            AzureBlobDataWriter dataWriter = GetInMemoryDataWriter(blobClient);
+
+            string blobName = $"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet";
+            await blobClient.CreateBlobAsync(blobName, stream, CancellationToken.None);
+            bool blobExists = await blobClient.BlobExistsAsync(blobName, CancellationToken.None);
+            Assert.True(blobExists);
+
+            Exception exception = await Record.ExceptionAsync(async () => await dataWriter.CommitJobDataAsync(jobId, CancellationToken.None));
+            Assert.Null(exception);
+            blobExists = await blobClient.BlobExistsAsync(blobName, CancellationToken.None);
+            Assert.False(blobExists);
+            string expectedBlobName = $"result/Patient/2021/10/01/{jobId:d20}/Patient_{partIndex:d10}.parquet";
+            blobExists = await blobClient.BlobExistsAsync(expectedBlobName, CancellationToken.None);
+            Assert.True(blobExists);
+        }
+
+        private static IDataSink GetBrokenDataSink()
         {
             var jobConfig = new JobConfiguration
             {
@@ -82,7 +156,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
                 Options.Create(jobConfig));
         }
 
-        public IDataSink GetLocalDataSink()
+        private static IDataSink GetLocalDataSink()
         {
             var jobConfig = new JobConfiguration
             {
@@ -91,7 +165,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
 
             var storageConfig = new DataLakeStoreConfiguration
             {
-                StorageUrl = "UseDevelopmentStorage=true",
+                StorageUrl = LocalTestStorageUrl,
             };
 
             return new AzureBlobDataSink(
@@ -99,23 +173,38 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
                 Options.Create(jobConfig));
         }
 
-        private AzureBlobDataWriter GetLocalDataWriter()
+        private static AzureBlobDataWriter GetLocalDataWriter()
         {
             return new AzureBlobDataWriter(
                 new AzureBlobContainerClientFactory(
                     new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
+                    Options.Create(_storageConfiguration),
+                    _diagnosticLogger,
                     new NullLoggerFactory()),
                 GetLocalDataSink(),
                 new NullLogger<AzureBlobDataWriter>());
         }
 
-        private AzureBlobDataWriter GetDataWriter()
+        private static AzureBlobDataWriter GetInMemoryDataWriter(IAzureBlobContainerClient blobClient)
+        {
+            var mockFactory = Substitute.For<IAzureBlobContainerClientFactory>();
+            mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
+
+            return new AzureBlobDataWriter(
+                mockFactory,
+                GetLocalDataSink(),
+                new NullLogger<AzureBlobDataWriter>());
+        }
+
+        private static AzureBlobDataWriter GetBrokenDataWriter()
         {
             return new AzureBlobDataWriter(
                 new AzureBlobContainerClientFactory(
                     new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
+                    Options.Create(_storageConfiguration),
+                    _diagnosticLogger,
                     new NullLoggerFactory()),
-                GetDataSink(),
+                GetBrokenDataSink(),
                 new NullLogger<AzureBlobDataWriter>());
         }
     }

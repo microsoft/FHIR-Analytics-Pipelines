@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+    <TargetFramework>net6.0</TargetFramework>
+    <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <OutputType>Exe</OutputType>
     <Platforms>x64</Platforms>
   </PropertyGroup>
@@ -32,15 +32,4 @@
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Message Text="PostBuild" Importance="high" />
-    <Exec Command="xcopy /y /d  &quot;..\..\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(TargetDir)&quot;" />
-    <Exec Command="xcopy /y /d /E &quot;..\..\data\*.*&quot; &quot;$(TargetDir)&quot;" />
-  </Target>
-  <Target Name="CopyBeforePublish" BeforeTargets="Publish">
-    <Message Text="Inside BeforePublish" Importance="high" />
-    <Exec Command="xcopy /y /d  &quot;..\..\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(PublishDir)&quot;" />
-    <Exec Command="xcopy /y /d /E &quot;..\..\data\*.*&quot; &quot;$(PublishDir)&quot;" />
-  </Target>
 </Project>

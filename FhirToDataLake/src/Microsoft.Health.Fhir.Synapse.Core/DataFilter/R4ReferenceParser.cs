@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         private static readonly string ResourceTypesPattern = string.Join('|', R4FhirModelInfo.SupportedResources);
         private static readonly string ReferenceCaptureRegexPattern = $@"(?<{ResourceTypeCapture}>{ResourceTypesPattern})\/(?<{ResourceIdCapture}>[A-Za-z0-9\-\.]{{1,64}})(\/_history\/[A-Za-z0-9\-\.]{{1,64}})?";
 
-        private static readonly Regex ReferenceRegex = new (
+        private static readonly Regex ReferenceRegex = new Regex(
             ReferenceCaptureRegexPattern,
             RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
@@ -45,21 +45,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
         {
             if (string.IsNullOrWhiteSpace(reference))
             {
-                _logger.LogError("The reference string is null or white space.");
+                _logger.LogInformation("The reference string is null or white space.");
                 throw new ReferenceParseException("The reference string is null or white space.");
             }
 
-            var match = ReferenceRegex.Match(reference);
+            Match match = ReferenceRegex.Match(reference);
 
             if (match.Success)
             {
-                var resourceTypeInString = match.Groups[ResourceTypeCapture].Value;
+                string resourceTypeInString = match.Groups[ResourceTypeCapture].Value;
 
                 if (R4FhirModelInfo.IsKnownResource(resourceTypeInString))
                 {
-                    var resourceId = match.Groups[ResourceIdCapture].Value;
+                    string resourceId = match.Groups[ResourceIdCapture].Value;
 
-                    var resourceTypeStartIndex = match.Groups[ResourceTypeCapture].Index;
+                    int resourceTypeStartIndex = match.Groups[ResourceTypeCapture].Index;
 
                     if (resourceTypeStartIndex == 0)
                     {
@@ -81,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                             if (SupportedSchemes.Contains(baseUri.Scheme, StringComparer.OrdinalIgnoreCase))
                             {
                                 // This is an absolute URL pointing to an external resource.
-                                _logger.LogError($"The reference {reference} is an absolute URL pointing to an external resource.");
+                                _logger.LogInformation($"The reference {reference} is an absolute URL pointing to an external resource.");
                                 throw new ReferenceParseException($"The reference {reference} is an absolute URL pointing to an external resource.");
                             }
                         }
@@ -89,18 +89,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                     catch (UriFormatException ex)
                     {
                         // The reference is not a relative reference but is not a valid absolute reference either.
-                        _logger.LogError($"The reference {reference} is not a relative reference but is not a valid absolute reference either. UriFormatException: {ex}.");
+                        _logger.LogInformation(ex, $"The reference {reference} is not a relative reference but is not a valid absolute reference either. UriFormatException: {ex}.");
                         throw new ReferenceParseException($"The reference {reference} is not a relative reference but is not a valid absolute reference either.", ex);
                     }
                 }
                 else
                 {
-                    _logger.LogError($"The resource type {resourceTypeInString} in reference {reference} isn't a known resource type.");
+                    _logger.LogInformation($"The resource type {resourceTypeInString} in reference {reference} isn't a known resource type.");
                     throw new ReferenceParseException($"The resource type {resourceTypeInString} in reference {reference} isn't a known resource type.");
                 }
             }
 
-            _logger.LogError($"Fail to parse reference {reference}.");
+            _logger.LogInformation($"Fail to parse reference {reference}.");
             throw new ReferenceParseException($"Fail to parse reference {reference}.");
         }
     }

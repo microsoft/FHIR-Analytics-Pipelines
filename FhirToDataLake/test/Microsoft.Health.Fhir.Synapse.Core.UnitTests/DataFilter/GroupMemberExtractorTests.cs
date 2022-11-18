@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient;
@@ -24,6 +25,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 {
     public class GroupMemberExtractorTests
     {
+        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+
         private readonly GroupMemberExtractor _groupMemberExtractor;
 
         private readonly FhirApiDataSource _dataSource;
@@ -63,11 +66,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             dataClient.SearchAsync(new ResourceIdSearchOptions("Group", _sampleGroupId, null), _noneCancellationToken)
                 .ReturnsForAnyArgs(x =>
                 {
-                    var resourceId = ((ResourceIdSearchOptions)x[0]).ResourceId;
-                    var testDataFile = _groupIdToTestDataFile.ContainsKey(resourceId)
+                    string resourceId = ((ResourceIdSearchOptions)x[0]).ResourceId;
+                    string testDataFile = _groupIdToTestDataFile.ContainsKey(resourceId)
                         ? Path.Combine(_testDataFolder, _groupIdToTestDataFile[resourceId])
                         : TestDataConstants.EmptyBundleFile;
-                    var bundle =
+                    string bundle =
                         TestDataProvider.GetBundleFromFile(testDataFile);
                     return bundle;
                 });
@@ -77,27 +80,27 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 ServerUrl = "https://example.com",
                 Authentication = AuthenticationType.None,
             };
-            var fhirServerOption = Options.Create(fhirServerConfig);
+            IOptions<FhirServerConfiguration> fhirServerOption = Options.Create(fhirServerConfig);
             _dataSource = new FhirApiDataSource(fhirServerOption);
             _referenceParser = new R4ReferenceParser(_dataSource, NullLogger<R4ReferenceParser>.Instance);
-            _groupMemberExtractor = new GroupMemberExtractor(dataClient, _referenceParser, _nullGroupMemberExtractorLogger);
+            _groupMemberExtractor = new GroupMemberExtractor(dataClient, _referenceParser, _diagnosticLogger, _nullGroupMemberExtractorLogger);
         }
 
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new GroupMemberExtractor(null, _referenceParser, _nullGroupMemberExtractorLogger));
+                () => new GroupMemberExtractor(null, _referenceParser, _diagnosticLogger, _nullGroupMemberExtractorLogger));
 
             var dataClient = Substitute.For<IFhirDataClient>();
             Assert.Throws<ArgumentNullException>(
-                () => new GroupMemberExtractor(dataClient, null, _nullGroupMemberExtractorLogger));
+                () => new GroupMemberExtractor(dataClient, null, _diagnosticLogger, _nullGroupMemberExtractorLogger));
         }
 
         [Fact]
         public async Task GivenAGroupId_WhenPatientsAreRequested_ThenTheActivePatientsAreReturnedAsync()
         {
-            var resultPatientIds =
+            HashSet<string> resultPatientIds =
                 await _groupMemberExtractor.GetGroupPatientsAsync(_sampleGroupId, null, _triggerTime, _noneCancellationToken);
 
             Assert.Equal(5, resultPatientIds.Count);
@@ -115,14 +118,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             pat4: invalid, duplicated patient while inactive
             pat9: absolute URL pointing to an internal resource
             */
-            var expectedPatientIds = new List<string> { "pat1", "pat3", "pat4", "pat6", "pat9" };
-            var unExpectedPatientIds = new List<string> { "pat2", "pat5", "pat7", "pat8" };
-            foreach (var expectedPatientId in expectedPatientIds)
+            List<string> expectedPatientIds = new List<string> { "pat1", "pat3", "pat4", "pat6", "pat9" };
+            List<string> unExpectedPatientIds = new List<string> { "pat2", "pat5", "pat7", "pat8" };
+            foreach (string expectedPatientId in expectedPatientIds)
             {
                 Assert.Contains(expectedPatientId, resultPatientIds);
             }
 
-            foreach (var unExpectedPatientId in unExpectedPatientIds)
+            foreach (string unExpectedPatientId in unExpectedPatientIds)
             {
                 Assert.DoesNotContain(unExpectedPatientId, resultPatientIds);
             }
@@ -132,7 +135,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         public async Task
             GivenAGroupIdForAGroupWithANestedGroup_WhenPatientsAreRequested_ThenTheActivePatientsAreReturnedAsync()
         {
-            var resultPatientIds =
+            HashSet<string> resultPatientIds =
                 await _groupMemberExtractor.GetGroupPatientsAsync(_nestedGroupId, null, _triggerTime, _noneCancellationToken);
 
             Assert.Equal(7, resultPatientIds.Count);
@@ -141,14 +144,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             // the new patient groupPat1 is included
             // the duplicate patient pat1 is included and deduplicated.
             // the duplicate patient pat2 is included.
-            var expectedPatientIds = new List<string> { "pat1", "pat2", "pat3", "pat4", "pat6", "pat9", "groupPat1" };
-            var unExpectedPatientIds = new List<string> { "pat5", "pat7", "pat8" };
-            foreach (var expectedPatientId in expectedPatientIds)
+            List<string> expectedPatientIds = new List<string> { "pat1", "pat2", "pat3", "pat4", "pat6", "pat9", "groupPat1" };
+            List<string> unExpectedPatientIds = new List<string> { "pat5", "pat7", "pat8" };
+            foreach (string expectedPatientId in expectedPatientIds)
             {
                 Assert.Contains(expectedPatientId, resultPatientIds);
             }
 
-            foreach (var unExpectedPatientId in unExpectedPatientIds)
+            foreach (string unExpectedPatientId in unExpectedPatientIds)
             {
                 Assert.DoesNotContain(unExpectedPatientId, resultPatientIds);
             }
@@ -165,7 +168,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 int numberOfResources)
         {
             var dateTimeOffset = new DateTimeOffset(new DateTime(year, 1, 1));
-            var resultPatientIds = await _groupMemberExtractor.GetGroupPatientsAsync(
+            HashSet<string> resultPatientIds = await _groupMemberExtractor.GetGroupPatientsAsync(
                 _sampleGroupId,
                 null,
                 dateTimeOffset,
@@ -178,7 +181,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         public async Task GivenNoFoundGroupId_WhenGetGroupPatients_ExceptionShouldBeThrown()
         {
             var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_notFoundGroupId, null, _triggerTime, _noneCancellationToken));
-            Assert.StartsWith($"Group {_notFoundGroupId} is not found.", exception.Message);
+            Assert.StartsWith($"Failed to extract group members. Reason: Group {_notFoundGroupId} is not found.", exception.Message);
         }
 
         [Theory]
@@ -188,28 +191,28 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         public async Task GivenNullOrWhiteSpaceGroupId_WhenGetGroupPatients_ExceptionShouldBeThrown(string groupId)
         {
             var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(groupId, null, _triggerTime, _noneCancellationToken));
-            Assert.Equal($"The input group id is null or white space.", exception.Message);
+            Assert.Equal("Failed to extract group members. Reason: The input group id is null or white space.", exception.Message);
         }
 
         [Fact]
         public async Task GivenInvalidBundle_WhenGetGroupPatients_ExceptionShouldBeThrown()
         {
             var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_invalidBundle, null, _triggerTime, _noneCancellationToken));
-            Assert.StartsWith($"Failed to parse fhir bundle ", exception.Message);
+            Assert.StartsWith("Failed to extract group members. Reason: Failed to parse fhir 'Group' bundle ", exception.Message);
         }
 
         [Fact]
         public async Task GivenInvalidGroupBundle_WhenGetGroupPatients_ExceptionShouldBeThrown()
         {
             var exception = await Assert.ThrowsAsync<GroupMemberExtractorException>(() => _groupMemberExtractor.GetGroupPatientsAsync(_invalidGroup, null, _triggerTime, _noneCancellationToken));
-            Assert.StartsWith($"There are invalid group entries returned: ", exception.Message);
+            Assert.StartsWith("Failed to extract group members. Reason: There are invalid group entries returned: ", exception.Message);
         }
 
         [Fact]
         public async Task
             GivenAGroupIdForAGroupWithInvalidMembers_WhenPatientsAreRequested_ThenTheEmptyResultAreReturnedAsync()
         {
-            var result = await _groupMemberExtractor.GetGroupPatientsAsync(
+            HashSet<string> result = await _groupMemberExtractor.GetGroupPatientsAsync(
                 _invalidMembersGroupId,
                 null,
                 _triggerTime,

@@ -13,26 +13,26 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
     public static class JObjectExtensions
     {
         /// <summary>
-        /// Extract last update day information from resource.
+        /// Extract last updated timestamp information from resource.
         /// </summary>
         /// <param name="resource">input resource.</param>
-        /// <returns>lastupdate timestamp of the bundle.</returns>
-        public static DateTime? GetLastUpdatedDay(this JObject resource)
+        /// <returns>The last updated timestamp of the resource.</returns>
+        public static DateTimeOffset? GetLastUpdated(this JObject resource)
         {
-            var result = (resource.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<string>(FhirBundleConstants.LastUpdatedKey);
+            string result =
+                (resource.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<string>(FhirBundleConstants.LastUpdatedKey);
             if (result == null)
             {
-                throw new FhirDataParseExeption("Failed to find lastUpdated value in resource.");
+                throw new FhirDataParseException("Failed to find lastUpdated value in resource.");
             }
 
             try
             {
-                var lastUpdateDatetime = DateTimeOffset.Parse(result.ToString());
-                return new DateTime(lastUpdateDatetime.Year, lastUpdateDatetime.Month, lastUpdateDatetime.Day);
+                return DateTimeOffset.Parse(result);
             }
             catch (Exception exception)
             {
-                throw new FhirDataParseExeption("Failed to parse lastUpdated value from resource.", exception);
+                throw new FhirDataParseException("Failed to parse lastUpdated value from resource.", exception);
             }
         }
     }

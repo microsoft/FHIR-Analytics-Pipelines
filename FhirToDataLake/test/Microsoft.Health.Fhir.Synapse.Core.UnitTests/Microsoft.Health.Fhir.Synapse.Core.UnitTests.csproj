@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Platforms>x64</Platforms>
     <IsPackable>false</IsPackable>
     <OutputPath>bin\$(Configuration)</OutputPath>
@@ -20,6 +20,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
+    <PackageReference Include="Microsoft.Health.Parquet" Version="$(ParquetNativeLibVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,9 +55,5 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /y /d  &quot;$(SolutionDir)\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(OutDir)&quot;" />
-  </Target>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <Platforms>x64</Platforms>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
@@ -19,6 +19,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
+    <PackageReference Include="Microsoft.Health.Parquet" Version="$(ParquetNativeLibVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,6 +29,9 @@
   <ItemGroup>
     <None Update="appsettings.test.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\Expected\GroupScope_AllPatient_Filters_part2.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestData\Expected\GroupScope_AllPatient_Filters_part1.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -42,9 +46,4 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /y /d  &quot;$(SolutionDir)\packages\ApacheArrowCPP.0.1.6\build\native\bin\$(Configuration)\*.*&quot; &quot;$(TargetDir)&quot;" />
-  </Target>
-
 </Project>

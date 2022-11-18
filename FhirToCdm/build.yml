@@ -11,21 +11,24 @@ steps:
     versionSpec: '12.x'
     checkLatest: true
 
-- script: |
-    npm install --prefix Configuration-Generator Configuration-Generator
-    npm run build Configuration-Generator
-  workingDirectory: FhirToCdm
-  displayName: 'Install & Build Configuartion Generator'
+- task: Npm@1
+  displayName: Install & Build Configuartion Generator
+  inputs:
+    command: ci
+    workingDir: FhirToCdm/Configuration-Generator
 
-- script: npm run citest --prefix Configuration-Generator
-  workingDirectory: FhirToCdm
-  displayName: 'Run Configuartion Generator Tests'
+- task: Npm@1
+  displayName: Run Configuartion Generator Tests
+  inputs:
+    command: custom
+    workingDir: FhirToCdm/Configuration-Generator
+    customCommand: test --runInBand
 
 - task: DotNetCoreCLI@2
   displayName: Run Engine Core Tests
   inputs:
     command: test
-    projects: '**/*Test/*.csproj'
+    projects: '**/Microsoft.Health.Fhir.*Test/*.csproj'
     arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
 
 - task: PublishTestResults@2

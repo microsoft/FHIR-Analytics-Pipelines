@@ -7,6 +7,7 @@ using System;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
@@ -32,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 ServerUrl = _serverUrl,
                 Authentication = AuthenticationType.None,
             };
-            var fhirServerOption = Options.Create(fhirServerConfig);
+            IOptions<FhirServerConfiguration> fhirServerOption = Options.Create(fhirServerConfig);
             _dataSource = new FhirApiDataSource(fhirServerOption);
             _referenceParser = new R4ReferenceParser(_dataSource, _nullR4ReferenceParserLogger);
         }
@@ -61,7 +62,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [InlineData("https://example.com/Patient/123/_history/2")]
         public void GivenValidReference_WhenParseReference_ParsedReferenceShouldBeReturned(string reference)
         {
-            var fhirReference = _referenceParser.Parse(reference);
+            FhirReference fhirReference = _referenceParser.Parse(reference);
             Assert.NotNull(fhirReference);
             Assert.Equal("Patient", fhirReference.ResourceType);
             Assert.Equal("123", fhirReference.ResourceId);
@@ -76,11 +77,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 Authentication = AuthenticationType.None,
             };
 
-            var fhirServerOption = Options.Create(fhirServerConfig);
+            IOptions<FhirServerConfiguration> fhirServerOption = Options.Create(fhirServerConfig);
             var dataSource = new FhirApiDataSource(fhirServerOption);
             var referenceParser = new R4ReferenceParser(dataSource, _nullR4ReferenceParserLogger);
 
-            var fhirReference = referenceParser.Parse("https://example.com/Patient/123/_history/2");
+            FhirReference fhirReference = referenceParser.Parse("https://example.com/Patient/123/_history/2");
             Assert.NotNull(fhirReference);
             Assert.Equal("Patient", fhirReference.ResourceType);
             Assert.Equal("123", fhirReference.ResourceId);

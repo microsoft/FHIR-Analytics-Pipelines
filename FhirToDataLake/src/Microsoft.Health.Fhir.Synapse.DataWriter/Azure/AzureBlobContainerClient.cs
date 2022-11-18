@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
+using Azure.Core;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
@@ -19,15 +20,22 @@ using Azure.Storage.Files.DataLake.Models;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
     public class AzureBlobContainerClient : IAzureBlobContainerClient
     {
-        private readonly BlobContainerClient _blobContainerClient;
-        private readonly DataLakeFileSystemClient _dataLakeFileSystemClient;
+        private readonly ITokenCredentialProvider _credentialProvider;
+        private readonly Uri _storageUri;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<AzureBlobContainerClient> _logger;
+
+        private readonly object _blobContainerClientLock = new object();
+        private readonly object _dataLakeFileSystemClientLock = new object();
+        private BlobContainerClient _blobContainerClient;
+        private DataLakeFileSystemClient _dataLakeFileSystemClient;
 
         private const int ListBlobPageCount = 20;
 
@@ -40,22 +48,18 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         public AzureBlobContainerClient(
             Uri storageUri,
             ITokenCredentialProvider credentialProvider,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureBlobContainerClient> logger)
         {
             EnsureArg.IsNotNull(storageUri, nameof(storageUri));
             EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
+            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
-
-            var externalTokenCredential = credentialProvider.GetCredential(TokenCredentialTypes.External);
-            _blobContainerClient = new BlobContainerClient(
-                storageUri,
-                externalTokenCredential);
-            _dataLakeFileSystemClient = new DataLakeFileSystemClient(
-                storageUri,
-                externalTokenCredential);
-            InitializeBlobContainerClient();
+            _credentialProvider = credentialProvider;
+            _storageUri = storageUri;
         }
 
         /// <summary>
@@ -64,61 +68,138 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         /// </summary>
         /// <param name="connectionString">Storage connection string.</param>
         /// <param name="containerName">Container name.</param>
+        /// <param name="diagnosticLogger">diagnostic logger</param>
         /// <param name="logger">logger.</param>
         public AzureBlobContainerClient(
             string connectionString,
             string containerName,
+            IDiagnosticLogger diagnosticLogger,
             ILogger<AzureBlobContainerClient> logger)
         {
             EnsureArg.IsNotNull(connectionString, nameof(connectionString));
             EnsureArg.IsNotNull(containerName, nameof(containerName));
+            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
+            _diagnosticLogger = diagnosticLogger;
             _logger = logger;
 
-            _blobContainerClient = new BlobContainerClient(
+            var blobContainerClient = new BlobContainerClient(
                 connectionString,
                 containerName);
-            _dataLakeFileSystemClient = new DataLakeFileSystemClient(
-                connectionString,
-                containerName);
+            InitializeBlobContainerClient(blobContainerClient);
 
-            InitializeBlobContainerClient();
+            BlobContainerClient = blobContainerClient;
+
+            DataLakeFileSystemClient = new DataLakeFileSystemClient(
+                connectionString,
+                containerName);
         }
 
-        private void InitializeBlobContainerClient()
+        private BlobContainerClient BlobContainerClient
+        {
+            get
+            {
+                // Do the lazy initialization.
+                if (_blobContainerClient is null)
+                {
+                    lock (_blobContainerClientLock)
+                    {
+                        // Check null again to avoid duplicate initialization.
+                        if (_blobContainerClient is null)
+                        {
+                            try
+                            {
+                                TokenCredential externalTokenCredential = _credentialProvider.GetCredential(TokenCredentialTypes.External);
+                                var tempBlobContainerClient = new BlobContainerClient(
+                                    _storageUri,
+                                    externalTokenCredential);
+
+                                InitializeBlobContainerClient(tempBlobContainerClient);
+                                _blobContainerClient = tempBlobContainerClient;
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogInformation(ex, "Failed to initialize blob container client.");
+                                throw;
+                            }
+                        }
+                    }
+                }
+
+                return _blobContainerClient;
+            }
+            set => _blobContainerClient = value;
+        }
+
+        private DataLakeFileSystemClient DataLakeFileSystemClient
+        {
+            get
+            {
+                // Do the lazy initialization.
+                if (_dataLakeFileSystemClient is null)
+                {
+                    lock (_dataLakeFileSystemClientLock)
+                    {
+                        _dataLakeFileSystemClient ??= new DataLakeFileSystemClient(
+                            _storageUri,
+                            _credentialProvider.GetCredential(TokenCredentialTypes.External));
+                    }
+                }
+
+                return _dataLakeFileSystemClient;
+            }
+            set => _dataLakeFileSystemClient = value;
+        }
+
+        private void InitializeBlobContainerClient(BlobContainerClient blobContainerClient)
         {
             try
             {
-                _blobContainerClient.CreateIfNotExists();
+                blobContainerClient.CreateIfNotExists();
+                _logger.LogInformation($"Create container {blobContainerClient.Name} successfully.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Create container {_blobContainerClient.Name} failed. Reason: {ex}");
-                throw new AzureBlobOperationFailedException($"Create container {_blobContainerClient.Name} failed.", ex);
+                _diagnosticLogger.LogError($"Create container {blobContainerClient.Name} failed. Reason: {ex.Message}");
+                _logger.LogInformation(ex, $"Failed to create container {blobContainerClient.Name}.");
+                throw new AzureBlobOperationFailedException($"Failed to create container {blobContainerClient.Name}.", ex);
+            }
+        }
+
+        public bool IsInitialized()
+        {
+            try
+            {
+                return BlobContainerClient != null;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
         public async Task<bool> BlobExistsAsync(string blobName, CancellationToken cancellationToken = default)
         {
-            var blobClient = _blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = BlobContainerClient.GetBlobClient(blobName);
             try
             {
                 return await blobClient.ExistsAsync(cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Check whether blob '{blobName}' exists failed. Reason: '{ex}'");
+                _diagnosticLogger.LogError($"Check whether blob '{blobName}' exists failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"Check whether blob '{blobName}' exists failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"Check whether blob '{blobName}' exists failed.", ex);
             }
         }
 
         public async Task<IEnumerable<string>> ListBlobsAsync(string blobPrefix, CancellationToken cancellationToken = default)
         {
-            var blobNameList = new List<string>();
+            List<string> blobNameList = new List<string>();
             try
             {
-                await foreach (var page in _blobContainerClient.GetBlobsByHierarchyAsync(prefix: blobPrefix, cancellationToken: cancellationToken)
+                await foreach (Page<BlobHierarchyItem> page in BlobContainerClient.GetBlobsByHierarchyAsync(prefix: blobPrefix, cancellationToken: cancellationToken)
                     .AsPages(default, ListBlobPageCount))
                 {
                     blobNameList.AddRange(page.Values.Where(item => item.IsBlob).Select(item => item.Blob.Name));
@@ -128,14 +209,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"List blob prefix '{blobPrefix}' failed. Reason: '{ex}'");
+                _diagnosticLogger.LogError($"List blob prefix '{blobPrefix}' failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"List blob prefix '{blobPrefix}' failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"List blob prefix '{blobPrefix}' failed.", ex);
             }
         }
 
         public async Task<Stream> GetBlobAsync(string blobName, CancellationToken cancellationToken = default)
         {
-            var blobClient = _blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = BlobContainerClient.GetBlobClient(blobName);
             try
             {
                 var stream = new MemoryStream();
@@ -150,14 +232,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Get blob '{blobName}' failed. Reason: '{ex}'");
+                _diagnosticLogger.LogError($"Get blob '{blobName}' failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"Get blob '{blobName}' failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"Get blob '{blobName}' failed.", ex);
             }
         }
 
         public async Task<bool> CreateBlobAsync(string blobName, Stream stream, CancellationToken cancellationToken = default)
         {
-            var blobClient = _blobContainerClient.GetBlobClient(blobName);
+            BlobClient blobClient = BlobContainerClient.GetBlobClient(blobName);
 
             stream.Seek(0, SeekOrigin.Begin);
             try
@@ -176,21 +259,23 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Create blob '{blobName}' failed. Reason: '{ex}'");
+                _diagnosticLogger.LogError($"Create blob '{blobName}' failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"Create blob '{blobName}' failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"Create blob '{blobName}' failed.", ex);
             }
         }
 
         public async Task<bool> DeleteBlobAsync(string blobName, CancellationToken cancellationToken = default)
         {
-            var blob = _blobContainerClient.GetBlobClient(blobName);
+            BlobClient blob = BlobContainerClient.GetBlobClient(blobName);
             try
             {
                 return await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Delete blob '{blobName}' failed. Reason: '{ex}'");
+                _diagnosticLogger.LogError($"Delete blob '{blobName}' failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"Delete blob '{blobName}' failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"Delete blob '{blobName}' failed.", ex);
             }
         }
@@ -200,7 +285,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             EnsureArg.IsNotNull(blobName, nameof(blobName));
             EnsureArg.IsNotNull(stream, nameof(stream));
 
-            var blob = _blobContainerClient.GetBlobClient(blobName);
+            BlobClient blob = BlobContainerClient.GetBlobClient(blobName);
 
             try
             {
@@ -212,7 +297,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Update blob '{blobName}' failed. Reason: '{ex}'");
+                _diagnosticLogger.LogError($"Update blob '{blobName}' failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"Update blob '{blobName}' failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"Update blob '{blobName}' failed.", ex);
             }
         }
@@ -221,7 +307,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             try
             {
-                BlobLeaseClient blobLeaseClient = _blobContainerClient.GetBlobClient(blobName).GetBlobLeaseClient(leaseId);
+                BlobLeaseClient blobLeaseClient = BlobContainerClient.GetBlobClient(blobName).GetBlobLeaseClient(leaseId);
                 BlobLease blobLease = await blobLeaseClient.AcquireAsync(timeSpan, cancellationToken: cancellationToken);
 
                 _logger.LogInformation("Acquire lease on the blob '{0}' successfully.", blobName);
@@ -229,7 +315,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Failed to acquire lease on the blob '{0}'. Reason: '{1}'", blobName, ex);
+                _logger.LogInformation(ex, "Failed to acquire lease on the blob '{0}'. Reason: '{1}'", blobName, ex.Message);
                 return null;
             }
         }
@@ -238,9 +324,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             try
             {
-                var blobClient = _blobContainerClient.GetBlobClient(blobName);
+                BlobClient blobClient = BlobContainerClient.GetBlobClient(blobName);
                 BlobLeaseClient blobLeaseClient = blobClient.GetBlobLeaseClient(leaseId);
-                var leaseResponse = await blobLeaseClient.RenewAsync(cancellationToken: cancellationToken);
+                Response<BlobLease> leaseResponse = await blobLeaseClient.RenewAsync(cancellationToken: cancellationToken);
 
                 _logger.LogInformation("Renew lease on the blob '{0}' successfully.", blobName);
                 return leaseResponse.Value.LeaseId;
@@ -248,7 +334,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             catch (Exception ex)
             {
                 // When renew lease failed, we should stop the application and exits. So we throw here.
-                _logger.LogWarning("Failed to renew lease on the blob '{0}'. Reason: '{1}'", blobName, ex);
+                _diagnosticLogger.LogError($"Failed to renew lease on the blob '{blobName}'. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, "Failed to renew lease on the blob '{0}'. Reason: '{1}'", blobName, ex.Message);
                 throw new AzureBlobOperationFailedException($"Failed to renew lease on the blob '{blobName}'.", ex);
             }
         }
@@ -257,7 +344,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             try
             {
-                var blobClient = _blobContainerClient.GetBlobClient(blobName);
+                BlobClient blobClient = BlobContainerClient.GetBlobClient(blobName);
                 BlobLeaseClient blobLeaseClient = blobClient.GetBlobLeaseClient(leaseId);
                 await blobLeaseClient.ReleaseAsync(cancellationToken: cancellationToken);
 
@@ -266,7 +353,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Failed to release lease on the blob '{0}'. Reason: '{1}'", blobName, ex);
+                _logger.LogInformation(ex, "Failed to release lease on the blob '{0}'. Reason: '{1}'", blobName, ex.Message);
                 return false;
             }
         }
@@ -275,13 +362,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             try
             {
-                var sourceDirectoryClient = _dataLakeFileSystemClient.GetDirectoryClient(sourceDirectory);
+                DataLakeDirectoryClient sourceDirectoryClient = DataLakeFileSystemClient.GetDirectoryClient(sourceDirectory);
 
                 // Create target parent directory if not exists.
-                var targetParentDirectory = Path.GetDirectoryName(targetDirectory);
-                if (!string.IsNullOrEmpty(targetParentDirectory))
+                string targetParentDirectory = Path.GetDirectoryName(targetDirectory);
+                if (!string.IsNullOrWhiteSpace(targetParentDirectory))
                 {
-                    var targetParentDirectoryClient = _dataLakeFileSystemClient.GetDirectoryClient(targetParentDirectory);
+                    DataLakeDirectoryClient targetParentDirectoryClient = DataLakeFileSystemClient.GetDirectoryClient(targetParentDirectory);
                     await targetParentDirectoryClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
                 }
 
@@ -291,7 +378,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Failed to move blob directory '{0}' to '{1}'. Reason: '{2}'", sourceDirectory, targetDirectory, ex);
+                _diagnosticLogger.LogError($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, "Failed to move blob directory '{0}' to '{1}'. Reason: '{2}'", sourceDirectory, targetDirectory, ex.Message);
                 throw new AzureBlobOperationFailedException($"Failed to move blob directory '{sourceDirectory}' to '{targetDirectory}'.", ex);
             }
         }
@@ -300,14 +388,15 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         {
             try
             {
-                var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
+                DataLakeDirectoryClient directoryClient = DataLakeFileSystemClient.GetDirectoryClient(directory);
                 await directoryClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
 
                 _logger.LogInformation("Delete blob directory '{0}' successfully.", directory);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Failed to delete blob directory '{0}'. Reason: '{1}'", directory, ex);
+                _diagnosticLogger.LogError($"Failed to delete blob directory '{directory}'. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, "Failed to delete blob directory '{0}'. Reason: '{1}'", directory, ex.Message);
                 throw new AzureBlobOperationFailedException($"Failed to delete blob directory '{directory}'.", ex);
             }
         }
@@ -315,7 +404,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         public async IAsyncEnumerable<PathItem> ListPathsAsync(string directory, [EnumeratorCancellation]CancellationToken cancellationToken = default)
         {
             // Enumerate all paths in folder, see List directory contents https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-directory-file-acl-dotnet#list-directory-contents
-            var directoryClient = _dataLakeFileSystemClient.GetDirectoryClient(directory);
+            DataLakeDirectoryClient directoryClient = DataLakeFileSystemClient.GetDirectoryClient(directory);
             IAsyncEnumerator<PathItem> asyncEnumerator = directoryClient.GetPathsAsync(true, cancellationToken: cancellationToken).GetAsyncEnumerator(cancellationToken);
 
             PathItem item;
@@ -339,7 +428,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Failed to query paths of directory '{0}'. Reason: '{1}'", directory, ex);
+                    _diagnosticLogger.LogError($"Failed to query paths of directory '{directory}'. Reason: '{ex.Message}'");
+                    _logger.LogInformation(ex, "Failed to query paths of directory '{0}'. Reason: '{1}'", directory, ex.Message);
                     throw new AzureBlobOperationFailedException($"Failed to query paths of directory '{directory}'.", ex);
                 }
 

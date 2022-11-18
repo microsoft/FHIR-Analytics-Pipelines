@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.IO;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
@@ -17,11 +18,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         private const string NoMetaSamplePatientFileName = "TestData/NoMetaPatientSample.json";
 
         [Fact]
-        public void GivenAJObject_WhenGetLastUpdatedDay_CorrectResultShouldReturn()
+        public void GivenAJObject_WhenGetLastUpdated_CorrectResultShouldReturn()
         {
-            var testJObject = GetTestJObject(SamplePatientFileName);
+            JObject testJObject = GetTestJObject(SamplePatientFileName);
 
-            var date = testJObject.GetLastUpdatedDay();
+            DateTimeOffset? date = testJObject.GetLastUpdated();
+            Assert.NotNull(date);
 
             Assert.Equal(2012, date.Value.Year);
             Assert.Equal(6, date.Value.Month);
@@ -29,11 +31,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
         }
 
         [Fact]
-        public void GivenAJObjectWithoutLastUpdatedDay_WhenGetLastUpdatedDay_ExceptionShouldBeThrown()
+        public void GivenAJObjectWithoutLastUpdated_WhenGetLastUpdated_ExceptionShouldBeThrown()
         {
-            var testJObject = GetTestJObject(NoMetaSamplePatientFileName);
+            JObject testJObject = GetTestJObject(NoMetaSamplePatientFileName);
 
-            Assert.Throws<FhirDataParseExeption>(() => testJObject.GetLastUpdatedDay());
+            Assert.Throws<FhirDataParseException>(() => testJObject.GetLastUpdated());
         }
 
         private JObject GetTestJObject(string fileName)

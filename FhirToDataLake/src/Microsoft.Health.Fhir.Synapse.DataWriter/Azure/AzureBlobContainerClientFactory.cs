@@ -6,25 +6,35 @@
 using System;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Logging;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
     public class AzureBlobContainerClientFactory : IAzureBlobContainerClientFactory
     {
-        private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ITokenCredentialProvider _credentialProvider;
+        private readonly string _externalConnectionString;
 
         public AzureBlobContainerClientFactory(
             ITokenCredentialProvider credentialProvider,
+            IOptions<StorageConfiguration> storageConfiguration,
+            IDiagnosticLogger diagnosticLogger,
             ILoggerFactory loggerFactory)
         {
             EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
             EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
+            EnsureArg.IsNotNull(storageConfiguration, nameof(storageConfiguration));
+            EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
 
             _credentialProvider = credentialProvider;
             _loggerFactory = loggerFactory;
+            _diagnosticLogger = diagnosticLogger;
+            _externalConnectionString = storageConfiguration.Value.ExternalStorageConnectionString;
         }
 
         public IAzureBlobContainerClient Create(string storeUrl, string containerName)
@@ -33,9 +43,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             EnsureArg.IsNotNull(containerName, nameof(containerName));
 
             // Create client for local emulator.
-            if (string.Equals(storeUrl, StorageEmulatorConnectionString, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(storeUrl, ConfigurationConstants.StorageEmulatorConnectionString, StringComparison.OrdinalIgnoreCase))
             {
-                return new AzureBlobContainerClient(StorageEmulatorConnectionString, containerName, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
+                return new AzureBlobContainerClient(ConfigurationConstants.StorageEmulatorConnectionString, containerName, _diagnosticLogger, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
+            }
+
+            if (!string.IsNullOrEmpty(_externalConnectionString))
+            {
+                return new AzureBlobContainerClient(_externalConnectionString, containerName, _diagnosticLogger, _loggerFactory.CreateLogger<AzureBlobContainerClient>());
             }
 
             var storageUri = new Uri(storeUrl);
@@ -44,6 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             return new AzureBlobContainerClient(
                 containerUrl,
                 _credentialProvider,
+                _diagnosticLogger,
                 _loggerFactory.CreateLogger<AzureBlobContainerClient>());
         }
     }
