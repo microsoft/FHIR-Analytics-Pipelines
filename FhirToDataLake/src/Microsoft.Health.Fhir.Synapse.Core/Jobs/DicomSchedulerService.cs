@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Dicom.Client.Models;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
@@ -18,6 +20,8 @@ using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
 using Microsoft.Health.JobManagement;
 using NCrontab;
 using Newtonsoft.Json;
@@ -26,8 +30,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class DicomSchedulerService : ISchedulerService
     {
+        private readonly DicomVersion dicomVersion = DicomVersion.V1;
         private readonly IQueueClient _queueClient;
-
         private readonly IMetadataStore _metadataStore;
         private readonly IDicomDataClient _dataClient;
         private readonly byte _queueType;
@@ -426,9 +430,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 currentTriggerEntity.TriggerStartTime = nextTriggerStartTime;
                 currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerEndTime;
-
                 currentTriggerEntity.StartOffset = currentTriggerEntity.EndOffset;
-                currentTriggerEntity.EndOffset = await _dataClient.GetLatestSequenceAsync(false, cancellationToken);
+                currentTriggerEntity.EndOffset = await GetDicomLatestSequence(cancellationToken);
 
                 bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
                 _logger.LogInformation(isSucceeded
@@ -455,7 +458,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 0,
                 StartOffset = InitialStartOffset,
-                EndOffset = await _dataClient.GetLatestSequenceAsync(false, cancellationToken),
+                EndOffset = await GetDicomLatestSequence(cancellationToken),
             };
 
             // add the initial trigger entity to table
@@ -585,6 +588,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 ? $"Scheduler instance {_instanceGuid} renews lease successfully."
                 : $"Scheduler instance {_instanceGuid} fails to renew lease, failed to update lease trigger entity: {triggerLeaseEntity}.");
             return isSucceeded;
+        }
+
+        private async Task<long> GetDicomLatestSequence(CancellationToken cancellationToken)
+        {
+            var queryParameters = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{false}"),
+                };
+
+            var changeFeedOption = new ChangeFeedLatestOptions(dicomVersion, queryParameters);
+            string changeFeedContent = await _dataClient.SearchAsync(changeFeedOption, cancellationToken);
+            var changeFeedEntry = JsonConvert.DeserializeObject<ChangeFeedEntry>(changeFeedContent);
+
+            return changeFeedEntry.Sequence;
         }
     }
 }

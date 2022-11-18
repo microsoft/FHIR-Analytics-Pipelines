@@ -3,21 +3,22 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
+using Microsoft.Health.Fhir.Synapse.Common;
+
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
 {
-    public class ChangeFeedOptions
+    public class BaseDicomApiOptions
     {
-        public ChangeFeedOptions(long offset, long limit, bool includeMetadata)
+        public List<KeyValuePair<string, string>> QueryParameters { get; set; } = null;
+
+        public DicomVersion DicomVersion { get; set; } = DicomVersion.V1;
+
+        public bool IsAccessTokenRequired { get; set; } = false;
+
+        public virtual string RelativeUri()
         {
-            Offset = offset;
-            Limit = limit;
-            IncludeMetadata = includeMetadata;
+            return string.Empty;
         }
-
-        public long Offset { get; set; }
-
-        public long Limit { get; set; }
-
-        public bool IncludeMetadata { get; set; }
     }
 }

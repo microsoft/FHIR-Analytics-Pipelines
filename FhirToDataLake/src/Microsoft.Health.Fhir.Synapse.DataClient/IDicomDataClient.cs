@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
@@ -12,12 +11,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
 {
     public interface IDicomDataClient
     {
-        public Task<List<string>> GetMetadataAsync(
-            ChangeFeedOptions changeFeedOptions,
-            CancellationToken cancellationToken = default);
-
-        public Task<long> GetLatestSequenceAsync(
-            bool includeMetadata,
+        /// <summary>
+        /// Returns server reponse content contains matching search results.
+        /// </summary>
+        /// <param name="dicomApiOptions">fhir api options.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>returned bundle.</returns>
+        public Task<string> SearchAsync(
+            BaseDicomApiOptions dicomApiOptions,
             CancellationToken cancellationToken = default);
     }
 }

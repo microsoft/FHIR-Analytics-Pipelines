@@ -10,6 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Dicom.Client.Models;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
@@ -18,6 +20,8 @@ using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
@@ -25,11 +29,13 @@ using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SharpCompress.Common;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class DicomToDataLakeProcessingJob : IJob
     {
+        private readonly DicomVersion dicomVersion = DicomVersion.V1;
         private readonly DicomToDataLakeProcessingJobInputData _inputData;
         private readonly IDicomDataClient _dataClient;
         private readonly IFhirDataWriter _dataWriter;
@@ -165,8 +171,43 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (limit > 0)
             {
-                var changeFeedOptions = new ChangeFeedOptions(_inputData.StartOffset, limit, false);
-                var metadataList = await _dataClient.GetMetadataAsync(changeFeedOptions, cancellationToken);
+                // Get change feeds
+                var queryParameters = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>(DicomApiConstants.OffsetKey, $"{_inputData.StartOffset}"),
+                    new KeyValuePair<string, string>(DicomApiConstants.LimitKey, $"{limit}"),
+                    new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{false}"),
+                };
+
+                var changeFeedOptions = new ChangeFeedOffsetOptions(dicomVersion, queryParameters);
+                string changeFeedsContent = await _dataClient.SearchAsync(changeFeedOptions, cancellationToken);
+
+                List<ChangeFeedEntry> changeFeedEntries;
+                try
+                {
+                    changeFeedEntries = JsonConvert.DeserializeObject<List<ChangeFeedEntry>>(changeFeedsContent)
+                        .Where(x => x.State == ChangeFeedState.Current && x.Action == ChangeFeedAction.Create)
+                        .ToList();
+                }
+                catch (Exception ex)
+                {
+                    _diagnosticLogger.LogError($"Parse changefeeds failed. Reason: {ex.Message}");
+                    _logger.LogError($"Parse changefeeds failed. Reason: {ex.Message}");
+                    throw new FhirSearchException("Parse changefeeds failed.", ex);
+                }
+
+                // Get metadata list
+                var metadataList = new List<string>();
+                foreach (var changeFeedEntry in changeFeedEntries)
+                {
+                    var metadataOptions = new SearchMetadataOptions(
+                        dicomVersion,
+                        changeFeedEntry.StudyInstanceUid,
+                        changeFeedEntry.SeriesInstanceUid,
+                        changeFeedEntry.SopInstanceUid);
+
+                    metadataList.Add(await _dataClient.SearchAsync(metadataOptions, cancellationToken));
+                }
 
                 foreach (var metadata in metadataList)
                 {
