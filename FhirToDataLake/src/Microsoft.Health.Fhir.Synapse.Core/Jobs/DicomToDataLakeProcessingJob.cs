@@ -20,6 +20,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
+using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.JobManagement;
@@ -224,7 +225,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             }
 
                             // Upload to blob and log result
-                            string blobUrl = await _dataWriter.WriteAsync(parquetStream, _jobId, _outputFileIndexMap[schemaType], _inputData.EndOffset, cancellationToken);
+                            var fileName = GetDataFileName(_inputData.EndOffset, schemaType, _jobId, _outputFileIndexMap[schemaType]);
+                            string blobUrl = await _dataWriter.WriteAsync(parquetStream, fileName, cancellationToken);
                             _outputFileIndexMap[schemaType] += 1;
 
                             _result.ProcessedDataSizeInTotal += parquetStream.Value.Length;
@@ -279,6 +281,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _logger.LogInformation(ex, "Failed to clean resource.");
             }
+        }
+
+        private static string GetDataFileName(
+            long offset,
+            string schemaType,
+            long jobId,
+            int partId)
+        {
+            return $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/{schemaType}/{offset}/{schemaType}_{partId:d10}.parquet";
         }
     }
 }

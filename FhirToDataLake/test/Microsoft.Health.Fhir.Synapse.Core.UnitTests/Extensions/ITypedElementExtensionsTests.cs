@@ -88,11 +88,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
 
         private ITypedElement GetTestElement(string fileName)
         {
-            var fhirConfiguration = new FhirServerConfiguration()
-            {
-                Version = FhirVersion.R4,
-            };
-            var fhirParser = new FhirSerializer(Options.Create(fhirConfiguration));
+            var fhirParser = new FhirSerializer(Options.Create(new DataSourceConfiguration()));
             return fhirParser.DeserializeToElement(File.ReadAllText(fileName));
         }
     }

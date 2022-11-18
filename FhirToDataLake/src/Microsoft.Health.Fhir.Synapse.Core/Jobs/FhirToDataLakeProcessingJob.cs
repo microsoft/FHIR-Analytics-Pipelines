@@ -28,6 +28,7 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
+using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.JobManagement;
@@ -61,6 +62,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// The format is '{SchemaType}_{index:d10}.parquet', e.g. Patient_0000000001.parquet.
         /// </summary>
         private Dictionary<string, int> _outputFileIndexMap;
+
+        // Date format in blob path.
+        private const string DateKeyFormat = "yyyy/MM/dd";
 
         public FhirToDataLakeProcessingJob(
             long jobId,
@@ -556,7 +560,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             }
 
                             // Upload to blob and log result
-                            string blobUrl = await _dataWriter.WriteAsync(parquetStream, _jobId, _outputFileIndexMap[schemaType], _inputData.DataEndTime, cancellationToken);
+                            var fileName = GetDataFileName(_inputData.DataEndTime, schemaType, _jobId, _outputFileIndexMap[schemaType]);
+                            string blobUrl = await _dataWriter.WriteAsync(parquetStream, fileName, cancellationToken);
                             _outputFileIndexMap[schemaType] += 1;
 
                             _result.ProcessedDataSizeInTotal += parquetStream.Value.Length;
@@ -611,6 +616,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _logger.LogInformation(ex, "Failed to clean resource.");
             }
+        }
+
+        private static string GetDataFileName(
+            DateTimeOffset dateTime,
+            string schemaType,
+            long jobId,
+            int partId)
+        {
+            string dateTimeKey = dateTime.ToString(DateKeyFormat);
+
+            return $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/{schemaType}/{dateTimeKey}/{schemaType}_{partId:d10}.parquet";
         }
     }
 }

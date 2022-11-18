@@ -16,23 +16,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter
         /// Write stream batch data to storage.
         /// </summary>
         /// <param name="data">The data to be written.</param>
-        /// <param name="jobId">The job id.</param>
-        /// <param name="partId">The part id.</param>
-        /// <param name="dateTime">The dateTime.</param>
+        /// <param name="blobName">The blob name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The storage url.</returns>
         public Task<string> WriteAsync(
             StreamBatchData data,
-            long jobId,
-            int partId,
-            DateTimeOffset dateTime,
-            CancellationToken cancellationToken = default);
-
-        public Task<string> WriteAsync(
-            StreamBatchData data,
-            long jobId,
-            int partId,
-            long offset,
+            string blobName,
             CancellationToken cancellationToken = default);
 
         /// <summary>

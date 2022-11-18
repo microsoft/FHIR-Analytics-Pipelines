@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
@@ -20,10 +19,10 @@ using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
 using NSubstitute;
 using Xunit;
 
-namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
+namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 {
     [Trait("Category", "DataWriter")]
-    public class DataWriterTests
+    public class AzureDataWriterTests
     {
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
 
@@ -50,7 +49,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
             int partIndex = 1;
             AzureBlobDataWriter dataWriter = GetLocalDataWriter();
             var streamData = new StreamBatchData(stream, 1, TestResourceType);
-            await dataWriter.WriteAsync(streamData, jobId, partIndex, _testDate);
+
+            string dateTimeKey = _testDate.ToString("yyyy/MM/dd");
+            var blobName = $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/{TestResourceType}/{dateTimeKey}/{TestResourceType}_{partIndex:d10}.parquet";
+
+            await dataWriter.WriteAsync(streamData, blobName);
 
             IAzureBlobContainerClient containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), _diagnosticLogger, new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
             Stream blobStream = await containerClient.GetBlobAsync($"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet");
@@ -66,7 +69,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests
         {
             AzureBlobDataWriter dataWriter = GetLocalDataWriter();
             var streamData = new StreamBatchData(null, 0, TestResourceType);
-            await Assert.ThrowsAsync<ArgumentNullException>(() => dataWriter.WriteAsync(streamData, 0L, 0, _testDate));
+
+            string dateTimeKey = _testDate.ToString("yyyy/MM/dd");
+            var blobName = $"{AzureStorageConstants.StagingFolderName}/{0L:d20}/{TestResourceType}/{dateTimeKey}/{TestResourceType}_{0:d10}.parquet";
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => dataWriter.WriteAsync(streamData, blobName));
         }
 
         [Fact]
