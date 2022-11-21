@@ -12,17 +12,17 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
     public class ChangeFeedOffsetOptions : BaseDicomApiOptions
     {
         public ChangeFeedOffsetOptions(
-            DicomApiVersion dicomVersion,
+            DicomApiVersion dicomApiVersion,
             List<KeyValuePair<string, string>> queryParameters)
         {
-            DicomVersion = dicomVersion;
+            DicomApiVersion = dicomApiVersion;
             QueryParameters = queryParameters ?? new List<KeyValuePair<string, string>>();
             IsAccessTokenRequired = true;
         }
 
         public override string RelativeUri()
         {
-            return $"{DicomApiConstants.VersionMap[DicomVersion]}/{DicomApiConstants.ChangeFeedKey}";
+            return $"{DicomApiConstants.VersionMap[DicomApiVersion]}/{DicomApiConstants.ChangeFeedKey}";
         }
     }
 }

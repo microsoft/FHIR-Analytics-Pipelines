@@ -195,18 +195,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     throw new FhirSearchException("Parse changefeeds failed.", ex);
                 }
 
-                // Get metadata list
-                var metadataList = new List<string>();
-                foreach (var changeFeedEntry in changeFeedEntries)
+                var tasks = changeFeedEntries.Select(entry =>
                 {
                     var metadataOptions = new SearchMetadataOptions(
                         dicomVersion,
-                        changeFeedEntry.StudyInstanceUid,
-                        changeFeedEntry.SeriesInstanceUid,
-                        changeFeedEntry.SopInstanceUid);
+                        entry.StudyInstanceUid,
+                        entry.SeriesInstanceUid,
+                        entry.SopInstanceUid);
 
-                    metadataList.Add(await _dataClient.SearchAsync(metadataOptions, cancellationToken));
-                }
+                    return _dataClient.SearchAsync(metadataOptions, cancellationToken);
+                });
+
+                var metadataList = new List<string>(await Task.WhenAll(tasks));
 
                 foreach (var metadata in metadataList)
                 {
@@ -320,5 +320,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _logger.LogInformation(ex, "Failed to clean resource.");
             }
         }
+
+
+        
     }
 }

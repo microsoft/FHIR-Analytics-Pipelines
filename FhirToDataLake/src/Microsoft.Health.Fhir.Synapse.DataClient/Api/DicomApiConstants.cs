@@ -41,7 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         public static readonly Dictionary<DicomApiVersion, string> VersionMap = new Dictionary<DicomApiVersion, string>()
         {
             { DicomApiVersion.V1, "v1" },
-            { DicomApiVersion.V1_0_Prerelease, "v1_0_prerelease" },
+            { DicomApiVersion.V1_0_Prerelease, "v1.0-prerelease" },
         };
 
         /// <summary>

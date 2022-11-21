@@ -12,12 +12,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
     public class SearchMetadataOptions : BaseDicomApiOptions
     {
         public SearchMetadataOptions(
-            DicomApiVersion dicomVersion,
+            DicomApiVersion dicomApiVersion,
             string studyInstanceUid,
             string seriesInstanceUid,
             string sopInstanceUid)
         {
-            DicomVersion = dicomVersion;
+            DicomApiVersion = dicomApiVersion;
             StudyInstanceUid = studyInstanceUid;
             SeriesInstanceUid = seriesInstanceUid;
             SopInstanceUid = sopInstanceUid;
@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
 
         public override string RelativeUri()
         {
-            return $"{DicomApiConstants.VersionMap[DicomVersion]}/" +
+            return $"{DicomApiConstants.VersionMap[DicomApiVersion]}/" +
                 $"{DicomApiConstants.StudiesKey}/{StudyInstanceUid}/" +
                 $"{DicomApiConstants.SeriesKey}/{SeriesInstanceUid}/" +
                 $"{DicomApiConstants.InstancesKey}/{SopInstanceUid}/" +
