@@ -8,9 +8,9 @@ using System.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaValidator
 {
-    public class FhirParquetSchemaValidator
+    public class ParquetSchemaValidator
     {
-        public static ValidationResult Validate(string schemaKey, FhirParquetSchemaNode rootNode)
+        public static ValidationResult Validate(string schemaKey, ParquetSchemaNode rootNode)
         {
             bool success;
             string error = string.Empty;
@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaValidator
             return new ValidationResult() { Success = success, ErrorMessage = error };
         }
 
-        private static bool ValidateInternal(string schemaKey, FhirParquetSchemaNode schemaNode, Stack<string> nodePath, ref string error)
+        private static bool ValidateInternal(string schemaKey, ParquetSchemaNode schemaNode, Stack<string> nodePath, ref string error)
         {
             nodePath.Push(schemaKey);
 
@@ -49,10 +49,10 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaValidator
 
                 // The Type of Leaf node should be primitive data type.
                 if (schemaNode.Type == null || !(
-                    FhirParquetSchemaConstants.IntTypes.Contains(schemaNode.Type) ||
-                    FhirParquetSchemaConstants.BooleanTypes.Contains(schemaNode.Type) ||
-                    FhirParquetSchemaConstants.DecimalTypes.Contains(schemaNode.Type) ||
-                    FhirParquetSchemaConstants.StringTypes.Contains(schemaNode.Type)))
+                    ParquetSchemaConstants.IntTypes.Contains(schemaNode.Type) ||
+                    ParquetSchemaConstants.BooleanTypes.Contains(schemaNode.Type) ||
+                    ParquetSchemaConstants.DecimalTypes.Contains(schemaNode.Type) ||
+                    ParquetSchemaConstants.StringTypes.Contains(schemaNode.Type)))
                 {
                     error = string.Format("The leaf schema node '{0}' type '{1}' is not primitive.", string.Join('.', nodePath.Reverse()), schemaNode.Type);
                     return false;

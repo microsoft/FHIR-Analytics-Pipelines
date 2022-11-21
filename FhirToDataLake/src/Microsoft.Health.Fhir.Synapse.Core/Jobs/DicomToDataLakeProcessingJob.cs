@@ -40,7 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IDicomDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
-        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
         private readonly IMetricsLogger _metricsLogger;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<DicomToDataLakeProcessingJob> _logger;
@@ -65,7 +65,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IDicomDataClient dataClient,
             IDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
-            IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
+            ISchemaManager<ParquetSchemaNode> schemaManager,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
             ILogger<DicomToDataLakeProcessingJob> logger)
@@ -76,7 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
-            _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            _schemaManager = EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
@@ -249,7 +249,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     var batchData = new JsonBatchData(resources);
 
-                    List<string> schemaTypes = _fhirSchemaManager.GetSchemaTypes(resourceType);
+                    List<string> schemaTypes = _schemaManager.GetSchemaTypes(resourceType);
                     foreach (string schemaType in schemaTypes)
                     {
                         // Convert grouped data to parquet stream

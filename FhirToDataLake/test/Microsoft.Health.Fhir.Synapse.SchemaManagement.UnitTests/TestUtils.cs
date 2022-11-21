@@ -69,7 +69,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests
         {
             List<Dictionary<string, Template>> testSchemaTemplateCollections = GetSchemaTemplateCollections("Schema/Patient.schema.json", File.ReadAllBytes(TestJsonSchemaFilePath));
 
-            if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
+            if (name == ParquetSchemaConstants.DefaultSchemaProviderKey)
             {
                 return new LocalDefaultSchemaProvider(
                     Options.Create(new DataSourceConfiguration()),

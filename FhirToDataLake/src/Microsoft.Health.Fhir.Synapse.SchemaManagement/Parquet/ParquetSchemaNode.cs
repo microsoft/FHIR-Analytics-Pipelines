@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 {
-    public class FhirParquetSchemaNode : FhirSchemaNode
+    public class ParquetSchemaNode : BaseSchemaNode
     {
         /// <summary>
         /// Gets or sets node type.
@@ -27,7 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         /// <summary>
         /// Gets or sets subnodes under the current FHIR schema node, node that have subnodes should not be leaf node.
         /// </summary>
-        public Dictionary<string, FhirParquetSchemaNode> SubNodes { get; set; } = null;
+        public Dictionary<string, ParquetSchemaNode> SubNodes { get; set; } = null;
 
         /// <summary>
         /// Gets or sets choice type nodes under the current FHIR schema node.

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
 {
-    public class FhirSchemaNode
+    public class BaseSchemaNode
     {
         /// <summary>
         /// Gets or sets node name.

@@ -16,23 +16,23 @@ using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaValidator;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 {
-    public class FhirParquetSchemaManager : IFhirSchemaManager<FhirParquetSchemaNode>
+    public class ParquetSchemaManager : ISchemaManager<ParquetSchemaNode>
     {
         private readonly ParquetSchemaProviderDelegate _schemaProviderDelegate;
         private readonly bool _enableCustomizedSchema;
         private readonly IDiagnosticLogger _diagnosticLogger;
-        private readonly ILogger<FhirParquetSchemaManager> _logger;
+        private readonly ILogger<ParquetSchemaManager> _logger;
 
         private readonly object _schemaTypesMaplock = new object();
         private readonly object _schemasMaplock = new object();
         private Dictionary<string, List<string>> _schemaTypesMap;
-        private Dictionary<string, FhirParquetSchemaNode> _resourceSchemaNodesMap;
+        private Dictionary<string, ParquetSchemaNode> _resourceSchemaNodesMap;
 
-        public FhirParquetSchemaManager(
+        public ParquetSchemaManager(
             IOptions<SchemaConfiguration> schemaConfiguration,
             ParquetSchemaProviderDelegate parquetSchemaDelegate,
             IDiagnosticLogger diagnosticLogger,
-            ILogger<FhirParquetSchemaManager> logger)
+            ILogger<ParquetSchemaManager> logger)
         {
             EnsureArg.IsNotNull(schemaConfiguration, nameof(schemaConfiguration));
 
@@ -43,7 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         }
 
         // Lazy load schemas for retrying to access ACR
-        private Dictionary<string, FhirParquetSchemaNode> ResourceSchemaNodesMap
+        private Dictionary<string, ParquetSchemaNode> ResourceSchemaNodesMap
         {
             get
             {
@@ -90,7 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             return SchemaTypesMap[resourceType];
         }
 
-        public FhirParquetSchemaNode GetSchema(string schemaType)
+        public ParquetSchemaNode GetSchema(string schemaType)
         {
             if (string.IsNullOrWhiteSpace(schemaType) || !ResourceSchemaNodesMap.ContainsKey(schemaType))
             {
@@ -106,25 +106,25 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             return ResourceSchemaNodesMap.ToDictionary(pair => pair.Key, pair => Newtonsoft.Json.JsonConvert.SerializeObject(pair.Value));
         }
 
-        public Dictionary<string, FhirParquetSchemaNode> GetAllSchemas()
+        public Dictionary<string, ParquetSchemaNode> GetAllSchemas()
         {
-            return new Dictionary<string, FhirParquetSchemaNode>(ResourceSchemaNodesMap);
+            return new Dictionary<string, ParquetSchemaNode>(ResourceSchemaNodesMap);
         }
 
-        private Dictionary<string, FhirParquetSchemaNode> LoadSchemaMap()
+        private Dictionary<string, ParquetSchemaNode> LoadSchemaMap()
         {
-            IParquetSchemaProvider defaultSchemaProvider = _schemaProviderDelegate(FhirParquetSchemaConstants.DefaultSchemaProviderKey);
+            IParquetSchemaProvider defaultSchemaProvider = _schemaProviderDelegate(ParquetSchemaConstants.DefaultSchemaProviderKey);
 
             // Get default schema, the default schema keys are resource types, like "Patient", "Encounter".
-            Dictionary<string, FhirParquetSchemaNode> resourceSchemaNodesMap = defaultSchemaProvider.GetSchemasAsync().Result;
+            Dictionary<string, ParquetSchemaNode> resourceSchemaNodesMap = defaultSchemaProvider.GetSchemasAsync().Result;
             _logger.LogInformation($"{resourceSchemaNodesMap.Count} resource default schemas have been loaded.");
 
             if (_enableCustomizedSchema)
             {
-                IParquetSchemaProvider customizedSchemaProvider = _schemaProviderDelegate(FhirParquetSchemaConstants.CustomSchemaProviderKey);
+                IParquetSchemaProvider customizedSchemaProvider = _schemaProviderDelegate(ParquetSchemaConstants.CustomSchemaProviderKey);
 
                 // Get customized schema, the customized schema keys are resource types with "_customized" suffix, like "Patient_Customized", "Encounter_Customized".
-                Dictionary<string, FhirParquetSchemaNode> resourceCustomizedSchemaNodesMap = customizedSchemaProvider.GetSchemasAsync().Result;
+                Dictionary<string, ParquetSchemaNode> resourceCustomizedSchemaNodesMap = customizedSchemaProvider.GetSchemasAsync().Result;
 
                 _logger.LogInformation($"{resourceCustomizedSchemaNodesMap.Count} resource customized schemas have been loaded.");
                 resourceSchemaNodesMap = resourceSchemaNodesMap.Concat(resourceCustomizedSchemaNodesMap).ToDictionary(x => x.Key, x => x.Value);
@@ -133,7 +133,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             // Validate Parquet schema nodes
             foreach (var schemaNodeItem in resourceSchemaNodesMap)
             {
-                ValidationResult validateResult = FhirParquetSchemaValidator.Validate(schemaNodeItem.Key, schemaNodeItem.Value);
+                ValidationResult validateResult = ParquetSchemaValidator.Validate(schemaNodeItem.Key, schemaNodeItem.Value);
                 if (!validateResult.Success)
                 {
                     _diagnosticLogger.LogError($"Validate Parquet schema node failed. Reason: {validateResult.ErrorMessage}.");
@@ -145,13 +145,13 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
             return resourceSchemaNodesMap;
         }
 
-        private static Dictionary<string, List<string>> LoadSchemaTypeMap(Dictionary<string, FhirParquetSchemaNode> schemaMap)
+        private static Dictionary<string, List<string>> LoadSchemaTypeMap(Dictionary<string, ParquetSchemaNode> schemaMap)
         {
             Dictionary<string, List<string>> schemaTypesMap = new Dictionary<string, List<string>>();
 
             // Each resource type may map to multiple output schema types
             // E.g: Schema type list for "Patient" resource can be ["Patient", "Patient_Customized"]
-            foreach (KeyValuePair<string, FhirParquetSchemaNode> schemaNodeItem in schemaMap)
+            foreach (KeyValuePair<string, ParquetSchemaNode> schemaNodeItem in schemaMap)
             {
                 if (schemaTypesMap.ContainsKey(schemaNodeItem.Value.Type))
                 {

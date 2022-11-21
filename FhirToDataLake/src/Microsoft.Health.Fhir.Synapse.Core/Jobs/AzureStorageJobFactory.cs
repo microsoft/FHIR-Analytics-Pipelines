@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IDataWriter _dataWriter;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly IColumnDataProcessor _parquetDataProcessor;
-        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
         private readonly IFilterManager _filterManager;
         private readonly IMetadataStore _metadataStore;
         private readonly ILoggerFactory _loggerFactory;
@@ -48,7 +48,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IDataWriter dataWriter,
             IGroupMemberExtractor groupMemberExtractor,
             IColumnDataProcessor parquetDataProcessor,
-            IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
+            ISchemaManager<ParquetSchemaNode> schemaManager,
             IFilterManager filterManager,
             IMetadataStore metadataStore,
             IOptions<JobConfiguration> jobConfiguration,
@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
-            _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            _schemaManager = EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
@@ -152,7 +152,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _dataClient,
                         _dataWriter,
                         _parquetDataProcessor,
-                        _fhirSchemaManager,
+                        _schemaManager,
                         _groupMemberExtractor,
                         _filterManager,
                         _metricsLogger,

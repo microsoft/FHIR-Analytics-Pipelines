@@ -8,7 +8,7 @@ using NJsonSchema;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
 {
-    public static class FhirParquetSchemaConstants
+    public static class ParquetSchemaConstants
     {
         public const string DefaultSchemaProviderKey = "default";
         public const string CustomSchemaProviderKey = "custom";

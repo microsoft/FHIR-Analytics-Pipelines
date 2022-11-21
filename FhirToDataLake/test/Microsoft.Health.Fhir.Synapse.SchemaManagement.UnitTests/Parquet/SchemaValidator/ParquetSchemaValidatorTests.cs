@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.SchemaValidator
 {
-    public class FhirParquetSchemaValidatorTests
+    public class ParquetSchemaValidatorTests
     {
         public static IEnumerable<object[]> GetInvalidParquetSchemaContent()
         {
@@ -59,8 +59,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [MemberData(nameof(GetInvalidParquetSchemaContent))]
         public void GivenInvalidParquetSchemaNode_WhenValidate_FalseShouldBeReturned(string schemaContent, string expectedError)
         {
-            var schemaNode = JsonConvert.DeserializeObject<FhirParquetSchemaNode>(schemaContent);
-            ValidationResult validateResult = FhirParquetSchemaValidator.Validate("testType", schemaNode);
+            var schemaNode = JsonConvert.DeserializeObject<ParquetSchemaNode>(schemaContent);
+            ValidationResult validateResult = ParquetSchemaValidator.Validate("testType", schemaNode);
             Assert.False(validateResult.Success);
             Assert.Equal(expectedError, validateResult.ErrorMessage);
         }
@@ -69,8 +69,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [MemberData(nameof(GetValidParquetSchemaContent))]
         public void GivenValidParquetSchemaNode_WhenValidate_TrueShouldBeReturned(string schemaContent)
         {
-            var schemaNode = JsonConvert.DeserializeObject<FhirParquetSchemaNode>(schemaContent);
-            ValidationResult validateResult = FhirParquetSchemaValidator.Validate("testType", schemaNode);
+            var schemaNode = JsonConvert.DeserializeObject<ParquetSchemaNode>(schemaContent);
+            ValidationResult validateResult = ParquetSchemaValidator.Validate("testType", schemaNode);
             Assert.True(validateResult.Success);
             Assert.Equal(string.Empty, validateResult.ErrorMessage);
         }
@@ -78,7 +78,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [Fact]
         public void GivenNullSchemaNode_WhenValidate_FalseShouldBeReturned()
         {
-            ValidationResult validateResult = FhirParquetSchemaValidator.Validate("testType", null);
+            ValidationResult validateResult = ParquetSchemaValidator.Validate("testType", null);
             Assert.False(validateResult.Success);
             Assert.Equal("The schema node 'testType' cannot be null.", validateResult.ErrorMessage);
         }
@@ -90,8 +90,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         public void GivenInvalidSchemaKey_WhenValidate_FalseShouldBeReturned(string invalidSchemaKey)
         {
             var schemaContent = File.ReadAllText(Path.Join(TestUtils.ExampleParquetSchemaDirectory, "Patient.json"));
-            var schemaNode = JsonConvert.DeserializeObject<FhirParquetSchemaNode>(schemaContent);
-            ValidationResult validateResult = FhirParquetSchemaValidator.Validate(invalidSchemaKey, schemaNode);
+            var schemaNode = JsonConvert.DeserializeObject<ParquetSchemaNode>(schemaContent);
+            ValidationResult validateResult = ParquetSchemaValidator.Validate(invalidSchemaKey, schemaNode);
             Assert.False(validateResult.Success);
             Assert.Equal("The schema key cannot be null or empty.", validateResult.ErrorMessage);
         }

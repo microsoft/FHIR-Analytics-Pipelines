@@ -70,7 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
         public static IParquetSchemaProvider TestParquetSchemaProviderDelegate(string name)
         {
-            if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
+            if (name == ParquetSchemaConstants.DefaultSchemaProviderKey)
             {
                 return new LocalDefaultSchemaProvider(
                     Options.Create(new DataSourceConfiguration()),
@@ -89,16 +89,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
         public static IDataSchemaConverter TestDataSchemaConverterDelegate(string name)
         {
-            var fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
+            var schemaManagerWithoutCustomizedSchema = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestParquetSchemaProviderDelegate,
                 _diagnosticLogger,
-                NullLogger<FhirParquetSchemaManager>.Instance);
+                NullLogger<ParquetSchemaManager>.Instance);
 
-            if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
+            if (name == ParquetSchemaConstants.DefaultSchemaProviderKey)
             {
                 return new DefaultSchemaConverter(
-                    fhirSchemaManagerWithoutCustomizedSchema,
+                    schemaManagerWithoutCustomizedSchema,
                     Options.Create(new DataSourceConfiguration()),
                     _diagnosticLogger,
                     NullLogger<DefaultSchemaConverter>.Instance);

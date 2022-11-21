@@ -24,18 +24,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 {
     public class DefaultSchemaConverter : IDataSchemaConverter
     {
-        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
         private readonly DataSourceType _dataSourceType;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<DefaultSchemaConverter> _logger;
 
         public DefaultSchemaConverter(
-            IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
+            ISchemaManager<ParquetSchemaNode> schemaManager,
             IOptions<DataSourceConfiguration> dataSourceConfiguration,
             IDiagnosticLogger diagnosticLogger,
             ILogger<DefaultSchemaConverter> logger)
         {
-            _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            _schemaManager = EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
             _dataSourceType = EnsureArg.EnumIsDefined(dataSourceConfiguration.Value.Type, nameof(dataSourceConfiguration.Value.Type));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
@@ -51,8 +51,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Get FHIR schema for the input data.
-            FhirParquetSchemaNode schema = _fhirSchemaManager.GetSchema(schemaType);
+            // Get schema for the input data.
+            ParquetSchemaNode schema = _schemaManager.GetSchema(schemaType);
             if (schema == null)
             {
                 _diagnosticLogger.LogError($"The FHIR schema node could not be found for schema type '{schemaType}'.");
@@ -77,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             return new JsonBatchData(processedJsonData);
         }
 
-        private JObject ProcessDicomMetadataObject(JToken metadata, FhirParquetSchemaNode schemaNode)
+        private JObject ProcessDicomMetadataObject(JToken metadata, ParquetSchemaNode schemaNode)
         {
             if (metadata is not JObject metadataObject)
             {
@@ -140,7 +140,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             return processedObject;
         }
 
-        private JObject ProcessDicomPnObject(JToken pnItem, FhirParquetSchemaNode schemaNode)
+        private JObject ProcessDicomPnObject(JToken pnItem, ParquetSchemaNode schemaNode)
         {
             if (pnItem is not JObject jObject)
             {
@@ -151,7 +151,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             return jObject;
         }
 
-        private JObject ProcessStructObject(JToken structItem, FhirParquetSchemaNode schemaNode)
+        private JObject ProcessStructObject(JToken structItem, ParquetSchemaNode schemaNode)
         {
             if (structItem is not JObject fhirJObject)
             {
@@ -180,7 +180,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                         throw new ParquetDataProcessorException($"Data type \"{choiceTypeDataType}\" cannot be found in choice type property, {subObject.Path}.");
                     }
 
-                    FhirParquetSchemaNode dataTypeNode = schemaNode.SubNodes[choiceTypeName].SubNodes[choiceTypeDataType];
+                    ParquetSchemaNode dataTypeNode = schemaNode.SubNodes[choiceTypeName].SubNodes[choiceTypeDataType];
                     processedObject.Add(choiceTypeName, ProcessChoiceTypeObject(subObject, dataTypeNode, choiceTypeDataType));
                 }
                 else
@@ -191,7 +191,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                         continue;
                     }
 
-                    FhirParquetSchemaNode subNode = schemaNode.SubNodes[subObjectKey];
+                    ParquetSchemaNode subNode = schemaNode.SubNodes[subObjectKey];
 
                     if (subNode.IsRepeated)
                     {
@@ -214,7 +214,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             return processedObject;
         }
 
-        private JArray ProcessArrayObject(JToken arrayItem, FhirParquetSchemaNode schemaNode)
+        private JArray ProcessArrayObject(JToken arrayItem, ParquetSchemaNode schemaNode)
         {
             if (arrayItem is not JArray fhirArrayObject)
             {
@@ -239,9 +239,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             return arrayObject;
         }
 
-        private JValue ProcessLeafObject(JToken fhirObject, FhirParquetSchemaNode schemaNode)
+        private JValue ProcessLeafObject(JToken fhirObject, ParquetSchemaNode schemaNode)
         {
-            if (schemaNode.Type == FhirParquetSchemaConstants.JsonStringType)
+            if (schemaNode.Type == ParquetSchemaConstants.JsonStringType)
             {
                 return new JValue(fhirObject.ToString(Formatting.None));
             }
@@ -257,7 +257,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             return _dataSourceType == DataSourceType.DICOM ? new JValue(fhirLeafObject.ToString()) : fhirLeafObject;
         }
 
-        private JObject ProcessChoiceTypeObject(JToken fhirObject, FhirParquetSchemaNode schemaNode, string schemaNodeKey)
+        private JObject ProcessChoiceTypeObject(JToken fhirObject, ParquetSchemaNode schemaNode, string schemaNodeKey)
         {
             var choiceRootObject = new JObject();
             if (schemaNode.IsLeaf)

@@ -7,8 +7,8 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
 {
-    public interface IFhirSchemaManager<T>
-        where T : FhirSchemaNode
+    public interface ISchemaManager<T>
+        where T : BaseSchemaNode
     {
         /// <summary>
         /// Get schema types for the specified resource type, return empty if the schema types don't exist.

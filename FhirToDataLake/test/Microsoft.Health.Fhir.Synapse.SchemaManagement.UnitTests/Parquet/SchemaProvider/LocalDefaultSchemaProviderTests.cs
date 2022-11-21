@@ -81,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
                 new DiagnosticLogger(),
                 NullLogger<LocalDefaultSchemaProvider>.Instance);
 
-            Dictionary<string, FhirParquetSchemaNode> defaultR5Schemas = await schemaProvider.GetSchemasAsync();
+            Dictionary<string, ParquetSchemaNode> defaultR5Schemas = await schemaProvider.GetSchemasAsync();
 
             Assert.Equal(151, defaultR5Schemas.Count);
 

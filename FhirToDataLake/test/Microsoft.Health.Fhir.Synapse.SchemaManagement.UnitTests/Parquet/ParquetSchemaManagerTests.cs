@@ -20,15 +20,15 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
 {
-    public class FhirParquetSchemaManagerTests
+    public class ParquetSchemaManagerTests
     {
-        private static readonly FhirParquetSchemaManager _testParquetSchemaManagerWithoutCustomizedSchema;
-        private static readonly FhirParquetSchemaManager _testParquetSchemaManagerWithCustomizedSchema;
+        private static readonly ParquetSchemaManager _testParquetSchemaManagerWithoutCustomizedSchema;
+        private static readonly ParquetSchemaManager _testParquetSchemaManagerWithCustomizedSchema;
 
-        private static readonly ILogger<FhirParquetSchemaManager> _nullLogger;
+        private static readonly ILogger<ParquetSchemaManager> _nullLogger;
         private static readonly IDiagnosticLogger _diagnosticLogger;
 
-        static FhirParquetSchemaManagerTests()
+        static ParquetSchemaManagerTests()
         {
             IOptions<SchemaConfiguration> schemaConfigurationOptionWithoutCustomizedSchema = Options.Create(new SchemaConfiguration());
 
@@ -38,11 +38,11 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
                 SchemaImageReference = TestUtils.MockSchemaImageReference,
             });
 
-            _nullLogger = NullLogger<FhirParquetSchemaManager>.Instance;
+            _nullLogger = NullLogger<ParquetSchemaManager>.Instance;
             _diagnosticLogger = new DiagnosticLogger();
 
-            _testParquetSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithoutCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, _nullLogger);
-            _testParquetSchemaManagerWithCustomizedSchema = new FhirParquetSchemaManager(schemaConfigurationOptionWithCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, _nullLogger);
+            _testParquetSchemaManagerWithoutCustomizedSchema = new ParquetSchemaManager(schemaConfigurationOptionWithoutCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, _nullLogger);
+            _testParquetSchemaManagerWithCustomizedSchema = new ParquetSchemaManager(schemaConfigurationOptionWithCustomizedSchema, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, _nullLogger);
         }
 
         [Fact]
@@ -51,16 +51,16 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
             var schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirParquetSchemaManager(null, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, _nullLogger));
+                () => new ParquetSchemaManager(null, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, _nullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirParquetSchemaManager(schemaConfigurationOption, null, _diagnosticLogger, _nullLogger));
+                () => new ParquetSchemaManager(schemaConfigurationOption, null, _diagnosticLogger, _nullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.TestParquetSchemaProviderDelegate, null, _nullLogger));
+                () => new ParquetSchemaManager(schemaConfigurationOption, TestUtils.TestParquetSchemaProviderDelegate, null, _nullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirParquetSchemaManager(schemaConfigurationOption, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, null));
+                () => new ParquetSchemaManager(schemaConfigurationOption, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, null));
         }
 
         [InlineData("Patient", 24)]
@@ -70,7 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Theory]
         public static void GivenASchemaType_WhenGetSchema_CorrectResultShouldBeReturned(string schemaType, int propertyCount)
         {
-            FhirParquetSchemaNode result = _testParquetSchemaManagerWithoutCustomizedSchema.GetSchema(schemaType);
+            ParquetSchemaNode result = _testParquetSchemaManagerWithoutCustomizedSchema.GetSchema(schemaType);
 
             Assert.Equal(schemaType, result.Name);
             Assert.False(result.IsLeaf);
@@ -84,14 +84,14 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Theory]
         public static void GivenInvalidSchemaType_WhenGetSchema_NullShouldBeReturned(string invalidSchemaType)
         {
-            FhirParquetSchemaNode result = _testParquetSchemaManagerWithoutCustomizedSchema.GetSchema(invalidSchemaType);
+            ParquetSchemaNode result = _testParquetSchemaManagerWithoutCustomizedSchema.GetSchema(invalidSchemaType);
             Assert.Null(result);
         }
 
         [Fact]
         public static void WhenGetAllSchemasWithoutCustomizedSchema_CorrectResultShouldBeReturned()
         {
-            Dictionary<string, FhirParquetSchemaNode> schemas = _testParquetSchemaManagerWithoutCustomizedSchema.GetAllSchemas();
+            Dictionary<string, ParquetSchemaNode> schemas = _testParquetSchemaManagerWithoutCustomizedSchema.GetAllSchemas();
             Assert.Equal(145, schemas.Count);
         }
 
@@ -105,7 +105,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Fact]
         public static void WhenGetAllSchemasWithCustomizedSchema_CorrectResultShouldBeReturned()
         {
-            Dictionary<string, FhirParquetSchemaNode> schemas = _testParquetSchemaManagerWithCustomizedSchema.GetAllSchemas();
+            Dictionary<string, ParquetSchemaNode> schemas = _testParquetSchemaManagerWithCustomizedSchema.GetAllSchemas();
 
             // Test customized schemas contain a "Patient_Customized" schema.
             Assert.Equal(146, schemas.Count);
@@ -155,7 +155,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Fact]
         public static void GivenInvalidSchema_WhenGetSchemaTypes_ExceptionShouldBeThrown()
         {
-            var schemaManager = new FhirParquetSchemaManager(
+            var schemaManager = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 ParquetSchemaProviderDelegateWithInvalidSchema,
                 _diagnosticLogger,
@@ -167,7 +167,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Fact]
         public static void GivenInvalidSchema_WhenGetSchema_ExceptionShouldBeThrown()
         {
-            var schemaManager = new FhirParquetSchemaManager(
+            var schemaManager = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 ParquetSchemaProviderDelegateWithInvalidSchema,
                 _diagnosticLogger,
@@ -179,7 +179,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Fact]
         public static void GivenInvalidSchema_WhenGetAllSchemaContent_ExceptionShouldBeThrown()
         {
-            var schemaManager = new FhirParquetSchemaManager(
+            var schemaManager = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 ParquetSchemaProviderDelegateWithInvalidSchema,
                 _diagnosticLogger,
@@ -191,7 +191,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         [Fact]
         public static void GivenInvalidSchema_WhenGetAllSchemas_ExceptionShouldBeThrown()
         {
-            var schemaManager = new FhirParquetSchemaManager(
+            var schemaManager = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 ParquetSchemaProviderDelegateWithInvalidSchema,
                 _diagnosticLogger,
@@ -203,10 +203,10 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet
         public static IParquetSchemaProvider ParquetSchemaProviderDelegateWithInvalidSchema(string placeHolderName)
         {
             var invalidParquetSchemaContent = File.ReadAllText(TestUtils.ExampleInvalidParquetSchemaFilePath);
-            var invalidParquetSchemaNode = JsonConvert.DeserializeObject<FhirParquetSchemaNode>(invalidParquetSchemaContent);
+            var invalidParquetSchemaNode = JsonConvert.DeserializeObject<ParquetSchemaNode>(invalidParquetSchemaContent);
 
             var mockSchemaProvider = Substitute.For<IParquetSchemaProvider>();
-            mockSchemaProvider.GetSchemasAsync().Returns(new Dictionary<string, FhirParquetSchemaNode> { { "testType", invalidParquetSchemaNode } });
+            mockSchemaProvider.GetSchemasAsync().Returns(new Dictionary<string, ParquetSchemaNode> { { "testType", invalidParquetSchemaNode } });
 
             return mockSchemaProvider;
         }
