@@ -101,39 +101,57 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 {
                     continue;
                 }
-
-                // Ignore empty tag, BulkDataURI and InlineBinary
-                if (item.Value is not JObject jObject ||
-                    !jObject.ContainsKey("vr") ||
-                    !jObject.ContainsKey("Value") ||
-                    jObject["Value"] is not JArray)
+                
+                if (item.Value is JValue jValue)
                 {
-                    continue;
-                }
-
-                var subValueArray = jObject["Value"] as JArray;
-
-                if (subNode.IsRepeated)
-                {
-                    processedObject.Add(subNodeKeyword, ProcessArrayObject(subValueArray, subNode));
-                }
-                else
-                {
-                    if (subValueArray.Count > 1)
+                    // Handle our self-defined properties that start with '_'.
+                    if (subNode.IsRepeated)
                     {
-                        _logger.LogInformation($"Multiple values appear in an unique tag. Keyword: {subNodeKeyword}");
-                    }
-
-                    if (subNode.IsLeaf)
-                    {
-                        var singleElement = subValueArray.ToString();
-                        processedObject.Add(subNodeKeyword, ProcessLeafObject(singleElement, subNode));
+                        processedObject.Add(subNodeKeyword, ProcessArrayObject(jValue, subNode));
                     }
                     else
                     {
-                        var singleElement = subValueArray.First;
-                        processedObject.Add(subNodeKeyword, ProcessDicomPnObject(singleElement, subNode));
+                        processedObject.Add(subNodeKeyword, ProcessLeafObject(jValue, subNode));
                     }
+                }
+                else if (item.Value is JObject jObject)
+                {
+                    // Ignore empty tag, BulkDataURI and InlineBinary
+                    if (!jObject.ContainsKey("vr") ||
+                        !jObject.ContainsKey("Value") ||
+                        jObject["Value"] is not JArray)
+                    {
+                        continue;
+                    }
+
+                    var subValueArray = jObject["Value"] as JArray;
+
+                    if (subNode.IsRepeated)
+                    {
+                        processedObject.Add(subNodeKeyword, ProcessArrayObject(subValueArray, subNode));
+                    }
+                    else
+                    {
+                        if (subValueArray.Count > 1)
+                        {
+                            _logger.LogInformation($"Multiple values appear in an unique tag. Keyword: {subNodeKeyword}");
+                        }
+
+                        if (subNode.IsLeaf)
+                        {
+                            var singleElement = subValueArray.ToString();
+                            processedObject.Add(subNodeKeyword, ProcessLeafObject(singleElement, subNode));
+                        }
+                        else
+                        {
+                            var singleElement = subValueArray.First;
+                            processedObject.Add(subNodeKeyword, ProcessDicomPnObject(singleElement, subNode));
+                        }
+                    }
+                }
+                else
+                {
+                    continue;
                 }
             }
 

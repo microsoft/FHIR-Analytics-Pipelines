@@ -87,7 +87,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
 
                         // The thread-safe AzureServiceTokenProvider class caches the token in memory and retrieves it from Azure AD just before expiration.
                         // https://docs.microsoft.com/en-us/dotnet/api/overview/azure/service-to-service-authentication#using-the-library
-                        accessToken = await _accessTokenProvider.GetAccessTokenAsync(DicomApiConstants.DicomManagedIdentityUrl, cancellationToken);
+                        accessToken = await _accessTokenProvider.GetAccessTokenAsync(DicomApiConstants.DicomResourceUrl, cancellationToken);
                     }
                 }
                 catch (Exception ex)
@@ -150,6 +150,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
                     case HttpStatusCode.NotFound:
                         _diagnosticLogger.LogError(string.Format("Failed to search from server: Server {0} is not found.", _dicomApiDataSource.ServerUrl));
                         _logger.LogInformation(hrEx, "Failed to search from server: Server {0} is not found.", _dicomApiDataSource.ServerUrl);
+                        break;
+                    case HttpStatusCode.Forbidden:
+                        _diagnosticLogger.LogError(string.Format("Failed to search from server: Server {0} is forbidden.", _dicomApiDataSource.ServerUrl));
+                        _logger.LogInformation(hrEx, "Failed to search from server: Server {0} is forbidden.", _dicomApiDataSource.ServerUrl);
                         break;
                     default:
                         _diagnosticLogger.LogError(string.Format("Failed to search from server: Status code: {0}. Reason: {1}", hrEx.StatusCode, hrEx.Message));

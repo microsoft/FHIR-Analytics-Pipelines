@@ -67,6 +67,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
         /// <summary>
         /// The managed identity url to get access token for DICOM service.
         /// </summary>
-        public const string DicomManagedIdentityUrl = "https://dicom.healthcareapis.azure.com";
+        public const string DicomResourceUrl = "https://dicom.healthcareapis.azure.com";
+
+        /// <summary>
+        /// Sequence property key in Dicom Parquet data.
+        /// </summary>
+        public const string SequencePropertyKey = "_sequence";
+
+        /// <summary>
+        /// Timestamp property key in Dicom Parquet data.
+        /// </summary>
+        public const string TimestampPropertyKey = "_timestamp";
     }
 }

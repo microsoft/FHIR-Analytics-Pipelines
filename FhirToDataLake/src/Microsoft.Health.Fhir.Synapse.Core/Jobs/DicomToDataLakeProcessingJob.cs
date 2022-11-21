@@ -16,6 +16,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
+using Microsoft.Health.Fhir.Synapse.Common.Models.DicomSearch;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -195,25 +196,33 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     throw new ApiSearchException("Parse changefeeds failed.", ex);
                 }
 
-                var tasks = changeFeedEntries.Select(entry =>
+                var changeFeedResults = new List<ChangeFeedResult>();
+
+                foreach (ChangeFeedEntry entry in changeFeedEntries)
                 {
                     var metadataOptions = new SearchMetadataOptions(
                         entry.StudyInstanceUid,
                         entry.SeriesInstanceUid,
                         entry.SopInstanceUid);
 
-                    return _dataClient.SearchAsync(metadataOptions, cancellationToken);
-                });
+                    string metadataContent = await _dataClient.SearchAsync(metadataOptions, cancellationToken);
+                    changeFeedResults.Add(new ChangeFeedResult()
+                    {
+                        Metadata = metadataContent,
+                        Timestamp = entry.Timestamp,
+                        Sequence = entry.Sequence,
+                    });
+                }
 
-                var metadataList = new List<string>(await Task.WhenAll(tasks));
-
-                foreach (var metadata in metadataList)
+                foreach (var changeFeedResult in changeFeedResults)
                 {
                     try
                     {
-                        var metadataObject = (JObject)JArray.Parse(metadata).First();
-                        _cacheResult.Resources[_resourceType].Add(metadataObject);
-                        _cacheResult.CacheSize += metadata.Length * sizeof(char);
+                        var dicomDataObject = (JObject)JArray.Parse(changeFeedResult.Metadata).First();
+                        dicomDataObject.Add(DicomApiConstants.SequencePropertyKey, changeFeedResult.Sequence.ToString());
+                        dicomDataObject.Add(DicomApiConstants.TimestampPropertyKey, changeFeedResult.Timestamp.ToString("s"));
+                        _cacheResult.Resources[_resourceType].Add(dicomDataObject);
+                        _cacheResult.CacheSize += changeFeedResult.Metadata.Length * sizeof(char);
                     }
                     catch (Exception ex)
                     {
