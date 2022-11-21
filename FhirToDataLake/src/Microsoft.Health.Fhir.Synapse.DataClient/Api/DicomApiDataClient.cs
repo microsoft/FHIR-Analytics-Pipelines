@@ -4,115 +4,177 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Dicom.Client.Models;
+using Microsoft.Health.Fhir.Synapse.Common;
+using Microsoft.Health.Fhir.Synapse.Common.Authentication;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
+using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
-using Newtonsoft.Json;
+using Polly.CircuitBreaker;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 {
     public class DicomApiDataClient : IDicomDataClient
     {
+        private readonly IFhirApiDataSource _dataSource;
         private readonly HttpClient _httpClient;
         private readonly IDiagnosticLogger _diagnosticLogger;
+        private readonly IAccessTokenProvider _accessTokenProvider;
         private readonly ILogger<DicomApiDataClient> _logger;
 
         public DicomApiDataClient(
             IFhirApiDataSource dataSource,
             HttpClient httpClient,
+            ITokenCredentialProvider tokenCredentialProvider,
             IDiagnosticLogger diagnosticLogger,
             ILogger<DicomApiDataClient> logger)
         {
             EnsureArg.IsNotNull(dataSource, nameof(dataSource));
             EnsureArg.IsNotNullOrEmpty(dataSource.FhirServerUrl, nameof(dataSource.FhirServerUrl));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
+            EnsureArg.IsNotNull(tokenCredentialProvider, nameof(tokenCredentialProvider));
             EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _httpClient = new HttpClient { BaseAddress = new Uri(dataSource.FhirServerUrl) };
+            _dataSource = dataSource;
+            _httpClient = httpClient;
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/dicom+json");
+            _accessTokenProvider = new AzureAccessTokenProvider(
+                tokenCredentialProvider.GetCredential(TokenCredentialTypes.External),
+                diagnosticLogger,
+                new Logger<AzureAccessTokenProvider>(new LoggerFactory()));
             _diagnosticLogger = diagnosticLogger;
             _logger = logger;
         }
 
-        public async Task<List<string>> GetMetadataAsync(ChangeFeedOptions changeFeedOptions, CancellationToken cancellationToken = default)
+        public async Task<string> SearchAsync(
+            BaseDicomApiOptions dicomApiOptions,
+            CancellationToken cancellationToken = default)
         {
-            var result = new List<string>();
-            var changeFeedEntries = await GetChangeFeedEntriesAsync(changeFeedOptions, cancellationToken);
-            var tasks = changeFeedEntries
-                .Select(entry => GetInstanceMetadataAsync(entry.StudyInstanceUid, entry.SeriesInstanceUid, entry.SopInstanceUid, cancellationToken));
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new OperationCanceledException();
+            }
 
-            return new List<string>(await Task.WhenAll(tasks));
-        }
-
-        public async Task<long> GetLatestSequenceAsync(bool includeMetadata, CancellationToken cancellationToken = default)
-        {
+            Uri searchUri;
             try
             {
-                var response = await _httpClient.GetAsync($"/changefeed/latest?includemetadata={includeMetadata}", cancellationToken);
-                var result = await response.Content.ReadAsStringAsync(cancellationToken);
-                var changeFeedEntry = JsonConvert.DeserializeObject<ChangeFeedEntry>(result);
-
-                return changeFeedEntry.Sequence;
+                searchUri = CreateSearchUri(dicomApiOptions);
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError($"Querying latest changefeed failed. Reason: {ex.Message}");
-                _logger.LogError($"Querying latest changefeed failed. Reason: {ex.Message}");
-                throw new FhirSearchException("Querying latest changefeed failed.", ex);
+                _diagnosticLogger.LogError(string.Format("Create search Uri failed, Reason: '{0}'", ex.Message));
+                _logger.LogInformation(ex, "Create search Uri failed, Reason: '{reason}'", ex.Message);
+                throw new FhirSearchException("Create search Uri failed", ex);
             }
+
+            string accessToken = null;
+            if (dicomApiOptions.IsAccessTokenRequired)
+            {
+                try
+                {
+                    if (_dataSource.Authentication == AuthenticationType.ManagedIdentity)
+                    {
+                        // Currently we support accessing service endpoints with Managed Identity.
+
+                        // The thread-safe AzureServiceTokenProvider class caches the token in memory and retrieves it from Azure AD just before expiration.
+                        // https://docs.microsoft.com/en-us/dotnet/api/overview/azure/service-to-service-authentication#using-the-library
+                        accessToken = await _accessTokenProvider.GetAccessTokenAsync(DicomApiConstants.DicomManagedIdentityUrl, cancellationToken);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _diagnosticLogger.LogError(string.Format("Get server access token failed, Reason: '{0}'", ex.Message));
+                    _logger.LogInformation(ex, "Get server access token failed, Reason: '{reason}'", ex.Message);
+                    throw new FhirSearchException("Get server access token failed", ex);
+                }
+            }
+
+            return await GetResponseFromHttpRequestAsync(searchUri, accessToken, cancellationToken);
         }
 
-        private async Task<string> GetInstanceMetadataAsync(string studyInstanceUid, string seriesInstanceUid, string sopInstanceUid, CancellationToken cancellationToken = default)
+        private Uri CreateSearchUri(BaseDicomApiOptions dicomApiOptions)
+        {
+            string serverUrl = _dataSource.FhirServerUrl;
+
+            var baseUri = new Uri(serverUrl);
+
+            var uri = new Uri(baseUri, dicomApiOptions.RelativeUri());
+
+            // the query parameters is null for metadata
+            if (dicomApiOptions.QueryParameters == null)
+            {
+                return uri;
+            }
+
+            return uri.AddQueryString(dicomApiOptions.QueryParameters);
+        }
+
+        private async Task<string> GetResponseFromHttpRequestAsync(Uri uri, string accessToken = null, CancellationToken cancellationToken = default)
         {
             try
             {
-                var response = await _httpClient.GetAsync($"/studies/{studyInstanceUid}/series/{seriesInstanceUid}/instances/{sopInstanceUid}/metadata", cancellationToken);
+                var searchRequest = new HttpRequestMessage(HttpMethod.Get, uri);
+                if (accessToken != null)
+                {
+                    // Currently we support accessing service endpoints with Managed Identity.
+
+                    // The thread-safe AzureServiceTokenProvider class caches the token in memory and retrieves it from Azure AD just before expiration.
+                    // https://docs.microsoft.com/en-us/dotnet/api/overview/azure/service-to-service-authentication#using-the-library
+                    searchRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                }
+
+                HttpResponseMessage response = await _httpClient.SendAsync(searchRequest, cancellationToken);
+                response.EnsureSuccessStatusCode();
+
+                _logger.LogInformation("Successfully retrieved result for url: '{url}'.", uri);
 
                 return await response.Content.ReadAsStringAsync(cancellationToken);
             }
+            catch (HttpRequestException hrEx)
+            {
+                switch (hrEx.StatusCode)
+                {
+                    case HttpStatusCode.Unauthorized:
+                        _diagnosticLogger.LogError(string.Format("Failed to search from server: Server {0} is unauthorized.", _dataSource.FhirServerUrl));
+                        _logger.LogInformation(hrEx, "Failed to search from server: Server {0} is unauthorized.", _dataSource.FhirServerUrl);
+                        break;
+                    case HttpStatusCode.NotFound:
+                        _diagnosticLogger.LogError(string.Format("Failed to search from server: Server {0} is not found.", _dataSource.FhirServerUrl));
+                        _logger.LogInformation(hrEx, "Failed to search from server: Server {0} is not found.", _dataSource.FhirServerUrl);
+                        break;
+                    default:
+                        _diagnosticLogger.LogError(string.Format("Failed to search from server: Status code: {0}. Reason: {1}", hrEx.StatusCode, hrEx.Message));
+                        _logger.LogInformation(hrEx, "Failed to search from server: Status code: {0}. Reason: {1}", hrEx.StatusCode, hrEx.Message);
+                        break;
+                }
+
+                throw new FhirSearchException(
+                    string.Format(Resource.FhirSearchFailed, uri, hrEx.Message),
+                    hrEx);
+            }
+            catch (BrokenCircuitException bcEx)
+            {
+                _diagnosticLogger.LogError($"Failed to search from server. Reason: {bcEx.Message}");
+                _logger.LogInformation(bcEx, "Broken circuit while searching from server. Reason: {0}", bcEx.Message);
+
+                throw new FhirSearchException(
+                    string.Format(Resource.FhirSearchFailed, uri, bcEx.Message),
+                    bcEx);
+            }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError($"Retrieving instance metadata failed. Reason: {ex.Message}");
-                _logger.LogError($"Retrieving instance metadata failed. Reason: {ex.Message}");
-                throw new FhirSearchException("Retrieving instance metadata failed.", ex);
-            }
-        }
-
-        private async Task<List<ChangeFeedEntry>> GetChangeFeedEntriesAsync(ChangeFeedOptions changeFeedOptions, CancellationToken cancellationToken = default)
-        {
-            if (changeFeedOptions.IncludeMetadata)
-            {
-                _diagnosticLogger.LogError("includemetadata should be set to false in changefeed.");
-                _logger.LogInformation("includemetadata should be set to false in changefeed.");
-                throw new FhirSearchException("includemetadata should be set to false in changefeed.");
-            }
-
-            try
-            {
-                var response = await _httpClient.GetAsync(
-                    $"/changefeed?offset={changeFeedOptions.Offset}&limit={changeFeedOptions.Limit}&includeMetadata={changeFeedOptions.IncludeMetadata}",
-                    cancellationToken);
-
-                var content = await response.Content.ReadAsStringAsync(cancellationToken);
-
-                return JsonConvert.DeserializeObject<List<ChangeFeedEntry>>(content)
-                    .Where(x => x.State == ChangeFeedState.Current && x.Action == ChangeFeedAction.Create)
-                    .ToList();
-            }
-            catch (Exception ex)
-            {
-                _diagnosticLogger.LogError($"Querying changefeed failed. Reason: {ex.Message}");
-                _logger.LogError($"Querying changefeed failed. Reason: {ex.Message}");
-                throw new FhirSearchException("Querying changefeed failed.", ex);
+                _diagnosticLogger.LogError($"Unknown error while searching from server. Reason: {ex.Message}");
+                _logger.LogError(ex, "Unhandled error while searching from server. Reason: {0}", ex.Message);
+                throw;
             }
         }
     }
