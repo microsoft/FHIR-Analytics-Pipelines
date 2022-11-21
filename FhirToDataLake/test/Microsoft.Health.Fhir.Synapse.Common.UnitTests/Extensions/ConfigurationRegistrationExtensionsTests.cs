@@ -35,9 +35,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
         public static IEnumerable<object[]> GetInvalidServiceConfiguration()
         {
             yield return new object[] { "fhirServer:serverUrl", string.Empty, "Fhir server url can not be empty." };
+            yield return new object[] { "fhirServer:version", "invalidVersion", "Failed to parse data source configuration" };
+            yield return new object[] { "fhirServer:version", "STU3", "Fhir version Stu3 is not supported." };
             yield return new object[] { "job:containerName", string.Empty, "Target azure container name can not be empty." };
             yield return new object[] { "dataLakeStore:storageUrl", string.Empty, "Target azure storage url can not be empty." };
-            yield return new object[] { "fhirServer:version", "invalidVersion", "Failed to parse data source configuration" };
             yield return new object[] { "job:startTime", "invalidDataTime", "Failed to parse job configuration" };
             yield return new object[] { "filter:filterScope", "invalidScope", "Failed to parse filter configuration" };
             yield return new object[] { "schema:schemaImageReference", 12345, "Found the schema image reference but customized schema is disable." };
@@ -46,6 +47,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             yield return new object[] { "configVersion", 2, "ConfigVersion '2' is not supported." };
             yield return new object[] { "configVersion", "1.0", "ConfigVersion '1.0' is not supported." };
             yield return new object[] { "configVersion", "abc", "ConfigVersion 'abc' is not supported." };
+            yield return new object[] { "dataSource:fhirServer:serverUrl", string.Empty, "Fhir server url can not be empty." };
+            yield return new object[] { "dataSource:fhirServer:version", "v1", "Failed to parse data source configuration" };
         }
 
         [Theory]
@@ -66,12 +69,44 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
         [Fact]
         public void GivenValidServiceCollectionConfiguration_WhenValidate_NoExceptionShouldBeThrown()
         {
+            // FhirServerConfiguration
             var builder = new ConfigurationBuilder();
             builder.AddInMemoryCollection(TestValidConfiguration);
             IConfigurationRoot config = builder.Build();
 
             var serviceCollection = new ServiceCollection();
             Exception exception = Record.Exception(() => serviceCollection.AddConfiguration(config));
+            Assert.Null(exception);
+
+            // DataSourceConfiguration with FHIR Server
+            var fhirConfiguration = new Dictionary<string, string>(TestValidConfiguration)
+            {
+                ["dataSource:fhirServer:serverUrl"] = "https://test.fhir.azurehealthcareapis.com",
+            };
+            fhirConfiguration.Remove("fhirServer:serverUrl");
+
+            builder = new ConfigurationBuilder();
+            builder.AddInMemoryCollection(fhirConfiguration);
+            config = builder.Build();
+
+            serviceCollection = new ServiceCollection();
+            exception = Record.Exception(() => serviceCollection.AddConfiguration(config));
+            Assert.Null(exception);
+
+            // DataSourceConfiguration with DICOM Server
+            var dicomConfiguration = new Dictionary<string, string>(TestValidConfiguration)
+            {
+                ["dataSource:type"] = "DICOM",
+                ["dataSource:dicomServer:serverUrl"] = "https://test.dicom.azurehealthcareapis.com",
+            };
+            dicomConfiguration.Remove("fhirServer:serverUrl");
+
+            builder = new ConfigurationBuilder();
+            builder.AddInMemoryCollection(dicomConfiguration);
+            config = builder.Build();
+
+            serviceCollection = new ServiceCollection();
+            exception = Record.Exception(() => serviceCollection.AddConfiguration(config));
             Assert.Null(exception);
         }
 

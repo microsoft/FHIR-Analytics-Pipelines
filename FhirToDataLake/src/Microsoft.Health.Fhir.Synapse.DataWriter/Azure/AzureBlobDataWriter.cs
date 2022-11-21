@@ -20,9 +20,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
     public class AzureBlobDataWriter : IFhirDataWriter
     {
-        // Date format in blob path.
-        private const string DateKeyFormat = "yyyy/MM/dd";
-
         private readonly IAzureBlobContainerClient _containerClient;
         private readonly ILogger<AzureBlobDataWriter> _logger;
 
@@ -31,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         // Staged data folder path: "staging/{JobId:d20}/{schemaType}/{year}/{month}/{day}"
         // Committed data file path: "result/{schemaType}/{year}/{month}/{day}/{JobId:d20}"
-        private readonly Regex _stagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z_]+/\d{4}/\d{2}/\d{2})$");
+        private readonly Regex _fhirStagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z_]+/\d{4}/\d{2}/\d{2})$");
         private readonly Regex _dicomStagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z_]+/\d+)$");
 
         private readonly DataSourceType _dataSourceType;
@@ -51,35 +48,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         public async Task<string> WriteAsync(
             StreamBatchData data,
-            long jobId,
-            int partId,
-            DateTimeOffset dateTime,
+            string blobName,
             CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(data, nameof(data));
 
-            string schemaType = data.SchemaType;
-
-            string blobName = GetDataFileName(dateTime, schemaType, jobId, partId);
-            string blobUrl = await _containerClient.UpdateBlobAsync(blobName, data.Value, cancellationToken);
-
-            _logger.LogInformation($"Write stream batch data to {blobUrl} successfully.");
-
-            return blobUrl;
-        }
-
-        public async Task<string> WriteAsync(
-            StreamBatchData data,
-            long jobId,
-            int partId,
-            long offset,
-            CancellationToken cancellationToken = default)
-        {
-            EnsureArg.IsNotNull(data, nameof(data));
-
-            string schemaType = data.SchemaType;
-
-            string blobName = GetDataFileName(offset, schemaType, jobId, partId);
             string blobUrl = await _containerClient.UpdateBlobAsync(blobName, data.Value, cancellationToken);
 
             _logger.LogInformation($"Write stream batch data to {blobUrl} successfully.");
@@ -111,9 +84,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 if (path.IsDirectory == true)
                 {
                     // Record all directories that need to commit.
-                    Match match = _dataSourceType == DataSourceType.DICOM
-                        ? _dicomStagingDataFolderRegex.Match(path.Name)
-                        : _stagingDataFolderRegex.Match(path.Name);
+                    Match match = _dataSourceType == DataSourceType.FHIR
+                        ? _fhirStagingDataFolderRegex.Match(path.Name)
+                        : _dicomStagingDataFolderRegex.Match(path.Name);
 
                     if (match.Success)
                     {
@@ -157,26 +130,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
 
             return true;
-        }
-
-        private static string GetDataFileName(
-            DateTimeOffset dateTime,
-            string schemaType,
-            long jobId,
-            int partId)
-        {
-            string dateTimeKey = dateTime.ToString(DateKeyFormat);
-
-            return $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/{schemaType}/{dateTimeKey}/{schemaType}_{partId:d10}.parquet";
-        }
-
-        private static string GetDataFileName(
-            long offset,
-            string schemaType,
-            long jobId,
-            int partId)
-        {
-            return $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/{schemaType}/{offset}/{schemaType}_{partId:d10}.parquet";
         }
     }
 }
