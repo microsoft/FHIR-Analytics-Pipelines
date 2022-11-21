@@ -21,7 +21,9 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
         }
 
         [Function("JobManagerFunction")]
-        public async Task Run(FunctionContext context)
+        public async Task Run(
+            [TimerTrigger("0 */5 * * * *", RunOnStartup = false)] MyInfo myTimer,
+            FunctionContext context)
         {
             ILogger logger = context.GetLogger("JobManagerFunction");
             logger.LogInformation("C# Timer trigger function executed at: {time}", DateTime.Now);
@@ -36,5 +38,25 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
                 throw;
             }
         }
+    }
+
+#pragma warning disable SA1402 // File may only contain a single type
+    public class MyInfo
+#pragma warning restore SA1402 // File may only contain a single type
+    {
+        public MyScheduleStatus ScheduleStatus { get; set; }
+
+        public bool IsPastDue { get; set; }
+    }
+
+#pragma warning disable SA1402 // File may only contain a single type
+    public class MyScheduleStatus
+#pragma warning restore SA1402 // File may only contain a single type
+    {
+        public DateTime Last { get; set; }
+
+        public DateTime Next { get; set; }
+
+        public DateTime LastUpdated { get; set; }
     }
 }

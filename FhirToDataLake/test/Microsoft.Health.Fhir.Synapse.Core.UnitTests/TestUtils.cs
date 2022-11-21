@@ -13,6 +13,7 @@ using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
@@ -38,6 +39,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         {
             EnableCustomizedSchema = true,
             SchemaImageReference = "testacr.azurecr.io/customizedtemplate:default",
+        };
+
+        public static readonly List<string> ExcludeResourceTypes = new List<string>
+        {
+            FhirConstants.StructureDefinitionResource,
+            FhirConstants.OperationOutcomeResource,
         };
 
         public static IEnumerable<JObject> LoadNdjsonData(string filePath)

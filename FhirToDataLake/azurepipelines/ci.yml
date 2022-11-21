@@ -88,6 +88,22 @@ steps:
     command: stop
     container: azurite-emulator-analytics-ci
 
+- task: DotNetCoreCLI@2
+  displayName: Dotnet Publish FhirToDataLake Function App
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: FhirToDataLake/**/*.FunctionApp.csproj
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/FunctionApp'
+    zipAfterPublish: True
+
+- task: PublishPipelineArtifact@1
+  displayName: Publish FhirToDataLake Function App as Artifact
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)/FunctionApp'
+    artifact: FhirToDataLakeFunctionApp
+    publishLocation: pipeline
+
 - task: PowerShell@2
   displayName: Build FhirToDataLake Tool Docker Image
   inputs:
