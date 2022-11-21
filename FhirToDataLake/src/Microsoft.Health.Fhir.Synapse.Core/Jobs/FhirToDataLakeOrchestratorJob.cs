@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly JobInfo _jobInfo;
         private readonly FhirToDataLakeOrchestratorJobInputData _inputData;
         private readonly IFhirDataClient _dataClient;
-        private readonly IFhirDataWriter _dataWriter;
+        private readonly IDataWriter _dataWriter;
         private readonly IQueueClient _queueClient;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly IMetadataStore _metadataStore;
@@ -55,7 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             FhirToDataLakeOrchestratorJobInputData inputData,
             FhirToDataLakeOrchestratorJobResult result,
             IFhirDataClient dataClient,
-            IFhirDataWriter dataWriter,
+            IDataWriter dataWriter,
             IQueueClient queueClient,
             IGroupMemberExtractor groupMemberExtractor,
             IFilterManager filterManager,

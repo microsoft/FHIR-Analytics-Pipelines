@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly IQueueClient _queueClient;
         private readonly IDicomDataClient _dataClient;
-        private readonly IFhirDataWriter _dataWriter;
+        private readonly IDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly IMetadataStore _metadataStore;
@@ -42,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public DicomAzureStorageJobFactory(
             IQueueClient queueClient,
             IDicomDataClient dataClient,
-            IFhirDataWriter dataWriter,
+            IDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             IMetadataStore metadataStore,

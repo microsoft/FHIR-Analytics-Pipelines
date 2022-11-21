@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly JobInfo _jobInfo;
         private readonly DicomToDataLakeOrchestratorJobInputData _inputData;
         private readonly IDicomDataClient _dataClient;
-        private readonly IFhirDataWriter _dataWriter;
+        private readonly IDataWriter _dataWriter;
         private readonly IQueueClient _queueClient;
         private readonly IMetadataStore _metadataStore;
         private readonly int _maxJobCountInRunningPool;
@@ -43,7 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             DicomToDataLakeOrchestratorJobInputData inputData,
             DicomToDataLakeOrchestratorJobResult result,
             IDicomDataClient dataClient,
-            IFhirDataWriter dataWriter,
+            IDataWriter dataWriter,
             IQueueClient queueClient,
             IMetadataStore metadataStore,
             int maxJobCountInRunningPool,

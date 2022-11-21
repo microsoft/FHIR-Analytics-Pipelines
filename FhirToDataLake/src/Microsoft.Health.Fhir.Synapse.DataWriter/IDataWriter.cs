@@ -10,7 +10,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter
 {
-    public interface IFhirDataWriter
+    public interface IDataWriter
     {
         /// <summary>
         /// Write stream batch data to storage.

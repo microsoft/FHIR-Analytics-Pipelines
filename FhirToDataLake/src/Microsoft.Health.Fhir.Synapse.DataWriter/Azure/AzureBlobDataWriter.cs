@@ -18,7 +18,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
-    public class AzureBlobDataWriter : IFhirDataWriter
+    public class AzureBlobDataWriter : IDataWriter
     {
         private readonly IAzureBlobContainerClient _containerClient;
         private readonly ILogger<AzureBlobDataWriter> _logger;

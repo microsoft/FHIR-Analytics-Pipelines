@@ -147,7 +147,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return dataClient;
         }
 
-        private static IFhirDataWriter GetDataWriter(string containerName, IAzureBlobContainerClient blobClient)
+        private static IDataWriter GetDataWriter(string containerName, IAzureBlobContainerClient blobClient)
         {
             var dataSourceOption = Options.Create(new DataSourceConfiguration());
 

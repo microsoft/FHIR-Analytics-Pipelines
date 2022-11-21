@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly DicomApiVersion dicomVersion = DicomApiVersion.V1;
         private readonly DicomToDataLakeProcessingJobInputData _inputData;
         private readonly IDicomDataClient _dataClient;
-        private readonly IFhirDataWriter _dataWriter;
+        private readonly IDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly IMetricsLogger _metricsLogger;
@@ -63,7 +63,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             long jobId,
             DicomToDataLakeProcessingJobInputData inputData,
             IDicomDataClient dataClient,
-            IFhirDataWriter dataWriter,
+            IDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             IMetricsLogger metricsLogger,

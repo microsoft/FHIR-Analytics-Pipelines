@@ -41,7 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly FhirToDataLakeProcessingJobInputData _inputData;
         private readonly IFhirDataClient _dataClient;
-        private readonly IFhirDataWriter _dataWriter;
+        private readonly IDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
@@ -70,7 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             long jobId,
             FhirToDataLakeProcessingJobInputData inputData,
             IFhirDataClient dataClient,
-            IFhirDataWriter dataWriter,
+            IDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
             IGroupMemberExtractor groupMemberExtractor,

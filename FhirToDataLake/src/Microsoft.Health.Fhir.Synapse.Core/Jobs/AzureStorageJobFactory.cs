@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly IQueueClient _queueClient;
         private readonly IFhirDataClient _dataClient;
-        private readonly IFhirDataWriter _dataWriter;
+        private readonly IDataWriter _dataWriter;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public AzureStorageJobFactory(
             IQueueClient queueClient,
             IFhirDataClient dataClient,
-            IFhirDataWriter dataWriter,
+            IDataWriter dataWriter,
             IGroupMemberExtractor groupMemberExtractor,
             IColumnDataProcessor parquetDataProcessor,
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
