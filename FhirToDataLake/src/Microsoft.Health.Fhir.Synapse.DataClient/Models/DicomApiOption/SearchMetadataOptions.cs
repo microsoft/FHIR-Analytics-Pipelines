@@ -4,20 +4,17 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using Microsoft.Health.Fhir.Synapse.Common;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
 {
     public class SearchMetadataOptions : BaseDicomApiOptions
     {
         public SearchMetadataOptions(
-            DicomApiVersion dicomApiVersion,
             string studyInstanceUid,
             string seriesInstanceUid,
             string sopInstanceUid)
         {
-            DicomApiVersion = dicomApiVersion;
             StudyInstanceUid = studyInstanceUid;
             SeriesInstanceUid = seriesInstanceUid;
             SopInstanceUid = sopInstanceUid;
@@ -33,8 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
 
         public override string RelativeUri()
         {
-            return $"{DicomApiConstants.VersionMap[DicomApiVersion]}/" +
-                $"{DicomApiConstants.StudiesKey}/{StudyInstanceUid}/" +
+            return $"{DicomApiConstants.StudiesKey}/{StudyInstanceUid}/" +
                 $"{DicomApiConstants.SeriesKey}/{SeriesInstanceUid}/" +
                 $"{DicomApiConstants.InstancesKey}/{SopInstanceUid}/" +
                 $"{DicomApiConstants.MetadataKey}";

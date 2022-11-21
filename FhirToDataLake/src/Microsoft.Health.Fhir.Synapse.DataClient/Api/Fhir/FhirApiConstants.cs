@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
+namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir
 {
     /// <summary>
     /// Constants for FHIR search API parameters.

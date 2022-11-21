@@ -55,7 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         public void GivenBrokenDataClient_WhenInitialize_ExceptionShouldBeThrown()
         {
             var dataClient = Substitute.For<IFhirDataClient>();
-            dataClient.SearchAsync(default, default).ThrowsForAnyArgs(new FhirSearchException("mockException"));
+            dataClient.SearchAsync(default, default).ThrowsForAnyArgs(new ApiSearchException("mockException"));
 
             var provider = new R5FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR5FhirSpecificationProviderLogger);
             Assert.Throws<FhirSpecificationProviderException>(

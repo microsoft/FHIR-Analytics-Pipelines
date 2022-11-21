@@ -60,7 +60,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
         {
             switch (ex)
             {
-                case FhirSearchException:
+                case ApiSearchException:
                     metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.ReadFhirDataError, message, Operations.RunJob), 1);
                     break;
                 case AzureBlobOperationFailedException:

@@ -15,6 +15,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
@@ -50,7 +51,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
                 },
             };
 
-            var dataSource = new FhirApiDataSource(Options.Create(dataSourceConfiguration));
+            var dataSource = new ApiDataSource(Options.Create(dataSourceConfiguration));
 
             var httpClient = new HttpClient(new MockHttpMessageHandler(new Dictionary<string, HttpResponseMessage>()));
 
@@ -94,7 +95,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         {
             FhirApiDataClient client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
             var searchOptions = new BaseSearchOptions("Patient", null);
-            Assert.Throws<FhirSearchException>(() => client.Search(searchOptions));
+            Assert.Throws<ApiSearchException>(() => client.Search(searchOptions));
         }
 
         [Theory]
@@ -138,7 +139,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [InlineData("https://example.com/#/")]
         public async Task GivenServerUrlWithPoundKey_WhenSearchFhirData_CorrectBatchDataShouldBeReturned(string serverUrl)
         {
-            IFhirApiDataSource datasource = CreateFhirApiDataSource(serverUrl, AuthenticationType.ManagedIdentity);
+            IApiDataSource datasource = CreateFhirApiDataSource(serverUrl, AuthenticationType.ManagedIdentity);
             FhirApiDataClient client = CreateDataClient("https://example.com", _mockTokenCredentialProvider, datasource);
 
             // First batch
@@ -187,7 +188,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             };
             var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
 
-            var exception = await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchOptions));
+            var exception = await Assert.ThrowsAsync<ApiSearchException>(() => client.SearchAsync(searchOptions));
             Assert.IsType<HttpRequestException>(exception.InnerException);
         }
 
@@ -203,7 +204,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             };
             var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
 
-            await Assert.ThrowsAsync<FhirSearchException>(() => client.SearchAsync(searchOptions));
+            await Assert.ThrowsAsync<ApiSearchException>(() => client.SearchAsync(searchOptions));
         }
 
         [Fact]
@@ -232,7 +233,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
         }
 
-        private FhirApiDataClient CreateDataClient(string fhirServerUrl, ITokenCredentialProvider mockProvider, IFhirApiDataSource dataSource = null)
+        private FhirApiDataClient CreateDataClient(string fhirServerUrl, ITokenCredentialProvider mockProvider, IApiDataSource dataSource = null)
         {
             // Set up http client.
             StringComparer comparer = StringComparer.OrdinalIgnoreCase;
@@ -270,7 +271,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             return dataClient;
         }
 
-        private IFhirApiDataSource CreateFhirApiDataSource(string fhirServerUrl, AuthenticationType authenticationType)
+        private IApiDataSource CreateFhirApiDataSource(string fhirServerUrl, AuthenticationType authenticationType)
         {
             var dataSourceConfiguration = new DataSourceConfiguration
             {
@@ -281,7 +282,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
                 },
             };
 
-            var dataSource = new FhirApiDataSource(Options.Create(dataSourceConfiguration));
+            var dataSource = new ApiDataSource(Options.Create(dataSourceConfiguration));
 
             return dataSource;
         }

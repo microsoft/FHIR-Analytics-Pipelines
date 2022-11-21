@@ -23,7 +23,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
@@ -253,7 +253,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         $"Failed to extract version id for patient {patientId}.");
                     _logger.LogInformation(
                         $"Failed to extract version id for patient {patientId}.");
-                    throw new FhirSearchException(
+                    throw new ApiSearchException(
                         $"Failed to extract version id for patient {patientId}.");
                 }
 
@@ -370,7 +370,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _diagnosticLogger.LogError($"Failed to get patient {patientId}.");
                 _logger.LogInformation($"Failed to get patient {patientId}.");
-                throw new FhirSearchException($"Failed to get patient {patientId}.");
+                throw new ApiSearchException($"Failed to get patient {patientId}.");
             }
 
             return patientResource;
@@ -490,7 +490,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _diagnosticLogger.LogError($"There is operationOutcome returned from FHIR server: {string.Join(',', operationOutcomes)}");
                 _logger.LogInformation($"There is operationOutcome returned from FHIR server: {string.Join(',', operationOutcomes)}");
-                throw new FhirSearchException($"There is operationOutcome returned from FHIR server: {string.Join(',', operationOutcomes)}");
+                throw new ApiSearchException($"There is operationOutcome returned from FHIR server: {string.Join(',', operationOutcomes)}");
             }
 
             string continuationToken = FhirBundleParser.ExtractContinuationToken(fhirBundleObject);

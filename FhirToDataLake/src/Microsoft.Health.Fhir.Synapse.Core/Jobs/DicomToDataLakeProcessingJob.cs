@@ -20,7 +20,7 @@ using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
@@ -35,7 +35,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class DicomToDataLakeProcessingJob : IJob
     {
-        private readonly DicomApiVersion dicomVersion = DicomApiVersion.V1;
         private readonly DicomToDataLakeProcessingJobInputData _inputData;
         private readonly IDicomDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
@@ -179,7 +178,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{false}"),
                 };
 
-                var changeFeedOptions = new ChangeFeedOffsetOptions(dicomVersion, queryParameters);
+                var changeFeedOptions = new ChangeFeedOffsetOptions(queryParameters);
                 string changeFeedsContent = await _dataClient.SearchAsync(changeFeedOptions, cancellationToken);
 
                 List<ChangeFeedEntry> changeFeedEntries;
@@ -193,13 +192,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     _diagnosticLogger.LogError($"Parse changefeeds failed. Reason: {ex.Message}");
                     _logger.LogError($"Parse changefeeds failed. Reason: {ex.Message}");
-                    throw new FhirSearchException("Parse changefeeds failed.", ex);
+                    throw new ApiSearchException("Parse changefeeds failed.", ex);
                 }
 
                 var tasks = changeFeedEntries.Select(entry =>
                 {
                     var metadataOptions = new SearchMetadataOptions(
-                        dicomVersion,
                         entry.StudyInstanceUid,
                         entry.SeriesInstanceUid,
                         entry.SopInstanceUid);

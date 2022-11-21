@@ -156,7 +156,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var retriableJobException = await Assert.ThrowsAsync<RetriableJobException>(async () =>
                 await job.ExecuteAsync(progress, CancellationToken.None));
 
-            Assert.IsType<FhirSearchException>(retriableJobException.InnerException);
+            Assert.IsType<ApiSearchException>(retriableJobException.InnerException);
         }
 
         private static async Task<FhirToDataLakeOrchestratorJobResult> VerifyCommonOrchestratorJobAsync(
@@ -373,7 +373,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var dataClient = Substitute.For<IFhirDataClient>();
             dataClient.SearchAsync(default)
-                .ReturnsForAnyArgs(Task.FromException<string>(new FhirSearchException("fake fhir search exception.")));
+                .ReturnsForAnyArgs(Task.FromException<string>(new ApiSearchException("fake fhir search exception.")));
             return dataClient;
         }
 

@@ -16,7 +16,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [Fact]
         public void GivenNullFhirServerConfiguration_WhenInitialize_ArgumentNullExceptionShouldBeThrown()
         {
-            Assert.Throws<ArgumentNullException>(() => new FhirApiDataSource(null));
+            Assert.Throws<ArgumentNullException>(() => new ApiDataSource(null));
         }
 
         [Fact]
@@ -31,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
                 },
             };
 
-            Assert.Throws<ArgumentNullException>(() => new FhirApiDataSource(Options.Create(dataSourceConfiguration)));
+            Assert.Throws<ArgumentNullException>(() => new ApiDataSource(Options.Create(dataSourceConfiguration)));
         }
 
         [Fact]
@@ -39,10 +39,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         {
             // ServerUrl is string.empty
             var dataSourceConfiguration = new DataSourceConfiguration();
-            Assert.Throws<ArgumentException>(() => new FhirApiDataSource(Options.Create(dataSourceConfiguration)));
+            Assert.Throws<ArgumentException>(() => new ApiDataSource(Options.Create(dataSourceConfiguration)));
 
             dataSourceConfiguration.FhirServer.ServerUrl = string.Empty;
-            Assert.Throws<ArgumentException>(() => new FhirApiDataSource(Options.Create(dataSourceConfiguration)));
+            Assert.Throws<ArgumentException>(() => new ApiDataSource(Options.Create(dataSourceConfiguration)));
         }
 
         [Theory]
@@ -58,9 +58,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
                 },
             };
 
-            var dataSource = new FhirApiDataSource(Options.Create(dataSourceConfiguration));
+            var dataSource = new ApiDataSource(Options.Create(dataSourceConfiguration));
 
-            Assert.Equal(expectedServerUrl, dataSource.FhirServerUrl);
+            Assert.Equal(expectedServerUrl, dataSource.ServerUrl);
         }
     }
 }

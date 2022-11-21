@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using Microsoft.Health.Fhir.Synapse.Common;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
+namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
 {
     public class DicomApiConstants
     {

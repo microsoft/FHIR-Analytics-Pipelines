@@ -20,31 +20,31 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
 using Polly.CircuitBreaker;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
+namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
 {
     public class DicomApiDataClient : IDicomDataClient
     {
-        private readonly IFhirApiDataSource _dataSource;
+        private readonly IApiDataSource _dicomApiDataSource;
         private readonly HttpClient _httpClient;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly IAccessTokenProvider _accessTokenProvider;
         private readonly ILogger<DicomApiDataClient> _logger;
 
         public DicomApiDataClient(
-            IFhirApiDataSource dataSource,
+            IApiDataSource dataSource,
             HttpClient httpClient,
             ITokenCredentialProvider tokenCredentialProvider,
             IDiagnosticLogger diagnosticLogger,
             ILogger<DicomApiDataClient> logger)
         {
             EnsureArg.IsNotNull(dataSource, nameof(dataSource));
-            EnsureArg.IsNotNullOrEmpty(dataSource.FhirServerUrl, nameof(dataSource.FhirServerUrl));
+            EnsureArg.IsNotNullOrEmpty(dataSource.ServerUrl, nameof(dataSource.ServerUrl));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
             EnsureArg.IsNotNull(tokenCredentialProvider, nameof(tokenCredentialProvider));
             EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _dataSource = dataSource;
+            _dicomApiDataSource = dataSource;
             _httpClient = httpClient;
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/dicom+json");
             _accessTokenProvider = new AzureAccessTokenProvider(
@@ -73,7 +73,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             {
                 _diagnosticLogger.LogError(string.Format("Create search Uri failed, Reason: '{0}'", ex.Message));
                 _logger.LogInformation(ex, "Create search Uri failed, Reason: '{reason}'", ex.Message);
-                throw new FhirSearchException("Create search Uri failed", ex);
+                throw new ApiSearchException("Create search Uri failed", ex);
             }
 
             string accessToken = null;
@@ -81,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             {
                 try
                 {
-                    if (_dataSource.Authentication == AuthenticationType.ManagedIdentity)
+                    if (_dicomApiDataSource.Authentication == AuthenticationType.ManagedIdentity)
                     {
                         // Currently we support accessing service endpoints with Managed Identity.
 
@@ -94,7 +94,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 {
                     _diagnosticLogger.LogError(string.Format("Get server access token failed, Reason: '{0}'", ex.Message));
                     _logger.LogInformation(ex, "Get server access token failed, Reason: '{reason}'", ex.Message);
-                    throw new FhirSearchException("Get server access token failed", ex);
+                    throw new ApiSearchException("Get server access token failed", ex);
                 }
             }
 
@@ -103,7 +103,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 
         private Uri CreateSearchUri(BaseDicomApiOptions dicomApiOptions)
         {
-            string serverUrl = _dataSource.FhirServerUrl;
+            string serverUrl = _dicomApiDataSource.ServerUrl;
 
             var baseUri = new Uri(serverUrl);
 
@@ -144,12 +144,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 switch (hrEx.StatusCode)
                 {
                     case HttpStatusCode.Unauthorized:
-                        _diagnosticLogger.LogError(string.Format("Failed to search from server: Server {0} is unauthorized.", _dataSource.FhirServerUrl));
-                        _logger.LogInformation(hrEx, "Failed to search from server: Server {0} is unauthorized.", _dataSource.FhirServerUrl);
+                        _diagnosticLogger.LogError(string.Format("Failed to search from server: Server {0} is unauthorized.", _dicomApiDataSource.ServerUrl));
+                        _logger.LogInformation(hrEx, "Failed to search from server: Server {0} is unauthorized.", _dicomApiDataSource.ServerUrl);
                         break;
                     case HttpStatusCode.NotFound:
-                        _diagnosticLogger.LogError(string.Format("Failed to search from server: Server {0} is not found.", _dataSource.FhirServerUrl));
-                        _logger.LogInformation(hrEx, "Failed to search from server: Server {0} is not found.", _dataSource.FhirServerUrl);
+                        _diagnosticLogger.LogError(string.Format("Failed to search from server: Server {0} is not found.", _dicomApiDataSource.ServerUrl));
+                        _logger.LogInformation(hrEx, "Failed to search from server: Server {0} is not found.", _dicomApiDataSource.ServerUrl);
                         break;
                     default:
                         _diagnosticLogger.LogError(string.Format("Failed to search from server: Status code: {0}. Reason: {1}", hrEx.StatusCode, hrEx.Message));
@@ -157,7 +157,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                         break;
                 }
 
-                throw new FhirSearchException(
+                throw new ApiSearchException(
                     string.Format(Resource.FhirSearchFailed, uri, hrEx.Message),
                     hrEx);
             }
@@ -166,7 +166,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 _diagnosticLogger.LogError($"Failed to search from server. Reason: {bcEx.Message}");
                 _logger.LogInformation(bcEx, "Broken circuit while searching from server. Reason: {0}", bcEx.Message);
 
-                throw new FhirSearchException(
+                throw new ApiSearchException(
                     string.Format(Resource.FhirSearchFailed, uri, bcEx.Message),
                     bcEx);
             }

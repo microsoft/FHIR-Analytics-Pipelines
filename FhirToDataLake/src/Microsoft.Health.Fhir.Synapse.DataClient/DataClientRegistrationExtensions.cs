@@ -13,6 +13,7 @@ using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
@@ -23,7 +24,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
     {
         public static IServiceCollection AddDataSource(this IServiceCollection services)
         {
-            services.AddSingleton<IFhirApiDataSource, FhirApiDataSource>();
+            services.AddSingleton<IApiDataSource, ApiDataSource>();
             services.AddSingleton<IFhirDataClient, FhirApiDataClient>();
 
             var dataSourceConfiguration = services

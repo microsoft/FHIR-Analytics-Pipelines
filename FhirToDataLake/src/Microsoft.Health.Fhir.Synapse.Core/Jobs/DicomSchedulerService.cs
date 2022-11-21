@@ -12,7 +12,6 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Dicom.Client.Models;
-using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
@@ -20,7 +19,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
 using Microsoft.Health.JobManagement;
 using NCrontab;
@@ -30,7 +29,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class DicomSchedulerService : ISchedulerService
     {
-        private readonly DicomApiVersion dicomVersion = DicomApiVersion.V1;
         private readonly IQueueClient _queueClient;
         private readonly IMetadataStore _metadataStore;
         private readonly IDicomDataClient _dataClient;
@@ -597,7 +595,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{false}"),
                 };
 
-            var changeFeedOption = new ChangeFeedLatestOptions(dicomVersion, queryParameters);
+            var changeFeedOption = new ChangeFeedLatestOptions(queryParameters);
             string changeFeedContent = await _dataClient.SearchAsync(changeFeedOption, cancellationToken);
             var changeFeedEntry = JsonConvert.DeserializeObject<ChangeFeedEntry>(changeFeedContent);
 
