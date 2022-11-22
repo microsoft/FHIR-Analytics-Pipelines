@@ -3,15 +3,11 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Common;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
@@ -22,21 +18,18 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 {
-    public class DefaultSchemaConverter : IDataSchemaConverter
+    public class DefaultFhirSchemaConverter : IDataSchemaConverter
     {
         private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
-        private readonly DataSourceType _dataSourceType;
         private readonly IDiagnosticLogger _diagnosticLogger;
-        private readonly ILogger<DefaultSchemaConverter> _logger;
+        private readonly ILogger<DefaultFhirSchemaConverter> _logger;
 
-        public DefaultSchemaConverter(
+        public DefaultFhirSchemaConverter(
             ISchemaManager<ParquetSchemaNode> schemaManager,
-            IOptions<DataSourceConfiguration> dataSourceConfiguration,
             IDiagnosticLogger diagnosticLogger,
-            ILogger<DefaultSchemaConverter> logger)
+            ILogger<DefaultFhirSchemaConverter> logger)
         {
             _schemaManager = EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
-            _dataSourceType = EnsureArg.EnumIsDefined(dataSourceConfiguration.Value.Type, nameof(dataSourceConfiguration.Value.Type));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
@@ -51,7 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Get schema for the input data.
+            // Get FHIR schema for the input data.
             ParquetSchemaNode schema = _schemaManager.GetSchema(schemaType);
             if (schema == null)
             {
@@ -70,85 +63,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                         throw new ParquetDataProcessorException($"The input FHIR data is null for schema type '{schemaType}'.");
                     }
 
-                    return _dataSourceType == DataSourceType.DICOM ? ProcessDicomMetadataObject(json, schema) : ProcessStructObject(json, schema);
+                    return ProcessStructObject(json, schema);
                 })
                 .Where(processedResult => processedResult != null);
 
             return new JsonBatchData(processedJsonData);
-        }
-
-        private JObject ProcessDicomMetadataObject(JToken metadata, ParquetSchemaNode schemaNode)
-        {
-            if (metadata is not JObject metadataObject)
-            {
-                _logger.LogError($"Current DICOM object is not a valid JObject: {metadata.Path}.");
-                throw new ParquetDataProcessorException($"Current DICOM object is not a valid JObject: {metadata.Path}.");
-            }
-
-            var processedObject = new JObject();
-
-            foreach (var item in metadataObject)
-            {
-                var subNodePair = schemaNode.SubNodes
-                    .Where(x => string.Equals(x.Value.Name, item.Key, StringComparison.OrdinalIgnoreCase))
-                    .FirstOrDefault();
-                var subNodeKeyword = subNodePair.Key;
-                var subNode = subNodePair.Value;
-
-                // Ignore DICOM metadata node if it doesn't exist in schema
-                // Type SQ is ignored in current schema file
-                if (subNodeKeyword == null)
-                {
-                    continue;
-                }
-
-                // Ignore empty tag, BulkDataURI and InlineBinary
-                if (item.Value is not JObject jObject ||
-                    !jObject.ContainsKey("vr") ||
-                    !jObject.ContainsKey("Value") ||
-                    jObject["Value"] is not JArray)
-                {
-                    continue;
-                }
-
-                var subValueArray = jObject["Value"] as JArray;
-
-                if (subNode.IsRepeated)
-                {
-                    processedObject.Add(subNodeKeyword, ProcessArrayObject(subValueArray, subNode));
-                }
-                else
-                {
-                    if (subValueArray.Count > 1)
-                    {
-                        _logger.LogInformation($"Multiple values appear in an unique tag. Keyword: {subNodeKeyword}");
-                    }
-
-                    if (subNode.IsLeaf)
-                    {
-                        var singleElement = subValueArray.ToString();
-                        processedObject.Add(subNodeKeyword, ProcessLeafObject(singleElement, subNode));
-                    }
-                    else
-                    {
-                        var singleElement = subValueArray.First;
-                        processedObject.Add(subNodeKeyword, ProcessDicomPnObject(singleElement, subNode));
-                    }
-                }
-            }
-
-            return processedObject;
-        }
-
-        private JObject ProcessDicomPnObject(JToken pnItem, ParquetSchemaNode schemaNode)
-        {
-            if (pnItem is not JObject jObject)
-            {
-                _logger.LogError($"Current PN object is not a valid JObject: {pnItem.Path}.");
-                throw new ParquetDataProcessorException($"Current PN object is not a valid JObject: {pnItem.Path}.");
-            }
-
-            return jObject;
         }
 
         private JObject ProcessStructObject(JToken structItem, ParquetSchemaNode schemaNode)
@@ -232,7 +151,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 }
                 else
                 {
-                    arrayObject.Add(_dataSourceType == DataSourceType.DICOM ? ProcessDicomPnObject(item, schemaNode) : ProcessStructObject(item, schemaNode));
+                    arrayObject.Add(ProcessStructObject(item, schemaNode));
                 }
             }
 
@@ -253,8 +172,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {fhirObject.Path}.");
             }
 
-            // Convert every type to string for DICOM
-            return _dataSourceType == DataSourceType.DICOM ? new JValue(fhirLeafObject.ToString()) : fhirLeafObject;
+            return fhirLeafObject;
         }
 
         private JObject ProcessChoiceTypeObject(JToken fhirObject, ParquetSchemaNode schemaNode, string schemaNodeKey)

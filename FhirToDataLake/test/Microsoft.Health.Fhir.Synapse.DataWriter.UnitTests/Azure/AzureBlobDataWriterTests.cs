@@ -22,7 +22,7 @@ using Xunit;
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 {
     [Trait("Category", "DataWriter")]
-    public class AzureDataWriterTests
+    public class AzureBlobDataWriterTests
     {
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
 
