@@ -131,7 +131,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
-                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create orchestrator job. Reason: {e.Message}", Operations.CreateJob);
+                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create orchestrator job. Reason: {e.Message}", JobOperations.CreateJob);
                 _logger.LogInformation(e, "Failed to create orchestrator job.");
                 return null;
             }
@@ -162,7 +162,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
-                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create processing job. Reason: {e.Message}", Operations.CreateJob);
+                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create processing job. Reason: {e.Message}", JobOperations.CreateJob);
                 _logger.LogInformation(e, "Failed to create processing job.");
                 return null;
             }

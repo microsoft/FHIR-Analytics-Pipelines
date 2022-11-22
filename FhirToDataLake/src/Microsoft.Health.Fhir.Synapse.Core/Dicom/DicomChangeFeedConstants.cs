@@ -27,7 +27,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Dicom
         /// </summary>
         public const string TimestampKey = "timestamp";
 
-
         /// <summary>
         /// Metadata property key in change feed content.
         /// </summary>

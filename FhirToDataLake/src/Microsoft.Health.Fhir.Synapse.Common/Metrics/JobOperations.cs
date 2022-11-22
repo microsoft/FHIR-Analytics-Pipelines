@@ -5,7 +5,7 @@
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
-    public class Operations
+    public class JobOperations
     {
         /// <summary>
         /// The stage to create job.

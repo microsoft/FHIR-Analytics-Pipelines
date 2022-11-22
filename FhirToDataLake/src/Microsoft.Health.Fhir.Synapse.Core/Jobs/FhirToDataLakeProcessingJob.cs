@@ -153,7 +153,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (OperationCanceledException operationCanceledEx)
             {
                 _logger.LogInformation(operationCanceledEx, "Processing job {0} is canceled.", _jobId);
-                _metricsLogger.LogTotalErrorsMetrics(operationCanceledEx, $"Processing job is canceled. Reason: {operationCanceledEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(operationCanceledEx, $"Processing job is canceled. Reason: {operationCanceledEx.Message}", JobOperations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Processing job is canceled.", operationCanceledEx);
@@ -162,7 +162,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // always throw RetriableJobException
                 _logger.LogInformation(retriableJobEx, "Error in processing job {0}. Reason : {1}", _jobId, retriableJobEx.Message);
-                _metricsLogger.LogTotalErrorsMetrics(retriableJobEx, $"Error in processing job. Reason: {retriableJobEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(retriableJobEx, $"Error in processing job. Reason: {retriableJobEx.Message}", JobOperations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw;
@@ -171,7 +171,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Customer exceptions.
                 _logger.LogInformation(synapsePipelineEx, "Error in data processing job {0}. Reason:{1}", _jobId, synapsePipelineEx.Message);
-                _metricsLogger.LogTotalErrorsMetrics(synapsePipelineEx, $"Error in processing job. Reason: {synapsePipelineEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(synapsePipelineEx, $"Error in processing job. Reason: {synapsePipelineEx.Message}", JobOperations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Error in data processing job.", synapsePipelineEx);
@@ -180,7 +180,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Unhandled exceptions.
                 _logger.LogError(ex, "Unhandled error occurred in data processing job {0}. Reason : {1}", _jobId, ex.Message);
-                _metricsLogger.LogTotalErrorsMetrics(ex, $"Unhandled error occurred in data processing job. Reason: {ex.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(ex, $"Unhandled error occurred in data processing job. Reason: {ex.Message}", JobOperations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Unhandled error occurred in data processing job.", ex);

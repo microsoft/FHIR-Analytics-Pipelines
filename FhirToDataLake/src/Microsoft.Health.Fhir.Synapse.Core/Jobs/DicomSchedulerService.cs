@@ -123,13 +123,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     delayTaskCancellationTokenSource.Cancel();
                     _diagnosticLogger.LogError($"Scheduler service {_instanceGuid} is cancelled.");
                     _logger.LogError($"Scheduler service {_instanceGuid} is cancelled.");
-                    _metricsLogger.LogTotalErrorsMetrics(ex, $"Scheduler service {_instanceGuid} is cancelled.", Operations.RunSchedulerService);
+                    _metricsLogger.LogTotalErrorsMetrics(ex, $"Scheduler service {_instanceGuid} is cancelled.", JobOperations.RunSchedulerService);
                 }
                 catch (Exception ex)
                 {
                     _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
                     _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
-                    _metricsLogger.LogTotalErrorsMetrics(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.", Operations.RunSchedulerService);
+                    _metricsLogger.LogTotalErrorsMetrics(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.", JobOperations.RunSchedulerService);
                 }
 
                 await delayTask;
@@ -279,7 +279,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     // don't exist the while-loop, and retry next time
                     _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
                     _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
-                    _metricsLogger.LogTotalErrorsMetrics(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.", Operations.RunSchedulerService);
+                    _metricsLogger.LogTotalErrorsMetrics(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.", JobOperations.RunSchedulerService);
                 }
 
                 await intervalDelayTask;

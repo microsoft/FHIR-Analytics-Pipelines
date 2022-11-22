@@ -19,16 +19,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
         {
             switch (operationType)
             {
-                case nameof(Operations.RunSchedulerService):
-                    metricsLogger.LogMetrics(new TotalErrorsMetric(false, ErrorType.SchedulerServiceError, message, Operations.RunSchedulerService), 1);
+                case nameof(JobOperations.RunSchedulerService):
+                    metricsLogger.LogMetrics(new TotalErrorsMetric(false, ErrorType.SchedulerServiceError, message, JobOperations.RunSchedulerService), 1);
                     break;
-                case nameof(Operations.HealthCheck):
-                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.HealthCheckError, message, Operations.HealthCheck), 1);
+                case nameof(JobOperations.HealthCheck):
+                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.HealthCheckError, message, JobOperations.HealthCheck), 1);
                     break;
-                case nameof(Operations.CreateJob):
-                    metricsLogger.LogMetrics(new TotalErrorsMetric(false, ErrorType.CreateJobError, message, Operations.CreateJob), 1);
+                case nameof(JobOperations.CreateJob):
+                    metricsLogger.LogMetrics(new TotalErrorsMetric(false, ErrorType.CreateJobError, message, JobOperations.CreateJob), 1);
                     break;
-                case nameof(Operations.RunJob):
+                case nameof(JobOperations.RunJob):
                     ProcessJobExecutionError(metricsLogger, ex, message);
                     break;
                 default:
@@ -61,28 +61,28 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
             switch (ex)
             {
                 case ApiSearchException:
-                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.ReadFhirDataError, message, Operations.RunJob), 1);
+                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.ReadFhirDataError, message, JobOperations.RunJob), 1);
                     break;
                 case AzureBlobOperationFailedException:
-                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.WriteToDatalakeError, message, Operations.RunJob), 1);
+                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.WriteToDatalakeError, message, JobOperations.RunJob), 1);
                     break;
                 case FhirSchemaException:
-                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.FhirSchemaError, message, Operations.RunJob), 1);
+                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.FhirSchemaError, message, JobOperations.RunJob), 1);
                     break;
                 case ContainerRegistryTokenException:
-                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.AuthenticationError, message, Operations.RunJob), 1);
+                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.AuthenticationError, message, JobOperations.RunJob), 1);
                     break;
                 case DataSerializationException:
-                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.DataProcessError, message, Operations.RunJob), 1);
+                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.DataProcessError, message, JobOperations.RunJob), 1);
                     break;
                 case ContainerRegistryFilterException:
-                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.ReadFilterError, message, Operations.RunJob), 1);
+                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.ReadFilterError, message, JobOperations.RunJob), 1);
                     break;
                 case SynapsePipelineExternalException:
-                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.JobExecutionError, message, Operations.RunJob), 1);
+                    metricsLogger.LogMetrics(new TotalErrorsMetric(true, ErrorType.JobExecutionError, message, JobOperations.RunJob), 1);
                     break;
                 default:
-                    metricsLogger.LogMetrics(new TotalErrorsMetric(false, ErrorType.JobExecutionError, message, Operations.RunJob), 1);
+                    metricsLogger.LogMetrics(new TotalErrorsMetric(false, ErrorType.JobExecutionError, message, JobOperations.RunJob), 1);
                     break;
             }
         }
