@@ -13,6 +13,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Dicom
         public const string DicomResourceType = "dicom";
 
         /// <summary>
+        /// The prefix for additional properties in Dicom medata parquet data, E.g. "_sequence", "_timestamp".
+        /// </summary>
+        public const char AdditionalColumnPrefix = '_';
+
+        /// <summary>
         /// Sequence property key in Dicom Parquet data.
         /// </summary>
         public const string SequenceColumnKey = "_sequence";

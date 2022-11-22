@@ -15,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
             int resultSizeInBytes,
             string continuationToken)
         {
-            this.Resources = resources;
+            Resources = resources;
             ResultSizeInBytes = resultSizeInBytes;
             ContinuationToken = continuationToken;
         }

@@ -92,16 +92,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 var subNodeKeyword = subNodePair.Key;
                 var subNode = subNodePair.Value;
 
-                if (item.Value is JValue jValue)
+                // Handle our additional self-defined properties that have specific prefix.
+                if (subNodeKeyword[0] == DicomConstants.AdditionalColumnPrefix)
                 {
-                    // Handle our self-defined properties that start with '_'.
                     if (subNode.IsRepeated)
                     {
-                        processedObject.Add(subNodeKeyword, ProcessArrayObject(jValue, subNode));
+                        processedObject.Add(subNodeKeyword, ProcessArrayObject(item.Value, subNode));
                     }
                     else
                     {
-                        processedObject.Add(subNodeKeyword, ProcessLeafObject(jValue, subNode));
+                        processedObject.Add(subNodeKeyword, ProcessLeafObject(item.Value, subNode));
                     }
                 }
                 else
