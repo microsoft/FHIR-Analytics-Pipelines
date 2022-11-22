@@ -1,8 +1,0 @@
-{% validate "Schema/dicom.schema.json" -%}
-{
-    "SOPInstanceUID": "{{ msg.00080018.Value | first }}",
-    "00130010": "{{ msg.00130010.Value | first }}",
-    "00131010": "{{ msg.00131010.Value | first }}",
-    "00131013": "{{ msg.00131013.Value | first }}",
-}
-{% endvalidate -%}

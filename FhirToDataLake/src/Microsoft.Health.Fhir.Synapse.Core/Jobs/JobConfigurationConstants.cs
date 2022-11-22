@@ -66,12 +66,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         public const int DataSizeInBytesPerCommit = 10 * 1024 * 1024;
 
-        // TODO DICOM: change to default
-
         /// <summary>
         /// The running job count threshold to check running job complete
         /// </summary>
-        public const int CheckRunningJobCompleteRunningJobCountThreshold = 0;
+        public const int CheckRunningJobCompleteRunningJobCountThreshold = 5;
 
         public const int DefaultInitialDicomStartOffset = 0;
 

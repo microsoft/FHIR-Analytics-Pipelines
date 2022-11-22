@@ -21,5 +21,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Dicom
         /// Timestamp property key in Dicom Parquet data.
         /// </summary>
         public const string TimestampColumnKey = "_timestamp";
+
+        public const string Vr = "vr";
+
+        public const string Value = "Value";
     }
 }

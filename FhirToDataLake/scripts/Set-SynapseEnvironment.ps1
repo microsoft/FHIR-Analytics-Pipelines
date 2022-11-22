@@ -43,7 +43,7 @@ Param(
     [string]$StorageName,
     [string]$Container = "fhir",
     [string]$ResultPath = "result",
-    [string]$DataSourceType = 'fhir',
+    [string]$DataSourceType = 'DICOM',
     [string]$FhirVersion = "R4",
     [string]$SqlScriptCollectionPath = "sql",
     [string]$MasterKey = "FhirSynapseLink0!",
