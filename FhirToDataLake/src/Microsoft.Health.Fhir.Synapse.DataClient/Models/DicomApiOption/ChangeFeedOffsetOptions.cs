@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
