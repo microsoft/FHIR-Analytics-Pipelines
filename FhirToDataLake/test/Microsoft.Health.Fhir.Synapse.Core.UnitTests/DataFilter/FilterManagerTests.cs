@@ -55,9 +55,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         }
 
         [Theory]
-        [InlineData(null, 145)]
-        [InlineData("", 145)]
-        [InlineData(" ", 145)]
+        [InlineData(null, 144)]
+        [InlineData("", 144)]
+        [InlineData(" ", 144)]
         [InlineData("Patient,Account", 2)]
         [InlineData("Patient", 1)]
         [InlineData("Patient,Patient", 1)]

@@ -41,11 +41,5 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir
         /// </summary>
         public const string MetadataKey = "metadata";
 
-        /// <summary>
-        /// How many resources should be returned in a single page.
-        /// Currently _count is limited to 1000 in FHIR server.
-        /// https://docs.microsoft.com/en-us/azure/healthcare-apis/fhir/overview-of-search#search-result-parameters
-        /// </summary>
-        public const int PageCount = 1000;
     }
 }

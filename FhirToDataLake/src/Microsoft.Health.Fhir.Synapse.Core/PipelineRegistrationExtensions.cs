@@ -101,8 +101,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core
             {
                 return name switch
                 {
-                    FhirParquetSchemaConstants.DefaultSchemaProviderKey => delegateProvider.GetService<DefaultSchemaConverter>(),
-                    FhirParquetSchemaConstants.CustomSchemaProviderKey => delegateProvider.GetService<CustomSchemaConverter>(),
+                    ParquetSchemaConstants.DefaultSchemaProviderKey => delegateProvider.GetService<DefaultSchemaConverter>(),
+                    ParquetSchemaConstants.CustomSchemaProviderKey => delegateProvider.GetService<CustomSchemaConverter>(),
                     _ => throw new ParquetDataProcessorException($"Schema delegate name {name} not found when injecting"),
                 };
             });

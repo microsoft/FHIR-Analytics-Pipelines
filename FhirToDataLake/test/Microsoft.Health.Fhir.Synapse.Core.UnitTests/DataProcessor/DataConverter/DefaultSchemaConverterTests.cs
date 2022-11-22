@@ -33,11 +33,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
         static DefaultSchemaConverterTests()
         {
-            var schemaManager = new FhirParquetSchemaManager(
+            var schemaManager = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestUtils.TestParquetSchemaProviderDelegate,
                 _diagnosticLogger,
-                NullLogger<FhirParquetSchemaManager>.Instance);
+                NullLogger<ParquetSchemaManager>.Instance);
 
             _dataSourceOption = Options.Create(new DataSourceConfiguration());
             _testDefaultConverter = new DefaultSchemaConverter(schemaManager, _dataSourceOption, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
@@ -324,11 +324,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
-            var schemaManager = new FhirParquetSchemaManager(
+            var schemaManager = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestUtils.TestParquetSchemaProviderDelegate,
                 _diagnosticLogger,
-                NullLogger<FhirParquetSchemaManager>.Instance);
+                NullLogger<ParquetSchemaManager>.Instance);
 
             Assert.Throws<ArgumentNullException>(
                 () => new DefaultSchemaConverter(null, _dataSourceOption, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance));
@@ -381,7 +381,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         [MemberData(nameof(GetInvalidSchemaContents))]
         public void GivenInvalidSchema_WhenConvert_ExceptionShouldBeThrown(string invalidSchemaContent)
         {
-            var schemaNode = JsonConvert.DeserializeObject<FhirParquetSchemaNode>(invalidSchemaContent);
+            var schemaNode = JsonConvert.DeserializeObject<ParquetSchemaNode>(invalidSchemaContent);
             var schemaManager = CreateMockSchemaManager(schemaNode);
             var testConverter = new DefaultSchemaConverter(schemaManager, _dataSourceOption, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
 
@@ -403,9 +403,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
             return new JsonBatchData(testData);
         }
 
-        private static IFhirSchemaManager<FhirParquetSchemaNode> CreateMockSchemaManager(FhirParquetSchemaNode schemaNode)
+        private static ISchemaManager<ParquetSchemaNode> CreateMockSchemaManager(ParquetSchemaNode schemaNode)
         {
-            var mockSchemaManager = Substitute.For<IFhirSchemaManager<FhirParquetSchemaNode>>();
+            var mockSchemaManager = Substitute.For<ISchemaManager<ParquetSchemaNode>>();
             mockSchemaManager.GetSchema(Arg.Any<string>()).Returns(schemaNode);
 
             return mockSchemaManager;

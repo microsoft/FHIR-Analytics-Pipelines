@@ -114,6 +114,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString("d")),
             };
 
             var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
@@ -147,6 +148,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString("d")),
             };
 
             var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
@@ -226,6 +228,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{DateTimeOffset.Parse(SampleStartTime).ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{DateTimeOffset.Parse(SampleEndTime).ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString("d")),
             };
             var searchOptions = new CompartmentSearchOptions("Patient", "347", "*", queryParameters);
             string bundle1 = await client.SearchAsync(searchOptions);
@@ -242,19 +245,19 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
                 $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
-                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&ct=Y29udGludWF0aW9udG9rZW4%3d&_count=1000",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&ct=Y29udGludWF0aW9udG9rZW4%3d",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile2)));
             requestMap.Add(
-                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&ct=invalidresponsetest&_count=1000",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&ct=invalidresponsetest",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidResponseFile)));
             requestMap.Add(
-                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&ct=invalidbundletest&_count=1000",
+                $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&ct=invalidbundletest",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidBundleFile)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/Patient?_count=1000",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
-                $"{fhirServerUrl.TrimEnd('/')}/MedicationRequest?_id=3123&_count=1000",
+                $"{fhirServerUrl.TrimEnd('/')}/MedicationRequest?_id=3123",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/Patient/347/*?_lastUpdated=ge2021-08-01T12%3a00%3a00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3a40%3a59%2b08%3a00&_count=1000",
@@ -262,6 +265,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/metadata",
                 CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile)));
+            requestMap.Add(
+                $"{fhirServerUrl.TrimEnd('/')}/Patient",
+                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
 
             dataSource ??= CreateFhirApiDataSource(fhirServerUrl, AuthenticationType.ManagedIdentity);
 

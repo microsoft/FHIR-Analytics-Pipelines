@@ -38,12 +38,13 @@
 Param(
     [parameter(Mandatory=$true)]
     [string]$SynapseWorkspaceName,
-    [string]$Database = "dicomdb5",
+    [string]$Database = "fhirdb",
     [parameter(Mandatory=$true)]
     [string]$StorageName,
-    [string]$Container = "dicom5",
+    [string]$Container = "fhir",
     [string]$ResultPath = "result",
-    [string]$FhirVersion = "DICOM",
+    [string]$DataSourceType = 'fhir',
+    [string]$FhirVersion = "R4",
     [string]$SqlScriptCollectionPath = "sql",
     [string]$MasterKey = "FhirSynapseLink0!",
     [int]$Concurrent = 15,
@@ -65,22 +66,30 @@ $OrasAppPath = "oras.exe"
 $OrasWinUrl = "https://github.com/deislabs/oras/releases/download/v0.12.0/oras_0.12.0_windows_amd64.tar.gz"
 $ErrorActionPreference = "Stop"
 
-$FhirVersion = $FhirVersion.ToUpper()
-if ($FhirVersion -eq "R4")
+$DataSourceType = $DataSourceType.ToUpper()
+if ($DataSourceType -eq "FHIR")
 {
-    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r4" | Join-Path -ChildPath "Resources"
+    $FhirVersion = $FhirVersion.ToUpper()
+    if ($FhirVersion -eq "R4")
+    {
+        $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r4" | Join-Path -ChildPath "Resources"
+    }
+    elseif ($FhirVersion -eq "R5")
+    {
+        $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r5" | Join-Path -ChildPath "Resources"
+    }
+    else
+    {
+        throw "The FHIR version '$FhirVersion' is not supported."
+    }
 }
-elseif ($FhirVersion -eq "R5")
+elseif ($DataSourceType -eq "DICOM")
 {
-    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r5" | Join-Path -ChildPath "Resources"
-}
-elseif ($FhirVersion -eq "DICOM")
-{
-	$SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "dicom"
+    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "dicom"
 }
 else
 {
-    throw "The FHIR version '$FhirVersion' is not supported."
+    throw "The data source type '$dataSourceType' is not supported."
 }
 
 function Start-Retryable-Job {
@@ -165,9 +174,10 @@ function Remove-FhirDatabase
 
 function Set-InitializeEnvironment
 {
-    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$storageName, [string]$container, [string]$resultPath)
+    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$storageName, [string]$container, [string]$resultPath, [string]$dataSourceType)
 
     $locationPath = "https://$storageName.blob.core.windows.net/$container/$resultPath"
+    $schema = $dataSourceType.ToLower()
 
     $initializeEnvironmentSql = "
     CREATE MASTER KEY ENCRYPTION BY PASSWORD = '$masterKey';
@@ -184,7 +194,7 @@ function Set-InitializeEnvironment
     CREATE EXTERNAL FILE FORMAT ParquetFormat WITH (  FORMAT_TYPE = PARQUET );
     
     GO
-    CREATE SCHEMA dicom;
+    CREATE SCHEMA $schema;
     
     GO
     USE [master]"
@@ -423,7 +433,8 @@ function Get-CustomizedTableSql {
         $customizedTableProperties += "    [$($property.Name)] $sqlType,"
     }
 
-    $createCustomizedTableSql = "CREATE EXTERNAL TABLE [dicom].[$schemaType] (
+    $dataSource = $DataSourceType.ToLower()
+    $createCustomizedTableSql = "CREATE EXTERNAL TABLE [$dataSource].[$schemaType] (
         $customizedTableProperties
         ) WITH (
             LOCATION='/$schemaType/**',
@@ -574,7 +585,8 @@ try{
         -masterKey $MasterKey `
         -storage $StorageName `
         -container $Container `
-        -resultPath $ResultPath
+        -resultPath $ResultPath `
+        -dataSourceType $DataSourceType
 
     # d). Create TABLEs and VIEWs on Synapse.
     New-TableAndViewsForResources `

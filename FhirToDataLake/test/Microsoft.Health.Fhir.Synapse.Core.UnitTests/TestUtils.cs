@@ -13,6 +13,7 @@ using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
+using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
@@ -38,6 +39,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         {
             EnableCustomizedSchema = true,
             SchemaImageReference = "testacr.azurecr.io/customizedtemplate:default",
+        };
+
+        public static readonly List<string> ExcludeResourceTypes = new List<string>
+        {
+            FhirConstants.StructureDefinitionResource,
+            FhirConstants.OperationOutcomeResource,
         };
 
         public static IEnumerable<JObject> LoadNdjsonData(string filePath)
@@ -70,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
         public static IParquetSchemaProvider TestParquetSchemaProviderDelegate(string name)
         {
-            if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
+            if (name == ParquetSchemaConstants.DefaultSchemaProviderKey)
             {
                 return new LocalDefaultSchemaProvider(
                     Options.Create(new DataSourceConfiguration()),
@@ -89,16 +96,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
         public static IDataSchemaConverter TestDataSchemaConverterDelegate(string name)
         {
-            var fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
+            var schemaManagerWithoutCustomizedSchema = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
                 TestParquetSchemaProviderDelegate,
                 _diagnosticLogger,
-                NullLogger<FhirParquetSchemaManager>.Instance);
+                NullLogger<ParquetSchemaManager>.Instance);
 
-            if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
+            if (name == ParquetSchemaConstants.DefaultSchemaProviderKey)
             {
                 return new DefaultSchemaConverter(
-                    fhirSchemaManagerWithoutCustomizedSchema,
+                    schemaManagerWithoutCustomizedSchema,
                     Options.Create(new DataSourceConfiguration()),
                     _diagnosticLogger,
                     NullLogger<DefaultSchemaConverter>.Instance);

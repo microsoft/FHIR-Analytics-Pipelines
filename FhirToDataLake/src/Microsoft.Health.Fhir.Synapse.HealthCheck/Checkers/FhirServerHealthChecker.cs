@@ -4,12 +4,14 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
@@ -30,7 +32,13 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             EnsureArg.IsNotNull(fhirApiDataClient, nameof(fhirApiDataClient));
 
             _fhirApiDataClient = fhirApiDataClient;
-            _searchOptions = new BaseSearchOptions(SampleResourceType, null);
+
+            var queryParameters = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString("d")),
+            };
+
+            _searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
         }
 
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
