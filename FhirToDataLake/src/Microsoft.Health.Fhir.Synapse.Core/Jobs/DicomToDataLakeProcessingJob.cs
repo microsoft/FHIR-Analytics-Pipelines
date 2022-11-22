@@ -11,13 +11,12 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Dicom.Client.Models;
-using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
-using Microsoft.Health.Fhir.Synapse.Common.Models.DicomSearch;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
+using Microsoft.Health.Fhir.Synapse.Core.Dicom;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
@@ -56,8 +55,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// The format is '{SchemaType}_{index:d10}.parquet', e.g. Patient_0000000001.parquet.
         /// </summary>
         private Dictionary<string, int> _outputFileIndexMap;
-
-        private const string _resourceType = "dicom";
 
         public DicomToDataLakeProcessingJob(
             long jobId,
@@ -105,9 +102,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // Initialize
                 _cacheResult = new CacheResult();
-                if (!_cacheResult.Resources.ContainsKey(_resourceType))
+                if (!_cacheResult.Resources.ContainsKey(DicomConstants.DicomResourceType))
                 {
-                    _cacheResult.Resources[_resourceType] = new List<JObject>();
+                    _cacheResult.Resources[DicomConstants.DicomResourceType] = new List<JObject>();
                 }
 
                 _outputFileIndexMap = new Dictionary<string, int>();
@@ -171,65 +168,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (limit > 0)
             {
-                // Get change feeds
-                var queryParameters = new List<KeyValuePair<string, string>>
-                {
-                    new KeyValuePair<string, string>(DicomApiConstants.OffsetKey, $"{_inputData.StartOffset}"),
-                    new KeyValuePair<string, string>(DicomApiConstants.LimitKey, $"{limit}"),
-                    new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{false}"),
-                };
+                // Get metadata objects from change feeds
+                SearchResult metadataObjectsResult = await GetMetadataObjectsAsync(limit, cancellationToken);
 
-                var changeFeedOptions = new ChangeFeedOffsetOptions(queryParameters);
-                string changeFeedsContent = await _dataClient.SearchAsync(changeFeedOptions, cancellationToken);
-
-                List<ChangeFeedEntry> changeFeedEntries;
-                try
+                foreach (JObject metadataObject in metadataObjectsResult.Resources)
                 {
-                    changeFeedEntries = JsonConvert.DeserializeObject<List<ChangeFeedEntry>>(changeFeedsContent)
-                        .Where(x => x.State == ChangeFeedState.Current && x.Action == ChangeFeedAction.Create)
-                        .ToList();
-                }
-                catch (Exception ex)
-                {
-                    _diagnosticLogger.LogError($"Parse changefeeds failed. Reason: {ex.Message}");
-                    _logger.LogError($"Parse changefeeds failed. Reason: {ex.Message}");
-                    throw new ApiSearchException("Parse changefeeds failed.", ex);
+                    _cacheResult.Resources[DicomConstants.DicomResourceType].Add(metadataObject);
                 }
 
-                var changeFeedResults = new List<ChangeFeedResult>();
-
-                foreach (ChangeFeedEntry entry in changeFeedEntries)
-                {
-                    var metadataOptions = new SearchMetadataOptions(
-                        entry.StudyInstanceUid,
-                        entry.SeriesInstanceUid,
-                        entry.SopInstanceUid);
-
-                    string metadataContent = await _dataClient.SearchAsync(metadataOptions, cancellationToken);
-                    changeFeedResults.Add(new ChangeFeedResult()
-                    {
-                        Metadata = metadataContent,
-                        Timestamp = entry.Timestamp,
-                        Sequence = entry.Sequence,
-                    });
-                }
-
-                foreach (var changeFeedResult in changeFeedResults)
-                {
-                    try
-                    {
-                        var dicomDataObject = (JObject)JArray.Parse(changeFeedResult.Metadata).First();
-                        dicomDataObject.Add(DicomApiConstants.SequencePropertyKey, changeFeedResult.Sequence.ToString());
-                        dicomDataObject.Add(DicomApiConstants.TimestampPropertyKey, changeFeedResult.Timestamp.ToString("s"));
-                        _cacheResult.Resources[_resourceType].Add(dicomDataObject);
-                        _cacheResult.CacheSize += changeFeedResult.Metadata.Length * sizeof(char);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogInformation($"Failed to parse DICOM metadata: {ex.Message}");
-                    }
-                }
-
+                _cacheResult.CacheSize += metadataObjectsResult.ResultSizeInBytes;
                 await TryCommitResultAsync(progress, false, cancellationToken);
             }
         }
@@ -313,6 +260,44 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _cacheResult.ClearCache();
                 _logger.LogInformation($"Commit cache resources successfully for processing job {_jobId}.");
             }
+        }
+
+        private async Task<SearchResult> GetMetadataObjectsAsync(long limit, CancellationToken cancellationToken)
+        {
+            var queryParameters = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>(DicomApiConstants.OffsetKey, $"{_inputData.StartOffset}"),
+                    new KeyValuePair<string, string>(DicomApiConstants.LimitKey, $"{limit}"),
+                    new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{true}"),
+                };
+
+            var changeFeedOptions = new ChangeFeedOffsetOptions(queryParameters);
+            string changeFeedsContent = await _dataClient.SearchAsync(changeFeedOptions, cancellationToken);
+
+            List<JObject> metadataObjects;
+            try
+            {
+                metadataObjects = JArray.Parse(changeFeedsContent)
+                    .Where(changeFeed =>
+                        Enum.Parse<ChangeFeedState>(changeFeed[DicomChangeFeedConstants.StateKey].ToString(), true) == ChangeFeedState.Current &&
+                        Enum.Parse<ChangeFeedAction>(changeFeed[DicomChangeFeedConstants.ActionKey].ToString(), true) == ChangeFeedAction.Create)
+                    .Select(changeFeed =>
+                    {
+                        var metadataObject = changeFeed[DicomChangeFeedConstants.MetadataKey] as JObject;
+
+                        metadataObject.Add(DicomConstants.SequenceColumnKey, changeFeed[DicomChangeFeedConstants.SequenceKey].ToString());
+                        metadataObject.Add(DicomConstants.TimestampColumnKey, changeFeed[DicomChangeFeedConstants.TimestampKey].ToString());
+                        return metadataObject;
+                    }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _diagnosticLogger.LogError($"Parse metadata objects failed. Reason: {ex.Message}");
+                _logger.LogError($"Parse metadata objects failed. Reason: {ex.Message}");
+                throw new ApiSearchException("Parse metadata objects failed.", ex);
+            }
+
+            return new SearchResult(metadataObjects, changeFeedsContent.Length, null);
         }
 
         /// <summary>

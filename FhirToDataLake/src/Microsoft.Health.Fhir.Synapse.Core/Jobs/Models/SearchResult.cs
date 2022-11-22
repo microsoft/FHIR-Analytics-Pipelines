@@ -11,16 +11,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
     public class SearchResult
     {
         public SearchResult(
-            List<JObject> fhirResources,
+            List<JObject> resources,
             int resultSizeInBytes,
             string continuationToken)
         {
-            FhirResources = fhirResources;
+            this.Resources = resources;
             ResultSizeInBytes = resultSizeInBytes;
             ContinuationToken = continuationToken;
         }
 
-        public List<JObject> FhirResources { get; }
+        public List<JObject> Resources { get; }
 
         public int ResultSizeInBytes { get; }
 

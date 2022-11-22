@@ -3,25 +3,23 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-
-namespace Microsoft.Health.Fhir.Synapse.Common.Models.DicomSearch
+namespace Microsoft.Health.Fhir.Synapse.Core.Dicom
 {
-    public class ChangeFeedResult
+    public class DicomConstants
     {
         /// <summary>
-        /// The result metadata content.
+        /// Dicom data resource type.
         /// </summary>
-        public string Metadata { get; set; }
+        public const string DicomResourceType = "dicom";
 
         /// <summary>
-        /// The timestamp of result action.
+        /// Sequence property key in Dicom Parquet data.
         /// </summary>
-        public DateTimeOffset Timestamp { get; set; }
+        public const string SequenceColumnKey = "_sequence";
 
         /// <summary>
-        /// The sequence of result change feed.
+        /// Timestamp property key in Dicom Parquet data.
         /// </summary>
-        public long Sequence { get; set; }
+        public const string TimestampColumnKey = "_timestamp";
     }
 }

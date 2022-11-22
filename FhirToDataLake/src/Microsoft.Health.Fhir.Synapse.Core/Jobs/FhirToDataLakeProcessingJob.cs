@@ -358,13 +358,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             SearchResult searchResult = await ExecuteSearchAsync(patientSearchOption, cancellationToken);
 
             // if the patient does not exist, log a warning, and do nothing about it.
-            if (searchResult.FhirResources == null || !searchResult.FhirResources.Any())
+            if (searchResult.Resources == null || !searchResult.Resources.Any())
             {
                 _logger.LogInformation($"The patient {patientId} dose not exist in fhir server, ignore it.");
                 return null;
             }
 
-            JObject patientResource = searchResult.FhirResources[0];
+            JObject patientResource = searchResult.Resources[0];
 
             if (patientResource["resourceType"]?.ToString() != FhirConstants.PatientResource)
             {
@@ -447,7 +447,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 SearchResult searchResult = await ExecuteSearchAsync(searchOptions, cancellationToken);
 
                 // add resources to memory cache
-                AddFhirResourcesToCache(searchResult.FhirResources);
+                AddFhirResourcesToCache(searchResult.Resources);
                 _cacheResult.CacheSize += searchResult.ResultSizeInBytes;
 
                 continuationToken = searchResult.ContinuationToken;
