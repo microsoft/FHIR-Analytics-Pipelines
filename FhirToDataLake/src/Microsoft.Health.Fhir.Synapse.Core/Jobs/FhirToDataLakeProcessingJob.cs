@@ -22,10 +22,10 @@ using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
-using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
@@ -40,7 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class FhirToDataLakeProcessingJob : IJob
     {
         private readonly FhirToDataLakeProcessingJobInputData _inputData;
-        private readonly IFhirDataClient _dataClient;
+        private readonly IApiDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
@@ -69,7 +69,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public FhirToDataLakeProcessingJob(
             long jobId,
             FhirToDataLakeProcessingJobInputData inputData,
-            IFhirDataClient dataClient,
+            IApiDataClient dataClient,
             IDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
             ISchemaManager<ParquetSchemaNode> schemaManager,

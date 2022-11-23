@@ -14,7 +14,7 @@ using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
-using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class AzureStorageJobFactory : IJobFactory
     {
         private readonly IQueueClient _queueClient;
-        private readonly IFhirDataClient _dataClient;
+        private readonly IApiDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly IColumnDataProcessor _parquetDataProcessor;
@@ -44,7 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public AzureStorageJobFactory(
             IQueueClient queueClient,
-            IFhirDataClient dataClient,
+            IApiDataClient dataClient,
             IDataWriter dataWriter,
             IGroupMemberExtractor groupMemberExtractor,
             IColumnDataProcessor parquetDataProcessor,

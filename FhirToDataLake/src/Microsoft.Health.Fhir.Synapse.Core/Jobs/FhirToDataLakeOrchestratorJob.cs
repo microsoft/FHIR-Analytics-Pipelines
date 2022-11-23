@@ -22,9 +22,9 @@ using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
-using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.JobManagement;
@@ -37,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly JobInfo _jobInfo;
         private readonly FhirToDataLakeOrchestratorJobInputData _inputData;
-        private readonly IFhirDataClient _dataClient;
+        private readonly IApiDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IQueueClient _queueClient;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
@@ -54,7 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             JobInfo jobInfo,
             FhirToDataLakeOrchestratorJobInputData inputData,
             FhirToDataLakeOrchestratorJobResult result,
-            IFhirDataClient dataClient,
+            IApiDataClient dataClient,
             IDataWriter dataWriter,
             IQueueClient queueClient,
             IGroupMemberExtractor groupMemberExtractor,

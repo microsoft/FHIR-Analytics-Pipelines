@@ -13,14 +13,14 @@ using FhirR5::Hl7.Fhir.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using R5FhirModelInfo = FhirR5::Hl7.Fhir.Model.ModelInfo;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 {
     public class R5FhirSpecificationProvider : BaseFhirSpecificationProvider
     {
-        public R5FhirSpecificationProvider(IFhirDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R5FhirSpecificationProvider> logger)
+        public R5FhirSpecificationProvider(IApiDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R5FhirSpecificationProvider> logger)
             : base(dataClient, diagnosticLogger, logger)
         {
         }

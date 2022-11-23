@@ -17,7 +17,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
-using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Bundle = FhirR4::Hl7.Fhir.Model.Bundle;
 using FhirDateTime = Hl7.Fhir.Model.FhirDateTime;
@@ -28,13 +28,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
     public class GroupMemberExtractor : IGroupMemberExtractor
     {
-        private readonly IFhirDataClient _dataClient;
+        private readonly IApiDataClient _dataClient;
         private readonly IReferenceParser _referenceParser;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<GroupMemberExtractor> _logger;
 
         public GroupMemberExtractor(
-            IFhirDataClient dataClient,
+            IApiDataClient dataClient,
             IReferenceParser referenceParser,
             IDiagnosticLogger diagnosticLogger,
             ILogger<GroupMemberExtractor> logger)

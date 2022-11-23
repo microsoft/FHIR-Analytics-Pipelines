@@ -13,7 +13,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
-using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class DicomAzureStorageJobFactory : IJobFactory
     {
         private readonly IQueueClient _queueClient;
-        private readonly IDicomDataClient _dataClient;
+        private readonly IApiDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
@@ -41,7 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public DicomAzureStorageJobFactory(
             IQueueClient queueClient,
-            IDicomDataClient dataClient,
+            IApiDataClient dataClient,
             IDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
             ISchemaManager<ParquetSchemaNode> schemaManager,

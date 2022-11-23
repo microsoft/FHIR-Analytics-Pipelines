@@ -23,8 +23,8 @@ using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
-using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
@@ -369,17 +369,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
         }
 
-        private static IFhirDataClient GetBrokenFhirDataClient()
+        private static IApiDataClient GetBrokenFhirDataClient()
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
             dataClient.SearchAsync(default)
                 .ReturnsForAnyArgs(Task.FromException<string>(new ApiSearchException("fake fhir search exception.")));
             return dataClient;
         }
 
-        private static IFhirDataClient GetMockFhirDataClient(int count, int resumedFrom)
+        private static IApiDataClient GetMockFhirDataClient(int count, int resumedFrom)
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
 
             // Get bundle from next link
             List<string> nextBundles = GetSearchBundles(count);

@@ -14,8 +14,8 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
 using NSubstitute;
@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         public GroupMemberExtractorTests()
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
 
             dataClient.SearchAsync(new ResourceIdSearchOptions("Group", _sampleGroupId, null), _noneCancellationToken)
                 .ReturnsForAnyArgs(x =>
@@ -95,7 +95,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
             Assert.Throws<ArgumentNullException>(
                 () => new GroupMemberExtractor(null, _referenceParser, _diagnosticLogger, _nullGroupMemberExtractorLogger));
 
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
             Assert.Throws<ArgumentNullException>(
                 () => new GroupMemberExtractor(dataClient, null, _diagnosticLogger, _nullGroupMemberExtractorLogger));
         }

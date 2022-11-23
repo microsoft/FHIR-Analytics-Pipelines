@@ -11,14 +11,14 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 {
     public abstract class BaseFhirSpecificationProvider : IFhirSpecificationProvider
     {
-        private readonly IFhirDataClient _dataClient;
+        private readonly IApiDataClient _dataClient;
 
         /// <summary>
         /// The resource types of each compartment type, extracted from _compartmentFiles
@@ -37,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         };
 
         public BaseFhirSpecificationProvider(
-            IFhirDataClient dataClient,
+            IApiDataClient dataClient,
             IDiagnosticLogger diagnosticLogger,
             ILogger logger)
         {

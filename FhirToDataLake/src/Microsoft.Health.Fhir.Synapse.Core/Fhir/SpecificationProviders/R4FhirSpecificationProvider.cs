@@ -13,7 +13,7 @@ using FhirR4::Hl7.Fhir.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using R4FhirModelInfo = FhirR4::Hl7.Fhir.Model.ModelInfo;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
     // TODO: Maybe we can get all FHIR specification directly through 'metadata' API. Thus we can remove the hard dependency with FHIR libs (which targets specific version)
     public class R4FhirSpecificationProvider : BaseFhirSpecificationProvider
     {
-        public R4FhirSpecificationProvider(IFhirDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R4FhirSpecificationProvider> logger)
+        public R4FhirSpecificationProvider(IApiDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R4FhirSpecificationProvider> logger)
             : base(dataClient, diagnosticLogger, logger)
         {
         }

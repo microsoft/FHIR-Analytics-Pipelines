@@ -7,7 +7,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
-using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 using NSubstitute;
@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         [Fact]
         public async Task When_FhirDataClient_CanSearch_HealthCheck_Succeeds()
         {
-            var fhirDataClient = Substitute.For<IFhirDataClient>();
+            var fhirDataClient = Substitute.For<IApiDataClient>();
             fhirDataClient.SearchAsync(default).Returns(Task.FromResult("result"));
             var fhirServerHealthChecker = new FhirServerHealthChecker(
                 fhirDataClient,
@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
         [Fact]
         public async Task When_FhirDataClient_ThrowExceptionWhenSearch_HealthCheck_Fails()
         {
-            var fhirDataClient = Substitute.For<IFhirDataClient>();
+            var fhirDataClient = Substitute.For<IApiDataClient>();
             fhirDataClient.SearchAsync(default).ThrowsAsyncForAnyArgs(new Exception());
             var fhirServerHealthChecker = new FhirServerHealthChecker(
                 fhirDataClient,

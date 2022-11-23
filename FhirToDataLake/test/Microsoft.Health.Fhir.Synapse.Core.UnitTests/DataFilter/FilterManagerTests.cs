@@ -16,7 +16,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
-using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
 using NSubstitute;
@@ -32,7 +32,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         public FilterManagerTests()
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
 
             var metadataOptions = new MetadataOptions();
             dataClient.Search(metadataOptions)

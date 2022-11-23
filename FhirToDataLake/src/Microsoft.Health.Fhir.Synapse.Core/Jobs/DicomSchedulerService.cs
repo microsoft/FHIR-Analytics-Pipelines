@@ -18,8 +18,8 @@ using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
-using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
 using Microsoft.Health.JobManagement;
 using NCrontab;
@@ -31,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly IQueueClient _queueClient;
         private readonly IMetadataStore _metadataStore;
-        private readonly IDicomDataClient _dataClient;
+        private readonly IApiDataClient _dataClient;
         private readonly byte _queueType;
         private readonly DateTimeOffset? _startTime;
         private readonly DateTimeOffset? _endTime;
@@ -46,7 +46,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public DicomSchedulerService(
             IQueueClient queueClient,
             IMetadataStore metadataStore,
-            IDicomDataClient dataClient,
+            IApiDataClient dataClient,
             IOptions<JobConfiguration> jobConfiguration,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
