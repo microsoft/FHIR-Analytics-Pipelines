@@ -417,7 +417,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     currentTriggerEntity.TriggerSequenceId += 1;
                     currentTriggerEntity.TriggerStatus = TriggerStatus.New;
 
-                    currentTriggerEntity.TriggerStartTime = (DateTimeOffset)nextTriggerTime;
+                    currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerTime;
                     currentTriggerEntity.StartOffset = currentTriggerEntity.EndOffset;
                     currentTriggerEntity.EndOffset = latestSequence;
 
@@ -457,7 +457,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 PartitionKey = TableKeyProvider.TriggerPartitionKey(_queueType),
                 RowKey = TableKeyProvider.TriggerPartitionKey(_queueType),
-                TriggerStartTime = DateTimeOffset.Now,
+                TriggerEndTime = DateTimeOffset.Now,
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 0,
                 StartOffset = InitialStartOffset,
