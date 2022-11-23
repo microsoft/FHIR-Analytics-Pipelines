@@ -7,8 +7,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Extensions;
 using Xunit;
@@ -108,22 +106,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             serviceCollection = new ServiceCollection();
             exception = Record.Exception(() => serviceCollection.AddConfiguration(config));
             Assert.Null(exception);
-        }
-
-        private static void RegistryConfiguration(IServiceCollection services, IConfigurationRoot configuration)
-        {
-            services.Configure<FhirServerConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options));
-            services.Configure<JobConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.JobConfigurationKey).Bind(options));
-            services.Configure<FilterConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.FilterConfigurationKey).Bind(options));
-            services.Configure<DataLakeStoreConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.DataLakeStoreConfigurationKey).Bind(options));
-            services.Configure<ArrowConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.ArrowConfigurationKey).Bind(options));
-            services.Configure<SchemaConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey).Bind(options));
         }
     }
 }

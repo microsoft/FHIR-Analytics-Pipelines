@@ -136,7 +136,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _diagnosticLogger.LogError("FhirToDataLake job is canceled.");
                 _logger.LogInformation(operationCanceledEx, "FhirToDataLake orchestrator job {0} is canceled.", _jobInfo.Id);
-                _metricsLogger.LogTotalErrorsMetrics(operationCanceledEx, $"FhirToDataLake orchestrator job is canceled. Reason: {operationCanceledEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(operationCanceledEx, $"FhirToDataLake orchestrator job is canceled. Reason: {operationCanceledEx.Message}", JobOperations.RunJob);
                 throw new RetriableJobException("Job is cancelled.", operationCanceledEx);
             }
             catch (SynapsePipelineExternalException synapsePipelineRetriableEx)
@@ -144,7 +144,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // Customer exceptions.
                 _diagnosticLogger.LogError($"Error in FhirToDataLake job. Reason:{synapsePipelineRetriableEx.Message}");
                 _logger.LogInformation(synapsePipelineRetriableEx, "Error in orchestrator job {0}. Reason:{1}", _jobInfo.Id, synapsePipelineRetriableEx);
-                _metricsLogger.LogTotalErrorsMetrics(synapsePipelineRetriableEx, $"Error in orchestrator job. Reason: {synapsePipelineRetriableEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(synapsePipelineRetriableEx, $"Error in orchestrator job. Reason: {synapsePipelineRetriableEx.Message}", JobOperations.RunJob);
                 throw new RetriableJobException("Error in orchestrator job.", synapsePipelineRetriableEx);
             }
             catch (RetriableJobException retriableJobEx)
@@ -152,14 +152,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // always throw RetriableJobException
                 _diagnosticLogger.LogError($"Error in FhirToDataLake job. Reason:{retriableJobEx.Message}");
                 _logger.LogInformation(retriableJobEx, "Error in orchestrator job {0}. Reason:{1}", _jobInfo.Id, retriableJobEx);
-                _metricsLogger.LogTotalErrorsMetrics(retriableJobEx, $"Error in orchestrator job. Reason: {retriableJobEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(retriableJobEx, $"Error in orchestrator job. Reason: {retriableJobEx.Message}", JobOperations.RunJob);
                 throw;
             }
             catch (SynapsePipelineInternalException synapsePipelineInternalEx)
             {
                 _diagnosticLogger.LogError("Internal error occurred in FhirToDataLake job.");
                 _logger.LogError(synapsePipelineInternalEx, "Error in orchestrator job {0}. Reason:{1}", _jobInfo.Id, synapsePipelineInternalEx);
-                _metricsLogger.LogTotalErrorsMetrics(synapsePipelineInternalEx, $"Error in orchestrator job. Reason: {synapsePipelineInternalEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(synapsePipelineInternalEx, $"Error in orchestrator job. Reason: {synapsePipelineInternalEx.Message}", JobOperations.RunJob);
                 throw new RetriableJobException("Error in orchestrator job.", synapsePipelineInternalEx);
             }
             catch (Exception unhandledEx)
@@ -167,7 +167,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // Unhandled exceptions.
                 _diagnosticLogger.LogError("Unknown error occurred in FhirToDataLake job.");
                 _logger.LogError(unhandledEx, "Unhandled error occurred in orchestrator job {0}. Reason:{1}", _jobInfo.Id, unhandledEx);
-                _metricsLogger.LogTotalErrorsMetrics(unhandledEx, $"Unhandled error occurred in orchestrator job. Reason: {unhandledEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(unhandledEx, $"Unhandled error occurred in orchestrator job. Reason: {unhandledEx.Message}", JobOperations.RunJob);
                 throw new RetriableJobException("Unhandled error occurred in orchestrator job.", unhandledEx);
             }
         }

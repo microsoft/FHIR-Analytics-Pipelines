@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Web;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         {
             List<JObject> operationOutcomes = resources.Where(x =>
                 x?.GetValue(FhirBundleConstants.ResourceTypeKey)?.ToString() ==
-                FhirBundleConstants.OperationOutcomeKey).ToList();
+                FhirConstants.OperationOutcomeResource).ToList();
             return operationOutcomes ?? new List<JObject>();
         }
 

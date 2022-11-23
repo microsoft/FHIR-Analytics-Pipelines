@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         private readonly GroupMemberExtractor _groupMemberExtractor;
 
-        private readonly FhirApiDataSource _dataSource;
+        private readonly ApiDataSource _dataSource;
 
         private readonly R4ReferenceParser _referenceParser;
 
@@ -84,7 +84,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 },
             };
 
-            _dataSource = new FhirApiDataSource(Options.Create(dataSourceConfiguration));
+            _dataSource = new ApiDataSource(Options.Create(dataSourceConfiguration));
             _referenceParser = new R4ReferenceParser(_dataSource, NullLogger<R4ReferenceParser>.Instance);
             _groupMemberExtractor = new GroupMemberExtractor(dataClient, _referenceParser, _diagnosticLogger, _nullGroupMemberExtractorLogger);
         }

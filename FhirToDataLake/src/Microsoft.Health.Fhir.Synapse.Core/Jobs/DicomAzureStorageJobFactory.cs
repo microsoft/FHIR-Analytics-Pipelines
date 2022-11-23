@@ -31,7 +31,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IDicomDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
-        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
+        private readonly IMetadataStore _metadataStore;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly int _maxJobCountInRunningPool;
@@ -43,7 +44,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IDicomDataClient dataClient,
             IDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
-            IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
+            ISchemaManager<ParquetSchemaNode> schemaManager,
+            IMetadataStore metadataStore,
             IOptions<JobConfiguration> jobConfiguration,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
@@ -53,7 +55,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
-            _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            _schemaManager = EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
+            _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
 
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
@@ -112,7 +115,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
-                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create orchestrator job. Reason: {e.Message}", Operations.CreateJob);
+                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create orchestrator job. Reason: {e.Message}", JobOperations.CreateJob);
                 _logger.LogInformation(e, "Failed to create orchestrator job.");
                 return null;
             }
@@ -133,7 +136,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _dataClient,
                         _dataWriter,
                         _parquetDataProcessor,
-                        _fhirSchemaManager,
+                        _schemaManager,
                         _metricsLogger,
                         _diagnosticLogger,
                         _loggerFactory.CreateLogger<DicomToDataLakeProcessingJob>());
@@ -141,7 +144,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
-                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create processing job. Reason: {e.Message}", Operations.CreateJob);
+                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create processing job. Reason: {e.Message}", JobOperations.CreateJob);
                 _logger.LogInformation(e, "Failed to create processing job.");
                 return null;
             }

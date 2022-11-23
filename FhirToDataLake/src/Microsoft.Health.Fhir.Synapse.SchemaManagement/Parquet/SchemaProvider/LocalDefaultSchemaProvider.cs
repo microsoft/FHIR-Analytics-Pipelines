@@ -42,16 +42,16 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
-        public Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default)
+        public Task<Dictionary<string, ParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default)
         {
             Dictionary<string, string> embeddedSchemas = LoadEmbeddedSchema();
-            Dictionary<string, FhirParquetSchemaNode> defaultSchemaNodesMap;
+            Dictionary<string, ParquetSchemaNode> defaultSchemaNodesMap;
             try
             {
                 defaultSchemaNodesMap = embeddedSchemas.Select(schemaItem =>
                 {
-                    var schemaNode = JsonConvert.DeserializeObject<FhirParquetSchemaNode>(schemaItem.Value);
-                    return new KeyValuePair<string, FhirParquetSchemaNode>(schemaNode.Type, schemaNode);
+                    var schemaNode = JsonConvert.DeserializeObject<ParquetSchemaNode>(schemaItem.Value);
+                    return new KeyValuePair<string, ParquetSchemaNode>(schemaNode.Type, schemaNode);
                 }).ToDictionary(x => x.Key, x => x.Value);
             }
             catch (Exception ex)

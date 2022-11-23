@@ -20,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
 
             services.AddSchemaProviders();
 
-            services.AddSingleton<IFhirSchemaManager<FhirParquetSchemaNode>, FhirParquetSchemaManager>();
+            services.AddSingleton<ISchemaManager<ParquetSchemaNode>, ParquetSchemaManager>();
 
             return services;
         }
@@ -34,8 +34,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
             {
                 return name switch
                 {
-                    FhirParquetSchemaConstants.DefaultSchemaProviderKey => delegateProvider.GetService<LocalDefaultSchemaProvider>(),
-                    FhirParquetSchemaConstants.CustomSchemaProviderKey => delegateProvider.GetService<AcrCustomizedSchemaProvider>(),
+                    ParquetSchemaConstants.DefaultSchemaProviderKey => delegateProvider.GetService<LocalDefaultSchemaProvider>(),
+                    ParquetSchemaConstants.CustomSchemaProviderKey => delegateProvider.GetService<AcrCustomizedSchemaProvider>(),
                     _ => throw new FhirSchemaException($"Schema delegate name {name} not found when injecting"),
                 };
             });

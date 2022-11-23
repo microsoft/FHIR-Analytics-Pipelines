@@ -11,16 +11,16 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Dicom.Client.Models;
-using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
+using Microsoft.Health.Fhir.Synapse.Core.Dicom;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
@@ -35,12 +35,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class DicomToDataLakeProcessingJob : IJob
     {
-        private readonly DicomApiVersion dicomVersion = DicomApiVersion.V1;
         private readonly DicomToDataLakeProcessingJobInputData _inputData;
         private readonly IDicomDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
-        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
         private readonly IMetricsLogger _metricsLogger;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<DicomToDataLakeProcessingJob> _logger;
@@ -57,15 +56,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         private Dictionary<string, int> _outputFileIndexMap;
 
-        private const string _resourceType = "dicom";
-
         public DicomToDataLakeProcessingJob(
             long jobId,
             DicomToDataLakeProcessingJobInputData inputData,
             IDicomDataClient dataClient,
             IDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
-            IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
+            ISchemaManager<ParquetSchemaNode> schemaManager,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
             ILogger<DicomToDataLakeProcessingJob> logger)
@@ -76,7 +73,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
-            _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            _schemaManager = EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
@@ -105,9 +102,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // Initialize
                 _cacheResult = new CacheResult();
-                if (!_cacheResult.Resources.ContainsKey(_resourceType))
+                if (!_cacheResult.Resources.ContainsKey(DicomConstants.DicomResourceType))
                 {
-                    _cacheResult.Resources[_resourceType] = new List<JObject>();
+                    _cacheResult.Resources[DicomConstants.DicomResourceType] = new List<JObject>();
                 }
 
                 _outputFileIndexMap = new Dictionary<string, int>();
@@ -129,7 +126,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (OperationCanceledException operationCanceledEx)
             {
                 _logger.LogInformation(operationCanceledEx, "Processing job {0} is canceled.", _jobId);
-                _metricsLogger.LogTotalErrorsMetrics(operationCanceledEx, $"Processing job is canceled. Reason: {operationCanceledEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(operationCanceledEx, $"Processing job is canceled. Reason: {operationCanceledEx.Message}", JobOperations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Processing job is canceled.", operationCanceledEx);
@@ -138,7 +135,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // always throw RetriableJobException
                 _logger.LogInformation(retriableJobEx, "Error in processing job {0}. Reason : {1}", _jobId, retriableJobEx.Message);
-                _metricsLogger.LogTotalErrorsMetrics(retriableJobEx, $"Error in processing job. Reason: {retriableJobEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(retriableJobEx, $"Error in processing job. Reason: {retriableJobEx.Message}", JobOperations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw;
@@ -147,7 +144,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Customer exceptions.
                 _logger.LogInformation(synapsePipelineEx, "Error in data processing job {0}. Reason:{1}", _jobId, synapsePipelineEx.Message);
-                _metricsLogger.LogTotalErrorsMetrics(synapsePipelineEx, $"Error in processing job. Reason: {synapsePipelineEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(synapsePipelineEx, $"Error in processing job. Reason: {synapsePipelineEx.Message}", JobOperations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Error in data processing job.", synapsePipelineEx);
@@ -156,7 +153,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Unhandled exceptions.
                 _logger.LogError(ex, "Unhandled error occurred in data processing job {0}. Reason : {1}", _jobId, ex.Message);
-                _metricsLogger.LogTotalErrorsMetrics(ex, $"Unhandled error occurred in data processing job. Reason: {ex.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(ex, $"Unhandled error occurred in data processing job. Reason: {ex.Message}", JobOperations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Unhandled error occurred in data processing job.", ex);
@@ -171,58 +168,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (limit > 0)
             {
-                // Get change feeds
-                var queryParameters = new List<KeyValuePair<string, string>>
-                {
-                    new KeyValuePair<string, string>(DicomApiConstants.OffsetKey, $"{_inputData.StartOffset}"),
-                    new KeyValuePair<string, string>(DicomApiConstants.LimitKey, $"{limit}"),
-                    new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{false}"),
-                };
+                // Get metadata objects from change feeds
+                SearchResult metadataObjectsResult = await GetMetadataObjectsAsync(limit, cancellationToken);
 
-                var changeFeedOptions = new ChangeFeedOffsetOptions(dicomVersion, queryParameters);
-                string changeFeedsContent = await _dataClient.SearchAsync(changeFeedOptions, cancellationToken);
-
-                List<ChangeFeedEntry> changeFeedEntries;
-                try
+                foreach (JObject metadataObject in metadataObjectsResult.Resources)
                 {
-                    changeFeedEntries = JsonConvert.DeserializeObject<List<ChangeFeedEntry>>(changeFeedsContent)
-                        .Where(x => x.State == ChangeFeedState.Current && x.Action == ChangeFeedAction.Create)
-                        .ToList();
-                }
-                catch (Exception ex)
-                {
-                    _diagnosticLogger.LogError($"Parse changefeeds failed. Reason: {ex.Message}");
-                    _logger.LogError($"Parse changefeeds failed. Reason: {ex.Message}");
-                    throw new FhirSearchException("Parse changefeeds failed.", ex);
+                    _cacheResult.Resources[DicomConstants.DicomResourceType].Add(metadataObject);
                 }
 
-                var tasks = changeFeedEntries.Select(entry =>
-                {
-                    var metadataOptions = new SearchMetadataOptions(
-                        dicomVersion,
-                        entry.StudyInstanceUid,
-                        entry.SeriesInstanceUid,
-                        entry.SopInstanceUid);
-
-                    return _dataClient.SearchAsync(metadataOptions, cancellationToken);
-                });
-
-                var metadataList = new List<string>(await Task.WhenAll(tasks));
-
-                foreach (var metadata in metadataList)
-                {
-                    try
-                    {
-                        var metadataObject = (JObject)JArray.Parse(metadata).First();
-                        _cacheResult.Resources[_resourceType].Add(metadataObject);
-                        _cacheResult.CacheSize += metadata.Length * sizeof(char);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogInformation($"Failed to parse DICOM metadata: {ex.Message}");
-                    }
-                }
-
+                _cacheResult.CacheSize += metadataObjectsResult.ResultSizeInBytes;
                 await TryCommitResultAsync(progress, false, cancellationToken);
             }
         }
@@ -249,7 +203,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     var batchData = new JsonBatchData(resources);
 
-                    List<string> schemaTypes = _fhirSchemaManager.GetSchemaTypes(resourceType);
+                    List<string> schemaTypes = _schemaManager.GetSchemaTypes(resourceType);
                     foreach (string schemaType in schemaTypes)
                     {
                         // Convert grouped data to parquet stream
@@ -306,6 +260,44 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _cacheResult.ClearCache();
                 _logger.LogInformation($"Commit cache resources successfully for processing job {_jobId}.");
             }
+        }
+
+        private async Task<SearchResult> GetMetadataObjectsAsync(long limit, CancellationToken cancellationToken)
+        {
+            var queryParameters = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>(DicomApiConstants.OffsetKey, $"{_inputData.StartOffset}"),
+                    new KeyValuePair<string, string>(DicomApiConstants.LimitKey, $"{limit}"),
+                    new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{true}"),
+                };
+
+            var changeFeedOptions = new ChangeFeedOffsetOptions(queryParameters);
+            string changeFeedsContent = await _dataClient.SearchAsync(changeFeedOptions, cancellationToken);
+
+            List<JObject> metadataObjects;
+            try
+            {
+                metadataObjects = JArray.Parse(changeFeedsContent)
+                    .Where(changeFeed =>
+                        Enum.Parse<ChangeFeedState>(changeFeed[DicomChangeFeedConstants.StateKey].ToString(), true) == ChangeFeedState.Current &&
+                        Enum.Parse<ChangeFeedAction>(changeFeed[DicomChangeFeedConstants.ActionKey].ToString(), true) == ChangeFeedAction.Create)
+                    .Select(changeFeed =>
+                    {
+                        var metadataObject = changeFeed[DicomChangeFeedConstants.MetadataKey] as JObject;
+
+                        metadataObject.Add(DicomConstants.SequenceColumnKey, changeFeed[DicomChangeFeedConstants.SequenceKey].ToString());
+                        metadataObject.Add(DicomConstants.TimestampColumnKey, changeFeed[DicomChangeFeedConstants.TimestampKey].ToString());
+                        return metadataObject;
+                    }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _diagnosticLogger.LogError($"Parse metadata objects failed. Reason: {ex.Message}");
+                _logger.LogError($"Parse metadata objects failed. Reason: {ex.Message}");
+                throw new ApiSearchException("Parse metadata objects failed.", ex);
+            }
+
+            return new SearchResult(metadataObjects, changeFeedsContent.Length, null);
         }
 
         /// <summary>

@@ -30,7 +30,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
         /// </summary>
         private readonly Lazy<FhirCapabilityData> _capabilityData;
 
-        protected static readonly IEnumerable<string> ExcludeTypes = new List<string> { FhirConstants.StructureDefinition };
+        protected static readonly IEnumerable<string> ExcludeTypes = new List<string>
+        {
+            FhirConstants.StructureDefinitionResource,
+            FhirConstants.OperationOutcomeResource,
+        };
 
         public BaseFhirSpecificationProvider(
             IFhirDataClient dataClient,

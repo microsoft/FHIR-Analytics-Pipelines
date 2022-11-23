@@ -77,6 +77,8 @@ CREATE EXTERNAL TABLE [dicom].[dicom] (
     [WindowCenterWidthExplanation] VARCHAR(MAX),
     [WindowWidth] VARCHAR(MAX),
     [XRayTubeCurrent] VARCHAR(MAX),
+    [_sequence] VARCHAR(50),
+    [_timestamp] VARCHAR(50),
 ) WITH (
     LOCATION='dicom/**',
     DATA_SOURCE = ParquetSource,

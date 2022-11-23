@@ -4,25 +4,21 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using Microsoft.Health.Fhir.Synapse.Common;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
 {
     public class ChangeFeedLatestOptions : BaseDicomApiOptions
     {
-        public ChangeFeedLatestOptions(
-            DicomApiVersion dicomApiVersion,
-            List<KeyValuePair<string, string>> queryParameters)
+        public ChangeFeedLatestOptions(List<KeyValuePair<string, string>> queryParameters)
         {
-            DicomApiVersion = dicomApiVersion;
             QueryParameters = queryParameters ?? new List<KeyValuePair<string, string>>();
             IsAccessTokenRequired = true;
         }
 
         public override string RelativeUri()
         {
-            return $"{DicomApiConstants.VersionMap[DicomApiVersion]}/{DicomApiConstants.ChangeFeedKey}/{DicomApiConstants.LatestKey}";
+            return $"{DicomApiConstants.ChangeFeedKey}/{DicomApiConstants.LatestKey}";
         }
     }
 }

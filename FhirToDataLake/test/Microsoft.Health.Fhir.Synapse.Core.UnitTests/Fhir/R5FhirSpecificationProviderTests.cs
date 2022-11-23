@@ -55,7 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         public void GivenBrokenDataClient_WhenInitialize_ExceptionShouldBeThrown()
         {
             var dataClient = Substitute.For<IFhirDataClient>();
-            dataClient.SearchAsync(default, default).ThrowsForAnyArgs(new FhirSearchException("mockException"));
+            dataClient.SearchAsync(default, default).ThrowsForAnyArgs(new ApiSearchException("mockException"));
 
             var provider = new R5FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR5FhirSpecificationProviderLogger);
             Assert.Throws<FhirSpecificationProviderException>(
@@ -81,7 +81,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         public void WhenGetAllResourceTypes_TheResourcesTypeShouldBeReturned()
         {
             List<string> types = _r5FhirSpecificationProvider.GetAllResourceTypes().ToList();
-            Assert.Equal(151, types.Count);
+            Assert.Equal(150, types.Count);
+        }
+
+        [Fact]
+        public void WhenGetAllResourceTypes_ExcludeResourceTypesShouldNotBeReturned()
+        {
+            List<string> types = _r5FhirSpecificationProvider.GetAllResourceTypes().ToList();
+            foreach (string excludeType in TestUtils.ExcludeResourceTypes)
+            {
+                Assert.DoesNotContain(excludeType, types);
+            }
         }
 
         [Theory]

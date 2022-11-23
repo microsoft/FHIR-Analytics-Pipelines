@@ -87,22 +87,35 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
             services.AddSingleton<IExternalDependencyChecker, ExternalDependencyChecker>();
 
-            services.AddSchemaConverters();
+            services.AddSchemaConverters(dataSourceConfiguration.Type);
 
             return services;
         }
 
-        public static IServiceCollection AddSchemaConverters(this IServiceCollection services)
+        public static IServiceCollection AddSchemaConverters(this IServiceCollection services, DataSourceType dataSourceType)
         {
-            services.AddSingleton<DefaultSchemaConverter>();
+            switch (dataSourceType)
+            {
+                case DataSourceType.FHIR:
+                    services.AddSingleton<DefaultFhirSchemaConverter>();
+                    break;
+                case DataSourceType.DICOM:
+                    services.AddSingleton<DefaultDicomSchemaConverter>();
+                    break;
+                default:
+                    throw new ConfigurationErrorException($"Data source type {dataSourceType} is not supported");
+            }
+
             services.AddSingleton<CustomSchemaConverter>();
 
             services.AddSingleton<DataSchemaConverterDelegate>(delegateProvider => name =>
             {
                 return name switch
                 {
-                    FhirParquetSchemaConstants.DefaultSchemaProviderKey => delegateProvider.GetService<DefaultSchemaConverter>(),
-                    FhirParquetSchemaConstants.CustomSchemaProviderKey => delegateProvider.GetService<CustomSchemaConverter>(),
+                    ParquetSchemaConstants.DefaultSchemaProviderKey => dataSourceType == DataSourceType.FHIR
+                        ? delegateProvider.GetService<DefaultFhirSchemaConverter>()
+                        : delegateProvider.GetService<DefaultDicomSchemaConverter>(),
+                    ParquetSchemaConstants.CustomSchemaProviderKey => delegateProvider.GetService<CustomSchemaConverter>(),
                     _ => throw new ParquetDataProcessorException($"Schema delegate name {name} not found when injecting"),
                 };
             });

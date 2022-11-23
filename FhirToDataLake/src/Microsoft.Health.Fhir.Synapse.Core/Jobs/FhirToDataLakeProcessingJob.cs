@@ -23,7 +23,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
@@ -43,7 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IFhirDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
-        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly IFilterManager _filterManager;
         private readonly IMetricsLogger _metricsLogger;
@@ -72,7 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IFhirDataClient dataClient,
             IDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
-            IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
+            ISchemaManager<ParquetSchemaNode> schemaManager,
             IGroupMemberExtractor groupMemberExtractor,
             IFilterManager filterManager,
             IMetricsLogger metricsLogger,
@@ -85,7 +85,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
-            _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            _schemaManager = EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
@@ -153,7 +153,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (OperationCanceledException operationCanceledEx)
             {
                 _logger.LogInformation(operationCanceledEx, "Processing job {0} is canceled.", _jobId);
-                _metricsLogger.LogTotalErrorsMetrics(operationCanceledEx, $"Processing job is canceled. Reason: {operationCanceledEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(operationCanceledEx, $"Processing job is canceled. Reason: {operationCanceledEx.Message}", JobOperations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Processing job is canceled.", operationCanceledEx);
@@ -162,7 +162,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // always throw RetriableJobException
                 _logger.LogInformation(retriableJobEx, "Error in processing job {0}. Reason : {1}", _jobId, retriableJobEx.Message);
-                _metricsLogger.LogTotalErrorsMetrics(retriableJobEx, $"Error in processing job. Reason: {retriableJobEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(retriableJobEx, $"Error in processing job. Reason: {retriableJobEx.Message}", JobOperations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw;
@@ -171,7 +171,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Customer exceptions.
                 _logger.LogInformation(synapsePipelineEx, "Error in data processing job {0}. Reason:{1}", _jobId, synapsePipelineEx.Message);
-                _metricsLogger.LogTotalErrorsMetrics(synapsePipelineEx, $"Error in processing job. Reason: {synapsePipelineEx.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(synapsePipelineEx, $"Error in processing job. Reason: {synapsePipelineEx.Message}", JobOperations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Error in data processing job.", synapsePipelineEx);
@@ -180,7 +180,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 // Unhandled exceptions.
                 _logger.LogError(ex, "Unhandled error occurred in data processing job {0}. Reason : {1}", _jobId, ex.Message);
-                _metricsLogger.LogTotalErrorsMetrics(ex, $"Unhandled error occurred in data processing job. Reason: {ex.Message}", Operations.RunJob);
+                _metricsLogger.LogTotalErrorsMetrics(ex, $"Unhandled error occurred in data processing job. Reason: {ex.Message}", JobOperations.RunJob);
                 await CleanResourceAsync(CancellationToken.None);
 
                 throw new RetriableJobException("Unhandled error occurred in data processing job.", ex);
@@ -194,6 +194,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
+                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString("d")),
             };
 
             if (_inputData.DataStartTime != null)
@@ -253,7 +254,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         $"Failed to extract version id for patient {patientId}.");
                     _logger.LogInformation(
                         $"Failed to extract version id for patient {patientId}.");
-                    throw new FhirSearchException(
+                    throw new ApiSearchException(
                         $"Failed to extract version id for patient {patientId}.");
                 }
 
@@ -281,6 +282,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
                             {
                                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
+                                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString("d")),
                             };
 
                 if (startDateTime != null)
@@ -358,19 +360,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             SearchResult searchResult = await ExecuteSearchAsync(patientSearchOption, cancellationToken);
 
             // if the patient does not exist, log a warning, and do nothing about it.
-            if (searchResult.FhirResources == null || !searchResult.FhirResources.Any())
+            if (searchResult.Resources == null || !searchResult.Resources.Any())
             {
                 _logger.LogInformation($"The patient {patientId} dose not exist in fhir server, ignore it.");
                 return null;
             }
 
-            JObject patientResource = searchResult.FhirResources[0];
+            JObject patientResource = searchResult.Resources[0];
 
             if (patientResource["resourceType"]?.ToString() != FhirConstants.PatientResource)
             {
                 _diagnosticLogger.LogError($"Failed to get patient {patientId}.");
                 _logger.LogInformation($"Failed to get patient {patientId}.");
-                throw new FhirSearchException($"Failed to get patient {patientId}.");
+                throw new ApiSearchException($"Failed to get patient {patientId}.");
             }
 
             return patientResource;
@@ -447,7 +449,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 SearchResult searchResult = await ExecuteSearchAsync(searchOptions, cancellationToken);
 
                 // add resources to memory cache
-                AddFhirResourcesToCache(searchResult.FhirResources);
+                AddFhirResourcesToCache(searchResult.Resources);
                 _cacheResult.CacheSize += searchResult.ResultSizeInBytes;
 
                 continuationToken = searchResult.ContinuationToken;
@@ -490,7 +492,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _diagnosticLogger.LogError($"There is operationOutcome returned from FHIR server: {string.Join(',', operationOutcomes)}");
                 _logger.LogInformation($"There is operationOutcome returned from FHIR server: {string.Join(',', operationOutcomes)}");
-                throw new FhirSearchException($"There is operationOutcome returned from FHIR server: {string.Join(',', operationOutcomes)}");
+                throw new ApiSearchException($"There is operationOutcome returned from FHIR server: {string.Join(',', operationOutcomes)}");
             }
 
             string continuationToken = FhirBundleParser.ExtractContinuationToken(fhirBundleObject);
@@ -544,7 +546,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     var batchData = new JsonBatchData(resources);
 
-                    List<string> schemaTypes = _fhirSchemaManager.GetSchemaTypes(resourceType);
+                    List<string> schemaTypes = _schemaManager.GetSchemaTypes(resourceType);
                     foreach (string schemaType in schemaTypes)
                     {
                         // Convert grouped data to parquet stream
