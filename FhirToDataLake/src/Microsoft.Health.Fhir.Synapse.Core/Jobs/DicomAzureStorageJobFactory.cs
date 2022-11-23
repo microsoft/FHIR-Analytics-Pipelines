@@ -32,7 +32,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
-        private readonly IMetadataStore _metadataStore;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly int _maxJobCountInRunningPool;
@@ -45,7 +44,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
             ISchemaManager<ParquetSchemaNode> schemaManager,
-            IMetadataStore metadataStore,
             IOptions<JobConfiguration> jobConfiguration,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
@@ -56,7 +54,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
             _schemaManager = EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
-            _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
 
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
@@ -104,7 +101,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         jobInfo,
                         inputData,
                         currentResult,
-                        _dataClient,
                         _dataWriter,
                         _queueClient,
                         _maxJobCountInRunningPool,

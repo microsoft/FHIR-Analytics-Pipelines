@@ -27,7 +27,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly JobInfo _jobInfo;
         private readonly DicomToDataLakeOrchestratorJobInputData _inputData;
-        private readonly IDicomDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IQueueClient _queueClient;
         private readonly int _maxJobCountInRunningPool;
@@ -41,7 +40,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             JobInfo jobInfo,
             DicomToDataLakeOrchestratorJobInputData inputData,
             DicomToDataLakeOrchestratorJobResult result,
-            IDicomDataClient dataClient,
             IDataWriter dataWriter,
             IQueueClient queueClient,
             int maxJobCountInRunningPool,
@@ -52,7 +50,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _jobInfo = EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
             _inputData = EnsureArg.IsNotNull(inputData, nameof(inputData));
             _result = EnsureArg.IsNotNull(result, nameof(result));
-            _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));

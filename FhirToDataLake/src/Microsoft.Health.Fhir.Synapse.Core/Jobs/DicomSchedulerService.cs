@@ -33,8 +33,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IMetadataStore _metadataStore;
         private readonly IDicomDataClient _dataClient;
         private readonly byte _queueType;
-        private readonly DateTimeOffset? _startTime;
-        private readonly DateTimeOffset? _endTime;
         private readonly ILogger<DicomSchedulerService> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly IMetricsLogger _metricsLogger;
@@ -58,10 +56,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             _queueType = (byte)jobConfiguration.Value.QueueType;
-
-            // if both startTime and endTime are specified, add validation on ConfigurationValidatorV1 to make sure startTime is larger than endTime.
-            _startTime = jobConfiguration.Value.StartTime;
-            _endTime = jobConfiguration.Value.EndTime;
 
             // add validation on ConfiguraionValidatorV1 to make sure the SchedulerCronExpression is valid.
             _crontabSchedule = CrontabSchedule.Parse(jobConfiguration.Value.SchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
@@ -305,7 +299,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                                         await CreateInitialTriggerEntity(cancellationToken);
 
             // if current trigger entity is still null after initializing, just skip processing it this time and try again next time.
-            // this case should not happen.
+            // this case happens when there is no change feed in the Dicom service.
             bool scheduledToEnd = false;
             if (currentTriggerEntity != null)
             {
@@ -413,19 +407,30 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             DateTimeOffset? nextTriggerTime = GetNextTriggerTime(currentTriggerEntity.TriggerEndTime);
 
-            if (nextTriggerTime != null)
+            if (nextTriggerTime != null )
             {
-                currentTriggerEntity.TriggerSequenceId += 1;
-                currentTriggerEntity.TriggerStatus = TriggerStatus.New;
+                long latestSequence = await GetDicomLatestSequence(cancellationToken);
 
-                currentTriggerEntity.TriggerStartTime = (DateTimeOffset)nextTriggerTime;
-                currentTriggerEntity.StartOffset = currentTriggerEntity.EndOffset;
-                currentTriggerEntity.EndOffset = await GetDicomLatestSequence(cancellationToken);
+                // if there is no new change feed added, skip this iteration
+                if (latestSequence > currentTriggerEntity.EndOffset)
+                {
+                    currentTriggerEntity.TriggerSequenceId += 1;
+                    currentTriggerEntity.TriggerStatus = TriggerStatus.New;
 
-                bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
-                _logger.LogInformation(isSucceeded
-                    ? $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table."
-                    : $"Failed to update new trigger with sequence id {currentTriggerEntity.TriggerSequenceId}, Etag precondition failed: {currentTriggerEntity}.");
+                    currentTriggerEntity.TriggerStartTime = (DateTimeOffset)nextTriggerTime;
+                    currentTriggerEntity.StartOffset = currentTriggerEntity.EndOffset;
+                    currentTriggerEntity.EndOffset = latestSequence;
+
+                    bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
+                    _logger.LogInformation(isSucceeded
+                        ? $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table."
+                        : $"Failed to update new trigger with sequence id {currentTriggerEntity.TriggerSequenceId}, Etag precondition failed: {currentTriggerEntity}.");
+                }
+                else
+                {
+                    _logger.LogInformation($"There is no new change feed, the latest change feed sequence is {latestSequence}.");
+                    _diagnosticLogger.LogInformation($"There is no new change feed, the latest change feed sequence is {latestSequence}.");
+                }
             }
 
             return false;
@@ -438,6 +443,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>The created trigger entity</returns>
         private async Task<CurrentTriggerEntity> CreateInitialTriggerEntity(CancellationToken cancellationToken)
         {
+            long latestSequence = await GetDicomLatestSequence(cancellationToken);
+
+            // if there is no new change feed added, skip this iteration
+            if (latestSequence == 0)
+            {
+                _logger.LogInformation("There is no change feed in the Dicom service.");
+                _diagnosticLogger.LogInformation("There is no change feed in the Dicom service.");
+                return null;
+            }
+
             var initialTriggerEntity = new CurrentTriggerEntity
             {
                 PartitionKey = TableKeyProvider.TriggerPartitionKey(_queueType),
@@ -544,6 +559,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return isSucceeded;
         }
 
+        /// <summary>
+        /// Get dicom latest sequence
+        /// </summary>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>return the latest sequence, return 0 if there is no change feed</returns>
         private async Task<long> GetDicomLatestSequence(CancellationToken cancellationToken)
         {
             var queryParameters = new List<KeyValuePair<string, string>>
@@ -555,7 +575,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             string changeFeedContent = await _dataClient.SearchAsync(changeFeedOption, cancellationToken);
             var changeFeedEntry = JsonConvert.DeserializeObject<ChangeFeedEntry>(changeFeedContent);
 
-            return changeFeedEntry.Sequence;
+            return changeFeedEntry == null ? 0 : changeFeedEntry.Sequence;
         }
     }
 }
