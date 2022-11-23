@@ -15,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
                 { DimensionNames.Name, "ResourceLatency" },
                 { DimensionNames.Category, MetricsCategories.Latency },
                 { DimensionNames.IsDiagnostic, true },
-                { DimensionNames.Operation, Operations.CompleteJob },
+                { DimensionNames.Operation, JobOperations.CompleteJob },
             })
         {
         }

@@ -84,14 +84,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
             foreach (var item in metadataObject)
             {
-                // Each tag should be JObject containing a child object "vr"
-                if (item.Value is not JObject jObject ||
-                    !jObject.ContainsKey(DicomConstants.Vr))
-                {
-                    _logger.LogError($"Current DICOM tag is not a valid JObject: {item.Key}.");
-                    throw new ParquetDataProcessorException($"Current DICOM tag is not a valid JObject: {item.Key}.");
-                }
-
                 // Find node by name
                 var subNodePair = schemaNode.SubNodes
                     .Where(x => string.Equals(x.Value.Name, item.Key, StringComparison.OrdinalIgnoreCase))
@@ -100,38 +92,61 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 var subNodeKeyword = subNodePair.Key;
                 var subNode = subNodePair.Value;
 
-                // Ignore DICOM metadata node if it doesn't exist in schema
-                // Ignore SQ
-                // Ignore empty tag, BulkDataURI and InlineBinary
-                if (subNodeKeyword == null ||
-                    !jObject.ContainsKey(DicomConstants.Value) ||
-                    jObject[DicomConstants.Value] is not JArray)
+                // Handle our additional self-defined properties that have specific prefix.
+                if (subNodeKeyword[0] == DicomConstants.AdditionalColumnPrefix)
                 {
-                    continue;
-                }
-
-                var subValueArray = jObject[DicomConstants.Value] as JArray;
-
-                if (subNode.IsRepeated)
-                {
-                    processedObject.Add(subNodeKeyword, ProcessArrayObject(subValueArray, subNode));
-                }
-                else
-                {
-                    if (subValueArray.Count > 1)
+                    if (subNode.IsRepeated)
                     {
-                        _logger.LogInformation($"Multiple values appear in an unique tag. Keyword: {subNodeKeyword}");
-                    }
-
-                    var singleElement = subValueArray.First();
-
-                    if (subNode.IsLeaf)
-                    {
-                        processedObject.Add(subNodeKeyword, ProcessLeafObject(singleElement, subNode));
+                        processedObject.Add(subNodeKeyword, ProcessArrayObject(item.Value, subNode));
                     }
                     else
                     {
-                        processedObject.Add(subNodeKeyword, ProcessDicomPnObject(singleElement));
+                        processedObject.Add(subNodeKeyword, ProcessLeafObject(item.Value, subNode));
+                    }
+                }
+                else
+                {
+                    // Each metadata native tag should be JObject containing a child object "vr"
+                    if (item.Value is not JObject jObject ||
+                        !jObject.ContainsKey(DicomConstants.Vr))
+                    {
+                        _logger.LogError($"Current DICOM tag is not a valid JObject: {item.Key}.");
+                        throw new ParquetDataProcessorException($"Current DICOM tag is not a valid JObject: {item.Key}.");
+                    }
+
+                    // Ignore DICOM metadata node if it doesn't exist in schema
+                    // Ignore SQ
+                    // Ignore empty tag, BulkDataURI and InlineBinary
+                    if (subNodeKeyword == null ||
+                    !jObject.ContainsKey(DicomConstants.Value) ||
+                    jObject[DicomConstants.Value] is not JArray)
+                    {
+                        continue;
+                    }
+
+                    var subValueArray = jObject[DicomConstants.Value] as JArray;
+
+                    if (subNode.IsRepeated)
+                    {
+                        processedObject.Add(subNodeKeyword, ProcessArrayObject(subValueArray, subNode));
+                    }
+                    else
+                    {
+                        if (subValueArray.Count > 1)
+                        {
+                            _logger.LogInformation($"Multiple values appear in an unique tag. Keyword: {subNodeKeyword}");
+                        }
+
+                        var singleElement = subValueArray.First();
+
+                        if (subNode.IsLeaf)
+                        {
+                            processedObject.Add(subNodeKeyword, ProcessLeafObject(singleElement, subNode));
+                        }
+                        else
+                        {
+                            processedObject.Add(subNodeKeyword, ProcessDicomPnObject(singleElement));
+                        }
                     }
                 }
             }

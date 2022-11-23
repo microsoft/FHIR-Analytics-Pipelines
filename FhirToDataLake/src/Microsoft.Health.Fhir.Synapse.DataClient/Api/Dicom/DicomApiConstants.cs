@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using Microsoft.Health.Fhir.Synapse.Common;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
+namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
 {
     public class DicomApiConstants
     {
@@ -67,6 +67,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         /// <summary>
         /// The managed identity url to get access token for DICOM service.
         /// </summary>
-        public const string DicomManagedIdentityUrl = "https://dicom.healthcareapis.azure.com";
+        public const string DicomResourceUrl = "https://dicom.healthcareapis.azure.com";
     }
 }

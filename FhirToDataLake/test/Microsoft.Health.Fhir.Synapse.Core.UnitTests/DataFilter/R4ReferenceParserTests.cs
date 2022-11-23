@@ -17,7 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 {
     public class R4ReferenceParserTests
     {
-        private readonly FhirApiDataSource _dataSource;
+        private readonly ApiDataSource _dataSource;
 
         private readonly R4ReferenceParser _referenceParser;
 
@@ -37,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 },
             };
 
-            _dataSource = new FhirApiDataSource(Options.Create(dataSourceConfiguration));
+            _dataSource = new ApiDataSource(Options.Create(dataSourceConfiguration));
             _referenceParser = new R4ReferenceParser(_dataSource, _nullR4ReferenceParserLogger);
         }
 
@@ -83,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                 },
             };
 
-            var dataSource = new FhirApiDataSource(Options.Create(dataSourceConfiguration));
+            var dataSource = new ApiDataSource(Options.Create(dataSourceConfiguration));
             var referenceParser = new R4ReferenceParser(dataSource, _nullR4ReferenceParserLogger);
 
             FhirReference fhirReference = referenceParser.Parse("https://example.com/Patient/123/_history/2");

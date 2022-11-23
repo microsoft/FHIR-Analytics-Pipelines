@@ -8,14 +8,14 @@ using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Exceptions
 {
-    public class FhirSearchException : SynapsePipelineExternalException
+    public class ApiSearchException : SynapsePipelineExternalException
     {
-        public FhirSearchException(string message)
+        public ApiSearchException(string message)
             : base(message)
         {
         }
 
-        public FhirSearchException(string message, Exception innerException)
+        public ApiSearchException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

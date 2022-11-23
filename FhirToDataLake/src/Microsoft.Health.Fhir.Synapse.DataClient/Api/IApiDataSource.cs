@@ -7,15 +7,15 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 {
-    public interface IFhirApiDataSource
+    public interface IApiDataSource
     {
         /// <summary>
         /// Server url.
         /// </summary>
-        public string FhirServerUrl { get; }
+        public string ServerUrl { get; }
 
         /// <summary>
-        /// Authentication method to access FHIR server.
+        /// Authentication method to access the server.
         /// </summary>
         public AuthenticationType Authentication { get; }
     }
