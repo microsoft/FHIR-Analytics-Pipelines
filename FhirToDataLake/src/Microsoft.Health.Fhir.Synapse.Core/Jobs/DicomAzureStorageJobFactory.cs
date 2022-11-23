@@ -32,7 +32,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
-        private readonly IMetadataStore _metadataStore;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly int _maxJobCountInRunningPool;
@@ -45,7 +44,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
             IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
-            IMetadataStore metadataStore,
             IOptions<JobConfiguration> jobConfiguration,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
@@ -56,7 +54,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
             _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
-            _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
 
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
@@ -71,27 +68,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
 
-            if (_metadataStore.IsInitialized())
+            Func<JobInfo, IJob>[] taskFactoryFuncs =
+                new Func<JobInfo, IJob>[] { CreateProcessingTask, CreateOrchestratorTask };
+
+            foreach (Func<JobInfo, IJob> factoryFunc in taskFactoryFuncs)
             {
-                Func<JobInfo, IJob>[] taskFactoryFuncs =
-                    new Func<JobInfo, IJob>[] { CreateProcessingTask, CreateOrchestratorTask };
-
-                foreach (Func<JobInfo, IJob> factoryFunc in taskFactoryFuncs)
+                IJob job = factoryFunc(jobInfo);
+                if (job != null)
                 {
-                    IJob job = factoryFunc(jobInfo);
-                    if (job != null)
-                    {
-                        return job;
-                    }
+                    return job;
                 }
-
-                // job hosting didn't catch any exception thrown during creating job,
-                // return null for failure case, and job hosting will skip it.
-                _logger.LogInformation($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
-                return null;
             }
 
-            _logger.LogInformation("Metadata store isn't initialized yet.");
+            // job hosting didn't catch any exception thrown during creating job,
+            // return null for failure case, and job hosting will skip it.
+            _logger.LogInformation($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
             return null;
         }
 
@@ -113,7 +104,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _dataClient,
                         _dataWriter,
                         _queueClient,
-                        _metadataStore,
                         _maxJobCountInRunningPool,
                         _metricsLogger,
                         _diagnosticLogger,

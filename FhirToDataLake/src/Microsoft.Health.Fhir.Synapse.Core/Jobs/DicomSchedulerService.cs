@@ -413,23 +413,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>return true if the job has been scheduled to end, otherwise return false.</returns>
         private async Task<bool> CreateNextTriggerAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
         {
-            DateTimeOffset? nextTriggerEndTime = GetNextTriggerEndTime(currentTriggerEntity.TriggerEndTime);
+            DateTimeOffset? nextTriggerTime = GetNextTriggerTime(currentTriggerEntity.TriggerEndTime);
 
-            if (nextTriggerEndTime != null)
+            if (nextTriggerTime != null)
             {
-                DateTimeOffset? nextTriggerStartTime = GetNextTriggerStartTime(currentTriggerEntity.TriggerEndTime);
-
-                if (nextTriggerStartTime >= nextTriggerEndTime)
-                {
-                    _logger.LogInformation($"The job has been scheduled to end {nextTriggerStartTime}.");
-                    return true;
-                }
-
                 currentTriggerEntity.TriggerSequenceId += 1;
                 currentTriggerEntity.TriggerStatus = TriggerStatus.New;
 
-                currentTriggerEntity.TriggerStartTime = nextTriggerStartTime;
-                currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerEndTime;
+                currentTriggerEntity.TriggerStartTime = (DateTimeOffset)nextTriggerTime;
                 currentTriggerEntity.StartOffset = currentTriggerEntity.EndOffset;
                 currentTriggerEntity.EndOffset = await GetDicomLatestSequence(cancellationToken);
 
@@ -453,8 +444,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 PartitionKey = TableKeyProvider.TriggerPartitionKey(_queueType),
                 RowKey = TableKeyProvider.TriggerPartitionKey(_queueType),
-                TriggerStartTime = GetNextTriggerStartTime(null),
-                TriggerEndTime = (DateTimeOffset)GetNextTriggerEndTime(null),
+                TriggerStartTime = DateTimeOffset.Now,
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 0,
                 StartOffset = InitialStartOffset,
@@ -471,52 +461,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return await _metadataStore.GetCurrentTriggerEntityAsync(_queueType, cancellationToken);
         }
 
-        /// <summary>
-        /// return the start time in configuration for initial load job, otherwise return the last trigger end time
-        /// </summary>
-        private DateTimeOffset? GetNextTriggerStartTime(DateTimeOffset? lastTriggerEndTime)
+        private DateTimeOffset? GetNextTriggerTime(DateTimeOffset lastTriggerTime)
         {
-            return lastTriggerEndTime ?? _startTime;
-        }
-
-        /// <summary>
-        /// FHIR data use processing time as lastUpdated timestamp, there might be some latency when saving to data store.
-        /// Here we add a JobEndTimeLatencyInMinutes latency to avoid data missing due to latency in creation.
-        /// So the nextTriggerEndTime is set JobEndTimeLatencyInMinutes earlier than the current timestamp.
-        /// If Job end time is specified and earlier than the nextTriggerEndTime, will set the nextTriggerEndTime to the specified job end time.
-        /// For initial load job, lastTriggerEndTime is null;
-        /// For incremental job, lastTriggerEndTime is the end time of the last trigger, we also get all the next occurrence times during lastTriggerEndTime and latency utc now.
-        /// If next occurrence time comes after latency utc now, will return null and skip this iteration.
-        /// </summary>
-        /// <param name="lastTriggerEndTime">the end time of the last trigger</param>
-        /// <returns>the end time of the next trigger, return null if it is not yet the next occurrence time</returns>
-        private DateTimeOffset? GetNextTriggerEndTime(DateTimeOffset? lastTriggerEndTime)
-        {
-            // Add latency to utc now
-            DateTimeOffset nextTriggerEndTime =
-                DateTimeOffset.UtcNow.AddMinutes(-1 * JobConfigurationConstants.JobQueryLatencyInMinutes);
-
-            // set the trigger end time for incremental job
-            if (lastTriggerEndTime != null)
+            // this functions will return times > baseTime and < endTime
+            DateTime nextOccurrenceTime = _crontabSchedule.GetNextOccurrences(((DateTimeOffset)lastTriggerTime).DateTime, DateTimeOffset.Now.DateTime).LastOrDefault();
+            if (nextOccurrenceTime == default)
             {
-                // this functions will return times > baseTime and < endTime
-                DateTime nextOccurrenceTime = _crontabSchedule.GetNextOccurrences(((DateTimeOffset)lastTriggerEndTime).DateTime, nextTriggerEndTime.DateTime).LastOrDefault();
-                if (nextOccurrenceTime == default)
-                {
-                    return null;
-                }
-
-                DateTimeOffset nextOccurrenceOffsetTime = DateTime.SpecifyKind(nextOccurrenceTime, DateTimeKind.Utc);
-
-                nextTriggerEndTime = nextOccurrenceOffsetTime;
+                return null;
             }
 
-            if (nextTriggerEndTime > _endTime)
-            {
-                nextTriggerEndTime = (DateTimeOffset)_endTime;
-            }
+            DateTimeOffset nextOccurrenceOffsetTime = DateTime.SpecifyKind(nextOccurrenceTime, DateTimeKind.Utc);
 
-            return nextTriggerEndTime;
+            return nextOccurrenceOffsetTime;
         }
 
         /// <summary>

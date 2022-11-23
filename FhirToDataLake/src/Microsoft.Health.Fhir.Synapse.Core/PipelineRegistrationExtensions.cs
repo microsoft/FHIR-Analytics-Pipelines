@@ -69,7 +69,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
                     services.AddSingleton<ISchedulerService, DicomSchedulerService>();
 
-                    services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<AzureStorageJobInfo>>();
+                    services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<DicomToDataLakeAzureStorageJobInfo>>();
                     break;
                 default:
                     throw new ConfigurationErrorException($"Data source type {dataSourceConfiguration.Type} is not supported");

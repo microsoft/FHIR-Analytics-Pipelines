@@ -30,7 +30,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IDicomDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IQueueClient _queueClient;
-        private readonly IMetadataStore _metadataStore;
         private readonly int _maxJobCountInRunningPool;
         private readonly ILogger<DicomToDataLakeOrchestratorJob> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
@@ -45,7 +44,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IDicomDataClient dataClient,
             IDataWriter dataWriter,
             IQueueClient queueClient,
-            IMetadataStore metadataStore,
             int maxJobCountInRunningPool,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
@@ -57,7 +55,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
-            _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
             _maxJobCountInRunningPool = maxJobCountInRunningPool;
