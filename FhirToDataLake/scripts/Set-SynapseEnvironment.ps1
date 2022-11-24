@@ -89,7 +89,7 @@ elseif ($DataSourceType -eq "DICOM")
 }
 else
 {
-    throw "The data source type '$dataSourceType' is not supported."
+    throw "The data source type '$DataSourceType' is not supported."
 }
 
 function Start-Retryable-Job {
@@ -414,7 +414,7 @@ function Get-CustomizedSchemaType {
 }
 
 function Get-CustomizedTableSql {
-    param ([string]$schemaType, [PSCustomObject]$schemaObject)
+    param ([string]$schemaType, [PSCustomObject]$schemaObject, [string]$dataSourceType)
 
     $customizedTableProperties = ""
     foreach ($property in $schemaObject.properties.psobject.properties){
@@ -433,7 +433,7 @@ function Get-CustomizedTableSql {
         $customizedTableProperties += "    [$($property.Name)] $sqlType,"
     }
 
-    $dataSource = $DataSourceType.ToLower()
+    $dataSource = $dataSourceType.ToLower()
     $createCustomizedTableSql = "CREATE EXTERNAL TABLE [$dataSource].[$schemaType] (
         $customizedTableProperties
         ) WITH (
@@ -447,7 +447,7 @@ function Get-CustomizedTableSql {
 
 function New-CustomizedTables
 {
-    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$customizedSchemaDirectory)
+    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$customizedSchemaDirectory, [string]$dataSourceType)
 
     $schemaFiles = Get-ChildItem -Path $(Join-Path -Path $customizedSchemaDirectory -ChildPath *) -Include '*.schema.json' -Name
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
@@ -475,7 +475,7 @@ function New-CustomizedTables
         $resourceType = $schemaFile.Substring(0, $schemaFile.IndexOf('.schema.json'))
         $schemaType = Get-CustomizedSchemaType -resourceType $resourceType
     
-        $sql = Get-CustomizedTableSql -schemaType $schemaType -schemaObject $schemaObject -ErrorAction stop
+        $sql = Get-CustomizedTableSql -schemaType $schemaType -schemaObject $schemaObject -dataSourceType $dataSourceType -ErrorAction stop
 
         Write-Host "Begin to create customized table for $schemaType" -ForegroundColor Green 
         Start-Job -Name $JobName -ScriptBlock{
@@ -632,7 +632,8 @@ if ($CustomizedSchemaImage) {
             -serviceEndpoint $synapseSqlServerEndpoint `
             -databaseName $Database `
             -masterKey $MasterKey `
-            -customizedSchemaDirectory $customizedSchemaDirectory
+            -customizedSchemaDirectory $customizedSchemaDirectory `
+            -dataSourceType $DataSourceType
     }
     catch{
         Write-Host "Create TABLEs for customized schema data failed, will try to drop database '$Database'." -ForegroundColor Red
