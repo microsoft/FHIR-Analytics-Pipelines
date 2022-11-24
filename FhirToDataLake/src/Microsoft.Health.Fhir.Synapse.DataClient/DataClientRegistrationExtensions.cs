@@ -14,7 +14,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
-using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;

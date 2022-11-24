@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
@@ -26,7 +27,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             IApiDataClient dicomApiDataClient,
             IDiagnosticLogger diagnosticLogger,
             ILogger<DicomServerHealthChecker> logger)
-            : base(HealthCheckTypes.FhirServiceCanRead, false, diagnosticLogger, logger)
+            : base(HealthCheckTypes.DicomServiceCanRead, false, diagnosticLogger, logger)
         {
             _dicomDataClient = EnsureArg.IsNotNull(dicomApiDataClient, nameof(dicomApiDataClient));
 
@@ -49,7 +50,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             }
             catch (Exception e)
             {
-                Logger.LogInformation(e, $"Health check component {HealthCheckTypes.FhirServiceCanRead}: read DICOM server failed: {e}.");
+                Logger.LogInformation(e, $"Health check component {HealthCheckTypes.DicomServiceCanRead}: read DICOM server failed: {e}.");
 
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
                 healthCheckResult.ErrorMessage = "Read from DICOM server failed." + e.Message;

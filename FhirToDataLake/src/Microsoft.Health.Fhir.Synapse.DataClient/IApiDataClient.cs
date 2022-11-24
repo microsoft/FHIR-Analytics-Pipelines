@@ -5,8 +5,9 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Models
+namespace Microsoft.Health.Fhir.Synapse.DataClient
 {
     public interface IApiDataClient
     {

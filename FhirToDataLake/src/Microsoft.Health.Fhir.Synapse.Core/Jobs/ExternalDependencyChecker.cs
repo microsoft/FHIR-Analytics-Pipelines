@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models;
@@ -149,14 +150,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             try
             {
-                // Ensure we can search from the source Api server.
+                // Ensure we can search from the source API server.
                 await _apiDataClient.SearchAsync(searchOptions, cancellationToken);
-                _logger.LogInformation("[External Dependency Check] The source Api server is ready.");
+                _logger.LogInformation("[External Dependency Check] The source API server is ready.");
             }
             catch (Exception ex)
             {
-                _logger.LogInformation($"[External Dependency Check] The source Api server is not accessible: {ex.Message}.");
-                _diagnosticLogger.LogError($"The source Api serveris not accessible: {ex.Message}.");
+                _logger.LogInformation($"[External Dependency Check] The source API server is not accessible: {ex.Message}.");
+                _diagnosticLogger.LogError($"The source API server is not accessible: {ex.Message}.");
                 return false;
             }
 
