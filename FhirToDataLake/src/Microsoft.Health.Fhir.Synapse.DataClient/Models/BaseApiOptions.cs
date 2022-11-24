@@ -4,11 +4,10 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using Microsoft.Health.Fhir.Synapse.Common;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
+namespace Microsoft.Health.Fhir.Synapse.DataClient.Models
 {
-    public class BaseDicomApiOptions
+    public class BaseApiOptions
     {
         public List<KeyValuePair<string, string>> QueryParameters { get; set; } = null;
 

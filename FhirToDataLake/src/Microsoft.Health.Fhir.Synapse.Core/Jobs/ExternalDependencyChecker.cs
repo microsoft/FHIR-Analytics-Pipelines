@@ -11,10 +11,14 @@ using EnsureThat;
 using Microsoft.Azure.ContainerRegistry;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.ContainerRegistry;
@@ -26,7 +30,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class ExternalDependencyChecker : IExternalDependencyChecker
     {
         private readonly IAzureBlobContainerClient _blobContainerClient;
-        private readonly IFhirDataClient _fhirApiDataClient;
+        private readonly DataSourceType _dataSourceType;
+        private readonly IApiDataClient _apiDataClient;
 
         private readonly string _filterImageReference;
         private readonly string _schemaImageReference;
@@ -38,17 +43,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private const string MediaTypeV2Manifest = "application/vnd.docker.distribution.manifest.v2+json";
 
         public ExternalDependencyChecker(
-            IFhirDataClient fhirApiDataClient,
+            IApiDataClient apiDataClient,
             IAzureBlobContainerClientFactory azureBlobContainerClientFactory,
             IContainerRegistryTokenProvider containerRegistryTokenProvider,
             IOptions<FilterLocation> filterLocation,
             IOptions<SchemaConfiguration> schemaConfiguration,
             IOptions<JobConfiguration> jobConfiguration,
             IOptions<DataLakeStoreConfiguration> storeConfiguration,
+            IOptions<DataSourceConfiguration> dataSourceConfiguration,
             IDiagnosticLogger diagnosticLogger,
             ILogger<ExternalDependencyChecker> logger)
         {
-            _fhirApiDataClient = EnsureArg.IsNotNull(fhirApiDataClient, nameof(fhirApiDataClient));
+            _apiDataClient = EnsureArg.IsNotNull(apiDataClient, nameof(apiDataClient));
             EnsureArg.IsNotNull(azureBlobContainerClientFactory, nameof(azureBlobContainerClientFactory));
             _blobContainerClient = azureBlobContainerClientFactory.Create(storeConfiguration.Value.StorageUrl, jobConfiguration.Value.ContainerName);
 
@@ -60,6 +66,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             EnsureArg.IsNotNull(schemaConfiguration, nameof(schemaConfiguration));
             _schemaImageReference = schemaConfiguration.Value.EnableCustomizedSchema ? schemaConfiguration.Value.SchemaImageReference : null;
 
+            EnsureArg.IsNotNull(dataSourceConfiguration, nameof(dataSourceConfiguration));
+            _dataSourceType = dataSourceConfiguration.Value.Type;
+
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
@@ -68,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             bool isBlobReady = IsBlobContainerReady();
 
-            bool isFhirServerReady = await IsFhirDataClientReady(cancellationToken);
+            bool isApiServerReady = await IsApiDataClientReady(cancellationToken);
 
             bool isFilterAcrReady = true;
             if (!string.IsNullOrWhiteSpace(_filterImageReference))
@@ -82,7 +91,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 isSchemaAcrReady = await IsAzureContainerRegistryReady(_schemaImageReference, cancellationToken);
             }
 
-            bool isReady = isBlobReady && isFhirServerReady && isFilterAcrReady && isSchemaAcrReady;
+            bool isReady = isBlobReady && isApiServerReady && isFilterAcrReady && isSchemaAcrReady;
 
             if (isReady)
             {
@@ -113,26 +122,44 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return isReady;
         }
 
-        private async Task<bool> IsFhirDataClientReady(CancellationToken cancellationToken)
+        private async Task<bool> IsApiDataClientReady(CancellationToken cancellationToken)
         {
-            // TODO DICOM: health check
-            /*var queryParameters = new List<KeyValuePair<string, string>>
+            BaseApiOptions searchOptions;
+            switch (_dataSourceType)
             {
-                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString("d")),
-            };
-            var searchOptions = new BaseSearchOptions("Patient", queryParameters);
+                case DataSourceType.FHIR:
+                    var fhirQueryParameters = new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString("d")),
+                    };
+                    searchOptions = new BaseSearchOptions("Patient", fhirQueryParameters);
+                    break;
+                case DataSourceType.DICOM:
+                    var dicomQueryParameters = new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{false}"),
+                    };
+                    searchOptions = new ChangeFeedLatestOptions(dicomQueryParameters);
+                    break;
+                default:
+                    // Should not happend.
+                    _logger.LogInformation($"[External Dependency Check] Unsupported data source type: {_dataSourceType}");
+                    _diagnosticLogger.LogError($"Unsupported data source type: {_dataSourceType}");
+                    return false;
+            }
+
             try
             {
-                // Ensure we can search from FHIR server.
-                await _fhirApiDataClient.SearchAsync(searchOptions, cancellationToken);
-                _logger.LogInformation("[External Dependency Check] Fhir server is ready.");
+                // Ensure we can search from the source API server.
+                await _apiDataClient.SearchAsync(searchOptions, cancellationToken);
+                _logger.LogInformation("[External Dependency Check] The source API server is ready.");
             }
             catch (Exception ex)
             {
-                _logger.LogInformation($"[External Dependency Check] Fhir server is not accessible: {ex.Message}.");
-                _diagnosticLogger.LogError($"Fhir server is not accessible: {ex.Message}.");
+                _logger.LogInformation($"[External Dependency Check] The source API server is not accessible: {ex.Message}.");
+                _diagnosticLogger.LogError($"The source API server is not accessible: {ex.Message}.");
                 return false;
-            }*/
+            }
 
             return true;
         }

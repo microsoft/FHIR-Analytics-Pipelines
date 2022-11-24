@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
-using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck

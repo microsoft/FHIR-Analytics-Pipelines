@@ -16,15 +16,14 @@ using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
-using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Polly.CircuitBreaker;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 {
-    public sealed class FhirApiDataClient : IFhirDataClient
+    public sealed class FhirApiDataClient : IApiDataClient
     {
         private readonly IApiDataSource _fhirApiDataSource;
         private readonly HttpClient _httpClient;
@@ -60,7 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         }
 
         public async Task<string> SearchAsync(
-            BaseFhirApiOptions fhirApiOptions,
+            BaseApiOptions fhirApiOptions,
             CancellationToken cancellationToken = default)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -107,7 +106,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             return await GetResponseFromHttpRequestAsync(searchUri, accessToken, cancellationToken);
         }
 
-        public string Search(BaseFhirApiOptions fhirApiOptions)
+        public string Search(BaseApiOptions fhirApiOptions)
         {
             if (fhirApiOptions.IsAccessTokenRequired && _fhirApiDataSource.Authentication == AuthenticationType.ManagedIdentity)
             {
@@ -132,7 +131,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             return GetResponseFromHttpRequest(searchUri);
         }
 
-        private Uri CreateSearchUri(BaseFhirApiOptions fhirApiOptions)
+        private Uri CreateSearchUri(BaseApiOptions fhirApiOptions)
         {
             string serverUrl = _fhirApiDataSource.ServerUrl;
 

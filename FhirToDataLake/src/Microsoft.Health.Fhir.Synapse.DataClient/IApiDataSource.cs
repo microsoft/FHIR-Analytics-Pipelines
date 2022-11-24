@@ -5,7 +5,7 @@
 
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
+namespace Microsoft.Health.Fhir.Synapse.DataClient
 {
     public interface IApiDataSource
     {

@@ -36,7 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class DicomToDataLakeProcessingJob : IJob
     {
         private readonly DicomToDataLakeProcessingJobInputData _inputData;
-        private readonly IDicomDataClient _dataClient;
+        private readonly IApiDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
@@ -59,7 +59,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public DicomToDataLakeProcessingJob(
             long jobId,
             DicomToDataLakeProcessingJobInputData inputData,
-            IDicomDataClient dataClient,
+            IApiDataClient dataClient,
             IDataWriter dataWriter,
             IColumnDataProcessor parquetDataProcessor,
             ISchemaManager<ParquetSchemaNode> schemaManager,
