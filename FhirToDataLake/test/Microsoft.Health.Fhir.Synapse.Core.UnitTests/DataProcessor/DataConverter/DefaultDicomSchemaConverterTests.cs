@@ -44,11 +44,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
 
         public static IEnumerable<object[]> GetInvalidDataContents()
         {
+            // Input data should not be null
             yield return new object[]
             {
                 null,
             };
 
+            // Value should not be null
             yield return new object[]
             {
                 new JObject
@@ -59,6 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 },
             };
 
+            // Value should be JObject
             yield return new object[]
             {
                 new JObject
@@ -69,12 +72,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 },
             };
 
+            // Value object should contain a child object "vr"
             yield return new object[]
             {
                 new JObject
                 {
                     {
                         "00080018", new JObject()
+                    },
+                },
+            };
+
+            // Value of current internal tags should be JProperty
+            yield return new object[]
+            {
+                new JObject
+                {
+                    {
+                        "_timestamp", new JObject { new JProperty("vr", "string") }
                     },
                 },
             };
