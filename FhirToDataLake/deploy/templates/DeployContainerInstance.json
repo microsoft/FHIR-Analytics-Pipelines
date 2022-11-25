@@ -306,7 +306,7 @@
       },
       {
         "type": "Microsoft.Resources/deployments",
-        condition": "[parameters('authentication')]"
+        "condition": "[parameters('authentication')]",
         "apiVersion": "2020-10-01",
         "name": "[guid(uniqueString('fhirServerRoleAssignment'))]",
         "dependsOn": [
