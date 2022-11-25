@@ -407,7 +407,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             DateTimeOffset? nextTriggerTime = GetNextTriggerTime(currentTriggerEntity.TriggerEndTime);
 
-            if (nextTriggerTime != null )
+            if (nextTriggerTime != null)
             {
                 long latestSequence = await GetDicomLatestSequence(cancellationToken);
 
@@ -461,7 +461,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 0,
                 StartOffset = InitialStartOffset,
-                EndOffset = await GetDicomLatestSequence(cancellationToken),
+                EndOffset = latestSequence,
             };
 
             // add the initial trigger entity to table
