@@ -22,7 +22,7 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
+namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api.Fhir
 {
     public class FhirApiDataClientTests
     {
@@ -76,7 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var metadataOption = new MetadataOptions();
             string metaData = client.Search(metadataOption);
 
-            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile), metaData);
+            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.R4MetadataFile), metaData);
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var metadataOption = new MetadataOptions();
             string metaData = await client.SearchAsync(metadataOption);
 
-            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile), metaData);
+            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.R4MetadataFile), metaData);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
             string bundle1 = await client.SearchAsync(searchOptions);
 
-            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
+            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile1), bundle1);
 
             // Get continuation token
             JObject bundleJObject = JObject.Parse(bundle1);
@@ -130,7 +130,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 
             string bundle2 = await client.SearchAsync(searchOptions);
 
-            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile2), bundle2);
+            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile2), bundle2);
         }
 
         [Theory]
@@ -154,7 +154,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
             string bundle1 = await client.SearchAsync(searchOptions);
 
-            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
+            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile1), bundle1);
 
             // Get continuation token
             JObject bundleJObject = JObject.Parse(bundle1);
@@ -164,7 +164,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
 
             string bundle2 = await client.SearchAsync(searchOptions);
 
-            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile2), bundle2);
+            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile2), bundle2);
         }
 
         [Fact]
@@ -173,7 +173,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             FhirApiDataClient client = CreateDataClient(FhirServerUri, _mockTokenCredentialProvider);
             var searchOptions = new BaseSearchOptions(SampleResourceType, null);
             string bundle1 = await client.SearchAsync(searchOptions);
-            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
+            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile1), bundle1);
         }
 
         [Fact]
@@ -217,7 +217,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var searchOptions = new ResourceIdSearchOptions("MedicationRequest", "3123", null);
             string bundle1 = await client.SearchAsync(searchOptions);
 
-            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
+            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile1), bundle1);
         }
 
         [Fact]
@@ -233,7 +233,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             var searchOptions = new CompartmentSearchOptions("Patient", "347", "*", queryParameters);
             string bundle1 = await client.SearchAsync(searchOptions);
 
-            Assert.Equal(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1), bundle1);
+            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile1), bundle1);
         }
 
         private FhirApiDataClient CreateDataClient(string fhirServerUrl, ITokenCredentialProvider mockProvider, IApiDataSource dataSource = null)
@@ -243,31 +243,31 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
             Dictionary<string, HttpResponseMessage> requestMap = new Dictionary<string, HttpResponseMessage>(comparer);
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000",
-                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
+                CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&ct=Y29udGludWF0aW9udG9rZW4%3d",
-                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile2)));
+                CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile2)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&ct=invalidresponsetest",
-                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidResponseFile)));
+                CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.InvalidResponseFile)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/Patient?_lastUpdated=ge2021-08-01T12%3A00%3A00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3A40%3A59%2b08%3a00&_count=1000&ct=invalidbundletest",
-                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidBundleFile)));
+                CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.InvalidBundleFile)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/Patient?_count=1000",
-                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
+                CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/MedicationRequest?_id=3123",
-                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
+                CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/Patient/347/*?_lastUpdated=ge2021-08-01T12%3a00%3a00%2b08%3a00&_lastUpdated=lt2021-08-09T12%3a40%3a59%2b08%3a00&_count=1000",
-                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
+                CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile1)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/metadata",
-                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile)));
+                CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.R4MetadataFile)));
             requestMap.Add(
                 $"{fhirServerUrl.TrimEnd('/')}/Patient",
-                CreateResponseMessage(TestDataProvider.GetBundleFromFile(TestDataConstants.BundleFile1)));
+                CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile1)));
 
             dataSource ??= CreateFhirApiDataSource(fhirServerUrl, AuthenticationType.ManagedIdentity);
 

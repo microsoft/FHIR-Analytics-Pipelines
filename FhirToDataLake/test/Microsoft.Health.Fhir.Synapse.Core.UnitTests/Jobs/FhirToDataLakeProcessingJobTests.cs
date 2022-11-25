@@ -62,7 +62,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var blobClient = new InMemoryBlobContainerClient();
 
-            FhirToDataLakeProcessingJob job = GetFhirToDataLakeProcessingJob(1L, GetInputData(), TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile1), containerName, blobClient, filterConfiguration);
+            FhirToDataLakeProcessingJob job = GetFhirToDataLakeProcessingJob(1L, GetInputData(), TestDataProvider.GetDataFromFile(TestDataConstants.PatientBundleFile1), containerName, blobClient, filterConfiguration);
 
             string resultString = await job.ExecuteAsync(progress, CancellationToken.None);
             var result = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(resultString);
@@ -142,7 +142,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var dataClient = Substitute.For<IApiDataClient>();
 
             // Get bundle from next link
-            string nextBundle = TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile2);
+            string nextBundle = TestDataProvider.GetDataFromFile(TestDataConstants.PatientBundleFile2);
             dataClient.SearchAsync(default).ReturnsForAnyArgs(firstBundle, nextBundle);
             return dataClient;
         }

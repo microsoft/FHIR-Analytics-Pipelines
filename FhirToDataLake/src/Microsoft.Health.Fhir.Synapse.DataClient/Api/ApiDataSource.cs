@@ -26,11 +26,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
             switch (dataSourceType)
             {
                 case DataSourceType.FHIR:
-                    ServerUrl = AddSlashForUrl(config.Value.FhirServer?.ServerUrl);
+                    ServerUrl = AddSlashForUrl(
+                        EnsureArg.IsNotNullOrEmpty(config.Value.FhirServer.ServerUrl, nameof(config.Value.FhirServer.ServerUrl)));
                     Authentication = config.Value.FhirServer.Authentication;
                     break;
                 case DataSourceType.DICOM:
-                    var dicomServerUrl = AddSlashForUrl(config.Value.DicomServer?.ServerUrl);
+                    var dicomServerUrl = AddSlashForUrl(
+                        EnsureArg.IsNotNullOrEmpty(config.Value.DicomServer.ServerUrl, nameof(config.Value.DicomServer.ServerUrl)));
                     ServerUrl = $"{dicomServerUrl}{DicomApiConstants.VersionMap[config.Value.DicomServer.Version]}/";
                     Authentication = config.Value.DicomServer.Authentication;
                     break;

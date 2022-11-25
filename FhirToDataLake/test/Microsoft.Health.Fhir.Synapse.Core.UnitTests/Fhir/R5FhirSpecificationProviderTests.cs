@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
 
             var metadataOptions = new MetadataOptions();
             dataClient.Search(metadataOptions)
-                .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.R5MetadataFile));
+                .ReturnsForAnyArgs(x => TestDataProvider.GetDataFromFile(TestDataConstants.R5MetadataFile));
 
             _r5FhirSpecificationProvider = new R5FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR5FhirSpecificationProviderLogger);
         }

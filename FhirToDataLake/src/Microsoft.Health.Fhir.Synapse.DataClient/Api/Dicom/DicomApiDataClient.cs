@@ -103,7 +103,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
 
         public string Search(BaseApiOptions serverApiOptions)
         {
-            return SearchAsync(serverApiOptions).Result;
+            _diagnosticLogger.LogError("Synchronous search is not supported in DICOM.");
+            _logger.LogInformation("Synchronous search is not supported in DICOM.");
+            throw new ApiSearchException("Synchronous search is not supported in DICOM.");
         }
 
         private Uri CreateSearchUri(BaseApiOptions dicomApiOptions)
@@ -114,7 +116,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
 
             var uri = new Uri(baseUri, dicomApiOptions.RelativeUri());
 
-            // the query parameters is null for metadata
             if (dicomApiOptions.QueryParameters == null)
             {
                 return uri;
