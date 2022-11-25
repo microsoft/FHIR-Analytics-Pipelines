@@ -39,27 +39,45 @@
             "description": "The name of the container instance that you wish to create."
         }
     },
-    "fhirServerUrl": {
+    "dataSourceType": {
         "type": "string",
+        "defaultValue": "FHIR",
+        "allowedValues": ["FHIR", "DICOM"],
         "metadata": {
-            "description": "The fhir server endpoint you wish to get data."
+            "description": "The source API server type you wish to get data."
         }
     },
-    "authentication": {
-        "type": "bool",
-        "defaultValue": false,
-        "allowedValues": [
-        true,
-        false
-        ],
+    "fhirServerUrl": {
+        "type": "string",
+        "defaultValue": "",
         "metadata": {
-            "description": "Whether to access Azure API for FHIR with managed identity authentication. Set false if you are using an OSS public FHIR server instance."
+            "description": "The fhir server endpoint you wish to get data."
         }
     },
     "fhirVersion": {
         "type": "string",
         "defaultValue": "R4",
         "allowedValues": ["R4"]
+    },
+    "dicomServerUrl": {
+        "type": "string",
+        "defaultValue": "",
+        "metadata": {
+            "description": "The dicom server endpoint you wish to get data."
+        }
+    },
+    "dicomApiVersion": {
+        "type": "string",
+        "defaultValue": "V1",
+        "allowedValues": ["V1"]
+    },
+    "serverAuthentication": {
+        "type": "string",
+        "defaultValue": "None",
+        "allowedValues": ["None", "ManagedIdentity"],
+        "metadata": {
+            "description": "Then authentication to access source API server. Set None if you are using an public server API instance."
+        }
     },
     "dataStart": {
         "type": "string",
@@ -176,6 +194,8 @@
     "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
     "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
     "customizedSchemaImageReference": "[toLower(parameters('customizedSchemaImageReference'))]",
+    "deployDicomToDatalake": "[equals(parameters('dataSourceType'), 'DICOM')]",
+    "deployFhirToDatalake": "[equals(parameters('dataSourceType'), 'FHIR')]",
     "pipelineContainerName": "fhir-to-datalake"
   },
   "resources": [
@@ -320,15 +340,31 @@
                 },
                 {
                     "name": "fhirServer__serverUrl",
-                    "value": "[parameters('fhirServerUrl')]"
+                    "value": "[if(variables('deployFhirToDatalake'), parameters('fhirServerUrl'), '')]"
                 },
                 {
                     "name": "fhirServer__version",
-                    "value": "[parameters('fhirVersion')]"
+                    "value": "[if(variables('deployFhirToDatalake'), parameters('fhirVersion'), '')]"
                 },
                 {
                     "name": "fhirServer__authentication",
-                    "value": "[if(parameters('authentication'), 'ManagedIdentity', 'None')]"
+                    "value": "[if(variables('deployFhirToDatalake'), parameters('serverAuthentication'), '')]"
+                },
+                {
+                    "name": "dataSource__type",
+                    "value": "[parameters('dataSourceType')]"
+                },
+                {
+                    "name": "dataSource__dicomServer__serverUrl",
+                    "value": "[if(variables('deployDicomToDatalake'), parameters('dicomServerUrl'), '')]"
+                },
+                {
+                    "name": "dataSource__dicomServer__version",
+                    "value": "[if(variables('deployDicomToDatalake'), parameters('dicomApiVersion'), '')]"
+                },
+                {
+                    "name": "dataSource__dicomServer__authentication",
+                    "value": "[if(variables('deployDicomToDatalake'), parameters('serverAuthentication'), '')]"
                 }
               ],
               "resources": {
