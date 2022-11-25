@@ -239,7 +239,7 @@
       
       "fhirServerFullName" : "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
       "fhirServerWorkspace" : "[split(variables('fhirServerFullName'), '-')[0]]",
-      "fhirServerName": "[substring(variables('fhirServerFullName'),add(length(variables('fhirServerWorkspace')), 1))]",
+      "fhirServerName": "[if(parameters('authentication'), substring(variables('fhirServerFullName'),add(length(variables('fhirServerWorkspace')), 1)), '')]",
       "filterACRName" : "[split(parameters('filterConfigImageReference'),'.')[0]]",
       "schemaACRName" : "[split(parameters('customizedSchemaImageReference'), '.')[0]]",
       "fhirDataReaderRoleId": "[concat('/subscriptions/', parameters('fhirServerSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
@@ -306,6 +306,7 @@
       },
       {
         "type": "Microsoft.Resources/deployments",
+        condition": "[parameters('authentication')]"
         "apiVersion": "2020-10-01",
         "name": "[guid(uniqueString('fhirServerRoleAssignment'))]",
         "dependsOn": [
