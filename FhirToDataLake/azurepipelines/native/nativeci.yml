@@ -23,11 +23,11 @@ stages:
     steps:
     - template: build-windows-native-libs.yml
 
+- stage: PublishNuget
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
   - job: PackNugets
     pool:
       vmImage: 'ubuntu-latest'
-    dependsOn:
-    - BuildLinuxNuget
-    - BuildWindowsNuget
     steps:
     - template: pack-nugets.yml
