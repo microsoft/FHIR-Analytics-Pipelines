@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
-namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
+namespace Microsoft.Health.Fhir.Synapse.HealthCheck
 {
     public interface IHealthChecker
     {

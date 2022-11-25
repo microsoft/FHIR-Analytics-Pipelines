@@ -17,12 +17,12 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
-using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
 using Polly.CircuitBreaker;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
 {
-    public class DicomApiDataClient : IDicomDataClient
+    public class DicomApiDataClient : IApiDataClient
     {
         private readonly IApiDataSource _dicomApiDataSource;
         private readonly HttpClient _httpClient;
@@ -56,7 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
         }
 
         public async Task<string> SearchAsync(
-            BaseDicomApiOptions dicomApiOptions,
+            BaseApiOptions dicomApiOptions,
             CancellationToken cancellationToken = default)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -101,7 +101,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
             return await GetResponseFromHttpRequestAsync(searchUri, accessToken, cancellationToken);
         }
 
-        private Uri CreateSearchUri(BaseDicomApiOptions dicomApiOptions)
+        public string Search(BaseApiOptions serverApiOptions)
+        {
+            return SearchAsync(serverApiOptions).Result;
+        }
+
+        private Uri CreateSearchUri(BaseApiOptions dicomApiOptions)
         {
             string serverUrl = _dicomApiDataSource.ServerUrl;
 

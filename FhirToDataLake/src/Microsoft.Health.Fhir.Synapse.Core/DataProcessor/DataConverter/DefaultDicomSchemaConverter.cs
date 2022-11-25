@@ -93,7 +93,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 var subNode = subNodePair.Value;
 
                 // Handle our additional self-defined properties that have specific prefix.
-                if (subNodeKeyword[0] == DicomConstants.AdditionalColumnPrefix)
+                if (subNodeKeyword != null && subNodeKeyword[0] == DicomConstants.AdditionalColumnPrefix)
                 {
                     if (subNode.IsRepeated)
                     {

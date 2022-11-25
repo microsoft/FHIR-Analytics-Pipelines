@@ -11,49 +11,49 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
-using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 {
-    public class FhirServerHealthChecker : BaseHealthChecker
+    public class DicomServerHealthChecker : BaseHealthChecker
     {
-        private const string SampleResourceType = "Patient";
-        private readonly IApiDataClient _fhirApiDataClient;
-        private readonly BaseSearchOptions _searchOptions;
+        private readonly IApiDataClient _dicomDataClient;
+        private readonly BaseApiOptions _dicomApiOptions;
 
-        public FhirServerHealthChecker(
-            IApiDataClient fhirApiDataClient,
+        public DicomServerHealthChecker(
+            IApiDataClient dicomApiDataClient,
             IDiagnosticLogger diagnosticLogger,
-            ILogger<FhirServerHealthChecker> logger)
-            : base(HealthCheckTypes.FhirServiceCanRead, false, diagnosticLogger, logger)
+            ILogger<DicomServerHealthChecker> logger)
+            : base(HealthCheckTypes.DicomServiceCanRead, false, diagnosticLogger, logger)
         {
-            _fhirApiDataClient = EnsureArg.IsNotNull(fhirApiDataClient, nameof(fhirApiDataClient));
+            _dicomDataClient = EnsureArg.IsNotNull(dicomApiDataClient, nameof(dicomApiDataClient));
 
             var queryParameters = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString("d")),
+                new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{false}"),
             };
 
-            _searchOptions = new BaseSearchOptions(SampleResourceType, queryParameters);
+            _dicomApiOptions = new ChangeFeedLatestOptions(queryParameters);
         }
 
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
-            var healthCheckResult = new HealthCheckResult(HealthCheckTypes.FhirServiceCanRead);
+            var healthCheckResult = new HealthCheckResult(HealthCheckTypes.DicomServiceCanRead);
 
             try
             {
-                // Ensure we can search from FHIR server.
-                await _fhirApiDataClient.SearchAsync(_searchOptions, cancellationToken);
+                // Ensure we can search from DICOM server.
+                await _dicomDataClient.SearchAsync(_dicomApiOptions, cancellationToken);
             }
             catch (Exception e)
             {
-                Logger.LogInformation(e, $"Health check component {HealthCheckTypes.FhirServiceCanRead}: read FHIR server failed: {e}.");
+                Logger.LogInformation(e, $"Health check component {HealthCheckTypes.DicomServiceCanRead}: read DICOM server failed: {e}.");
 
                 healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
-                healthCheckResult.ErrorMessage = "Read from FHIR server failed." + e.Message;
+                healthCheckResult.ErrorMessage = "Read from DICOM server failed." + e.Message;
                 return healthCheckResult;
             }
 

@@ -137,9 +137,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 new NullLogger<FhirToDataLakeProcessingJob>());
         }
 
-        private static IFhirDataClient GetMockFhirDataClient(string firstBundle)
+        private static IApiDataClient GetMockFhirDataClient(string firstBundle)
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
 
             // Get bundle from next link
             string nextBundle = TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile2);

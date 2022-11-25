@@ -5,6 +5,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers;
 
@@ -41,7 +42,21 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                 services.AddSingleton<IHealthChecker, FilterAzureContainerRegistryHealthChecker>();
             }
 
-            services.AddSingleton<IHealthChecker, FhirServerHealthChecker>();
+            var dataSourceConfiguration = services
+                .BuildServiceProvider()
+                .GetRequiredService<IOptions<DataSourceConfiguration>>()
+                .Value;
+
+            switch (dataSourceConfiguration.Type)
+            {
+                case DataSourceType.FHIR:
+                    services.AddSingleton<IHealthChecker, FhirServerHealthChecker>(); break;
+                case DataSourceType.DICOM:
+                    services.AddSingleton<IHealthChecker, DicomServerHealthChecker>(); break;
+                default:
+                    break;
+            }
+
             services.AddSingleton<IHealthChecker, SchedulerServiceHealthChecker>();
             return services;
         }

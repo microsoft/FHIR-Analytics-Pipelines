@@ -9,10 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
+using Microsoft.Health.Fhir.Synapse.Core.Dicom;
 using Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
@@ -43,11 +45,20 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
         {
             var stream = new MemoryStream();
             byte[] bytes = { 1, 2, 3, 4, 5, 6 };
-            await stream.WriteAsync(bytes, 0, bytes.Length);
-            stream.Position = 0;
+            await stream.WriteAsync(bytes);
             const long jobId = 1L;
             int partIndex = 1;
+
+            IAzureBlobContainerClient containerClient = new AzureBlobContainerClientFactory(
+                new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
+                Options.Create(_storageConfiguration),
+                _diagnosticLogger,
+                new NullLoggerFactory())
+                .Create(LocalTestStorageUrl, TestContainerName);
+
+            // DataWriter for FHIR
             AzureBlobDataWriter dataWriter = GetLocalDataWriter();
+            stream.Position = 0;
             var streamData = new StreamBatchData(stream, 1, TestResourceType);
 
             string dateTimeKey = _testDate.ToString("yyyy/MM/dd");
@@ -55,11 +66,27 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             await dataWriter.WriteAsync(streamData, blobName);
 
-            IAzureBlobContainerClient containerClient = new AzureBlobContainerClientFactory(new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()), Options.Create(_storageConfiguration), _diagnosticLogger, new NullLoggerFactory()).Create(LocalTestStorageUrl, TestContainerName);
             Stream blobStream = await containerClient.GetBlobAsync($"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet");
             Assert.NotNull(blobStream);
 
             var resultStream = new MemoryStream();
+            await blobStream.CopyToAsync(resultStream);
+            Assert.Equal(bytes, resultStream.ToArray());
+
+            // DataWriter for DICOM
+            dataWriter = GetLocalDataWriter(DataSourceType.DICOM);
+            stream.Position = 0;
+            streamData = new StreamBatchData(stream, 1, "dicom");
+
+            var offset = 100;
+            blobName = $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/{DicomConstants.DicomResourceType}/{offset}/{DicomConstants.DicomResourceType}_{partIndex:d10}.parquet";
+
+            await dataWriter.WriteAsync(streamData, blobName);
+
+            blobStream = await containerClient.GetBlobAsync($"staging/{jobId:d20}/dicom/100/dicom_{partIndex:d10}.parquet");
+            Assert.NotNull(blobStream);
+
+            resultStream = new MemoryStream();
             await blobStream.CopyToAsync(resultStream);
             Assert.Equal(bytes, resultStream.ToArray());
         }
@@ -127,24 +154,37 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
 
             var stream = new MemoryStream();
             byte[] bytes = { 1, 2, 3, 4, 5, 6 };
-            await stream.WriteAsync(bytes, 0, bytes.Length);
-            stream.Position = 0;
+            await stream.WriteAsync(bytes);
             const long jobId = 1L;
             int partIndex = 1;
+
+            // DataWriter for FHIR
             AzureBlobDataWriter dataWriter = GetInMemoryDataWriter(blobClient);
 
+            stream.Position = 0;
             string blobName = $"staging/{jobId:d20}/Patient/2021/10/01/Patient_{partIndex:d10}.parquet";
             await blobClient.CreateBlobAsync(blobName, stream, CancellationToken.None);
-            bool blobExists = await blobClient.BlobExistsAsync(blobName, CancellationToken.None);
-            Assert.True(blobExists);
+            Assert.True(await blobClient.BlobExistsAsync(blobName, CancellationToken.None));
 
-            Exception exception = await Record.ExceptionAsync(async () => await dataWriter.CommitJobDataAsync(jobId, CancellationToken.None));
-            Assert.Null(exception);
-            blobExists = await blobClient.BlobExistsAsync(blobName, CancellationToken.None);
-            Assert.False(blobExists);
+            Assert.Null(await Record.ExceptionAsync(async () => await dataWriter.CommitJobDataAsync(jobId, CancellationToken.None)));
+            Assert.False(await blobClient.BlobExistsAsync(blobName, CancellationToken.None));
+
             string expectedBlobName = $"result/Patient/2021/10/01/{jobId:d20}/Patient_{partIndex:d10}.parquet";
-            blobExists = await blobClient.BlobExistsAsync(expectedBlobName, CancellationToken.None);
-            Assert.True(blobExists);
+            Assert.True(await blobClient.BlobExistsAsync(expectedBlobName, CancellationToken.None));
+
+            // DataWriter for DICOM
+            dataWriter = GetInMemoryDataWriter(blobClient, DataSourceType.DICOM);
+
+            stream.Position = 0;
+            blobName = $"staging/{jobId:d20}/dicom/100/dicom_{partIndex:d10}.parquet";
+            await blobClient.CreateBlobAsync(blobName, stream, CancellationToken.None);
+            Assert.True(await blobClient.BlobExistsAsync(blobName, CancellationToken.None));
+
+            Assert.Null(await Record.ExceptionAsync(async () => await dataWriter.CommitJobDataAsync(jobId, CancellationToken.None)));
+            Assert.False(await blobClient.BlobExistsAsync(blobName, CancellationToken.None));
+
+            expectedBlobName = $"result/dicom/100/{jobId:d20}/dicom_{partIndex:d10}.parquet";
+            Assert.True(await blobClient.BlobExistsAsync(expectedBlobName, CancellationToken.None));
         }
 
         private static IDataSink GetBrokenDataSink()
@@ -181,10 +221,10 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
                 Options.Create(jobConfig));
         }
 
-        private static AzureBlobDataWriter GetLocalDataWriter()
+        private static AzureBlobDataWriter GetLocalDataWriter(DataSourceType dataSourceType = DataSourceType.FHIR)
         {
             return new AzureBlobDataWriter(
-                Options.Create(new DataSourceConfiguration()),
+                Options.Create(new DataSourceConfiguration { Type = dataSourceType }),
                 new AzureBlobContainerClientFactory(
                     new DefaultTokenCredentialProvider(new NullLogger<DefaultTokenCredentialProvider>()),
                     Options.Create(_storageConfiguration),
@@ -194,13 +234,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
                 new NullLogger<AzureBlobDataWriter>());
         }
 
-        private static AzureBlobDataWriter GetInMemoryDataWriter(IAzureBlobContainerClient blobClient)
+        private static AzureBlobDataWriter GetInMemoryDataWriter(IAzureBlobContainerClient blobClient, DataSourceType dataSourceType = DataSourceType.FHIR)
         {
             var mockFactory = Substitute.For<IAzureBlobContainerClientFactory>();
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
 
             return new AzureBlobDataWriter(
-                Options.Create(new DataSourceConfiguration()),
+                Options.Create(new DataSourceConfiguration { Type = dataSourceType }),
                 mockFactory,
                 GetLocalDataSink(),
                 new NullLogger<AzureBlobDataWriter>());

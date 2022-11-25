@@ -30,7 +30,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
 
         public R5FhirSpecificationProviderTests()
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
 
             var metadataOptions = new MetadataOptions();
             dataClient.Search(metadataOptions)
@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
             Assert.Throws<ArgumentNullException>(
                 () => new R5FhirSpecificationProvider(null, _diagnosticLogger, _nullR5FhirSpecificationProviderLogger));
 
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
 
             Assert.Throws<ArgumentNullException>(
                 () => new R5FhirSpecificationProvider(dataClient, _diagnosticLogger, null));
@@ -54,7 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [Fact]
         public void GivenBrokenDataClient_WhenInitialize_ExceptionShouldBeThrown()
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
             dataClient.SearchAsync(default, default).ThrowsForAnyArgs(new ApiSearchException("mockException"));
 
             var provider = new R5FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR5FhirSpecificationProviderLogger);
@@ -69,7 +69,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [InlineData("{\"resourceType\": \"CapabilityStatement\",\"rest\": [{\"mode\":\"server\"}]}")]
         public void GivenInvalidMetadata_WhenInitialize_ExceptionShouldBeThrown(string metadataContent)
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
             dataClient.SearchAsync(default, default).ReturnsForAnyArgs(metadataContent);
 
             var provider = new R5FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR5FhirSpecificationProviderLogger);

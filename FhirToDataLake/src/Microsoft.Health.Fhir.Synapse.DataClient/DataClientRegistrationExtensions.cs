@@ -25,7 +25,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
         public static IServiceCollection AddDataSource(this IServiceCollection services)
         {
             services.AddSingleton<IApiDataSource, ApiDataSource>();
-            services.AddSingleton<IFhirDataClient, FhirApiDataClient>();
 
             var dataSourceConfiguration = services
                 .BuildServiceProvider()
@@ -35,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
             switch (dataSourceConfiguration.Type)
             {
                 case DataSourceType.FHIR:
-                    services.AddHttpClient<IFhirDataClient, FhirApiDataClient>(client =>
+                    services.AddHttpClient<IApiDataClient, FhirApiDataClient>(client =>
                     {
                         client.BaseAddress = new Uri(dataSourceConfiguration.FhirServer.ServerUrl);
                     })
@@ -45,7 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient
 
                     break;
                 case DataSourceType.DICOM:
-                    services.AddHttpClient<IDicomDataClient, DicomApiDataClient>(client =>
+                    services.AddHttpClient<IApiDataClient, DicomApiDataClient>(client =>
                     {
                         client.BaseAddress = new Uri(dataSourceConfiguration.DicomServer.ServerUrl);
                     })

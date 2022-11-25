@@ -31,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly IQueueClient _queueClient;
         private readonly IMetadataStore _metadataStore;
-        private readonly IDicomDataClient _dataClient;
+        private readonly IApiDataClient _dataClient;
         private readonly byte _queueType;
         private readonly ILogger<DicomSchedulerService> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
@@ -44,7 +44,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public DicomSchedulerService(
             IQueueClient queueClient,
             IMetadataStore metadataStore,
-            IDicomDataClient dataClient,
+            IApiDataClient dataClient,
             IOptions<JobConfiguration> jobConfiguration,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,

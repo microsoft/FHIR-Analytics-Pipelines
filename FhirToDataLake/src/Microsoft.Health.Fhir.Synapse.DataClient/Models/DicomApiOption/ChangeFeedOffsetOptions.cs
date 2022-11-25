@@ -8,7 +8,7 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption
 {
-    public class ChangeFeedOffsetOptions : BaseDicomApiOptions
+    public class ChangeFeedOffsetOptions : BaseApiOptions
     {
         public ChangeFeedOffsetOptions(List<KeyValuePair<string, string>> queryParameters)
         {
