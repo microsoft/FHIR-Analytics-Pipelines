@@ -181,7 +181,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 CheckJobStatus(jobInfo, "SystemScope_Patient_Observation.json");
 
                 // Check result files
-                Assert.Equal(10, await GetResultFileCount(_blobContainerClient, "result/Observation"));
+                Assert.Equal(15, await GetResultFileCount(_blobContainerClient, "result/Observation"));
                 Assert.Equal(3, await GetResultFileCount(_blobContainerClient, "result/Patient"));
             }
             finally
