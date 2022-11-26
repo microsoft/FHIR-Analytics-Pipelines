@@ -315,9 +315,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 CheckJobStatus(jobInfo, "GroupScope_AllPatient_Filters.json");
 
                 // Check result files
-                Assert.Equal(1, await GetResultFileCount(_blobContainerClient, "result/Patient/2022/07/01"));
-                Assert.Equal(1, await GetResultFileCount(_blobContainerClient, "result/Condition/2022/07/01"));
-                Assert.Equal(1, await GetResultFileCount(_blobContainerClient, "result/MedicationRequest/2022/07/01"));
+                Assert.Equal(2 await GetResultFileCount(_blobContainerClient, "result/Patient/2022/07/01"));
+                Assert.Equal(2, await GetResultFileCount(_blobContainerClient, "result/Condition/2022/07/01"));
+                Assert.Equal(2, await GetResultFileCount(_blobContainerClient, "result/MedicationRequest/2022/07/01"));
 
                 // Check patient version
                 Dictionary<string, long> patientVersions =
@@ -414,9 +414,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 CheckJobStatus(jobInfo, "GroupScope_AllPatient_Filters_part2.json");
 
                 // Check files
-                Assert.Equal(1, await GetResultFileCount(_blobContainerClient, "result/Patient"));
-                Assert.Equal(2, await GetResultFileCount(_blobContainerClient, "result/Condition"));
-                Assert.Equal(2, await GetResultFileCount(_blobContainerClient, "result/MedicationRequest"));
+                Assert.Equal(2, await GetResultFileCount(_blobContainerClient, "result/Patient"));
+                Assert.Equal(3, await GetResultFileCount(_blobContainerClient, "result/Condition"));
+                Assert.Equal(3, await GetResultFileCount(_blobContainerClient, "result/MedicationRequest"));
 
                 // check patient version
                 Dictionary<string, long> patientVersions =
