@@ -315,7 +315,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 CheckJobStatus(jobInfo, "GroupScope_AllPatient_Filters.json");
 
                 // Check result files
-                Assert.Equal(2 await GetResultFileCount(_blobContainerClient, "result/Patient/2022/07/01"));
+                Assert.Equal(2, await GetResultFileCount(_blobContainerClient, "result/Patient/2022/07/01"));
                 Assert.Equal(2, await GetResultFileCount(_blobContainerClient, "result/Condition/2022/07/01"));
                 Assert.Equal(2, await GetResultFileCount(_blobContainerClient, "result/MedicationRequest/2022/07/01"));
 
