@@ -1,7 +1,7 @@
 steps:
 - powershell: |
     $buildNumber = ([string]$(Build.BuildNumber)).replace('.', '')
-    $pipelineName = 'test' + $buildNumber.substring($buildNumber.length - 7)
+    $pipelineName = 'dicom' + $buildNumber.substring($buildNumber.length - 7)
 
     Write-Host $("Build number: " + $buildNumber)
     Write-Host $("Pipeline name: " + $pipelineName)
@@ -31,7 +31,7 @@ steps:
       # Update test running container instance 
       az container create `
         --resource-group $(resourceGroup) `
-        --name $(containerInstanceName) `
+        --name $(fhirToDatalakeInstanceName) `
         --image $env:CONTAINER_REGISTRY_SERVER/$(imageName):$(version) `
         --restart-policy Never `
         --cpu 2 --memory 4 `
@@ -127,7 +127,7 @@ steps:
       }
 
       # Stop Container Instance
-      az container stop --name $(containerInstanceName) --resource-group $(resourceGroup)
+      az container stop --name $(fhirToDatalakeInstanceName) --resource-group $(resourceGroup)
 
 - task: AzureCLI@2
   displayName: Get fhir service access token
