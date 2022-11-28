@@ -19,7 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 {
     public class AzureContainerRegistryHealthChecker : BaseHealthChecker
     {
-        private const string MediatypeV2Manifest = "application/vnd.docker.distribution.manifest.v2+json";
+        private const string ManifestMediatype = "application/vnd.oci.image.manifest.v1+json,application/vnd.docker.distribution.manifest.v2+json";
         private readonly string _imageReference;
         private readonly IContainerRegistryTokenProvider _containerRegistryTokenProvider;
         private readonly string _name;
@@ -49,7 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
                 var acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrClientCredentials(accessToken));
 
                 // Ensure we can read from acr.
-                await acrClient.Manifests.GetAsync(imageInfo.ImageName, imageInfo.Label, MediatypeV2Manifest, cancellationToken);
+                await acrClient.Manifests.GetAsync(imageInfo.ImageName, imageInfo.Label, ManifestMediatype, cancellationToken);
             }
             catch (Exception e)
             {
