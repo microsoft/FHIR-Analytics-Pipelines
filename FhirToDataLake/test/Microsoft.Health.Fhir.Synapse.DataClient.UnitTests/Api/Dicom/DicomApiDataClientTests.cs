@@ -67,6 +67,31 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api.Dicom
         }
 
         [Fact]
+        public void GivenHttpClientWithAcceptHeader_WhenInitialize_NoExceptionShouldBeThrown()
+        {
+            var dataSourceConfiguration = new DataSourceConfiguration
+            {
+                Type = DataSourceType.DICOM,
+                DicomServer = new DicomServerConfiguration
+                {
+                    ServerUrl = DicomServerUri,
+                },
+            };
+
+            var dataSource = new ApiDataSource(Options.Create(dataSourceConfiguration));
+
+            var httpClient = new HttpClient(new MockHttpMessageHandler(new Dictionary<string, HttpResponseMessage>()));
+            httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+
+            Assert.Null(Record.Exception(() => new DicomApiDataClient(dataSource, httpClient, _mockTokenCredentialProvider, _diagnosticLogger, _nullDicomApiDataClientLogger)));
+
+            httpClient = new HttpClient(new MockHttpMessageHandler(new Dictionary<string, HttpResponseMessage>()));
+            httpClient.DefaultRequestHeaders.Add("Accept", "application/dicom+json");
+
+            Assert.Null(Record.Exception(() => new DicomApiDataClient(dataSource, httpClient, _mockTokenCredentialProvider, _diagnosticLogger, _nullDicomApiDataClientLogger)));
+        }
+
+        [Fact]
         public async Task GivenAValidDataClient_WhenSearchLatestChangeFeedAsync_LatestChangeFeedShouldBeReturned()
         {
             DicomApiDataClient client = CreateDataClient(DicomServerUri, _mockTokenCredentialProvider);
@@ -139,11 +164,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api.Dicom
         {
             DicomApiDataClient client = CreateDataClient(DicomServerUri, _mockTokenCredentialProvider);
 
+            // changefeed/latest
             var changeFeedLatestOptions = new ChangeFeedLatestOptions(null);
             string changeFeed = await client.SearchAsync(changeFeedLatestOptions);
 
             Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile), changeFeed);
 
+            // changefeed
             var changeFeedOffsetOptions = new ChangeFeedOffsetOptions(null);
             string changeFeeds = await client.SearchAsync(changeFeedOffsetOptions);
 
@@ -225,7 +252,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api.Dicom
         {
             var response = new HttpResponseMessage(code)
             {
-                Content = new StringContent(body)
+                Content = new StringContent(body),
             };
             return response;
         }

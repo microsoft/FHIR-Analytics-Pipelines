@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
@@ -84,9 +85,12 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 if (path.IsDirectory == true)
                 {
                     // Record all directories that need to commit.
-                    Match match = _dataSourceType == DataSourceType.FHIR
-                        ? _fhirStagingDataFolderRegex.Match(path.Name)
-                        : _dicomStagingDataFolderRegex.Match(path.Name);
+                    Match match = _dataSourceType switch
+                    {
+                        DataSourceType.FHIR => _fhirStagingDataFolderRegex.Match(path.Name),
+                        DataSourceType.DICOM => _dicomStagingDataFolderRegex.Match(path.Name),
+                        _ => throw new ConfigurationErrorException($"Data source type {_dataSourceType} is not supported")
+                    };
 
                     if (match.Success)
                     {

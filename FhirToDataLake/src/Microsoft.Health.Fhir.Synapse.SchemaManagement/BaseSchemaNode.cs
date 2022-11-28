@@ -15,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets depth of current FHIR schema node.
+        /// Gets or sets depth of current schema node.
         /// Choice root node doesn't have additional depth, and share same depth with its children nodes.
         /// </summary>
         public int Depth { get; set; }
@@ -32,7 +32,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
         public bool IsRepeated { get; set; }
 
         /// <summary>
-        /// Gets or sets node path for current FHIR schema node.
+        /// Gets or sets node path for current schema node.
         /// </summary>
         public List<string> NodePaths { get; set; }
     }

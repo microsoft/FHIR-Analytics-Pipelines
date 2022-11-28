@@ -46,15 +46,41 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             yield return new object[] { "configVersion", "1.0", "ConfigVersion '1.0' is not supported." };
             yield return new object[] { "configVersion", "abc", "ConfigVersion 'abc' is not supported." };
             yield return new object[] { "dataSource:fhirServer:serverUrl", string.Empty, "Fhir server url can not be empty." };
-            yield return new object[] { "dataSource:fhirServer:version", "v1", "Failed to parse data source configuration" };
+            yield return new object[] { "dataSource:fhirServer:version", "V1", "Failed to parse data source configuration" };
+        }
+
+        public static IEnumerable<object[]> GetInvalidServiceConfigurationForDicom()
+        {
+            yield return new object[] { "dataSource:dicomServer:serverUrl", string.Empty, "DICOM server url can not be empty." };
+            yield return new object[] { "dataSource:dicomServer:version", "V2", "Failed to parse data source configuration" };
         }
 
         [Theory]
         [MemberData(nameof(GetInvalidServiceConfiguration))]
         public void GivenInvalidServiceCollectionConfiguration_WhenValidate_ExceptionShouldBeThrown(string configKey, string configValue, string expectedMessageStart)
         {
-            Dictionary<string, string> config = new Dictionary<string, string>(TestValidConfiguration);
-            config[configKey] = configValue;
+            Dictionary<string, string> config = new (TestValidConfiguration)
+            {
+                [configKey] = configValue,
+            };
+
+            var builder = new ConfigurationBuilder();
+            builder.AddInMemoryCollection(config);
+            var serviceCollection = new ServiceCollection();
+
+            var exception = Assert.Throws<ConfigurationErrorException>(() => serviceCollection.AddConfiguration(builder.Build()));
+            Assert.StartsWith(expectedMessageStart, exception.Message);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetInvalidServiceConfigurationForDicom))]
+        public void GivenInvalidServiceCollectionConfigurationForDicom_WhenValidate_ExceptionShouldBeThrown(string configKey, string configValue, string expectedMessageStart)
+        {
+            Dictionary<string, string> config = new (TestValidConfiguration)
+            {
+                [configKey] = configValue,
+                ["dataSource:type"] = "DICOM",
+            };
 
             var builder = new ConfigurationBuilder();
             builder.AddInMemoryCollection(config);
@@ -80,6 +106,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             var fhirConfiguration = new Dictionary<string, string>(TestValidConfiguration)
             {
                 ["dataSource:fhirServer:serverUrl"] = "https://test.fhir.azurehealthcareapis.com",
+                ["dataSource:fhirServer:version"] = "r5",
             };
             fhirConfiguration.Remove("fhirServer:serverUrl");
 
@@ -94,8 +121,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             // DataSourceConfiguration with DICOM Server
             var dicomConfiguration = new Dictionary<string, string>(TestValidConfiguration)
             {
-                ["dataSource:type"] = "DICOM",
+                ["dataSource:type"] = "dIcoM",
                 ["dataSource:dicomServer:serverUrl"] = "https://test.dicom.azurehealthcareapis.com",
+                ["dataSource:dicomServer:version"] = "v1_0_pRereLease",
             };
             dicomConfiguration.Remove("fhirServer:serverUrl");
 

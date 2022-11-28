@@ -18,23 +18,23 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement
         public List<string> GetSchemaTypes(string resourceType);
 
         /// <summary>
-        /// Get FHIR schema node for the specified schema type, return null if the schema type doesn't exist.
+        /// Get schema node for the specified schema type, return null if the schema type doesn't exist.
         /// </summary>
         /// <param name="schemaType">Schema type string.</param>
         /// <returns>Instance of FhirSchemaNode, represents the schema for given resource type.</returns>
         public T GetSchema(string schemaType);
 
         /// <summary>
-        /// Get FHIR schema content for all schema types.
+        /// Get schema content for all schema types.
         /// Currently used for initializing parquet schema.
         /// </summary>
-        /// <returns>A FHIR scehma dictionary.</returns>
+        /// <returns>A schema dictionary.</returns>
         public Dictionary<string, string> GetAllSchemaContent();
 
         /// <summary>
-        /// Get FHIR schema nodes for all schema types.
+        /// Get schema nodes for all schema types.
         /// </summary>
-        /// <returns>A FHIR schema node dictionary. Keys are schema types and values are instances of FHIR schema nodes.</returns>
+        /// <returns>A schema node dictionary. Keys are schema types and values are instances of FHIR schema nodes.</returns>
         public Dictionary<string, T> GetAllSchemas();
     }
 }

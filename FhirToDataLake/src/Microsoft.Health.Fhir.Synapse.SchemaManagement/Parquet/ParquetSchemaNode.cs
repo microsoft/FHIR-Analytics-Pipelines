@@ -19,27 +19,27 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet
         public string Type { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether current FHIR schema node is leaf node.
+        /// Gets a value indicating whether current schema node is leaf node.
         /// A leaf node should not have subNodes, and its type should be "JSONSTRING" or normal primitive types.
         /// </summary>
         public bool IsLeaf { get; set; }
 
         /// <summary>
-        /// Gets or sets subnodes under the current FHIR schema node, node that have subnodes should not be leaf node.
+        /// Gets or sets subnodes under the current schema node, node that have subnodes should not be leaf node.
         /// </summary>
         public Dictionary<string, ParquetSchemaNode> SubNodes { get; set; } = null;
 
         /// <summary>
-        /// Gets or sets choice type nodes under the current FHIR schema node.
+        /// Gets or sets choice type nodes under the current schema node.
         /// E.g. "Patient" schema node have {"deceasedBoolean": <deceased, boolean>} and {"deceasedDateTime": <deceased, datetime>} two choice type node.
         /// </summary>
         public Dictionary<string, Tuple<string, string>> ChoiceTypeNodes { get; set; } = null;
 
         /// <summary>
-        /// Check if current FHIR schema node contains given choice data type node.
+        /// Check if current schema node contains given choice data type node.
         /// </summary>
         /// <param name="choiceDataType">Choice data type string.</param>
-        /// <returns>A boolean value indicating whether current FHIR schema node contains given choice data type node.</returns>
+        /// <returns>A boolean value indicating whether current schema node contains given choice data type node.</returns>
         public bool ContainsChoiceDataType(string choiceDataType)
         {
             return ChoiceTypeNodes != null && ChoiceTypeNodes.ContainsKey(choiceDataType);

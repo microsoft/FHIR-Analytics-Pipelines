@@ -11,38 +11,25 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
     public class DicomApiConstants
     {
         /// <summary>
-        /// Change feed key in DICOM url.
-        /// </summary>
-        public const string ChangeFeedKey = "changefeed";
-
-        /// <summary>
-        /// Studies key in DICOM url.
-        /// </summary>
-        public const string StudiesKey = "studies";
-
-        /// <summary>
-        /// Series key in DICOM url.
-        /// </summary>
-        public const string SeriesKey = "series";
-
-        /// <summary>
-        /// Instances key in DICOM url.
-        /// </summary>
-        public const string InstancesKey = "instances";
-
-        /// <summary>
-        /// Metadata key in DICOM url.
-        /// </summary>
-        public const string MetadataKey = "metadata";
-
-        /// <summary>
-        /// Version dictionary in DICON url.
+        /// Version dictionary in DICOM url.
+        /// Reference: https://github.com/microsoft/dicom-server/blob/main/docs/api-versioning.md
         /// </summary>
         public static readonly Dictionary<DicomApiVersion, string> VersionMap = new Dictionary<DicomApiVersion, string>()
         {
             { DicomApiVersion.V1, "v1" },
             { DicomApiVersion.V1_0_Prerelease, "v1.0-prerelease" },
         };
+
+        /// <summary>
+        /// Change feed key in DICOM url.
+        /// Reference: https://github.com/microsoft/dicom-server/blob/main/docs/concepts/change-feed.md
+        /// </summary>
+        public const string ChangeFeedKey = "changefeed";
+
+        /// <summary>
+        /// Offset search parameter.
+        /// </summary>
+        public const string OffsetKey = "offset";
 
         /// <summary>
         /// Limit search parameter.
@@ -55,12 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
         public const string IncludeMetadataKey = "includeMetadata";
 
         /// <summary>
-        /// Offset search parameter.
-        /// </summary>
-        public const string OffsetKey = "offset";
-
-        /// <summary>
-        /// Latest search parameter.
+        /// Latest key in DICOM url.
         /// </summary>
         public const string LatestKey = "latest";
 
