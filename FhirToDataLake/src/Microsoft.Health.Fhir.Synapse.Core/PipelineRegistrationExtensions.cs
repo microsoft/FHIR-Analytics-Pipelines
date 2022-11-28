@@ -16,7 +16,6 @@ using Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.JobManagement;
-using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.JobManagement;
 
@@ -69,7 +68,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
                     services.AddSingleton<ISchedulerService, DicomSchedulerService>();
 
-                    services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<AzureStorageJobInfo>>();
+                    services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<DicomToDataLakeAzureStorageJobInfo>>();
                     break;
                 default:
                     throw new ConfigurationErrorException($"Data source type {dataSourceConfiguration.Type} is not supported");

@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -16,7 +15,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
-using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
@@ -27,10 +25,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly JobInfo _jobInfo;
         private readonly DicomToDataLakeOrchestratorJobInputData _inputData;
-        private readonly IApiDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IQueueClient _queueClient;
-        private readonly IMetadataStore _metadataStore;
         private readonly int _maxJobCountInRunningPool;
         private readonly ILogger<DicomToDataLakeOrchestratorJob> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
@@ -42,10 +38,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             JobInfo jobInfo,
             DicomToDataLakeOrchestratorJobInputData inputData,
             DicomToDataLakeOrchestratorJobResult result,
-            IApiDataClient dataClient,
             IDataWriter dataWriter,
             IQueueClient queueClient,
-            IMetadataStore metadataStore,
             int maxJobCountInRunningPool,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
@@ -54,10 +48,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _jobInfo = EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
             _inputData = EnsureArg.IsNotNull(inputData, nameof(inputData));
             _result = EnsureArg.IsNotNull(result, nameof(result));
-            _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
-            _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
             _maxJobCountInRunningPool = maxJobCountInRunningPool;
@@ -70,8 +62,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            _diagnosticLogger.LogInformation("Start executing FhirToDataLake job.");
-            _logger.LogInformation($"Start executing FhirToDataLake orchestrator job {_jobInfo.Id}.");
+            _diagnosticLogger.LogInformation("Start executing DicomToDataLake job.");
+            _logger.LogInformation($"Start executing DicomToDataLake orchestrator job {_jobInfo.Id}.");
 
             try
             {
@@ -130,22 +122,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 progress.Report(JsonConvert.SerializeObject(_result));
 
-                _diagnosticLogger.LogInformation("Finish FhirToDataLake job.");
-                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}");
+                _diagnosticLogger.LogInformation("Finish DicomToDataLake job.");
+                _logger.LogInformation($"Finish DicomToDataLake orchestrator job {_jobInfo.Id}");
 
                 return JsonConvert.SerializeObject(_result);
             }
             catch (OperationCanceledException operationCanceledEx)
             {
-                _diagnosticLogger.LogError("FhirToDataLake job is canceled.");
-                _logger.LogInformation(operationCanceledEx, "FhirToDataLake orchestrator job {0} is canceled.", _jobInfo.Id);
-                _metricsLogger.LogTotalErrorsMetrics(operationCanceledEx, $"FhirToDataLake orchestrator job is canceled. Reason: {operationCanceledEx.Message}", JobOperations.RunJob);
+                _diagnosticLogger.LogError("DicomToDataLake job is canceled.");
+                _logger.LogInformation(operationCanceledEx, "DicomToDataLake orchestrator job {0} is canceled.", _jobInfo.Id);
+                _metricsLogger.LogTotalErrorsMetrics(operationCanceledEx, $"DicomToDataLake orchestrator job is canceled. Reason: {operationCanceledEx.Message}", JobOperations.RunJob);
                 throw new RetriableJobException("Job is cancelled.", operationCanceledEx);
             }
             catch (SynapsePipelineExternalException synapsePipelineRetriableEx)
             {
                 // Customer exceptions.
-                _diagnosticLogger.LogError($"Error in FhirToDataLake job. Reason:{synapsePipelineRetriableEx.Message}");
+                _diagnosticLogger.LogError($"Error in DicomToDataLake job. Reason:{synapsePipelineRetriableEx.Message}");
                 _logger.LogInformation(synapsePipelineRetriableEx, "Error in orchestrator job {0}. Reason:{1}", _jobInfo.Id, synapsePipelineRetriableEx);
                 _metricsLogger.LogTotalErrorsMetrics(synapsePipelineRetriableEx, $"Error in orchestrator job. Reason: {synapsePipelineRetriableEx.Message}", JobOperations.RunJob);
                 throw new RetriableJobException("Error in orchestrator job.", synapsePipelineRetriableEx);
@@ -153,14 +145,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (RetriableJobException retriableJobEx)
             {
                 // always throw RetriableJobException
-                _diagnosticLogger.LogError($"Error in FhirToDataLake job. Reason:{retriableJobEx.Message}");
+                _diagnosticLogger.LogError($"Error in DicomToDataLake job. Reason:{retriableJobEx.Message}");
                 _logger.LogInformation(retriableJobEx, "Error in orchestrator job {0}. Reason:{1}", _jobInfo.Id, retriableJobEx);
                 _metricsLogger.LogTotalErrorsMetrics(retriableJobEx, $"Error in orchestrator job. Reason: {retriableJobEx.Message}", JobOperations.RunJob);
                 throw;
             }
             catch (SynapsePipelineInternalException synapsePipelineInternalEx)
             {
-                _diagnosticLogger.LogError("Internal error occurred in FhirToDataLake job.");
+                _diagnosticLogger.LogError("Internal error occurred in DicomToDataLake job.");
                 _logger.LogError(synapsePipelineInternalEx, "Error in orchestrator job {0}. Reason:{1}", _jobInfo.Id, synapsePipelineInternalEx);
                 _metricsLogger.LogTotalErrorsMetrics(synapsePipelineInternalEx, $"Error in orchestrator job. Reason: {synapsePipelineInternalEx.Message}", JobOperations.RunJob);
                 throw new RetriableJobException("Error in orchestrator job.", synapsePipelineInternalEx);
@@ -168,7 +160,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             catch (Exception unhandledEx)
             {
                 // Unhandled exceptions.
-                _diagnosticLogger.LogError("Unknown error occurred in FhirToDataLake job.");
+                _diagnosticLogger.LogError("Unknown error occurred in DicomToDataLake job.");
                 _logger.LogError(unhandledEx, "Unhandled error occurred in orchestrator job {0}. Reason:{1}", _jobInfo.Id, unhandledEx);
                 _metricsLogger.LogTotalErrorsMetrics(unhandledEx, $"Unhandled error occurred in orchestrator job. Reason: {unhandledEx.Message}", JobOperations.RunJob);
                 throw new RetriableJobException("Unhandled error occurred in orchestrator job.", unhandledEx);
@@ -233,7 +225,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         if (latestJobInfo.Result != null)
                         {
                             var processingJobResult =
-                                JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(latestJobInfo.Result);
+                                JsonConvert.DeserializeObject<DicomToDataLakeProcessingJobResult>(latestJobInfo.Result);
                             _result.TotalResourceCounts =
                                 _result.TotalResourceCounts.ConcatDictionaryCount(processingJobResult.SearchCount);
                             _result.ProcessedResourceCounts =
