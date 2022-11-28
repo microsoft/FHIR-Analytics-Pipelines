@@ -42,9 +42,9 @@ steps:
           job__jobInfoTableName='$(containerName)jobinfotable' `
           job__metadataTableName='$(containerName)metadatatable' `
           job__containerName='$(containerName)' `
-          job__tableUrl='https://$(storageAccountName).table.core.windows.net' `
-          job__queueUrl='https://$(storageAccountName).queue.core.windows.net' `
-          dataLakeStore__storageUrl='https://$(storageAccountName).blob.core.windows.net' `
+          job__tableUrl='https://$(fhirToDatalakeStorageAccountName).table.core.windows.net' `
+          job__queueUrl='https://$(fhirToDatalakeStorageAccountName).queue.core.windows.net' `
+          dataLakeStore__storageUrl='https://$(fhirToDatalakeStorageAccountName).blob.core.windows.net' `
           schema__enableCustomizedSchema=true `
           schema__schemaImageReference='$(customizedSchemaImageReference)' `
           fhirServer__serverUrl='https://analyticspipelineci-readonlytest.fhir.azurehealthcareapis.com' `
@@ -85,7 +85,7 @@ steps:
           {
               ./Set-SynapseEnvironment.ps1 `
                 -SynapseWorkspaceName $(synapseWorkspaceName) `
-                -StorageName $(storageAccountName) `
+                -StorageName $(fhirToDatalakeStorageAccountName) `
                 -Container $(containerName) `
                 -Database $(databaseName) `
                 -CustomizedSchemaImage $(customizedSchemaImageReference) `
@@ -166,8 +166,8 @@ steps:
     ScriptType: inlineScript
     pwsh: true
     Inline: |
-      $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(storageAccountName)).Value[0]
-      $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $storageAccountKey
+      $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(fhirToDatalakeStorageAccountName)).Value[0]
+      $storageContext = New-AzStorageContext -StorageAccountName $(fhirToDatalakeStorageAccountName) -StorageAccountKey $storageAccountKey
       Remove-AzStorageContainer -Name $(containerName) -Context $storageContext -Force
       Remove-AzStorageTable -Name $(containerName)jobinfotable -Context $storageContext -Force
       Remove-AzStorageTable -Name $(containerName)metadatatable -Context $storageContext -Force

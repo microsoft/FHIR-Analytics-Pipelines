@@ -42,16 +42,17 @@ steps:
           job__jobInfoTableName='$(containerName)jobinfotable' `
           job__metadataTableName='$(containerName)metadatatable' `
           job__containerName='$(containerName)' `
-          job__tableUrl='https://$(storageAccountName).table.core.windows.net' `
-          job__queueUrl='https://$(storageAccountName).queue.core.windows.net' `
-          dataLakeStore__storageUrl='https://$(storageAccountName).blob.core.windows.net' `
+          job__tableUrl='https://$(dicomToDatalakeStorageAccountName).table.core.windows.net' `
+          job__queueUrl='https://$(dicomToDatalakeStorageAccountName).queue.core.windows.net' `
+          dataLakeStore__storageUrl='https://$(dicomToDatalakeStorageAccountName).blob.core.windows.net' `
           schema__enableCustomizedSchema=true `
           schema__schemaImageReference='$(customizedSchemaImageReference)' `
-          fhirServer__serverUrl='https://analyticspipelineci-readonlytest.fhir.azurehealthcareapis.com' `
-          fhirServer__version=R4 `
-          fhirServer__authentication=ManagedIdentity `
+          dataSource__type=DICOM `
+          dataSource__dicomServer__serverUrl=https://boywudicom.azurewebsites.net `
+          dataSource__dicomServer__versio=V1 `
+          dataSource__dicomServer__authentication=None `
           ApplicationInsights__ConnectionString='$(application-insights-connection-string)' `
-          Logging__ApplicationInsights__LogLevel__Default=Information
+          Logging__ApplicationInsights__LogLevel__Default=Information `
   env:
     CONTAINER_REGISTRY_SERVER: $(pipeline-container-registry-server)
     CONTAINER_REGISTRY_PASSWORD: $(pipeline-container-registry-password)
@@ -85,7 +86,7 @@ steps:
           {
               ./Set-SynapseEnvironment.ps1 `
                 -SynapseWorkspaceName $(synapseWorkspaceName) `
-                -StorageName $(storageAccountName) `
+                -StorageName $(dicomToDatalakeStorageAccountName) `
                 -Container $(containerName) `
                 -Database $(databaseName) `
                 -CustomizedSchemaImage $(customizedSchemaImageReference) `
@@ -166,8 +167,8 @@ steps:
     ScriptType: inlineScript
     pwsh: true
     Inline: |
-      $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(storageAccountName)).Value[0]
-      $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $storageAccountKey
+      $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(dicomToDatalakeStorageAccountName)).Value[0]
+      $storageContext = New-AzStorageContext -StorageAccountName $(dicomToDatalakeStorageAccountName) -StorageAccountKey $storageAccountKey
       Remove-AzStorageContainer -Name $(containerName) -Context $storageContext -Force
       Remove-AzStorageTable -Name $(containerName)jobinfotable -Context $storageContext -Force
       Remove-AzStorageTable -Name $(containerName)metadatatable -Context $storageContext -Force
