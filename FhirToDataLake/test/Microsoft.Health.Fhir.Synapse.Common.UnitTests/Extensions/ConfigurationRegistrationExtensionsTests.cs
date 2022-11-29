@@ -33,8 +33,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
         public static IEnumerable<object[]> GetInvalidServiceConfiguration()
         {
             yield return new object[] { "fhirServer:serverUrl", string.Empty, "Fhir server url can not be empty." };
-            yield return new object[] { "fhirServer:version", "invalidVersion", "Failed to parse data source configuration" };
             yield return new object[] { "fhirServer:version", "STU3", "Fhir version Stu3 is not supported." };
+            yield return new object[] { "fhirServer:version", "invalidVersion", "Failed to parse data source configuration" };
             yield return new object[] { "job:containerName", string.Empty, "Target azure container name can not be empty." };
             yield return new object[] { "dataLakeStore:storageUrl", string.Empty, "Target azure storage url can not be empty." };
             yield return new object[] { "job:startTime", "invalidDataTime", "Failed to parse job configuration" };
@@ -52,7 +52,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
         public static IEnumerable<object[]> GetInvalidServiceConfigurationForDicom()
         {
             yield return new object[] { "dataSource:dicomServer:serverUrl", string.Empty, "DICOM server url can not be empty." };
-            yield return new object[] { "dataSource:dicomServer:version", "V2", "Failed to parse data source configuration" };
+            yield return new object[] { "dataSource:dicomServer:apiVersion", "V1_0_Prerelease", "DICOM server API version V1_0_Prerelease is not supported." };
+            yield return new object[] { "dataSource:dicomServer:apiVersion", "V2", "Failed to parse data source configuration" };
         }
 
         [Theory]
@@ -78,8 +79,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
         {
             Dictionary<string, string> config = new (TestValidConfiguration)
             {
-                [configKey] = configValue,
                 ["dataSource:type"] = "DICOM",
+                ["dataSource:dicomServer:serverUrl"] = "https://test.dicom.azurehealthcareapis.com",
+                [configKey] = configValue,
             };
 
             var builder = new ConfigurationBuilder();
@@ -123,7 +125,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             {
                 ["dataSource:type"] = "dIcoM",
                 ["dataSource:dicomServer:serverUrl"] = "https://test.dicom.azurehealthcareapis.com",
-                ["dataSource:dicomServer:version"] = "v1_0_pRereLease",
+                ["dataSource:dicomServer:version"] = "v1",
             };
             dicomConfiguration.Remove("fhirServer:serverUrl");
 

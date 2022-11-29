@@ -20,14 +20,14 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConverter
 {
-    public class DefaultDicomSchemaConverterTests
+    public class DicomDefaultSchemaConverterTests
     {
         private static readonly ParquetSchemaManager _schemaManager;
         private static readonly IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
-        private static readonly DefaultDicomSchemaConverter _testDefaultConverter;
+        private static readonly DicomDefaultSchemaConverter _testDefaultConverter;
         private static readonly JObject _testMetadata;
 
-        static DefaultDicomSchemaConverterTests()
+        static DicomDefaultSchemaConverterTests()
         {
             _schemaManager = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
@@ -35,7 +35,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 _diagnosticLogger,
                 NullLogger<ParquetSchemaManager>.Instance);
 
-            _testDefaultConverter = new DefaultDicomSchemaConverter(_schemaManager, _diagnosticLogger, NullLogger<DefaultDicomSchemaConverter>.Instance);
+            _testDefaultConverter = new DicomDefaultSchemaConverter(_schemaManager, _diagnosticLogger, NullLogger<DicomDefaultSchemaConverter>.Instance);
             _testMetadata = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.DicomTestDataFolder, "red-triangle.ndjson")).First();
         }
 
@@ -96,13 +96,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new DefaultDicomSchemaConverter(null, _diagnosticLogger, NullLogger<DefaultDicomSchemaConverter>.Instance));
+                () => new DicomDefaultSchemaConverter(null, _diagnosticLogger, NullLogger<DicomDefaultSchemaConverter>.Instance));
 
             Assert.Throws<ArgumentNullException>(
-                () => new DefaultDicomSchemaConverter(_schemaManager, null, NullLogger<DefaultDicomSchemaConverter>.Instance));
+                () => new DicomDefaultSchemaConverter(_schemaManager, null, NullLogger<DicomDefaultSchemaConverter>.Instance));
 
             Assert.Throws<ArgumentNullException>(
-                () => new DefaultDicomSchemaConverter(_schemaManager, _diagnosticLogger, null));
+                () => new DicomDefaultSchemaConverter(_schemaManager, _diagnosticLogger, null));
         }
 
         [Fact]

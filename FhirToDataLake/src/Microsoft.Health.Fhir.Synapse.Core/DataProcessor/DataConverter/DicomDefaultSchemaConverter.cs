@@ -20,16 +20,16 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 {
-    public class DefaultDicomSchemaConverter : IDataSchemaConverter
+    public class DicomDefaultSchemaConverter : IDataSchemaConverter
     {
         private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
         private readonly IDiagnosticLogger _diagnosticLogger;
-        private readonly ILogger<DefaultDicomSchemaConverter> _logger;
+        private readonly ILogger<DicomDefaultSchemaConverter> _logger;
 
-        public DefaultDicomSchemaConverter(
+        public DicomDefaultSchemaConverter(
             ISchemaManager<ParquetSchemaNode> schemaManager,
             IDiagnosticLogger diagnosticLogger,
-            ILogger<DefaultDicomSchemaConverter> logger)
+            ILogger<DicomDefaultSchemaConverter> logger)
         {
             _schemaManager = EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
@@ -76,15 +76,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             if (metadata is not JObject metadataObject)
             {
-                _logger.LogError($"Current DICOM object is not a valid JObject: {metadata.Path}.");
-                throw new ParquetDataProcessorException($"Current DICOM object is not a valid JObject: {metadata.Path}.");
+                _diagnosticLogger.LogError($"Current DICOM metadata is not a valid JObject: {metadata.Path}.");
+                _logger.LogInformation($"Current DICOM metadata is not a valid JObject: {metadata.Path}.");
+                throw new ParquetDataProcessorException($"Current DICOM metadata is not a valid JObject: {metadata.Path}.");
             }
 
             var processedObject = new JObject();
 
             foreach (var item in metadataObject)
             {
-                // Find node by name
+                // Find schema node by name
                 var subNodePair = schemaNode.SubNodes
                     .Where(x => string.Equals(x.Value.Name, item.Key, StringComparison.OrdinalIgnoreCase))
                     .FirstOrDefault();
@@ -107,19 +108,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 else
                 {
                     // Each metadata native tag should be JObject containing a child object "vr"
+                    // Reference: https://dicom.nema.org/medical/dicom/current/output/chtml/part18/sect_F.2.2.html
                     if (item.Value is not JObject jObject ||
                         !jObject.ContainsKey(DicomConstants.Vr))
                     {
-                        _logger.LogError($"Current DICOM tag is not a valid JObject: {item.Key}.");
+                        _diagnosticLogger.LogError($"Current DICOM tag is not a valid JObject: {item.Key}.");
+                        _logger.LogInformation($"Current DICOM tag is not a valid JObject: {item.Key}.");
                         throw new ParquetDataProcessorException($"Current DICOM tag is not a valid JObject: {item.Key}.");
                     }
 
-                    // Ignore DICOM metadata node if it doesn't exist in schema
-                    // Ignore SQ
+                    // Ignore DICOM metadata node if it doesn't exist in schema, including data type SQ
                     // Ignore empty tag, BulkDataURI and InlineBinary
+                    // Value field should be an array
                     if (subNodeKeyword == null ||
-                    !jObject.ContainsKey(DicomConstants.Value) ||
-                    jObject[DicomConstants.Value] is not JArray)
+                        !jObject.ContainsKey(DicomConstants.Value) ||
+                        jObject[DicomConstants.Value] is not JArray)
                     {
                         continue;
                     }
@@ -134,6 +137,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                     {
                         if (subValueArray.Count > 1)
                         {
+                            _diagnosticLogger.LogWarning($"Multiple values appear in an unique tag. Keyword: {subNodeKeyword}");
                             _logger.LogInformation($"Multiple values appear in an unique tag. Keyword: {subNodeKeyword}");
                         }
 
@@ -158,7 +162,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
         {
             if (pnItem is not JObject pnObject)
             {
-                _logger.LogError($"Current DICOM PN object is not a valid JObject: {pnItem.Path}.");
+                _diagnosticLogger.LogError($"Current DICOM PN object is not a valid JObject: {pnItem.Path}.");
+                _logger.LogInformation($"Current DICOM PN object is not a valid JObject: {pnItem.Path}.");
                 throw new ParquetDataProcessorException($"Current DICOM PN object is not a valid JObject: {pnItem.Path}.");
             }
 
@@ -204,7 +209,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
                 throw new ParquetDataProcessorException($"Invalid data: complex object found in leaf schema node {leafItem.Path}.");
             }
 
-            // Convert every type to string for DICOM
+            // Currently convert every data type to string for DICOM
+            // TODO: make data type more specific
             return new JValue(leafValue.ToString());
         }
     }

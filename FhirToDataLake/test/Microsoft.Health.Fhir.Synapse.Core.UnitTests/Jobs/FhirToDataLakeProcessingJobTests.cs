@@ -173,7 +173,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var schemaManager = new ParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<ParquetSchemaManager>.Instance);
             IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
-            var defaultConverter = new DefaultFhirSchemaConverter(schemaManager, _diagnosticLogger, NullLogger<DefaultFhirSchemaConverter>.Instance);
+            var defaultConverter = new FhirDefaultSchemaConverter(schemaManager, _diagnosticLogger, NullLogger<FhirDefaultSchemaConverter>.Instance);
             var fhirConverter = new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), schemaConfigurationOption, _diagnosticLogger, NullLogger<CustomSchemaConverter>.Instance);
 
             return new ParquetDataProcessor(

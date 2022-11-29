@@ -60,9 +60,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
                         throw new ConfigurationErrorException("DICOM server url can not be empty.");
                     }
 
-                    if (!ConfigurationConstants.SupportedDicomApiVersions.Contains(dicomServerConfiguration.Version))
+                    if (!ConfigurationConstants.SupportedDicomApiVersions.Contains(dicomServerConfiguration.ApiVersion))
                     {
-                        throw new ConfigurationErrorException($"DICOM server API version {dicomServerConfiguration.Version} is not supported.");
+                        throw new ConfigurationErrorException($"DICOM server API version {dicomServerConfiguration.ApiVersion} is not supported.");
                     }
 
                     break;

@@ -74,7 +74,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public int SchedulerServiceLeaseRefreshIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultSchedulerServiceLeaseRefreshIntervalInSeconds;
 
-        public long InitialStartOffset { get; set; } = JobConfigurationConstants.DefaultInitialDicomStartOffset;
+        public long InitialStartOffset { get; set; } = JobConfigurationConstants.DefaultDicomInitialStartOffset;
 
         // scheduler service is a long running service, it shouldn't stop for any exception.
         // It stops only when the job is scheduled to end or is cancelled.

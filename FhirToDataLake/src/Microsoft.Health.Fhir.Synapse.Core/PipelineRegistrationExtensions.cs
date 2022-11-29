@@ -96,10 +96,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core
             switch (dataSourceType)
             {
                 case DataSourceType.FHIR:
-                    services.AddSingleton<DefaultFhirSchemaConverter>();
+                    services.AddSingleton<FhirDefaultSchemaConverter>();
                     break;
                 case DataSourceType.DICOM:
-                    services.AddSingleton<DefaultDicomSchemaConverter>();
+                    services.AddSingleton<DicomDefaultSchemaConverter>();
                     break;
                 default:
                     throw new ConfigurationErrorException($"Data source type {dataSourceType} is not supported");
@@ -112,8 +112,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core
                 return name switch
                 {
                     ParquetSchemaConstants.DefaultSchemaProviderKey => dataSourceType == DataSourceType.FHIR
-                        ? delegateProvider.GetService<DefaultFhirSchemaConverter>()
-                        : delegateProvider.GetService<DefaultDicomSchemaConverter>(),
+                        ? delegateProvider.GetService<FhirDefaultSchemaConverter>()
+                        : delegateProvider.GetService<DicomDefaultSchemaConverter>(),
                     ParquetSchemaConstants.CustomSchemaProviderKey => delegateProvider.GetService<CustomSchemaConverter>(),
                     _ => throw new ParquetDataProcessorException($"Schema delegate name {name} not found when injecting"),
                 };
