@@ -125,10 +125,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
             if (name == ParquetSchemaConstants.DefaultSchemaProviderKey)
             {
-                return new DefaultFhirSchemaConverter(
+                return new FhirDefaultSchemaConverter(
                     schemaManagerWithoutCustomizedSchema,
                     _diagnosticLogger,
-                    NullLogger<DefaultFhirSchemaConverter>.Instance);
+                    NullLogger<FhirDefaultSchemaConverter>.Instance);
             }
             else
             {
@@ -150,10 +150,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
             if (name == ParquetSchemaConstants.DefaultSchemaProviderKey)
             {
-                return new DefaultDicomSchemaConverter(
+                return new DicomDefaultSchemaConverter(
                     schemaManagerWithoutCustomizedSchema,
                     _diagnosticLogger,
-                    NullLogger<DefaultDicomSchemaConverter>.Instance);
+                    NullLogger<DicomDefaultSchemaConverter>.Instance);
             }
             else
             {

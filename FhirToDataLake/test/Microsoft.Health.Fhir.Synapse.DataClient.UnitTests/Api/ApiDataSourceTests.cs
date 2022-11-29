@@ -90,7 +90,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
         [InlineData("https://example.com/", "v1", "https://example.com/v1/")]
         [InlineData("https://example.com", "v1_0_prerelease", "https://example.com/v1.0-prerelease/")]
         [InlineData("https://example.com/", "v1_0_prerelease", "https://example.com/v1.0-prerelease/")]
-        public void GivenDicomServerUrlAndVersion_WhenInitialize_ServerUrlShouldBeEndsWithSlash(string serverUrl, string version, string expectedServerUrl)
+        public void GivenDicomServerUrlAndApiVersion_WhenInitialize_ServerUrlShouldBeEndsWithApiVersionAndSlash(string serverUrl, string version, string expectedServerUrl)
         {
             var dataSourceConfiguration = new DataSourceConfiguration
             {

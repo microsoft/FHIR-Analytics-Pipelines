@@ -339,6 +339,10 @@
                     "value": "[variables('customizedSchemaImageReference')]"
                 },
                 {
+                    "name": "dataSource__type",
+                    "value": "[parameters('dataSourceType')]"
+                },
+                {
                     "name": "fhirServer__serverUrl",
                     "value": "[if(variables('deployFhirToDatalake'), parameters('fhirServerUrl'), '')]"
                 },
@@ -349,10 +353,6 @@
                 {
                     "name": "fhirServer__authentication",
                     "value": "[if(variables('deployFhirToDatalake'), parameters('serverAuthentication'), '')]"
-                },
-                {
-                    "name": "dataSource__type",
-                    "value": "[parameters('dataSourceType')]"
                 },
                 {
                     "name": "dataSource__dicomServer__serverUrl",

@@ -18,16 +18,16 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 {
-    public class DefaultFhirSchemaConverter : IDataSchemaConverter
+    public class FhirDefaultSchemaConverter : IDataSchemaConverter
     {
         private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
         private readonly IDiagnosticLogger _diagnosticLogger;
-        private readonly ILogger<DefaultFhirSchemaConverter> _logger;
+        private readonly ILogger<FhirDefaultSchemaConverter> _logger;
 
-        public DefaultFhirSchemaConverter(
+        public FhirDefaultSchemaConverter(
             ISchemaManager<ParquetSchemaNode> schemaManager,
             IDiagnosticLogger diagnosticLogger,
-            ILogger<DefaultFhirSchemaConverter> logger)
+            ILogger<FhirDefaultSchemaConverter> logger)
         {
             _schemaManager = EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));

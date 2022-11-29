@@ -15,15 +15,16 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationResol
             IServiceCollection services,
             IConfiguration configuration)
         {
-            // Try get DataSourceConfiguration first. If not found, create one from FhirServerConfiguration.
-            // If both exist, DataSourceConfiguration takes effect.
             if (configuration.GetSection(ConfigurationConstants.DataSourceConfigurationKey).Exists())
             {
+                // Try to get DataSourceConfiguration from configuration.
                 services.Configure<DataSourceConfiguration>(options =>
                     configuration.GetSection(ConfigurationConstants.DataSourceConfigurationKey).Bind(options));
             }
             else
             {
+                // If DataSourceConfiguration is not found, find FhirServerConfiguration instead
+                // and create a DataSourceConfiguration from it for backward compatibility.
                 services.Configure<DataSourceConfiguration>(options =>
                     configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options.FhirServer));
             }

@@ -142,7 +142,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     searchOptions = new ChangeFeedLatestOptions(dicomQueryParameters);
                     break;
                 default:
-                    // Should not happend.
+                    // Should not happen.
                     _logger.LogInformation($"[External Dependency Check] Unsupported data source type: {_dataSourceType}");
                     _diagnosticLogger.LogError($"Unsupported data source type: {_dataSourceType}");
                     return false;
