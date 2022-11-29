@@ -104,7 +104,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api.Dicom
             var changeFeedLatestOptions = new ChangeFeedLatestOptions(queryParameters);
             string changeFeed = await client.SearchAsync(changeFeedLatestOptions);
 
-            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile), changeFeed);
+            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile1), changeFeed);
         }
 
         [Fact]
@@ -168,7 +168,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api.Dicom
             var changeFeedLatestOptions = new ChangeFeedLatestOptions(null);
             string changeFeed = await client.SearchAsync(changeFeedLatestOptions);
 
-            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile), changeFeed);
+            Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile1), changeFeed);
 
             // changefeed
             var changeFeedOffsetOptions = new ChangeFeedOffsetOptions(null);
@@ -204,11 +204,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api.Dicom
             {
                 {
                     $"{dicomServerUrl.TrimEnd('/')}/v1/{DicomApiConstants.ChangeFeedKey}/{DicomApiConstants.LatestKey}",
-                    CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile))
+                    CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile1))
                 },
                 {
                     $"{dicomServerUrl.TrimEnd('/')}/v1/{DicomApiConstants.ChangeFeedKey}/{DicomApiConstants.LatestKey}?{DicomApiConstants.IncludeMetadataKey}={SampleIncludeMetadata}",
-                    CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile))
+                    CreateResponseMessage(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile1))
                 },
                 {
                     $"{dicomServerUrl.TrimEnd('/')}/v1/{DicomApiConstants.ChangeFeedKey}",

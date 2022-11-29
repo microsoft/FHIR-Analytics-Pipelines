@@ -11,10 +11,10 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Dicom.Client.Models;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
+using Microsoft.Health.Fhir.Synapse.Core.Dicom;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
@@ -24,6 +24,7 @@ using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
 using Microsoft.Health.JobManagement;
 using NCrontab;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
@@ -573,9 +574,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             var changeFeedOption = new ChangeFeedLatestOptions(queryParameters);
             string changeFeedContent = await _dataClient.SearchAsync(changeFeedOption, cancellationToken);
-            var changeFeedEntry = JsonConvert.DeserializeObject<ChangeFeedEntry>(changeFeedContent);
+            var changeFeed = JObject.Parse(changeFeedContent);
 
-            return changeFeedEntry == null ? 0 : changeFeedEntry.Sequence;
+            return changeFeed == null ? 0 : changeFeed.Value<long>(DicomChangeFeedConstants.SequenceKey);
         }
     }
 }

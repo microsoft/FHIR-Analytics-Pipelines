@@ -25,7 +25,6 @@ using Microsoft.Health.JobManagement;
 using NCrontab;
 using Newtonsoft.Json;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
@@ -47,6 +46,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private const string TestSchedulerCronExpression = "*/2 * * * * *";
 
         private readonly IOptions<JobConfiguration> _jobConfigOption;
+
+        private const long TestEndOffset = 1300;
 
         public DicomSchedulerServiceTests()
         {
@@ -111,7 +112,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var queueClient = new MockQueueClient();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -148,7 +149,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
 
                 currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
-                Assert.Null(currentTriggerEntity);
+                Assert.NotNull(currentTriggerEntity);
 
                 triggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
                 Assert.NotNull(triggerLeaseEntity);
@@ -250,9 +251,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             TriggerLeaseEntity triggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
             Assert.NotNull(triggerLeaseEntity);
 
-            // dicom server return null, so current trigger entity is null
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
-            Assert.Null(currentTriggerEntity);
+            Assert.NotNull(currentTriggerEntity);
         }
 
         [Fact]
@@ -575,6 +575,41 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         // Enqueue Orchestrator Job
         [Fact]
+        public async Task GivenEmptyDicomServer_WhenRunAsync_ThenShouldNotCreateTriggerEntity()
+        {
+            var queueClient = new MockQueueClient();
+
+            var metadataStore = new MockMetadataStore();
+
+            var dataClient = Substitute.For<IApiDataClient>();
+            dataClient.SearchAsync(default).ReturnsForAnyArgs(string.Empty);
+
+            var schedulerService =
+                new DicomSchedulerService(queueClient, metadataStore, dataClient, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                {
+                    SchedulerServicePullingIntervalInSeconds = 1,
+                    SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
+                    SchedulerServiceLeaseExpirationInSeconds = 2,
+                };
+
+            using var tokenSource = new CancellationTokenSource();
+            Task task = schedulerService.RunAsync(tokenSource.Token);
+
+            await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
+
+            // trigger lease entity is added
+            TriggerLeaseEntity triggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
+            Assert.NotNull(triggerLeaseEntity);
+
+            // current trigger entity is not added
+            CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
+            Assert.Null(currentTriggerEntity);
+
+            tokenSource.Cancel();
+            await task;
+        }
+
+        [Fact]
         public async Task GivenNewJob_WhenRunAsync_ThenTheInitialTriggerEntityShouldBeCreatedAndEnqueueOrchestratorJob()
         {
             var queueClient = new MockQueueClient();
@@ -582,7 +617,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile2)), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -602,7 +637,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
             Assert.Equal(0, currentTriggerEntity.StartOffset);
-            Assert.Equal(1265, currentTriggerEntity.EndOffset);
+            Assert.Equal(TestEndOffset, currentTriggerEntity.EndOffset);
 
             tokenSource.Cancel();
             await task;
@@ -748,15 +783,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 EndOffset = 100,
             };
 
-            DateTimeOffset lastTriggerEndTime = triggerEntity.TriggerEndTime;
-
             var metadataStore = new MockMetadataStore();
 
             // add the trigger entity to table
             await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile2)), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -766,20 +799,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             using var tokenSource = new CancellationTokenSource();
             Task task = schedulerService.RunAsync(tokenSource.Token);
 
-            DateTimeOffset endTime = DateTimeOffset.UtcNow.AddMinutes(-1 * JobConfigurationConstants.JobQueryLatencyInMinutes);
-
             await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
 
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
             Assert.Equal(triggerEntity.TriggerSequenceId + 1, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
 
-            CrontabSchedule crontabSchedule = CrontabSchedule.Parse(_jobConfigOption.Value.SchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
-
-            IEnumerable<DateTime> result = crontabSchedule.GetNextOccurrences(lastTriggerEndTime.DateTime, endTime.DateTime);
-            Assert.Contains(currentTriggerEntity.TriggerEndTime.DateTime, result);
             Assert.Equal(triggerEntity.EndOffset, currentTriggerEntity.StartOffset);
-            Assert.Equal(1265, currentTriggerEntity.EndOffset);
+            Assert.Equal(TestEndOffset, currentTriggerEntity.EndOffset);
 
             JobInfo jobInfo = await queueClient.GetJobByIdAsync((byte)QueueType.DicomToDataLake, currentTriggerEntity.OrchestratorJobId, true, CancellationToken.None);
 
@@ -789,7 +816,71 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await task;
         }
 
-        // Functional Test
+        [Fact]
+        public async Task GivenNoNewData_WhenCreateNextTrigger_ThenShouldNotCreateNextTrigger()
+        {
+            var queueClient = new MockQueueClient();
+
+            var metadataStore = new MockMetadataStore();
+
+            var schedulerService =
+                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile2)), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                {
+                    SchedulerServicePullingIntervalInSeconds = 1,
+                    SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
+                    SchedulerServiceLeaseExpirationInSeconds = 2,
+                };
+
+            using var tokenSource = new CancellationTokenSource();
+            Task task = schedulerService.RunAsync(tokenSource.Token);
+
+            await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
+
+            // should enqueue orchestrator job
+            CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
+            Assert.NotNull(currentTriggerEntity);
+
+            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
+            Assert.Equal(0, currentTriggerEntity.StartOffset);
+            Assert.Equal(TestEndOffset, currentTriggerEntity.EndOffset);
+
+            DateTimeOffset lastTriggerEndTime = currentTriggerEntity.TriggerEndTime;
+
+            // the job is dequeued, and the trigger status is still running.
+            JobInfo jobInfo = await queueClient.DequeueAsync(
+                (byte)QueueType.DicomToDataLake,
+                TestWorkerName,
+                0,
+                CancellationToken.None);
+
+            await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
+
+            currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
+            Assert.NotNull(currentTriggerEntity);
+
+            Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
+
+            // job is completed
+            jobInfo.Status = JobStatus.Completed;
+            await queueClient.CompleteJobAsync(jobInfo, false, CancellationToken.None);
+
+            // nenxt trigger entity is not created
+            await Task.Delay(TimeSpan.FromSeconds(4), CancellationToken.None);
+            currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
+            Assert.NotNull(currentTriggerEntity);
+            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.Completed, currentTriggerEntity.TriggerStatus);
+            Assert.Equal(TestEndOffset, currentTriggerEntity.EndOffset);
+
+            tokenSource.Cancel();
+            await task;
+        }
+
+        // Rerun test
         [Fact]
         public async Task GivenRunningTrigger_WhenReRunAsync_ThenTheTriggerShouldBePickedUp()
         {
@@ -866,6 +957,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
             Assert.Equal(TriggerStatus.Completed, currentTriggerEntity.TriggerStatus);
+            Assert.Equal(TestEndOffset, currentTriggerEntity.EndOffset);
 
             tokenSource2.Cancel();
             await task2;
@@ -1166,8 +1258,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.True(elapsedSeconds < schedulerService.SchedulerServiceLeaseRefreshIntervalInSeconds);
         }
 
+        // Functional Test
         [Fact]
-        public async Task GivenNoNewData_WhenCreateNextTrigger_ThenShouldNotCreateNextTrigger()
+        public async Task GivenValidTrigger_WhenRunAsync_ThenTheTriggerShouldBeProcessed()
         {
             var queueClient = new MockQueueClient();
 
@@ -1200,7 +1293,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // the job is dequeued, and the trigger status is still running.
             JobInfo jobInfo = await queueClient.DequeueAsync(
-                (byte)QueueType.DicomToDataLake,
+                (byte)QueueType.FhirToDataLake,
                 TestWorkerName,
                 0,
                 CancellationToken.None);
@@ -1213,18 +1306,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
 
-            // job is completed,
+            // job is completed, the trigger status should be set to next trigger
             jobInfo.Status = JobStatus.Completed;
             await queueClient.CompleteJobAsync(jobInfo, false, CancellationToken.None);
 
-            // nenxt trigger entity is not created
+            // current trigger entity is running
             await Task.Delay(TimeSpan.FromSeconds(4), CancellationToken.None);
             currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
-            Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
-            Assert.Equal(TriggerStatus.Completed, currentTriggerEntity.TriggerStatus);
-            Assert.Equal(1265, currentTriggerEntity.EndOffset);
+            Assert.Equal(2, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(1, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
+            Assert.Equal(1265, currentTriggerEntity.StartOffset);
+            Assert.Equal(TestEndOffset, currentTriggerEntity.EndOffset);
+
+            // the next job is created
+            jobInfo =
+                await queueClient.GetJobByIdAsync((byte)QueueType.DicomToDataLake, 2, true, CancellationToken.None);
+            Assert.Equal(JobStatus.Created, jobInfo.Status);
 
             tokenSource.Cancel();
             await task;
@@ -1234,13 +1333,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             if (firstBundle == null)
             {
-                firstBundle = TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile);
+                firstBundle = TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile1);
             }
 
             var dataClient = Substitute.For<IApiDataClient>();
 
             // Get bundle from next link
-            string nextBundle = TestDataProvider.GetDataFromFile(TestDataConstants.ChangeFeedsFile);
+            string nextBundle = TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile2);
             dataClient.SearchAsync(default).ReturnsForAnyArgs(firstBundle, nextBundle);
             return dataClient;
         }
