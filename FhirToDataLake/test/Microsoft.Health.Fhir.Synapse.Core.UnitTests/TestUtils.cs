@@ -77,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             return templateProvider;
         }
 
-        public static IParquetSchemaProvider TestParquetSchemaProviderDelegate(string name)
+        public static IParquetSchemaProvider TestFhirParquetSchemaProviderDelegate(string name)
         {
             if (name == ParquetSchemaConstants.DefaultSchemaProviderKey)
             {
@@ -119,7 +119,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         {
             var schemaManagerWithoutCustomizedSchema = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
-                TestParquetSchemaProviderDelegate,
+                TestFhirParquetSchemaProviderDelegate,
                 _diagnosticLogger,
                 NullLogger<ParquetSchemaManager>.Instance);
 
@@ -144,7 +144,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
         {
             var schemaManagerWithoutCustomizedSchema = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
-                TestParquetSchemaProviderDelegate,
+                TestDicomParquetSchemaProviderDelegate,
                 _diagnosticLogger,
                 NullLogger<ParquetSchemaManager>.Instance);
 

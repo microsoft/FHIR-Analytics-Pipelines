@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
@@ -36,7 +37,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
 
         private const string TestBlobEndpoint = "UseDevelopmentStorage=true";
-        private static IOptions<DataSourceConfiguration> _dataSourceOption = Options.Create(new DataSourceConfiguration { Type = Common.DataSourceType.DICOM });
+        private static IOptions<DataSourceConfiguration> _dataSourceOption = Options.Create(new DataSourceConfiguration { Type = DataSourceType.DICOM });
 
         [Fact]
         public async Task GivenValidDataClient_WhenExecute_ThenTheDataShouldBeSavedToBlob()
@@ -57,18 +58,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var result = JsonConvert.DeserializeObject<DicomToDataLakeProcessingJobResult>(resultString);
 
             Assert.NotNull(result);
-            Assert.Equal(6, result.SearchCount["Dicom"]);
-            Assert.Equal(6, result.ProcessedCount["Dicom"]);
-            Assert.Equal(0, result.SkippedCount["Dicom"]);
-            Assert.Equal(52314, result.ProcessedDataSizeInTotal);
-            Assert.Equal(6, result.ProcessedCountInTotal);
+            Assert.Equal(3, result.SearchCount["dicom"]);
+            Assert.Equal(3, result.ProcessedCount["dicom"]);
+            Assert.Equal(0, result.SkippedCount["dicom"]);
+            Assert.Equal(911000, result.ProcessedDataSizeInTotal);
+            Assert.Equal(3, result.ProcessedCountInTotal);
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));
             var progressForContext = JsonConvert.DeserializeObject<DicomToDataLakeProcessingJobResult>(progressResult);
             Assert.NotNull(progressForContext);
-            Assert.Equal(progressForContext.SearchCount["Dicom"], result.SearchCount["Dicom"]);
-            Assert.Equal(progressForContext.ProcessedCount["Dicom"], result.ProcessedCount["Dicom"]);
-            Assert.Equal(progressForContext.SkippedCount["Dicom"], result.SkippedCount["Dicom"]);
+            Assert.Equal(progressForContext.SearchCount["dicom"], result.SearchCount["dicom"]);
+            Assert.Equal(progressForContext.ProcessedCount["dicom"], result.ProcessedCount["dicom"]);
+            Assert.Equal(progressForContext.SkippedCount["dicom"], result.SkippedCount["dicom"]);
             Assert.Equal(progressForContext.ProcessedDataSizeInTotal, result.ProcessedDataSizeInTotal);
             Assert.Equal(progressForContext.ProcessedCountInTotal, result.ProcessedCountInTotal);
 
@@ -155,7 +156,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return new ParquetDataProcessor(
                 schemaManager,
                 arrowConfigurationOptions,
-                TestUtils.TestDataSchemaConverterDelegate,
+                TestUtils.TestDicomDataSchemaConverterDelegate,
                 _diagnosticLogger,
                 NullLogger<ParquetDataProcessor>.Instance);
         }
