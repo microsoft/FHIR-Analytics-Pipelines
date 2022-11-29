@@ -52,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
         public static IEnumerable<object[]> GetInvalidServiceConfigurationForDicom()
         {
             yield return new object[] { "dataSource:dicomServer:serverUrl", string.Empty, "DICOM server url can not be empty." };
-            yield return new object[] { "dataSource:dicomServer:version", "V2", "Failed to parse data source configuration" };
+            yield return new object[] { "dataSource:dicomServer:apiVersion", "V2", "Failed to parse data source configuration" };
         }
 
         [Theory]

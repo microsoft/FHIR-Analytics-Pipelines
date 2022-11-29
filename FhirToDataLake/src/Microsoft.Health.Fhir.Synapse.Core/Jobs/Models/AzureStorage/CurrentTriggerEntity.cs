@@ -44,8 +44,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage
         /// </summary>
         public long OrchestratorJobId { get; set; } = 0;
 
+        /// <summary>
+        /// The start offset in DICOM Server changefeed
+        /// </summary>
         public long StartOffset { get; set; }
 
+        /// <summary>
+        /// The end offset in DICOM Server changefeed
+        /// </summary>
         public long EndOffset { get; set; }
     }
 }

@@ -32,6 +32,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         public const int DefaultSchedulerServiceLeaseRefreshIntervalInSeconds = 60;
 
+        /// <summary>
+        /// The default initial start offset in DICOM Server changefeed
+        /// </summary>
+        public const int DefaultDicomInitialStartOffset = 0;
+
+        /// <summary>
+        /// The default limit in DICOM Server changefeed
+        /// </summary>
+        public const int DefaultDicomChangeFeedLimit = 100;
+
         // orchestrator job configurations
 
         /// <summary>
@@ -70,9 +80,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// The running job count threshold to check running job complete
         /// </summary>
         public const int CheckRunningJobCompleteRunningJobCountThreshold = 5;
-
-        public const int DefaultInitialDicomStartOffset = 0;
-
-        public const int DefaultDicomChangeFeedLimit = 100;
     }
 }

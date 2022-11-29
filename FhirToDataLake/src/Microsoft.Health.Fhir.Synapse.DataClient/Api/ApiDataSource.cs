@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
                 case DataSourceType.DICOM:
                     var dicomServerUrl = AddSlashForUrl(
                         EnsureArg.IsNotNullOrEmpty(config.Value.DicomServer.ServerUrl, nameof(config.Value.DicomServer.ServerUrl)));
-                    ServerUrl = $"{dicomServerUrl}{DicomApiConstants.VersionMap[config.Value.DicomServer.Version]}/";
+                    ServerUrl = $"{dicomServerUrl}{DicomApiConstants.VersionMap[config.Value.DicomServer.ApiVersion]}/";
                     Authentication = config.Value.DicomServer.Authentication;
                     break;
                 default:
