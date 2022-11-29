@@ -31,7 +31,7 @@ steps:
       # Update test running container instance 
       az container create `
         --resource-group $(resourceGroup) `
-        --name $(dicomToDatalakeInstanceName) `
+        --name $(fhirToDatalakeInstanceName) `
         --image $env:CONTAINER_REGISTRY_SERVER/$(imageName):$(version) `
         --restart-policy Never `
         --cpu 2 --memory 4 `
@@ -127,7 +127,7 @@ steps:
       }
 
       # Stop Container Instance
-      az container stop --name $(dicomToDatalakeInstanceName) --resource-group $(resourceGroup)
+      az container stop --name $(fhirToDatalakeInstanceName) --resource-group $(resourceGroup)
 
 - task: AzureCLI@2
   displayName: Get fhir service access token
@@ -152,7 +152,7 @@ steps:
   displayName: Validate data on Synapse
   inputs:
     scriptSource: filePath
-    scriptPath: '$(Build.SourcesDirectory)/FhirToDataLake/synapse/SynapseValidator.py'
+    scriptPath: '$(Build.SourcesDirectory)/FhirToDataLake/synapse/FhirToSynapseValidator.py'
     arguments: --synapse_workspace $(synapseWorkspaceName) --fhir_server_url $(fhirServer:serverUrl) --database $(databaseName) --schema_directory $(System.DefaultWorkingDirectory)/FhirToDataLake/data/schemas/r4/ --fhir_server_access_token $(fhirServiceAccessToken) --resource_types $(validateResourceTypes) --customized_schema True
   env:
     SQL_USERNAME: $(synapse-sql-username)
@@ -174,8 +174,15 @@ steps:
       Remove-AzStorageQueue -Name $(containerName)jobinfoqueue -Context $storageContext -Force
       Write-Host "##[section]Clear test container"
 
-      Remove-AzContainerRegistryRepository -Name $(imageName) -RegistryName ($env:CONTAINER_REGISTRY_SERVER -split '.', 0, "simplematch")[0]
-      Write-Host "##[section]Clear test image"
+      try
+      {
+        Remove-AzContainerRegistryRepository -Name $(imageName) -RegistryName ($env:CONTAINER_REGISTRY_SERVER -split '.', 0, "simplematch")[0]
+        Write-Host "##[section]Clear test image"
+      }
+      catch [Exception]
+      {
+        Write-Host "##[warning] $($_.Exception.Message)"
+      }
 
       $sqlServerEndpoint = "$(synapseWorkspaceName)-ondemand.sql.azuresynapse.net"
       $userName = $env:SQL_USERNAME

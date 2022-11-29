@@ -71,7 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
                         ? Path.Combine(_testDataFolder, _groupIdToTestDataFile[resourceId])
                         : TestDataConstants.EmptyBundleFile;
                     string bundle =
-                        TestDataProvider.GetBundleFromFile(testDataFile);
+                        TestDataProvider.GetDataFromFile(testDataFile);
                     return bundle;
                 });
 

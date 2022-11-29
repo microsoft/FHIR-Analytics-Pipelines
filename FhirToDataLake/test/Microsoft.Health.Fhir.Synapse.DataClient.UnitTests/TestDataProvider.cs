@@ -15,14 +15,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
 {
     public static class TestDataProvider
     {
-        public static string GetBundleFromFile(string filePath)
+        public static string GetDataFromFile(string filePath)
         {
             return File.ReadAllText(filePath);
         }
 
         public static ITypedElement GetBundleElementFromFile(string filePath)
         {
-            string bundleContent = GetBundleFromFile(filePath);
+            string bundleContent = GetDataFromFile(filePath);
 
             var fhirSerializer = new FhirSerializer(Options.Create(new DataSourceConfiguration()));
 
@@ -31,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
 
         public static JObject GetBundleJsonFromFile(string filePath)
         {
-            string bundleContent = GetBundleFromFile(filePath);
+            string bundleContent = GetDataFromFile(filePath);
 
             return JObject.Parse(bundleContent);
         }

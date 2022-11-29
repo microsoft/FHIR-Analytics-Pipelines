@@ -46,6 +46,8 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
 
             _dicomApiDataSource = dataSource;
             _httpClient = httpClient;
+
+            // The header could accept multiple values
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/dicom+json");
             _accessTokenProvider = new AzureAccessTokenProvider(
                 tokenCredentialProvider.GetCredential(TokenCredentialTypes.External),
@@ -103,7 +105,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
 
         public string Search(BaseApiOptions serverApiOptions)
         {
-            return SearchAsync(serverApiOptions).Result;
+            _diagnosticLogger.LogError("Synchronous search is not supported in DICOM.");
+            _logger.LogInformation("Synchronous search is not supported in DICOM.");
+            throw new ApiSearchException("Synchronous search is not supported in DICOM.");
         }
 
         private Uri CreateSearchUri(BaseApiOptions dicomApiOptions)
@@ -114,7 +118,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
 
             var uri = new Uri(baseUri, dicomApiOptions.RelativeUri());
 
-            // the query parameters is null for metadata
             if (dicomApiOptions.QueryParameters == null)
             {
                 return uri;
@@ -167,7 +170,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
                 }
 
                 throw new ApiSearchException(
-                    string.Format(Resource.FhirSearchFailed, uri, hrEx.Message),
+                    string.Format(Resource.DicomSearchFailed, uri, hrEx.Message),
                     hrEx);
             }
             catch (BrokenCircuitException bcEx)
@@ -176,7 +179,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom
                 _logger.LogInformation(bcEx, "Broken circuit while searching from server. Reason: {0}", bcEx.Message);
 
                 throw new ApiSearchException(
-                    string.Format(Resource.FhirSearchFailed, uri, bcEx.Message),
+                    string.Format(Resource.DicomSearchFailed, uri, bcEx.Message),
                     bcEx);
             }
             catch (Exception ex)

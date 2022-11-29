@@ -46,7 +46,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private readonly long _jobId;
 
-        private FhirToDataLakeProcessingJobResult _result;
+        private DicomToDataLakeProcessingJobResult _result;
         private CacheResult _cacheResult;
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             try
             {
                 // clear result at first
-                _result = new FhirToDataLakeProcessingJobResult();
+                _result = new DicomToDataLakeProcessingJobResult();
 
                 progress.Report(JsonConvert.SerializeObject(_result));
 

@@ -25,6 +25,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
             try
             {
                 // include enum field, an exception will be thrown when parse invalid enum string
+                // enum field parsing is case insensitive
                 dataSourceConfiguration = services
                     .BuildServiceProvider()
                     .GetRequiredService<IOptions<DataSourceConfiguration>>()

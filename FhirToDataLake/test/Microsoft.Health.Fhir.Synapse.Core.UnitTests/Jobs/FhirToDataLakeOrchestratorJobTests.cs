@@ -383,7 +383,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // Get bundle from next link
             List<string> nextBundles = GetSearchBundles(count);
-            string emptyBundle = TestDataProvider.GetBundleFromFile(TestDataConstants.EmptyBundleFile);
+            string emptyBundle = TestDataProvider.GetDataFromFile(TestDataConstants.EmptyBundleFile);
             nextBundles.Add(emptyBundle);
             dataClient.SearchAsync(default).ReturnsForAnyArgs(nextBundles[resumedFrom + 1], nextBundles.Skip(resumedFrom + 2).ToArray());
             return dataClient;
@@ -391,7 +391,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private static List<string> GetSearchBundles(int count)
         {
-            string bundleSample = TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile2);
+            string bundleSample = TestDataProvider.GetDataFromFile(TestDataConstants.PatientBundleFile2);
             List<string> results = new List<string> { bundleSample };
             for (int i = 1; i < count; i++)
             {

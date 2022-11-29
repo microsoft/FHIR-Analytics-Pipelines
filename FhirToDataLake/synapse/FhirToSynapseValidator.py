@@ -51,11 +51,11 @@ class FhirApiDataClient:
 
     def get_all_entries(self, resource_type):
         query_base_url = self.fhir_server_base_url + f"/{resource_type}?_lastUpdated=ge{FhirApiDataClient.start_datetime}&_lastUpdated=lt{datetime.today().strftime('%Y-%m-%dT%H:%M:%S-00:00')}&_sort=_lastUpdated&_count=1000"
-        
+
         result = []
         query_url = query_base_url
         while query_url:
-            response = requests.get(query_url, headers=FhirApiDataClient.headers)
+            response = requests.get(query_url, headers=self.headers)
             if response.status_code != requests.codes.ok:
                 raise Exception(f"Get data from {query_url} failed: " + response.text)
 
@@ -129,7 +129,7 @@ class SchemaManager:
 class SqlServerClient:
     def __init__(self, sql_server_endpoint, database, sql_username, sql_password):
         self.connection_string = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' \
-                    + sql_server_endpoint + ';DATABASE=' + database + ';UID=' + sql_username + ';PWD=' + sql_password
+                                 + sql_server_endpoint + ';DATABASE=' + database + ';UID=' + sql_username + ';PWD=' + sql_password
 
     def get_data(self, resource_type):
         connection = pyodbc.connect(self.connection_string)
@@ -160,7 +160,8 @@ class DataClient:
             DataClient.column_dict_key: self.column_dicts[resource_type]
         }
         if self.customized_schema:
-            result[DataClient.queried_custom_data_key] = self.sql_client.get_data('{0}_Customized'.format(resource_type))
+            result[DataClient.queried_custom_data_key] = self.sql_client.get_data(
+                '{0}_Customized'.format(resource_type))
         return result
 
 
@@ -184,7 +185,8 @@ if __name__ == "__main__":
         fhir_api_client = FhirApiDataClient(fhir_server_base_url)
     sql_client = SqlServerClient(sql_server_endpoint, database, sql_username, sql_password)
 
-    dataClient = DataClient(sql_client, fhir_api_client, schema_manager.generate_external_table_column_dicts(), customized_schema)
+    dataClient = DataClient(sql_client, fhir_api_client, schema_manager.generate_external_table_column_dicts(),
+                            customized_schema)
 
     start_time = time.time()
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
@@ -195,7 +197,8 @@ if __name__ == "__main__":
             expected_entries = result[DataClient.expected_data_key]
             queried_default_df = result[DataClient.queried_default_data_key]
             column_dict = result[DataClient.column_dict_key]
-            print(f"Get {queried_default_df.shape[0]} resources from \"{resource_type_name}\" on Synapse, columns number is {queried_default_df.shape[1]}")
+            print(
+                f"Get {queried_default_df.shape[0]} resources from \"{resource_type_name}\" on Synapse, columns number is {queried_default_df.shape[1]}")
 
             if len(expected_entries) != queried_default_df.shape[0]:
                 raise Exception(f"The resource number of \"{resource_type_name}\" is incorrect."
@@ -208,14 +211,16 @@ if __name__ == "__main__":
                 raise Exception(f"The columns number of \"{resource_type_name}\" is incorrect."
                                 f"Expected column number is {len(column_dict)}, "
                                 f"while column number been queried on Synapse is {queried_default_df.shape[1]}.")
-            
+
             if customized_schema:
                 queried_custom_df = result[DataClient.queried_custom_data_key]
-                print(f"Get {queried_custom_df.shape[0]} customized resources from \"{'{0}_Customized'.format(resource_type_name)}\" on Synapse, columns number is {queried_custom_df.shape[1]}")
+                print(
+                    f"Get {queried_custom_df.shape[0]} customized resources from \"{'{0}_Customized'.format(resource_type_name)}\" on Synapse, columns number is {queried_custom_df.shape[1]}")
 
                 if len(expected_entries) != queried_custom_df.shape[0]:
-                    raise Exception(f"The resource number of \"{'{0}_Customized'.format(resource_type_name)}\" is incorrect."
-                                    f"Expected resource number is {len(expected_entries)}, "
-                                    f"while resources been queried on Synapse is {queried_custom_df.shape[0]}.")
+                    raise Exception(
+                        f"The resource number of \"{'{0}_Customized'.format(resource_type_name)}\" is incorrect."
+                        f"Expected resource number is {len(expected_entries)}, "
+                        f"while resources been queried on Synapse is {queried_custom_df.shape[0]}.")
 
     print(f"Validating {len(resource_types)} resource types, completes in {str(time.time() - start_time)} seconds.")

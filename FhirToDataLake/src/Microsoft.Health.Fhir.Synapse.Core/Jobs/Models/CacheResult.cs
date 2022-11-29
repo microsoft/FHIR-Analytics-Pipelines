@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
 {
     /// <summary>
-    /// Cache the resources retrieved from Fhir server in memory,
+    /// Cache the resources retrieved from server in memory,
     /// so we can process the resources and save them to blob storage in batch.
     /// </summary>
     public class CacheResult
@@ -25,12 +25,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         }
 
         /// <summary>
-        /// The fhir resources of each resource type
+        /// The resources of each resource type
         /// </summary>
         public Dictionary<string, List<JObject>> Resources { get; set; }
 
         /// <summary>
-        /// The data size of cached fhir resource bundles in bytes.
+        /// The data size of cached resources in bytes.
         /// </summary>
         public int CacheSize { get; set; }
 
