@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(3, result.SearchCount["dicom"]);
             Assert.Equal(3, result.ProcessedCount["dicom"]);
             Assert.Equal(0, result.SkippedCount["dicom"]);
-            Assert.Equal(911000, result.ProcessedDataSizeInTotal);
+            Assert.Equal(911016, result.ProcessedDataSizeInTotal);
             Assert.Equal(3, result.ProcessedCountInTotal);
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));
