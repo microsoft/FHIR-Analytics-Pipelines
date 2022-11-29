@@ -47,7 +47,7 @@ steps:
           dataLakeStore__storageUrl='https://$(fhirToDatalakeStorageAccountName).blob.core.windows.net' `
           schema__enableCustomizedSchema=true `
           schema__schemaImageReference='$(customizedSchemaImageReference)' `
-          fhirServer__serverUrl='https://analyticspipelineci-readonlytest.fhir.azurehealthcareapis.com' `
+          fhirServer__serverUrl='$(fhirServer:serverUrl)' `
           fhirServer__version=R4 `
           fhirServer__authentication=ManagedIdentity `
           ApplicationInsights__ConnectionString='$(application-insights-connection-string)' `

@@ -46,7 +46,7 @@ steps:
           job__queueUrl='https://$(dicomToDatalakeStorageAccountName).queue.core.windows.net' `
           dataLakeStore__storageUrl='https://$(dicomToDatalakeStorageAccountName).blob.core.windows.net' `
           dataSource__type=DICOM `
-          dataSource__dicomServer__serverUrl=$(DicomServerUrl) `
+          dataSource__dicomServer__serverUrl=$(dataSource:dicomServer:serverUrl) `
           dataSource__dicomServer__versio=V1 `
           dataSource__dicomServer__authentication=ManagedIdentity `
           ApplicationInsights__ConnectionString='$(application-insights-connection-string)' `
@@ -146,7 +146,7 @@ steps:
   inputs:
     scriptSource: filePath
     scriptPath: '$(Build.SourcesDirectory)/FhirToDataLake/synapse/DicomToSynapseValidator.py'
-    arguments: --synapse_workspace $(synapseWorkspaceName) --dicom_server_url $(DicomServerUrl) --dicom_server_access_token $(dicomServiceAccessToken) --database $(databaseName) --schema_directory $(System.DefaultWorkingDirectory)/FhirToDataLake/data/schemas/dicom/ --dicom_server_access_token $(dicomServiceAccessToken)
+    arguments: --synapse_workspace $(synapseWorkspaceName) --dicom_server_url $(dataSource:dicomServer:serverUrl) --dicom_server_access_token $(dicomServiceAccessToken) --database $(databaseName) --schema_directory $(System.DefaultWorkingDirectory)/FhirToDataLake/data/schemas/dicom/ --dicom_server_access_token $(dicomServiceAccessToken)
   env:
     SQL_USERNAME: $(synapse-sql-username)
     SQL_PASSWORD: $(synapse-sql-password)
