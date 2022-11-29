@@ -46,7 +46,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         public static readonly HashSet<DicomApiVersion> SupportedDicomApiVersions = new ()
         {
             DicomApiVersion.V1,
-            DicomApiVersion.V1_0_Prerelease,
         };
 
         public const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
