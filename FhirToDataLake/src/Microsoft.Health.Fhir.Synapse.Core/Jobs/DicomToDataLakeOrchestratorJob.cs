@@ -169,34 +169,38 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private IEnumerable<DicomToDataLakeProcessingJobInputData> GetInputs()
         {
-            var currentOffset = _inputData.StartOffset;
+            if (_result.CreatedJobCount == 0)
+            {
+                _result.NextOffset = _inputData.StartOffset;
+            }
 
-            while (currentOffset + ChangeFeedLimit <= _inputData.EndOffset)
+            while (_result.NextOffset + ChangeFeedLimit <= _inputData.EndOffset)
             {
                 var input = new DicomToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
                     ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
-                    StartOffset = currentOffset,
-                    EndOffset = currentOffset + ChangeFeedLimit,
+                    StartOffset = _result.NextOffset,
+                    EndOffset = _result.NextOffset + ChangeFeedLimit,
                 };
 
-                currentOffset += ChangeFeedLimit;
+                _result.NextOffset += ChangeFeedLimit;
                 yield return input;
             }
 
-            if (currentOffset < _inputData.EndOffset)
+            if (_result.NextOffset < _inputData.EndOffset)
             {
                 var input = new DicomToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
                     ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
-                    StartOffset = currentOffset,
+                    StartOffset = _result.NextOffset,
                     EndOffset = _inputData.EndOffset,
                 };
 
+                _result.NextOffset = _inputData.EndOffset;
                 yield return input;
             }
         }
