@@ -12,8 +12,8 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
         [JsonProperty("serverUrl")]
         public string ServerUrl { get; set; } = string.Empty;
 
-        [JsonProperty("version")]
-        public DicomApiVersion Version { get; set; } = DicomApiVersion.V1;
+        [JsonProperty("apiVersion")]
+        public DicomApiVersion ApiVersion { get; set; } = DicomApiVersion.V1;
 
         [JsonProperty("authentication")]
         public AuthenticationType Authentication { get; set; } = AuthenticationType.None;

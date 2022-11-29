@@ -98,7 +98,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Api
                 DicomServer = new DicomServerConfiguration
                 {
                     ServerUrl = serverUrl,
-                    Version = Enum.Parse<DicomApiVersion>(version, true),
+                    ApiVersion = Enum.Parse<DicomApiVersion>(version, true),
                 },
             };
 
