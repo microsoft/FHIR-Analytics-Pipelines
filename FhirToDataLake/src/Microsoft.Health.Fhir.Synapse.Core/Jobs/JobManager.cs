@@ -48,8 +48,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>Completed task.</returns>
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            _logger.LogInformation($"Job manager starts running with version {assembly.GetName().Version}");
+            _logger.LogInformation($"Job manager starts running with version {Assembly.GetExecutingAssembly().GetName().Version}");
 
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task scheduleTask = _scheduler.RunAsync(cancellationTokenSource.Token);

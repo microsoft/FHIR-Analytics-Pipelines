@@ -3,8 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,9 +23,6 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
     {
         public static void Main()
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            Console.WriteLine($"Running FHIR to Synapse Pipeline. Version: {assembly.GetName().Version}");
-
             IHost host = new HostBuilder()
                 .ConfigureAppConfiguration(builder =>
                 {

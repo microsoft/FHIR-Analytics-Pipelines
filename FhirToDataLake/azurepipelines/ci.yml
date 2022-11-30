@@ -110,7 +110,7 @@ steps:
     targetType: inline
     workingDirectory: FhirToDataLake
     script: |
-      docker build -t $(imageName):$(version) -f ./src/Microsoft.Health.Fhir.Synapse.Tool/Dockerfile . --build-arg Version=$(version)
+      docker build -t $(imageName):$(version) -f ./src/Microsoft.Health.Fhir.Synapse.Tool/Dockerfile . --build-arg BINARY_VERSION=$(version)
       docker save $(imageName):$(version) -o $(Build.ArtifactStagingDirectory)/$(imageName).tar
 
 - task: PublishPipelineArtifact@1
