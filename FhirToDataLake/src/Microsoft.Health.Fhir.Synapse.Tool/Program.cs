@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Reflection;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,6 +25,10 @@ namespace Microsoft.Health.Fhir.Synapse.Tool
     {
         public static async Task Main(string[] args)
         {
+            var assembly = Assembly.GetExecutingAssembly();
+            var version1 = assembly.GetName().Version;
+            var version = ((AssemblyFileVersionAttribute)Attribute.GetCustomAttribute(assembly, typeof(AssemblyFileVersionAttribute), false)).Version;
+            Console.WriteLine($"Running version:{version1} FHIR to Synapse Pipeline. Fileversion: {version}.");
             IHost host = CreateHostBuilder(args).Build();
             await host.RunAsync();
         }
