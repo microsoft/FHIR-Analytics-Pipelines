@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--synapse_workspace", required=True, help="Name of Synapse workspace.")
 parser.add_argument("--dicom_server_url", required=True, help="Dicom server url.")
 parser.add_argument("--dicom_server_access_token", help="Dicom server bearer access token.")
+parser.add_argument("--customized_schema", help="Whether enable customized schema feature.")
 parser.add_argument("--schema_directory", required=True, help="Schema directory path.")
 parser.add_argument("--database", default='dicom', help="Name of SQL database.")
 parser.add_argument("--sql_username", help="SQL username.")
@@ -22,6 +23,7 @@ database = args.database
 schema_directory = args.schema_directory
 dicom_server_base_url = args.dicom_server_url
 dicom_server_access_token = args.dicom_server_access_token
+customized_schema = args.customized_schema
 sql_username = args.sql_username
 sql_password = args.sql_password
 
@@ -108,6 +110,7 @@ if __name__ == "__main__":
 
     expected_entries_count = dicom_api_client.get_metadata_count()
 
+    # Check DICOM default schema data.
     if expected_entries_count != queried_default_df.shape[0]:
         raise Exception(f"The resource number of \"{resource_type_name}\" is incorrect."
                         f"Expected resource number is {expected_entries_count}, "
@@ -117,5 +120,14 @@ if __name__ == "__main__":
         raise Exception(f"The columns number of \"{resource_type_name}\" is incorrect."
                         f"Expected column number is {expected_column_count}, "
                         f"while column number been queried on Synapse is {queried_default_df.shape[1]}.")
+
+    # Check DICOM customized schema data.
+    if customized_schema:
+        queried_default_df = sql_client.get_data('{0}_Customized'.format(resource_type_name))
+        print(f"Get {queried_default_df.shape[0]} resources from \"{'{0}_Customized'.format(resource_type_name)}\" on Synapse, columns number is {queried_default_df.shape[1]}")
+        if expected_entries_count != queried_default_df.shape[0]:
+            raise Exception(f"The resource number of \"{'{0}_Customized'.format(resource_type_name)}\" is incorrect."
+                            f"Expected resource number is {expected_entries_count}, "
+                            f"while resources been queried on Synapse is {queried_default_df.shape[0]}.")
 
     print(f"Validate dicom data completes in {str(time.time() - start_time)} seconds.")

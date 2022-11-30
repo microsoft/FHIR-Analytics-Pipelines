@@ -45,6 +45,8 @@ steps:
           job__tableUrl='https://$(dicomToDatalakeStorageAccountName).table.core.windows.net' `
           job__queueUrl='https://$(dicomToDatalakeStorageAccountName).queue.core.windows.net' `
           dataLakeStore__storageUrl='https://$(dicomToDatalakeStorageAccountName).blob.core.windows.net' `
+          schema__enableCustomizedSchema=true `
+          schema__schemaImageReference='$(dicomCustomizedSchemaImageReference)' `
           dataSource__type=DICOM `
           dataSource__dicomServer__serverUrl=$(dataSource:dicomServer:serverUrl) `
           dataSource__dicomServer__versio=V1 `
@@ -87,6 +89,7 @@ steps:
                 -StorageName $(dicomToDatalakeStorageAccountName) `
                 -Container $(containerName) `
                 -Database $(databaseName) `
+                -CustomizedSchemaImage $(dicomCustomizedSchemaImageReference) `
                 -SqlScriptCollectionPath $(System.DefaultWorkingDirectory)/FhirToDataLake/scripts/sql `
                 -DataSourceType DICOM
               break;
@@ -146,7 +149,7 @@ steps:
   inputs:
     scriptSource: filePath
     scriptPath: '$(Build.SourcesDirectory)/FhirToDataLake/synapse/DicomToSynapseValidator.py'
-    arguments: --synapse_workspace $(synapseWorkspaceName) --dicom_server_url $(dataSource:dicomServer:serverUrl) --dicom_server_access_token $(dicomServiceAccessToken) --database $(databaseName) --schema_directory $(System.DefaultWorkingDirectory)/FhirToDataLake/data/schemas/dicom/ --dicom_server_access_token $(dicomServiceAccessToken)
+    arguments: --synapse_workspace $(synapseWorkspaceName) --dicom_server_url $(dataSource:dicomServer:serverUrl) --dicom_server_access_token $(dicomServiceAccessToken) --database $(databaseName) --schema_directory $(System.DefaultWorkingDirectory)/FhirToDataLake/data/schemas/dicom/ --customized_schema True
   env:
     SQL_USERNAME: $(synapse-sql-username)
     SQL_PASSWORD: $(synapse-sql-password)
