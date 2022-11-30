@@ -81,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [InlineData(null)]
         [InlineData("")]
         [InlineData("{entry: [{resource: {}}]}")]
-        public async Task GivenInvalidSearchBundle_WhenExecuteTask_ExceptionShouldBeThrown(string invalidBundle)
+        public async Task GivenInvalidSearchResult_WhenExecuteTask_ExceptionShouldBeThrown(string invalidSearchResult)
         {
             string progressResult = null;
             Progress<string> progress = new Progress<string>(r =>
@@ -93,7 +93,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var blobClient = new InMemoryBlobContainerClient();
 
-            DicomToDataLakeProcessingJob job = GetDicomToDataLakeProcessingJob(1L, GetInputData(), invalidBundle, containerName, blobClient);
+            DicomToDataLakeProcessingJob job = GetDicomToDataLakeProcessingJob(1L, GetInputData(), invalidSearchResult, containerName, blobClient);
 
             await Assert.ThrowsAsync<RetriableJobException>(() => job.ExecuteAsync(progress, CancellationToken.None));
         }
@@ -101,14 +101,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static DicomToDataLakeProcessingJob GetDicomToDataLakeProcessingJob(
             long jobId,
             DicomToDataLakeProcessingJobInputData inputData,
-            string bundleResult,
+            string searchResult,
             string containerName,
             IAzureBlobContainerClient blobClient)
         {
             return new DicomToDataLakeProcessingJob(
                 jobId,
                 inputData,
-                GetMockDicomDataClient(bundleResult),
+                GetMockDicomDataClient(searchResult),
                 GetDataWriter(containerName, blobClient),
                 GetParquetDataProcessor(),
                 GetSchemaManager(),
@@ -117,13 +117,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 new NullLogger<DicomToDataLakeProcessingJob>());
         }
 
-        private static IApiDataClient GetMockDicomDataClient(string firstBundle)
+        private static IApiDataClient GetMockDicomDataClient(string firstResult)
         {
             var dataClient = Substitute.For<IApiDataClient>();
 
-            // Get bundle from next link
-            string nextBundle = TestDataProvider.GetDataFromFile(TestDataConstants.ChangeFeedsFile);
-            dataClient.SearchAsync(default).ReturnsForAnyArgs(firstBundle, nextBundle);
+            // Get result from next link
+            string nextResult = TestDataProvider.GetDataFromFile(TestDataConstants.ChangeFeedsFile);
+            dataClient.SearchAsync(default).ReturnsForAnyArgs(firstResult, nextResult);
             return dataClient;
         }
 
@@ -149,7 +149,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             IOptions<SchemaConfiguration> schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
-            var schemaManager = new ParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<ParquetSchemaManager>.Instance);
+            var schemaManager = new ParquetSchemaManager(schemaConfigurationOption, TestUtils.TestDicomParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<ParquetSchemaManager>.Instance);
             IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             return new ParquetDataProcessor(
@@ -160,16 +160,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 NullLogger<ParquetDataProcessor>.Instance);
         }
 
-        private static IParquetSchemaProvider ParquetSchemaProviderDelegate(string name)
-        {
-            return new LocalDefaultSchemaProvider(_dataSourceOption, _diagnosticLogger, NullLogger<LocalDefaultSchemaProvider>.Instance);
-        }
-
         private static ISchemaManager<ParquetSchemaNode> GetSchemaManager()
         {
             IOptions<SchemaConfiguration> schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
-            return new ParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<ParquetSchemaManager>.Instance);
+            return new ParquetSchemaManager(schemaConfigurationOption, TestUtils.TestDicomParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<ParquetSchemaManager>.Instance);
         }
 
         private DicomToDataLakeProcessingJobInputData GetInputData()
