@@ -51,7 +51,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _logger.LogInformation("Job manager starts running.");
 
             var assembly = Assembly.GetExecutingAssembly();
-            _logger.LogInformation($"Running FHIR to Synapse Pipeline. Version: {assembly.GetName().Version}");
+            _logger.LogInformation($"Job manager starts running with version {assembly.GetName().Version}");
 
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task scheduleTask = _scheduler.RunAsync(cancellationTokenSource.Token);
