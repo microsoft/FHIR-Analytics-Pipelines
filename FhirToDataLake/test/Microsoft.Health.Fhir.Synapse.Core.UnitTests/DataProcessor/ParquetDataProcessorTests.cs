@@ -41,13 +41,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
 
             var schemaManagerWithoutCustomizedSchema = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
-                TestUtils.TestParquetSchemaProviderDelegate,
+                TestUtils.TestFhirParquetSchemaProviderDelegate,
                 _diagnosticLogger,
                 schemaManagerNullLogger);
 
             var schemaManagerWithCustomizedSchema = new ParquetSchemaManager(
                 Options.Create(TestUtils.TestCustomSchemaConfiguration),
-                TestUtils.TestParquetSchemaProviderDelegate,
+                TestUtils.TestFhirParquetSchemaProviderDelegate,
                 _diagnosticLogger,
                 schemaManagerNullLogger);
 

@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using Hl7.Fhir.ElementModel;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;

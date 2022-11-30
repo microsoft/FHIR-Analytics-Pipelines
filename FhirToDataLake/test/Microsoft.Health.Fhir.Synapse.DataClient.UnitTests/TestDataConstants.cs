@@ -27,7 +27,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
 
         public const string PatientBundleFile2 = "./TestData/Patient-Bundle2.json";
 
-        public const string LatestChangeFeedFile = "./TestData/LatestChangeFeed.json";
+        public const string LatestChangeFeedFile1 = "./TestData/LatestChangeFeed1.json";
+
+        public const string LatestChangeFeedFile2 = "./TestData/LatestChangeFeed2.json";
 
         public const string ChangeFeedsFile = "./TestData/ChangeFeeds.json";
     }

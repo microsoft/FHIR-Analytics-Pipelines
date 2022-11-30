@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         {
             var schemaManager = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
-                TestUtils.TestParquetSchemaProviderDelegate,
+                TestUtils.TestFhirParquetSchemaProviderDelegate,
                 _diagnosticLogger,
                 NullLogger<ParquetSchemaManager>.Instance);
 
@@ -323,7 +323,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         {
             var schemaManager = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
-                TestUtils.TestParquetSchemaProviderDelegate,
+                TestUtils.TestFhirParquetSchemaProviderDelegate,
                 _diagnosticLogger,
                 NullLogger<ParquetSchemaManager>.Instance);
 
