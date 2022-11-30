@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -48,6 +49,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Job manager starts running.");
+            var assembly = Assembly.GetExecutingAssembly();
+            var version1 = assembly.GetName().Version;
+            var version = ((AssemblyFileVersionAttribute)Attribute.GetCustomAttribute(assembly, typeof(AssemblyFileVersionAttribute), false)).Version;
+            _logger.LogInformation($"Running version:{version1} FHIR to Synapse Pipeline. Fileversion: {version}.");
 
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task scheduleTask = _scheduler.RunAsync(cancellationTokenSource.Token);
