@@ -18,7 +18,7 @@ RUN dotnet restore "src/Microsoft.Health.Fhir.Synapse.Tool/Microsoft.Health.Fhir
 
 COPY . .
 WORKDIR "/src/src/Microsoft.Health.Fhir.Synapse.Tool"
-RUN dotnet build "Microsoft.Health.Fhir.Synapse.Tool.csproj" -c Release -o /app/build
+RUN dotnet build "Microsoft.Health.Fhir.Synapse.Tool.csproj" -c Release -o /app/build -p:Version=0.5.0
 FROM build AS publish
 
 RUN dotnet publish "Microsoft.Health.Fhir.Synapse.Tool.csproj" -c Release -o /app/publish /p:UseAppHost=false
