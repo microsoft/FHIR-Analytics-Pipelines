@@ -15,6 +15,8 @@ using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.JobManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
+using System;
+using System.Reflection;
 
 namespace Microsoft.Health.Fhir.Synapse.FunctionApp
 {
@@ -22,6 +24,11 @@ namespace Microsoft.Health.Fhir.Synapse.FunctionApp
     {
         public static void Main()
         {
+            var assembly = Assembly.GetExecutingAssembly();
+            var version1 = assembly.GetName().Version;
+            var version = ((AssemblyFileVersionAttribute)Attribute.GetCustomAttribute(assembly, typeof(AssemblyFileVersionAttribute), false)).Version;
+            Console.WriteLine($"Running version:{version1} FHIR to Synapse Pipeline. Fileversion: {version}.");
+
             IHost host = new HostBuilder()
                 .ConfigureAppConfiguration(builder =>
                 {
