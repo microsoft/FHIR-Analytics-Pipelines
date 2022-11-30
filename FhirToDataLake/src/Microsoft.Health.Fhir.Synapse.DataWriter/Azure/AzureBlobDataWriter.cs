@@ -30,6 +30,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
         // Staged data folder path: "staging/{JobId:d20}/{schemaType}/{year}/{month}/{day}"
         // Committed data file path: "result/{schemaType}/{year}/{month}/{day}/{JobId:d20}"
         private readonly Regex _fhirStagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z_]+/\d{4}/\d{2}/\d{2})$");
+
+        // Staged data folder path: "staging/{JobId:d20}/{schemaType}/{offset}"
+        // Committed data file path: "result/{schemaType}/{offset}/{JobId:d20}"
         private readonly Regex _dicomStagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z_]+/\d+)$");
 
         private readonly DataSourceType _dataSourceType;

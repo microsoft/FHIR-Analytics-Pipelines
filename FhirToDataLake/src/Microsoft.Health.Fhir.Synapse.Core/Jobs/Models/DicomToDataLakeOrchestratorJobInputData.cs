@@ -17,8 +17,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// </summary>
         public long TriggerSequenceId { get; set; }
 
+        /// <summary>
+        /// Start offset in DICOM Server changefeed
+        /// </summary>
         public long StartOffset { get; set; }
 
+        /// <summary>
+        /// End offset in DICOM Server changefeed
+        /// </summary>
         public long EndOffset { get; set; }
     }
 }

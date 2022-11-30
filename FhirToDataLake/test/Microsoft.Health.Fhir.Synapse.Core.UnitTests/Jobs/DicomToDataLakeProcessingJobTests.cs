@@ -146,13 +146,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private static ParquetDataProcessor GetParquetDataProcessor()
         {
-            IOptions<SchemaConfiguration> schemaConfigurationOption = Options.Create(new SchemaConfiguration());
-
-            var schemaManager = new ParquetSchemaManager(schemaConfigurationOption, TestUtils.TestDicomParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<ParquetSchemaManager>.Instance);
             IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             return new ParquetDataProcessor(
-                schemaManager,
+                GetSchemaManager(),
                 arrowConfigurationOptions,
                 TestUtils.TestDicomDataSchemaConverterDelegate,
                 _diagnosticLogger,
@@ -166,7 +163,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return new ParquetSchemaManager(schemaConfigurationOption, TestUtils.TestDicomParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<ParquetSchemaManager>.Instance);
         }
 
-        private DicomToDataLakeProcessingJobInputData GetInputData()
+        private static DicomToDataLakeProcessingJobInputData GetInputData()
         {
             var inputData = new DicomToDataLakeProcessingJobInputData
             {
