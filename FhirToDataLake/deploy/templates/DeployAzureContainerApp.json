@@ -109,6 +109,13 @@
             "description": "Concurrent jobs exeucting in parallel."
         }
     },
+    "customizedSchemaImageReference":{
+        "type": "string",
+        "defaultValue": "",
+        "metadata": {
+            "description": "The customized schema image reference for the image on Container Registry. Refer https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
+        }
+    },
     "filterConfigImageReference":{
         "type": "string",
         "defaultValue": "",
@@ -142,13 +149,6 @@
         "defaultValue": "",
         "metadata": {
             "description": "For data filtering use. Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. All data of requiredTypes will be exported if not specified. Leave it blank if no filter is applied."
-        }
-    },
-    "customizedSchemaImageReference":{
-        "type": "string",
-        "defaultValue": "",
-        "metadata": {
-            "description": "The customized schema image reference for the image on Container Registry. Refer https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
         }
     },
     "image": {

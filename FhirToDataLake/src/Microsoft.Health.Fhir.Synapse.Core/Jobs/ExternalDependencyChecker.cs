@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Core.ContainerRegistry;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
@@ -39,8 +40,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<ExternalDependencyChecker> _logger;
-
-        private const string MediaTypeV2Manifest = "application/vnd.docker.distribution.manifest.v2+json";
 
         public ExternalDependencyChecker(
             IApiDataClient apiDataClient,
@@ -173,7 +172,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var acrClient = new AzureContainerRegistryClient(imageInfo.Registry, new AcrClientCredentials(accessToken));
 
                 // Ensure we can read from acr.
-                await acrClient.Manifests.GetAsync(imageInfo.ImageName, imageInfo.Label, MediaTypeV2Manifest, cancellationToken);
+                await acrClient.Manifests.GetAsync(imageInfo.ImageName, imageInfo.Label, OciArtifactConstants.AcceptedManifestTypes, cancellationToken);
 
                 _logger.LogInformation($"[External Dependency Check] ACR {imageReference} is ready.");
             }
