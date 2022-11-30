@@ -14,7 +14,6 @@ COPY ["src/Microsoft.Health.Fhir.Synapse.JobManagement/Microsoft.Health.Fhir.Syn
 COPY ["src/Microsoft.Health.Fhir.Synapse.SchemaManagement/Microsoft.Health.Fhir.Synapse.SchemaManagement.csproj", "src/Microsoft.Health.Fhir.Synapse.SchemaManagement/"]
 COPY ["src/Microsoft.Health.Fhir.Synapse.HealthCheck/Microsoft.Health.Fhir.Synapse.HealthCheck.csproj", "src/Microsoft.Health.Fhir.Synapse.HealthCheck/"]
 
-ENV Version 0.5.0
 RUN dotnet restore "src/Microsoft.Health.Fhir.Synapse.Tool/Microsoft.Health.Fhir.Synapse.Tool.csproj"
 
 COPY . .
