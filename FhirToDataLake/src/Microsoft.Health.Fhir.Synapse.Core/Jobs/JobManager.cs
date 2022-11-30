@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -47,7 +48,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>Completed task.</returns>
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Job manager starts running.");
+            _logger.LogInformation($"Job manager starts running with version {Assembly.GetExecutingAssembly().GetName().Version}");
 
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Task scheduleTask = _scheduler.RunAsync(cancellationTokenSource.Token);
