@@ -22,6 +22,7 @@ ARG BINARY_VERSION
 RUN dotnet build "Microsoft.Health.Fhir.Synapse.Tool.csproj" -c Release -o /app/build -p:Version=$BINARY_VERSION
 FROM build AS publish
 
+ARG BINARY_VERSION
 RUN dotnet publish "Microsoft.Health.Fhir.Synapse.Tool.csproj" -c Release -o /app/publish /p:UseAppHost=false -p:Version=$BINARY_VERSION
 FROM base AS final
 
