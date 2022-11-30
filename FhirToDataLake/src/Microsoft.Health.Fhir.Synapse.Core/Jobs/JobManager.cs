@@ -48,8 +48,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>Completed task.</returns>
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Job manager starts running.");
-
             var assembly = Assembly.GetExecutingAssembly();
             _logger.LogInformation($"Job manager starts running with version {assembly.GetName().Version}");
 
