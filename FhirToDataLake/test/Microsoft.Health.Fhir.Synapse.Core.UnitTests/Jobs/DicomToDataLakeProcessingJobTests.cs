@@ -23,7 +23,6 @@ using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
-using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using NSubstitute;
