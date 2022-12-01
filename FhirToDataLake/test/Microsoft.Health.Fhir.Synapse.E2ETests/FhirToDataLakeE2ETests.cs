@@ -44,12 +44,12 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Health.Fhir.Synapse.E2ETests
 {
-    public class E2ETests
+    public class FhirToDataLakeE2ETests
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly ITestOutputHelper _testOutputHelper;
 
-        private const string TestConfigurationPath = "appsettings.test.json";
+        private const string TestConfigurationPath = "appsettings.fhirtodatalake.test.json";
 
         private const string ExpectedDataFolder = "TestData/Expected";
 
@@ -61,11 +61,10 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         private AzureStorageClientFactory _queueClientFactory;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="E2ETests"/> class.
-        /// To run the tests locally, pull "healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1" and run it in port 5000.
+        /// Initializes a new instance of the <see cref="FhirToDataLakeE2ETests"/> class.
         /// </summary>
         /// <param name="testOutputHelper">output helper.</param>
-        public E2ETests(ITestOutputHelper testOutputHelper)
+        public FhirToDataLakeE2ETests(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
             string storageUri = Environment.GetEnvironmentVariable("dataLakeStore:storageUrl");
