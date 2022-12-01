@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -158,6 +159,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 throw new RetriableJobException("Unhandled error occurred in data processing job.", ex);
             }
+            finally
+            {
+                // Compact large objects allocated in processing.
+                GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+                GC.Collect();
+            }
         }
 
         private async Task SearchAsync(
@@ -208,7 +215,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     {
                         // Convert grouped data to parquet stream
                         var processParameters = new ProcessParameters(schemaType, resourceType);
-                        StreamBatchData parquetStream = await _parquetDataProcessor.ProcessAsync(batchData, processParameters, cancellationToken);
+                        using StreamBatchData parquetStream = await _parquetDataProcessor.ProcessAsync(batchData, processParameters, cancellationToken);
                         int skippedCount = batchData.Values.Count() - parquetStream.BatchSize;
 
                         if (parquetStream.Value?.Length > 0)
