@@ -4,9 +4,11 @@ trigger:
 - main
 - synapse
 - refs/heads/synapse
+- releases/*
 pr:
 - main
 - synapse
+- releases/*
 
 variables:
   buildConfiguration: 'Release'
@@ -37,7 +39,7 @@ stages:
     - template: FhirToDataLake/azurepipelines/ci.yml
 
 - stage: OverallTest
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  condition: and(succeeded(), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/'), eq(variables['Build.SourceBranch'], 'refs/heads/main')))
   jobs:
   - job: PrepareTestEnvironment
     pool:
