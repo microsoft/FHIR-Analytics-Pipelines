@@ -1,15 +1,17 @@
 steps:
-- task: DownloadBuildArtifacts@0
-  displayName: 'Download FhirToDataLake Image Artifacts'
+- task: DownloadPipelineArtifact@2
+  displayName: Download FhirToDataLake Image Artifacts
   inputs:
+    buildType: current
     artifactName: FhirToDataLakeImage
-    downloadPath: $(System.DefaultWorkingDirectory)
-
-- task: DownloadBuildArtifacts@0
-  displayName: 'Download FhirToDataLake Function App Artifacts'
+    targetPath: $(System.DefaultWorkingDirectory)
+    
+- task: DownloadPipelineArtifact@2
+  displayName: Download FhirToDataLake Function App Artifacts
   inputs:
+    buildType: current
     artifactName: FhirToDataLakeFunctionApp
-    downloadPath: $(System.DefaultWorkingDirectory)
+    targetPath: $(System.DefaultWorkingDirectory)
 
 - task: DownloadBuildArtifacts@0
   displayName: 'Download FhirToCdm Artifacts'
