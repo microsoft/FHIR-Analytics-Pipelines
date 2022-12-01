@@ -2,7 +2,7 @@
 
 1. To deploy the FHIR Synapse sync pipeline to [Azure Function](https://learn.microsoft.com/en-us/azure/azure-functions/functions-overview), use the buttons below to deploy through the Azure Portal.
    
-    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2FFHIR-Analytics-Pipelines%2Fmain%2FFhirToDataLake%2Fdeploy%2Ftemplates%2FDeployAzureFunction.json" target="_blank">
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2FFHIR-Analytics-Pipelines%2Freleases%2Fv0.5.0%2FFhirToDataLake%2Fdeploy%2Ftemplates%2FDeployAzureFunction.json" target="_blank">
         <img src="https://aka.ms/deploytoazurebutton"/>
     </a>
 
