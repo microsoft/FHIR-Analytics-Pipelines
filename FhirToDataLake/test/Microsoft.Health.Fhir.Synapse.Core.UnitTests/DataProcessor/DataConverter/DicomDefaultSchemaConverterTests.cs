@@ -13,7 +13,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
-using Microsoft.Health.Fhir.Synapse.Core.Dicom;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Newtonsoft.Json.Linq;
@@ -111,7 +110,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         {
             var result = _testDefaultConverter.Convert(
                 CreateTestJsonBatchData(_testMetadata),
-                DicomConstants.DicomResourceType);
+                "Dicom");
 
             var expectedResult = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.DicomTestDataFolder, "red-triangle-expected.ndjson"));
 
@@ -125,7 +124,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
                 () => _testDefaultConverter.Convert(CreateTestJsonBatchData(_testMetadata), null));
 
             Assert.Throws<ArgumentNullException>(
-                () => _testDefaultConverter.Convert(null, DicomConstants.DicomResourceType));
+                () => _testDefaultConverter.Convert(null, "Dicom"));
         }
 
         [Fact]
@@ -140,7 +139,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor.DataConvert
         public void GivenInvalidData_WhenConvert_ExceptionShouldBeThrown(JObject inputObject)
         {
             Assert.Throws<ParquetDataProcessorException>(
-                () => _testDefaultConverter.Convert(CreateTestJsonBatchData(inputObject), DicomConstants.DicomResourceType).Values.Count());
+                () => _testDefaultConverter.Convert(CreateTestJsonBatchData(inputObject), "Dicom").Values.Count());
         }
 
         private static JsonBatchData CreateTestJsonBatchData(JObject testJObjectData)
