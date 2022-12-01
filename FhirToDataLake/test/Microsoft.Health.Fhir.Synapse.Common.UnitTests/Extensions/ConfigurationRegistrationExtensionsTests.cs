@@ -125,7 +125,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             {
                 ["dataSource:type"] = "dIcoM",
                 ["dataSource:dicomServer:serverUrl"] = "https://test.dicom.azurehealthcareapis.com",
-                ["dataSource:dicomServer:version"] = "v1",
+                ["dataSource:dicomServer:apiVersion"] = "v1",
             };
             dicomConfiguration.Remove("fhirServer:serverUrl");
 

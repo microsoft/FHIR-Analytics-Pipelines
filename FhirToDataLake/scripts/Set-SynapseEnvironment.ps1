@@ -18,6 +18,9 @@
 .PARAMETER ResultPath
     Default: result
     Path to the parquet FHIR data.
+.PARAMETER DataSourceType
+    Default: FHIR
+    Source data type, "FHIR", "DICOM".
 .PARAMETER FhirVersion
     Default: R4
     The fhir version of Parquet data on the storage.
@@ -43,7 +46,7 @@ Param(
     [string]$StorageName,
     [string]$Container = "fhir",
     [string]$ResultPath = "result",
-    [string]$DataSourceType = 'fhir',
+    [string]$DataSourceType = 'FHIR',
     [string]$FhirVersion = "R4",
     [string]$SqlScriptCollectionPath = "sql",
     [string]$MasterKey = "FhirSynapseLink0!",

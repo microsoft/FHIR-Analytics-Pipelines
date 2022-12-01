@@ -1,7 +1,7 @@
 steps:
 - powershell: |
     $buildNumber = ([string]$(Build.BuildNumber)).replace('.', '')
-    $pipelineName = 'test' + $buildNumber.substring($buildNumber.length - 7)
+    $pipelineName = 'dicom' + $buildNumber.substring($buildNumber.length - 7)
 
     Write-Host $("Build number: " + $buildNumber)
     Write-Host $("Pipeline name: " + $pipelineName)
@@ -31,7 +31,7 @@ steps:
       # Update test running container instance 
       az container create `
         --resource-group $(resourceGroup) `
-        --name $(containerInstanceName) `
+        --name $(dicomToDatalakeInstanceName) `
         --image $env:CONTAINER_REGISTRY_SERVER/$(imageName):$(version) `
         --restart-policy Never `
         --cpu 2 --memory 4 `
@@ -42,14 +42,15 @@ steps:
           job__jobInfoTableName='$(containerName)jobinfotable' `
           job__metadataTableName='$(containerName)metadatatable' `
           job__containerName='$(containerName)' `
-          job__tableUrl='https://$(storageAccountName).table.core.windows.net' `
-          job__queueUrl='https://$(storageAccountName).queue.core.windows.net' `
-          dataLakeStore__storageUrl='https://$(storageAccountName).blob.core.windows.net' `
+          job__tableUrl='https://$(dicomToDatalakeStorageAccountName).table.core.windows.net' `
+          job__queueUrl='https://$(dicomToDatalakeStorageAccountName).queue.core.windows.net' `
+          dataLakeStore__storageUrl='https://$(dicomToDatalakeStorageAccountName).blob.core.windows.net' `
           schema__enableCustomizedSchema=true `
-          schema__schemaImageReference='$(customizedSchemaImageReference)' `
-          fhirServer__serverUrl='https://analyticspipelineci-readonlytest.fhir.azurehealthcareapis.com' `
-          fhirServer__version=R4 `
-          fhirServer__authentication=ManagedIdentity `
+          schema__schemaImageReference='$(dicomCustomizedSchemaImageReference)' `
+          dataSource__type=DICOM `
+          dataSource__dicomServer__serverUrl=$(dataSource:dicomServer:serverUrl) `
+          dataSource__dicomServer__versio=V1 `
+          dataSource__dicomServer__authentication=ManagedIdentity `
           ApplicationInsights__ConnectionString='$(application-insights-connection-string)' `
           Logging__ApplicationInsights__LogLevel__Default=Information
   env:
@@ -85,11 +86,12 @@ steps:
           {
               ./Set-SynapseEnvironment.ps1 `
                 -SynapseWorkspaceName $(synapseWorkspaceName) `
-                -StorageName $(storageAccountName) `
+                -StorageName $(dicomToDatalakeStorageAccountName) `
                 -Container $(containerName) `
                 -Database $(databaseName) `
-                -CustomizedSchemaImage $(customizedSchemaImageReference) `
-                -SqlScriptCollectionPath $(System.DefaultWorkingDirectory)/FhirToDataLake/scripts/sql
+                -CustomizedSchemaImage $(dicomCustomizedSchemaImageReference) `
+                -SqlScriptCollectionPath $(System.DefaultWorkingDirectory)/FhirToDataLake/scripts/sql `
+                -DataSourceType DICOM
               break;
           }
           catch [Exception]
@@ -111,7 +113,7 @@ steps:
       } while ($attempts -le $maxAttempts)
 
 - task: AzureCLI@2
-  displayName: Sync and process data from FHIR server
+  displayName: Sync and process data from DICOM server
   inputs: 
     azureSubscription: ResoluteOpenSource
     scriptType: ps
@@ -127,23 +129,17 @@ steps:
       }
 
       # Stop Container Instance
-      az container stop --name $(containerInstanceName) --resource-group $(resourceGroup)
+      az container stop --name $(dicomToDatalakeInstanceName) --resource-group $(resourceGroup)
 
 - task: AzureCLI@2
-  displayName: Get fhir service access token
+  displayName: Get DICOM service access token
   inputs: 
     azureSubscription: ResoluteOpenSource
     scriptType: ps
     scriptLocation: inlineScript
     inlineScript: |
-      $token=$(az account get-access-token --resource=$(fhirServer:serverUrl) --query accessToken --output tsv)
-      Write-Output("##vso[task.setvariable variable=fhirServiceAccessToken;]$token")
-
-- powershell: |
-    $validateResourceTypes = 'AllergyIntolerance,CarePlan,CareTeam,Claim,Condition,Device,DiagnosticReport,DocumentReference,Encounter,ExplanationOfBenefit,Group,ImagingStudy,Immunization,Medication,MedicationAdministration,MedicationRequest,Observation,Patient,Procedure,Provenance'
-    Write-Host "##vso[task.setvariable variable=validateResourceTypes;]$validateResourceTypes"
-    Write-Host "Validate $validateResourceTypes"
-  displayName: Set up validate resource types
+      $token=$(az account get-access-token --resource=https://dicom.healthcareapis.azure.com --query accessToken --output tsv)
+      Write-Output("##vso[task.setvariable variable=dicomServiceAccessToken;]$token")
 
 - script: python -m pip install requests pyodbc pandas
   displayName: Install requirements for validate script
@@ -152,8 +148,8 @@ steps:
   displayName: Validate data on Synapse
   inputs:
     scriptSource: filePath
-    scriptPath: '$(Build.SourcesDirectory)/FhirToDataLake/synapse/SynapseValidator.py'
-    arguments: --synapse_workspace $(synapseWorkspaceName) --fhir_server_url $(fhirServer:serverUrl) --database $(databaseName) --schema_directory $(System.DefaultWorkingDirectory)/FhirToDataLake/data/schemas/r4/ --fhir_server_access_token $(fhirServiceAccessToken) --resource_types $(validateResourceTypes) --customized_schema True
+    scriptPath: '$(Build.SourcesDirectory)/FhirToDataLake/synapse/DicomToSynapseValidator.py'
+    arguments: --synapse_workspace $(synapseWorkspaceName) --dicom_server_url $(dataSource:dicomServer:serverUrl) --dicom_server_access_token $(dicomServiceAccessToken) --database $(databaseName) --schema_directory $(System.DefaultWorkingDirectory)/FhirToDataLake/data/schemas/dicom/ --customized_schema True
   env:
     SQL_USERNAME: $(synapse-sql-username)
     SQL_PASSWORD: $(synapse-sql-password)
@@ -166,16 +162,23 @@ steps:
     ScriptType: inlineScript
     pwsh: true
     Inline: |
-      $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(storageAccountName)).Value[0]
-      $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $storageAccountKey
+      $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $(resourceGroup) -AccountName $(dicomToDatalakeStorageAccountName)).Value[0]
+      $storageContext = New-AzStorageContext -StorageAccountName $(dicomToDatalakeStorageAccountName) -StorageAccountKey $storageAccountKey
       Remove-AzStorageContainer -Name $(containerName) -Context $storageContext -Force
       Remove-AzStorageTable -Name $(containerName)jobinfotable -Context $storageContext -Force
       Remove-AzStorageTable -Name $(containerName)metadatatable -Context $storageContext -Force
       Remove-AzStorageQueue -Name $(containerName)jobinfoqueue -Context $storageContext -Force
       Write-Host "##[section]Clear test container"
 
-      Remove-AzContainerRegistryRepository -Name $(imageName) -RegistryName ($env:CONTAINER_REGISTRY_SERVER -split '.', 0, "simplematch")[0]
-      Write-Host "##[section]Clear test image"
+      try
+      {
+        Remove-AzContainerRegistryRepository -Name $(imageName) -RegistryName ($env:CONTAINER_REGISTRY_SERVER -split '.', 0, "simplematch")[0]
+        Write-Host "##[section]Clear test image"
+      }
+      catch [Exception]
+      {
+        Write-Host "##[warning] $($_.Exception.Message)"
+      }
 
       $sqlServerEndpoint = "$(synapseWorkspaceName)-ondemand.sql.azuresynapse.net"
       $userName = $env:SQL_USERNAME
