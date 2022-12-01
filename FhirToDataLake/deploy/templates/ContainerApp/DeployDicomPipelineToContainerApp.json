@@ -39,31 +39,10 @@
             "description": "The name of the container instance that you wish to create."
         }
     },
-    "dataSourceType": {
-        "type": "string",
-        "defaultValue": "FHIR",
-        "allowedValues": ["FHIR", "DICOM"],
-        "metadata": {
-            "description": "The source API server type you wish to get data."
-        }
-    },
-    "fhirServerUrl": {
-        "type": "string",
-        "defaultValue": "",
-        "metadata": {
-            "description": "The fhir server endpoint you wish to get data."
-        }
-    },
-    "fhirVersion": {
-        "type": "string",
-        "defaultValue": "R4",
-        "allowedValues": ["R4"]
-    },
     "dicomServerUrl": {
         "type": "string",
-        "defaultValue": "",
         "metadata": {
-            "description": "The dicom server endpoint you wish to get data."
+            "description": "The DICOM server endpoint you wish to get data."
         }
     },
     "dicomApiVersion": {
@@ -95,7 +74,7 @@
     },
     "containerName": {
         "type": "string",
-        "defaultValue": "fhir",
+        "defaultValue": "dicom",
         "metadata": {
             "description": "The name of the container to store job and data."
         }
@@ -116,44 +95,9 @@
             "description": "The customized schema image reference for the image on Container Registry. Refer https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
         }
     },
-    "filterConfigImageReference":{
-        "type": "string",
-        "defaultValue": "",
-        "metadata": {
-            "description": "Azure Container Registry image reference of filter configuration file."
-        }
-    },
-    "filterScope":{
-        "type": "string",
-        "defaultValue": "System",
-        "metadata": {
-            "description": "For data filtering use. The export scope can be System or Group. The default value is System if no filter is applied."
-        }
-    },
-    "groupId":{
-        "type": "string",
-        "defaultValue": "",
-        "metadata": {
-            "description": "For data filtering use. If the Filter scope is set as Group, you need to fill the group Id, otherwise leave it blank."
-        }
-    },
-    "requiredTypes":{
-        "type": "string",
-        "defaultValue": "",
-        "metadata": {
-            "description": "For data filtering use. Specify which types of resources will be included. For example, type=Patient would return only patient resources. All resource types will be exported if not specified. Leave it blank if no filter is applied."
-        }
-    },
-    "typeFilters":{
-        "type": "string",
-        "defaultValue": "",
-        "metadata": {
-            "description": "For data filtering use. Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. All data of requiredTypes will be exported if not specified. Leave it blank if no filter is applied."
-        }
-    },
     "image": {
         "type": "string",
-        "defaultValue": "healthplatformregistry.azurecr.io/fhirtodatalaketool:latest",
+        "defaultValue": "healthplatformregistry.azurecr.io/fhirtodatalaketool:v0.5.0",
         "metadata": {
             "description": "Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials."
         }
@@ -164,7 +108,7 @@
         "minValue": 1,
         "maxValue": 30,
         "metadata": {
-            "description": "Maximum number of replicas running for fhir to datalake container app."
+            "description": "Maximum number of replicas running pipeline on the Container App."
         }
     },
     "storageAccountType": {
@@ -181,22 +125,20 @@
     }
   },
   "variables": {
+    "dataSourceType": "DICOM",
+    "pipelineContainerName": "dicom-to-datalake",
     "pipelineName": "[toLower(parameters('pipelineName'))]",
     "analyticsWorkspaceName": "[concat(variables('pipelineName'), '-LogAnalytics')]",
     "environmentName": "[concat(variables('pipelineName'), '-Environment')]",
     "jobInfoQueueName": "[concat(variables('pipelineName'), 'jobinfoqueue')]",
     "jobInfoTableName": "[concat(variables('pipelineName'), 'jobinfotable')]",
     "metadataTableName": "[concat(variables('pipelineName'), 'metadatatable')]",
-    "resourceTags": {"FhirAnalyticsPipeline": "FhirToDataLake", "FhirSchemaVersion": "v0.5.0"},
+    "resourceTags": {"FhirAnalyticsPipeline": "DicomToDataLake", "FhirSchemaVersion": "v0.5.0"},
     "storageAccountName": "[concat(substring(replace(variables('pipelineName'), '-', ''), 0, min(11, length(replace(variables('pipelineName'), '-', '')))), uniquestring(resourceGroup().id, variables('pipelineName')))]",
     "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
     "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
     "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
-    "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
-    "customizedSchemaImageReference": "[toLower(parameters('customizedSchemaImageReference'))]",
-    "deployDicomToDatalake": "[equals(parameters('dataSourceType'), 'DICOM')]",
-    "deployFhirToDatalake": "[equals(parameters('dataSourceType'), 'FHIR')]",
-    "pipelineContainerName": "fhir-to-datalake"
+    "customizedSchemaImageReference": "[toLower(parameters('customizedSchemaImageReference'))]"
   },
   "resources": [
     {
@@ -307,30 +249,6 @@
                     "value": "[concat('https://', variables('storageAccountName'), '.blob.core.windows.net')]"
                 },
                 {
-                    "name": "filter__filterScope",
-                    "value": "[parameters('filterScope')]"
-                },
-                {
-                    "name": "filter__enableExternalFilter",
-                    "value": "[if(empty(variables('filterConfigImageReference')), 'false', 'true')]"
-                },
-                {
-                    "name": "filter__filterImageReference",
-                    "value": "[variables('filterConfigImageReference')]"
-                },
-                {
-                    "name": "filter__groupId",
-                    "value": "[parameters('groupId')]"
-                },
-                {
-                    "name": "filter__requiredTypes",
-                    "value": "[parameters('requiredTypes')]"
-                },
-                {
-                    "name": "filter__typeFilters",
-                    "value": "[parameters('typeFilters')]"
-                },
-                {
                     "name": "schema__enableCustomizedSchema",
                     "value": "[if(empty(variables('customizedSchemaImageReference')), 'false', 'true')]"
                 },
@@ -340,31 +258,19 @@
                 },
                 {
                     "name": "dataSource__type",
-                    "value": "[parameters('dataSourceType')]"
-                },
-                {
-                    "name": "fhirServer__serverUrl",
-                    "value": "[if(variables('deployFhirToDatalake'), parameters('fhirServerUrl'), '')]"
-                },
-                {
-                    "name": "fhirServer__version",
-                    "value": "[if(variables('deployFhirToDatalake'), parameters('fhirVersion'), '')]"
-                },
-                {
-                    "name": "fhirServer__authentication",
-                    "value": "[if(variables('deployFhirToDatalake'), parameters('serverAuthentication'), '')]"
+                    "value": "[variables('dataSourceType')]"
                 },
                 {
                     "name": "dataSource__dicomServer__serverUrl",
-                    "value": "[if(variables('deployDicomToDatalake'), parameters('dicomServerUrl'), '')]"
+                    "value": "[parameters('dicomServerUrl')]"
                 },
                 {
                     "name": "dataSource__dicomServer__version",
-                    "value": "[if(variables('deployDicomToDatalake'), parameters('dicomApiVersion'), '')]"
+                    "value": "[parameters('dicomApiVersion')]"
                 },
                 {
                     "name": "dataSource__dicomServer__authentication",
-                    "value": "[if(variables('deployDicomToDatalake'), parameters('serverAuthentication'), '')]"
+                    "value": "[parameters('serverAuthentication')]"
                 }
               ],
               "resources": {
