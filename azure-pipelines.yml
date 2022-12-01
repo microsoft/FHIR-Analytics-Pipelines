@@ -47,7 +47,7 @@ stages:
     steps:
     - template: FhirToDataLake/azurepipelines/OverallTest/set-environment.yml
 
-  - job: RunSynapseE2ETest
+  - job: RunFhirToSynapseOverallTest
     dependsOn: PrepareTestEnvironment
     condition: succeeded()
     pool:
@@ -55,7 +55,7 @@ stages:
     steps:
     - template: FhirToDataLake/azurepipelines/OverallTest/fhirtosynapse-e2e-test.yml
 
-  - job: RunSynapseE2ETest
+  - job: RunDicomToSynapseOverallTest
     dependsOn: PrepareTestEnvironment
     condition: succeeded()
     pool:
