@@ -139,7 +139,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
                         orchestratorJobResult.CreatedJobCount += 1;
                         orchestratorJobResult.NextOffset = (i + 1) * 100;
-
                     }
                 }
             }
