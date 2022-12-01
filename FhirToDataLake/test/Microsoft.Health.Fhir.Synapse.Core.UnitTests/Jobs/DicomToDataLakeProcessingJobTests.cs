@@ -15,6 +15,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
+using Microsoft.Health.Fhir.Synapse.Core.Dicom;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
@@ -56,18 +57,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var result = JsonConvert.DeserializeObject<DicomToDataLakeProcessingJobResult>(resultString);
 
             Assert.NotNull(result);
-            Assert.Equal(3, result.SearchCount["dicom"]);
-            Assert.Equal(3, result.ProcessedCount["dicom"]);
-            Assert.Equal(0, result.SkippedCount["dicom"]);
+            Assert.Equal(3, result.SearchCount[DicomConstants.DicomResourceType]);
+            Assert.Equal(3, result.ProcessedCount[DicomConstants.DicomResourceType]);
+            Assert.Equal(0, result.SkippedCount[DicomConstants.DicomResourceType]);
             Assert.Equal(911016, result.ProcessedDataSizeInTotal);
             Assert.Equal(3, result.ProcessedCountInTotal);
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));
             var progressForContext = JsonConvert.DeserializeObject<DicomToDataLakeProcessingJobResult>(progressResult);
             Assert.NotNull(progressForContext);
-            Assert.Equal(progressForContext.SearchCount["dicom"], result.SearchCount["dicom"]);
-            Assert.Equal(progressForContext.ProcessedCount["dicom"], result.ProcessedCount["dicom"]);
-            Assert.Equal(progressForContext.SkippedCount["dicom"], result.SkippedCount["dicom"]);
+            Assert.Equal(progressForContext.SearchCount[DicomConstants.DicomResourceType], result.SearchCount[DicomConstants.DicomResourceType]);
+            Assert.Equal(progressForContext.ProcessedCount[DicomConstants.DicomResourceType], result.ProcessedCount[DicomConstants.DicomResourceType]);
+            Assert.Equal(progressForContext.SkippedCount[DicomConstants.DicomResourceType], result.SkippedCount[DicomConstants.DicomResourceType]);
             Assert.Equal(progressForContext.ProcessedDataSizeInTotal, result.ProcessedDataSizeInTotal);
             Assert.Equal(progressForContext.ProcessedCountInTotal, result.ProcessedCountInTotal);
 

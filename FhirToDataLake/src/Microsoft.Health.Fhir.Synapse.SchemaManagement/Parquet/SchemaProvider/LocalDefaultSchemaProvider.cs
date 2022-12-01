@@ -26,7 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
     {
         private const string SchemaR4EmbeddedPrefix = "Schemas.R4";
         private const string SchemaR5EmbeddedPrefix = "Schemas.R5";
-        private const string SchemaDicomEmbeddedPrefix = "Schemas.dicom";
+        private const string SchemaDicomEmbeddedPrefix = "Schemas.Dicom";
 
         private readonly DataSourceConfiguration _dataSourceConfiguration;
         private readonly IDiagnosticLogger _diagnosticLogger;

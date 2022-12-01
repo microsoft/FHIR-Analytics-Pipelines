@@ -76,7 +76,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             // DataWriter for DICOM
             dataWriter = GetLocalDataWriter(DataSourceType.DICOM);
             stream.Position = 0;
-            streamData = new StreamBatchData(stream, 1, "dicom");
+            streamData = new StreamBatchData(stream, 1, DicomConstants.DicomResourceType);
 
             var offset = 100;
             blobName = $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/{DicomConstants.DicomResourceType}/{offset}/{DicomConstants.DicomResourceType}_{partIndex:d10}.parquet";
