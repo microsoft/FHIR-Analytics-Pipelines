@@ -19,7 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
         /// <param name="resourceType">The resource type.</param>
         /// <param name="jsonSchema">The json schema.</param>
         /// <returns>A FhirParquetSchemaNode instance.</returns>
-        public static FhirParquetSchemaNode ParseJSchema(string resourceType, JsonSchema jsonSchema)
+        public static ParquetSchemaNode ParseJSchema(string resourceType, JsonSchema jsonSchema)
         {
             EnsureArg.IsNotNullOrWhiteSpace(resourceType, nameof(resourceType));
             EnsureArg.IsNotNull(jsonSchema, nameof(jsonSchema));
@@ -36,13 +36,13 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
             List<string> fhirPath = new List<string>() { resourceType };
 
-            var customizedSchemaNode = new FhirParquetSchemaNode()
+            var customizedSchemaNode = new ParquetSchemaNode()
             {
                 Name = resourceType,
                 Type = resourceType,
                 Depth = 0,
                 NodePaths = new List<string>(fhirPath),
-                SubNodes = new Dictionary<string, FhirParquetSchemaNode>(),
+                SubNodes = new Dictionary<string, ParquetSchemaNode>(),
             };
 
             foreach (KeyValuePair<string, JsonSchemaProperty> property in jsonSchema.Properties)
@@ -54,14 +54,14 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                     throw new GenerateFhirParquetSchemaNodeException(string.Format("Property \"{0}\" for \"{1}\" customized schema have no \"type\" keyword or \"type\" is null.", property.Key, resourceType));
                 }
 
-                if (!FhirParquetSchemaConstants.BasicJSchemaTypeMap.ContainsKey(property.Value.Type))
+                if (!ParquetSchemaConstants.BasicJSchemaTypeMap.ContainsKey(property.Value.Type))
                 {
                     throw new GenerateFhirParquetSchemaNodeException(string.Format("Property \"{0}\" type \"{1}\" for \"{2}\" customized schema is not basic type.", property.Key, property.Value.Type, resourceType));
                 }
 
                 customizedSchemaNode.SubNodes.Add(
                     property.Key,
-                    BuildLeafNode(property.Key, FhirParquetSchemaConstants.BasicJSchemaTypeMap[property.Value.Type], 1, fhirPath));
+                    BuildLeafNode(property.Key, ParquetSchemaConstants.BasicJSchemaTypeMap[property.Value.Type], 1, fhirPath));
 
                 fhirPath.RemoveAt(fhirPath.Count - 1);
             }
@@ -69,9 +69,9 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             return customizedSchemaNode;
         }
 
-        private static FhirParquetSchemaNode BuildLeafNode(string propertyName, string propertyType, int curDepth, List<string> curFhirPath)
+        private static ParquetSchemaNode BuildLeafNode(string propertyName, string propertyType, int curDepth, List<string> curFhirPath)
         {
-            return new FhirParquetSchemaNode()
+            return new ParquetSchemaNode()
             {
                 Name = propertyName,
                 Type = propertyType,

@@ -28,13 +28,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
 {
     public class GroupMemberExtractor : IGroupMemberExtractor
     {
-        private readonly IFhirDataClient _dataClient;
+        private readonly IApiDataClient _dataClient;
         private readonly IReferenceParser _referenceParser;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<GroupMemberExtractor> _logger;
 
         public GroupMemberExtractor(
-            IFhirDataClient dataClient,
+            IApiDataClient dataClient,
             IReferenceParser referenceParser,
             IDiagnosticLogger diagnosticLogger,
             ILogger<GroupMemberExtractor> logger)
