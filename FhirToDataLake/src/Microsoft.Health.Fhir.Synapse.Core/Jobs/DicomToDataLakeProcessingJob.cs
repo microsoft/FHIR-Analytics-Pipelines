@@ -36,6 +36,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class DicomToDataLakeProcessingJob : IJob
     {
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
         private readonly DicomToDataLakeProcessingJobInputData _inputData;
         private readonly IApiDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
@@ -78,6 +79,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+
+            _jsonSerializerSettings = new JsonSerializerSettings { DateParseHandling = DateParseHandling.None };
         }
 
         // the processing job status is never set to failed or cancelled.
@@ -284,7 +287,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             List<JObject> metadataObjects;
             try
             {
-                metadataObjects = JArray.Parse(changeFeedsContent)
+                metadataObjects = JsonConvert.DeserializeObject<JArray>(changeFeedsContent, _jsonSerializerSettings)
                     .Where(changeFeed =>
                         Enum.Parse<ChangeFeedState>(changeFeed[DicomChangeFeedConstants.StateKey].ToString(), true) == ChangeFeedState.Current &&
                         Enum.Parse<ChangeFeedAction>(changeFeed[DicomChangeFeedConstants.ActionKey].ToString(), true) == ChangeFeedAction.Create)
