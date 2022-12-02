@@ -67,6 +67,8 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         public DicomToDataLakeE2ETests(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
+
+            string storageUri = Environment.GetEnvironmentVariable("dataLakeStore:storageUrl");
             if (!string.IsNullOrWhiteSpace(storageUri))
             {
                 _testOutputHelper.WriteLine($"Using custom data lake storage uri {storageUri}");
