@@ -74,8 +74,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 _blobServiceClient = new BlobServiceClient(new Uri(storageUri), new DefaultAzureCredential());
             }
         }
-        
-        /*
+
         [SkippableFact]
         public async Task GivenValidDicomServer_WhenRun_CorrectResultShouldBeReturnedAsync()
         {
@@ -138,7 +137,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             }
 
             _testOutputHelper.WriteLine("Finish GivenValidDicomServer_WhenRun_CorrectResultShouldBeReturnedAsync.");
-
         }
 
         private async Task InitializeUniqueStorage()
@@ -275,6 +273,5 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                         .AddMetricsLogger()
                         .AddDiagnosticLogger()
                         .AddHostedService<SynapseLinkService>());
-       */
     }
 }
