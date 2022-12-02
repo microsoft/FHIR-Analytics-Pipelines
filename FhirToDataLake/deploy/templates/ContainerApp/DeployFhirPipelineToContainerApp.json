@@ -39,45 +39,27 @@
             "description": "The name of the container instance that you wish to create."
         }
     },
-    "dataSourceType": {
-        "type": "string",
-        "defaultValue": "FHIR",
-        "allowedValues": ["FHIR", "DICOM"],
-        "metadata": {
-            "description": "The source API server type you wish to get data."
-        }
-    },
     "fhirServerUrl": {
         "type": "string",
-        "defaultValue": "",
         "metadata": {
             "description": "The fhir server endpoint you wish to get data."
+        }
+    },
+    "authentication": {
+        "type": "bool",
+        "defaultValue": false,
+        "allowedValues": [
+        true,
+        false
+        ],
+        "metadata": {
+            "description": "Whether to access Azure API for FHIR with managed identity authentication. Set false if you are using an OSS public FHIR server instance."
         }
     },
     "fhirVersion": {
         "type": "string",
         "defaultValue": "R4",
         "allowedValues": ["R4"]
-    },
-    "dicomServerUrl": {
-        "type": "string",
-        "defaultValue": "",
-        "metadata": {
-            "description": "The dicom server endpoint you wish to get data."
-        }
-    },
-    "dicomApiVersion": {
-        "type": "string",
-        "defaultValue": "V1",
-        "allowedValues": ["V1"]
-    },
-    "serverAuthentication": {
-        "type": "string",
-        "defaultValue": "None",
-        "allowedValues": ["None", "ManagedIdentity"],
-        "metadata": {
-            "description": "Then authentication to access source API server. Set None if you are using an public server API instance."
-        }
     },
     "dataStart": {
         "type": "string",
@@ -153,7 +135,7 @@
     },
     "image": {
         "type": "string",
-        "defaultValue": "healthplatformregistry.azurecr.io/fhirtodatalaketool:latest",
+        "defaultValue": "healthplatformregistry.azurecr.io/fhirtodatalaketool:v0.5.0",
         "metadata": {
             "description": "Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials."
         }
@@ -181,6 +163,7 @@
     }
   },
   "variables": {
+    "pipelineContainerName": "fhir-to-datalake",
     "pipelineName": "[toLower(parameters('pipelineName'))]",
     "analyticsWorkspaceName": "[concat(variables('pipelineName'), '-LogAnalytics')]",
     "environmentName": "[concat(variables('pipelineName'), '-Environment')]",
@@ -193,10 +176,7 @@
     "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
     "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
     "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
-    "customizedSchemaImageReference": "[toLower(parameters('customizedSchemaImageReference'))]",
-    "deployDicomToDatalake": "[equals(parameters('dataSourceType'), 'DICOM')]",
-    "deployFhirToDatalake": "[equals(parameters('dataSourceType'), 'FHIR')]",
-    "pipelineContainerName": "fhir-to-datalake"
+    "customizedSchemaImageReference": "[toLower(parameters('customizedSchemaImageReference'))]"
   },
   "resources": [
     {
@@ -339,32 +319,16 @@
                     "value": "[variables('customizedSchemaImageReference')]"
                 },
                 {
-                    "name": "dataSource__type",
-                    "value": "[parameters('dataSourceType')]"
-                },
-                {
                     "name": "fhirServer__serverUrl",
-                    "value": "[if(variables('deployFhirToDatalake'), parameters('fhirServerUrl'), '')]"
+                    "value": "[parameters('fhirServerUrl')]"
                 },
                 {
                     "name": "fhirServer__version",
-                    "value": "[if(variables('deployFhirToDatalake'), parameters('fhirVersion'), '')]"
+                    "value": "[parameters('fhirVersion')]"
                 },
                 {
                     "name": "fhirServer__authentication",
-                    "value": "[if(variables('deployFhirToDatalake'), parameters('serverAuthentication'), '')]"
-                },
-                {
-                    "name": "dataSource__dicomServer__serverUrl",
-                    "value": "[if(variables('deployDicomToDatalake'), parameters('dicomServerUrl'), '')]"
-                },
-                {
-                    "name": "dataSource__dicomServer__version",
-                    "value": "[if(variables('deployDicomToDatalake'), parameters('dicomApiVersion'), '')]"
-                },
-                {
-                    "name": "dataSource__dicomServer__authentication",
-                    "value": "[if(variables('deployDicomToDatalake'), parameters('serverAuthentication'), '')]"
+                    "value": "[if(parameters('authentication'), 'ManagedIdentity', 'None')]"
                 }
               ],
               "resources": {
