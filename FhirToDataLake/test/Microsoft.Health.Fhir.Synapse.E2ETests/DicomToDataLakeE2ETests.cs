@@ -43,6 +43,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Health.Fhir.Synapse.E2ETests
 {
+    [Collection("E2E Tests")]
     public class DicomToDataLakeE2ETests
     {
         private readonly BlobServiceClient _blobServiceClient;
