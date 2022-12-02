@@ -74,7 +74,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 _blobServiceClient = new BlobServiceClient(new Uri(storageUri), new DefaultAzureCredential());
             }
         }
-
+        /*
         [Fact]
         public void GivenInvalidFilterScope_WhenBuildHost_ExceptionShouldBeThrown()
         {
@@ -121,7 +121,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             Assert.Null(exception);
         }
 
-        /*
         [SkippableFact]
         public async Task GivenRequiredTypes_WhenProcessSystemScope_CorrectResultShouldBeReturnedAsync()
         {
