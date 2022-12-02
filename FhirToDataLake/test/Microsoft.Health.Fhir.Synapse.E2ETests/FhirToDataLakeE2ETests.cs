@@ -44,6 +44,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Health.Fhir.Synapse.E2ETests
 {
+    [Collection("E2E Tests")]
     public class FhirToDataLakeE2ETests
     {
         private readonly BlobServiceClient _blobServiceClient;
@@ -74,7 +75,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 _blobServiceClient = new BlobServiceClient(new Uri(storageUri), new DefaultAzureCredential());
             }
         }
-        /*
+
         [Fact]
         public void GivenInvalidFilterScope_WhenBuildHost_ExceptionShouldBeThrown()
         {
@@ -84,6 +85,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 .AddEnvironmentVariables()
                 .Build();
             Assert.Throws<ConfigurationErrorException>(() => CreateHostBuilder(configuration).Build());
+
+            // set the filter scope to default value
+            Environment.SetEnvironmentVariable("filter:filterScope", "System");
         }
 
         [Theory]
@@ -436,7 +440,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                  await CleanStorage();
             }
         }
-        */
 
         private async Task InitializeUniqueStorage()
         {

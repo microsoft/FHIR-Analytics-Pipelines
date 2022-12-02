@@ -43,6 +43,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Health.Fhir.Synapse.E2ETests
 {
+    [Collection("E2E Tests")]
     public class DicomToDataLakeE2ETests
     {
         private readonly BlobServiceClient _blobServiceClient;
@@ -67,6 +68,13 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         {
             _testOutputHelper = testOutputHelper;
 
+            Environment.SetEnvironmentVariable("dataLakeStore:storageUrl", "https://yanhon.blob.core.windows.net/");
+            Environment.SetEnvironmentVariable("dataSource:dicomServer:authentication", "ManagedIdentity");
+            Environment.SetEnvironmentVariable("dataSource:dicomServer:serverUrl", "https://analyticspipelineci-readonlytest.dicom.azurehealthcareapis.com");
+            Environment.SetEnvironmentVariable("dataSource:fhirServer:authentication", "ManagedIdentity");
+            Environment.SetEnvironmentVariable("dataSource:fhirServer:serverUrl", "https://analyticspipelineci-readonlytest.fhir.azurehealthcareapis.com");
+            Environment.SetEnvironmentVariable("fhirServer:authentication", "ManagedIdentity");
+            Environment.SetEnvironmentVariable("fhirServer:serverUrl", "https://analyticspipelineci-readonlytest.fhir.azurehealthcareapis.com");
             string storageUri = Environment.GetEnvironmentVariable("dataLakeStore:storageUrl");
             if (!string.IsNullOrWhiteSpace(storageUri))
             {
