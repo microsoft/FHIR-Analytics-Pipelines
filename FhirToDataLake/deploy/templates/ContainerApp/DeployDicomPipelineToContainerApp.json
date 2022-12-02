@@ -58,20 +58,6 @@
             "description": "Then authentication to access source API server. Set None if you are using an public server API instance."
         }
     },
-    "dataStart": {
-        "type": "string",
-        "defaultValue": "1970-01-01 00:00:00 +00:00",
-        "metadata": {
-            "description": "Start timestamp of the data range you want to export."
-        }
-    },
-    "dataEnd": {
-        "type": "string",
-        "defaultValue": "",
-        "metadata": {
-            "description": "End timestamp of the data range you want to export. Will continuous export all data if not specified."
-        }
-    },
     "containerName": {
         "type": "string",
         "defaultValue": "dicom",
@@ -227,14 +213,6 @@
                 {
                     "name": "job__containerName",
                     "value": "[parameters('containerName')]"
-                },
-                {
-                    "name": "job__startTime",
-                    "value": "[parameters('dataStart')]"
-                },
-                {
-                    "name": "job__endTime",
-                    "value": "[parameters('dataEnd')]"
                 },
                 {
                     "name": "job__tableUrl",
