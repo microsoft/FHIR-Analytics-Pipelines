@@ -56,18 +56,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var result = JsonConvert.DeserializeObject<DicomToDataLakeProcessingJobResult>(resultString);
 
             Assert.NotNull(result);
-            Assert.Equal(3, result.SearchCount["dicom"]);
-            Assert.Equal(3, result.ProcessedCount["dicom"]);
-            Assert.Equal(0, result.SkippedCount["dicom"]);
+            Assert.Equal(3, result.SearchCount["Dicom"]);
+            Assert.Equal(3, result.ProcessedCount["Dicom"]);
+            Assert.Equal(0, result.SkippedCount["Dicom"]);
             Assert.Equal(911016, result.ProcessedDataSizeInTotal);
             Assert.Equal(3, result.ProcessedCountInTotal);
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));
             var progressForContext = JsonConvert.DeserializeObject<DicomToDataLakeProcessingJobResult>(progressResult);
             Assert.NotNull(progressForContext);
-            Assert.Equal(progressForContext.SearchCount["dicom"], result.SearchCount["dicom"]);
-            Assert.Equal(progressForContext.ProcessedCount["dicom"], result.ProcessedCount["dicom"]);
-            Assert.Equal(progressForContext.SkippedCount["dicom"], result.SkippedCount["dicom"]);
+            Assert.Equal(progressForContext.SearchCount["Dicom"], result.SearchCount["Dicom"]);
+            Assert.Equal(progressForContext.ProcessedCount["Dicom"], result.ProcessedCount["Dicom"]);
+            Assert.Equal(progressForContext.SkippedCount["Dicom"], result.SkippedCount["Dicom"]);
             Assert.Equal(progressForContext.ProcessedDataSizeInTotal, result.ProcessedDataSizeInTotal);
             Assert.Equal(progressForContext.ProcessedCountInTotal, result.ProcessedCountInTotal);
 

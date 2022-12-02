@@ -1,4 +1,4 @@
-CREATE EXTERNAL TABLE [dicom].[dicom] (
+CREATE EXTERNAL TABLE [dicom].[Dicom] (
     [AccessionNumber] VARCHAR(MAX),
     [AcquisitionDate] VARCHAR(MAX),
     [AcquisitionDateTime] VARCHAR(MAX),
@@ -101,7 +101,7 @@ CREATE EXTERNAL TABLE [dicom].[dicom] (
     [_sequence] VARCHAR(50),
     [_timestamp] VARCHAR(50),
 ) WITH (
-    LOCATION='dicom/**',
+    LOCATION='/Dicom/**',
     DATA_SOURCE = ParquetSource,
     FILE_FORMAT = ParquetFormat
 );

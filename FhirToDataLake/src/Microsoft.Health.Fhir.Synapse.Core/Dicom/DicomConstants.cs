@@ -10,7 +10,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Dicom
         /// <summary>
         /// DICOM data resource type.
         /// </summary>
-        public const string DicomResourceType = "dicom";
+        public const string DicomResourceType = "Dicom";
 
         /// <summary>
         /// The prefix for additional properties in DICOM metadata parquet data, E.g. "_sequence", "_timestamp".

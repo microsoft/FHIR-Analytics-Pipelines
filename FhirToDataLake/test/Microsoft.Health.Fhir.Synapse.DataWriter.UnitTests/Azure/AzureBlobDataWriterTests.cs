@@ -14,7 +14,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Authentication;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
-using Microsoft.Health.Fhir.Synapse.Core.Dicom;
 using Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Exceptions;
@@ -76,14 +75,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             // DataWriter for DICOM
             dataWriter = GetLocalDataWriter(DataSourceType.DICOM);
             stream.Position = 0;
-            streamData = new StreamBatchData(stream, 1, "dicom");
+            streamData = new StreamBatchData(stream, 1, "Dicom");
 
             var offset = 100;
-            blobName = $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/{DicomConstants.DicomResourceType}/{offset}/{DicomConstants.DicomResourceType}_{partIndex:d10}.parquet";
+            blobName = $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/Dicom/{offset}/Dicom_{partIndex:d10}.parquet";
 
             await dataWriter.WriteAsync(streamData, blobName);
 
-            blobStream = await containerClient.GetBlobAsync($"staging/{jobId:d20}/dicom/100/dicom_{partIndex:d10}.parquet");
+            blobStream = await containerClient.GetBlobAsync($"staging/{jobId:d20}/Dicom/{offset}/Dicom_{partIndex:d10}.parquet");
             Assert.NotNull(blobStream);
 
             resultStream = new MemoryStream();
@@ -176,14 +175,14 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.UnitTests.Azure
             dataWriter = GetInMemoryDataWriter(blobClient, DataSourceType.DICOM);
 
             stream.Position = 0;
-            blobName = $"staging/{jobId:d20}/dicom/100/dicom_{partIndex:d10}.parquet";
+            blobName = $"staging/{jobId:d20}/Dicom/100/Dicom_{partIndex:d10}.parquet";
             await blobClient.CreateBlobAsync(blobName, stream, CancellationToken.None);
             Assert.True(await blobClient.BlobExistsAsync(blobName, CancellationToken.None));
 
             Assert.Null(await Record.ExceptionAsync(async () => await dataWriter.CommitJobDataAsync(jobId, CancellationToken.None)));
             Assert.False(await blobClient.BlobExistsAsync(blobName, CancellationToken.None));
 
-            expectedBlobName = $"result/dicom/100/{jobId:d20}/dicom_{partIndex:d10}.parquet";
+            expectedBlobName = $"result/Dicom/100/{jobId:d20}/Dicom_{partIndex:d10}.parquet";
             Assert.True(await blobClient.BlobExistsAsync(expectedBlobName, CancellationToken.None));
         }
 
