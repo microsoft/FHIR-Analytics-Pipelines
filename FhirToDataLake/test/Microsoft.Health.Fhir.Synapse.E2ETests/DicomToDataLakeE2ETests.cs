@@ -79,6 +79,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         public async Task GivenValidDicomServer_WhenRun_CorrectResultShouldBeReturnedAsync()
         {
             Skip.If(_blobServiceClient == null);
+
+            _testOutputHelper.WriteLine("Start to run GivenValidDicomServer_WhenRun_CorrectResultShouldBeReturnedAsync.");
+
             await InitializeUniqueStorage();
 
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -132,6 +135,9 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             {
                 await CleanStorage();
             }
+
+            _testOutputHelper.WriteLine("Finish GivenValidDicomServer_WhenRun_CorrectResultShouldBeReturnedAsync.");
+
         }
 
         private async Task InitializeUniqueStorage()
