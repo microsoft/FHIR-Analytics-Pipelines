@@ -129,8 +129,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         public async Task GivenRequiredTypes_WhenProcessSystemScope_CorrectResultShouldBeReturnedAsync()
         {
             Skip.If(_blobServiceClient == null);
-            _testOutputHelper.WriteLine("Start to run GivenRequiredTypes_WhenProcessSystemScope_CorrectResultShouldBeReturnedAsync.");
-
             await InitializeUniqueStorage();
 
             // specified configuration
@@ -193,8 +191,6 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
             {
                 await CleanStorage();
             }
-
-            _testOutputHelper.WriteLine("Finish GivenRequiredTypes_WhenProcessSystemScope_CorrectResultShouldBeReturnedAsync.");
         }
 
         [SkippableFact]

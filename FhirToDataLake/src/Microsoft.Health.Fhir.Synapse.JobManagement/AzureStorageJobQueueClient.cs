@@ -83,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
             bool isCompleted,
             CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"[Enqueue] Start to enqueue {definitions.Length} jobs queue type {queueType}.");
+            _logger.LogInformation($"[Enqueue] Start to enqueue {definitions.Length} jobs.");
 
             if (definitions.Length > MaxJobsCountForEnqueuingInABatch)
             {
@@ -264,7 +264,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
                 jobInfos = jobInfoEntities.Select(entity => entity.ToJobInfo<TJobInfo>()).ToList();
 
-                _logger.LogInformation($"[Enqueue] Enqueue jobs {string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())} queue type {queueType} successfully.");
+                _logger.LogInformation($"[Enqueue] Enqueue jobs {string.Join(",", jobInfos.Select(jobInfo => jobInfo.Id).ToList())} successfully.");
 
                 return jobInfos;
             }
@@ -279,7 +279,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
         // throw an exception if there is any issue for this message, the caller (jobHosting) will catch the exception, log a message and retry.
         public async Task<JobInfo> DequeueAsync(byte queueType, string worker, int heartbeatTimeoutSec, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"[Dequeue] Start to dequeue for queue type {queueType}.");
+            _logger.LogInformation("[Dequeue] Start to dequeue.");
 
             // step 1: receive message from message queue
             TimeSpan visibilityTimeout =
@@ -376,7 +376,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
             _ = await _azureJobInfoTableClient.SubmitTransactionAsync(transactionUpdateActions, cancellationToken);
 
-            _logger.LogInformation($"[Dequeue] Dequeue job {jobInfo.Id} queue type {jobInfo.QueueType} Successfully.");
+            _logger.LogInformation($"[Dequeue] Dequeue job {jobInfo.Id} Successfully.");
             return jobInfo;
         }
 
@@ -625,7 +625,7 @@ namespace Microsoft.Health.Fhir.Synapse.JobManagement
 
         public async Task CompleteJobAsync(JobInfo jobInfo, bool requestCancellationOnFailure, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"[CompleteJob] Start to complete job {jobInfo.Id} queue type {jobInfo.QueueType}.");
+            _logger.LogInformation($"[CompleteJob] Start to complete job {jobInfo.Id}.");
 
             // step 1: get jobInfo entity and job lock entity
             (TableEntity? retrievedJobInfoEntity, TableEntity? jobLockEntity) = await AcquireJobEntityByJobInfoAsync(jobInfo, cancellationToken);
