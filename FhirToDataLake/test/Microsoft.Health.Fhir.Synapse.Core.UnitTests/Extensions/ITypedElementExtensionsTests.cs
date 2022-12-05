@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using Hl7.Fhir.ElementModel;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
@@ -88,11 +87,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Extensions
 
         private ITypedElement GetTestElement(string fileName)
         {
-            var fhirConfiguration = new FhirServerConfiguration()
-            {
-                Version = FhirVersion.R4,
-            };
-            var fhirParser = new FhirSerializer(Options.Create(fhirConfiguration));
+            var fhirParser = new FhirSerializer(Options.Create(new DataSourceConfiguration()));
             return fhirParser.DeserializeToElement(File.ReadAllText(fileName));
         }
     }

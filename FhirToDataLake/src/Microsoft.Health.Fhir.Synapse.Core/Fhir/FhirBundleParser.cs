@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Web;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Fhir

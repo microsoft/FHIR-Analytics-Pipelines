@@ -16,7 +16,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
                 { DimensionNames.Component, component },
                 { DimensionNames.Category, MetricsCategories.Health },
                 { DimensionNames.IsDiagnostic, isDiagnostic },
-                { DimensionNames.Operation, Operations.HealthCheck },
+                { DimensionNames.Operation, JobOperations.HealthCheck },
             })
         {
         }

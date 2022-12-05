@@ -42,7 +42,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
             _schemaImageReference = schemaConfiguration.Value.SchemaImageReference;
         }
 
-        public async Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default)
+        public async Task<Dictionary<string, ParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default)
         {
             Dictionary<string, JsonSchema> jsonSchemaCollection = await GetJsonSchemaCollectionAsync(cancellationToken);
 
@@ -72,7 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                 {
                     string[] templatePathSegments = templateItem.Key.Split('/');
 
-                    if (!string.Equals(templatePathSegments[0], FhirParquetSchemaConstants.JsonSchemaTemplateDirectory, StringComparison.InvariantCultureIgnoreCase))
+                    if (!string.Equals(templatePathSegments[0], ParquetSchemaConstants.JsonSchemaTemplateDirectory, StringComparison.InvariantCultureIgnoreCase))
                     {
                         continue;
                     }
@@ -84,14 +84,14 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
                         throw new ContainerRegistrySchemaException($"All Json schema should be directly in \"Schema\" directory.");
                     }
 
-                    if (!templatePathSegments[1].EndsWith(FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension, StringComparison.InvariantCultureIgnoreCase))
+                    if (!templatePathSegments[1].EndsWith(ParquetSchemaConstants.JsonSchemaTemplateFileExtension, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        _logger.LogInformation($"{templatePathSegments[1]} doesn't have {FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension} extension in \"Schema\" directory.");
+                        _logger.LogInformation($"{templatePathSegments[1]} doesn't have {ParquetSchemaConstants.JsonSchemaTemplateFileExtension} extension in \"Schema\" directory.");
                     }
                     else
                     {
                         // The customized schema keys are like "Patient_Customized", "Observation_Customized"...
-                        string resourceType = templatePathSegments[1].Substring(0, templatePathSegments[1].Length - FhirParquetSchemaConstants.JsonSchemaTemplateFileExtension.Length);
+                        string resourceType = templatePathSegments[1].Substring(0, templatePathSegments[1].Length - ParquetSchemaConstants.JsonSchemaTemplateFileExtension.Length);
 
                         if (!(templateItem.Value.Root is JSchemaDocument customizedSchemaDocument) || customizedSchemaDocument.Schema == null)
                         {
@@ -110,7 +110,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
         private string GetCustomizedSchemaType(string resourceType)
         {
-            return $"{resourceType}{FhirParquetSchemaConstants.CustomizedSchemaSuffix}";
+            return $"{resourceType}{ParquetSchemaConstants.CustomizedSchemaSuffix}";
         }
     }
 }

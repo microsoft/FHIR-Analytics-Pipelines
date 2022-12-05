@@ -17,7 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 {
     public class R4ReferenceParserTests
     {
-        private readonly FhirApiDataSource _dataSource;
+        private readonly ApiDataSource _dataSource;
 
         private readonly R4ReferenceParser _referenceParser;
 
@@ -28,13 +28,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         public R4ReferenceParserTests()
         {
-            var fhirServerConfig = new FhirServerConfiguration
+            var dataSourceConfiguration = new DataSourceConfiguration
             {
-                ServerUrl = _serverUrl,
-                Authentication = AuthenticationType.None,
+                FhirServer = new FhirServerConfiguration
+                {
+                    ServerUrl = _serverUrl,
+                    Authentication = AuthenticationType.None,
+                },
             };
-            IOptions<FhirServerConfiguration> fhirServerOption = Options.Create(fhirServerConfig);
-            _dataSource = new FhirApiDataSource(fhirServerOption);
+
+            _dataSource = new ApiDataSource(Options.Create(dataSourceConfiguration));
             _referenceParser = new R4ReferenceParser(_dataSource, _nullR4ReferenceParserLogger);
         }
 
@@ -71,14 +74,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
         [Fact]
         public void GivenDataSourceServerUrlEndsWithSlash_WhenParseReference_ParsedReferenceShouldBeReturned()
         {
-            var fhirServerConfig = new FhirServerConfiguration
+            var dataSourceConfiguration = new DataSourceConfiguration
             {
-                ServerUrl = "https://example.com/",
-                Authentication = AuthenticationType.None,
+                FhirServer = new FhirServerConfiguration
+                {
+                    ServerUrl = "https://example.com/",
+                    Authentication = AuthenticationType.None,
+                },
             };
 
-            IOptions<FhirServerConfiguration> fhirServerOption = Options.Create(fhirServerConfig);
-            var dataSource = new FhirApiDataSource(fhirServerOption);
+            var dataSource = new ApiDataSource(Options.Create(dataSourceConfiguration));
             var referenceParser = new R4ReferenceParser(dataSource, _nullR4ReferenceParserLogger);
 
             FhirReference fhirReference = referenceParser.Parse("https://example.com/Patient/123/_history/2");

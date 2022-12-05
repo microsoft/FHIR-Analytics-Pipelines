@@ -14,7 +14,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter
         {
             services.AddSingleton<IAzureBlobContainerClientFactory, AzureBlobContainerClientFactory>();
             services.AddSingleton<IDataSink, AzureBlobDataSink>();
-            services.AddSingleton<IFhirDataWriter, AzureBlobDataWriter>();
+            services.AddSingleton<IDataWriter, AzureBlobDataWriter>();
 
             return services;
         }

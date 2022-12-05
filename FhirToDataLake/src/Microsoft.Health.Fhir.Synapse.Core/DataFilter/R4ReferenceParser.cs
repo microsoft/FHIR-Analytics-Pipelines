@@ -12,7 +12,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient;
 
 using R4FhirModelInfo = FhirR4::Hl7.Fhir.Model.ModelInfo;
 
@@ -21,7 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
     public class R4ReferenceParser : IReferenceParser
     {
         private readonly ILogger<R4ReferenceParser> _logger;
-        private readonly IFhirApiDataSource _dataSource;
+        private readonly IApiDataSource _dataSource;
 
         private const string ResourceTypeCapture = "resourceType";
         private const string ResourceIdCapture = "resourceId";
@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
             RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         public R4ReferenceParser(
-            IFhirApiDataSource dataSource,
+            IApiDataSource dataSource,
             ILogger<R4ReferenceParser> logger)
         {
             _dataSource = EnsureArg.IsNotNull(dataSource, nameof(dataSource));
@@ -72,7 +72,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataFilter
                         var baseUri = new Uri(reference.Substring(0, resourceTypeStartIndex), UriKind.RelativeOrAbsolute);
                         if (baseUri.IsAbsoluteUri)
                         {
-                            if (baseUri.AbsoluteUri == _dataSource.FhirServerUrl)
+                            if (baseUri.AbsoluteUri == _dataSource.ServerUrl)
                             {
                                 // This is an absolute URL pointing to an internal resource.
                                 return new FhirReference(resourceTypeInString, resourceId);

@@ -21,28 +21,53 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
         /// <exception cref="ConfigurationErrorException">Throw ConfigurationErrorException if configuration is invalid.</exception>
         public static void Validate(IServiceCollection services)
         {
-            FhirServerConfiguration fhirServerConfiguration;
+            DataSourceConfiguration dataSourceConfiguration;
             try
             {
                 // include enum field, an exception will be thrown when parse invalid enum string
-                fhirServerConfiguration = services
+                // enum field parsing is case insensitive
+                dataSourceConfiguration = services
                     .BuildServiceProvider()
-                    .GetRequiredService<IOptions<FhirServerConfiguration>>()
+                    .GetRequiredService<IOptions<DataSourceConfiguration>>()
                     .Value;
             }
             catch (Exception ex)
             {
-                throw new ConfigurationErrorException("Failed to parse fhir server configuration", ex);
+                throw new ConfigurationErrorException("Failed to parse data source configuration", ex);
             }
 
-            if (string.IsNullOrWhiteSpace(fhirServerConfiguration.ServerUrl))
+            switch (dataSourceConfiguration.Type)
             {
-                throw new ConfigurationErrorException("Fhir server url can not be empty.");
-            }
+                case DataSourceType.FHIR:
+                    var fhirServerConfiguration = dataSourceConfiguration.FhirServer;
 
-            if (!ConfigurationConstants.SupportedFhirVersions.Contains(fhirServerConfiguration.Version))
-            {
-                throw new ConfigurationErrorException($"Fhir version {fhirServerConfiguration.Version} is not supported.");
+                    if (string.IsNullOrWhiteSpace(fhirServerConfiguration.ServerUrl))
+                    {
+                        throw new ConfigurationErrorException("Fhir server url can not be empty.");
+                    }
+
+                    if (!ConfigurationConstants.SupportedFhirVersions.Contains(fhirServerConfiguration.Version))
+                    {
+                        throw new ConfigurationErrorException($"Fhir version {fhirServerConfiguration.Version} is not supported.");
+                    }
+
+                    break;
+                case DataSourceType.DICOM:
+                    var dicomServerConfiguration = dataSourceConfiguration.DicomServer;
+
+                    if (string.IsNullOrWhiteSpace(dicomServerConfiguration.ServerUrl))
+                    {
+                        throw new ConfigurationErrorException("DICOM server url can not be empty.");
+                    }
+
+                    if (!ConfigurationConstants.SupportedDicomApiVersions.Contains(dicomServerConfiguration.ApiVersion))
+                    {
+                        throw new ConfigurationErrorException($"DICOM server API version {dicomServerConfiguration.ApiVersion} is not supported.");
+                    }
+
+                    break;
+                default:
+                    throw new ConfigurationErrorException($"Data source type {dataSourceConfiguration.Type} is not supported");
             }
 
             JobConfiguration jobConfiguration;
