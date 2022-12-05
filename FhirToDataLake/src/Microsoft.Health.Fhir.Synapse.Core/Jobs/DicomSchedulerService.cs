@@ -574,6 +574,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             var changeFeedOption = new ChangeFeedLatestOptions(queryParameters);
             string changeFeedContent = await _dataClient.SearchAsync(changeFeedOption, cancellationToken);
+
+            // When there's no changefeed, an empty string will be returned. JObject.Parse() will throw JsonReaderException.
+            if (string.IsNullOrEmpty(changeFeedContent))
+            {
+                return 0;
+            }
+
             var changeFeed = JObject.Parse(changeFeedContent);
 
             return changeFeed == null ? 0 : changeFeed.Value<long>(DicomChangeFeedConstants.SequenceKey);
