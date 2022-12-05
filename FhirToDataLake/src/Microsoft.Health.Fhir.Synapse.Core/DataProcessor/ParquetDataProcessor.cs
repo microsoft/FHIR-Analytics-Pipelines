@@ -109,8 +109,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
                          .Where(result => CheckBlockSize(processParameters.SchemaType, result)));
             if (string.IsNullOrEmpty(inputContent))
             {
-                // Return null if no data has been converted.
-                return Task.FromResult<StreamBatchData>(null);
+                // Return StreamBatchData with null Value if no data has been converted.
+                return Task.FromResult<StreamBatchData>(new StreamBatchData(null, 0, processParameters.SchemaType));
             }
 
             // Convert JSON data to parquet stream.

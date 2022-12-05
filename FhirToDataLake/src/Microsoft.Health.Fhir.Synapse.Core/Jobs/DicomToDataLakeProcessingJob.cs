@@ -307,7 +307,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 throw new ApiSearchException("Parse metadata objects failed.", ex);
             }
 
-            return new SearchResult(metadataObjects, changeFeedsContent.Length, null);
+            return new SearchResult(metadataObjects, changeFeedsContent.Length * sizeof(char), null);
         }
 
         /// <summary>
