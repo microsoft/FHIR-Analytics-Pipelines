@@ -149,7 +149,7 @@ steps:
   inputs:
     scriptSource: filePath
     scriptPath: '$(Build.SourcesDirectory)/FhirToDataLake/synapse/DicomToSynapseValidator.py'
-    arguments: --synapse_workspace $(synapseWorkspaceName) --dicom_server_url $(dataSource:dicomServer:serverUrl) --dicom_server_access_token $(dicomServiceAccessToken) --database $(databaseName) --schema_directory $(System.DefaultWorkingDirectory)/FhirToDataLake/data/schemas/dicom/ --customized_schema True
+    arguments: --synapse_workspace $(synapseWorkspaceName) --dicom_server_url $(dataSource:dicomServer:serverUrl) --dicom_server_access_token $(dicomServiceAccessToken) --database $(databaseName) --schema_directory placeholder --customized_schema True
   env:
     SQL_USERNAME: $(synapse-sql-username)
     SQL_PASSWORD: $(synapse-sql-password)
