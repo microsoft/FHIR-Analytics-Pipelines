@@ -236,7 +236,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataProcessor
             var jsonBatchData = new JsonBatchData(testData);
 
             StreamBatchData result = await parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("Patient", "Patient"));
-            Assert.Null(result);
+            Assert.Null(result.Value);
+            Assert.Equal(0, result.BatchSize);
+            Assert.Equal("Patient", result.SchemaType);
         }
 
         [Fact]

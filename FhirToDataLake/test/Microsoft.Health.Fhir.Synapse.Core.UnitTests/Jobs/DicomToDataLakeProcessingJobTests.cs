@@ -76,6 +76,32 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Single(blobs);
         }
 
+        [Fact]
+        public async Task GivenChangeFeedAllReplacedSearchResult_WhenExecuteTask_EmptyResultShouldBeThrown()
+        {
+            string changeFeedAllReplacedSearchResult = "[{\"action\":\"Create\", \"state\":\"Replaced\"},{\"action\":\"Delete\", \"state\":\"Replaced\"}]";
+            string progressResult = null;
+            Progress<string> progress = new Progress<string>(r =>
+            {
+                progressResult = r;
+            });
+
+            string containerName = Guid.NewGuid().ToString("N");
+
+            var blobClient = new InMemoryBlobContainerClient();
+
+            DicomToDataLakeProcessingJob job = GetDicomToDataLakeProcessingJob(1L, GetInputData(), changeFeedAllReplacedSearchResult, containerName, blobClient);
+            string resultString = await job.ExecuteAsync(progress, CancellationToken.None);
+            var result = JsonConvert.DeserializeObject<DicomToDataLakeProcessingJobResult>(resultString);
+
+            Assert.NotNull(result);
+            Assert.Equal(0, result.SearchCount["Dicom"]);
+            Assert.Equal(0, result.ProcessedCount["Dicom"]);
+            Assert.Equal(0, result.SkippedCount["Dicom"]);
+            Assert.Equal(0, result.ProcessedDataSizeInTotal);
+            Assert.Equal(0, result.ProcessedCountInTotal);
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
