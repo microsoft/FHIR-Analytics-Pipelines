@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 
             var queryParameters = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{false}"),
+                new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, "false"),
             };
 
             _dicomApiOptions = new ChangeFeedLatestOptions(queryParameters);

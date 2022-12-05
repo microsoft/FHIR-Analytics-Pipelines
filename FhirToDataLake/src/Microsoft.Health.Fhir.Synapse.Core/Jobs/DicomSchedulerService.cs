@@ -569,7 +569,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             var queryParameters = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{false}"),
+                    new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, "false"),
                 };
 
             var changeFeedOption = new ChangeFeedLatestOptions(queryParameters);

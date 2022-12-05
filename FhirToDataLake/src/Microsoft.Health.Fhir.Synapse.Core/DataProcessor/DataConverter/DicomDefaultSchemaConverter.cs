@@ -58,13 +58,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
             IEnumerable<JObject> processedJsonData = inputData.Values
                 .Select(json =>
                 {
-                    if (json == null)
-                    {
-                        _diagnosticLogger.LogError($"The input DICOM metadata is null for schema type '{schemaType}'.");
-                        _logger.LogInformation($"The input DICOM metadata is null for schema type '{schemaType}'.");
-                        throw new ParquetDataProcessorException($"The input DICOM metadata is null for schema type '{schemaType}'.");
-                    }
-
                     return ProcessDicomMetadataObject(json, schema);
                 })
                 .Where(processedResult => processedResult != null);
@@ -74,6 +67,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter
 
         private JObject ProcessDicomMetadataObject(JToken metadata, ParquetSchemaNode schemaNode)
         {
+            if (metadata == null)
+            {
+                _diagnosticLogger.LogError($"The input DICOM metadata is null for schema type '{schemaNode.Type}'.");
+                _logger.LogInformation($"The input DICOM metadata is null for schema type '{schemaNode.Type}'.");
+                throw new ParquetDataProcessorException($"The input DICOM metadata is null for schema type '{schemaNode.Type}'.");
+            }
+
             if (metadata is not JObject metadataObject)
             {
                 _diagnosticLogger.LogError($"Current DICOM metadata is not a valid JObject: {metadata.Path}.");

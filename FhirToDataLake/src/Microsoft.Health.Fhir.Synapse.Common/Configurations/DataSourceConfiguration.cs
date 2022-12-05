@@ -9,7 +9,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
 {
     public class DataSourceConfiguration
     {
-        [JsonProperty("Type")]
+        [JsonProperty("type")]
         public DataSourceType Type { get; set; } = DataSourceType.FHIR;
 
         [JsonProperty("fhirServer")]

@@ -136,7 +136,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 case DataSourceType.DICOM:
                     var dicomQueryParameters = new List<KeyValuePair<string, string>>
                     {
-                        new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{false}"),
+                        new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, "false"),
                     };
                     searchOptions = new ChangeFeedLatestOptions(dicomQueryParameters);
                     break;
