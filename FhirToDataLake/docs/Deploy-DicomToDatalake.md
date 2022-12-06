@@ -2,7 +2,7 @@
 
 DICOM to Synapse Sync Agent enables you to perform Analytics and Machine Learning on DICOM metadata by moving DICOM metadata to Azure Data Lake in near real time and making it available to a Synapse workspace.
 
-It is an [Azure Container App](https://learn.microsoft.com/en-us/azure/container-apps/?ocid=AID3042118) that extracts data from a DICOM server using DICOM [Search](https://learn.microsoft.com/en-us/azure/healthcare-apis/dicom/dicom-services-conformance-statement#search-qido-rs) APIs, converts it to hierarchical Parquet files, and writes it to Azure Data Lake in near real time. This solution also contains a script to create External Table in Synapse Serverless SQL pool pointing to the DICOM Parquet files. For more information about External Tables and Views.
+It is an [Azure Container App](https://learn.microsoft.com/en-us/azure/container-apps/?ocid=AID3042118) that extracts data from a DICOM server using DICOM [Change Feed](https://learn.microsoft.com/en-us/azure/healthcare-apis/dicom/dicom-change-feed-overview) APIs, converts it to hierarchical Parquet files, and writes it to Azure Data Lake in near real time. This solution also contains a script to create External Table in Synapse Serverless SQL pool pointing to the DICOM metadata Parquet files.
 
 This solution enables you to query against the entire DICOM metadata with tools such as Synapse Studio, SSMS, and Power BI. You can also access the Parquet files directly from a Synapse Spark pool. You should consider this solution if you want to access all of your DICOM metadata in near real time, and want to defer custom transformation to downstream systems.
 
@@ -23,7 +23,7 @@ This solution enables you to query against the entire DICOM metadata with tools 
 1. Provide access of the Storage Account and the Synapse workspace to your account for running the PowerScript mentioned below.
 1. Provide access of the Storage Account to the Synapse Workspace to access the data from Synapse.
 1. Run the provided PowerShell script that creates following artifacts:
-    1. Dicom specific folder in the Azure Storage Account.
+    1. DICOM specific folder in the Azure Storage Account.
     1. A database in Synapse serverless pool with External Table pointing to the DICOM Parquet files in the Storage Account.
 1. Query data from Synapse Studio.
 
@@ -68,7 +68,7 @@ If you are using the DICOM server for Azure with anonymous access, then you can 
 
 ### 3. Verify data movement
 
-The Azure Container App runs automatically. You'll notice the progress of the Azure Container App in the Azure portal. The time taken to write the data to the storage account depends on the amount of metadata in the DICOM server. After the Azure Container App execution is completed, you should have Parquet files in the Storage Account. Browse to the _results_ folder inside the container. You should see a folder corresponding to Dicom resource.
+The Azure Container App runs automatically. You'll notice the progress of the Azure Container App in the Azure portal. The time taken to write the data to the storage account depends on the amount of metadata in the DICOM server. After the Azure Container App execution is completed, you should have Parquet files in the Storage Account. Browse to the _results_ folder inside the container. You should see a folder corresponding to DICOM metadata.
 
 ![blob result](./assets/ExportedDicomData.png)
 
