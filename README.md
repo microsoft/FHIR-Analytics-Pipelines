@@ -4,7 +4,7 @@
 
 This OSS project currently has the following two solutions:
 
-1. [FHIR to Synapse sync agent](FhirToDataLake/docs/Deployment.md): This is an [Azure Container App](https://learn.microsoft.com/en-us/azure/container-apps/?ocid=AID3042118) that extracts data from a FHIR server using FHIR Resource APIs, converts it to hierarchial Parquet files, and writes it to Azure Data Lake in near real time. This also contains a [script](FhirToDataLake/scripts/Set-SynapseEnvironment.ps1) to create external tables and views in Synapse Serverless SQL pool pointing to the Parquet files.
+1. [FHIR to Synapse sync agent](FhirToDataLake/docs/Deploy-FhirToDatalake.md): This is an [Azure Container App](https://learn.microsoft.com/en-us/azure/container-apps/?ocid=AID3042118) that extracts data from a FHIR server using FHIR Resource APIs, converts it to hierarchial Parquet files, and writes it to Azure Data Lake in near real time. This also contains a [script](FhirToDataLake/scripts/Set-SynapseEnvironment.ps1) to create external tables and views in Synapse Serverless SQL pool pointing to the Parquet files.
 
     This solution enables you to query against the entire FHIR data with tools such as Synapse Studio, SSMS, and Power BI. You can also access the Parquet files directly from a Synapse Spark pool. You should consider this solution if you want to access all of your FHIR data in near real time, and want to defer custom transformation to downstream systems.
 
