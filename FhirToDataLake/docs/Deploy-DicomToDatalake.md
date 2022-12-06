@@ -41,7 +41,7 @@ This solution enables you to query against the entire DICOM metadata with tools 
     
     ![image](./assets/deployDicomContainerAppParameters.png)
 
-2. Fill the form based on the table below and click on **Review and Create** to start the deployment.
+1. Fill the form based on the table below and click on **Review and Create** to start the deployment.
 
     |Parameter   | Description   |
     |---|---|
@@ -58,7 +58,9 @@ This solution enables you to query against the entire DICOM metadata with tools 
     | Max Instance Count | Maximum number of replicas running for pipeline Container App. |
     | Storage Account type | Azure Storage Account type to deploy. |
 
-3. Ensure to make note of the names of the _Storage Account_ and the _Azure Container Apps_ created during the deployment.
+1. Refer [here](./Dicom-Customized-Schema.md) for more information about using **customized schema** to sync up DICOM metadata to data lake.
+
+1. Ensure to make note of the names of the _Storage Account_ and the _Azure Container Apps_ created during the deployment.
 
 ### 2. Provide Access of the DICOM server to the Azure Container App
 
