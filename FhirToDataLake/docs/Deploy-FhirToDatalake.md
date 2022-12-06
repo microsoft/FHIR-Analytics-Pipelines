@@ -71,7 +71,7 @@ This solution enables you to query against the entire FHIR data with tools such 
 
 5. Refer [here](./Filter%20FHIR%20data%20in%20pipeline.md) for more information about filtering.
 
-**_NOTE:_**  You can also deploy the FhirToDatalake pipeline to [Azure Function](https://learn.microsoft.com/en-us/azure/azure-functions/functions-overview), see Deploy To Function for more information.
+**_NOTE:_**  You can also deploy the FhirToDatalake pipeline to [Azure Function](https://learn.microsoft.com/en-us/azure/azure-functions/functions-overview), see [Deploy-FhirToDatalake-Function](./Deploy-FhirToDatalake-Function.md) for more information.
 
 ### 2. Provide Access of the FHIR server to the Azure Container App
 
