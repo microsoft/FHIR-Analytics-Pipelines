@@ -1,41 +1,41 @@
-# FHIR to Synapse Sync Agent
+# DICOM to Synapse Sync Agent
 
-FHIR to Synapse Sync Agent enables you to perform Analytics and Machine Learning on FHIR data by moving FHIR data to Azure Data Lake in near real time and making it available to a Synapse workspace.
+DICOM to Synapse Sync Agent enables you to perform Analytics and Machine Learning on DICOM metadata by moving DICOM metadata to Azure Data Lake in near real time and making it available to a Synapse workspace.
 
-It is an [Azure Container App](https://learn.microsoft.com/en-us/azure/container-apps/?ocid=AID3042118) that extracts data from a FHIR server using FHIR Resource APIs, converts it to hierarchical Parquet files, and writes it to Azure Data Lake in near real time. This solution also contains a script to create External Tables and Views in Synapse Serverless SQL pool pointing to the Parquet files. For more information about External Tables and Views, see [Data mapping from FHIR to Synapse](Data-Mapping.md).
+It is an [Azure Container App](https://learn.microsoft.com/en-us/azure/container-apps/?ocid=AID3042118) that extracts data from a DICOM server using DICOM [Search](https://learn.microsoft.com/en-us/azure/healthcare-apis/dicom/dicom-services-conformance-statement#search-qido-rs) APIs, converts it to hierarchical Parquet files, and writes it to Azure Data Lake in near real time. This solution also contains a script to create External Table in Synapse Serverless SQL pool pointing to the DICOM Parquet files. For more information about External Tables and Views.
 
-This solution enables you to query against the entire FHIR data with tools such as Synapse Studio, SSMS, and Power BI. You can also access the Parquet files directly from a Synapse Spark pool. You should consider this solution if you want to access all of your FHIR data in near real time, and want to defer custom transformation to downstream systems.
+This solution enables you to query against the entire DICOM metadata with tools such as Synapse Studio, SSMS, and Power BI. You can also access the Parquet files directly from a Synapse Spark pool. You should consider this solution if you want to access all of your DICOM metadata in near real time, and want to defer custom transformation to downstream systems.
 
-**Note**: An API usage charge will be incurred in the FHIR server if you use this tool to copy data from the FHIR server to Azure Data Lake.
+**Note**: An API usage charge will be incurred in the DICOM server if you use this tool to copy data from the DICOM server to Azure Data Lake.
 
 ## Deployment
 
 ### Prerequisites
 
-- An instance of Azure API for FHIR, FHIR server for Azure, or the FHIR service in Azure Healthcare APIs. The pipeline will sync data from this FHIR server.
+- An instance of DICOM server, or the DICOM service in Azure Healthcare APIs. The pipeline will sync data from this DICOM server.
 - A Synapse workspace.
 
 ### Steps at high level
 
 1. Deploy the pipeline to [Azure Container App](https://learn.microsoft.com/en-us/azure/container-apps/?ocid=AID3042118) using the given ARM template.
-1. Provide access of the FHIR service to the Container App that was deployed in the previous step.
+1. Provide access of the DICOM service to the Container App that was deployed in the previous step.
 1. Verify that the data gets copied to the Storage Account. If data is copied to the Storage Account, then the pipeline is working successfully.
 1. Provide access of the Storage Account and the Synapse workspace to your account for running the PowerScript mentioned below.
 1. Provide access of the Storage Account to the Synapse Workspace to access the data from Synapse.
 1. Run the provided PowerShell script that creates following artifacts:
-    1. Resource specific folders in the Azure Storage Account.
-    1. A database in Synapse serverless pool with External Tables and Views pointing to the files in the Storage Account.
+    1. Dicom specific folder in the Azure Storage Account.
+    1. A database in Synapse serverless pool with External Table pointing to the DICOM Parquet files in the Storage Account.
 1. Query data from Synapse Studio.
 
 ### 1. Deploy the pipeline
 
-1. To deploy the FHIR to datalake sync pipeline, use the button below to deploy through the Azure Portal.
+1. To deploy the DICOM to datalake sync pipeline, use the button below to deploy through the Azure Portal.
    
-    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2FFHIR-Analytics-Pipelines%2Fmain%2FFhirToDataLake%2Fdeploy%2Ftemplates%2FContainerApp%2FDeployFhirPipelineToContainerApp.json" target="_blank">
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2FFHIR-Analytics-Pipelines%2Fmain%2FFhirToDataLake%2Fdeploy%2Ftemplates%2FContainerApp%2FDeployDicomPipelineToContainerApp.json" target="_blank">
         <img src="https://aka.ms/deploytoazurebutton"/>
     </a>
 
-    Or you can browse to the [Custom deployment](https://ms.portal.Azure.com/#create/Microsoft.Template) page in the Azure portal, select **Build your own template in the editor**, then copy the content of the provided [ARM template](../deploy/templates/ContainerApp/DeployFhirPipelineToContainerApp.json) to the edit box and click **Save**.
+    Or you can browse to the [Custom deployment](https://ms.portal.Azure.com/#create/Microsoft.Template) page in the Azure portal, select **Build your own template in the editor**, then copy the content of the provided [ARM template](../deploy/templates/ContainerApp/DeployDicomPipelineToContainerApp.json) to the edit box and click **Save**.
 
     The deployment page should open the following form. 
     
@@ -67,21 +67,15 @@ This solution enables you to query against the entire FHIR data with tools such 
 
 3. Ensure to make note of the names of the _Storage Account_ and the _Azure Container App_ created during the deployment.
 
-4. Refer [here](./Process%20FHIR%20extensions.md) for more information about using **customized schema** to handle [FHIR Extension](https://www.hl7.org/fhir/extensibility.html).
+### 2. Provide Access of the DICOM server to the Azure Container App
 
-5. Refer [here](./Filter%20FHIR%20data%20in%20pipeline.md) for more information about filtering.
+If you are using the DICOM service in Azure Healthcare APIs, assign the **DICOM Data Reader** role to the Azure Container App deployed above.
 
-**_NOTE:_**  You can also deploy the FhirToDatalake pipeline to [Azure Function](https://learn.microsoft.com/en-us/azure/azure-functions/functions-overview), see [Deploy-FhirToDatalake-Function](./Deploy-FhirToDatalake-Function.md) for more information.
-
-### 2. Provide Access of the FHIR server to the Azure Container App
-
-If you are using the Azure API for FHIR or the FHIR service in Azure Healthcare APIs, assign the **FHIR Data Reader** role to the Azure Container App deployed above.
-
-If you are using the FHIR server for Azure with anonymous access, then you can skip this step.
+If you are using the DICOM server for Azure with anonymous access, then you can skip this step.
 
 ### 3. Verify data movement
 
-The Azure Container App runs automatically. You'll notice the progress of the Azure Container App in the Azure portal. The time taken to write the data to the storage account depends on the amount of data in the FHIR server. After the Azure Container App execution is completed, you should have Parquet files in the Storage Account. Browse to the _results_ folder inside the container. You should see folders corresponding to different FHIR resources. Note that you will see folders for only those Resources that are present in your FHIR server. Running the PowerShell script described further below will create folders for other Resources.
+The Azure Container App runs automatically. You'll notice the progress of the Azure Container App in the Azure portal. The time taken to write the data to the storage account depends on the amount of metadata in the DICOM server. After the Azure Container App execution is completed, you should have Parquet files in the Storage Account. Browse to the _results_ folder inside the container. You should see a folder corresponding to Dicom resource.
 
 ![blob result](./assets/ExportedData.png)
 
@@ -100,8 +94,8 @@ To enable Synapse to read the data from the Storage Account, assign the _Storage
 
 Running the PowerShell script that creates following artifacts:
 
-1. Resource specific folders in the Azure Storage Account.
-1. A database in Synapse [serverless SQL pool](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/on-demand-workspace-overview) with [External Tables](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/develop-tables-external-tables?tabs=hadoop) and [Views](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/create-use-views) pointing to the files in the Storage Account.
+1. Dicom specific folder in the Azure Storage Account.
+1. A database in Synapse [serverless SQL pool](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/on-demand-workspace-overview) with [External Tables](https://docs.microsoft.com/en-us/azure/synapse-analytics/sql/develop-tables-external-tables?tabs=hadoop) pointing to the DICOM metadata Parquet files in the Storage Account.
 
 To run the PowerShell Script, perform the following steps:
 
