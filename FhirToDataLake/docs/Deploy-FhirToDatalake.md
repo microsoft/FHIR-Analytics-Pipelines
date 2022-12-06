@@ -65,7 +65,7 @@ This solution enables you to query against the entire FHIR data with tools such 
     | Max Instance Count | Maximum number of replicas running for pipeline Container App. |
     | Storage Account type | Azure Storage Account type to deploy. |
 
-3. Ensure to make note of the names of the _Storage Account_ and the _Azure Container App_ created during the deployment.
+3. Ensure to make note of the names of the _Storage Account_ and the _Azure Container Apps_ created during the deployment.
 
 4. Refer [here](./Process%20FHIR%20extensions.md) for more information about using **customized schema** to handle [FHIR Extension](https://www.hl7.org/fhir/extensibility.html).
 
@@ -83,7 +83,7 @@ If you are using the FHIR server for Azure with anonymous access, then you can s
 
 The Azure Container App runs automatically. You'll notice the progress of the Azure Container App in the Azure portal. The time taken to write the data to the storage account depends on the amount of data in the FHIR server. After the Azure Container App execution is completed, you should have Parquet files in the Storage Account. Browse to the _results_ folder inside the container. You should see folders corresponding to different FHIR resources. Note that you will see folders for only those Resources that are present in your FHIR server. Running the PowerShell script described further below will create folders for other Resources.
 
-![blob result](./assets/ExportedData.png)
+![blob result](./assets/ExportedFhirData.png)
 
 ### 4. Provide privilege to your account
 
@@ -125,29 +125,7 @@ To run the PowerShell Script, perform the following steps:
     ```Powershell
     ./Set-SynapseEnvironment.ps1 -SynapseWorkspaceName "{Name of your Synapse workspace instance}" -StorageName "{Name of your storage account where Parquet files are written}".
     ```
-    For more details, refer to the complete syntax below.
-    ``` PowerShell
-    Set-SynapseEnvironment
-        [-SynapseWorkspaceName] <string>
-        [-StorageName] <string>
-        [[-Database] <string>, default: “fhirdb”]
-        [[-Container] <string>, default: “fhir”]
-        [[-ResultPath] <string>, default: “result”]
-        [[-MasterKey] <string>, default: ”FhirSynapseLink0!”]
-        [[-Concurrent] <int>, default: 15]
-        [[-CustomizedSchemaImage] <string>, default: None]
-    ```
-
-    |Parameter   | Description   |
-    |---|---|
-    | SynapseWorkspaceName | Name of Synapse workspace instance. |
-    | StorageName | Name of Storage Account where parquet files are stored. |
-    | Database | Name of database to be created on Synapse serverless SQL pool |
-    | Container | Name of container on storage where parquet files are stored. |
-    | ResultPath | Path to the parquet folder. |
-    | MasterKey | Master key that will be set in the created database. The database needs to have the master key, and then you can create EXTERNAL TABLEs and VIEWs on it. |
-    | Concurrent | Max concurrent tasks number that will be used to upload place holder files and execute SQL scripts. |
-    | CustomizedSchemaImage | Customized schema image reference. Need to be provided when customized schema is enable. |
+    For more details, refer to the complete syntax in [Set-SynapseEnvironment Syntax](./SetSynapseEnvironmentSyntax.md).
 
 ### 7. Query data from Synapse Studio
 
