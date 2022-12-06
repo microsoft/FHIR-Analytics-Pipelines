@@ -378,7 +378,6 @@ function Get-OrasExeApp {
 
 function Get-ImageDigest {
     param ([string]$orasAppPath, [string]$schemaImageReference)
-
     $registryName = $schemaImageReference.Substring(0, $schemaImageReference.IndexOf('.azurecr.io'))
     Connect-AzContainerRegistry -Name $registryName -ErrorAction stop | Out-Null
 
@@ -389,9 +388,11 @@ function Get-ImageDigest {
         $schemaImageReference
     )
 
-    $digest = & "./$orasAppPath" $orasParameters
+    $descriptor = & "./$orasAppPath" $orasParameters
+    $digest = ($descriptor | ConvertFrom-Json).digest
+    Write-Information "Got image digest $digest from $schemaImageReference" -InformationAction Continue
 
-    return ($digest | ConvertFrom-Json).digest
+    return $digest
 }
 
 function Get-CustomizedSchemaImage {
@@ -477,8 +478,6 @@ function New-CustomizedTables
     param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$schemaDirectory, [string]$dataSourceType)
 
     $schemaFiles = Get-ChildItem -Path $(Join-Path -Path $schemaDirectory -ChildPath *) -Include '*.schema.json' -Name
-    Write-Host $schemaFiles
-
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
 
     Write-Host "Start to create customized Tables on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
