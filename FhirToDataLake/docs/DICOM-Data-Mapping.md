@@ -7,14 +7,14 @@ The information below describes how DICOM JSON metadata is converted to Parquet 
 
 ## DICOM JSON metadata to Parquet data
 
-Parquet format supports nested and repeated structure. Theoretically, JSON data can be converted losslessly to Parquet format, but for stability and practical purposes, we designed schemas to transform DICOM JSON metadata into Parquet following the rules listed below. The detailed schemas are available in the [**data/schemas/dicom**](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/data/schemas/dicom) directory.
+Parquet format supports nested and repeated structure. Theoretically, JSON data can be converted losslessly to Parquet format, but for stability and practical purposes, we designed schemas to transform DICOM JSON metadata into Parquet following the rules listed below. The detailed schemas are available in the [**data/schemas/dicom**](../data/schemas/dicom) directory.
 
 In [DICOM JSON model object structure](https://dicom.nema.org/medical/dicom/current/output/chtml/part18/sect_F.2.2.html), each attribute object should contain "vr" - a string encoding the DICOM Value representation, and at most one of "Value", "BulkDataURI" or "InlineBinary". Attributes with "vr" set to "SQ" are excluded. "BulkDataURI" and "InlineBinary" are excluded. All data are saved as type string in Parquet files.
 
 Data saved in the Parquet format is unreadable by humans due to the way it's compressed and stored. The sample [Python script](#using-python-library-to-quickly-read-parquet-files) reads a Parquet file with specific columns.
 
 ## Query Parquet data on Synapse
-The PowerShell script [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) creates default EXTERNAL TABLEs on Synapse Serverless SQL pool. Tables enabled for Synapse Serverless SQL pool can have a maximum limit of [1,020 columns](https://learn.microsoft.com/en-us/azure/synapse-analytics/synapse-link/synapse-link-for-sql-known-issues), but the number of [DICOM metadata attributes](https://dicom.nema.org/medical/dicom/current/output/chtml/part06/chapter_6.html) is far beyond that. The Powershell script selects some attributes as default columns. You can update the columns accordingly in [Dicom.sql](https://github.com/microsoft/FHIR-Analytics-Pipelines/tree/main/FhirToDataLake/scripts/sql/dicom/Dicom.sql).
+The PowerShell script [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) creates default EXTERNAL TABLEs on Synapse Serverless SQL pool. Tables enabled for Synapse Serverless SQL pool can have a maximum limit of [1,020 columns](https://learn.microsoft.com/en-us/azure/synapse-analytics/synapse-link/synapse-link-for-sql-known-issues), but the number of [DICOM metadata attributes](https://dicom.nema.org/medical/dicom/current/output/chtml/part06/chapter_6.html) is far beyond that. The Powershell script selects some attributes as default columns. You can update the columns accordingly in [Dicom.sql](../scripts/sql/dicom/Dicom.sql).
 
 The EXTERNAL TABLE is linked to all Parquet files for DICOM metadata. The table name is ```"[dicom].[Dicom]"```. 
 
