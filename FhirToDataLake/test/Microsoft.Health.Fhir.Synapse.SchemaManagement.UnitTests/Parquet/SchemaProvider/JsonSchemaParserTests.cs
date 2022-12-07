@@ -107,7 +107,7 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         [Fact]
         public void GivenAJsonSchema_WhenParseJSchema_CorrectResultShouldBeReturned()
         {
-            FhirParquetSchemaNode parquetSchemaNode = JsonSchemaParser.ParseJSchema("testType", _testSchema);
+            ParquetSchemaNode parquetSchemaNode = JsonSchemaParser.ParseJSchema("testType", _testSchema);
             JsonSchema expectedSchemaNode = JsonSchema.FromJsonAsync(File.ReadAllText(Path.Join(TestUtils.ExpectedDataDirectory, "ExpectedValidParquetSchemaNode.json"))).GetAwaiter().GetResult();
 
             Assert.True(JToken.DeepEquals(

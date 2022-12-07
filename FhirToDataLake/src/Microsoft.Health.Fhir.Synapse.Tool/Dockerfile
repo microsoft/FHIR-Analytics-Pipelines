@@ -1,8 +1,9 @@
-#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
-FROM mcr.microsoft.com/dotnet/runtime:6.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
+
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
+
 COPY ["NuGet.Config", "."]
 COPY ["Directory.Build.props", "."]
 COPY ["src/Microsoft.Health.Fhir.Synapse.Tool/Microsoft.Health.Fhir.Synapse.Tool.csproj", "src/Microsoft.Health.Fhir.Synapse.Tool/"]
@@ -18,10 +19,12 @@ RUN dotnet restore "src/Microsoft.Health.Fhir.Synapse.Tool/Microsoft.Health.Fhir
 
 COPY . .
 WORKDIR "/src/src/Microsoft.Health.Fhir.Synapse.Tool"
-RUN dotnet build "Microsoft.Health.Fhir.Synapse.Tool.csproj" -c Release -o /app/build
+ARG BINARY_VERSION
+RUN dotnet build "Microsoft.Health.Fhir.Synapse.Tool.csproj" -c Release -o /app/build -p:Version=$BINARY_VERSION
 FROM build AS publish
 
-RUN dotnet publish "Microsoft.Health.Fhir.Synapse.Tool.csproj" -c Release -o /app/publish /p:UseAppHost=false
+ARG BINARY_VERSION
+RUN dotnet publish "Microsoft.Health.Fhir.Synapse.Tool.csproj" -c Release -o /app/publish /p:UseAppHost=false -p:Version=$BINARY_VERSION
 FROM base AS final
 
 WORKDIR /app

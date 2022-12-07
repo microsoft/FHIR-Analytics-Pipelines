@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
@@ -25,62 +26,95 @@ namespace Microsoft.Health.Fhir.Synapse.Core
         public static IServiceCollection AddJobScheduler(
             this IServiceCollection services)
         {
+            var dataSourceConfiguration = services
+                .BuildServiceProvider()
+                .GetRequiredService<IOptions<DataSourceConfiguration>>()
+                .Value;
+
+            switch (dataSourceConfiguration.Type)
+            {
+                case DataSourceType.FHIR:
+                    services.AddSingleton<IJobFactory, AzureStorageJobFactory>();
+
+                    services.AddSingleton<ISchedulerService, SchedulerService>();
+
+                    services.AddSingleton<IGroupMemberExtractor, GroupMemberExtractor>();
+
+                    FilterLocation filterLocation = services
+                        .BuildServiceProvider()
+                        .GetRequiredService<IOptions<FilterLocation>>()
+                        .Value;
+
+                    if (filterLocation.EnableExternalFilter)
+                    {
+                        services.AddSingleton<IFilterProvider, ContainerRegistryFilterProvider>();
+                    }
+                    else
+                    {
+                        services.AddSingleton<IFilterProvider, LocalFilterProvider>();
+                    }
+
+                    services.AddSingleton<IFilterManager, FilterManager>();
+
+                    services.AddSingleton<IReferenceParser, R4ReferenceParser>();
+
+                    services.AddFhirSpecificationProvider();
+
+                    services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>();
+
+                    break;
+                case DataSourceType.DICOM:
+                    services.AddSingleton<IJobFactory, DicomAzureStorageJobFactory>();
+
+                    services.AddSingleton<ISchedulerService, DicomSchedulerService>();
+
+                    services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<DicomToDataLakeAzureStorageJobInfo>>();
+                    break;
+                default:
+                    throw new ConfigurationErrorException($"Data source type {dataSourceConfiguration.Type} is not supported");
+            }
+
             services.AddSingleton<JobHosting, JobHosting>();
-
-            services.AddSingleton<IJobFactory, AzureStorageJobFactory>();
-
-            services.AddSingleton<IAzureTableClientFactory, AzureTableClientFactory>();
 
             services.AddSingleton<JobManager, JobManager>();
 
-            services.AddSingleton<ISchedulerService, SchedulerService>();
+            services.AddSingleton<IAzureTableClientFactory, AzureTableClientFactory>();
 
             services.AddSingleton<IMetadataStore, AzureTableMetadataStore>();
 
             services.AddSingleton<IColumnDataProcessor, ParquetDataProcessor>();
 
-            services.AddSingleton<IGroupMemberExtractor, GroupMemberExtractor>();
-
             services.AddSingleton<IExternalDependencyChecker, ExternalDependencyChecker>();
 
-            FilterLocation filterLocation = services
-                    .BuildServiceProvider()
-                    .GetRequiredService<IOptions<FilterLocation>>()
-                    .Value;
-
-            if (filterLocation.EnableExternalFilter)
-            {
-                services.AddSingleton<IFilterProvider, ContainerRegistryFilterProvider>();
-            }
-            else
-            {
-                services.AddSingleton<IFilterProvider, LocalFilterProvider>();
-            }
-
-            services.AddSingleton<IFilterManager, FilterManager>();
-
-            services.AddSingleton<IReferenceParser, R4ReferenceParser>();
-
-            services.AddFhirSpecificationProvider();
-
-            services.AddSchemaConverters();
-
-            services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>();
+            services.AddSchemaConverters(dataSourceConfiguration.Type);
 
             return services;
         }
 
-        public static IServiceCollection AddSchemaConverters(this IServiceCollection services)
+        public static IServiceCollection AddSchemaConverters(this IServiceCollection services, DataSourceType dataSourceType)
         {
-            services.AddSingleton<DefaultSchemaConverter>();
+            switch (dataSourceType)
+            {
+                case DataSourceType.FHIR:
+                    services.AddSingleton<FhirDefaultSchemaConverter>();
+                    break;
+                case DataSourceType.DICOM:
+                    services.AddSingleton<DicomDefaultSchemaConverter>();
+                    break;
+                default:
+                    throw new ConfigurationErrorException($"Data source type {dataSourceType} is not supported");
+            }
+
             services.AddSingleton<CustomSchemaConverter>();
 
             services.AddSingleton<DataSchemaConverterDelegate>(delegateProvider => name =>
             {
                 return name switch
                 {
-                    FhirParquetSchemaConstants.DefaultSchemaProviderKey => delegateProvider.GetService<DefaultSchemaConverter>(),
-                    FhirParquetSchemaConstants.CustomSchemaProviderKey => delegateProvider.GetService<CustomSchemaConverter>(),
+                    ParquetSchemaConstants.DefaultSchemaProviderKey => dataSourceType == DataSourceType.FHIR
+                        ? delegateProvider.GetService<FhirDefaultSchemaConverter>()
+                        : delegateProvider.GetService<DicomDefaultSchemaConverter>(),
+                    ParquetSchemaConstants.CustomSchemaProviderKey => delegateProvider.GetService<CustomSchemaConverter>(),
                     _ => throw new ParquetDataProcessorException($"Schema delegate name {name} not found when injecting"),
                 };
             });
@@ -90,10 +124,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
         public static IServiceCollection AddFhirSpecificationProvider(this IServiceCollection services)
         {
-            FhirServerConfiguration fhirServerConfiguration = services
+            var dataSourceConfiguration = services
                 .BuildServiceProvider()
-                .GetRequiredService<IOptions<FhirServerConfiguration>>()
+                .GetRequiredService<IOptions<DataSourceConfiguration>>()
                 .Value;
+
+            var fhirServerConfiguration = dataSourceConfiguration.FhirServer;
 
             switch (fhirServerConfiguration.Version)
             {

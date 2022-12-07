@@ -32,6 +32,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         public const int DefaultSchedulerServiceLeaseRefreshIntervalInSeconds = 60;
 
+        /// <summary>
+        /// The default initial start offset in DICOM Server changefeed
+        /// </summary>
+        public const int DefaultDicomInitialStartOffset = 0;
+
+        /// <summary>
+        /// The default limit in DICOM Server changefeed
+        /// </summary>
+        public const int DefaultDicomChangeFeedLimit = 100;
+
         // orchestrator job configurations
 
         /// <summary>
@@ -59,12 +69,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <summary>
         /// The cache resources number, will commit the cache to storage if there are more resources than this value in cache.
         /// </summary>
-        public const int NumberOfResourcesPerCommit = 10000;
+        public const int NumberOfResourcesPerCommit = 5000;
 
         /// <summary>
         /// The data size of cache in bytes, will commit the cache to storage it the data size is larger than this value.
         /// </summary>
-        public const int DataSizeInBytesPerCommit = 10 * 1024 * 1024;
+        public const int DataSizeInBytesPerCommit = 5 * 1024 * 1024;
 
         /// <summary>
         /// The running job count threshold to check running job complete

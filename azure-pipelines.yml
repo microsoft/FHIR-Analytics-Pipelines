@@ -12,13 +12,15 @@ variables:
   buildConfiguration: 'Release'
   buildPlatform: 'x64'
   major: 0
-  minor: 4
+  minor: 5
   patch: 0
   buildnum: $[counter(format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch']), 1)]
   version: $(major).$(minor).$(patch).$(buildnum)
-  containerInstanceName: testfhirtodatalake
+  fhirToDatalakeInstanceName: testfhirtodatalake
+  dicomToDatalakeInstanceName: testdicomtodatalake
   synapseWorkspaceName: testcisynapseworkspace
-  storageAccountName: testfhirtodoglaw6s6zpluk
+  fhirToDatalakeStorageAccountName: testfhirtodoglaw6s6zpluk
+  dicomToDatalakeStorageAccountName: testdicomtozrv3ddtm6vwkw
   imageName: fhirtodatalake
 
 stages:
@@ -43,15 +45,23 @@ stages:
     pool:
       vmImage: 'ubuntu-22.04'
     steps:
-    - template: FhirToDataLake/azurepipelines/FhirToSynapseTest/set-environment.yml
+    - template: FhirToDataLake/azurepipelines/OverallTest/set-environment.yml
 
-  - job: RunSynapseE2ETest
+  - job: RunFhirToSynapseOverallTest
     dependsOn: PrepareTestEnvironment
     condition: succeeded()
     pool:
       vmImage: 'windows-latest'
     steps:
-    - template: FhirToDataLake/azurepipelines/FhirToSynapseTest/synapse-e2e-test.yml
+    - template: FhirToDataLake/azurepipelines/OverallTest/fhirtosynapse-e2e-test.yml
+
+  - job: RunDicomToSynapseOverallTest
+    dependsOn: PrepareTestEnvironment
+    condition: succeeded()
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - template: FhirToDataLake/azurepipelines/OverallTest/dicomtosynapse-e2e-test.yml
 
 - stage: Release
   condition: succeeded()

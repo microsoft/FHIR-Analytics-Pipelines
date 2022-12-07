@@ -64,7 +64,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.UnitTests.Checkers
             Assert.False(result.IsCritical);
         }
 
-        [Fact]
+        [SkippableFact]
         public async Task When_GivenValidACR_HealthCheck_Succeeds()
         {
             var testContainerRegistryServer = Environment.GetEnvironmentVariable("TestContainerRegistryServer");

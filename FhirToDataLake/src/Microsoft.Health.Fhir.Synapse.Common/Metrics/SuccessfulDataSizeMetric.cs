@@ -15,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
                 { DimensionNames.Name, "SuccessfulDataSize" },
                 { DimensionNames.Category, MetricsCategories.Availability },
                 { DimensionNames.IsDiagnostic, true },
-                { DimensionNames.Operation, Operations.CompleteJob },
+                { DimensionNames.Operation, JobOperations.CompleteJob },
             })
         {
         }

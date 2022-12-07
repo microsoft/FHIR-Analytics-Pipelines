@@ -24,11 +24,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir
         private readonly IStructureDefinitionSummaryProvider _r4Provider = new R4StructureDefinitionSummaryProvider();
         private readonly IStructureDefinitionSummaryProvider _stu3Provider = new Stu3StructureDefinitionSummaryProvider();
 
-        public FhirSerializer(IOptions<FhirServerConfiguration> fhirConfiguration)
+        public FhirSerializer(IOptions<DataSourceConfiguration> dataSourceConfiguration)
         {
-            EnsureArg.IsNotNull(fhirConfiguration, nameof(fhirConfiguration));
+            EnsureArg.IsNotNull(dataSourceConfiguration, nameof(dataSourceConfiguration));
 
-            _fhirVersion = fhirConfiguration.Value.Version;
+            _fhirVersion = dataSourceConfiguration.Value.FhirServer.Version;
         }
 
         public ITypedElement DeserializeToElement(

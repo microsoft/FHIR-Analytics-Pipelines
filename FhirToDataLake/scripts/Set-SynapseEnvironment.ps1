@@ -18,6 +18,9 @@
 .PARAMETER ResultPath
     Default: result
     Path to the parquet FHIR data.
+.PARAMETER DataSourceType
+    Default: FHIR
+    Source data type, "FHIR", "DICOM".
 .PARAMETER FhirVersion
     Default: R4
     The fhir version of Parquet data on the storage.
@@ -43,6 +46,7 @@ Param(
     [string]$StorageName,
     [string]$Container = "fhir",
     [string]$ResultPath = "result",
+    [string]$DataSourceType = 'FHIR',
     [string]$FhirVersion = "R4",
     [string]$SqlScriptCollectionPath = "sql",
     [string]$MasterKey = "FhirSynapseLink0!",
@@ -53,7 +57,7 @@ Param(
 # TODO: Align Tags here and ARM template, maybe save schemas in Storage/ACR and run remotely.
 $Tags = @{
     "FhirAnalyticsPipeline" = "FhirToDataLake"
-    "FhirSchemaVersion" = "v0.4.0"
+    "FhirSchemaVersion" = "v0.5.0"
 }
 
 $JobName = "FhirSynapseJob"
@@ -65,18 +69,30 @@ $OrasAppPath = "oras.exe"
 $OrasWinUrl = "https://github.com/deislabs/oras/releases/download/v0.12.0/oras_0.12.0_windows_amd64.tar.gz"
 $ErrorActionPreference = "Stop"
 
-$FhirVersion = $FhirVersion.ToUpper()
-if ($FhirVersion -eq "R4")
+$DataSourceType = $DataSourceType.ToUpper()
+if ($DataSourceType -eq "FHIR")
 {
-    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r4" | Join-Path -ChildPath "Resources"
+    $FhirVersion = $FhirVersion.ToUpper()
+    if ($FhirVersion -eq "R4")
+    {
+        $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r4" | Join-Path -ChildPath "Resources"
+    }
+    elseif ($FhirVersion -eq "R5")
+    {
+        $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r5" | Join-Path -ChildPath "Resources"
+    }
+    else
+    {
+        throw "The FHIR version '$FhirVersion' is not supported."
+    }
 }
-elseif ($FhirVersion -eq "R5")
+elseif ($DataSourceType -eq "DICOM")
 {
-    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r5" | Join-Path -ChildPath "Resources"
+    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "dicom"
 }
 else
 {
-    throw "The FHIR version '$FhirVersion' is not supported."
+    throw "The data source type '$DataSourceType' is not supported."
 }
 
 function Start-Retryable-Job {
@@ -161,9 +177,10 @@ function Remove-FhirDatabase
 
 function Set-InitializeEnvironment
 {
-    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$storageName, [string]$container, [string]$resultPath)
+    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$storageName, [string]$container, [string]$resultPath, [string]$dataSourceType)
 
     $locationPath = "https://$storageName.blob.core.windows.net/$container/$resultPath"
+    $schema = $dataSourceType.ToLower()
 
     $initializeEnvironmentSql = "
     CREATE MASTER KEY ENCRYPTION BY PASSWORD = '$masterKey';
@@ -180,7 +197,7 @@ function Set-InitializeEnvironment
     CREATE EXTERNAL FILE FORMAT ParquetFormat WITH (  FORMAT_TYPE = PARQUET );
     
     GO
-    CREATE SCHEMA fhir;
+    CREATE SCHEMA $schema;
     
     GO
     USE [master]"
@@ -400,7 +417,7 @@ function Get-CustomizedSchemaType {
 }
 
 function Get-CustomizedTableSql {
-    param ([string]$schemaType, [PSCustomObject]$schemaObject)
+    param ([string]$schemaType, [PSCustomObject]$schemaObject, [string]$dataSourceType)
 
     $customizedTableProperties = ""
     foreach ($property in $schemaObject.properties.psobject.properties){
@@ -419,7 +436,8 @@ function Get-CustomizedTableSql {
         $customizedTableProperties += "    [$($property.Name)] $sqlType,"
     }
 
-    $createCustomizedTableSql = "CREATE EXTERNAL TABLE [fhir].[$schemaType] (
+    $dataSource = $dataSourceType.ToLower()
+    $createCustomizedTableSql = "CREATE EXTERNAL TABLE [$dataSource].[$schemaType] (
         $customizedTableProperties
         ) WITH (
             LOCATION='/$schemaType/**',
@@ -432,7 +450,7 @@ function Get-CustomizedTableSql {
 
 function New-CustomizedTables
 {
-    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$customizedSchemaDirectory)
+    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$customizedSchemaDirectory, [string]$dataSourceType)
 
     $schemaFiles = Get-ChildItem -Path $(Join-Path -Path $customizedSchemaDirectory -ChildPath *) -Include '*.schema.json' -Name
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
@@ -460,7 +478,7 @@ function New-CustomizedTables
         $resourceType = $schemaFile.Substring(0, $schemaFile.IndexOf('.schema.json'))
         $schemaType = Get-CustomizedSchemaType -resourceType $resourceType
     
-        $sql = Get-CustomizedTableSql -schemaType $schemaType -schemaObject $schemaObject -ErrorAction stop
+        $sql = Get-CustomizedTableSql -schemaType $schemaType -schemaObject $schemaObject -dataSourceType $dataSourceType -ErrorAction stop
 
         Write-Host "Begin to create customized table for $schemaType" -ForegroundColor Green 
         Start-Job -Name $JobName -ScriptBlock{
@@ -570,7 +588,8 @@ try{
         -masterKey $MasterKey `
         -storage $StorageName `
         -container $Container `
-        -resultPath $ResultPath
+        -resultPath $ResultPath `
+        -dataSourceType $DataSourceType
 
     # d). Create TABLEs and VIEWs on Synapse.
     New-TableAndViewsForResources `
@@ -616,7 +635,8 @@ if ($CustomizedSchemaImage) {
             -serviceEndpoint $synapseSqlServerEndpoint `
             -databaseName $Database `
             -masterKey $MasterKey `
-            -customizedSchemaDirectory $customizedSchemaDirectory
+            -customizedSchemaDirectory $customizedSchemaDirectory `
+            -dataSourceType $DataSourceType
     }
     catch{
         Write-Host "Create TABLEs for customized schema data failed, will try to drop database '$Database'." -ForegroundColor Red
