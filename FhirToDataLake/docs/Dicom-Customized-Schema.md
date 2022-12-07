@@ -12,7 +12,7 @@ You need to prepare a **liquid template** and a related **JSON schema** file.
 
 Follow the links for more information about [liquid template](http://dotliquidmarkup.org/) and [JSON schema](https://json-schema.org/learn/getting-started-step-by-step).
 
-Below are the example liquid template and JSON schema, select "00080018", "00130010", "00131013" value from raw DICOM metadata and represent them as "SOPInstanceUID", "myValue1", "myValue2" in result Parquet data.
+Below are the example liquid template and JSON schema, select "00080018", "00130010", "00131013" value from DICOM metadata and represent them as "SOPInstanceUID", "myValue1", "myValue2" in result Parquet data.
 
 _Liquid template:_
 ```liquid
