@@ -168,7 +168,7 @@
         "hostingPlanName": "[variables('appName')]",
         "applicationInsightsName": "[concat('AppInsights-', variables('appName'))]",
         "deployAppInsights": "[parameters('deployAppInsights')]",
-        "resourceTags": {"FhirAnalyticsPipeline": "FhirToDataLake", "FhirSchemaVersion": "v0.5.0"},
+        "resourceTags": {"FhirAnalyticsPipeline": "FhirToDataLake", "FhirSchemaVersion": "v0.6.0"},
         "storageAccountName": "[concat(substring(replace(variables('appName'), '-', ''), 0, min(11, length(replace(variables('appName'), '-', '')))), uniquestring(resourceGroup().id, variables('appName')))]",
         "storageBlobDataContributorRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
         "storageQueueDataContributorRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
