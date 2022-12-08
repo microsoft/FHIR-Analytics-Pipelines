@@ -397,21 +397,7 @@
             ],
             "scale": {
               "minReplicas": 1,
-              "maxReplicas": "[parameters('maxInstanceCount')]",
-              "rules": [
-                    {
-                    "name": "queue-trigger",
-                    "custom": {
-                        "type": "azure-queue",
-                        "metadata": {
-                            "queueName": "[variables('jobInfoQueueName')]",
-                            "accountName": "[variables('storageAccountName')]",
-                            "cloud": "AzurePublicCloud",
-                            "queueLength": 3
-                        }
-                        }
-                    }
-                ]
+              "maxReplicas": "[parameters('maxInstanceCount')]"
             }
           }
         }
