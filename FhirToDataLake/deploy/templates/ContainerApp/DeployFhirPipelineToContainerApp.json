@@ -299,7 +299,7 @@
           "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', variables('environmentName'))]",
           "configuration": {
             "secrets": [{
-              "name": "my-connection-string",
+              "name": "queue-connection-string",
               "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-04-01').keys[0].value)]"
             }]
           },    
@@ -411,11 +411,11 @@
                     "type": "azure-queue",
                     "metadata": { 
                       "queueName": "[variables('jobInfoQueueName')]",
-                      "queueLength": "3",
+                      "queueLength": 3,
                       "cloud": "AzurePublicCloud"
                     },
                     "auth": [{
-                      "secretRef": "my-connection-string",
+                      "secretRef": "queue-connection-string",
                       "triggerParameter": "connection"
                     }]
                   }
