@@ -12,7 +12,7 @@ variables:
   buildConfiguration: 'Release'
   buildPlatform: 'x64'
   major: 0
-  minor: 5
+  minor: 6
   patch: 0
   buildnum: $[counter(format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch']), 1)]
   version: $(major).$(minor).$(patch).$(buildnum)
@@ -21,7 +21,7 @@ variables:
   synapseWorkspaceName: testcisynapseworkspace
   fhirToDatalakeStorageAccountName: testfhirtodoglaw6s6zpluk
   dicomToDatalakeStorageAccountName: testdicomtozrv3ddtm6vwkw
-  imageName: fhirtodatalake
+  imageName: healthdatatodatalake
 
 stages:
 - stage: Build
