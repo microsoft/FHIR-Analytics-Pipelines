@@ -57,7 +57,7 @@ Param(
 # TODO: Align Tags here and ARM template, maybe save schemas in Storage/ACR and run remotely.
 $Tags = @{
     "FhirAnalyticsPipeline" = "FhirToDataLake"
-    "FhirSchemaVersion" = "v0.5.0"
+    "FhirSchemaVersion" = "v0.6.0"
 }
 
 $JobName = "FhirSynapseJob"
