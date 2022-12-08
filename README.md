@@ -1,6 +1,6 @@
 # Health Data Analytics Pipelines
 
-Health Data Analytics Pipelines is an open source project with the goal to help build components and pipelines for transforming and moving FHIR and DICOM data from Azure Health Data Services(https://docs.microsoft.com/en-us/azure/healthcare-apis/), [Azure API for FHIR](https://azure.microsoft.com/en-us/services/azure-api-for-fhir/), [FHIR server for Azure](https://github.com/microsoft/fhir-server) or [DICOM server](https://github.com/microsoft/dicom-server) to [Azure Data Lake](https://azure.microsoft.com/en-us/solutions/data-lake/) and thereby make it available for analytics with [Azure Synapse](https://azure.microsoft.com/en-us/services/synapse-analytics/), [Power BI](https://powerbi.microsoft.com/en-us/), and [Azure Machine Learning](https://azure.microsoft.com/en-us/services/machine-learning/).
+Health Data Analytics Pipelines is an open source project with the goal to help build components and pipelines for transforming and moving FHIR and DICOM data from FHIR and DICOM servers to [Azure Data Lake](https://azure.microsoft.com/en-us/solutions/data-lake/) and thereby make it available for analytics with [Azure Synapse](https://azure.microsoft.com/en-us/services/synapse-analytics/), [Power BI](https://powerbi.microsoft.com/en-us/), and [Azure Machine Learning](https://azure.microsoft.com/en-us/services/machine-learning/).
 
 This OSS project currently has the following solutions:
 
@@ -8,9 +8,15 @@ This OSS project currently has the following solutions:
 
     This solution enables you to query against the entire FHIR data with tools such as Synapse Studio, SSMS, and Power BI. You can also access the Parquet files directly from a Synapse Spark pool. You should consider this solution if you want to access all of your FHIR data in near real time, and want to defer custom transformation to downstream systems.
     
+    Supported FHIR server: 
+    [FHIR Service in Azure Health Data Services](https://learn.microsoft.com/en-us/azure/healthcare-apis/fhir/), [Azure API for FHIR](https://learn.microsoft.com/en-us/azure/healthcare-apis/azure-api-for-fhir/), [FHIR server for Azure](https://github.com/microsoft/fhir-server) 
+    
 1. [DICOM to Synapse sync agent](FhirToDataLake/docs/Deploy-DicomToDatalake.md): It is an [Azure Container App](https://learn.microsoft.com/en-us/azure/container-apps/?ocid=AID3042118) that extracts DICOM metadata from a DICOM server using DICOM [Change Feed](https://learn.microsoft.com/en-us/azure/healthcare-apis/dicom/dicom-change-feed-overview) APIs, converts it to hierarchical Parquet files, and writes it to Azure Data Lake in near real time. This solution also contains a script to create External Table in Synapse Serverless SQL pool pointing to the DICOM metadata Parquet files. For more information about DICOM External Tables, see [Data mapping from DICOM to Synapse](./DICOM-Data-Mapping.md).
 
     This solution enables you to query against the entire DICOM metadata with Synapse in SQL. You can also access the Parquet files directly from a Synapse Spark pool. 
+    
+    Supported DICOM server:
+    [DICOM service in Azure Health Data Services](https://learn.microsoft.com/en-us/azure/healthcare-apis/dicom/), [DICOM server](https://github.com/microsoft/dicom-server) 
 
 1. [FHIR to CDM Pipeline Generator](FhirToCdm/docs/fhir-to-cdm.md): It is a tool to generate an ADF pipeline for moving a snapshot of data from a FHIR server using $export API to a [CDM folder](https://docs.microsoft.com/en-us/common-data-model/data-lake) in Azure Data Lake Storage Gen 2 in csv format. The tools requires a user-created configuration file containing instructions to project and flatten FHIR Resources and fields into tables. You can also follow the [instructions](FhirToCdm/docs/cdm-to-synapse.md) for creating a downstream pipeline in Synapse workspace to move data from CDM folder to Synapse dedicated SQL pool.
 
