@@ -297,6 +297,12 @@
         "tags": "[variables('resourceTags')]",
         "properties": {
           "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', variables('environmentName'))]",
+          "configuration": {
+            "secrets": [{
+              "name": "my-connection-string",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-04-01').keys[0].value)]"
+            }]
+          },    
           "template": {
             "revisionSuffix": "myrevision",
             "containers": [
@@ -397,7 +403,24 @@
             ],
             "scale": {
               "minReplicas": 1,
-              "maxReplicas": "[parameters('maxInstanceCount')]"
+              "maxReplicas": "[parameters('maxInstanceCount')]",
+              "rules": [
+                {
+                  "name": "queue-trigger",
+                  "custom": {
+                    "type": "azure-queue",
+                    "metadata": { 
+                      "queueName": "[variables('jobInfoQueueName')]",
+                      "queueLength": "3",
+                      "cloud": "AzurePublicCloud"
+                    },
+                    "auth": [{
+                      "secretRef": "my-connection-string",
+                      "triggerParameter": "connection"
+                    }]
+                  }
+                }
+                ]      
             }
           }
         }
