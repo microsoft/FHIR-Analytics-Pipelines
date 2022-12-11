@@ -587,6 +587,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 skippedCount);
                         }
 
+                        
                         _result.SkippedCount =
                             _result.SkippedCount.AddToDictionary(schemaType, skippedCount);
                         _result.ProcessedCount =
@@ -602,6 +603,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 progress.Report(JsonConvert.SerializeObject(_result));
 
                 // clear cache
+                _result.ProcessedDataSizeForInput += _cacheResult.CacheSize;
                 _cacheResult.ClearCache();
                 _logger.LogInformation($"Commit cache resources successfully for processing job {_jobId}.");
             }

@@ -9,7 +9,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Extensions
 {
     public static class DateTimeOffsetExtensions
     {
-        private const string InstantFormat = "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK";
+        private const string InstantFormat = "yyyy-MM-dd'T'HH:mm:ss.ffffffK";
 
         /// <summary>
         /// Formats the input DateTimeOffset as an ISO 8601 string.

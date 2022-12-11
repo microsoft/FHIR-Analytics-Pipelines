@@ -64,5 +64,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// Data size for output parquet data in bytes.
         /// </summary>
         public long ProcessedDataSizeInTotal { get; set; } = 0;
+
+        /// <summary>
+        /// Data size for output parquet data in bytes.
+        /// </summary>
+        public long ProcessedDataSizeForInput { get; set; } = 0;
     }
 }

@@ -6,7 +6,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Security.AccessControl;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -30,6 +32,7 @@ using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TypeFilter = Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch.TypeFilter;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
@@ -47,8 +50,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly ILogger<FhirToDataLakeOrchestratorJob> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly IMetricsLogger _metricsLogger;
+        private Dictionary<DateTimeOffset, int> _anchor = new Dictionary<DateTimeOffset, int>();
 
         private FhirToDataLakeOrchestratorJobResult _result;
+        private List<(string, string, int)> _spliting = new List<(string, string, int)>();
 
         public FhirToDataLakeOrchestratorJob(
             JobInfo jobInfo,
@@ -202,6 +207,164 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
+        private bool ValidSubjob(int size)
+        {
+            if (size < 20000 && size > 5000)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private List<DateTimeOffset> GetAnchors(int baseSize)
+        {
+            var last = _anchor.First();
+            var result = new List<DateTimeOffset>();
+            var flag = true;
+            foreach (var item in _anchor)
+            {
+                
+                if (item.Value - baseSize> 5000 && flag)
+                {
+                    result.Add(last.Key);
+                }
+                if(item.Value - baseSize > 20000)
+                {
+                    result.Add(item.Key);
+                    flag = false;
+                }
+                last = item;
+            }
+            return result;
+        }
+
+        private async Task<DateTimeOffset> GetAnchor(DateTimeOffset? start)
+        {
+            
+            int baseSize = start==null?0:_anchor[(DateTimeOffset)start];
+            var last = _anchor.First();
+            var result = new List<DateTimeOffset>();
+            var flag = true;
+            foreach (var item in _anchor)
+            {
+                var value = item.Value;
+                if (value == int.MaxValue)
+                {
+                    var resourceCount = await GetResourceCountAsync(last.Key , item.Key);
+                    _anchor[item.Key] = resourceCount == int.MaxValue ? int.MaxValue : resourceCount + _anchor[last.Key];
+                    value = _anchor[item.Key];
+                }
+
+                if (value - baseSize < 50000)
+                {
+                    last = item;
+                    continue;
+                }
+                if (value - baseSize <= 2000000 && value - baseSize >= 50000)
+                {
+                    return item.Key;
+                }
+
+                return await BisectAnchor(last.Key, item.Key, baseSize);
+            }
+
+            return last.Key;
+
+        }
+
+        private async Task<DateTimeOffset> BisectAnchor(DateTimeOffset start, DateTimeOffset end, int baseSize)
+        {
+
+            while ((end - start).TotalMilliseconds>1)
+            {
+                DateTimeOffset mid = start.Add((end - start) / 2); 
+                var resourceCount = await GetResourceCountAsync(start, mid);
+                resourceCount = resourceCount == int.MaxValue ? int.MaxValue : resourceCount + _anchor[start];
+                _anchor[mid] = resourceCount;
+                if (resourceCount - baseSize > 2000000)
+                {
+                    end = mid;
+                }
+                else if (resourceCount - baseSize < 50000)
+                {
+                    start = mid;
+                }
+                else
+                {
+                    return mid;
+                }
+            }
+
+            return end;
+
+        }
+
+        private async Task<int> GetResourceCountAsync(DateTimeOffset? start, DateTimeOffset end, CancellationToken cancellationToken = default)
+        {
+            var count = 0;
+            List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
+
+            List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
+                new KeyValuePair<string, string>("_summary", "count"),
+            };
+
+            if (start != null)
+            {
+                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{((DateTimeOffset)start).ToInstantString()}"));
+            }
+
+            var searchOptions = new BaseSearchOptions(null, parameters);
+
+            foreach (var typeFilter in typeFilters)
+            {
+                searchOptions.ResourceType = typeFilter.ResourceType;
+                List<KeyValuePair<string, string>> sharedQueryParameters = new List<KeyValuePair<string, string>>(searchOptions.QueryParameters);
+
+                DateTimeOffset? nexTimeOffset = null;
+                string fhirBundleResult;
+                try
+                {
+                    var tokenSrc = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                    using var searchCountToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, tokenSrc.Token);
+                    fhirBundleResult = await _dataClient.SearchAsync(searchOptions, searchCountToken.Token);
+                }
+                catch
+                {
+                    _logger.LogInformation("Start spliting: too mush resoucre");
+                    return int.MaxValue;
+                }
+
+                // Parse bundle result.
+                JObject fhirBundleObject;
+                try
+                {
+                    fhirBundleObject = JObject.Parse(fhirBundleResult);
+                    count += (int)fhirBundleObject["total"];
+                    if (count > 10000000)
+                    {
+                        return int.MaxValue;
+                    }
+                }
+                catch (JsonReaderException exception)
+                {
+                    string reason = string.Format(
+                            "Failed to parse fhir search result for '{0}' with search parameters '{1}'.",
+                            searchOptions.ResourceType,
+                            string.Join(", ", searchOptions.QueryParameters.Select(parameter => $"{parameter.Key}: {parameter.Value}")));
+
+                    _diagnosticLogger.LogError(reason);
+                    _logger.LogInformation(exception, reason);
+                    throw new FhirDataParseException(reason, exception);
+                }
+            }
+            
+
+            return count;
+        }
+
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             TimeSpan interval = TimeSpan.FromSeconds(IncrementalOrchestrationIntervalInSeconds);
@@ -211,22 +374,29 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 interval = TimeSpan.FromSeconds(InitialOrchestrationIntervalInSeconds);
             }
 
+            if (_inputData.DataStartTime != null)
+            {
+                _anchor[(DateTimeOffset)_inputData.DataStartTime] = 0;
+            }
+            _logger.LogInformation($"Start spliting job {DateTimeOffset.Now.ToInstantString()}.");
+
+            _anchor[_inputData.DataEndTime] = await GetResourceCountAsync(_inputData.DataStartTime, _inputData.DataEndTime);
+
+            _logger.LogInformation($"Start spliting job, add end anchor with {_anchor[_inputData.DataEndTime]} resources. {DateTimeOffset.Now.ToInstantString()}.");
+
+            DateTimeOffset? nextResourceTimestamp = await GetNextTimestamp(_inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
+
+            _logger.LogInformation($"Start spliting job, get first resource. {DateTimeOffset.Now.ToInstantString()}.");
+            if (nextResourceTimestamp.HasValue)
+            {
+                _anchor[(DateTimeOffset) nextResourceTimestamp] = await GetResourceCountAsync(_inputData.DataStartTime, (DateTimeOffset) nextResourceTimestamp);
+            }
             while (_result.NextJobTimestamp == null || _result.NextJobTimestamp < _inputData.DataEndTime)
             {
+                _anchor = _anchor.OrderBy(p => p.Key).ToDictionary(p => p.Key, o => o.Value);
                 DateTimeOffset? lastEndTime = _result.NextJobTimestamp ?? _inputData.DataStartTime;
-                DateTimeOffset? nextResourceTimestamp =
-                    await GetNextTimestamp(lastEndTime, _inputData.DataEndTime, cancellationToken);
-                if (nextResourceTimestamp == null)
-                {
-                    _result.NextJobTimestamp = _inputData.DataEndTime;
-                    break;
-                }
-
-                DateTimeOffset nextJobEnd = (DateTimeOffset)nextResourceTimestamp + interval;
-                if (nextJobEnd > _inputData.DataEndTime)
-                {
-                    nextJobEnd = _inputData.DataEndTime;
-                }
+                // DateTimeOffset nextJobEnd = (DateTimeOffset)nextResourceTimestamp + interval;
+                DateTimeOffset nextJobEnd = await GetAnchor(lastEndTime);
 
                 var input = new FhirToDataLakeProcessingJobInputData
                 {
@@ -237,9 +407,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     DataStartTime = lastEndTime,
                     DataEndTime = nextJobEnd,
                 };
+                if(lastEndTime== null)
+                {
+                    _spliting.Add((null, nextJobEnd.ToInstantString(), _anchor[nextJobEnd]));
+                }
+                else
+                {
+
+                    _spliting.Add((((DateTimeOffset)lastEndTime).ToInstantString(), nextJobEnd.ToInstantString(), _anchor[nextJobEnd] - _anchor[(DateTimeOffset)lastEndTime]));
+                }
+                _logger.LogInformation($"Start spliting job, generate new split. {DateTimeOffset.Now.ToInstantString()}. {_spliting.Last() } , anchors : {_anchor.Count()}");
                 _result.NextJobTimestamp = nextJobEnd;
                 yield return input;
             }
+            _logger.LogInformation($"Start spliting job, anchor number: {_anchor.Count}.");
         }
 
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForGroup([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -405,6 +586,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
                             _result.ProcessedCountInTotal += processingJobResult.ProcessedCountInTotal;
                             _result.ProcessedDataSizeInTotal += processingJobResult.ProcessedDataSizeInTotal;
+                            _result.ProcessedDataSizeForInput += processingJobResult.ProcessedDataSizeForInput;
 
                             // log metrics
                             _metricsLogger.LogSuccessfulResourceCountMetric(processingJobResult.ProcessedCountInTotal);
