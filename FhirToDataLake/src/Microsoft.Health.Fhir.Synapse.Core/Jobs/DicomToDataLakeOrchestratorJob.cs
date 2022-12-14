@@ -58,7 +58,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public int CheckFrequencyInSeconds { get; set; } = JobConfigurationConstants.DefaultCheckFrequencyInSeconds;
 
-        public int ChangeFeedLimit { get; set; } = JobConfigurationConstants.DefaultDicomChangeFeedLimit;
+        public int JobChangeFeedLimit { get; set; } = JobConfigurationConstants.DicomJobChangeFeedLimit;
 
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
@@ -174,7 +174,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _result.NextOffset = _inputData.StartOffset;
             }
 
-            while (_result.NextOffset + ChangeFeedLimit <= _inputData.EndOffset)
+            while (_result.NextOffset + JobChangeFeedLimit <= _inputData.EndOffset)
             {
                 var input = new DicomToDataLakeProcessingJobInputData
                 {
@@ -182,10 +182,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     StartOffset = _result.NextOffset,
-                    EndOffset = _result.NextOffset + ChangeFeedLimit,
+                    EndOffset = _result.NextOffset + JobChangeFeedLimit,
                 };
 
-                _result.NextOffset += ChangeFeedLimit;
+                _result.NextOffset += JobChangeFeedLimit;
                 yield return input;
             }
 

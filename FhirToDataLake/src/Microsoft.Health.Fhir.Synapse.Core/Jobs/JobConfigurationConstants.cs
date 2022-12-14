@@ -38,9 +38,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public const int DefaultDicomInitialStartOffset = 0;
 
         /// <summary>
-        /// The default limit in DICOM Server changefeed
+        /// The DICOM changefeed limit in each processing job
         /// </summary>
-        public const int DefaultDicomChangeFeedLimit = 100;
+        public const int DicomJobChangeFeedLimit = 5000;
+
+        /// <summary>
+        /// The DICOM changefeed limit in search request
+        /// </summary>
+        public const int DicomSearchChangeFeedLimit = 100;
 
         // orchestrator job configurations
 
