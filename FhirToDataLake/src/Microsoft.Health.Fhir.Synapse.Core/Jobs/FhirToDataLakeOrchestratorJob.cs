@@ -61,6 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private FhirToDataLakeOrchestratorJobResult _result;
         private List<(string, string, int)> _spliting = new List<(string, string, int)>();
+        private List<(string, TimeRange, int)> _mergeList = new List<(string, TimeRange, int)>();
 
         public FhirToDataLakeOrchestratorJob(
             JobInfo jobInfo,
@@ -321,6 +322,28 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return count;
         }
 
+        private Dictionary<string, TimeRange> PushMergeList(string resourceType, TimeRange range, int count)
+        {
+            var current = 0;
+            var result = new Dictionary<string, TimeRange>();
+            foreach(var item in _mergeList)
+            {
+                current += item.Item3;
+            }
+            if (current + count > LowBoundOfProcessingJobResourceCount)
+            {
+                foreach (var item in _mergeList)
+                {
+                    result.Add(item.Item1, item.Item2);
+                }
+                result.Add(resourceType, range);
+                _mergeList.Clear();
+                return result;
+            }
+            _mergeList.Add((resourceType, range, count));
+            return null;
+        }
+
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Start spliting. {DateTimeOffset.Now.ToString()}");
@@ -355,6 +378,29 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     continue;
                 }
+                else if (_anchor[resourceType][_inputData.DataEndTime] < LowBoundOfProcessingJobResourceCount)
+                {
+                    _logger.LogInformation($"Start spliting. {resourceType} push one small job {DateTimeOffset.Now.ToString()}");
+                    var timeRange = new TimeRange()
+                    {
+                        DataEndTime = _inputData.DataEndTime,
+                        DataStartTime = _inputData.DataStartTime,
+                    };
+
+                    var parameters = PushMergeList(resourceType, timeRange, _anchor[resourceType][_inputData.DataEndTime]);
+                    if (parameters != null)
+                    {
+                        _logger.LogInformation($"Start spliting {resourceType}job, generate new split. merge {parameters.Count}jobs : {parameters.Keys}");
+                        yield return new FhirToDataLakeProcessingJobInputData
+                        {
+                            JobType = JobType.Processing,
+                            ProcessingJobSequenceId = _result.CreatedJobCount,
+                            TriggerSequenceId = _inputData.TriggerSequenceId,
+                            Since = _inputData.Since,
+                            Parameters = parameters,
+                        };
+                    }
+                }
                 else if (_anchor[resourceType][_inputData.DataEndTime] < HighBoundOfProcessingJobResourceCount)
                 {
                     _logger.LogInformation($"Start spliting. {resourceType} one job {DateTimeOffset.Now.ToString()}");
@@ -364,9 +410,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         ProcessingJobSequenceId = _result.CreatedJobCount,
                         TriggerSequenceId = _inputData.TriggerSequenceId,
                         Since = _inputData.Since,
-                        ResourceType = resourceType,
-                        DataStartTime = null,
-                        DataEndTime = _inputData.DataEndTime,
+                        Parameters = new Dictionary<string, TimeRange>
+                        {
+                            {
+                                resourceType,
+                                new TimeRange()
+                                {
+                                    DataEndTime = _inputData.DataEndTime,
+                                    DataStartTime = _inputData.DataStartTime,
+                                }
+                            },
+                        },
                     };
                 }
                 else
@@ -402,17 +456,42 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         DateTimeOffset? lastEndTime = nextJobEnd ?? _inputData.DataStartTime;
                         // DateTimeOffset nextJobEnd = (DateTimeOffset)nextResourceTimestamp + interval;
                         nextJobEnd = await GetAnchor(resourceType, lastEndTime);
-                        if (lastEndTime != null && _anchor[resourceType][(DateTimeOffset)nextJobEnd] - _anchor[resourceType][(DateTimeOffset)lastEndTime] == 0 )
+
+                        var totalCount = lastEndTime == null ? _anchor[resourceType][(DateTimeOffset)nextJobEnd] : _anchor[resourceType][(DateTimeOffset)nextJobEnd] - _anchor[resourceType][(DateTimeOffset)lastEndTime];
+
+                        if (totalCount == 0 )
                         {
                             continue;
                         }
 
-                        var logCount = lastEndTime == null ? _anchor[resourceType][(DateTimeOffset)nextJobEnd] : _anchor[resourceType][(DateTimeOffset)nextJobEnd] - _anchor[resourceType][(DateTimeOffset)lastEndTime];
+                        if (totalCount < LowBoundOfProcessingJobResourceCount)
+                        {
+                            var timeRange = new TimeRange()
+                            {
+                                DataEndTime = (DateTimeOffset)nextJobEnd,
+                                DataStartTime = lastEndTime,
+                            };
+                            var parameters = PushMergeList(resourceType, timeRange, totalCount );
 
+                            if (parameters != null)
+                            {
+                                _logger.LogInformation($"Start spliting {resourceType}job, generate new split. merge {parameters.Count}jobs : {parameters.Keys}");
+                                yield return new FhirToDataLakeProcessingJobInputData
+                                {
+                                    JobType = JobType.Processing,
+                                    ProcessingJobSequenceId = _result.CreatedJobCount,
+                                    TriggerSequenceId = _inputData.TriggerSequenceId,
+                                    Since = _inputData.Since,
+                                    Parameters = parameters,
+                                };
+                                continue;
+                            }
+                        }
+                        
                         time2 = DateTimeOffset.Now;
                         if (jobCounts == 0)
                         {
-                            _logger.LogInformation($"Start spliting {resourceType}job, generate new split. use : {(time2 - time1).TotalMilliseconds} , {lastEndTime}-{(DateTimeOffset)nextJobEnd} : {logCount}. anchors : {_anchor[resourceType].Count()}, {DateTimeOffset.Now.ToInstantString()}");
+                            _logger.LogInformation($"Start spliting {resourceType}job, generate new split. use : {(time2 - time1).TotalMilliseconds} , {lastEndTime}-{(DateTimeOffset)nextJobEnd} : {totalCount}. anchors : {_anchor[resourceType].Count()}, {DateTimeOffset.Now.ToInstantString()}");
                         }
                         
                         yield return new FhirToDataLakeProcessingJobInputData
@@ -421,12 +500,19 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             ProcessingJobSequenceId = _result.CreatedJobCount,
                             TriggerSequenceId = _inputData.TriggerSequenceId,
                             Since = _inputData.Since,
-                            ResourceType = resourceType,
-                            DataStartTime = lastEndTime,
-                            DataEndTime = (DateTimeOffset)nextJobEnd,
+                            Parameters = new Dictionary<string, TimeRange>
+                            {
+                                {
+                                    resourceType,
+                                    new TimeRange()
+                                    {
+                                        DataEndTime = (DateTimeOffset)nextJobEnd,
+                                        DataStartTime = lastEndTime,
+                                    }
+                                },
+                            },
                         };
                         jobCounts += 1;
-
                     }
 
                     _logger.LogInformation($"Start spliting {resourceType}job, finish split. use : {(time2 - splitingStartTime).TotalMilliseconds} , anchors : {_anchor[resourceType].Count()}. job counts: {jobCounts}.{DateTimeOffset.Now.ToInstantString()}");

@@ -196,17 +196,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             // the resource type and customized parameters of each filter will be set later.
             List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString("d")),
-                new KeyValuePair<string, string>("_type", _inputData.ResourceType),
             };
 
-            if (_inputData.DataStartTime != null)
-            {
-                parameters.Add(new KeyValuePair<string, string>(
-                    FhirApiConstants.LastUpdatedKey,
-                    $"ge{((DateTimeOffset)_inputData.DataStartTime).ToInstantString()}"));
-            }
 
             var searchOption = new BaseSearchOptions(null, parameters);
 
@@ -394,8 +386,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             foreach (TypeFilter typeFilter in _typeFilters)
             {
+                if(!_inputData.Parameters.ContainsKey(typeFilter.ResourceType))
+                {
+                    continue;
+                }
                 searchOptions.ResourceType = typeFilter.ResourceType;
-                searchOptions.QueryParameters = new List<KeyValuePair<string, string>>(sharedQueryParameters);
+                searchOptions.QueryParameters = new List<KeyValuePair<string, string>>(sharedQueryParameters)
+                {
+                    new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.Parameters[typeFilter.ResourceType].DataEndTime.ToInstantString()}"),
+                };
+
+                if (_inputData.Parameters[typeFilter.ResourceType].DataStartTime != null)
+                {
+                    searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(
+                        FhirApiConstants.LastUpdatedKey,
+                        $"ge{((DateTimeOffset)_inputData.Parameters[typeFilter.ResourceType].DataStartTime).ToInstantString()}"));
+                }
+
                 foreach (KeyValuePair<string, string> parameter in typeFilter.Parameters)
                 {
                     searchOptions.QueryParameters.Add(parameter);
@@ -566,7 +573,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             }
 
                             // Upload to blob and log result
-                            string blobUrl = await _dataWriter.WriteAsync(parquetStream, _jobId, _outputFileIndexMap[schemaType], _inputData.DataEndTime, cancellationToken);
+                            string blobUrl = await _dataWriter.WriteAsync(parquetStream, _jobId, _outputFileIndexMap[schemaType], _inputData.Parameters[resourceType].DataEndTime, cancellationToken);
                             _outputFileIndexMap[schemaType] += 1;
 
                             _result.ProcessedDataSizeInTotal += parquetStream.Value.Length;
