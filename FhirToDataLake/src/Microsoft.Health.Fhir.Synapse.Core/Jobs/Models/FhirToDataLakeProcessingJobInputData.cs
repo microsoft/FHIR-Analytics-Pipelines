@@ -32,6 +32,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         public DateTimeOffset? Since { get; set; }
 
         /// <summary>
+        /// Resource type to be processed,
+        /// </summary>
+        public string ResourceType { get; set; }
+
+        /// <summary>
         /// Start time, process all data if not specified,
         /// </summary>
         public DateTimeOffset? DataStartTime { get; set; }

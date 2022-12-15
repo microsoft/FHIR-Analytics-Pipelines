@@ -70,5 +70,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// The running job count threshold to check running job complete
         /// </summary>
         public const int CheckRunningJobCompleteRunningJobCountThreshold = 5;
+
+        /// <summary>
+        /// The low bound of resource count when spliting processing jobs.
+        /// </summary>
+        public const int LowBoundOfProcessingJobResourceCount = 50000;
+
+        /// <summary>
+        /// The high bound of resource count when spliting processing jobs.
+        /// </summary>
+        public const int HighBoundOfProcessingJobResourceCount = 500000;
     }
 }

@@ -31,6 +31,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         public DateTimeOffset? NextJobTimestamp { get; set; }
 
         /// <summary>
+        /// Processing resource type to be processed, used for system scope
+        /// </summary>
+        public string ProcessingResourceType { get; set; }
+
+        /// <summary>
         /// Next patient index to be processed, used for group scope
         /// </summary>
         public int NextPatientIndex { get; set; }

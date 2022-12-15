@@ -198,6 +198,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString("d")),
+                new KeyValuePair<string, string>("_type", _inputData.ResourceType),
             };
 
             if (_inputData.DataStartTime != null)
