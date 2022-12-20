@@ -200,13 +200,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// </summary>
         private void AddDicomMetadataToCache(List<JObject> dicomMetadataList)
         {
+            if (!_cacheResult.Resources.ContainsKey(DicomConstants.DicomResourceType))
+            {
+                _cacheResult.Resources[DicomConstants.DicomResourceType] = new List<JObject>();
+            }
+
             foreach (JObject metadata in dicomMetadataList)
             {
-                if (!_cacheResult.Resources.ContainsKey(DicomConstants.DicomResourceType))
-                {
-                    _cacheResult.Resources[DicomConstants.DicomResourceType] = new List<JObject>();
-                }
-
                 _cacheResult.Resources[DicomConstants.DicomResourceType].Add(metadata);
             }
         }
