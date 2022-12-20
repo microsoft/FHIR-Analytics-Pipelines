@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -22,7 +21,6 @@ using Microsoft.Health.Fhir.Synapse.SchemaManagement;
 using Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet;
 using Microsoft.Health.Parquet;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
 {
@@ -135,17 +133,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.DataProcessor
                 _logger.LogError(ex, $"Unhandled exception when converting input data to parquet for \"{processParameters.SchemaType}\".");
                 throw;
             }
-        }
-
-        private MemoryStream TransformJsonDataToStream(string schemaType, IEnumerable<JObject> inputData)
-        {
-            string content = string.Join(
-                Environment.NewLine,
-                inputData.Select(jsonObject => jsonObject.ToString(Formatting.None))
-                         .Where(result => CheckBlockSize(schemaType, result)));
-
-            // If no content been fetched, E.g. input data is empty or all FHIR data are larger than block size, will return null.
-            return string.IsNullOrEmpty(content) ? null : new MemoryStream(Encoding.UTF8.GetBytes(content));
         }
 
         private bool CheckBlockSize(string schemaType, string data)
