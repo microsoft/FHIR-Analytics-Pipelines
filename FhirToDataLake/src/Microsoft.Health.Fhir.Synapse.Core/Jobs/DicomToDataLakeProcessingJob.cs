@@ -109,11 +109,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // Initialize
                 _cacheResult = new CacheResult();
-                if (!_cacheResult.Resources.ContainsKey(DicomConstants.DicomResourceType))
-                {
-                    _cacheResult.Resources[DicomConstants.DicomResourceType] = new List<JObject>();
-                }
-
                 _outputFileIndexMap = new Dictionary<string, int>();
 
                 // Search metadata
@@ -301,7 +296,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             var queryParameters = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>(DicomApiConstants.OffsetKey, $"{_inputData.StartOffset}"),
+                    new KeyValuePair<string, string>(DicomApiConstants.OffsetKey, $"{startOffset}"),
                     new KeyValuePair<string, string>(DicomApiConstants.LimitKey, $"{limit}"),
                     new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{true}"),
                 };
