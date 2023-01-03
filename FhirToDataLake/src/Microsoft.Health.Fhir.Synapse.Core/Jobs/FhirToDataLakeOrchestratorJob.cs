@@ -218,39 +218,41 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
-        private async Task<DateTimeOffset> GetAnchor(string resourceType, DateTimeOffset? start)
+        private async Task<DateTimeOffset?> GetAnchor(string resourceType, DateTimeOffset? start)
         {
             int baseSize = start == null ? 0 : _anchor[resourceType][(DateTimeOffset)start];
-            var last = _anchor[resourceType].First();
+            var last = start;
             foreach (var item in _anchor[resourceType])
             {
                 var value = item.Value;
                 if (value == int.MaxValue)
                 {
-                    var resourceCount = await GetResourceCountAsync(resourceType, last.Key ,item.Key);
-                    _anchor[resourceType][item.Key] = resourceCount == int.MaxValue ? int.MaxValue : resourceCount + _anchor[resourceType][last.Key];
+                    var resourceCount = await GetResourceCountAsync(resourceType, last, item.Key);
+                    var lastAnchorValue = last == null ? 0 : _anchor[resourceType][(DateTimeOffset)last];
+                    _anchor[resourceType][item.Key] = resourceCount == int.MaxValue ? int.MaxValue : resourceCount + lastAnchorValue;
                     value = _anchor[resourceType][item.Key];
                 }
 
                 if (value - baseSize < LowBoundOfProcessingJobResourceCount)
                 {
-                    last = item;
+                    last = item.Key;
                     continue;
                 }
+
                 if (value - baseSize <= HighBoundOfProcessingJobResourceCount && value - baseSize >= LowBoundOfProcessingJobResourceCount)
                 {
                     return item.Key;
                 }
 
-                return await BisectAnchor(resourceType, last.Key, item.Key, baseSize);
+                return await BisectAnchor(resourceType, last == null ? DateTimeOffset.MinValue : (DateTimeOffset)last, item.Key, baseSize);
             }
 
-            return last.Key;
+            return last;
         }
 
         private async Task<DateTimeOffset> BisectAnchor(string resourceType, DateTimeOffset start, DateTimeOffset end, int baseSize)
         {
-            while ((end - start).TotalMilliseconds>1)
+            while ((end - start).TotalMilliseconds > 1)
             {
                 DateTimeOffset mid = start.Add((end - start) / 2);
                 var resourceCount = await GetResourceCountAsync(resourceType, start, mid);
@@ -279,8 +281,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
-                new KeyValuePair<string, string>("_summary", "count"),
-                new KeyValuePair<string, string>("_type", resourceType),
+                new KeyValuePair<string, string>(FhirApiConstants.Summary, "count"),
+                new KeyValuePair<string, string>(FhirApiConstants.TypeKey, resourceType),
             };
 
             if (start != null)
@@ -296,7 +298,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch
             {
-                _logger.LogInformation("Start spliting: too mush resoucres");
+                _logger.LogInformation("Get resource count error: too mush resoucres");
                 return int.MaxValue;
             }
 
@@ -324,73 +326,65 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private Dictionary<string, TimeRange> PushMergeList(string resourceType, TimeRange range, int count)
         {
-            var current = 0;
-            var result = new Dictionary<string, TimeRange>();
-            foreach(var item in _mergeList)
-            {
-                current += item.Item3;
-            }
+            var current = _mergeList.Sum(x => x.Item3);
             if (current + count > LowBoundOfProcessingJobResourceCount)
             {
+                var result = new Dictionary<string, TimeRange>();
                 foreach (var item in _mergeList)
                 {
                     result.Add(item.Item1, item.Item2);
                 }
+
                 result.Add(resourceType, range);
                 _mergeList.Clear();
                 return result;
             }
+
             _mergeList.Add((resourceType, range, count));
             return null;
         }
 
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Start spliting. {DateTimeOffset.Now.ToString()}");
-            
+            _logger.LogInformation($"Start spliting. {DateTimeOffset.Now.ToInstantString()}");
+
             List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
             var resourceTypes = typeFilters.Select(filter => filter.ResourceType).ToList();
             resourceTypes.Sort();
-            var startedIndex = 0;
-            if(_result.ProcessingResourceType != null)
+
+            foreach (var resourceType in resourceTypes)
             {
-                startedIndex = resourceTypes.IndexOf(_result.ProcessingResourceType);
-            }
+                var startTime = _result.ProcessingResourceType.ContainsKey(resourceType) ? _result.ProcessingResourceType[resourceType] : _inputData.DataStartTime;
 
-            foreach (var resourceType in resourceTypes.GetRange(startedIndex, resourceTypes.Count - startedIndex))
-            {
-                var startTime = string.Equals(resourceType, _result.ProcessingResourceType) ? _result.NextJobTimestamp: _inputData.DataStartTime;
-
-                _anchor[resourceType] = new Dictionary<DateTimeOffset, int>();
-
-                if (startTime != null)
-                {
-                    _anchor[resourceType][(DateTimeOffset)_inputData.DataStartTime] = 0;
-                }
-                else
-                {
-                    _anchor[resourceType][new DateTimeOffset(1970, 1,1,0,0,0, TimeSpan.Zero)] = 0;
-                }
-
-                _anchor[resourceType][_inputData.DataEndTime] = await GetResourceCountAsync(resourceType, startTime, _inputData.DataEndTime);
-
-                if (_anchor[resourceType][_inputData.DataEndTime] == 0)
+                // The resource type has already been processed.
+                if (startTime >= _inputData.DataEndTime)
                 {
                     continue;
                 }
-                else if (_anchor[resourceType][_inputData.DataEndTime] < LowBoundOfProcessingJobResourceCount)
+
+
+                var totalCount = await GetResourceCountAsync(resourceType, startTime, _inputData.DataEndTime);
+
+                if (totalCount == 0)
                 {
-                    _logger.LogInformation($"Start spliting. {resourceType} push one small job {DateTimeOffset.Now.ToString()}");
+                    // No resources found.
+                    continue;
+                }
+                else if (totalCount < LowBoundOfProcessingJobResourceCount)
+                {
+                    // Small size job, put it into pool waiting for merge.
+                    _logger.LogInformation($"Spliting jobs. {resourceType} push one small job {DateTimeOffset.Now.ToInstantString()}");
+
                     var timeRange = new TimeRange()
                     {
-                        DataEndTime = _inputData.DataEndTime,
                         DataStartTime = _inputData.DataStartTime,
+                        DataEndTime = _inputData.DataEndTime,
                     };
 
                     var parameters = PushMergeList(resourceType, timeRange, _anchor[resourceType][_inputData.DataEndTime]);
                     if (parameters != null)
                     {
-                        _logger.LogInformation($"Start spliting {resourceType}job, generate new split. merge {parameters.Count}jobs : {parameters.Keys}");
+                        _logger.LogInformation($"Spliting jobs. Merge {parameters.Count}jobs : {parameters.Keys}");
                         yield return new FhirToDataLakeProcessingJobInputData
                         {
                             JobType = JobType.Processing,
@@ -401,9 +395,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         };
                     }
                 }
-                else if (_anchor[resourceType][_inputData.DataEndTime] < HighBoundOfProcessingJobResourceCount)
+                else if (totalCount < HighBoundOfProcessingJobResourceCount)
                 {
-                    _logger.LogInformation($"Start spliting. {resourceType} one job {DateTimeOffset.Now.ToString()}");
+                    // Generate one job with properate size.
+                    _logger.LogInformation($"Spliting jobs. Generate one {resourceType} job. {DateTimeOffset.Now.ToInstantString()}");
+
                     yield return new FhirToDataLakeProcessingJobInputData
                     {
                         JobType = JobType.Processing,
@@ -425,7 +421,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
                 else
                 {
-                    int jobCounts = 0;
+                    // Split large size job using binary search.
+                    _anchor[resourceType] = new Dictionary<DateTimeOffset, int>();
+
+                    if (startTime != null)
+                    {
+                        _anchor[resourceType][(DateTimeOffset)_inputData.DataStartTime] = 0;
+                    }
+
                     var splitingStartTime = DateTimeOffset.Now;
                     _logger.LogInformation($"Start spliting {resourceType} job, total {_anchor[resourceType][_inputData.DataEndTime]} resources. {splitingStartTime.ToInstantString()}.");
 
@@ -439,39 +442,36 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     if (lastTimestamp != null)
                     {
-                        var count = await GetResourceCountAsync(resourceType, _inputData.DataStartTime, (DateTimeOffset)lastTimestamp, cancellationToken);
-                        _anchor[resourceType][(DateTimeOffset)lastTimestamp] = count;
+                        _anchor[resourceType][(DateTimeOffset)lastTimestamp] = totalCount;
                     }
 
                     var time2 = DateTimeOffset.Now;
 
-                    _logger.LogInformation($"Start spliting {resourceType} job, get first and last. {(time2- splitingStartTime).TotalMilliseconds}. {DateTimeOffset.Now.ToInstantString()}");
+                    _logger.LogInformation($"Start spliting {resourceType} job, get first and last. {(time2 - splitingStartTime).TotalMilliseconds}. {DateTimeOffset.Now.ToInstantString()}");
                     DateTimeOffset? nextJobEnd = null;
-                    var jobId = 0;
                     while (nextJobEnd == null || nextJobEnd < _inputData.DataEndTime)
                     {
                         var time1 = DateTimeOffset.Now;
-                        
+
                         _anchor[resourceType] = _anchor[resourceType].OrderBy(p => p.Key).ToDictionary(p => p.Key, o => o.Value);
                         DateTimeOffset? lastEndTime = nextJobEnd ?? _inputData.DataStartTime;
-                        // DateTimeOffset nextJobEnd = (DateTimeOffset)nextResourceTimestamp + interval;
                         nextJobEnd = await GetAnchor(resourceType, lastEndTime);
 
-                        var totalCount = lastEndTime == null ? _anchor[resourceType][(DateTimeOffset)nextJobEnd] : _anchor[resourceType][(DateTimeOffset)nextJobEnd] - _anchor[resourceType][(DateTimeOffset)lastEndTime];
+                        var jobSize = lastEndTime == null ? _anchor[resourceType][(DateTimeOffset)nextJobEnd] : _anchor[resourceType][(DateTimeOffset)nextJobEnd] - _anchor[resourceType][(DateTimeOffset)lastEndTime];
 
-                        if (totalCount == 0 )
+                        if (jobSize == 0)
                         {
                             continue;
                         }
 
-                        if (totalCount < LowBoundOfProcessingJobResourceCount)
+                        if (jobSize < LowBoundOfProcessingJobResourceCount)
                         {
                             var timeRange = new TimeRange()
                             {
                                 DataEndTime = (DateTimeOffset)nextJobEnd,
                                 DataStartTime = lastEndTime,
                             };
-                            var parameters = PushMergeList(resourceType, timeRange, totalCount );
+                            var parameters = PushMergeList(resourceType, timeRange, jobSize);
 
                             if (parameters != null)
                             {
@@ -487,13 +487,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 continue;
                             }
                         }
-                        
+
                         time2 = DateTimeOffset.Now;
-                        if (jobCounts == 0)
-                        {
-                            _logger.LogInformation($"Start spliting {resourceType}job, generate new split. use : {(time2 - time1).TotalMilliseconds} , {lastEndTime}-{(DateTimeOffset)nextJobEnd} : {totalCount}. anchors : {_anchor[resourceType].Count()}, {DateTimeOffset.Now.ToInstantString()}");
-                        }
-                        
                         yield return new FhirToDataLakeProcessingJobInputData
                         {
                             JobType = JobType.Processing,
@@ -512,11 +507,28 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 },
                             },
                         };
-                        jobCounts += 1;
                     }
 
                     _logger.LogInformation($"Start spliting {resourceType}job, finish split. use : {(time2 - splitingStartTime).TotalMilliseconds} , anchors : {_anchor[resourceType].Count()}. job counts: {jobCounts}.{DateTimeOffset.Now.ToInstantString()}");
                 }
+            }
+
+            if (_mergeList.Count != 0)
+            {
+                var result = new Dictionary<string, TimeRange>();
+                foreach (var item in _mergeList)
+                {
+                    result.Add(item.Item1, item.Item2);
+                }
+
+                yield return new FhirToDataLakeProcessingJobInputData
+                {
+                    JobType = JobType.Processing,
+                    ProcessingJobSequenceId = _result.CreatedJobCount,
+                    TriggerSequenceId = _inputData.TriggerSequenceId,
+                    Since = _inputData.Since,
+                    Parameters = result,
+                };
             }
         }
 

@@ -17,6 +17,11 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         public const string LastUpdatedKey = "_lastUpdated";
 
         /// <summary>
+        /// Summary search parameter.
+        /// </summary>
+        public const string Summary = "_summary";
+
+        /// <summary>
         /// Id search parameter.
         /// </summary>
         public const string IdKey = "_id";
