@@ -31,7 +31,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// </summary>
         public DateTimeOffset? Since { get; set; }
 
+        /// <summary>
+        /// Resourc type and time range specified in job configuration.
+        /// </summary>
         public Dictionary<string, TimeRange> Parameters { get; set; }
+
         /// <summary>
         /// Start time, process all data if not specified,
         /// </summary>
@@ -41,6 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// End time
         /// </summary>
         public DateTimeOffset DataEndTime { get; set; }
+
         /// <summary>
         /// The patients to be processed, patient id hash and processed patient version are provided for each patient, used for Group scope
         /// </summary>

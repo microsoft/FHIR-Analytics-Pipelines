@@ -46,11 +46,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         public long ProcessedDataSizeInTotal { get; set; } = 0;
 
         /// <summary>
-        /// Data size for input fhir data in bytes.
-        /// </summary>
-        public long ProcessedDataSizeForInput { get; set; } = 0;
-
-        /// <summary>
         /// The version id for each new/updated patient.
         /// </summary>
         public Dictionary<string, long> ProcessedPatientVersion { get; set; } = new Dictionary<string, long>();

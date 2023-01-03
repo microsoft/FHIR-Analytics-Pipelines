@@ -50,7 +50,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(Definition);
                 if (inputData is { JobType: JobType.Processing })
                 {
-                    // inputData.DataEndTime = _fakeDataEndTime;
+                    inputData.DataEndTime = _fakeDataEndTime;
                     return JsonConvert.SerializeObject(inputData);
                 }
             }

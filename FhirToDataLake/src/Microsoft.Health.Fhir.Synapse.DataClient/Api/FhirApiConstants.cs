@@ -46,5 +46,9 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         /// </summary>
         public const string MetadataKey = "metadata";
 
+        /// <summary>
+        /// Sort parameter.
+        /// </summary>
+        public const string SortKey = "_sort";
     }
 }

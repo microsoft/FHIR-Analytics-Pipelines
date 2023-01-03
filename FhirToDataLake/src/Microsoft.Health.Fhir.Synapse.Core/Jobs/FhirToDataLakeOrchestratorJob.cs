@@ -158,6 +158,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         await CheckRunningJobComplete(progress, cancellationToken);
                     }
                 }
+
                 _logger.LogInformation($"Orchestrator job {_jobInfo.Id} finished generating and enqueueing processing jobs.");
 
                 while (_result.RunningJobIds.Count > 0)
@@ -362,7 +363,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     continue;
                 }
 
-
                 var totalCount = await GetResourceCountAsync(resourceType, startTime, _inputData.DataEndTime);
 
                 if (totalCount == 0)
@@ -432,8 +432,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     var splitingStartTime = DateTimeOffset.Now;
                     _logger.LogInformation($"Start spliting {resourceType} job, total {_anchor[resourceType][_inputData.DataEndTime]} resources. {splitingStartTime.ToInstantString()}.");
 
-                    var nextTimestamp = await GetNextTimestamp(resourceType, _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
-                    var lastTimestamp = await GetLastTimestamp(resourceType, _inputData.DataStartTime, _inputData.DataEndTime, cancellationToken);
+                    // Set isDescending parameter false to get first timestmp.
+                    var nextTimestamp = await GetNextTimestamp(resourceType, _inputData.DataStartTime, _inputData.DataEndTime, false, cancellationToken);
+
+                    // Set isDescending parameter as true to get last timestmp.
+                    var lastTimestamp = await GetNextTimestamp(resourceType, _inputData.DataStartTime, _inputData.DataEndTime, true, cancellationToken);
 
                     if (nextTimestamp != null)
                     {
@@ -447,7 +450,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     var time2 = DateTimeOffset.Now;
 
-                    _logger.LogInformation($"Start spliting {resourceType} job, get first and last. {(time2 - splitingStartTime).TotalMilliseconds}. {DateTimeOffset.Now.ToInstantString()}");
+                    _logger.LogInformation($"Start spliting {resourceType} job, get first and last timestamp. {(DateTimeOffset.Now - splitingStartTime).TotalMilliseconds}. {DateTimeOffset.Now.ToInstantString()}");
                     DateTimeOffset? nextJobEnd = null;
                     while (nextJobEnd == null || nextJobEnd < _inputData.DataEndTime)
                     {
@@ -475,7 +478,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                             if (parameters != null)
                             {
-                                _logger.LogInformation($"Start spliting {resourceType}job, generate new split. merge {parameters.Count}jobs : {parameters.Keys}");
+                                _logger.LogInformation($"Spliting {resourceType}job, generate new split. merge {parameters.Count}jobs : {parameters.Keys}");
                                 yield return new FhirToDataLakeProcessingJobInputData
                                 {
                                     JobType = JobType.Processing,
@@ -509,7 +512,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         };
                     }
 
-                    _logger.LogInformation($"Start spliting {resourceType}job, finish split. use : {(time2 - splitingStartTime).TotalMilliseconds} , anchors : {_anchor[resourceType].Count()}. job counts: {jobCounts}.{DateTimeOffset.Now.ToInstantString()}");
+                    _logger.LogInformation($"Spliting {resourceType}job, finish split. use : {(DateTimeOffset.Now - splitingStartTime).TotalMilliseconds} milliseconds.");
                 }
             }
 
@@ -599,7 +602,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         }
 
         // get the lastUpdated timestamp of next resource for next processing job
-        private async Task<DateTimeOffset?> GetNextTimestamp(string resourceType, DateTimeOffset? start, DateTimeOffset end, CancellationToken cancellationToken)
+        private async Task<DateTimeOffset?> GetNextTimestamp(string resourceType, DateTimeOffset? start, DateTimeOffset end, bool isDescending,  CancellationToken cancellationToken)
         {
             List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
 
@@ -607,59 +610,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString("d")),
-                new KeyValuePair<string, string>("_type", resourceType),
-                new KeyValuePair<string, string>("_sort", "_lastUpdated"),
+                new KeyValuePair<string, string>(FhirApiConstants.TypeKey, resourceType),
             };
 
-            if (start != null)
+            if (isDescending)
             {
-                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{((DateTimeOffset)start).ToInstantString()}"));
+                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.SortKey, "-_lastUpdated"));
             }
-
-            var searchOptions = new BaseSearchOptions(null, parameters);
-
-            string fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
-
-            // Parse bundle result.
-            JObject fhirBundleObject;
-            try
+            else
             {
-                fhirBundleObject = JObject.Parse(fhirBundleResult);
+                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.SortKey, "_lastUpdated"));
             }
-            catch (JsonReaderException exception)
-            {
-                string reason = string.Format(
-                        "Failed to parse fhir search result for '{0}' with search parameters '{1}'.",
-                        searchOptions.ResourceType,
-                        string.Join(", ", searchOptions.QueryParameters.Select(parameter => $"{parameter.Key}: {parameter.Value}")));
-
-                _diagnosticLogger.LogError(reason);
-                _logger.LogInformation(exception, reason);
-                throw new FhirDataParseException(reason, exception);
-            }
-
-            List<JObject> fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject).ToList();
-
-            if (fhirResources.Any() && fhirResources.First().GetLastUpdated() != null)
-            {
-                return fhirResources.First().GetLastUpdated();
-            }
-
-            return null;
-        }
-
-        // get the lastUpdated timestamp of next resource for next processing job
-        private async Task<DateTimeOffset?> GetLastTimestamp(string resourceType, DateTimeOffset? start, DateTimeOffset end, CancellationToken cancellationToken)
-        {
-            List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
-
-            List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
-                new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString("d")),
-                new KeyValuePair<string, string>("_type", resourceType),
-                new KeyValuePair<string, string>("_sort", "-_lastUpdated"),
-            };
 
             if (start != null)
             {
@@ -731,7 +692,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
                             _result.ProcessedCountInTotal += processingJobResult.ProcessedCountInTotal;
                             _result.ProcessedDataSizeInTotal += processingJobResult.ProcessedDataSizeInTotal;
-                            _result.ProcessedDataSizeForInput += processingJobResult.ProcessedDataSizeForInput;
 
                             // log metrics
                             _metricsLogger.LogSuccessfulResourceCountMetric(processingJobResult.ProcessedCountInTotal);

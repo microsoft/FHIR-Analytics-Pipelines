@@ -386,10 +386,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             foreach (TypeFilter typeFilter in _typeFilters)
             {
-                if(!_inputData.Parameters.ContainsKey(typeFilter.ResourceType))
+                if (!_inputData.Parameters.ContainsKey(typeFilter.ResourceType))
                 {
                     continue;
                 }
+
                 searchOptions.ResourceType = typeFilter.ResourceType;
                 searchOptions.QueryParameters = new List<KeyValuePair<string, string>>(sharedQueryParameters)
                 {
@@ -595,7 +596,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 skippedCount);
                         }
 
-                        
                         _result.SkippedCount =
                             _result.SkippedCount.AddToDictionary(schemaType, skippedCount);
                         _result.ProcessedCount =
@@ -611,7 +611,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 progress.Report(JsonConvert.SerializeObject(_result));
 
                 // clear cache
-                _result.ProcessedDataSizeForInput += _cacheResult.CacheSize;
                 _cacheResult.ClearCache();
                 _logger.LogInformation($"Commit cache resources successfully for processing job {_jobId}.");
             }
