@@ -15,16 +15,16 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests.Extensions
         public static IEnumerable<object[]> DateTimeOffsetInstantValues =>
             new List<object[]>
             {
-                new object[] { default(DateTimeOffset), "0001-01-01T00:00:00+00:00" },
+                new object[] { default(DateTimeOffset), "0001-01-01T00:00:00.0000000+00:00" },
                 new object[]
                 {
                     new DateTimeOffset(2008, 5, 1, 8, 6, 32, new TimeSpan(1, 0, 0)),
-                    "2008-05-01T08:06:32+01:00",
+                    "2008-05-01T08:06:32.0000000+01:00",
                 },
                 new object[]
                 {
                     new DateTimeOffset(2021, 9, 9, 8, 0, 30, new TimeSpan(-8, 0, 0)),
-                    "2021-09-09T08:00:30-08:00",
+                    "2021-09-09T08:00:30.0000000-08:00",
                 },
             };
 

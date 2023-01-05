@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// <summary>
         /// Processing resource type to be processed, used for system scope
         /// </summary>
-        public Dictionary<string, DateTimeOffset> ProcessingResourceType { get; set; }
+        public Dictionary<string, DateTimeOffset> ProcessingResourceType { get; set; } = new Dictionary<string, DateTimeOffset>();
 
         /// <summary>
         /// Next patient index to be processed, used for group scope

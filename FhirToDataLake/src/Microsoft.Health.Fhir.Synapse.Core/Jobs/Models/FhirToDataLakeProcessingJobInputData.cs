@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// <summary>
         /// Resourc type and time range specified in job configuration.
         /// </summary>
-        public Dictionary<string, TimeRange> Parameters { get; set; }
+        public Dictionary<string, TimeRange> Parameters { get; set; } = new Dictionary<string, TimeRange>() { };
 
         /// <summary>
         /// Start time, process all data if not specified,

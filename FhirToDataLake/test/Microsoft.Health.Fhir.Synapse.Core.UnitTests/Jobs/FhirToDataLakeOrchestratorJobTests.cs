@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Hl7.FhirPath.Sprache;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Authentication;
@@ -23,7 +24,10 @@ using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
+using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataClient.UnitTests;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.Fhir.Synapse.DataWriter.Azure;
@@ -43,35 +47,42 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static readonly DateTimeOffset TestEndTime = new DateTimeOffset(2020, 11, 1, 0, 0, 0, TimeSpan.FromHours(0));
 
         private static readonly List<TypeFilter> TestResourceTypeFilters = new List<TypeFilter> { new TypeFilter("Patient", null) };
+        private static readonly List<TypeFilter> TestFourResourceTypeFilters = new List<TypeFilter> { new TypeFilter("Patient1", null), new TypeFilter("Patient2", null), new TypeFilter("Patient3", null), new TypeFilter("Patient4", null) };
+
+        [Fact]
+        public async Task GivenASystemScopeWithOneResourceType_WhenProcessing_CorrectNumberOfJobWillBeCreated()
+        {
+            await VerifyCommonOrchestratorJobAsync(4, new Dictionary<string, int>() { { "patient", 30 }, { "patient2", 30 }, { "patient3", 30 }, { "patient4", 30 } }, 2);
+        }
 
         [Fact]
         public async Task GivenASystemScopeNewOrchestratorJob_WhenProcessingInputFilesMoreThanConcurrentCount_ThenJobShouldBeCompleted()
         {
-            await VerifyCommonOrchestratorJobAsync(4, 2);
+            await VerifyCommonOrchestratorJobAsync(4, new Dictionary<string, int>() { { "patient", 30 }, { "patient2", 30 }, { "patient3", 30 }, { "patient4", 30 } }, 2);
         }
 
         [Fact]
         public async Task GivenASystemScopeNewOrchestratorJob_WhenProcessingInputFilesEqualsConcurrentCount_ThenJobShouldBeCompleted()
         {
-            await VerifyCommonOrchestratorJobAsync(4, 4);
+            await VerifyCommonOrchestratorJobAsync(4, new Dictionary<string, int>() { { "patient", 30 }, { "patient2", 30 }, { "patient3", 30 }, { "patient4", 30 } }, 4);
         }
 
         [Fact]
         public async Task GivenASystemScopeNewOrchestratorJob_WhenProcessingInputFilesLessThanConcurrentCount_ThenJobShouldBeCompleted()
         {
-            await VerifyCommonOrchestratorJobAsync(2, 4);
+            await VerifyCommonOrchestratorJobAsync(2, new Dictionary<string, int>() { { "patient", 30 }, { "patient2", 30 } }, 4);
         }
 
         [Fact]
         public async Task GivenASystemScopeResumedOrchestratorJob_WhenExecute_ThenJobShouldBeCompleted()
         {
-            await VerifyCommonOrchestratorJobAsync(4, 2, 1);
+            await VerifyCommonOrchestratorJobAsync(4, new Dictionary<string, int>() { { "patient", 30 }, { "patient2", 30 }, { "patient3", 30 }, { "patient4", 30 } }, 2, 1);
         }
 
         [Fact]
         public async Task GivenASystemScopeResumedOrchestratorJob_WhenExecuteSomeJobCompleted_ThenJobShouldBeCompleted()
         {
-            await VerifyCommonOrchestratorJobAsync(10, 2, 5, 3);
+            await VerifyCommonOrchestratorJobAsync(10, new Dictionary<string, int>() { { "patient", 300 } }, 2, 5, 3);
         }
 
         [Fact]
@@ -95,7 +106,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     VersionId = 3,
                 };
                 await metadataStore.TryAddEntityAsync(previousPatientInfo);
-                FhirToDataLakeOrchestratorJobResult result = await VerifyCommonOrchestratorJobAsync(patientCnt, 4, filterScope: FilterScope.Group, metadataStore: metadataStore);
+                FhirToDataLakeOrchestratorJobResult result = await VerifyCommonOrchestratorJobAsync(patientCnt, new Dictionary<string, int>() { { "patient", 10 * patientCnt } }, 4, filterScope: FilterScope.Group, metadataStore: metadataStore);
 
                 // verify patient version for group scope
                 Assert.Equal(patientCnt, result.NextPatientIndex);
@@ -158,13 +169,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.IsType<FhirSearchException>(retriableJobException.InnerException);
         }
 
-        private static async Task<FhirToDataLakeOrchestratorJobResult> VerifyCommonOrchestratorJobAsync(
-            int inputFileCount,
-            int concurrentCount,
+        private static async Task<FhirToDataLakeOrchestratorJobResult> VerifyJobCountAsync(
+            Dictionary<string, int> inputFileCount,
             int resumeFrom = -1,
-            int completedCount = 0,
-            FilterScope filterScope = FilterScope.System,
-            IMetadataStore metadataStore = null)
+            FilterScope filterScope = FilterScope.System)
         {
             string progressResult = null;
             Progress<string> progress = new Progress<string>(r =>
@@ -194,7 +202,74 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             JobInfo orchestratorJobInfo = jobInfoList.First();
 
             var orchestratorJobResult = new FhirToDataLakeOrchestratorJobResult();
+
+            IGroupMemberExtractor groupMemberExtractor = GetGroupMemberExtractor(inputFileCount.Count);
+            var job = new FhirToDataLakeOrchestratorJob(
+                orchestratorJobInfo,
+                inputData,
+                orchestratorJobResult,
+                GetMockFhirDataClient(inputFileCount, resumeFrom),
+                GetDataWriter(containerName, blobClient),
+                queueClient,
+                groupMemberExtractor,
+                GetFilterManager(filterConfiguration),
+                GetMetaDataStore(),
+                10,
+                new MetricsLogger(new NullLogger<MetricsLogger>()),
+                _diagnosticLogger,
+                new NullLogger<FhirToDataLakeOrchestratorJob>())
+            {
+                NumberOfPatientsPerProcessingJob = 1,
+            };
+
+            string resultString = await job.ExecuteAsync(progress, CancellationToken.None);
+            var result = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(resultString);
+
+            Assert.NotNull(result);
+            Assert.Equal(inputFileCount.Count, result.CreatedJobCount);
+            return result;
+        }
+
+        private static async Task<FhirToDataLakeOrchestratorJobResult> VerifyCommonOrchestratorJobAsync(
+            int inputFileCount,
+            Dictionary<string, int> inputCount,
+            int concurrentCount,
+            int resumeFrom = -1,
+            int completedCount = 0,
+            FilterScope filterScope = FilterScope.System,
+            IMetadataStore metadataStore = null)
+        {
+            string progressResult = null;
+            Progress<string> progress = new Progress<string>(r =>
+            {
+                progressResult = r;
+            });
+
+            string containerName = Guid.NewGuid().ToString("N");
+
+            var filterConfiguration = new FilterConfiguration
+            {
+                FilterScope = filterScope,
+                RequiredTypes = string.Join(",", inputCount.Select(x => x.Key).ToArray()),
+            };
+
+            var blobClient = new InMemoryBlobContainerClient();
+
+            FhirToDataLakeOrchestratorJobInputData inputData = GetInputData();
+            MockQueueClient queueClient = GetQueueClient(filterScope);
+            List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(
+                (byte)QueueType.FhirToDataLake,
+                new[] { JsonConvert.SerializeObject(inputData) },
+                inputData.TriggerSequenceId,
+                false,
+                false,
+                CancellationToken.None)).ToList();
+            Assert.Single(jobInfoList);
+            JobInfo orchestratorJobInfo = jobInfoList.First();
+
+            var orchestratorJobResult = new FhirToDataLakeOrchestratorJobResult();
             bool resumeMode = resumeFrom >= 0;
+            
             for (int i = 0; i < inputFileCount; ++i)
             {
                 if (resumeMode)
@@ -242,7 +317,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     }
                 }
             }
-
+            
             for (int i = 0; i < inputFileCount; ++i)
             {
                 if (i < completedCount)
@@ -254,13 +329,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     await CreateBlobForProcessingJob(orchestratorJobInfo.Id + i + 1, TestStartTime.AddDays(i + 1).DateTime, false, blobClient);
                 }
             }
-
+            
             IGroupMemberExtractor groupMemberExtractor = GetGroupMemberExtractor(inputFileCount);
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
                 inputData,
                 orchestratorJobResult,
-                GetMockFhirDataClient(inputFileCount, resumeFrom),
+                GetMockFhirDataClient(inputCount, resumeFrom),
                 GetDataWriter(containerName, blobClient),
                 queueClient,
                 groupMemberExtractor,
@@ -376,16 +451,58 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return dataClient;
         }
 
-        private static IFhirDataClient GetMockFhirDataClient(int count, int resumedFrom)
+        private static IFhirDataClient GetMockFhirDataClient(Dictionary<string, int> count, int resumedFrom)
         {
             var dataClient = Substitute.For<IFhirDataClient>();
 
-            // Get bundle from next link
-            List<string> nextBundles = GetSearchBundles(count);
-            string emptyBundle = TestDataProvider.GetBundleFromFile(TestDataConstants.EmptyBundleFile);
-            nextBundles.Add(emptyBundle);
-            dataClient.SearchAsync(default).ReturnsForAnyArgs(nextBundles[resumedFrom + 1], nextBundles.Skip(resumedFrom + 2).ToArray());
+            Func<BaseFhirApiOptions, Dictionary<string, int>, string> fun4 = new Func<BaseFhirApiOptions, Dictionary<string, int>, string>(FunWithPara);
+            //dataClient.SearchAsync(default).ReturnsForAnyArgs(nextBundles[resumedFrom + 1], nextBundles.Skip(resumedFrom + 2).ToArray());
+            dataClient.SearchAsync(Arg.Any<BaseFhirApiOptions>(), default).Returns(x => fun4((BaseFhirApiOptions)x[0], count));
             return dataClient;
+        }
+
+        private static string FunWithPara(BaseFhirApiOptions options, Dictionary<string, int> count)
+        {
+            DateTimeOffset start = DateTimeOffset.MinValue;
+            DateTimeOffset end = DateTimeOffset.Now;
+            string resource = "patient";
+            foreach(var parameter in options.QueryParameters)
+            {
+                if(parameter.Key == FhirApiConstants.LastUpdatedKey)
+                {
+                    if (parameter.Value.Contains("lt"))
+                    {
+                        end = DateTimeOffset.Parse(parameter.Value.Substring(2));
+                    }
+                    else if(parameter.Value.Contains("ge"))
+                    {
+                        start = DateTimeOffset.Parse(parameter.Value.Substring(2));
+                    }
+                }
+
+                if (parameter.Key == FhirApiConstants.TypeKey)
+                {
+                    resource = parameter.Value;
+                }
+            }
+
+            foreach (var parameter in options.QueryParameters)
+            {
+                if (parameter.Key == FhirApiConstants.SortKey)
+                {
+                    if (parameter.Value.Contains("-"))
+                    {
+                        return $"{{\"entry\": [{{\"resource\":{{\"meta\":{{\"lastUpdated\":\"{end.ToInstantString()}\"}}}}}}]}}";
+                    }
+                    else
+                    {
+                        return $"{{\"entry\": [{{\"resource\":{{\"meta\":{{\"lastUpdated\":\"{start.ToInstantString()}\"}}}}}}]}}";
+                    }
+                }
+            }
+
+            var total = (int)(end - start).TotalDays * count[resource];
+            return $"{{\"total\":{total}}}";
         }
 
         private static List<string> GetSearchBundles(int count)
@@ -438,7 +555,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static IFilterManager GetFilterManager(FilterConfiguration filterConfiguration)
         {
             var filterManager = Substitute.For<IFilterManager>();
-            filterManager.GetTypeFiltersAsync(default).Returns(TestResourceTypeFilters);
+            filterManager.GetTypeFiltersAsync(default).Returns(filterConfiguration.RequiredTypes.Split(",").Select(x => new TypeFilter(x, null)).ToList());
             filterManager.GetFilterScopeAsync(default).Returns(filterConfiguration.FilterScope);
             filterManager.GetGroupIdAsync(default).Returns(filterConfiguration.GroupId);
             return filterManager;
