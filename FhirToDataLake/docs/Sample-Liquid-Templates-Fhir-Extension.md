@@ -67,32 +67,32 @@ Here we share some sample liquid templates to handle extensions.
     "resourceType": "{{ msg.resourceType }}",
     "id": "{{ msg.id }}",
 
-    {% assign individual_gender_identity_extension = msg["extension"] | where: "url", "http://hl7.org/fhir/StructureDefinition/individual-genderIdentity" | first -%}
-    {% assign individual_gender_identity_value_extension = individual_gender_identity_extension["extension"] | where: "url": "value" | first -%}
-    {% assign individual_gender_identity_value_extension_coding = individual_gender_identity_value_extension.valueCodeableConcept.["coding"] | where: "system": "http://terminology.hl7.org/CodeSystem/sex-for-clinical-use" | first -%}
+    {% assign individual_gender_identity_extension = msg.extension | where: "url", "http://hl7.org/fhir/StructureDefinition/individual-genderIdentity" | first -%}
+    {% assign individual_gender_identity_value_extension = individual_gender_identity_extension.extension | where: "url": "value" | first -%}
+    {% assign individual_gender_identity_value_extension_coding = individual_gender_identity_value_extension.valueCodeableConcept.coding | where: "system": "http://terminology.hl7.org/CodeSystem/sex-for-clinical-use" | first -%}
     "individual_gender_identity_value_coding_system": "{{individual_gender_identity_value_extension_coding.system}}",
     "individual_gender_identity_value_coding_code": "{{individual_gender_identity_value_extension_coding.code}}",
     "individual_gender_identity_value_coding_display": "{{individual_gender_identity_value_extension_coding.display}}",
     
-    {% assign individual_gender_identity_period_extension = individual_gender_identity_extension["extension"] | where: "url": "period" | first -%}
+    {% assign individual_gender_identity_period_extension = individual_gender_identity_extension.extension | where: "url": "period" | first -%}
     "individual_gender_identity_extension_period_start": "{{ individual_gender_identity_period_extension.valuePeriod.start }}",
     "individual_gender_identity_extension_period_end": "{{ individual_gender_identity_period_extension.valuePeriod.end }}",
 
-    {% assign individual_pronouns_extension = msg["extension"] | where: "url", "http://hl7.org/fhir/StructureDefinition/individual-pronouns" | first -%}
-    {% assign individual_pronouns_value_extension = individual_pronouns_extension["extension"] | where: "url": "value" | first -%}
-    {% assign individual_pronouns_value_extension_coding = individual_pronouns_value_extension.valueCodeableConcept.["coding"] | where: "system": "http://loinc.org" | first -%}
+    {% assign individual_pronouns_extension = msg.extension | where: "url", "http://hl7.org/fhir/StructureDefinition/individual-pronouns" | first -%}
+    {% assign individual_pronouns_value_extension = individual_pronouns_extension.extension | where: "url": "value" | first -%}
+    {% assign individual_pronouns_value_extension_coding = individual_pronouns_value_extension.valueCodeableConcept.coding | where: "system": "http://loinc.org" | first -%}
     "individual_pronouns_value_coding_system": "{{individual_pronouns_value_extension_coding.system}}",
     "individual_pronouns_value_coding_code": "{{individual_pronouns_value_extension_coding.code}}",
     "individual_pronouns_value_coding_display": "{{individual_pronouns_value_extension_coding.display}}",
 
-    {% assign individual_pronouns_period_extension = individual_pronouns_extension["extension"] | where: "url": "period" | first -%}
+    {% assign individual_pronouns_period_extension = individual_pronouns_extension.extension | where: "url": "period" | first -%}
     "individual_pronouns_extension_period_start": "{{ individual_pronouns_period_extension.valuePeriod.start }}",
     "individual_pronouns_extension_period_end": "{{ individual_pronouns_period_extension.valuePeriod.end }}",
 
-    {% assign individual_pronouns_comment_extension = individual_pronouns_extension["extension"] | where: "url": "comment" | first -%}
+    {% assign individual_pronouns_comment_extension = individual_pronouns_extension.extension | where: "url": "comment" | first -%}
     "individual_pronouns_extension_comment": "{{ individual_pronouns_comment_extension.valueString }}",
 
-    {% assign comment_extension = msg["extension"] | where: "url", "comment" | first -%}
+    {% assign comment_extension = msg.extension | where: "url", "comment" | first -%}
     "comment": "{{ comment_extension.valueString }}"
   }
 {% endvalidate -%}
