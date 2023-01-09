@@ -343,6 +343,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
         {
+            if (_inputData.IsIncremental)
+            {
+                yield return new FhirToDataLakeProcessingJobInputData
+                {
+                    JobType = JobType.Processing,
+                    ProcessingJobSequenceId = _result.CreatedJobCount,
+                    TriggerSequenceId = _inputData.TriggerSequenceId,
+                    Since = _inputData.Since,
+                    DataStartTime = _inputData.DataStartTime,
+                    DataEndTime = _inputData.DataEndTime,
+                    Parameters = null,
+                };
+            }
+
             _logger.LogInformation($"Start splitting. {DateTimeOffset.Now.ToInstantString()}");
 
             List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
@@ -365,6 +379,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     // No resources found.
                     continue;
                 }
+                /*
                 else if (totalCount < LowBoundOfProcessingJobResourceCount)
                 {
                     // Small size job, put it into pool waiting for merge.
@@ -389,7 +404,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             Parameters = jobParameters,
                         };
                     }
-                }
+                }*/
                 else if (totalCount < HighBoundOfProcessingJobResourceCount)
                 {
                     // Generate one job with properate size.
@@ -467,6 +482,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             continue;
                         }
 
+                        jobParameters = new Dictionary<string, TimeRange>()
+                            {
+                                {
+                                    resourceType,
+                                    new TimeRange()
+                                    {
+                                        DataEndTime = (DateTimeOffset)nextJobEnd,
+                                        DataStartTime = lastEndTime,
+                                    }
+                                },
+                            };
+                        /*
                         if (jobSize < LowBoundOfProcessingJobResourceCount)
                         {
                             var timeRange = new TimeRange()
@@ -490,7 +517,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 },
                             };
                         }
-
+                        */
                         if (jobParameters != null)
                         {
                             time2 = DateTimeOffset.Now;
@@ -506,6 +533,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                 Parameters = jobParameters,
                             };
                         }
+
                         jobId += 1;
                     }
 

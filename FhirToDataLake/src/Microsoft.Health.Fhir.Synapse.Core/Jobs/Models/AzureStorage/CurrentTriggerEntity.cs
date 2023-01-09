@@ -43,5 +43,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage
         /// The corresponding orchestrator job id of current trigger
         /// </summary>
         public long OrchestratorJobId { get; set; } = 0;
+
+        public bool IsIncrementalEntity { get; set; } = true;
     }
 }
