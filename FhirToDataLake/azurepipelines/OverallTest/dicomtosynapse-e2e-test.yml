@@ -170,16 +170,6 @@ steps:
       Remove-AzStorageQueue -Name $(containerName)jobinfoqueue -Context $storageContext -Force
       Write-Host "##[section]Clear test container"
 
-      try
-      {
-        Remove-AzContainerRegistryRepository -Name $(imageName) -RegistryName ($env:CONTAINER_REGISTRY_SERVER -split '.', 0, "simplematch")[0]
-        Write-Host "##[section]Clear test image"
-      }
-      catch [Exception]
-      {
-        Write-Host "##[warning] $($_.Exception.Message)"
-      }
-
       $sqlServerEndpoint = "$(synapseWorkspaceName)-ondemand.sql.azuresynapse.net"
       $userName = $env:SQL_USERNAME
       $password = $env:SQL_PASSWORD
@@ -221,6 +211,5 @@ steps:
         }
       } while ($attempts -le $maxAttempts)
   env:
-    CONTAINER_REGISTRY_SERVER: $(pipeline-container-registry-server)
     SQL_USERNAME: $(synapse-sql-username)
     SQL_PASSWORD: $(synapse-sql-password)
