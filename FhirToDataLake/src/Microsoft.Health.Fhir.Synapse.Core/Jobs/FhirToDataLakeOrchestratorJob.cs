@@ -153,12 +153,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     }
                 }
 
-                _result.CompleteTime = DateTimeOffset.UtcNow;
+                var processEndtime = DateTimeOffset.UtcNow;
+                _result.CompleteTime = processEndtime;
 
                 progress.Report(JsonConvert.SerializeObject(_result));
 
-                _diagnosticLogger.LogInformation("Finish FhirToDataLake job.");
-                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}");
+                var jobLatency = processEndtime - _inputData.DataEndTime;
+                _metricsLogger.LogProcessLatencyMetric(jobLatency.TotalSeconds);
+
+                _diagnosticLogger.LogInformation($"Finish FhirToDataLake job. Synced result data to {_inputData.DataEndTime}.");
+                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}. Synced result data to {_inputData.DataEndTime}.");
 
                 return JsonConvert.SerializeObject(_result);
             }
