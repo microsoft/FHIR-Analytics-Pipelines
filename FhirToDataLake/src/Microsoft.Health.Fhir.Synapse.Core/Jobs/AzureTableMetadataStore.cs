@@ -134,6 +134,27 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return (await _metadataTableClient.GetEntityAsync<CompartmentInfoEntity>(TableKeyProvider.CompartmentPartitionKey(queueType), TableKeyProvider.CompartmentRowKey(patientId), cancellationToken: cancellationToken)).Value;
         }
 
+        public async Task<OrchestratorJobStatusEntity> GetOrchestratorJobStatusAsync(byte queueType, long groupId, CancellationToken cancellationToken = default)
+        {
+            OrchestratorJobStatusEntity entity = null;
+            try
+            {
+                Response<OrchestratorJobStatusEntity> response = await _metadataTableClient.GetEntityAsync<OrchestratorJobStatusEntity>(
+                    TableKeyProvider.OrchestratorJobStatusPartitionKey(queueType),
+                    TableKeyProvider.OrchestratorJobStatusRowKey(queueType, groupId),
+                    cancellationToken: cancellationToken);
+
+                entity = response.Value;
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
+            {
+                _logger.LogInformation(ex, "The current trigger doesn't exist, will create a new one.");
+            }
+
+            // don't catch other exceptions, the caller should handle it
+            return entity;
+        }
+
         public async Task<Dictionary<string, long>> GetPatientVersionsAsync(byte queueType, List<string> patientsHash, CancellationToken cancellationToken = default)
         {
             string pk = TableKeyProvider.CompartmentPartitionKey(queueType);

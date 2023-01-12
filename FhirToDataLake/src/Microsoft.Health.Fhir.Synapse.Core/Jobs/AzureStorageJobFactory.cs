@@ -109,14 +109,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
-                    FhirToDataLakeOrchestratorJobResult currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
-                        ? new FhirToDataLakeOrchestratorJobResult()
-                        : JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
-
                     return new FhirToDataLakeOrchestratorJob(
                         jobInfo,
                         inputData,
-                        currentResult,
                         _dataClient,
                         _dataWriter,
                         _queueClient,

@@ -106,5 +106,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private Tuple<string, string> TriggerLeaseEntityKey(byte queueType) =>
             new Tuple<string, string>(TableKeyProvider.LeasePartitionKey(queueType), TableKeyProvider.LeaseRowKey(queueType));
+
+        public Task<OrchestratorJobStatusEntity> GetOrchestratorJobStatusAsync(byte queueType, long groupId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

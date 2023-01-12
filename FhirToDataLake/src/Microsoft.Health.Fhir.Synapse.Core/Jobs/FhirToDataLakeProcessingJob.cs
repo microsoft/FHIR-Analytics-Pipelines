@@ -382,28 +382,28 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             BaseSearchOptions searchOptions,
             CancellationToken cancellationToken)
         {
-            List<KeyValuePair<string, string>> sharedQueryParameters = new List<KeyValuePair<string, string>>(searchOptions.QueryParameters);
-
             foreach (TypeFilter typeFilter in _typeFilters)
             {
-                if (!_inputData.Parameters.ContainsKey(typeFilter.ResourceType))
+                if (_inputData.Parameters != null)
                 {
-                    continue;
+                    if (!_inputData.Parameters.ContainsKey(typeFilter.ResourceType))
+                    {
+                        continue;
+                    }
+
+                    searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(
+                            FhirApiConstants.LastUpdatedKey,
+                            $"lt{_inputData.Parameters[typeFilter.ResourceType].DataEndTime.ToInstantString()}"));
+
+                    if (_inputData.Parameters[typeFilter.ResourceType].DataStartTime != null)
+                    {
+                        searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(
+                            FhirApiConstants.LastUpdatedKey,
+                            $"ge{((DateTimeOffset)_inputData.Parameters[typeFilter.ResourceType].DataStartTime).ToInstantString()}"));
+                    }
                 }
 
                 searchOptions.ResourceType = typeFilter.ResourceType;
-                searchOptions.QueryParameters = new List<KeyValuePair<string, string>>(sharedQueryParameters)
-                {
-                    new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.Parameters[typeFilter.ResourceType].DataEndTime.ToInstantString()}"),
-                };
-
-                if (_inputData.Parameters[typeFilter.ResourceType].DataStartTime != null)
-                {
-                    searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(
-                        FhirApiConstants.LastUpdatedKey,
-                        $"ge{((DateTimeOffset)_inputData.Parameters[typeFilter.ResourceType].DataStartTime).ToInstantString()}"));
-                }
-
                 foreach (KeyValuePair<string, string> parameter in typeFilter.Parameters)
                 {
                     searchOptions.QueryParameters.Add(parameter);

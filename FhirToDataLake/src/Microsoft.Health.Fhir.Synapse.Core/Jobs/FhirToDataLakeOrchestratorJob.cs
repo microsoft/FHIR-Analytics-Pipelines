@@ -26,6 +26,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
+using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
@@ -52,15 +53,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly ILogger<FhirToDataLakeOrchestratorJob> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly IMetricsLogger _metricsLogger;
-        private Dictionary<string, Dictionary<DateTimeOffset, int>> _anchor = new Dictionary<string, Dictionary<DateTimeOffset, int>>();
-
         private FhirToDataLakeOrchestratorJobResult _result;
+        private OrchestratorJobStatusEntity _jobStatus;
+        private Dictionary<string, Dictionary<DateTimeOffset, int>> _anchor = new Dictionary<string, Dictionary<DateTimeOffset, int>>();
         private List<(string, TimeRange, int)> _mergeList = new List<(string, TimeRange, int)>();
 
         public FhirToDataLakeOrchestratorJob(
             JobInfo jobInfo,
             FhirToDataLakeOrchestratorJobInputData inputData,
-            FhirToDataLakeOrchestratorJobResult result,
             IFhirDataClient dataClient,
             IFhirDataWriter dataWriter,
             IQueueClient queueClient,
@@ -74,7 +74,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             _jobInfo = EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
             _inputData = EnsureArg.IsNotNull(inputData, nameof(inputData));
-            _result = EnsureArg.IsNotNull(result, nameof(result));
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
@@ -106,6 +105,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             try
             {
+                _jobStatus = await InitializeJobStatusAsync(cancellationToken);
+                _result = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(_jobStatus.StatisticResult);
+
                 if (cancellationToken.IsCancellationRequested)
                 {
                     throw new OperationCanceledException();
@@ -132,6 +134,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     }
 
                     string[] jobDefinitions = { JsonConvert.SerializeObject(input) };
+
+                    _result.SubmitingProcessingJob = jobDefinitions;
+                    _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
+                    _jobStatus = await UpdateJobStatusAsync(_jobStatus, cancellationToken);
+
                     IEnumerable<JobInfo> jobInfos = await _queueClient.EnqueueAsync(
                         _jobInfo.QueueType,
                         jobDefinitions,
@@ -140,11 +147,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         false,
                         cancellationToken);
                     long newJobId = jobInfos.First().Id;
+
                     _result.CreatedJobCount++;
                     _result.RunningJobIds.Add(newJobId);
 
-                    // if enqueue successfully while fails to report result, will re-enqueue and return the existing jobInfo
+                    foreach (var item in input.Parameters)
+                    {
+                        _result.NextJobTimestamp[item.Key] = item.Value.DataEndTime;
+                    }
+
+                    _result.SubmitingProcessingJob = null;
                     progress.Report(JsonConvert.SerializeObject(_result));
+
+                    _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
+                    _jobStatus = await UpdateJobStatusAsync(_jobStatus, cancellationToken);
 
                     if (_result.RunningJobIds.Count >
                         JobConfigurationConstants.CheckRunningJobCompleteRunningJobCountThreshold)
@@ -167,6 +183,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _result.CompleteTime = DateTimeOffset.UtcNow;
 
                 progress.Report(JsonConvert.SerializeObject(_result));
+                _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
+                _jobStatus = await UpdateJobStatusAsync(_jobStatus, cancellationToken);
 
                 _diagnosticLogger.LogInformation("Finish FhirToDataLake job.");
                 _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}");
@@ -212,6 +230,239 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 throw new RetriableJobException("Unhandled error occurred in orchestrator job.", unhandledEx);
             }
         }
+
+        private async Task<OrchestratorJobStatusEntity> InitializeJobStatusAsync(CancellationToken cancellationToken)
+        {
+            OrchestratorJobStatusEntity jobStatus = await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, cancellationToken);
+
+            if (jobStatus == null)
+            {
+                var newJobStatus = new OrchestratorJobStatusEntity()
+                {
+                    PartitionKey = TableKeyProvider.OrchestratorJobStatusPartitionKey(_jobInfo.QueueType),
+                    RowKey = TableKeyProvider.OrchestratorJobStatusRowKey(_jobInfo.QueueType, _jobInfo.GroupId),
+                    GroupId = _jobInfo.GroupId,
+                    IsIncrementalEntity = _inputData.IsIncremental,
+                    StatisticResult = JsonConvert.SerializeObject(new FhirToDataLakeOrchestratorJobResult()),
+                };
+
+                if (!await _metadataStore.TryAddEntityAsync(newJobStatus, cancellationToken))
+                {
+                    throw new SynapsePipelineInternalException("Initilize job status failed");
+                }
+
+                jobStatus = await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, cancellationToken);
+            }
+
+            return jobStatus;
+        }
+
+        private async Task<OrchestratorJobStatusEntity> UpdateJobStatusAsync(OrchestratorJobStatusEntity jobStatus, CancellationToken cancellationToken)
+        {
+            if (!await _metadataStore.TryUpdateEntityAsync(_jobStatus))
+            {
+                throw new SynapsePipelineInternalException("Update orchestrator job status failed.");
+            }
+
+            return await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, cancellationToken);
+        }
+
+
+        private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            if (_result.SubmitingProcessingJob != null)
+            {
+                yield return JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(_result.SubmitingProcessingJob.First());
+            }
+
+            List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
+            var resourceTypes = typeFilters.Select(filter => filter.ResourceType).ToList();
+
+            foreach (var resourceType in resourceTypes)
+            {
+                var startTime = _result.NextJobTimestamp.ContainsKey(resourceType) ? _result.NextJobTimestamp[resourceType] : _inputData.DataStartTime;
+
+                // The resource type has already been processed.
+                if (startTime >= _inputData.DataEndTime)
+                {
+                    continue;
+                }
+
+                var totalCount = await GetResourceCountAsync(resourceType, startTime, _inputData.DataEndTime);
+
+                if (totalCount == 0)
+                {
+                    // No resources found.
+                    _result.NextJobTimestamp[resourceType] = _inputData.DataEndTime;
+                    continue;
+                }
+                else if (totalCount < LowBoundOfProcessingJobResourceCount)
+                {
+                    // Small size job, put it into pool waiting for merge.
+                    _logger.LogInformation($"Splitting jobs. {resourceType} push one small job {DateTimeOffset.Now.ToInstantString()}");
+
+                    var timeRange = new TimeRange()
+                    {
+                        DataStartTime = startTime,
+                        DataEndTime = _inputData.DataEndTime,
+                    };
+
+                    var jobParameters = PushToJobPool(resourceType, timeRange, totalCount);
+                    if (jobParameters != null)
+                    {
+                        _logger.LogInformation($"Splitting jobs. Merge {jobParameters.Count}jobs : {jobParameters.Keys}");
+                        yield return new FhirToDataLakeProcessingJobInputData
+                        {
+                            JobType = JobType.Processing,
+                            ProcessingJobSequenceId = _result.CreatedJobCount,
+                            TriggerSequenceId = _inputData.TriggerSequenceId,
+                            Since = _inputData.Since,
+                            Parameters = jobParameters,
+                        };
+                    }
+                }
+                else if (totalCount < HighBoundOfProcessingJobResourceCount)
+                {
+                    // Generate one job with properate size.
+                    _logger.LogInformation($"Spliting jobs. Generate one {resourceType} job. {DateTimeOffset.Now.ToInstantString()}");
+
+                    yield return new FhirToDataLakeProcessingJobInputData
+                    {
+                        JobType = JobType.Processing,
+                        ProcessingJobSequenceId = _result.CreatedJobCount,
+                        TriggerSequenceId = _inputData.TriggerSequenceId,
+                        Since = _inputData.Since,
+                        Parameters = new Dictionary<string, TimeRange>
+                        {
+                            {
+                                resourceType,
+                                new TimeRange()
+                                {
+                                    DataEndTime = _inputData.DataEndTime,
+                                    DataStartTime = startTime,
+                                }
+                            },
+                        },
+                    };
+                }
+                else
+                {
+                    // Split large size job using binary search.
+                    _anchor[resourceType] = new Dictionary<DateTimeOffset, int>();
+
+                    if (startTime != null)
+                    {
+                        _anchor[resourceType][(DateTimeOffset)startTime] = 0;
+                    }
+
+                    var splitingStartTime = DateTimeOffset.Now;
+                    _logger.LogInformation($"Start spliting {resourceType} job, total {totalCount} resources. {splitingStartTime.ToInstantString()}.");
+
+                    // Set isDescending parameter false to get first timestmp.
+                    var nextTimestamp = await GetNextTimestamp(resourceType, startTime, _inputData.DataEndTime, false, cancellationToken);
+
+                    // Set isDescending parameter as true to get last timestmp.
+                    var lastTimestamp = await GetNextTimestamp(resourceType, startTime, _inputData.DataEndTime, true, cancellationToken);
+
+                    if (nextTimestamp != null)
+                    {
+                        _anchor[resourceType][(DateTimeOffset)nextTimestamp] = 0;
+                    }
+
+                    if (lastTimestamp != null)
+                    {
+                        _anchor[resourceType][(DateTimeOffset)lastTimestamp] = totalCount;
+                    }
+
+                    _anchor[resourceType][_inputData.DataEndTime] = totalCount;
+
+                    var lastSplitTimestamp = DateTimeOffset.Now;
+                    _logger.LogInformation($"Start spliting {resourceType} job, get first and last timestamp. {(DateTimeOffset.Now - splitingStartTime).TotalMilliseconds}. {DateTimeOffset.Now.ToInstantString()}");
+                    DateTimeOffset? nextJobEnd = null;
+
+                    while (nextJobEnd == null || nextJobEnd < _inputData.DataEndTime)
+                    {
+                        var jobId = 0;
+                        _anchor[resourceType] = _anchor[resourceType].OrderBy(p => p.Key).ToDictionary(p => p.Key, o => o.Value);
+                        DateTimeOffset? lastEndTime = nextJobEnd ?? startTime;
+
+                        nextJobEnd = await GetAnchor(resourceType, lastEndTime);
+
+                        var jobSize = lastEndTime == null ? _anchor[resourceType][(DateTimeOffset)nextJobEnd] : _anchor[resourceType][(DateTimeOffset)nextJobEnd] - _anchor[resourceType][(DateTimeOffset)lastEndTime];
+
+                        Dictionary<string, TimeRange> jobParameters = null;
+                        if (jobSize == 0)
+                        {
+                            // todo: too much resources.
+                            _result.NextJobTimestamp[resourceType] = _inputData.DataEndTime;
+                            continue;
+                        }
+
+                        if (jobSize < LowBoundOfProcessingJobResourceCount)
+                        {
+                            var timeRange = new TimeRange()
+                            {
+                                DataEndTime = (DateTimeOffset)nextJobEnd,
+                                DataStartTime = lastEndTime,
+                            };
+                            jobParameters = PushToJobPool(resourceType, timeRange, jobSize);
+                        }
+                        else
+                        {
+                            jobParameters = new Dictionary<string, TimeRange>()
+                            {
+                                {
+                                    resourceType,
+                                    new TimeRange()
+                                    {
+                                        DataEndTime = (DateTimeOffset)nextJobEnd,
+                                        DataStartTime = lastEndTime,
+                                    }
+                                },
+                            };
+                        }
+
+                        if (jobParameters != null)
+                        {
+                            _logger.LogInformation($"Spliting {resourceType}job, generate new split.time : {(DateTimeOffset.UtcNow - lastSplitTimestamp).TotalMilliseconds}. {lastEndTime} - {(DateTimeOffset)nextJobEnd}, {jobSize} counts. ");
+                            lastSplitTimestamp = DateTimeOffset.Now;
+
+                            yield return new FhirToDataLakeProcessingJobInputData
+                            {
+                                JobType = JobType.Processing,
+                                ProcessingJobSequenceId = _result.CreatedJobCount,
+                                TriggerSequenceId = _inputData.TriggerSequenceId,
+                                Since = _inputData.Since,
+                                Parameters = jobParameters,
+                            };
+                        }
+
+                        jobId += 1;
+                    }
+
+                    _logger.LogInformation($"Spliting {resourceType}job, finish split. use : {(DateTimeOffset.Now - splitingStartTime).TotalMilliseconds} milliseconds.");
+                }
+            }
+
+            if (_mergeList.Count != 0)
+            {
+                var result = new Dictionary<string, TimeRange>();
+                foreach (var item in _mergeList)
+                {
+                    result.Add(item.Item1, item.Item2);
+                }
+
+                yield return new FhirToDataLakeProcessingJobInputData
+                {
+                    JobType = JobType.Processing,
+                    ProcessingJobSequenceId = _result.CreatedJobCount,
+                    TriggerSequenceId = _inputData.TriggerSequenceId,
+                    Since = _inputData.Since,
+                    Parameters = result,
+                };
+            }
+        }
+
 
         private async Task<DateTimeOffset?> GetAnchor(string resourceType, DateTimeOffset? start)
         {
@@ -339,225 +590,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             _mergeList.Add((resourceType, range, count));
             return null;
-        }
-
-        private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            if (_inputData.IsIncremental)
-            {
-                yield return new FhirToDataLakeProcessingJobInputData
-                {
-                    JobType = JobType.Processing,
-                    ProcessingJobSequenceId = _result.CreatedJobCount,
-                    TriggerSequenceId = _inputData.TriggerSequenceId,
-                    Since = _inputData.Since,
-                    DataStartTime = _inputData.DataStartTime,
-                    DataEndTime = _inputData.DataEndTime,
-                    Parameters = null,
-                };
-            }
-
-            _logger.LogInformation($"Start splitting. {DateTimeOffset.Now.ToInstantString()}");
-
-            List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
-            var resourceTypes = typeFilters.Select(filter => filter.ResourceType).ToList();
-
-            foreach (var resourceType in resourceTypes)
-            {
-                var startTime = _result.ProcessingResourceType.ContainsKey(resourceType) ? _result.ProcessingResourceType[resourceType] : _inputData.DataStartTime;
-
-                // The resource type has already been processed.
-                if (startTime >= _inputData.DataEndTime)
-                {
-                    continue;
-                }
-
-                var totalCount = await GetResourceCountAsync(resourceType, startTime, _inputData.DataEndTime);
-
-                if (totalCount == 0)
-                {
-                    // No resources found.
-                    continue;
-                }
-                /*
-                else if (totalCount < LowBoundOfProcessingJobResourceCount)
-                {
-                    // Small size job, put it into pool waiting for merge.
-                    _logger.LogInformation($"Splitting jobs. {resourceType} push one small job {DateTimeOffset.Now.ToInstantString()}");
-
-                    var timeRange = new TimeRange()
-                    {
-                        DataStartTime = _inputData.DataStartTime,
-                        DataEndTime = _inputData.DataEndTime,
-                    };
-
-                    var jobParameters = PushToJobPool(resourceType, timeRange, totalCount);
-                    if (jobParameters != null)
-                    {
-                        _logger.LogInformation($"Splitting jobs. Merge {jobParameters.Count}jobs : {jobParameters.Keys}");
-                        yield return new FhirToDataLakeProcessingJobInputData
-                        {
-                            JobType = JobType.Processing,
-                            ProcessingJobSequenceId = _result.CreatedJobCount,
-                            TriggerSequenceId = _inputData.TriggerSequenceId,
-                            Since = _inputData.Since,
-                            Parameters = jobParameters,
-                        };
-                    }
-                }*/
-                else if (totalCount < HighBoundOfProcessingJobResourceCount)
-                {
-                    // Generate one job with properate size.
-                    _logger.LogInformation($"Spliting jobs. Generate one {resourceType} job. {DateTimeOffset.Now.ToInstantString()}");
-
-                    yield return new FhirToDataLakeProcessingJobInputData
-                    {
-                        JobType = JobType.Processing,
-                        ProcessingJobSequenceId = _result.CreatedJobCount,
-                        TriggerSequenceId = _inputData.TriggerSequenceId,
-                        Since = _inputData.Since,
-                        Parameters = new Dictionary<string, TimeRange>
-                        {
-                            {
-                                resourceType,
-                                new TimeRange()
-                                {
-                                    DataEndTime = _inputData.DataEndTime,
-                                    DataStartTime = _inputData.DataStartTime,
-                                }
-                            },
-                        },
-                    };
-                }
-                else
-                {
-                    // Split large size job using binary search.
-                    _anchor[resourceType] = new Dictionary<DateTimeOffset, int>();
-
-                    if (startTime != null)
-                    {
-                        _anchor[resourceType][(DateTimeOffset)_inputData.DataStartTime] = 0;
-                    }
-
-                    var splitingStartTime = DateTimeOffset.Now;
-                    _logger.LogInformation($"Start spliting {resourceType} job, total {totalCount} resources. {splitingStartTime.ToInstantString()}.");
-
-                    // Set isDescending parameter false to get first timestmp.
-                    var nextTimestamp = await GetNextTimestamp(resourceType, _inputData.DataStartTime, _inputData.DataEndTime, false, cancellationToken);
-
-                    // Set isDescending parameter as true to get last timestmp.
-                    var lastTimestamp = await GetNextTimestamp(resourceType, _inputData.DataStartTime, _inputData.DataEndTime, true, cancellationToken);
-
-                    if (nextTimestamp != null)
-                    {
-                        _anchor[resourceType][(DateTimeOffset)nextTimestamp] = 0;
-                    }
-
-                    if (lastTimestamp != null)
-                    {
-                        _anchor[resourceType][(DateTimeOffset)lastTimestamp] = totalCount;
-                    }
-
-                    _anchor[resourceType][_inputData.DataEndTime] = totalCount;
-
-                    var time2 = DateTimeOffset.Now;
-                    _logger.LogInformation($"Start spliting {resourceType} job, get first and last timestamp. {(DateTimeOffset.Now - splitingStartTime).TotalMilliseconds}. {DateTimeOffset.Now.ToInstantString()}");
-                    DateTimeOffset? nextJobEnd = null;
-
-                    var time1 = DateTimeOffset.Now;
-
-                    while (nextJobEnd == null || nextJobEnd < _inputData.DataEndTime)
-                    {
-                        var jobId = 0;
-                        _anchor[resourceType] = _anchor[resourceType].OrderBy(p => p.Key).ToDictionary(p => p.Key, o => o.Value);
-                        DateTimeOffset? lastEndTime = nextJobEnd ?? _inputData.DataStartTime;
-
-                        nextJobEnd = await GetAnchor(resourceType, lastEndTime);
-
-                        var jobSize = lastEndTime == null ? _anchor[resourceType][(DateTimeOffset)nextJobEnd] : _anchor[resourceType][(DateTimeOffset)nextJobEnd] - _anchor[resourceType][(DateTimeOffset)lastEndTime];
-
-                        Dictionary<string, TimeRange> jobParameters = null;
-                        if (jobSize == 0)
-                        {
-                            continue;
-                        }
-
-                        jobParameters = new Dictionary<string, TimeRange>()
-                            {
-                                {
-                                    resourceType,
-                                    new TimeRange()
-                                    {
-                                        DataEndTime = (DateTimeOffset)nextJobEnd,
-                                        DataStartTime = lastEndTime,
-                                    }
-                                },
-                            };
-                        /*
-                        if (jobSize < LowBoundOfProcessingJobResourceCount)
-                        {
-                            var timeRange = new TimeRange()
-                            {
-                                DataEndTime = (DateTimeOffset)nextJobEnd,
-                                DataStartTime = lastEndTime,
-                            };
-                            jobParameters = PushToJobPool(resourceType, timeRange, jobSize);
-                        }
-                        else
-                        {
-                            jobParameters = new Dictionary<string, TimeRange>()
-                            {
-                                {
-                                    resourceType,
-                                    new TimeRange()
-                                    {
-                                        DataEndTime = (DateTimeOffset)nextJobEnd,
-                                        DataStartTime = lastEndTime,
-                                    }
-                                },
-                            };
-                        }
-                        */
-                        if (jobParameters != null)
-                        {
-                            time2 = DateTimeOffset.Now;
-                            _logger.LogInformation($"Spliting {resourceType}job, generate new split.time : {(time2 - time1).TotalMilliseconds}. {lastEndTime} - {(DateTimeOffset)nextJobEnd}, {jobSize} counts. ");
-                            time1 = time2;
-
-                            yield return new FhirToDataLakeProcessingJobInputData
-                            {
-                                JobType = JobType.Processing,
-                                ProcessingJobSequenceId = _result.CreatedJobCount,
-                                TriggerSequenceId = _inputData.TriggerSequenceId,
-                                Since = _inputData.Since,
-                                Parameters = jobParameters,
-                            };
-                        }
-
-                        jobId += 1;
-                    }
-
-                    _logger.LogInformation($"Spliting {resourceType}job, finish split. use : {(DateTimeOffset.Now - splitingStartTime).TotalMilliseconds} milliseconds.");
-                }
-            }
-
-            if (_mergeList.Count != 0)
-            {
-                var result = new Dictionary<string, TimeRange>();
-                foreach (var item in _mergeList)
-                {
-                    result.Add(item.Item1, item.Item2);
-                }
-
-                yield return new FhirToDataLakeProcessingJobInputData
-                {
-                    JobType = JobType.Processing,
-                    ProcessingJobSequenceId = _result.CreatedJobCount,
-                    TriggerSequenceId = _inputData.TriggerSequenceId,
-                    Since = _inputData.Since,
-                    Parameters = result,
-                };
-            }
         }
 
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForGroup([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -758,6 +790,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _result.RunningJobIds.ExceptWith(completedJobIds);
                 progress.Report(JsonConvert.SerializeObject(_result));
+
+                _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
+                _jobStatus = await UpdateJobStatusAsync(_jobStatus, cancellationToken);
             }
 
             _logger.LogInformation($"Orchestrator job {_jobInfo.Id} finished checking running job status, there are {completedJobIds.Count} jobs completed.");

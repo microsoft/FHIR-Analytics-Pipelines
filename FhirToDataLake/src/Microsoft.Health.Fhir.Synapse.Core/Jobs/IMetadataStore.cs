@@ -43,6 +43,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// Get current trigger entity from azure table
         /// </summary>
         /// <param name="queueType">queue type.</param>
+        /// <param name="groupId">group ID.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>Current trigger entity, return null if does not exist.</returns>
+        public Task<OrchestratorJobStatusEntity> GetOrchestratorJobStatusAsync(byte queueType, long groupId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get current trigger entity from azure table
+        /// </summary>
+        /// <param name="queueType">queue type.</param>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>Current trigger entity, return null if does not exist.</returns>
         public Task<CurrentTriggerEntity> GetCurrentTriggerEntityAsync(byte queueType, CancellationToken cancellationToken = default);

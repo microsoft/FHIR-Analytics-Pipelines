@@ -26,14 +26,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         public long CreatedJobCount { get; set; }
 
         /// <summary>
-        /// Next job timestamp to be processed, used for system scope
+        /// Processing jobs in the process of submitting, used for system scope
         /// </summary>
-        public DateTimeOffset? NextJobTimestamp { get; set; }
+        public string[] SubmitingProcessingJob { get; set; } = null;
 
         /// <summary>
-        /// Processing resource type to be processed, used for system scope
+        /// Next job timestamp to be processed for each resource type, used for system scope
         /// </summary>
-        public Dictionary<string, DateTimeOffset> ProcessingResourceType { get; set; } = new Dictionary<string, DateTimeOffset>();
+        public Dictionary<string, DateTimeOffset> NextJobTimestamp { get; set; } = new Dictionary<string, DateTimeOffset>();
 
         /// <summary>
         /// Next patient index to be processed, used for group scope
