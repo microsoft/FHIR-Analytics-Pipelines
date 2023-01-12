@@ -6,8 +6,10 @@
 using System;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
+using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
@@ -143,7 +145,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 HeartbeatDateTime = DateTime.UtcNow,
             };
 
-            orchestratorDefinition.JobVersion= SupportedJobVersion.V2;
+            orchestratorDefinition.JobVersion = SupportedJobVersion.V2;
 
             var jobInfo2 = new FhirToDataLakeAzureStorageJobInfo()
             {
@@ -158,6 +160,39 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 HeartbeatDateTime = DateTime.UtcNow,
             };
             Assert.NotEqual(jobInfo1.JobIdentifier(), jobInfo2.JobIdentifier());
+        }
+
+        [Fact]
+        public void
+            GivenJobVersionV1JobDefinition_WhenGetJobIdentifier_ThenTheJobVersionShouldBeRemoved()
+        {
+            var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
+            {
+                JobType = JobType.Orchestrator,
+                JobVersion = SupportedJobVersion.V1,
+                TriggerSequenceId = 1,
+                Since = DateTimeOffset.MinValue,
+                DataStartTime = DateTimeOffset.MinValue,
+                DataEndTime = DateTimeOffset.UtcNow,
+            };
+
+            var jobInfo = new FhirToDataLakeAzureStorageJobInfo()
+            {
+                Id = 1L,
+                QueueType = 0,
+                Status = JobStatus.Created,
+                GroupId = 0,
+                Definition = JsonConvert.SerializeObject(orchestratorDefinition),
+                Result = string.Empty,
+                CancelRequested = false,
+                CreateDate = DateTime.UtcNow,
+                HeartbeatDateTime = DateTime.UtcNow,
+            };
+
+            var jobject = JObject.FromObject(orchestratorDefinition);
+            jobject[JobVersionManager.JobVersionKey].Parent.Remove();
+
+            Assert.Equal(jobject.ToString().ComputeHash(),jobInfo.JobIdentifier());
         }
     }
 }

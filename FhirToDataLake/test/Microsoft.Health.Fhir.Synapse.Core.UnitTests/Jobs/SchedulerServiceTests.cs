@@ -20,6 +20,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.JobManagement;
+using Microsoft.VisualBasic;
 using NCrontab;
 using Newtonsoft.Json;
 using Xunit;
@@ -67,10 +68,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 () => new SchedulerService(null, new MockMetadataStore(), Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new SchedulerService(new MockQueueClient(), null, Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new SchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), null, Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new SchedulerService(new MockQueueClient(), new MockMetadataStore(), null, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new SchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), null, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
         }
 
         [Theory]
@@ -87,14 +88,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             Assert.Throws<CrontabException>(
-                () => new SchedulerService(new MockQueueClient(), new MockMetadataStore(), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new SchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
         }
 
         [Fact]
         public void GivenNullSchedulerCronExpression_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new SchedulerService(new MockQueueClient(), new MockMetadataStore(), Options.Create(new JobConfiguration()), MetricsLogger,  DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new SchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(new JobConfiguration()), MetricsLogger,  DiagnosticLogger, _nullSchedulerServiceLogger));
         }
 
         [Fact]
@@ -110,7 +111,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 JobInfoQueueName = TestJobInfoQueueName,
             };
 
-            Exception exception = Record.Exception(() => new SchedulerService(new MockQueueClient(), new MockMetadataStore(), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+            Exception exception = Record.Exception(() => new SchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
 
             Assert.Null(exception);
         }
@@ -119,7 +120,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenUninitializedStorage_WhenRunAsync_WaitUntilStorageInitialized()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
                 new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
@@ -175,7 +176,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenBrokenMetadataStoreThrowExceptionWhenGetTriggerLeaseEntity_WhenTryAcquireLeaseAsync_ThenNoExceptionShouldBeThrown()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var brokenMetadataStore = new MockMetadataStore
             {
                 GetTriggerLeaseEntityFunc = (_, _, _) => throw new Exception("fake exception in get trigger lease entity"),
@@ -205,7 +206,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenBrokenMetadataStoreReturnNullWhenGetTriggerLeaseEntity_WhenTryAcquireLeaseAsync_ThenNoExceptionShouldBeThrown()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var brokenMetadataStore = new MockMetadataStore
             {
                 GetTriggerLeaseEntityFunc = (_, _, _) => null,
@@ -237,7 +238,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenNoTriggerLeaseEntityInTable_WhenTryAcquireLeaseAsync_ThenShouldCreateANewOne()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
@@ -269,7 +270,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenLeaseNotTimeout_WhenTryAcquireLeaseAsync_ThenShouldNotAcquireLease()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var oldGuid = Guid.NewGuid();
             var triggerLeaseEntity = new TriggerLeaseEntity
             {
@@ -306,7 +307,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenLeaseTimeout_WhenTryAcquireLeaseAsync_ThenShouldAcquireLease()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var oldGuid = Guid.NewGuid();
             var triggerLeaseEntity = new TriggerLeaseEntity
             {
@@ -344,7 +345,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GiveTwoSchedulerService_WhenTryAcquireLeaseAsync_ThenOnlyOneWillAcquireLease()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             // initialize two scheduler services
@@ -395,7 +396,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCrashSchedulerService_WhenRunAsync_ThenTheLeaseShouldBeAcquiredByOtherSchedulerService()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             // initialize two scheduler services
@@ -455,7 +456,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenTwoSchedulerServiceAndLeaseTimeout_WhenTryAcquireLeaseAsync_ThenOnlyOneWillAcquireLease()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var oldGuid = Guid.NewGuid();
             var triggerLeaseEntity = new TriggerLeaseEntity
             {
@@ -505,7 +506,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenLongRunningSchedulerService_WhenRunAsync_ThenTheLeaseShouldBeRenewed()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
@@ -538,7 +539,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenLeaseLost_WhenRenewLease_ThenShouldFailToRenewLease()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
@@ -588,7 +589,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenNewJob_WhenRunAsync_ThenTheInitialTriggerEntityShouldBeCreatedAndEnqueueOrchestratorJob()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
@@ -634,7 +635,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 StartTime = startTime,
             };
             IOptions<JobConfiguration> jobConfigOption = Options.Create(jobConfig);
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
@@ -667,7 +668,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenEnqueueFailure_WhenRunAsync_ThenTheTriggerShouldBeRetried()
         {
-            var brokenQueueClient = new MockQueueClient();
+            var brokenQueueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             void FaultAction() => throw new RequestFailedException("fake request failed exception");
 
@@ -699,7 +700,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             tokenSource1.Cancel();
             await task1;
 
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var schedulerService2 =
                 new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
             {
@@ -730,7 +731,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [InlineData(SupportedJobVersion.V2)]
         public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned(SupportedJobVersion jobVersion)
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var initialTriggerEntity = new CurrentTriggerEntity
             {
@@ -792,10 +793,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await task;
         }
 
+        // version update
         [Fact]
-        public async Task GivenACompletedJob_WhenUpdateVersion_ThenTheVersionOfNextJobIsUpdated()
+        public async Task GivenCompletedTriggerStatus_WhenUpdateVersion_ThenTheVersionOfNextJobIsUpdated()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             // trigger entity with old job version
             var triggerEntity = new CurrentTriggerEntity
@@ -846,11 +848,137 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await task;
         }
 
+        [Fact]
+        public async Task GivenNewTriggerStatus_WhenUpdateVersion_ThenTheVersionShouldNotBeUpdated()
+        {
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
+
+            // trigger entity with old job version
+            var triggerEntity = new CurrentTriggerEntity
+            {
+                PartitionKey = TableKeyProvider.TriggerPartitionKey((byte)QueueType.FhirToDataLake),
+                RowKey = TableKeyProvider.TriggerPartitionKey((byte)QueueType.FhirToDataLake),
+                TriggerStartTime = DateTime.UtcNow.AddMinutes(-10),
+                TriggerEndTime = DateTime.UtcNow.AddMinutes(-5),
+                TriggerStatus = TriggerStatus.New,
+                TriggerSequenceId = 11,
+            };
+
+            var metadataStore = new MockMetadataStore();
+
+            // add the trigger entity to table
+            await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
+
+            var schedulerService =
+                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                {
+                    SchedulerServicePullingIntervalInSeconds = 0,
+                    SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
+                    SchedulerServiceLeaseExpirationInSeconds = 2,
+                };
+
+            // service is running
+            using var tokenSource = new CancellationTokenSource();
+            Task task = schedulerService.RunAsync(tokenSource.Token);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100), CancellationToken.None);
+
+            CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
+
+            Assert.Equal(triggerEntity.TriggerSequenceId, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
+
+            // The job version is NOT updated
+            Assert.Equal(JobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
+            Assert.Equal(JobVersionManager.DefaultJobVersion, currentTriggerEntity.JobVersion);
+
+            JobInfo jobInfo = await queueClient.GetJobByIdAsync((byte)QueueType.FhirToDataLake, currentTriggerEntity.OrchestratorJobId, true, CancellationToken.None);
+
+            var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
+
+            Assert.Equal(JobVersionManager.DefaultJobVersion, inputData.JobVersion);
+
+            tokenSource.Cancel();
+            await task;
+        }
+
+        [Fact]
+        public async Task GivenJobEnqueuedTriggerNotUpdate_WhenUpdateVersion_ThenExistingJobShouldBeReturned()
+        {
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
+
+            // trigger entity with old job version
+            var triggerEntity = new CurrentTriggerEntity
+            {
+                PartitionKey = TableKeyProvider.TriggerPartitionKey((byte)QueueType.FhirToDataLake),
+                RowKey = TableKeyProvider.TriggerPartitionKey((byte)QueueType.FhirToDataLake),
+                TriggerStartTime = DateTime.UtcNow.AddMinutes(-10),
+                TriggerEndTime = DateTime.UtcNow.AddMinutes(-5),
+                TriggerStatus = TriggerStatus.New,
+            };
+
+            var metadataStore = new MockMetadataStore();
+
+            // add the trigger entity to table
+            await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
+
+            // enqueue the job manually
+            var orchestratorDefinition1 = new FhirToDataLakeOrchestratorJobInputData
+            {
+                JobType = JobType.Orchestrator,
+                JobVersion = triggerEntity.JobVersion,
+                DataStartTime = triggerEntity.TriggerStartTime,
+                DataEndTime = triggerEntity.TriggerEndTime,
+            };
+
+            List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(
+                (byte)QueueType.FhirToDataLake,
+                new[] { JsonConvert.SerializeObject(orchestratorDefinition1) },
+                0,
+                false,
+                false,
+                CancellationToken.None)).ToList();
+
+            var schedulerService =
+                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                {
+                    SchedulerServicePullingIntervalInSeconds = 0,
+                    SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
+                    SchedulerServiceLeaseExpirationInSeconds = 2,
+                };
+
+            // service is running
+            using var tokenSource = new CancellationTokenSource();
+            Task task = schedulerService.RunAsync(tokenSource.Token);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100), CancellationToken.None);
+
+            // return the existing job
+            CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
+            Assert.Equal(triggerEntity.TriggerSequenceId, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
+            Assert.Equal(jobInfoList.First().Id, currentTriggerEntity.OrchestratorJobId);
+
+            JobInfo jobInfo = await queueClient.GetJobByIdAsync((byte)QueueType.FhirToDataLake, currentTriggerEntity.OrchestratorJobId, true, CancellationToken.None);
+
+            Assert.Equal(jobInfoList.First().HeartbeatDateTime, jobInfo.HeartbeatDateTime);
+
+            // The job version is NOT updated
+            Assert.Equal(JobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
+
+            var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
+
+            Assert.Equal(JobVersionManager.DefaultJobVersion, inputData.JobVersion);
+
+            tokenSource.Cancel();
+            await task;
+        }
+
         // Complete Trigger
         [Fact]
         public async Task GivenCompletedTrigger_WhenRunAsync_ThenShouldCreateAndEnqueueTheNextTrigger()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var triggerEntity = new CurrentTriggerEntity
             {
@@ -908,7 +1036,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             DateTimeOffset endTime = new DateTime(2022, 1, 1);
 
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var triggerEntity = new CurrentTriggerEntity
             {
@@ -969,7 +1097,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenValidTrigger_WhenRunAsync_ThenTheTriggerShouldBeProcessed()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
@@ -1037,7 +1165,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenRunningTrigger_WhenReRunAsync_ThenTheTriggerShouldBePickedUp()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
@@ -1120,7 +1248,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenFailedTrigger_WhenReRunAsync_ThenTheTriggerShouldKeepFailure()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
@@ -1190,7 +1318,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCancelledTrigger_WhenReRunAsync_ThenTheTriggerShouldKeepFailure()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
@@ -1261,7 +1389,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCancelRequest_WhenStartToRun_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
                     new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
@@ -1289,7 +1417,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCancelRequest_WhenCheckStorageInitialization_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             queueClient.Initialized = false;
             var schedulerService =
@@ -1319,7 +1447,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCancelRequest_WhenTryAcquireLease_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             // the lease is acquired by another instance
             var otherGuid = Guid.NewGuid();
@@ -1366,7 +1494,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCancelRequest_WhenRunAsync_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
                 new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
@@ -1442,7 +1570,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenInitialJobWithoutEndTime_WhenCreateNextTrigger_ThenTheJobEndTimeShouldBeSetCorrectly()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
@@ -1479,7 +1607,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenInitialJobWithEndTime_WhenCreateNextTrigger_ThenTheJobEndTimeShouldBeSetCorrectly()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
@@ -1528,7 +1656,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenInitialJobWithFutureEndTime_WhenCreateNextTrigger_ThenTheJobEndTimeShouldBeSetCorrectly()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 

@@ -126,7 +126,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
 
             FhirToDataLakeOrchestratorJobInputData inputData = GetInputData();
-            MockQueueClient queueClient = GetQueueClient();
+            MockQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient = GetQueueClient();
             List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(
                 (byte)QueueType.FhirToDataLake,
                 new[] { JsonConvert.SerializeObject(inputData) },
@@ -182,7 +182,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
 
             FhirToDataLakeOrchestratorJobInputData inputData = GetInputData();
-            MockQueueClient queueClient = GetQueueClient(filterScope);
+            MockQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient = GetQueueClient(filterScope);
             List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(
                 (byte)QueueType.FhirToDataLake,
                 new[] { JsonConvert.SerializeObject(inputData) },
@@ -310,9 +310,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return result;
         }
 
-        private static MockQueueClient GetQueueClient(FilterScope filterScope = FilterScope.System)
+        private static MockQueueClient<FhirToDataLakeAzureStorageJobInfo> GetQueueClient(FilterScope filterScope = FilterScope.System)
         {
-            var queueClient = new MockQueueClient
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>
             {
                 GetJobByIdFunc = (queueClient, id,  _) =>
                 {
