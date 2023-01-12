@@ -1,15 +1,27 @@
 <?xml version="1.0"?>
 <Project>
-    <ItemGroup Condition=" '$(OS)' == 'WINDOWS_NT'">
-        <Content Include="$(MSBuildThisFileDirectory)..\runtimes\windows-x64\*.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Link>%(FileName)%(Extension)</Link>
-        </Content>
-    </ItemGroup>
-    <ItemGroup Condition=" '$(OS)' == 'UNIX'">
-        <Content Include="$(MSBuildThisFileDirectory)..\runtimes\linux-x64\*">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Link>%(FileName)%(Extension)</Link>
-        </Content>
-    </ItemGroup>
+	<ItemGroup Condition="$(RuntimeIdentifier) == '' And $(OS) == 'Windows_NT'">
+		<Content Include="$(MSBuildThisFileDirectory)..\runtimes\windows-x64\*.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>%(FileName)%(Extension)</Link>
+		</Content>
+	</ItemGroup>
+	<ItemGroup Condition="$(RuntimeIdentifier) == '' And $(OS) == 'UNIX'">
+		<Content Include="$(MSBuildThisFileDirectory)..\runtimes\linux-x64\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>%(FileName)%(Extension)</Link>
+		</Content>
+	</ItemGroup>
+	<ItemGroup Condition="$(RuntimeIdentifier.StartsWith('win'))">
+		<Content Include="$(MSBuildThisFileDirectory)..\runtimes\windows-x64\*.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>%(FileName)%(Extension)</Link>
+		</Content>
+	</ItemGroup>
+	<ItemGroup Condition="$(RuntimeIdentifier.StartsWith('linux'))">
+		<Content Include="$(MSBuildThisFileDirectory)..\runtimes\linux-x64\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>%(FileName)%(Extension)</Link>
+		</Content>
+	</ItemGroup>
 </Project>
