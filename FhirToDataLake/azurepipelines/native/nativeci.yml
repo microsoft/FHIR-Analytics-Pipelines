@@ -29,7 +29,7 @@ stages:
     - template: build-windows-native-libs.yml
 
 - stage: PublishNuget
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  condition: succeeded()
   jobs:
   - job: PackNugets
     pool:
