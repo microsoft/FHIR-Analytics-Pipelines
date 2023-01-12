@@ -61,6 +61,15 @@ namespace Microsoft.Health.Fhir.Synapse.Common {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search DICOM server failed. Search url: &apos;{0}&apos;. Reason : {1}.
+        /// </summary>
+        public static string DicomSearchFailed {
+            get {
+                return ResourceManager.GetString("DicomSearchFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to parse FHIR bundle content, reason: &apos;{0}&apos;..
         /// </summary>
         public static string FhirBundleParseFailed {

@@ -15,7 +15,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Logging;
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
 {
     /// <summary>
-    /// Provide access token for the given FHIR url from token credential.
+    /// Provide access token for the given url from token credential.
     /// Access token will be cached and will be refreshed if expired.
     /// </summary>
     public class AzureAccessTokenProvider : IAccessTokenProvider

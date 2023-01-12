@@ -54,7 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         public void GivenValidOperationOutcomeResources_WhenGetOperationOutcomes_EmptyResultShouldBeReturned()
         {
             JObject jObj1 = JObject.Parse("{\"resourceType\":\"OperationOutcome\"}");
-            JObject jObj2 = JObject.Parse(TestDataProvider.GetBundleFromFile(TestDataConstants.InvalidResponseFile));
+            JObject jObj2 = JObject.Parse(TestDataProvider.GetDataFromFile(TestDataConstants.InvalidResponseFile));
             List<JObject> input = new List<JObject> { jObj1, jObj2 };
             IEnumerable<JObject> results = FhirBundleParser.GetOperationOutcomes(input);
             Assert.Equal(2, results.Count());

@@ -29,11 +29,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     public class AzureStorageJobFactory : IJobFactory
     {
         private readonly IQueueClient _queueClient;
-        private readonly IFhirDataClient _dataClient;
-        private readonly IFhirDataWriter _dataWriter;
+        private readonly IApiDataClient _dataClient;
+        private readonly IDataWriter _dataWriter;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly IColumnDataProcessor _parquetDataProcessor;
-        private readonly IFhirSchemaManager<FhirParquetSchemaNode> _fhirSchemaManager;
+        private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
         private readonly IFilterManager _filterManager;
         private readonly IMetadataStore _metadataStore;
         private readonly ILoggerFactory _loggerFactory;
@@ -44,11 +44,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public AzureStorageJobFactory(
             IQueueClient queueClient,
-            IFhirDataClient dataClient,
-            IFhirDataWriter dataWriter,
+            IApiDataClient dataClient,
+            IDataWriter dataWriter,
             IGroupMemberExtractor groupMemberExtractor,
             IColumnDataProcessor parquetDataProcessor,
-            IFhirSchemaManager<FhirParquetSchemaNode> fhirSchemaManager,
+            ISchemaManager<ParquetSchemaNode> schemaManager,
             IFilterManager filterManager,
             IMetadataStore metadataStore,
             IOptions<JobConfiguration> jobConfiguration,
@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
-            _fhirSchemaManager = EnsureArg.IsNotNull(fhirSchemaManager, nameof(fhirSchemaManager));
+            _schemaManager = EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
@@ -137,7 +137,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
-                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create orchestrator job. Reason: {e.Message}", Operations.CreateJob);
+                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create orchestrator job. Reason: {e.Message}", JobOperations.CreateJob);
                 _logger.LogInformation(e, "Failed to create orchestrator job.");
                 return null;
             }
@@ -163,7 +163,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _dataClient,
                         _dataWriter,
                         _parquetDataProcessor,
-                        _fhirSchemaManager,
+                        _schemaManager,
                         _groupMemberExtractor,
                         _filterManager,
                         _metricsLogger,
@@ -174,7 +174,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (Exception e)
             {
-                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create processing job. Reason: {e.Message}", Operations.CreateJob);
+                _metricsLogger.LogTotalErrorsMetrics(e, $"Failed to create processing job. Reason: {e.Message}", JobOperations.CreateJob);
                 _logger.LogInformation(e, "Failed to create processing job.");
                 return null;
             }

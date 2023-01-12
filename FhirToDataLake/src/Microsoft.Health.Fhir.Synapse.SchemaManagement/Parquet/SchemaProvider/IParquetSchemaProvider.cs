@@ -13,6 +13,6 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.Parquet.SchemaProvider
 
     public interface IParquetSchemaProvider
     {
-        public Task<Dictionary<string, FhirParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default);
+        public Task<Dictionary<string, ParquetSchemaNode>> GetSchemasAsync(CancellationToken cancellationToken = default);
     }
 }

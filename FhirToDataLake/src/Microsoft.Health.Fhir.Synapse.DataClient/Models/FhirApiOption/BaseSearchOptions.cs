@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption
 {
-    public class BaseSearchOptions : BaseFhirApiOptions
+    public class BaseSearchOptions : BaseApiOptions
     {
         public BaseSearchOptions(
             string resourceType,

@@ -15,8 +15,20 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationResol
             IServiceCollection services,
             IConfiguration configuration)
         {
-            services.Configure<FhirServerConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options));
+            if (configuration.GetSection(ConfigurationConstants.DataSourceConfigurationKey).Exists())
+            {
+                // Try to get DataSourceConfiguration from configuration.
+                services.Configure<DataSourceConfiguration>(options =>
+                    configuration.GetSection(ConfigurationConstants.DataSourceConfigurationKey).Bind(options));
+            }
+            else
+            {
+                // If DataSourceConfiguration is not found, find FhirServerConfiguration instead
+                // and create a DataSourceConfiguration from it for backward compatibility.
+                services.Configure<DataSourceConfiguration>(options =>
+                    configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options.FhirServer));
+            }
+
             services.Configure<JobConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.JobConfigurationKey).Bind(options));
             services.Configure<FilterConfiguration>(options =>

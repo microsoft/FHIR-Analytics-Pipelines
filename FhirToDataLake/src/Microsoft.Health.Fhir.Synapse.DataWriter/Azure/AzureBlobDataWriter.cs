@@ -11,15 +11,16 @@ using System.Threading.Tasks;
 using Azure.Storage.Files.DataLake.Models;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
+using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Common.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 
 namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 {
-    public class AzureBlobDataWriter : IFhirDataWriter
+    public class AzureBlobDataWriter : IDataWriter
     {
-        // Date format in blob path.
-        private const string DateKeyFormat = "yyyy/MM/dd";
-
         private readonly IAzureBlobContainerClient _containerClient;
         private readonly ILogger<AzureBlobDataWriter> _logger;
 
@@ -28,32 +29,34 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
 
         // Staged data folder path: "staging/{JobId:d20}/{schemaType}/{year}/{month}/{day}"
         // Committed data file path: "result/{schemaType}/{year}/{month}/{day}/{JobId:d20}"
-        private readonly Regex _stagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z_]+/\d{4}/\d{2}/\d{2})$");
+        private readonly Regex _fhirStagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z_]+/\d{4}/\d{2}/\d{2})$");
+
+        // Staged data folder path: "staging/{JobId:d20}/{schemaType}/{offset}"
+        // Committed data file path: "result/{schemaType}/{offset}/{JobId:d20}"
+        private readonly Regex _dicomStagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z_]+/\d+)$");
+
+        private readonly DataSourceType _dataSourceType;
 
         public AzureBlobDataWriter(
+            IOptions<DataSourceConfiguration> dataSourceConfiguration,
             IAzureBlobContainerClientFactory containerClientFactory,
             IDataSink dataSink,
             ILogger<AzureBlobDataWriter> logger)
         {
             EnsureArg.IsNotNull(containerClientFactory, nameof(containerClientFactory));
-            EnsureArg.IsNotNull(logger, nameof(logger));
 
+            _dataSourceType = EnsureArg.EnumIsDefined(dataSourceConfiguration.Value.Type, nameof(dataSourceConfiguration.Value.Type));
             _containerClient = containerClientFactory.Create(dataSink.StorageUrl, dataSink.Location);
-            _logger = logger;
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         public async Task<string> WriteAsync(
             StreamBatchData data,
-            long jobId,
-            int partId,
-            DateTimeOffset dateTime,
+            string blobName,
             CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(data, nameof(data));
 
-            string schemaType = data.SchemaType;
-
-            string blobName = GetDataFileName(dateTime, schemaType, jobId, partId);
             string blobUrl = await _containerClient.UpdateBlobAsync(blobName, data.Value, cancellationToken);
 
             _logger.LogInformation($"Write stream batch data to {blobUrl} successfully.");
@@ -85,7 +88,13 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
                 if (path.IsDirectory == true)
                 {
                     // Record all directories that need to commit.
-                    Match match = _stagingDataFolderRegex.Match(path.Name);
+                    Match match = _dataSourceType switch
+                    {
+                        DataSourceType.FHIR => _fhirStagingDataFolderRegex.Match(path.Name),
+                        DataSourceType.DICOM => _dicomStagingDataFolderRegex.Match(path.Name),
+                        _ => throw new ConfigurationErrorException($"Data source type {_dataSourceType} is not supported")
+                    };
+
                     if (match.Success)
                     {
                         string destination = $"{AzureStorageConstants.ResultFolderName}/{match.Groups["partition"].Value}/{jobId:d20}";
@@ -128,17 +137,6 @@ namespace Microsoft.Health.Fhir.Synapse.DataWriter.Azure
             }
 
             return true;
-        }
-
-        private static string GetDataFileName(
-            DateTimeOffset dateTime,
-            string schemaType,
-            long jobId,
-            int partId)
-        {
-            string dateTimeKey = dateTime.ToString(DateKeyFormat);
-
-            return $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/{schemaType}/{dateTimeKey}/{schemaType}_{partId:d10}.parquet";
         }
     }
 }
