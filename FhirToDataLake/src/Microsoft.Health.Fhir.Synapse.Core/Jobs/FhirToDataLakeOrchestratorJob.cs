@@ -235,6 +235,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var input = new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
+                    JobVersion = _inputData.JobVersion,
                     ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,
@@ -258,6 +259,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var input = new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
+                    JobVersion = _inputData.JobVersion,
                     ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,

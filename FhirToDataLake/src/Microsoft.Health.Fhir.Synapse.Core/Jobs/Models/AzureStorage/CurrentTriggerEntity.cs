@@ -43,5 +43,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage
         /// The corresponding orchestrator job id of current trigger
         /// </summary>
         public long OrchestratorJobId { get; set; } = 0;
+
+        /// <summary>
+        /// The job version of current orchestrator job
+        /// </summary>
+        public SupportedJobVersion JobVersion { get; set; } = JobVersionManager.DefaultJobVersion;
     }
 }

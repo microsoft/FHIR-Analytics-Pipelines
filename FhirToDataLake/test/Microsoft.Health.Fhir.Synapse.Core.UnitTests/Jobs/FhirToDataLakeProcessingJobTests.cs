@@ -216,6 +216,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var inputData = new FhirToDataLakeProcessingJobInputData
             {
+                JobVersion = JobVersionManager.CurrentJobVersion,
                 JobType = JobType.Processing,
                 TriggerSequenceId = 0L,
                 ProcessingJobSequenceId = 0L,
