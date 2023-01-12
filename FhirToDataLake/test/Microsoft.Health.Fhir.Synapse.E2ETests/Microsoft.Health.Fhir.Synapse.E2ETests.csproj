@@ -27,7 +27,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="appsettings.test.json">
+    <None Update="appsettings.dicomtodatalake.test.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.fhirtodatalake.test.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\Expected\Dicom_All.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="TestData\Expected\GroupScope_AllPatient_Filters_part2.json">

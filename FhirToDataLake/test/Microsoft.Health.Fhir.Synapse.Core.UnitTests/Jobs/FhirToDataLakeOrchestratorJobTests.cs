@@ -155,7 +155,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var retriableJobException = await Assert.ThrowsAsync<RetriableJobException>(async () =>
                 await job.ExecuteAsync(progress, CancellationToken.None));
 
-            Assert.IsType<FhirSearchException>(retriableJobException.InnerException);
+            Assert.IsType<ApiSearchException>(retriableJobException.InnerException);
         }
 
         private static async Task<FhirToDataLakeOrchestratorJobResult> VerifyCommonOrchestratorJobAsync(
@@ -368,21 +368,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
         }
 
-        private static IFhirDataClient GetBrokenFhirDataClient()
+        private static IApiDataClient GetBrokenFhirDataClient()
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
             dataClient.SearchAsync(default)
-                .ReturnsForAnyArgs(Task.FromException<string>(new FhirSearchException("fake fhir search exception.")));
+                .ReturnsForAnyArgs(Task.FromException<string>(new ApiSearchException("fake fhir search exception.")));
             return dataClient;
         }
 
-        private static IFhirDataClient GetMockFhirDataClient(int count, int resumedFrom)
+        private static IApiDataClient GetMockFhirDataClient(int count, int resumedFrom)
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
 
             // Get bundle from next link
             List<string> nextBundles = GetSearchBundles(count);
-            string emptyBundle = TestDataProvider.GetBundleFromFile(TestDataConstants.EmptyBundleFile);
+            string emptyBundle = TestDataProvider.GetDataFromFile(TestDataConstants.EmptyBundleFile);
             nextBundles.Add(emptyBundle);
             dataClient.SearchAsync(default).ReturnsForAnyArgs(nextBundles[resumedFrom + 1], nextBundles.Skip(resumedFrom + 2).ToArray());
             return dataClient;
@@ -390,7 +390,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private static List<string> GetSearchBundles(int count)
         {
-            string bundleSample = TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile2);
+            string bundleSample = TestDataProvider.GetDataFromFile(TestDataConstants.PatientBundleFile2);
             List<string> results = new List<string> { bundleSample };
             for (int i = 1; i < count; i++)
             {
@@ -417,8 +417,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return metadataStore;
         }
 
-        private static IFhirDataWriter GetDataWriter(string containerName, IAzureBlobContainerClient blobClient)
+        private static IDataWriter GetDataWriter(string containerName, IAzureBlobContainerClient blobClient)
         {
+            var dataSourceOption = Options.Create(new DataSourceConfiguration());
+
             var mockFactory = Substitute.For<IAzureBlobContainerClientFactory>();
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
 
@@ -432,7 +434,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             var dataSink = new AzureBlobDataSink(Options.Create(storageConfig), Options.Create(jobConfig));
-            return new AzureBlobDataWriter(mockFactory, dataSink, new NullLogger<AzureBlobDataWriter>());
+            return new AzureBlobDataWriter(dataSourceOption, mockFactory, dataSink, new NullLogger<AzureBlobDataWriter>());
         }
 
         private static IFilterManager GetFilterManager(FilterConfiguration filterConfiguration)

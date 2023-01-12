@@ -63,8 +63,8 @@ namespace Microsoft.Health.Fhir.Synapse.SchemaManagement.UnitTests.Parquet.Schem
         {
             var schemaProvider = new AcrCustomizedSchemaProvider(_mockContainerRegistryTemplateProvider, _schemaConfigurationWithCustomizedSchemaOption, _diagnosticLogger, _nullLogger);
 
-            Dictionary<string, FhirParquetSchemaNode> schemaCollections = await schemaProvider.GetSchemasAsync();
-            FhirParquetSchemaNode expectedSchemaNode = JsonSchemaParser.ParseJSchema("Patient", JsonSchema.FromJsonAsync(File.ReadAllText(TestUtils.TestJsonSchemaFilePath)).GetAwaiter().GetResult());
+            Dictionary<string, ParquetSchemaNode> schemaCollections = await schemaProvider.GetSchemasAsync();
+            ParquetSchemaNode expectedSchemaNode = JsonSchemaParser.ParseJSchema("Patient", JsonSchema.FromJsonAsync(File.ReadAllText(TestUtils.TestJsonSchemaFilePath)).GetAwaiter().GetResult());
 
             Assert.Equal(expectedSchemaNode.Name, schemaCollections["Patient_Customized"].Name);
         }

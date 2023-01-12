@@ -11,5 +11,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Models.Jobs
         /// FHIR to data lake
         /// </summary>
         FhirToDataLake = 0,
+
+        /// <summary>
+        /// Dicom to data lake
+        /// </summary>
+        DicomToDataLake = 1,
     }
 }
