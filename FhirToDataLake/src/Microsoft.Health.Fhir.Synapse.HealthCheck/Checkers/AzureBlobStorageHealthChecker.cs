@@ -20,6 +20,9 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
 {
     public class AzureBlobStorageHealthChecker : BaseHealthChecker
     {
+        private readonly IAzureBlobContainerClientFactory _blobContainerClientFactory;
+        private readonly string _storageUrl;
+        private readonly string _containerName;
         private readonly string _instanceId;
         private readonly string _sourceFolderName;
         private readonly string _targetFolderName;
@@ -29,7 +32,6 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
         public const string HealthCheckSourceSubFolderFormat = "__healthcheck__/{0}/source";
         public const string HealthCheckTargetSubFolderFormat = "__healthcheck__/{0}/target";
         public const string HealthCheckUploadedContent = "healthCheckContent";
-        private readonly IAzureBlobContainerClient _blobContainerClient;
 
         public AzureBlobStorageHealthChecker(
             IAzureBlobContainerClientFactory azureBlobContainerClientFactory,
@@ -43,21 +45,25 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             EnsureArg.IsNotNull(storeConfiguration, nameof(storeConfiguration));
 
+            _blobContainerClientFactory = azureBlobContainerClientFactory;
+            _storageUrl = storeConfiguration.Value.StorageUrl;
+            _containerName = jobConfiguration.Value.ContainerName;
             _instanceId = Guid.NewGuid().ToString("N");
             _sourceFolderName = string.Format(HealthCheckSourceSubFolderFormat, _instanceId);
             _targetFolderName = string.Format(HealthCheckTargetSubFolderFormat, _instanceId);
-            _blobContainerClient = azureBlobContainerClientFactory.Create(storeConfiguration.Value.StorageUrl, jobConfiguration.Value.ContainerName);
         }
 
         protected override async Task<HealthCheckResult> PerformHealthCheckImplAsync(CancellationToken cancellationToken)
         {
+            IAzureBlobContainerClient blobContainerClient = _blobContainerClientFactory.Create(_storageUrl, _containerName);
+
             var healthCheckResult = new HealthCheckResult(HealthCheckTypes.AzureBlobStorageCanReadWrite);
             string blobPath = $"{_sourceFolderName}/{HealthCheckBlobPrefix}";
 
             try
             {
                 // Ensure we can write to the storage account
-                await UploadToBlobAsync(HealthCheckUploadedContent, blobPath, cancellationToken);
+                await UploadToBlobAsync(blobContainerClient, HealthCheckUploadedContent, blobPath, cancellationToken);
             }
             catch (Exception e)
             {
@@ -71,7 +77,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             try
             {
                 // Ensure we can read from the storage account
-                string result = await DownloadFromBlobAsync(blobPath, cancellationToken);
+                string result = await DownloadFromBlobAsync(blobContainerClient, blobPath, cancellationToken);
                 if (!Equals(result, HealthCheckUploadedContent))
                 {
                     healthCheckResult.Status = HealthCheckStatus.UNHEALTHY;
@@ -91,8 +97,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             try
             {
                 // Ensure hierachical namespace is enabled (supports directory operations) from the storage account
-                await _blobContainerClient.DeleteDirectoryIfExistsAsync(_targetFolderName, cancellationToken);
-                await _blobContainerClient.MoveDirectoryAsync(_sourceFolderName, _targetFolderName, cancellationToken);
+                await blobContainerClient.DeleteDirectoryIfExistsAsync(_targetFolderName, cancellationToken);
+                await blobContainerClient.MoveDirectoryAsync(_sourceFolderName, _targetFolderName, cancellationToken);
             }
             catch (Exception e)
             {
@@ -106,7 +112,7 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             {
                 try
                 {
-                    await _blobContainerClient.DeleteDirectoryIfExistsAsync(string.Format(HealthCheckFolderFormat, _instanceId), cancellationToken);
+                    await blobContainerClient.DeleteDirectoryIfExistsAsync(string.Format(HealthCheckFolderFormat, _instanceId), cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -119,16 +125,16 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
             return healthCheckResult;
         }
 
-        private async Task UploadToBlobAsync(string uploadedContent, string blobPath, CancellationToken cancellationToken)
+        private async Task UploadToBlobAsync(IAzureBlobContainerClient blobContainerClient, string uploadedContent, string blobPath, CancellationToken cancellationToken)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(uploadedContent);
             using var stream = new MemoryStream(bytes);
-            await _blobContainerClient.UpdateBlobAsync(blobPath, stream, cancellationToken);
+            await blobContainerClient.UpdateBlobAsync(blobPath, stream, cancellationToken);
         }
 
-        private async Task<string> DownloadFromBlobAsync(string blobPath, CancellationToken cancellationToken)
+        private async Task<string> DownloadFromBlobAsync(IAzureBlobContainerClient blobContainerClient, string blobPath, CancellationToken cancellationToken)
         {
-            using Stream resultStream = await _blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);
+            using Stream resultStream = await blobContainerClient.GetBlobAsync(blobPath, cancellationToken: cancellationToken);
             resultStream.Position = 0;
             using var reader = new StreamReader(resultStream, Encoding.UTF8);
             return reader.ReadToEnd();
