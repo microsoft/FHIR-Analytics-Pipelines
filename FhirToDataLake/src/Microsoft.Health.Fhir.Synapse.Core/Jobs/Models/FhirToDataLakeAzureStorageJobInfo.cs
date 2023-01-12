@@ -7,6 +7,7 @@ using System;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
 {
@@ -14,12 +15,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
     {
         private readonly DateTimeOffset _fakeDataEndTime = DateTimeOffset.MinValue;
 
-        // Remove data end time field in Definition to generate job identifier,
+        // Remove job version field and data end time field in Definition to generate job identifier,
         // as the data end time is related to the trigger created time, and may be different if there are two instances try to create a new trigger simultaneously
         public override string JobIdentifier()
         {
             string result = (TryParseAsFhirToDataLakeOrchestratorJobInputData() ??
-                             TryParseAsFhirToDataLakeProcessingJobInputData()) ?? Definition.ComputeHash();
+                             TryParseAsFhirToDataLakeProcessingJobInputData()) ?? Definition;
 
             return result.ComputeHash();
         }
@@ -37,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                         inputData.DataEndTime = _fakeDataEndTime;
                     }
 
-                    return JsonConvert.SerializeObject(inputData);
+                    return RemoveJobVersionFromInput(inputData);
                 }
             }
             catch (Exception)
@@ -61,7 +62,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                         inputData.DataEndTime = _fakeDataEndTime;
                     }
 
-                    return JsonConvert.SerializeObject(inputData);
+                    return RemoveJobVersionFromInput(inputData);
                 }
             }
             catch (Exception)
@@ -70,6 +71,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
             }
 
             return null;
+        }
+
+        private static string RemoveJobVersionFromInput(object inputData)
+        {
+            var jobject = JObject.FromObject(inputData);
+            jobject[JobVersionManager.JobVersionKey].Parent.Remove();
+
+            return jobject.ToString();
         }
     }
 }

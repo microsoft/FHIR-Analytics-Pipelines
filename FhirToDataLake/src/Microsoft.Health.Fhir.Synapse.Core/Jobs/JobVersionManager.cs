@@ -10,5 +10,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public const SupportedJobVersion CurrentJobVersion = SupportedJobVersion.V2;
 
         public const SupportedJobVersion DefaultJobVersion = SupportedJobVersion.V1;
+
+        public const string JobVersionKey = "JobVersion";
     }
 }
