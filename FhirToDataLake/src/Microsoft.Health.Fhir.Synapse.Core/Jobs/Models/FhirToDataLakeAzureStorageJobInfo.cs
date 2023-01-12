@@ -38,7 +38,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                         inputData.DataEndTime = _fakeDataEndTime;
                     }
 
-                    return RemoveJobVersionFromInput(inputData);
+                    return GetIdentifierText(inputData);
                 }
             }
             catch (Exception)
@@ -62,7 +62,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                         inputData.DataEndTime = _fakeDataEndTime;
                     }
 
-                    return RemoveJobVersionFromInput(inputData);
+                    return GetIdentifierText(inputData);
                 }
             }
             catch (Exception)
@@ -73,8 +73,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
             return null;
         }
 
-        private static string RemoveJobVersionFromInput(object inputData)
+        private static string GetIdentifierText(object inputData)
         {
+            // the job version is added in input data to handle possible version compatibility issues when the version is updated. It is not related to the job definition, so we need to remove the job version property when calculate job identifier.
             var jobject = JObject.FromObject(inputData);
             jobject[JobVersionManager.JobVersionKey].Parent.Remove();
 

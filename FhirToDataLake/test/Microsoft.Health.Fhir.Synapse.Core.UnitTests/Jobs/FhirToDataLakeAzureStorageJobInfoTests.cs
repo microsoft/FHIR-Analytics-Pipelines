@@ -164,7 +164,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         [Fact]
         public void
-            GivenJobVersionV1JobDefinition_WhenGetJobIdentifier_ThenTheJobVersionShouldBeRemoved()
+       GivenJobVersionV1JobDefinition_WhenGetJobIdentifier_ThenTheJobVersionShouldBeRemoved()
         {
             var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
             {
@@ -190,9 +190,35 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             var jobject = JObject.FromObject(orchestratorDefinition);
+
+            Assert.NotEqual(jobject.ToString().ComputeHash(), jobInfo.JobIdentifier());
+
             jobject[JobVersionManager.JobVersionKey].Parent.Remove();
 
             Assert.Equal(jobject.ToString().ComputeHash(), jobInfo.JobIdentifier());
+        }
+
+        [Fact]
+        public void GivenJobInfoWithoutJobVersion_WhenParseStringToInputData_ThenTheDefaultJobVersionIsAssigned()
+        {
+            var inputData = new FhirToDataLakeOrchestratorJobInputData
+            {
+                JobType = JobType.Orchestrator,
+                TriggerSequenceId = 1,
+                Since = DateTimeOffset.MinValue,
+                DataStartTime = DateTimeOffset.MinValue,
+                DataEndTime = DateTimeOffset.UtcNow,
+            };
+
+            var jobject = JObject.FromObject(inputData);
+
+            jobject[JobVersionManager.JobVersionKey].Parent.Remove();
+
+            string inputDataString = JsonConvert.SerializeObject(jobject);
+
+            var deserializedInputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(inputDataString);
+
+            Assert.Equal(JobVersionManager.DefaultJobVersion, deserializedInputData.JobVersion);
         }
     }
 }
