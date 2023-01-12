@@ -49,6 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage
         /// </summary>
         public SupportedJobVersion JobVersion { get; set; } = JobVersionManager.DefaultJobVersion;
 
+        /// <summary>
         /// The start offset in DICOM Server changefeed
         /// </summary>
         public long StartOffset { get; set; }
