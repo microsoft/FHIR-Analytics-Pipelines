@@ -83,7 +83,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var blobClient = new InMemoryBlobContainerClient();
 
             DicomToDataLakeOrchestratorJobInputData inputData = GetInputData();
-            MockQueueClient queueClient = GetQueueClient();
+            var queueClient = GetQueueClient();
             List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(
                 (byte)QueueType.DicomToDataLake,
                 new[] { JsonConvert.SerializeObject(inputData) },
@@ -201,9 +201,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return result;
         }
 
-        private static MockQueueClient GetQueueClient()
+        private static MockQueueClient<DicomToDataLakeAzureStorageJobInfo> GetQueueClient()
         {
-            var queueClient = new MockQueueClient
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>
             {
                 GetJobByIdFunc = (queueClient, id,  _) =>
                 {

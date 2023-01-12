@@ -192,7 +192,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var jobject = JObject.FromObject(orchestratorDefinition);
             jobject[JobVersionManager.JobVersionKey].Parent.Remove();
 
-            Assert.Equal(jobject.ToString().ComputeHash(),jobInfo.JobIdentifier());
+            Assert.Equal(jobject.ToString().ComputeHash(), jobInfo.JobIdentifier());
         }
     }
 }
