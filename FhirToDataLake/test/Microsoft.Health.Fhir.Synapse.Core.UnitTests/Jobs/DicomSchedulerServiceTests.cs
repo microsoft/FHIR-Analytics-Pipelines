@@ -72,13 +72,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 () => new DicomSchedulerService(null, new MockMetadataStore(), GetMockDicomDataClient(string.Empty), Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new DicomSchedulerService(new MockQueueClient(), null, GetMockDicomDataClient(string.Empty), Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
+                () => new DicomSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), null, GetMockDicomDataClient(string.Empty), Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new DicomSchedulerService(new MockQueueClient(), new MockMetadataStore(), null, Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
+                () => new DicomSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), null, Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new DicomSchedulerService(new MockQueueClient(), new MockMetadataStore(), GetMockDicomDataClient(string.Empty), null, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
+                () => new DicomSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), GetMockDicomDataClient(string.Empty), null, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
         }
 
         [Theory]
@@ -95,21 +95,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             Assert.Throws<CrontabException>(
-                () => new DicomSchedulerService(new MockQueueClient(), new MockMetadataStore(), GetMockDicomDataClient(string.Empty), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
+                () => new DicomSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), GetMockDicomDataClient(string.Empty), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
         }
 
         [Fact]
         public void GivenNullSchedulerCronExpression_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new DicomSchedulerService(new MockQueueClient(), new MockMetadataStore(), GetMockDicomDataClient(string.Empty), Options.Create(new JobConfiguration()), MetricsLogger,  DiagnosticLogger, _nullDicomSchedulerServiceLogger));
+                () => new DicomSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), GetMockDicomDataClient(string.Empty), Options.Create(new JobConfiguration()), MetricsLogger,  DiagnosticLogger, _nullDicomSchedulerServiceLogger));
         }
 
         // Check Storage
         [Fact]
         public async Task GivenUninitializedStorage_WhenRunAsync_WaitUntilStorageInitialized()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
                 new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
@@ -165,7 +165,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenBrokenMetadataStoreThrowExceptionWhenGetTriggerLeaseEntity_WhenTryAcquireLeaseAsync_ThenNoExceptionShouldBeThrown()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var brokenMetadataStore = new MockMetadataStore
             {
                 GetTriggerLeaseEntityFunc = (_, _, _) => throw new Exception("fake exception in get trigger lease entity"),
@@ -195,7 +195,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenBrokenMetadataStoreReturnNullWhenGetTriggerLeaseEntity_WhenTryAcquireLeaseAsync_ThenNoExceptionShouldBeThrown()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var brokenMetadataStore = new MockMetadataStore
             {
                 GetTriggerLeaseEntityFunc = (_, _, _) => null,
@@ -227,7 +227,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenNoTriggerLeaseEntityInTable_WhenTryAcquireLeaseAsync_ThenShouldCreateANewOne()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
@@ -258,7 +258,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenLeaseNotTimeout_WhenTryAcquireLeaseAsync_ThenShouldNotAcquireLease()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var oldGuid = Guid.NewGuid();
             var triggerLeaseEntity = new TriggerLeaseEntity
             {
@@ -295,7 +295,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenLeaseTimeout_WhenTryAcquireLeaseAsync_ThenShouldAcquireLease()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var oldGuid = Guid.NewGuid();
             var triggerLeaseEntity = new TriggerLeaseEntity
             {
@@ -333,7 +333,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GiveTwoSchedulerService_WhenTryAcquireLeaseAsync_ThenOnlyOneWillAcquireLease()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             // initialize two scheduler services
@@ -384,7 +384,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCrashSchedulerService_WhenRunAsync_ThenTheLeaseShouldBeAcquiredByOtherSchedulerService()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             // initialize two scheduler services
@@ -444,7 +444,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenTwoSchedulerServiceAndLeaseTimeout_WhenTryAcquireLeaseAsync_ThenOnlyOneWillAcquireLease()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var oldGuid = Guid.NewGuid();
             var triggerLeaseEntity = new TriggerLeaseEntity
             {
@@ -494,7 +494,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenLongRunningSchedulerService_WhenRunAsync_ThenTheLeaseShouldBeRenewed()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
@@ -527,7 +527,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenLeaseLost_WhenRenewLease_ThenShouldFailToRenewLease()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
@@ -577,7 +577,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenEmptyDicomServer_WhenRunAsync_ThenShouldNotCreateTriggerEntity()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
@@ -612,7 +612,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenNewJob_WhenRunAsync_ThenTheInitialTriggerEntityShouldBeCreatedAndEnqueueOrchestratorJob()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
@@ -646,7 +646,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenEnqueueFailure_WhenRunAsync_ThenTheTriggerShouldBeRetried()
         {
-            var brokenQueueClient = new MockQueueClient();
+            var brokenQueueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
 
             void FaultAction() => throw new RequestFailedException("fake request failed exception");
 
@@ -678,7 +678,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             tokenSource1.Cancel();
             await task1;
 
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var schedulerService2 =
                 new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
             {
@@ -707,7 +707,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
 
             var initialTriggerEntity = new CurrentTriggerEntity
             {
@@ -770,7 +770,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCompletedTrigger_WhenRunAsync_ThenShouldCreateAndEnqueueTheNextTrigger()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
 
             var triggerEntity = new CurrentTriggerEntity
             {
@@ -819,7 +819,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenNoNewData_WhenCreateNextTrigger_ThenShouldNotCreateNextTrigger()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
@@ -884,7 +884,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenRunningTrigger_WhenReRunAsync_ThenTheTriggerShouldBePickedUp()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
@@ -966,7 +966,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenFailedTrigger_WhenReRunAsync_ThenTheTriggerShouldKeepFailure()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
@@ -1036,7 +1036,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCancelledTrigger_WhenReRunAsync_ThenTheTriggerShouldKeepFailure()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
@@ -1107,7 +1107,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCancelRequest_WhenStartToRun_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
                     new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
@@ -1135,7 +1135,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCancelRequest_WhenCheckStorageInitialization_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             queueClient.Initialized = false;
             var schedulerService =
@@ -1165,7 +1165,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCancelRequest_WhenTryAcquireLease_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
 
             // the lease is acquired by another instance
             var otherGuid = Guid.NewGuid();
@@ -1212,7 +1212,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenCancelRequest_WhenRunAsync_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
                 new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
@@ -1262,7 +1262,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenValidTrigger_WhenRunAsync_ThenTheTriggerShouldBeProcessed()
         {
-            var queueClient = new MockQueueClient();
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 

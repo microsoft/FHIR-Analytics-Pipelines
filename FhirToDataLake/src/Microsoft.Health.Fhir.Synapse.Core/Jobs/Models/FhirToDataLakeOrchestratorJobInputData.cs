@@ -15,6 +15,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         public JobType JobType { get; set; }
 
         /// <summary>
+        /// Job version, used for version update
+        /// </summary>
+        public SupportedJobVersion JobVersion { get; set; } = JobVersionManager.DefaultJobVersion;
+
+        /// <summary>
         /// Trigger sequence id.
         /// </summary>
         public long TriggerSequenceId { get; set; }

@@ -8,13 +8,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Microsoft.Health.JobManagement;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
-    public class MockQueueClient : IQueueClient
+    public class MockQueueClient<TJobInfo> : IQueueClient
+        where TJobInfo : AzureStorageJobInfo, new()
     {
-        private List<JobInfo> _jobInfos = new List<JobInfo>();
+        private List<TJobInfo> _jobInfos = new List<TJobInfo>();
         private long _largestId = 1;
 
         public Action EnqueueFaultAction { get; set; }
@@ -25,15 +27,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         public Action CompleteFaultAction { get; set; }
 
-        public Func<MockQueueClient, long, CancellationToken, JobInfo> GetJobByIdFunc { get; set; }
+        public Func<MockQueueClient<TJobInfo>, long, CancellationToken, JobInfo> GetJobByIdFunc { get; set; }
 
-        public List<JobInfo> JobInfos => _jobInfos;
+        public List<TJobInfo> JobInfos => _jobInfos;
 
         public bool Initialized { get; set; } = true;
 
         public Task CancelJobByGroupIdAsync(byte queueType, long groupId, CancellationToken cancellationToken)
         {
-            foreach (JobInfo jobInfo in _jobInfos.Where(t => t.GroupId == groupId))
+            foreach (TJobInfo jobInfo in _jobInfos.Where(t => t.GroupId == groupId))
             {
                 if (jobInfo.Status == JobStatus.Created)
                 {
@@ -99,25 +101,26 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             EnqueueFaultAction?.Invoke();
 
-            List<JobInfo> result = new List<JobInfo>();
+            List<TJobInfo> result = new List<TJobInfo>();
 
             long gId = groupId ?? _largestId++;
             foreach (string definition in definitions)
             {
-                if (_jobInfos.Any(t => t.Definition.Equals(definition)))
-                {
-                    result.Add(_jobInfos.First(t => t.Definition.Equals(definition)));
-                    continue;
-                }
-
-                result.Add(new JobInfo
+                var newJob = new TJobInfo
                 {
                     Definition = definition,
                     Id = _largestId,
                     GroupId = gId,
                     Status = JobStatus.Created,
                     HeartbeatDateTime = DateTime.Now,
-                });
+                };
+                if (_jobInfos.Any(t => t.JobIdentifier().Equals(newJob.JobIdentifier())))
+                {
+                    result.Add(_jobInfos.First(t => t.Definition.Equals(definition)));
+                    continue;
+                }
+
+                result.Add(newJob);
                 _largestId++;
             }
 
