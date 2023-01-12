@@ -68,6 +68,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
         public FhirToDataLakeE2ETests(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
+
             string storageUri = Environment.GetEnvironmentVariable("dataLakeStore:storageUrl");
             if (!string.IsNullOrWhiteSpace(storageUri))
             {

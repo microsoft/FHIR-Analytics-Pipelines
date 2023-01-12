@@ -5,22 +5,17 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationResolvers
 {
-    public class ConfigurationResolverV1 : BaseConfigurationResolver
+    public class ConfigurationResolverV2 : BaseConfigurationResolver
     {
         public static void Resolve(
             IServiceCollection services,
             IConfiguration configuration)
         {
-            // Find FhirServerConfiguration instead and create a DataSourceConfiguration from it for backward compatibility.
             services.Configure<DataSourceConfiguration>(options =>
-            {
-                options.Type = DataSourceType.FHIR;
-                configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options.FhirServer);
-            });
+                configuration.GetSection(ConfigurationConstants.DataSourceConfigurationKey).Bind(options));
 
             BaseResolve(services, configuration);
         }

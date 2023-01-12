@@ -12,7 +12,7 @@ using NCrontab;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValidators
 {
-    public static class ConfigurationValidatorV1
+    public static class ConfigurationValidator
     {
         /// <summary>
         /// Validate configuration in service collection.
@@ -20,6 +20,16 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
         /// <param name="services">Service collection instance.</param>
         /// <exception cref="ConfigurationErrorException">Throw ConfigurationErrorException if configuration is invalid.</exception>
         public static void Validate(IServiceCollection services)
+        {
+            ValidateDataSourceConfig(services);
+            ValidateJobConfig(services);
+            ValidateFilterConfig(services);
+            ValidateDataLakeStoreConfig(services);
+            ValidateSchemaConfig(services);
+            ValidateHealthCheckConfig(services);
+        }
+
+        private static void ValidateDataSourceConfig(IServiceCollection services)
         {
             DataSourceConfiguration dataSourceConfiguration;
             try
@@ -69,7 +79,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
                 default:
                     throw new ConfigurationErrorException($"Data source type {dataSourceConfiguration.Type} is not supported");
             }
+        }
 
+        private static void ValidateJobConfig(IServiceCollection services)
+        {
             JobConfiguration jobConfiguration;
             try
             {
@@ -129,7 +142,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
             {
                 throw new ConfigurationErrorException("The scheduler crontab expression is invalid.");
             }
+        }
 
+        private static void ValidateFilterConfig(IServiceCollection services)
+        {
             FilterLocation filterLocation;
             try
             {
@@ -169,7 +185,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
 
                 ValidateUtility.ValidateFilterConfiguration(filterConfiguration);
             }
+        }
 
+        private static void ValidateDataLakeStoreConfig(IServiceCollection services)
+        {
             DataLakeStoreConfiguration storeConfiguration = services
                 .BuildServiceProvider()
                 .GetRequiredService<IOptions<DataLakeStoreConfiguration>>()
@@ -179,7 +198,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
             {
                 throw new ConfigurationErrorException("Target azure storage url can not be empty.");
             }
+        }
 
+        private static void ValidateSchemaConfig(IServiceCollection services)
+        {
             SchemaConfiguration schemaConfiguration;
             try
             {
@@ -211,7 +233,10 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationValid
                     throw new ConfigurationErrorException("Found the schema image reference but customized schema is disable.");
                 }
             }
+        }
 
+        private static void ValidateHealthCheckConfig(IServiceCollection services)
+        {
             HealthCheckConfiguration healthCheckConfiguration;
             try
             {
