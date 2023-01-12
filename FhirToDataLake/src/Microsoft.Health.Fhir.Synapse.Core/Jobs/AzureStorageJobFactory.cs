@@ -109,24 +109,30 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
-                    FhirToDataLakeOrchestratorJobResult currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
+                    bool isSupported = Enum.IsDefined(typeof(SupportedJobVersion), inputData.JobVersion);
+
+                    // return null if the job version is unsupported
+                    if (isSupported)
+                    {
+                        FhirToDataLakeOrchestratorJobResult currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
                         ? new FhirToDataLakeOrchestratorJobResult()
                         : JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
 
-                    return new FhirToDataLakeOrchestratorJob(
-                        jobInfo,
-                        inputData,
-                        currentResult,
-                        _dataClient,
-                        _dataWriter,
-                        _queueClient,
-                        _groupMemberExtractor,
-                        _filterManager,
-                        _metadataStore,
-                        _maxJobCountInRunningPool,
-                        _metricsLogger,
-                        _diagnosticLogger,
-                        _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>());
+                        return new FhirToDataLakeOrchestratorJob(
+                            jobInfo,
+                            inputData,
+                            currentResult,
+                            _dataClient,
+                            _dataWriter,
+                            _queueClient,
+                            _groupMemberExtractor,
+                            _filterManager,
+                            _metadataStore,
+                            _maxJobCountInRunningPool,
+                            _metricsLogger,
+                            _diagnosticLogger,
+                            _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>());
+                    }
                 }
             }
             catch (Exception e)
@@ -146,7 +152,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Processing })
                 {
-                    return new FhirToDataLakeProcessingJob(
+                    bool isSupported = Enum.IsDefined(typeof(SupportedJobVersion), inputData.JobVersion);
+
+                    // return null if the job version is unsupported
+                    if (isSupported)
+                    {
+                        return new FhirToDataLakeProcessingJob(
                         jobInfo.Id,
                         inputData,
                         _dataClient,
@@ -158,6 +169,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _metricsLogger,
                         _diagnosticLogger,
                         _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>());
+                    }
                 }
             }
             catch (Exception e)

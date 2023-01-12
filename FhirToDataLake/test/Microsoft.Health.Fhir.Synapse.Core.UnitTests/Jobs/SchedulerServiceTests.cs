@@ -725,8 +725,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await task2;
         }
 
-        [Fact]
-        public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned()
+        [Theory]
+        [InlineData(SupportedJobVersion.V1)]
+        [InlineData(SupportedJobVersion.V2)]
+        public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned(SupportedJobVersion jobVersion)
         {
             var queueClient = new MockQueueClient();
 
@@ -738,6 +740,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TriggerEndTime = DateTime.UtcNow,
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 0,
+                JobVersion = jobVersion,
             };
 
             var metadataStore = new MockMetadataStore();
@@ -749,6 +752,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var orchestratorDefinition1 = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
+                JobVersion = initialTriggerEntity.JobVersion,
                 DataStartTime = initialTriggerEntity.TriggerStartTime,
                 DataEndTime = initialTriggerEntity.TriggerEndTime,
             };
@@ -788,6 +792,60 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await task;
         }
 
+        [Fact]
+        public async Task GivenACompletedJob_WhenUpdateVersion_ThenTheVersionOfNextJobIsUpdated()
+        {
+            var queueClient = new MockQueueClient();
+
+            // trigger entity with old job version
+            var triggerEntity = new CurrentTriggerEntity
+            {
+                PartitionKey = TableKeyProvider.TriggerPartitionKey((byte)QueueType.FhirToDataLake),
+                RowKey = TableKeyProvider.TriggerPartitionKey((byte)QueueType.FhirToDataLake),
+                TriggerStartTime = DateTime.UtcNow.AddMinutes(-10),
+                TriggerEndTime = DateTime.UtcNow.AddMinutes(-5),
+                TriggerStatus = TriggerStatus.Completed,
+                TriggerSequenceId = 11,
+            };
+
+            var metadataStore = new MockMetadataStore();
+
+            // add the trigger entity to table
+            await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
+
+            var schedulerService =
+                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                {
+                    SchedulerServicePullingIntervalInSeconds = 0,
+                    SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
+                    SchedulerServiceLeaseExpirationInSeconds = 2,
+                };
+
+            // service is running
+            using var tokenSource = new CancellationTokenSource();
+            Task task = schedulerService.RunAsync(tokenSource.Token);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100), CancellationToken.None);
+
+            CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
+
+            Assert.Equal(triggerEntity.TriggerSequenceId + 1, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
+
+            // The job version is updated
+            Assert.Equal(JobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
+            Assert.Equal(JobVersionManager.CurrentJobVersion, currentTriggerEntity.JobVersion);
+
+            JobInfo jobInfo = await queueClient.GetJobByIdAsync((byte)QueueType.FhirToDataLake, currentTriggerEntity.OrchestratorJobId, true, CancellationToken.None);
+
+            var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
+
+            Assert.Equal(JobVersionManager.CurrentJobVersion, inputData.JobVersion);
+
+            tokenSource.Cancel();
+            await task;
+        }
+
         // Complete Trigger
         [Fact]
         public async Task GivenCompletedTrigger_WhenRunAsync_ThenShouldCreateAndEnqueueTheNextTrigger()
@@ -802,6 +860,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TriggerEndTime = DateTime.UtcNow.AddMinutes(-5),
                 TriggerStatus = TriggerStatus.Completed,
                 TriggerSequenceId = 11,
+                JobVersion = JobVersionManager.CurrentJobVersion,
             };
 
             DateTimeOffset lastTriggerEndTime = triggerEntity.TriggerEndTime;
@@ -858,6 +917,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TriggerEndTime = endTime,
                 TriggerStatus = TriggerStatus.Completed,
                 TriggerSequenceId = 11,
+                JobVersion = JobVersionManager.CurrentJobVersion,
             };
 
             var metadataStore = new MockMetadataStore();

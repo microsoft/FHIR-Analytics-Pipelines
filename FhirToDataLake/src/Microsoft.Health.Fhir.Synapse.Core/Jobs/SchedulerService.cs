@@ -331,6 +331,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
+                JobVersion = currentTriggerEntity.JobVersion,
                 TriggerSequenceId = currentTriggerEntity.TriggerSequenceId,
                 Since = _startTime,
                 DataStartTime = currentTriggerEntity.TriggerStartTime,
@@ -421,6 +422,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 currentTriggerEntity.TriggerStartTime = nextTriggerStartTime;
                 currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerEndTime;
+                currentTriggerEntity.JobVersion = JobVersionManager.CurrentJobVersion;
 
                 bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
                 _logger.LogInformation(isSucceeded
@@ -446,6 +448,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 TriggerEndTime = (DateTimeOffset)GetNextTriggerEndTime(null),
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 0,
+                JobVersion = JobVersionManager.CurrentJobVersion,
             };
 
             // add the initial trigger entity to table

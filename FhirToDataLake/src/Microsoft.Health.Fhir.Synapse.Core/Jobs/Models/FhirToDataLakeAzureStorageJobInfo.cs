@@ -31,7 +31,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(Definition);
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
-                    inputData.DataEndTime = _fakeDataEndTime;
+                    // the data end time is removed when calculate JobIdentifier since job version v2
+                    if (inputData.JobVersion > SupportedJobVersion.V1)
+                    {
+                        inputData.DataEndTime = _fakeDataEndTime;
+                    }
+
                     return JsonConvert.SerializeObject(inputData);
                 }
             }
@@ -50,7 +55,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(Definition);
                 if (inputData is { JobType: JobType.Processing })
                 {
-                    inputData.DataEndTime = _fakeDataEndTime;
+                    // the data end time is removed when calculate JobIdentifier since job version v2
+                    if (inputData.JobVersion > SupportedJobVersion.V1)
+                    {
+                        inputData.DataEndTime = _fakeDataEndTime;
+                    }
+
                     return JsonConvert.SerializeObject(inputData);
                 }
             }
