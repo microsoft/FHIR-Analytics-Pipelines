@@ -127,7 +127,7 @@ namespace Microsoft.Health.Fhir.Synapse.E2ETests
                 CheckJobStatus(jobInfo, "Dicom_All.json");
 
                 // Check result files
-                Assert.Equal(13, await GetResultFileCount(_blobContainerClient, "result/Dicom"));
+                Assert.Equal(3, await GetResultFileCount(_blobContainerClient, "result/Dicom"));
             }
             finally
             {

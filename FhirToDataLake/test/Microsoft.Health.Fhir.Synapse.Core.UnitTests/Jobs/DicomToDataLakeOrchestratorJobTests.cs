@@ -32,13 +32,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
         private const string TestBlobEndpoint = "UseDevelopmentStorage=true";
         private const long TBValue = 1024L * 1024L * 1024L * 1024L;
+        private static readonly long JobChangeFeedLimit = JobConfigurationConstants.DicomJobChangeFeedLimit;
+        private static readonly long SearchChangeFeedLimit = JobConfigurationConstants.DicomSearchChangeFeedLimit;
         private static readonly long TestStartOffset = 0;
-        private static readonly long TestEndOffset = 1010;
+        private static readonly long TestEndOffset = (JobChangeFeedLimit * 10) + 10;
 
         [Fact]
         public async Task GivenANewOrchestratorJob_WhenProcessingInputFilesMoreThanConcurrentCount_ThenJobShouldBeCompleted()
         {
-            // offset from 0 to 1010, every 100 changefeeds one job, so there are 11 jobs.
+            // offset from 0 to {TestEndOffset}, every {JobChangeFeedLimit} changefeeds one job, so there are {TestEndOffset/JobChangeFeedLimit} jobs.
             await VerifyCommonOrchestratorJobAsync(11, 2);
         }
 
@@ -107,8 +109,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                             JobType = JobType.Processing,
                             ProcessingJobSequenceId = i,
                             TriggerSequenceId = inputData.TriggerSequenceId,
-                            StartOffset = TestStartOffset + (i * 100),
-                            EndOffset = TestStartOffset + ((i + 1) * 100),
+                            StartOffset = TestStartOffset + (i * JobChangeFeedLimit),
+                            EndOffset = TestStartOffset + ((i + 1) * JobChangeFeedLimit),
                         };
 
                         JobInfo jobInfo = (await queueClient.EnqueueAsync(0, new[] { JsonConvert.SerializeObject(processingInput) }, 1, false, false, CancellationToken.None)).First();
@@ -138,7 +140,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                         }
 
                         orchestratorJobResult.CreatedJobCount += 1;
-                        orchestratorJobResult.NextOffset = (i + 1) * 100;
+                        orchestratorJobResult.NextOffset = (i + 1) * JobChangeFeedLimit;
                     }
                 }
             }
@@ -147,11 +149,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 if (i < completedCount)
                 {
-                    await CreateBlobForProcessingJob(orchestratorJobInfo.Id + i + 1, (i + 1) * 100, true, blobClient);
+                    await CreateBlobForProcessingJob(orchestratorJobInfo.Id + i + 1, (i + 1) * SearchChangeFeedLimit, true, blobClient);
                 }
                 else
                 {
-                    await CreateBlobForProcessingJob(orchestratorJobInfo.Id + i + 1, (i + 1) * 100, false, blobClient);
+                    await CreateBlobForProcessingJob(orchestratorJobInfo.Id + i + 1, (i + 1) * SearchChangeFeedLimit, false, blobClient);
                 }
             }
 

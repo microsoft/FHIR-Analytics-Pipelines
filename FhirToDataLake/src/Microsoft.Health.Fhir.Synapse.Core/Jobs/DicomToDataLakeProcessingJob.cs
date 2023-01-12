@@ -18,6 +18,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Data;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Dicom;
+using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
@@ -83,6 +84,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _jsonSerializerSettings = new JsonSerializerSettings { DateParseHandling = DateParseHandling.None };
         }
 
+        public int SearchChangeFeedLimit { get; set; } = JobConfigurationConstants.DicomSearchChangeFeedLimit;
+
         // the processing job status is never set to failed or cancelled.
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
@@ -106,11 +109,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // Initialize
                 _cacheResult = new CacheResult();
-                if (!_cacheResult.Resources.ContainsKey(DicomConstants.DicomResourceType))
-                {
-                    _cacheResult.Resources[DicomConstants.DicomResourceType] = new List<JObject>();
-                }
-
                 _outputFileIndexMap = new Dictionary<string, int>();
 
                 // Search metadata
@@ -174,21 +172,40 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             IProgress<string> progress,
             CancellationToken cancellationToken)
         {
-            var limit = _inputData.EndOffset - _inputData.StartOffset;
-
-            if (limit > 0)
+            long startOffset = _inputData.StartOffset;
+            while (startOffset + SearchChangeFeedLimit <= _inputData.EndOffset)
             {
                 // Get metadata objects from change feeds
-                SearchResult metadataObjectsResult = await GetMetadataObjectsAsync(limit, cancellationToken);
+                SearchResult metadataObjectsResult = await GetMetadataObjectsAsync(startOffset, SearchChangeFeedLimit, cancellationToken);
 
-                foreach (JObject metadataObject in metadataObjectsResult.Resources)
-                {
-                    _cacheResult.Resources[DicomConstants.DicomResourceType].Add(metadataObject);
-                }
-
+                AddDicomMetadataToCache(metadataObjectsResult.Resources);
                 _cacheResult.CacheSize += metadataObjectsResult.ResultSizeInBytes;
+
                 await TryCommitResultAsync(progress, false, cancellationToken);
+                startOffset += SearchChangeFeedLimit;
             }
+
+            if (startOffset < _inputData.EndOffset)
+            {
+                // Get metadata objects from change feeds
+                SearchResult metadataObjectsResult = await GetMetadataObjectsAsync(startOffset, _inputData.EndOffset - startOffset, cancellationToken);
+
+                AddDicomMetadataToCache(metadataObjectsResult.Resources);
+                _cacheResult.CacheSize += metadataObjectsResult.ResultSizeInBytes;
+            }
+        }
+
+        /// <summary>
+        /// Add the DICOM metadata list extracted from a request to memory cache.
+        /// </summary>
+        private void AddDicomMetadataToCache(List<JObject> dicomMetadataList)
+        {
+            if (!_cacheResult.Resources.ContainsKey(DicomConstants.DicomResourceType))
+            {
+                _cacheResult.Resources[DicomConstants.DicomResourceType] = new List<JObject>();
+            }
+
+            _cacheResult.Resources[DicomConstants.DicomResourceType].AddRange(dicomMetadataList);
         }
 
         /// <summary>
@@ -272,11 +289,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
         }
 
-        private async Task<SearchResult> GetMetadataObjectsAsync(long limit, CancellationToken cancellationToken)
+        private async Task<SearchResult> GetMetadataObjectsAsync(long startOffset, long limit, CancellationToken cancellationToken)
         {
             var queryParameters = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>(DicomApiConstants.OffsetKey, $"{_inputData.StartOffset}"),
+                    new KeyValuePair<string, string>(DicomApiConstants.OffsetKey, $"{startOffset}"),
                     new KeyValuePair<string, string>(DicomApiConstants.LimitKey, $"{limit}"),
                     new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, $"{true}"),
                 };
