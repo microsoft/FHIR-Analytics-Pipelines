@@ -205,10 +205,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _cacheResult.Resources[DicomConstants.DicomResourceType] = new List<JObject>();
             }
 
-            foreach (JObject metadata in dicomMetadataList)
-            {
-                _cacheResult.Resources[DicomConstants.DicomResourceType].Add(metadata);
-            }
+            _cacheResult.Resources[DicomConstants.DicomResourceType].AddRange(dicomMetadataList);
         }
 
         /// <summary>
