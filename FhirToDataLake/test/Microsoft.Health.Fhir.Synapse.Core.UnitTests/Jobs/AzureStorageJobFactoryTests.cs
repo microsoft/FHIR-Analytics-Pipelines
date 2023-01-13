@@ -42,11 +42,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var jobFactory = new AzureStorageJobFactory(
                 queueClient,
-                Substitute.For<IApiDataClient>(),
-                Substitute.For<IDataWriter>(),
+                Substitute.For<IFhirDataClient>(),
+                Substitute.For<IFhirDataWriter>(),
                 Substitute.For<IGroupMemberExtractor>(),
                 Substitute.For<IColumnDataProcessor>(),
-                Substitute.For<ISchemaManager<ParquetSchemaNode>>(),
+                Substitute.For<IFhirSchemaManager<FhirParquetSchemaNode>>(),
                 Substitute.For<IFilterManager>(),
                 Substitute.For<IMetadataStore>(),
                 Options.Create(new JobConfiguration()),
