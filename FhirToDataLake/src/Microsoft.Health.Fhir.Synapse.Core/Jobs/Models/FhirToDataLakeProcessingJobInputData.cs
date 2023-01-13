@@ -32,17 +32,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         public DateTimeOffset? Since { get; set; }
 
         /// <summary>
-        /// Resourc type and time range specified in job configuration.
+        /// Resource type and time range parameters for system scope.
+        /// Parameters will be null for group scope.
         /// </summary>
         public Dictionary<string, TimeRange> Parameters { get; set; } = new Dictionary<string, TimeRange>() { };
 
         /// <summary>
-        /// Start time, process all data if not specified,
+        /// Start time, process all data if not specified. Used for group scope.
         /// </summary>
         public DateTimeOffset? DataStartTime { get; set; }
 
         /// <summary>
-        /// End time
+        /// End time. Used for group scope.
         /// </summary>
         public DateTimeOffset DataEndTime { get; set; }
 

@@ -35,6 +35,7 @@ using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SemVer;
 using TypeFilter = Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch.TypeFilter;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
@@ -135,7 +136,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     string[] jobDefinitions = { JsonConvert.SerializeObject(input) };
 
-                    _result.SubmitingProcessingJob = jobDefinitions;
+                    _result.SubmittingProcessingJob = jobDefinitions;
                     _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
                     _jobStatus = await UpdateJobStatusAsync(_jobStatus, cancellationToken);
 
@@ -147,7 +148,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         false,
                         cancellationToken);
                     long newJobId = jobInfos.First().Id;
-
                     _result.CreatedJobCount++;
                     _result.RunningJobIds.Add(newJobId);
 
@@ -156,7 +156,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         _result.NextJobTimestamp[item.Key] = item.Value.DataEndTime;
                     }
 
-                    _result.SubmitingProcessingJob = null;
+                    _result.SubmittingProcessingJob = null;
                     progress.Report(JsonConvert.SerializeObject(_result));
 
                     _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
@@ -246,9 +246,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     StatisticResult = JsonConvert.SerializeObject(new FhirToDataLakeOrchestratorJobResult()),
                 };
 
-                if (!await _metadataStore.TryAddEntityAsync(newJobStatus, cancellationToken))
+                if (await _metadataStore.TryAddEntityAsync(newJobStatus, cancellationToken))
                 {
-                    throw new SynapsePipelineInternalException("Initilize job status failed");
+                    throw new SynapsePipelineInternalException("Initialize job status failed");
                 }
 
                 jobStatus = await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, cancellationToken);
@@ -270,9 +270,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            if (_result.SubmitingProcessingJob != null)
+            if (_result.SubmittingProcessingJob != null)
             {
-                yield return JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(_result.SubmitingProcessingJob.First());
+                yield return JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(_result.SubmittingProcessingJob.First());
             }
 
             List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
@@ -292,14 +292,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 if (totalCount == 0)
                 {
-                    // No resources found.
+                    // No resources found. Update status and skip.
                     _result.NextJobTimestamp[resourceType] = _inputData.DataEndTime;
                     continue;
                 }
                 else if (totalCount < LowBoundOfProcessingJobResourceCount)
                 {
                     // Small size job, put it into pool waiting for merge.
-                    _logger.LogInformation($"Splitting jobs. {resourceType} push one small job {DateTimeOffset.Now.ToInstantString()}");
+                    _logger.LogInformation($"Splitting jobs. Generated one small job for {resourceType} with {totalCount} count.");
 
                     var timeRange = new TimeRange()
                     {
@@ -307,10 +307,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         DataEndTime = _inputData.DataEndTime,
                     };
 
+                    // Push small job into pool and pop if merge succeed.
                     var jobParameters = PushToJobPool(resourceType, timeRange, totalCount);
                     if (jobParameters != null)
                     {
-                        _logger.LogInformation($"Splitting jobs. Merge {jobParameters.Count}jobs : {jobParameters.Keys}");
+                        // Succeed merge small jobs.
+                        _logger.LogInformation($"Splitting jobs. Merge {jobParameters.Count} small jobs : {jobParameters.Keys}");
                         yield return new FhirToDataLakeProcessingJobInputData
                         {
                             JobType = JobType.Processing,
@@ -446,11 +448,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (_mergeList.Count != 0)
             {
-                var result = new Dictionary<string, TimeRange>();
-                foreach (var item in _mergeList)
-                {
-                    result.Add(item.Item1, item.Item2);
-                }
+                var jobParameters = _mergeList.ToDictionary(x => x.Item1, x => x.Item2);
 
                 yield return new FhirToDataLakeProcessingJobInputData
                 {
@@ -458,7 +456,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,
-                    Parameters = result,
+                    Parameters = jobParameters,
                 };
             }
         }
@@ -577,12 +575,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             if (current + count > LowBoundOfProcessingJobResourceCount)
             {
                 // Pop all jobs if total resource count larger than low bound.
-                var result = new Dictionary<string, TimeRange>();
-                foreach (var item in _mergeList)
-                {
-                    result.Add(item.Item1, item.Item2);
-                }
-
+                var result = _mergeList.ToDictionary(x => x.Item1, x => x.Item2);
                 result.Add(resourceType, range);
                 _mergeList.Clear();
                 return result;

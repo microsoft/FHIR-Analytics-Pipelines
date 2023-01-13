@@ -28,7 +28,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// <summary>
         /// Processing jobs in the process of submitting, used for system scope
         /// </summary>
-        public string[] SubmitingProcessingJob { get; set; } = null;
+        public string[] SubmittingProcessingJob { get; set; } = null;
 
         /// <summary>
         /// Next job timestamp to be processed for each resource type, used for system scope

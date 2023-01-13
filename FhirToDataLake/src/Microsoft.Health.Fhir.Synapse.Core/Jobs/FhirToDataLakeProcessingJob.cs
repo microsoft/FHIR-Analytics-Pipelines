@@ -574,7 +574,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             }
 
                             // Upload to blob and log result
-                            string blobUrl = await _dataWriter.WriteAsync(parquetStream, _jobId, _outputFileIndexMap[schemaType], _inputData.Parameters[resourceType].DataEndTime, cancellationToken);
+                            var dateTime = _inputData.Parameters == null && _inputData.Parameters.ContainsKey(resourceType) ? _inputData.DataEndTime : _inputData.Parameters[resourceType].DataEndTime;
+                            string blobUrl = await _dataWriter.WriteAsync(parquetStream, _jobId, _outputFileIndexMap[schemaType], dateTime, cancellationToken);
                             _outputFileIndexMap[schemaType] += 1;
 
                             _result.ProcessedDataSizeInTotal += parquetStream.Value.Length;
