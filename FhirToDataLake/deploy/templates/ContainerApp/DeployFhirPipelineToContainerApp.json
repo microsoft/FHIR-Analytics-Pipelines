@@ -160,13 +160,21 @@
         "metadata": {
             "description": "Storage Account type"
         }
-    }
+    },
+    "environmentName": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 24,
+        "metadata": {
+            "description": "The name of the container instance that you wish to create."
+        }
+    },
   },
   "variables": {
     "pipelineContainerName": "fhir-to-datalake",
     "pipelineName": "[toLower(parameters('pipelineName'))]",
     "analyticsWorkspaceName": "[concat(variables('pipelineName'), '-LogAnalytics')]",
-    "environmentName": "[concat(variables('pipelineName'), '-Environment')]",
+    "environmentName": "[toLower(parameters('environmentName'))]]",
     "jobInfoQueueName": "[concat(variables('pipelineName'), 'jobinfoqueue')]",
     "jobInfoTableName": "[concat(variables('pipelineName'), 'jobinfotable')]",
     "metadataTableName": "[concat(variables('pipelineName'), 'metadatatable')]",
