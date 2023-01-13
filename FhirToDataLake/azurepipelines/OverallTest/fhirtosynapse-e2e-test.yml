@@ -47,6 +47,7 @@ steps:
           dataLakeStore__storageUrl='https://$(fhirToDatalakeStorageAccountName).blob.core.windows.net' `
           schema__enableCustomizedSchema=true `
           schema__schemaImageReference='$(customizedSchemaImageReference)' `
+          configVersion=1 `
           fhirServer__serverUrl='$(fhirServer:serverUrl)' `
           fhirServer__version=R4 `
           fhirServer__authentication=ManagedIdentity `
