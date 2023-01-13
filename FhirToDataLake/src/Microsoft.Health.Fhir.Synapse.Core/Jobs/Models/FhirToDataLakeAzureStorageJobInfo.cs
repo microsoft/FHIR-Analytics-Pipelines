@@ -79,7 +79,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
             var jobject = JObject.FromObject(inputData);
             jobject[JobVersionManager.JobVersionKey].Parent.Remove();
 
-            return jobject.ToString();
+            return jobject.ToString(Formatting.None);
         }
     }
 }
