@@ -25,6 +25,7 @@ variables:
 
 stages:
 - stage: Build
+  jobs:
   - job: BuildFhirToDataLake
     pool:
       vmImage: 'ubuntu-22.04'
