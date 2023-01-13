@@ -166,7 +166,7 @@
         "minLength": 3,
         "maxLength": 24,
         "metadata": {
-            "description": "The name of the container instance that you wish to create."
+            "description": "The name of the environment that you wish to create."
         }
     }
   },
@@ -174,7 +174,7 @@
     "pipelineContainerName": "fhir-to-datalake",
     "pipelineName": "[toLower(parameters('pipelineName'))]",
     "analyticsWorkspaceName": "[concat(variables('pipelineName'), '-LogAnalytics')]",
-    "environmentName": "[toLower(parameters('environmentName'))]]",
+    "environmentName": "[parameters('environmentName')]",
     "jobInfoQueueName": "[concat(variables('pipelineName'), 'jobinfoqueue')]",
     "jobInfoTableName": "[concat(variables('pipelineName'), 'jobinfotable')]",
     "metadataTableName": "[concat(variables('pipelineName'), 'metadatatable')]",
