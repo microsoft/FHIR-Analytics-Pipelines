@@ -47,6 +47,7 @@ steps:
           dataLakeStore__storageUrl='https://$(dicomToDatalakeStorageAccountName).blob.core.windows.net' `
           schema__enableCustomizedSchema=true `
           schema__schemaImageReference='$(dicomCustomizedSchemaImageReference)' `
+          configVersion=2 `
           dataSource__type=DICOM `
           dataSource__dicomServer__serverUrl=$(dataSource:dicomServer:serverUrl) `
           dataSource__dicomServer__versio=V1 `
