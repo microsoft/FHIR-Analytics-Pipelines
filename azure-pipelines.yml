@@ -37,7 +37,7 @@ stages:
     - template: FhirToDataLake/azurepipelines/ci.yml
 
 - stage: OverallTest
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/releases/20230116'))
   jobs:
   - job: PrepareTestEnvironment
     pool:
