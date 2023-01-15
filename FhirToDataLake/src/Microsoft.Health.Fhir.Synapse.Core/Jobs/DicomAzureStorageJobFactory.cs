@@ -93,20 +93,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var inputData = JsonConvert.DeserializeObject<DicomToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
-                    DicomToDataLakeOrchestratorJobResult currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
-                        ? new DicomToDataLakeOrchestratorJobResult()
-                        : JsonConvert.DeserializeObject<DicomToDataLakeOrchestratorJobResult>(jobInfo.Result);
+                    bool isSupported = Enum.IsDefined(typeof(SupportedJobVersion), inputData.JobVersion);
+                    if (isSupported)
+                    {
+                        var currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
+                            ? new DicomToDataLakeOrchestratorJobResult()
+                            : JsonConvert.DeserializeObject<DicomToDataLakeOrchestratorJobResult>(jobInfo.Result);
 
-                    return new DicomToDataLakeOrchestratorJob(
-                        jobInfo,
-                        inputData,
-                        currentResult,
-                        _dataWriter,
-                        _queueClient,
-                        _maxJobCountInRunningPool,
-                        _metricsLogger,
-                        _diagnosticLogger,
-                        _loggerFactory.CreateLogger<DicomToDataLakeOrchestratorJob>());
+                        return new DicomToDataLakeOrchestratorJob(
+                            jobInfo,
+                            inputData,
+                            currentResult,
+                            _dataWriter,
+                            _queueClient,
+                            _maxJobCountInRunningPool,
+                            _metricsLogger,
+                            _diagnosticLogger,
+                            _loggerFactory.CreateLogger<DicomToDataLakeOrchestratorJob>());
+                    }
                 }
             }
             catch (Exception e)
@@ -126,16 +130,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var inputData = JsonConvert.DeserializeObject<DicomToDataLakeProcessingJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Processing })
                 {
-                    return new DicomToDataLakeProcessingJob(
-                        jobInfo.Id,
-                        inputData,
-                        _dataClient,
-                        _dataWriter,
-                        _parquetDataProcessor,
-                        _schemaManager,
-                        _metricsLogger,
-                        _diagnosticLogger,
-                        _loggerFactory.CreateLogger<DicomToDataLakeProcessingJob>());
+                    bool isSupported = Enum.IsDefined(typeof(SupportedJobVersion), inputData.JobVersion);
+                    if (isSupported)
+                    {
+                        return new DicomToDataLakeProcessingJob(
+                            jobInfo.Id,
+                            inputData,
+                            _dataClient,
+                            _dataWriter,
+                            _parquetDataProcessor,
+                            _schemaManager,
+                            _metricsLogger,
+                            _diagnosticLogger,
+                            _loggerFactory.CreateLogger<DicomToDataLakeProcessingJob>());
+                    }
                 }
             }
             catch (Exception e)

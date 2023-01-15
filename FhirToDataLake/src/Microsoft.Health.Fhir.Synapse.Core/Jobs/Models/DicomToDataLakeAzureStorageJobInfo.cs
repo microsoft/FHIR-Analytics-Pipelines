@@ -7,6 +7,7 @@ using System;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
 {
@@ -32,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
                     inputData.EndOffset = _fakeEndOffset;
-                    return JsonConvert.SerializeObject(inputData);
+                    return GetIdentifierText(inputData);
                 }
             }
             catch (Exception)
@@ -51,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 if (inputData is { JobType: JobType.Processing })
                 {
                     inputData.EndOffset = _fakeEndOffset;
-                    return JsonConvert.SerializeObject(inputData);
+                    return GetIdentifierText(inputData);
                 }
             }
             catch (Exception)
@@ -60,6 +61,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
             }
 
             return null;
+        }
+
+        private static string GetIdentifierText(object inputData)
+        {
+            // the job version is added in input data to handle possible version compatibility issues when the version is updated. It is not related to the job definition, so we need to remove the job version property when calculate job identifier.
+            var jobject = JObject.FromObject(inputData);
+            jobject[JobVersionManager.JobVersionKey].Parent.Remove();
+
+            return jobject.ToString(Formatting.None);
         }
     }
 }
