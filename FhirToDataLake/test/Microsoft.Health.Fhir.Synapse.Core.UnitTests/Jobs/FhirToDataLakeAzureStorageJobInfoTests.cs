@@ -193,7 +193,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             Assert.NotEqual(jobject.ToString(Formatting.None).ComputeHash(), jobInfo.JobIdentifier());
 
-            jobject[JobVersionManager.JobVersionKey].Parent.Remove();
+            jobject[FhirToDataLakeJobInputDataProperties.JobVersion].Parent.Remove();
 
             Assert.Equal(jobject.ToString(Formatting.None).ComputeHash(), jobInfo.JobIdentifier());
         }
@@ -212,7 +212,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var jobject = JObject.FromObject(inputData);
 
-            jobject[JobVersionManager.JobVersionKey].Parent.Remove();
+            jobject[FhirToDataLakeJobInputDataProperties.JobVersion].Parent.Remove();
 
             string inputDataString = JsonConvert.SerializeObject(jobject);
 
