@@ -141,8 +141,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             try
             {
                 Response<OrchestratorJobStatusEntity> response = await _metadataTableClient.GetEntityAsync<OrchestratorJobStatusEntity>(
-                    TableKeyProvider.JobStatusPartitionKey(queueType, JobType.Orchestrator.ToString()),
-                    TableKeyProvider.JobStatusRowKey(queueType, JobType.Orchestrator.ToString(), groupId),
+                    TableKeyProvider.JobStatusPartitionKey(queueType, Convert.ToInt32(JobType.Orchestrator)),
+                    TableKeyProvider.JobStatusRowKey(queueType, Convert.ToInt32(JobType.Orchestrator), groupId),
                     cancellationToken: cancellationToken);
 
                 entity = response.Value;

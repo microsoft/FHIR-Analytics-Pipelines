@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public int HighBoundOfProcessingJobResourceCount { get; set; } = JobConfigurationConstants.HighBoundOfProcessingJobResourceCount;
 
-        public async IAsyncEnumerable<FhirToDataLakeProcessingJobParameters> SplitJobAsync(string resourceType, DateTimeOffset? startTime, DateTimeOffset endTime, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<SubJobInfo> SplitJobAsync(string resourceType, DateTimeOffset? startTime, DateTimeOffset endTime, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var totalCount = await GetResourceCountAsync(resourceType, startTime, endTime, cancellationToken);
 
@@ -54,7 +54,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 // Return job with total count lower than high bound.
                 _logger.LogInformation($"Generate one {resourceType} job with {totalCount} count.");
 
-                yield return new FhirToDataLakeProcessingJobParameters
+                yield return new SubJobInfo
                 {
                     ResourceType = resourceType,
                     TimeRange = new TimeRange() { DataStartTime = startTime, DataEndTime = endTime },
@@ -85,7 +85,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     _logger.LogInformation($"Spliting {resourceType}job, generate new split.time : {(DateTimeOffset.UtcNow - lastSplitTimestamp).TotalMilliseconds}. {lastEndTime} - {(DateTimeOffset)nextJobEnd}, {jobSize} counts. ");
                     lastSplitTimestamp = DateTimeOffset.Now;
 
-                    yield return new FhirToDataLakeProcessingJobParameters
+                    yield return new SubJobInfo
                     {
                         ResourceType = resourceType,
                         TimeRange = new TimeRange() { DataStartTime = lastEndTime, DataEndTime = (DateTimeOffset)nextJobEnd },
@@ -247,7 +247,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
-                new KeyValuePair<string, string>(FhirApiConstants.Summary, "count"),
+                new KeyValuePair<string, string>(FhirApiConstants.SummaryKey, "count"),
                 new KeyValuePair<string, string>(FhirApiConstants.TypeKey, resourceType),
             };
 

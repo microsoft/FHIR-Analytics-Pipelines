@@ -3,25 +3,23 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
-
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
 {
-    public class FhirToDataLakeProcessingJobParameters
+    public class SubJobInfo
     {
         /// <summary>
-        /// Job type
+        /// Resource type
         /// </summary>
         public string ResourceType { get; set; }
 
         /// <summary>
-        /// Resource type and time range parameters for system scope.
-        /// Parameters will be null for group scope.
+        /// Time range of sub job.
         /// </summary>
         public TimeRange TimeRange { get; set; }
 
+        /// <summary>
+        /// Resource count of the sub job.
+        /// </summary>
         public int JobSize { get; set; }
     }
 }

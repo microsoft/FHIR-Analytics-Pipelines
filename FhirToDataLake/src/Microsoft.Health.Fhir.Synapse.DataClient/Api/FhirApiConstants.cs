@@ -19,7 +19,7 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         /// <summary>
         /// Summary search parameter.
         /// </summary>
-        public const string Summary = "_summary";
+        public const string SummaryKey = "_summary";
 
         /// <summary>
         /// Id search parameter.

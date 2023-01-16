@@ -28,7 +28,6 @@ using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
-using TypeFilter = Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch.TypeFilter;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
@@ -233,8 +232,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 var newJobStatus = new OrchestratorJobStatusEntity()
                 {
-                    PartitionKey = TableKeyProvider.JobStatusPartitionKey(_jobInfo.QueueType, JobType.Orchestrator.ToString()),
-                    RowKey = TableKeyProvider.JobStatusRowKey(_jobInfo.QueueType, JobType.Orchestrator.ToString(), _jobInfo.GroupId),
+                    PartitionKey = TableKeyProvider.JobStatusPartitionKey(_jobInfo.QueueType, Convert.ToInt32(JobType.Orchestrator)),
+                    RowKey = TableKeyProvider.JobStatusRowKey(_jobInfo.QueueType, Convert.ToInt32(JobType.Orchestrator), _jobInfo.GroupId),
                     GroupId = _jobInfo.GroupId,
                     StatisticResult = JsonConvert.SerializeObject(new FhirToDataLakeOrchestratorJobResult()),
                 };
@@ -282,21 +281,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     continue;
                 }
 
-                IAsyncEnumerable<FhirToDataLakeProcessingJobParameters> jobs = _jobSpliter.SplitJobAsync(resourceType, startTime, _inputData.DataEndTime, cancellationToken);
+                IAsyncEnumerable<SubJobInfo> subJobs = _jobSpliter.SplitJobAsync(resourceType, startTime, _inputData.DataEndTime, cancellationToken);
 
-                await foreach (FhirToDataLakeProcessingJobParameters input in jobs.WithCancellation(cancellationToken))
+                await foreach (SubJobInfo subJob in subJobs.WithCancellation(cancellationToken))
                 {
-                    if (input.JobSize == 0)
+                    if (subJob.JobSize == 0)
                     {
                         _result.NextJobTimestamp[resourceType] = _inputData.DataEndTime;
                         continue;
                     }
-                    else if (input.JobSize < LowBoundOfProcessingJobResourceCount)
+                    else if (subJob.JobSize < LowBoundOfProcessingJobResourceCount)
                     {
                         // Small size job, put it into pool and wait for merge.
-                        _logger.LogInformation($"Splitting jobs. Generated one small job for {resourceType} with {input.JobSize} count.");
+                        _logger.LogInformation($"Splitting jobs. Generated one small job for {resourceType} with {subJob.JobSize} count.");
 
-                        var jobParameters = PushToJobPool(resourceType, input.TimeRange, input.JobSize);
+                        var jobParameters = PushToJobPool(resourceType, subJob.TimeRange, subJob.JobSize);
                         if (jobParameters != null)
                         {
                             yield return new FhirToDataLakeProcessingJobInputData
@@ -317,7 +316,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             ProcessingJobSequenceId = _result.CreatedJobCount,
                             TriggerSequenceId = _inputData.TriggerSequenceId,
                             Since = _inputData.Since,
-                            SplitParameters = new Dictionary<string, TimeRange>() { { input.ResourceType, input.TimeRange } },
+                            SplitParameters = new Dictionary<string, TimeRange>() { { subJob.ResourceType, subJob.TimeRange } },
                         };
                     }
                 }

@@ -14,9 +14,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public static string TriggerRowKey(byte queueType) => $"{queueType:D3}_trigger";
 
-        public static string JobStatusPartitionKey(byte queueType, string jobType) => $"{queueType:D3}_{jobType}_jobStatus";
+        public static string JobStatusPartitionKey(byte queueType, int jobType) => $"{queueType:D3}_{jobType}_jobStatus";
 
-        public static string JobStatusRowKey(byte queueType, string jobType, long groupId) => $"{queueType:D3}_{jobType}_{groupId:D20}";
+        public static string JobStatusRowKey(byte queueType, int jobType, long groupId) => $"{queueType:D3}_{jobType}_{groupId:D20}";
 
         public static string LeasePartitionKey(byte queueType) => $"{queueType:D3}_lock";
 
