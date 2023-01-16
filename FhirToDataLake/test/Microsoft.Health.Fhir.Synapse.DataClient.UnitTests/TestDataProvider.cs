@@ -6,7 +6,6 @@
 using System.IO;
 using Hl7.Fhir.ElementModel;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Newtonsoft.Json.Linq;
@@ -15,27 +14,23 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.UnitTests
 {
     public static class TestDataProvider
     {
-        public static string GetBundleFromFile(string filePath)
+        public static string GetDataFromFile(string filePath)
         {
             return File.ReadAllText(filePath);
         }
 
         public static ITypedElement GetBundleElementFromFile(string filePath)
         {
-            string bundleContent = GetBundleFromFile(filePath);
+            string bundleContent = GetDataFromFile(filePath);
 
-            var fhirConfiguration = new FhirServerConfiguration()
-            {
-                Version = FhirVersion.R4,
-            };
-            var fhirSerializer = new FhirSerializer(Options.Create(fhirConfiguration));
+            var fhirSerializer = new FhirSerializer(Options.Create(new DataSourceConfiguration()));
 
             return fhirSerializer.DeserializeToElement(bundleContent);
         }
 
         public static JObject GetBundleJsonFromFile(string filePath)
         {
-            string bundleContent = GetBundleFromFile(filePath);
+            string bundleContent = GetDataFromFile(filePath);
 
             return JObject.Parse(bundleContent);
         }

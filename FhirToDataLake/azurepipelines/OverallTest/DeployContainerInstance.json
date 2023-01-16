@@ -1,0 +1,405 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "pipelineName": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 24,
+            "metadata": {
+                "description": "The name of the container instance that you wish to create."
+            }
+        },
+        "dataSourceType": {
+            "type": "string",
+            "defaultValue": "FHIR",
+            "allowedValues": ["FHIR", "DICOM"],
+            "metadata": {
+                "description": "The source API server type you wish to get data."
+            }
+        },
+        "fhirServerUrl": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The fhir server endpoint you wish to get data."
+            }
+        },
+        "fhirVersion": {
+            "type": "string",
+            "defaultValue": "R4",
+            "allowedValues": ["R4"]
+        },
+        "dicomServerUrl": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The dicom server endpoint you wish to get data."
+            }
+        },
+        "dicomApiVersion": {
+            "type": "string",
+            "defaultValue": "V1",
+            "allowedValues": ["V1"]
+        },
+        "serverAuthentication": {
+            "type": "string",
+            "defaultValue": "None",
+            "allowedValues": ["None", "ManagedIdentity"],
+            "metadata": {
+                "description": "Then authentication to access source API server. Set None if you are using an public server API instance."
+            }
+        },
+        "dataStart": {
+            "type": "string",
+            "defaultValue": "1970-01-01 00:00:00 +00:00",
+            "metadata": {
+                "description": "Start timestamp of the data range you want to export."
+            }
+        },
+        "dataEnd": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "End timestamp of the data range you want to export. Will continuous export all data if not specified."
+            }
+        },
+        "containerName": {
+            "type": "string",
+            "defaultValue": "fhir",
+            "metadata": {
+                "description": "The name of the container to store job and data."
+            }
+        },
+        "jobConcurrency": {
+            "type": "string",
+            "defaultValue": "3",
+            "metadata": {
+                "description": "Concurrent jobs exeucting in parallel."
+            }
+        },
+        "filterConfigImageReference":{
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Azure Container Registry image reference of filter configuration file."
+            }
+        },
+        "filterScope":{
+            "type": "string",
+            "defaultValue": "System",
+            "metadata": {
+                "description": "For data filtering use. The export scope can be System or Group. The default value is System if no filter is applied."
+            }
+        },
+        "groupId":{
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "For data filtering use. If the Filter scope is set as Group, you need to fill the group Id, otherwise leave it blank."
+            }
+        },
+        "requiredTypes":{
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "For data filtering use. Specify which types of resources will be included. For example, type=Patient would return only patient resources. All resource types will be exported if not specified. Leave it blank if no filter is applied."
+            }
+        },
+        "typeFilters":{
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "For data filtering use. Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. All data of requiredTypes will be exported if not specified. Leave it blank if no filter is applied."
+            }
+        },
+        "customizedSchemaImageReference":{
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The customized schema image reference on for the image on Container Registry. Refer https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
+            }
+        },
+        "image": {
+            "type": "string",
+            "defaultValue": "healthplatformregistry.azurecr.io/fhirtodatalaketool:latest",
+            "metadata": {
+              "description": "Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials."
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Standard_GRS",
+                "Standard_RAGRS"
+            ],
+            "metadata": {
+                "description": "Storage Account type"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        },
+        "deployAppInsights": {
+            "type": "bool",
+            "defaultValue": true,
+            "allowedValues": [
+            true,
+            false
+            ],
+            "metadata": {
+                "description": "Whether to deploy the Application Insights."
+            }
+        },
+        "appInsightsLocation": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "allowedValues": [
+                "southeastasia",
+                "northeurope",
+                "westeurope",
+                "eastus",
+                "southcentralus",
+                "westus2",
+                "usgovvirginia",
+                "usgovarizona"
+            ],
+            "metadata": {
+                "description": "Location for Application Insights"
+            }
+        }
+    },
+    "variables": {
+        "pipelineName": "[toLower(parameters('pipelineName'))]",
+        "jobInfoQueueName": "[concat(variables('pipelineName'), 'jobinfoqueue')]",
+        "jobInfoTableName": "[concat(variables('pipelineName'), 'jobinfotable')]",
+        "metadataTableName": "[concat(variables('pipelineName'), 'metadatatable')]",
+        "applicationInsightsName": "[concat('AppInsights-', variables('pipelineName'))]",
+        "deployAppInsights": "[parameters('deployAppInsights')]",
+        "resourceTags": {"FhirAnalyticsPipeline": "FhirToDataLake", "FhirSchemaVersion": "v0.4.0"},
+        "storageAccountName": "[concat(substring(replace(variables('pipelineName'), '-', ''), 0, min(11, length(replace(variables('pipelineName'), '-', '')))), uniquestring(resourceGroup().id, variables('pipelineName')))]",
+        "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
+        "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
+        "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
+        "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
+        "deployDicomToDatalake": "[equals(parameters('dataSourceType'), 'DICOM')]",
+        "deployFhirToDatalake": "[equals(parameters('dataSourceType'), 'FHIR')]",
+        "restartPolicy": "OnFailure"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "name": "[variables('storageAccountName')]",
+            "location": "[parameters('location')]",
+            "tags": "[variables('resourceTags')]",
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "properties": {
+                "isHnsEnabled": true
+            },
+            "kind": "StorageV2"
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'), variables('pipelineName'), 'blob')))]",
+            "dependsOn": [
+                "[variables('storageAccountName')]",
+                "[variables('pipelineName')]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[variables('storageBlobDataContributerRoleId')]",
+                "principalId": "[reference(concat('Microsoft.ContainerInstance/containerGroups/', variables('pipelineName')), '2021-09-01', 'full').identity.principalId]",
+                "principalType": "ServicePrincipal"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'), variables('pipelineName'), 'queue')))]",
+            "dependsOn": [
+                "[variables('storageAccountName')]",
+                "[variables('pipelineName')]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[variables('storageQueueDataContributerRoleId')]",
+                "principalId": "[reference(concat('Microsoft.ContainerInstance/containerGroups/', variables('pipelineName')), '2021-09-01', 'full').identity.principalId]",
+                "principalType": "ServicePrincipal"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'), variables('pipelineName'), 'table')))]",
+            "dependsOn": [
+                "[variables('storageAccountName')]",
+                "[variables('pipelineName')]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[variables('storageTableDataContributerRoleId')]",
+                "principalId": "[reference(concat('Microsoft.ContainerInstance/containerGroups/', variables('pipelineName')), '2021-09-01', 'full').identity.principalId]",
+                "principalType": "ServicePrincipal"
+            }
+        },
+        {
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2021-09-01",
+            "name": "[variables('pipelineName')]",
+            "location": "[parameters('location')]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+            ],
+            "properties": {
+                "containers": [
+                    {
+                        "name": "[variables('pipelineName')]",
+                        "properties": {
+                            "image": "[parameters('image')]",
+                            "resources": {
+                                "requests": {
+                                    "cpu": 2,
+                                    "memoryInGB": 4
+                                }
+                            },
+                            "environmentVariables": [
+                                {
+                                    "name": "ApplicationInsights__ConnectionString",
+                                    "value": "[if(variables('deployAppInsights'),reference(resourceId('microsoft.insights/components', variables('applicationInsightsName')), '2020-02-02-preview').ConnectionString, '')]"
+                                },
+                                {
+                                    "name": "Logging__ApplicationInsights__LogLevel__Default",
+                                    "value": "Information"
+                                },
+                                {
+                                    "name": "job__jobInfoQueueName",
+                                    "value": "[variables('jobInfoQueueName')]"
+                                },
+                                {
+                                    "name": "job__jobInfoTableName",
+                                    "value": "[variables('jobInfoTableName')]"
+                                },
+                                {
+                                    "name": "job__metadataTableName",
+                                    "value": "[variables('metadataTableName')]"
+                                },
+                                {
+                                    "name": "job__maxRunningJobCount",
+                                    "value": "[parameters('jobConcurrency')]"
+                                },
+                                {
+                                    "name": "job__containerName",
+                                    "value": "[parameters('containerName')]"
+                                },
+                                {
+                                    "name": "job__startTime",
+                                    "value": "[parameters('dataStart')]"
+                                },
+                                {
+                                    "name": "job__endTime",
+                                    "value": "[parameters('dataEnd')]"
+                                },
+                                {
+                                    "name": "job__tableUrl",
+                                    "value": "[concat('https://', variables('storageAccountName'), '.table.core.windows.net')]"
+                                },
+                                {
+                                    "name": "job__queueUrl",
+                                    "value": "[concat('https://', variables('storageAccountName'), '.queue.core.windows.net')]"
+                                },
+                                {
+                                    "name": "dataLakeStore__storageUrl",
+                                    "value": "[concat('https://', variables('storageAccountName'), '.blob.core.windows.net')]"
+                                },
+                                {
+                                    "name": "filter__filterScope",
+                                    "value": "[parameters('filterScope')]"
+                                },
+                                {
+                                    "name": "filter__enableExternalFilter",
+                                    "value": "[if(empty(variables('filterConfigImageReference')), 'false', 'true')]"
+                                },
+                                {
+                                    "name": "filter__filterImageReference",
+                                    "value": "[variables('filterConfigImageReference')]"
+                                },
+                                {
+                                    "name": "filter__groupId",
+                                    "value": "[parameters('groupId')]"
+                                },
+                                {
+                                    "name": "filter__requiredTypes",
+                                    "value": "[parameters('requiredTypes')]"
+                                },
+                                {
+                                    "name": "filter__typeFilters",
+                                    "value": "[parameters('typeFilters')]"
+                                },
+                                {
+                                    "name": "schema__enableCustomizedSchema",
+                                    "value": "[if(empty(parameters('customizedSchemaImageReference')), 'false', 'true')]"
+                                },
+                                {
+                                    "name": "schema__schemaImageReference",
+                                    "value": "[parameters('customizedSchemaImageReference')]"
+                                },
+                                {
+                                    "name": "fhirServer__serverUrl",
+                                    "value": "[if(variables('deployFhirToDatalake'), parameters('fhirServerUrl'), '')]"
+                                },
+                                {
+                                    "name": "fhirServer__version",
+                                    "value": "[if(variables('deployFhirToDatalake'), parameters('fhirVersion'), '')]"
+                                },
+                                {
+                                    "name": "fhirServer__authentication",
+                                    "value": "[if(variables('deployFhirToDatalake'), parameters('serverAuthentication'), '')]"
+                                },
+                                {
+                                    "name": "dataSource__type",
+                                    "value": "[parameters('dataSourceType')]"
+                                },
+                                {
+                                    "name": "dataSource__dicomServer__serverUrl",
+                                    "value": "[if(variables('deployDicomToDatalake'), parameters('dicomServerUrl'), '')]"
+                                },
+                                {
+                                    "name": "dataSource__dicomServer__version",
+                                    "value": "[if(variables('deployDicomToDatalake'), parameters('dicomApiVersion'), '')]"
+                                },
+                                {
+                                    "name": "dataSource__dicomServer__authentication",
+                                    "value": "[if(variables('deployDicomToDatalake'), parameters('serverAuthentication'), '')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "osType": "Linux",
+                "restartPolicy": "[variables('restartPolicy')]"
+            }
+        },
+        {
+            "type": "microsoft.insights/components",
+            "apiVersion": "2020-02-02-preview",
+            "name": "[variables('applicationInsightsName')]",
+            "location": "[parameters('appInsightsLocation')]",
+            "condition": "[variables('deployAppInsights')]",
+            "tags": "[union(variables('resourceTags'), createObject(concat('hidden-link:', resourceId('Microsoft.Web/sites', variables('applicationInsightsName'))),'Resource'))]",
+            "properties": {
+                "ApplicationId": "[variables('applicationInsightsName')]",
+                "Request_Source": "IbizaWebAppExtensionCreate"
+            }
+        }
+    ]
+}

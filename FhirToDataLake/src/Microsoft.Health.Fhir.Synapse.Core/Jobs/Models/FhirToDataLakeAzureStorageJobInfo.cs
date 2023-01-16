@@ -7,6 +7,7 @@ using System;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
 {
@@ -14,12 +15,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
     {
         private readonly DateTimeOffset _fakeDataEndTime = DateTimeOffset.MinValue;
 
-        // Remove data end time field in Definition to generate job identifier,
+        // Remove job version field and data end time field in Definition to generate job identifier,
         // as the data end time is related to the trigger created time, and may be different if there are two instances try to create a new trigger simultaneously
         public override string JobIdentifier()
         {
             string result = (TryParseAsFhirToDataLakeOrchestratorJobInputData() ??
-                             TryParseAsFhirToDataLakeProcessingJobInputData()) ?? Definition.ComputeHash();
+                             TryParseAsFhirToDataLakeProcessingJobInputData()) ?? Definition;
 
             return result.ComputeHash();
         }
@@ -31,8 +32,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(Definition);
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
-                    inputData.DataEndTime = _fakeDataEndTime;
-                    return JsonConvert.SerializeObject(inputData);
+                    // the data end time is removed when calculate JobIdentifier since job version v2
+                    if (inputData.JobVersion > SupportedJobVersion.V1)
+                    {
+                        inputData.DataEndTime = _fakeDataEndTime;
+                    }
+
+                    return GetIdentifierText(inputData);
                 }
             }
             catch (Exception)
@@ -50,8 +56,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(Definition);
                 if (inputData is { JobType: JobType.Processing })
                 {
-                    inputData.DataEndTime = _fakeDataEndTime;
-                    return JsonConvert.SerializeObject(inputData);
+                    // the data end time is removed when calculate JobIdentifier since job version v2
+                    if (inputData.JobVersion > SupportedJobVersion.V1)
+                    {
+                        inputData.DataEndTime = _fakeDataEndTime;
+                    }
+
+                    return GetIdentifierText(inputData);
                 }
             }
             catch (Exception)
@@ -60,6 +71,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
             }
 
             return null;
+        }
+
+        private static string GetIdentifierText(object inputData)
+        {
+            // the job version is added in input data to handle possible version compatibility issues when the version is updated. It is not related to the job definition, so we need to remove the job version property when calculate job identifier.
+            var jobject = JObject.FromObject(inputData);
+            jobject[JobVersionManager.JobVersionKey].Parent.Remove();
+
+            return jobject.ToString();
         }
     }
 }

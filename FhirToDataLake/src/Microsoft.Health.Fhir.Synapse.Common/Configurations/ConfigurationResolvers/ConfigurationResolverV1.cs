@@ -9,30 +9,20 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations.Arrow;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Configurations.ConfigurationResolvers
 {
-    public class ConfigurationResolverV1
+    public class ConfigurationResolverV1 : BaseConfigurationResolver
     {
         public static void Resolve(
             IServiceCollection services,
             IConfiguration configuration)
         {
-            services.Configure<FhirServerConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options));
-            services.Configure<JobConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.JobConfigurationKey).Bind(options));
-            services.Configure<FilterConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.FilterConfigurationKey).Bind(options));
-            services.Configure<FilterLocation>(options =>
-                configuration.GetSection(ConfigurationConstants.FilterConfigurationKey).Bind(options));
-            services.Configure<DataLakeStoreConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.DataLakeStoreConfigurationKey).Bind(options));
-            services.Configure<ArrowConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.ArrowConfigurationKey).Bind(options));
-            services.Configure<SchemaConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey).Bind(options));
-            services.Configure<HealthCheckConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.HealthCheckConfigurationKey).Bind(options));
-            services.Configure<StorageConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.StorageConfigurationKey).Bind(options));
+            // Find FhirServerConfiguration instead and create a DataSourceConfiguration from it for backward compatibility.
+            services.Configure<DataSourceConfiguration>(options =>
+            {
+                options.Type = DataSourceType.FHIR;
+                configuration.GetSection(ConfigurationConstants.FhirServerConfigurationKey).Bind(options.FhirServer);
+            });
+
+            BaseResolve(services, configuration);
         }
     }
 }

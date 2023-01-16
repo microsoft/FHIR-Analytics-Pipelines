@@ -9,6 +9,7 @@ using System.Linq;
 using DotLiquid;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Fhir.Synapse.Common;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor.DataConverter;
@@ -25,8 +26,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 {
     public static class TestUtils
     {
-        private static IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+        private static readonly IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
+
         public const string TestDataFolder = "./TestData";
+        public const string DicomTestDataFolder = TestDataFolder + "/Dicom";
         public const string ExpectTestDataFolder = TestDataFolder + "/Expected";
         public const string TestNormalSchemaDirectoryPath = TestDataFolder + "/Schema";
         public const string TestInvalidSchemaDirectoryPath = TestDataFolder + "/InvalidSchema";
@@ -74,12 +77,31 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
             return templateProvider;
         }
 
-        public static IParquetSchemaProvider TestParquetSchemaProviderDelegate(string name)
+        public static IParquetSchemaProvider TestFhirParquetSchemaProviderDelegate(string name)
         {
-            if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
+            if (name == ParquetSchemaConstants.DefaultSchemaProviderKey)
             {
                 return new LocalDefaultSchemaProvider(
-                    Options.Create(new FhirServerConfiguration()),
+                    Options.Create(new DataSourceConfiguration()),
+                    _diagnosticLogger,
+                    NullLogger<LocalDefaultSchemaProvider>.Instance);
+            }
+            else
+            {
+                return new AcrCustomizedSchemaProvider(
+                    GetMockAcrTemplateProvider(),
+                    Options.Create(TestCustomSchemaConfiguration),
+                    _diagnosticLogger,
+                    NullLogger<AcrCustomizedSchemaProvider>.Instance);
+            }
+        }
+
+        public static IParquetSchemaProvider TestDicomParquetSchemaProviderDelegate(string name)
+        {
+            if (name == ParquetSchemaConstants.DefaultSchemaProviderKey)
+            {
+                return new LocalDefaultSchemaProvider(
+                    Options.Create(new DataSourceConfiguration { Type = DataSourceType.DICOM }),
                     _diagnosticLogger,
                     NullLogger<LocalDefaultSchemaProvider>.Instance);
             }
@@ -95,18 +117,43 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests
 
         public static IDataSchemaConverter TestDataSchemaConverterDelegate(string name)
         {
-            var fhirSchemaManagerWithoutCustomizedSchema = new FhirParquetSchemaManager(
+            var schemaManagerWithoutCustomizedSchema = new ParquetSchemaManager(
                 Options.Create(new SchemaConfiguration()),
-                TestParquetSchemaProviderDelegate,
+                TestFhirParquetSchemaProviderDelegate,
                 _diagnosticLogger,
-                NullLogger<FhirParquetSchemaManager>.Instance);
+                NullLogger<ParquetSchemaManager>.Instance);
 
-            if (name == FhirParquetSchemaConstants.DefaultSchemaProviderKey)
+            if (name == ParquetSchemaConstants.DefaultSchemaProviderKey)
             {
-                return new DefaultSchemaConverter(
-                    fhirSchemaManagerWithoutCustomizedSchema,
+                return new FhirDefaultSchemaConverter(
+                    schemaManagerWithoutCustomizedSchema,
                     _diagnosticLogger,
-                    NullLogger<DefaultSchemaConverter>.Instance);
+                    NullLogger<FhirDefaultSchemaConverter>.Instance);
+            }
+            else
+            {
+                return new CustomSchemaConverter(
+                    GetMockAcrTemplateProvider(),
+                    Options.Create(TestCustomSchemaConfiguration),
+                    _diagnosticLogger,
+                    NullLogger<CustomSchemaConverter>.Instance);
+            }
+        }
+
+        public static IDataSchemaConverter TestDicomDataSchemaConverterDelegate(string name)
+        {
+            var schemaManagerWithoutCustomizedSchema = new ParquetSchemaManager(
+                Options.Create(new SchemaConfiguration()),
+                TestDicomParquetSchemaProviderDelegate,
+                _diagnosticLogger,
+                NullLogger<ParquetSchemaManager>.Instance);
+
+            if (name == ParquetSchemaConstants.DefaultSchemaProviderKey)
+            {
+                return new DicomDefaultSchemaConverter(
+                    schemaManagerWithoutCustomizedSchema,
+                    _diagnosticLogger,
+                    NullLogger<DicomDefaultSchemaConverter>.Instance);
             }
             else
             {

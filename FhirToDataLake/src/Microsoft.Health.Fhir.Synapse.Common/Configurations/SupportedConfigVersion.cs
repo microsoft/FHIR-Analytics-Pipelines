@@ -11,8 +11,13 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Configurations
     public enum SupportedConfigVersion
     {
         /// <summary>
-        /// First version.
+        /// Config Version 1, support FHIR as data source.
         /// </summary>
         V1 = 1,
+
+        /// <summary>
+        /// Config Version 2, support FHIR, DICOM as data source.
+        /// </summary>
+        V2 = 2,
     }
 }

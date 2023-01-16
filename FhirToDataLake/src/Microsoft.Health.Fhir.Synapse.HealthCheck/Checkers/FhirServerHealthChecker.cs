@@ -11,7 +11,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.HealthCheck.Models;
 
@@ -20,18 +20,16 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck.Checkers
     public class FhirServerHealthChecker : BaseHealthChecker
     {
         private const string SampleResourceType = "Patient";
-        private readonly IFhirDataClient _fhirApiDataClient;
+        private readonly IApiDataClient _fhirApiDataClient;
         private readonly BaseSearchOptions _searchOptions;
 
         public FhirServerHealthChecker(
-            IFhirDataClient fhirApiDataClient,
+            IApiDataClient fhirApiDataClient,
             IDiagnosticLogger diagnosticLogger,
             ILogger<FhirServerHealthChecker> logger)
             : base(HealthCheckTypes.FhirServiceCanRead, false, diagnosticLogger, logger)
         {
-            EnsureArg.IsNotNull(fhirApiDataClient, nameof(fhirApiDataClient));
-
-            _fhirApiDataClient = fhirApiDataClient;
+            _fhirApiDataClient = EnsureArg.IsNotNull(fhirApiDataClient, nameof(fhirApiDataClient));
 
             var queryParameters = new List<KeyValuePair<string, string>>
             {

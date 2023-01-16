@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var blobClient = new InMemoryBlobContainerClient();
 
-            FhirToDataLakeProcessingJob job = GetFhirToDataLakeProcessingJob(1L, GetInputData(), TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile1), containerName, blobClient, filterConfiguration);
+            FhirToDataLakeProcessingJob job = GetFhirToDataLakeProcessingJob(1L, GetInputData(), TestDataProvider.GetDataFromFile(TestDataConstants.PatientBundleFile1), containerName, blobClient, filterConfiguration);
 
             string resultString = await job.ExecuteAsync(progress, CancellationToken.None);
             var result = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(resultString);
@@ -128,7 +128,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetMockFhirDataClient(bundleResult),
                 GetDataWriter(containerName, blobClient),
                 GetParquetDataProcessor(),
-                GetFhirSchemaManager(),
+                GetSchemaManager(),
                 GetGroupMemberExtractor(),
                 GetFilterManager(filterConfiguration),
                 new MetricsLogger(new NullLogger<MetricsLogger>()),
@@ -136,18 +136,20 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 new NullLogger<FhirToDataLakeProcessingJob>());
         }
 
-        private static IFhirDataClient GetMockFhirDataClient(string firstBundle)
+        private static IApiDataClient GetMockFhirDataClient(string firstBundle)
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
 
             // Get bundle from next link
-            string nextBundle = TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile2);
+            string nextBundle = TestDataProvider.GetDataFromFile(TestDataConstants.PatientBundleFile2);
             dataClient.SearchAsync(default).ReturnsForAnyArgs(firstBundle, nextBundle);
             return dataClient;
         }
 
-        private static IFhirDataWriter GetDataWriter(string containerName, IAzureBlobContainerClient blobClient)
+        private static IDataWriter GetDataWriter(string containerName, IAzureBlobContainerClient blobClient)
         {
+            var dataSourceOption = Options.Create(new DataSourceConfiguration());
+
             var mockFactory = Substitute.For<IAzureBlobContainerClientFactory>();
             mockFactory.Create(Arg.Any<string>(), Arg.Any<string>()).ReturnsForAnyArgs(blobClient);
 
@@ -161,21 +163,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             var dataSink = new AzureBlobDataSink(Options.Create(storageConfig), Options.Create(jobConfig));
-            return new AzureBlobDataWriter(mockFactory, dataSink, new NullLogger<AzureBlobDataWriter>());
+            return new AzureBlobDataWriter(dataSourceOption, mockFactory, dataSink, new NullLogger<AzureBlobDataWriter>());
         }
 
         private static ParquetDataProcessor GetParquetDataProcessor()
         {
             IOptions<SchemaConfiguration> schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
-            var fhirSchemaManager = new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<FhirParquetSchemaManager>.Instance);
+            var schemaManager = new ParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<ParquetSchemaManager>.Instance);
             IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
-            var defaultConverter = new DefaultSchemaConverter(fhirSchemaManager, _diagnosticLogger, NullLogger<DefaultSchemaConverter>.Instance);
+            var defaultConverter = new FhirDefaultSchemaConverter(schemaManager, _diagnosticLogger, NullLogger<FhirDefaultSchemaConverter>.Instance);
             var fhirConverter = new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), schemaConfigurationOption, _diagnosticLogger, NullLogger<CustomSchemaConverter>.Instance);
 
             return new ParquetDataProcessor(
-                fhirSchemaManager,
+                schemaManager,
                 arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
                 _diagnosticLogger,
@@ -184,14 +186,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private static IParquetSchemaProvider ParquetSchemaProviderDelegate(string name)
         {
-            return new LocalDefaultSchemaProvider(Options.Create(new FhirServerConfiguration()), _diagnosticLogger, NullLogger<LocalDefaultSchemaProvider>.Instance);
+            var dataSourceOption = Options.Create(new DataSourceConfiguration());
+
+            return new LocalDefaultSchemaProvider(dataSourceOption, _diagnosticLogger, NullLogger<LocalDefaultSchemaProvider>.Instance);
         }
 
-        private static IFhirSchemaManager<FhirParquetSchemaNode> GetFhirSchemaManager()
+        private static ISchemaManager<ParquetSchemaNode> GetSchemaManager()
         {
             IOptions<SchemaConfiguration> schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
-            return new FhirParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<FhirParquetSchemaManager>.Instance);
+            return new ParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<ParquetSchemaManager>.Instance);
         }
 
         private static IFilterManager GetFilterManager(FilterConfiguration filterConfiguration)
@@ -216,6 +220,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var inputData = new FhirToDataLakeProcessingJobInputData
             {
+                JobVersion = JobVersionManager.CurrentJobVersion,
                 JobType = JobType.Processing,
                 TriggerSequenceId = 0L,
                 ProcessingJobSequenceId = 0L,

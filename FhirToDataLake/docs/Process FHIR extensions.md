@@ -12,7 +12,7 @@ For each resource types, e.g. Patient, Observation, you need to prepare a **liqu
 
 Follow the links for more information about [liquid template](http://dotliquidmarkup.org/) and [JSON schema](https://json-schema.org/learn/getting-started-step-by-step).
 
-Below are the example liquid template and JSON schema for "Patient" resource, flatten the [Patient birthPlace](https://build.fhir.org/extension-patient-birthplace.html) extension for analytics.
+Below are the example liquid template and JSON schema for "Patient" resource, flatten the [Patient birthPlace](https://build.fhir.org/extension-patient-birthplace.html) extension for analytics. You can refer to [this sample template](./Sample-Liquid-Templates-Fhir-Extension.md) that handles more complex extension types in FHIR resources. 
 
 _Liquid template:_
 ```liquid

@@ -115,13 +115,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     delayTaskCancellationTokenSource.Cancel();
                     _diagnosticLogger.LogError($"Scheduler service {_instanceGuid} is cancelled.");
                     _logger.LogError($"Scheduler service {_instanceGuid} is cancelled.");
-                    _metricsLogger.LogTotalErrorsMetrics(ex, $"Scheduler service {_instanceGuid} is cancelled.", Operations.RunSchedulerService);
+                    _metricsLogger.LogTotalErrorsMetrics(ex, $"Scheduler service {_instanceGuid} is cancelled.", JobOperations.RunSchedulerService);
                 }
                 catch (Exception ex)
                 {
                     _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
                     _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
-                    _metricsLogger.LogTotalErrorsMetrics(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.", Operations.RunSchedulerService);
+                    _metricsLogger.LogTotalErrorsMetrics(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.", JobOperations.RunSchedulerService);
                 }
 
                 await delayTask;
@@ -271,7 +271,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     // don't exist the while-loop, and retry next time
                     _diagnosticLogger.LogError($"Internal error occurred in scheduler service {_instanceGuid}, will retry later.");
                     _logger.LogError(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.");
-                    _metricsLogger.LogTotalErrorsMetrics(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.", Operations.RunSchedulerService);
+                    _metricsLogger.LogTotalErrorsMetrics(ex, $"There is an exception thrown in scheduler instance {_instanceGuid}, will retry later.", JobOperations.RunSchedulerService);
                 }
 
                 await intervalDelayTask;
@@ -331,6 +331,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
+                JobVersion = currentTriggerEntity.JobVersion,
                 TriggerSequenceId = currentTriggerEntity.TriggerSequenceId,
                 Since = _startTime,
                 DataStartTime = currentTriggerEntity.TriggerStartTime,
@@ -421,6 +422,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 currentTriggerEntity.TriggerStartTime = nextTriggerStartTime;
                 currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerEndTime;
+                currentTriggerEntity.JobVersion = JobVersionManager.CurrentJobVersion;
 
                 bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
                 _logger.LogInformation(isSucceeded
@@ -446,6 +448,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 TriggerEndTime = (DateTimeOffset)GetNextTriggerEndTime(null),
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 0,
+                JobVersion = JobVersionManager.CurrentJobVersion,
             };
 
             // add the initial trigger entity to table

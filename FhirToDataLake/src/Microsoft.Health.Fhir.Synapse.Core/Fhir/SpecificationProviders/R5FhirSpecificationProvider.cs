@@ -20,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Fhir.SpecificationProviders
 {
     public class R5FhirSpecificationProvider : BaseFhirSpecificationProvider
     {
-        public R5FhirSpecificationProvider(IFhirDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R5FhirSpecificationProvider> logger)
+        public R5FhirSpecificationProvider(IApiDataClient dataClient, IDiagnosticLogger diagnosticLogger, ILogger<R5FhirSpecificationProvider> logger)
             : base(dataClient, diagnosticLogger, logger)
         {
         }

@@ -32,11 +32,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.DataFilter
 
         public FilterManagerTests()
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
 
             var metadataOptions = new MetadataOptions();
             dataClient.Search(metadataOptions)
-                .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile));
+                .ReturnsForAnyArgs(x => TestDataProvider.GetDataFromFile(TestDataConstants.R4MetadataFile));
 
             _testFhirSpecificationProvider = new R4FhirSpecificationProvider(dataClient, _diagnosticLogger, NullLogger<R4FhirSpecificationProvider>.Instance);
             _nullFilterManagerLogger = NullLogger<FilterManager>.Instance;

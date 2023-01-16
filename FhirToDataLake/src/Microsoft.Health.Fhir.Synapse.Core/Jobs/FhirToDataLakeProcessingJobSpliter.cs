@@ -17,7 +17,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Newtonsoft.Json;
@@ -27,12 +27,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public class FhirToDataLakeProcessingJobSpliter
     {
-        private readonly IFhirDataClient _dataClient;
+        private readonly IApiDataClient _dataClient;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<FhirToDataLakeProcessingJobSpliter> _logger;
 
         public FhirToDataLakeProcessingJobSpliter(
-            IFhirDataClient dataClient,
+            IApiDataClient dataClient,
             IDiagnosticLogger diagnosticLogger,
             ILogger<FhirToDataLakeProcessingJobSpliter> logger)
         {

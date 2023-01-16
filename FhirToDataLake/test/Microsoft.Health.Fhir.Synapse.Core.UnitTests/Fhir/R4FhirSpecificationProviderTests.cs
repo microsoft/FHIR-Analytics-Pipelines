@@ -31,11 +31,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
 
         public R4FhirSpecificationProviderTests()
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
 
             var metadataOptions = new MetadataOptions();
             dataClient.Search(metadataOptions)
-                .ReturnsForAnyArgs(x => TestDataProvider.GetBundleFromFile(TestDataConstants.R4MetadataFile));
+                .ReturnsForAnyArgs(x => TestDataProvider.GetDataFromFile(TestDataConstants.R4MetadataFile));
 
             _r4FhirSpecificationProvider = new R4FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR4FhirSpecificationProviderLogger);
         }
@@ -46,7 +46,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
             Assert.Throws<ArgumentNullException>(
                 () => new R4FhirSpecificationProvider(null, _diagnosticLogger, _nullR4FhirSpecificationProviderLogger));
 
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
 
             Assert.Throws<ArgumentNullException>(
                 () => new R4FhirSpecificationProvider(dataClient, _diagnosticLogger, null));
@@ -55,8 +55,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [Fact]
         public void GivenBrokenDataClient_WhenInitialize_ExceptionShouldBeThrown()
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
-            dataClient.SearchAsync(default).ThrowsForAnyArgs(new FhirSearchException("mockException"));
+            var dataClient = Substitute.For<IApiDataClient>();
+            dataClient.SearchAsync(default).ThrowsForAnyArgs(new ApiSearchException("mockException"));
 
             var provider = new R4FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR4FhirSpecificationProviderLogger);
             Assert.Throws<FhirSpecificationProviderException>(
@@ -70,7 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Fhir
         [InlineData("{\"resourceType\": \"CapabilityStatement\",\"rest\": [{\"mode\":\"server\"}]}")]
         public void GivenInvalidMetadata_WhenInitialize_ExceptionShouldBeThrown(string metadataContent)
         {
-            var dataClient = Substitute.For<IFhirDataClient>();
+            var dataClient = Substitute.For<IApiDataClient>();
             dataClient.SearchAsync(default).ReturnsForAnyArgs(metadataContent);
 
             var provider = new R4FhirSpecificationProvider(dataClient, _diagnosticLogger, _nullR4FhirSpecificationProviderLogger);

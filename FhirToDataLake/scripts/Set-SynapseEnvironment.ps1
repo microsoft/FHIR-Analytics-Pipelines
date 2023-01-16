@@ -18,6 +18,9 @@
 .PARAMETER ResultPath
     Default: result
     Path to the parquet FHIR data.
+.PARAMETER DataSourceType
+    Default: FHIR
+    Source data type, "FHIR", "DICOM".
 .PARAMETER FhirVersion
     Default: R4
     The fhir version of Parquet data on the storage.
@@ -43,6 +46,7 @@ Param(
     [string]$StorageName,
     [string]$Container = "fhir",
     [string]$ResultPath = "result",
+    [string]$DataSourceType = 'FHIR',
     [string]$FhirVersion = "R4",
     [string]$SqlScriptCollectionPath = "sql",
     [string]$MasterKey = "FhirSynapseLink0!",
@@ -53,30 +57,42 @@ Param(
 # TODO: Align Tags here and ARM template, maybe save schemas in Storage/ACR and run remotely.
 $Tags = @{
     "FhirAnalyticsPipeline" = "FhirToDataLake"
-    "FhirSchemaVersion" = "v0.5.0"
+    "FhirSchemaVersion" = "v0.6.0"
 }
 
 $JobName = "FhirSynapseJob"
 $PlaceHolderName = ".readme.txt"
-$CustomizedTemplateDirectory = "CustomizedSchema"
+$CustomizedSchemaDirectoryPrefix = "CustomizedSchema_"
 
 $OrasDirectoryPath = "Oras"
 $OrasAppPath = "oras.exe"
-$OrasWinUrl = "https://github.com/deislabs/oras/releases/download/v0.12.0/oras_0.12.0_windows_amd64.tar.gz"
+$OrasWinUrl = "https://github.com/deislabs/oras/releases/download/v0.16.0/oras_0.16.0_windows_amd64.zip"
 $ErrorActionPreference = "Stop"
 
-$FhirVersion = $FhirVersion.ToUpper()
-if ($FhirVersion -eq "R4")
+$DataSourceType = $DataSourceType.ToUpper()
+if ($DataSourceType -eq "FHIR")
 {
-    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r4" | Join-Path -ChildPath "Resources"
+    $FhirVersion = $FhirVersion.ToUpper()
+    if ($FhirVersion -eq "R4")
+    {
+        $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r4" | Join-Path -ChildPath "Resources"
+    }
+    elseif ($FhirVersion -eq "R5")
+    {
+        $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r5" | Join-Path -ChildPath "Resources"
+    }
+    else
+    {
+        throw "The FHIR version '$FhirVersion' is not supported."
+    }
 }
-elseif ($FhirVersion -eq "R5")
+elseif ($DataSourceType -eq "DICOM")
 {
-    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "r5" | Join-Path -ChildPath "Resources"
+    $SqlScriptCollectionPath = Join-Path $SqlScriptCollectionPath "dicom"
 }
 else
 {
-    throw "The FHIR version '$FhirVersion' is not supported."
+    throw "The data source type '$DataSourceType' is not supported."
 }
 
 function Start-Retryable-Job {
@@ -161,9 +177,10 @@ function Remove-FhirDatabase
 
 function Set-InitializeEnvironment
 {
-    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$storageName, [string]$container, [string]$resultPath)
+    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$storageName, [string]$container, [string]$resultPath, [string]$dataSourceType)
 
     $locationPath = "https://$storageName.blob.core.windows.net/$container/$resultPath"
+    $schema = $dataSourceType.ToLower()
 
     $initializeEnvironmentSql = "
     CREATE MASTER KEY ENCRYPTION BY PASSWORD = '$masterKey';
@@ -180,7 +197,7 @@ function Set-InitializeEnvironment
     CREATE EXTERNAL FILE FORMAT ParquetFormat WITH (  FORMAT_TYPE = PARQUET );
     
     GO
-    CREATE SCHEMA fhir;
+    CREATE SCHEMA $schema;
     
     GO
     USE [master]"
@@ -359,9 +376,32 @@ function Get-OrasExeApp {
     Write-Host "Finish download oras application from $orasUrl" -ForegroundColor Green 
 }
 
+function Get-ImageDigest {
+    param ([string]$orasAppPath, [string]$schemaImageReference)
+    $registryName = $schemaImageReference.Substring(0, $schemaImageReference.IndexOf('.azurecr.io'))
+    Connect-AzContainerRegistry -Name $registryName -ErrorAction stop | Out-Null
+
+    $orasParameters = @(
+        'manifest'
+        "fetch"
+        '--descriptor'
+        $schemaImageReference
+    )
+
+    $descriptor = & "./$orasAppPath" $orasParameters
+    $digest = ($descriptor | ConvertFrom-Json).digest
+    Write-Information "Got image digest $digest from $schemaImageReference" -InformationAction Continue
+
+    return $digest
+}
+
 function Get-CustomizedSchemaImage {
-    param ([string]$orasAppPath, [string]$schemaImageReference, [string]$customizedTemplateDirectory)
-    
+    param ([string]$orasAppPath, [string]$schemaImageReference, [string]$customizedSchemaDirectory, [string]$templateDirectory)
+
+    if (!(Test-Path $customizedSchemaDirectory)){
+        New-Item $customizedSchemaDirectory -ItemType Directory
+    }
+
     $registryName = $schemaImageReference.Substring(0, $schemaImageReference.IndexOf('.azurecr.io'))
     Connect-AzContainerRegistry -Name $registryName -ErrorAction stop
 
@@ -369,16 +409,18 @@ function Get-CustomizedSchemaImage {
     $orasParameters = @(
         'pull'
         $schemaImageReference
+        '-o'
+        $customizedSchemaDirectory
     )
     
     Execute_File -fileName "./$orasAppPath" -argumentList $orasParameters
 
-    $compressPackages = Get-ChildItem -Path * -Include '*.tar.gz' -Name
+    $compressPackages = Get-ChildItem -Path (Join-Path $customizedSchemaDirectory '*') -Include '*.tar.gz' | % { $_.FullName }
     Write-Host "Successfully pull the customized schema image: $compressPackages" -ForegroundColor Green
 
     # Unpack the image compressed package to customized template directory    
-    if (!(Test-Path $customizedTemplateDirectory)){
-        New-Item $customizedTemplateDirectory -ItemType Directory
+    if (!(Test-Path $templateDirectory)){
+        New-Item $templateDirectory -ItemType Directory
     }
 
     foreach ($compressPackage in $compressPackages){
@@ -386,7 +428,7 @@ function Get-CustomizedSchemaImage {
             '-xvf'
             $compressPackage
             '-C'
-            $customizedTemplateDirectory
+            $templateDirectory
         )
 
         Execute_File -fileName 'tar' -argumentList $unpackParameters
@@ -400,7 +442,7 @@ function Get-CustomizedSchemaType {
 }
 
 function Get-CustomizedTableSql {
-    param ([string]$schemaType, [PSCustomObject]$schemaObject)
+    param ([string]$schemaType, [PSCustomObject]$schemaObject, [string]$dataSourceType)
 
     $customizedTableProperties = ""
     foreach ($property in $schemaObject.properties.psobject.properties){
@@ -419,7 +461,8 @@ function Get-CustomizedTableSql {
         $customizedTableProperties += "    [$($property.Name)] $sqlType,"
     }
 
-    $createCustomizedTableSql = "CREATE EXTERNAL TABLE [fhir].[$schemaType] (
+    $dataSource = $dataSourceType.ToLower()
+    $createCustomizedTableSql = "CREATE EXTERNAL TABLE [$dataSource].[$schemaType] (
         $customizedTableProperties
         ) WITH (
             LOCATION='/$schemaType/**',
@@ -432,9 +475,9 @@ function Get-CustomizedTableSql {
 
 function New-CustomizedTables
 {
-    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$customizedSchemaDirectory)
+    param([string]$serviceEndpoint, [string]$databaseName, [string]$masterKey, [string]$schemaDirectory, [string]$dataSourceType)
 
-    $schemaFiles = Get-ChildItem -Path $(Join-Path -Path $customizedSchemaDirectory -ChildPath *) -Include '*.schema.json' -Name
+    $schemaFiles = Get-ChildItem -Path $(Join-Path -Path $schemaDirectory -ChildPath *) -Include '*.schema.json' -Name
     $sqlAccessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
 
     Write-Host "Start to create customized Tables on '$databaseName' of '$serviceEndpoint'" -ForegroundColor Green 
@@ -455,12 +498,12 @@ function New-CustomizedTables
             }
         }
 
-        $schemaFilePath = Join-Path -Path $customizedSchemaDirectory -ChildPath $schemaFile
+        $schemaFilePath = Join-Path -Path $schemaDirectory -ChildPath $schemaFile
         $schemaObject = Get-Content $schemaFilePath | Out-String | ConvertFrom-Json -ErrorAction stop
         $resourceType = $schemaFile.Substring(0, $schemaFile.IndexOf('.schema.json'))
         $schemaType = Get-CustomizedSchemaType -resourceType $resourceType
     
-        $sql = Get-CustomizedTableSql -schemaType $schemaType -schemaObject $schemaObject -ErrorAction stop
+        $sql = Get-CustomizedTableSql -schemaType $schemaType -schemaObject $schemaObject -dataSourceType $dataSourceType -ErrorAction stop
 
         Write-Host "Begin to create customized table for $schemaType" -ForegroundColor Green 
         Start-Job -Name $JobName -ScriptBlock{
@@ -570,7 +613,8 @@ try{
         -masterKey $MasterKey `
         -storage $StorageName `
         -container $Container `
-        -resultPath $ResultPath
+        -resultPath $ResultPath `
+        -dataSourceType $DataSourceType
 
     # d). Create TABLEs and VIEWs on Synapse.
     New-TableAndViewsForResources `
@@ -598,16 +642,23 @@ if ($CustomizedSchemaImage) {
             -orasAppPath $OrasAppPath `
             -orasUrl $OrasWinUrl
 
+        $digest = Get-ImageDigest `
+            -orasAppPath $OrasAppPath `
+            -schemaImageReference $CustomizedSchemaImage
+
+        $customizedSchemaDirectory = $CustomizedSchemaDirectoryPrefix + $digest.Substring($digest.Length - 10)
+        $templateDirectory = Join-Path -Path $customizedSchemaDirectory -ChildPath "template"
+        $schemaDirectory = Join-Path -Path $templateDirectory -ChildPath "Schema"
+
         # b). Pull and parse customized schema from Container Registry.
         Get-CustomizedSchemaImage `
             -orasAppPath $OrasAppPath `
             -schemaImageReference $CustomizedSchemaImage `
-            -customizedTemplateDirectory $CustomizedTemplateDirectory
-
-        $customizedSchemaDirectory = Join-Path -Path $CustomizedTemplateDirectory -ChildPath "Schema"
+            -customizedSchemaDirectory $customizedSchemaDirectory `
+            -templateDirectory $templateDirectory
         
         # c). Create placeholder blobs for customized schema data.
-        $sqlFiles = Get-ChildItem $customizedSchemaDirectory -Filter "*.schema.json" -Name 
+        $sqlFiles = Get-ChildItem $schemaDirectory  -Filter "*.schema.json" -Name 
         $customizedSchemaTypes = $sqlFiles | ForEach-Object { Get-CustomizedSchemaType -resourceType $($_ -split "\.")[0] }
         New-PlaceHolderBlobs -storage $StorageName -container $Container -resultPath $ResultPath -schemaTypes $customizedSchemaTypes
 
@@ -616,7 +667,8 @@ if ($CustomizedSchemaImage) {
             -serviceEndpoint $synapseSqlServerEndpoint `
             -databaseName $Database `
             -masterKey $MasterKey `
-            -customizedSchemaDirectory $customizedSchemaDirectory
+            -schemaDirectory $schemaDirectory `
+            -dataSourceType $DataSourceType
     }
     catch{
         Write-Host "Create TABLEs for customized schema data failed, will try to drop database '$Database'." -ForegroundColor Red
