@@ -20,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private readonly string _sinceStr = "1970-01-01T00:00:00+00:00";
         private readonly string _startStr = "2000-01-01T00:00:00+00:00";
         private readonly string _endStr = "2023-01-01T00:00:00+00:00";
-        private readonly List<PatientWrapper> _toBeProcessedPatients = new List<PatientWrapper> { new PatientWrapper("patient1Hash", 2), new PatientWrapper("patient2Hash", 1) };
+        private readonly List<PatientWrapper> _toBeProcessedPatients = new () { new PatientWrapper("patient1Hash", 2), new PatientWrapper("patient2Hash", 1) };
 
         [Fact]
         public void GivenTwoDefinitionsWithDifferentEndTimeForJobVersionV2_WhenGetJobIdentifier_ThenTheJobIdentifierShouldBeTheSame()
