@@ -34,9 +34,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core
             switch (dataSourceConfiguration.Type)
             {
                 case DataSourceType.FHIR:
-                    services.AddSingleton<IJobFactory, AzureStorageJobFactory>();
+                    services.AddSingleton<IJobFactory, FhirAzureStorageJobFactory>();
 
-                    services.AddSingleton<ISchedulerService, SchedulerService>();
+                    services.AddSingleton<ISchedulerService, FhirSchedulerService>();
 
                     services.AddSingleton<IGroupMemberExtractor, GroupMemberExtractor>();
 

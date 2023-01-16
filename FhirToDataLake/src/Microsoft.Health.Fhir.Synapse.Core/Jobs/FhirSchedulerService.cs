@@ -23,7 +23,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
-    public class SchedulerService : ISchedulerService
+    public class FhirSchedulerService : ISchedulerService
     {
         private readonly IQueueClient _queueClient;
 
@@ -31,7 +31,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly byte _queueType;
         private readonly DateTimeOffset? _startTime;
         private readonly DateTimeOffset? _endTime;
-        private readonly ILogger<SchedulerService> _logger;
+        private readonly ILogger<FhirSchedulerService> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly IMetricsLogger _metricsLogger;
         private readonly Guid _instanceGuid;
@@ -39,13 +39,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         // See https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression
         private readonly CrontabSchedule _crontabSchedule;
 
-        public SchedulerService(
+        public FhirSchedulerService(
             IQueueClient queueClient,
             IMetadataStore metadataStore,
             IOptions<JobConfiguration> jobConfiguration,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
-            ILogger<SchedulerService> logger)
+            ILogger<FhirSchedulerService> logger)
         {
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));

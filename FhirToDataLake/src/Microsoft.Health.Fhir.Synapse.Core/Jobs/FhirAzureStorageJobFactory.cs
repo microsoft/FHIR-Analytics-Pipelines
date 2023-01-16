@@ -26,7 +26,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     /// <summary>
     /// Factory to create different jobs.
     /// </summary>
-    public class AzureStorageJobFactory : IJobFactory
+    public class FhirAzureStorageJobFactory : IJobFactory
     {
         private readonly IQueueClient _queueClient;
         private readonly IApiDataClient _dataClient;
@@ -39,10 +39,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly ILoggerFactory _loggerFactory;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly int _maxJobCountInRunningPool;
-        private readonly ILogger<AzureStorageJobFactory> _logger;
+        private readonly ILogger<FhirAzureStorageJobFactory> _logger;
         private readonly IMetricsLogger _metricsLogger;
 
-        public AzureStorageJobFactory(
+        public FhirAzureStorageJobFactory(
             IQueueClient queueClient,
             IApiDataClient dataClient,
             IDataWriter dataWriter,
@@ -70,7 +70,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _maxJobCountInRunningPool = jobConfiguration.Value.MaxQueuedJobCountPerOrchestration;
 
             _loggerFactory = EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
-            _logger = _loggerFactory.CreateLogger<AzureStorageJobFactory>();
+            _logger = _loggerFactory.CreateLogger<FhirAzureStorageJobFactory>();
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
         }
 
