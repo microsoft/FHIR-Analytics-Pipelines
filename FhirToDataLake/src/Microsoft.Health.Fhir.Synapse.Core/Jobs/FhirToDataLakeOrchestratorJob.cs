@@ -149,7 +149,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     foreach (var item in input.SplitParameters)
                     {
-                        _result.NextJobTimestamp[item.Key] = item.Value.DataEndTime;
+                        _result.SubmittedResourceTimestamps[item.Key] = item.Value.DataEndTime;
                     }
 
                     _result.SubmittingProcessingJob = null;
@@ -280,7 +280,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             // Split jobs by resource types.
             foreach (var resourceType in resourceTypes)
             {
-                var startTime = _result.NextJobTimestamp.ContainsKey(resourceType) ? _result.NextJobTimestamp[resourceType] : _inputData.DataStartTime;
+                var startTime = _result.SubmittedResourceTimestamps.ContainsKey(resourceType) ? _result.SubmittedResourceTimestamps[resourceType] : _inputData.DataStartTime;
 
                 // The resource type has already been processed.
                 if (startTime >= _inputData.DataEndTime)
@@ -294,7 +294,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     if (subJob.JobSize == 0)
                     {
-                        _result.NextJobTimestamp[resourceType] = _inputData.DataEndTime;
+                        _result.SubmittedResourceTimestamps[resourceType] = _inputData.DataEndTime;
                         continue;
                     }
                     else if (subJob.JobSize < LowBoundOfProcessingJobResourceCount)
