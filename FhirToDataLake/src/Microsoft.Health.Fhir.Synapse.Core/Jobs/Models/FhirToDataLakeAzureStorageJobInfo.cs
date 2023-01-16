@@ -70,7 +70,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
 
         private static string GetIdentifierText(object inputData, List<string> selectedProperties)
         {
-            // the job version is added in input data to handle possible version compatibility issues when the version is updated. It is not related to the job definition, so we need to remove the job version property when calculate job identifier.
             var inputDataJObject = JObject.FromObject(inputData);
             var identifierJObject = new JObject();
             foreach (var property in selectedProperties)
@@ -78,6 +77,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 identifierJObject.Add(inputDataJObject.Property(property));
             }
 
+            // When getting the job identifier, the default version (v1) serializes job input data using `JsonConvert.SerializeObject()`, which removes the JSON format in the output string.
+            // We select specific properties for different job versions to calculate job identifier now, so `jObject.tostring()` is used, we need to remove the JSON format in the output string for `jObject.tostring()`  function by specifying "Formatting.None";
             return identifierJObject.ToString(Formatting.None);
         }
     }
