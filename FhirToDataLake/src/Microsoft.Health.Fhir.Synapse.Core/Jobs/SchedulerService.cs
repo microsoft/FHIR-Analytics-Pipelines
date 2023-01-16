@@ -335,7 +335,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 Since = _startTime,
                 DataStartTime = currentTriggerEntity.TriggerStartTime,
                 DataEndTime = currentTriggerEntity.TriggerEndTime,
-                IsIncremental = currentTriggerEntity.IsIncrementalEntity,
             };
 
             IEnumerable<JobInfo> jobInfoList = await _queueClient.EnqueueAsync(
@@ -422,7 +421,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 currentTriggerEntity.TriggerStartTime = nextTriggerStartTime;
                 currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerEndTime;
-                currentTriggerEntity.IsIncrementalEntity = true;
 
                 bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
                 _logger.LogInformation(isSucceeded

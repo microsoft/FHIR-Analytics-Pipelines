@@ -151,6 +151,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
                 inputData,
+                new FhirToDataLakeProcessingJobSpliter(GetBrokenFhirDataClient(), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
                 GetBrokenFhirDataClient(),
                 GetDataWriter(containerName, blobClient),
                 queueClient,
@@ -206,6 +207,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
                 inputData,
+                new FhirToDataLakeProcessingJobSpliter(GetMockFhirDataClient(inputFileCount, resumeFrom), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
                 GetMockFhirDataClient(inputFileCount, resumeFrom),
                 GetDataWriter(containerName, blobClient),
                 queueClient,
@@ -330,6 +332,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
                 inputData,
+                new FhirToDataLakeProcessingJobSpliter(GetMockFhirDataClient(inputCount, resumeFrom), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
                 GetMockFhirDataClient(inputCount, resumeFrom),
                 GetDataWriter(containerName, blobClient),
                 queueClient,

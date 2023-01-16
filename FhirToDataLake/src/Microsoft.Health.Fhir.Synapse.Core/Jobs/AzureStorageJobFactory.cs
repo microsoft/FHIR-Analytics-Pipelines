@@ -112,6 +112,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     return new FhirToDataLakeOrchestratorJob(
                         jobInfo,
                         inputData,
+                        new FhirToDataLakeProcessingJobSpliter(_dataClient, _diagnosticLogger, _loggerFactory.CreateLogger<FhirToDataLakeProcessingJobSpliter>()),
                         _dataClient,
                         _dataWriter,
                         _queueClient,

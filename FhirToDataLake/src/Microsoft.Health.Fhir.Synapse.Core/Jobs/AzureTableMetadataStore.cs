@@ -14,6 +14,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
+using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.Fhir.Synapse.JobManagement;
 
@@ -140,8 +141,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             try
             {
                 Response<OrchestratorJobStatusEntity> response = await _metadataTableClient.GetEntityAsync<OrchestratorJobStatusEntity>(
-                    TableKeyProvider.OrchestratorJobStatusPartitionKey(queueType),
-                    TableKeyProvider.OrchestratorJobStatusRowKey(queueType, groupId),
+                    TableKeyProvider.JobStatusPartitionKey(queueType, JobType.Orchestrator.ToString()),
+                    TableKeyProvider.JobStatusRowKey(queueType, JobType.Orchestrator.ToString(), groupId),
                     cancellationToken: cancellationToken);
 
                 entity = response.Value;

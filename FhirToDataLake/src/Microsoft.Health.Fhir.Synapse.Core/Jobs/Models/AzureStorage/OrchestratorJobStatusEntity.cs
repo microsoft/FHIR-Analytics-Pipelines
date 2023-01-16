@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using Azure;
 using Azure.Data.Tables;
 
@@ -20,8 +19,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage
 
         public ETag ETag { get; set; }
 
-        
-
         /// <summary>
         /// statistic result of orchestrator job.
         /// </summary>
@@ -31,7 +28,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage
         /// The corresponding orchestrator job id of current trigger
         /// </summary>
         public long GroupId { get; set; } = 0;
-
-        public bool IsIncrementalEntity { get; set; } = true;
     }
 }

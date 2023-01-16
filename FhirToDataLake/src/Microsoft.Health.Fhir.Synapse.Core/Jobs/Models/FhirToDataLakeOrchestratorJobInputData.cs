@@ -33,10 +33,5 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// End time
         /// </summary>
         public DateTimeOffset DataEndTime { get; set; }
-
-        /// <summary>
-        /// Is Incremental
-        /// </summary>
-        public bool IsIncremental { get; set; }
     }
 }

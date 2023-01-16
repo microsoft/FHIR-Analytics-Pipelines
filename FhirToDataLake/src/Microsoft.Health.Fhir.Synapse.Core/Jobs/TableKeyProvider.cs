@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
@@ -13,9 +14,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
         public static string TriggerRowKey(byte queueType) => $"{queueType:D3}_trigger";
 
-        public static string OrchestratorJobStatusPartitionKey(byte queueType) => $"{queueType:D3}_jobStatus";
+        public static string JobStatusPartitionKey(byte queueType, string jobType) => $"{queueType:D3}_{jobType}_jobStatus";
 
-        public static string OrchestratorJobStatusRowKey(byte queueType, long groupId) => $"{queueType:D3}_{groupId:D20}";
+        public static string JobStatusRowKey(byte queueType, string jobType, long groupId) => $"{queueType:D3}_{jobType}_{groupId:D20}";
 
         public static string LeasePartitionKey(byte queueType) => $"{queueType:D3}_lock";
 

@@ -384,22 +384,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             foreach (TypeFilter typeFilter in _typeFilters)
             {
-                if (_inputData.Parameters != null)
+                if (_inputData.SplitParameters != null)
                 {
-                    if (!_inputData.Parameters.ContainsKey(typeFilter.ResourceType))
+                    if (!_inputData.SplitParameters.ContainsKey(typeFilter.ResourceType))
                     {
                         continue;
                     }
 
                     searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(
                             FhirApiConstants.LastUpdatedKey,
-                            $"lt{_inputData.Parameters[typeFilter.ResourceType].DataEndTime.ToInstantString()}"));
+                            $"lt{_inputData.SplitParameters[typeFilter.ResourceType].DataEndTime.ToInstantString()}"));
 
-                    if (_inputData.Parameters[typeFilter.ResourceType].DataStartTime != null)
+                    if (_inputData.SplitParameters[typeFilter.ResourceType].DataStartTime != null)
                     {
                         searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(
                             FhirApiConstants.LastUpdatedKey,
-                            $"ge{((DateTimeOffset)_inputData.Parameters[typeFilter.ResourceType].DataStartTime).ToInstantString()}"));
+                            $"ge{((DateTimeOffset)_inputData.SplitParameters[typeFilter.ResourceType].DataStartTime).ToInstantString()}"));
                     }
                 }
 
@@ -574,7 +574,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             }
 
                             // Upload to blob and log result
-                            var dateTime = _inputData.Parameters == null && _inputData.Parameters.ContainsKey(resourceType) ? _inputData.DataEndTime : _inputData.Parameters[resourceType].DataEndTime;
+                            var dateTime = _inputData.SplitParameters == null && _inputData.SplitParameters.ContainsKey(resourceType) ? _inputData.DataEndTime : _inputData.SplitParameters[resourceType].DataEndTime;
                             string blobUrl = await _dataWriter.WriteAsync(parquetStream, _jobId, _outputFileIndexMap[schemaType], dateTime, cancellationToken);
                             _outputFileIndexMap[schemaType] += 1;
 
