@@ -133,8 +133,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     string[] jobDefinitions = { JsonConvert.SerializeObject(input) };
 
                     _result.SubmittingProcessingJob = jobDefinitions;
-                    _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
-                    _jobStatus = await UpdateJobStatusAsync(_jobStatus, cancellationToken);
+                    _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
 
                     IEnumerable<JobInfo> jobInfos = await _queueClient.EnqueueAsync(
                         _jobInfo.QueueType,
@@ -155,8 +154,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     _result.SubmittingProcessingJob = null;
                     progress.Report(JsonConvert.SerializeObject(_result));
 
-                    _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
-                    _jobStatus = await UpdateJobStatusAsync(_jobStatus, cancellationToken);
+                    _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
 
                     if (_result.RunningJobIds.Count >
                         JobConfigurationConstants.CheckRunningJobCompleteRunningJobCountThreshold)
@@ -180,8 +178,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _result.CompleteTime = processEndtime;
 
                 progress.Report(JsonConvert.SerializeObject(_result));
-                _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
-                _jobStatus = await UpdateJobStatusAsync(_jobStatus, cancellationToken);
+                _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
 
                 var jobLatency = processEndtime - _inputData.DataEndTime;
                 _metricsLogger.LogProcessLatencyMetric(jobLatency.TotalSeconds);
@@ -256,8 +253,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return jobStatus;
         }
 
-        private async Task<OrchestratorJobStatusEntity> UpdateJobStatusAsync(OrchestratorJobStatusEntity jobStatus, CancellationToken cancellationToken)
+        private async Task<OrchestratorJobStatusEntity> UpdateJobStatusWithResultAsync(CancellationToken cancellationToken)
         {
+            _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
             if (!await _metadataStore.TryUpdateEntityAsync(_jobStatus))
             {
                 throw new SynapsePipelineInternalException("Update orchestrator job status failed.");
@@ -503,9 +501,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 _result.RunningJobIds.ExceptWith(completedJobIds);
                 progress.Report(JsonConvert.SerializeObject(_result));
-
-                _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
-                _jobStatus = await UpdateJobStatusAsync(_jobStatus, cancellationToken);
+                _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
             }
 
             _logger.LogInformation($"Orchestrator job {_jobInfo.Id} finished checking running job status, there are {completedJobIds.Count} jobs completed.");

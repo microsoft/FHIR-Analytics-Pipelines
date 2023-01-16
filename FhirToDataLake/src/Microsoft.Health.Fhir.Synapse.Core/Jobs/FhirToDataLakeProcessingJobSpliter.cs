@@ -79,10 +79,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     anchorList = anchorList.OrderBy(p => p.Key).ToDictionary(p => p.Key, o => o.Value);
                     DateTimeOffset? lastEndTime = nextJobEnd ?? startTime;
 
-                    nextJobEnd = await GetAnchor(resourceType, lastEndTime, anchorList, cancellationToken);
+                    nextJobEnd = await GetNextSplitTimestamp(resourceType, lastEndTime, anchorList, cancellationToken);
 
                     var jobSize = lastEndTime == null ? anchorList[(DateTimeOffset)nextJobEnd] : anchorList[(DateTimeOffset)nextJobEnd] - anchorList[(DateTimeOffset)lastEndTime];
-                    _logger.LogInformation($"Spliting {resourceType}job, generate new split.time : {(DateTimeOffset.UtcNow - lastSplitTimestamp).TotalMilliseconds}. {lastEndTime} - {(DateTimeOffset)nextJobEnd}, {jobSize} counts. ");
+                    _logger.LogInformation($"Spliting {resourceType} job. Generated new sub job using {(DateTimeOffset.UtcNow - lastSplitTimestamp).TotalMilliseconds} milliseconds with {jobSize} resource counts. ");
                     lastSplitTimestamp = DateTimeOffset.Now;
 
                     yield return new SubJobInfo
@@ -185,7 +185,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return null;
         }
 
-        private async Task<DateTimeOffset?> GetAnchor(string resourceType, DateTimeOffset? start, Dictionary<DateTimeOffset, int> anchorList, CancellationToken cancellationToken)
+        private async Task<DateTimeOffset?> GetNextSplitTimestamp(string resourceType, DateTimeOffset? start, Dictionary<DateTimeOffset, int> anchorList, CancellationToken cancellationToken)
         {
             int baseSize = start == null ? 0 : anchorList[(DateTimeOffset)start];
             var last = start;

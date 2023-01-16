@@ -20,7 +20,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage
         public ETag ETag { get; set; }
 
         /// <summary>
-        /// statistic result of orchestrator job.
+        /// Statistic result of orchestrator job.
         /// </summary>
         public string StatisticResult { get; set; }
 
