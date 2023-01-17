@@ -562,7 +562,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(triggerLeaseEntity.WorkingInstanceGuid, newTriggerLeaseEntity.WorkingInstanceGuid);
 
             // the scheduler service acquire lease again
-            await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
+            await Task.Delay(TimeSpan.FromSeconds(4), CancellationToken.None);
 
             newTriggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
             Assert.True(newTriggerLeaseEntity.HeartbeatDateTime > triggerLeaseEntity.HeartbeatDateTime);
