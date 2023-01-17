@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Extensions;
 using Microsoft.Health.Fhir.Synapse.JobManagement.Models;
 using Newtonsoft.Json;
@@ -13,10 +14,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
 {
     public class FhirToDataLakeAzureStorageJobInfo : AzureStorageJobInfo
     {
-        private readonly DateTimeOffset _fakeDataEndTime = DateTimeOffset.MinValue;
-
-        // Remove job version field and data end time field in Definition to generate job identifier,
-        // as the data end time is related to the trigger created time, and may be different if there are two instances try to create a new trigger simultaneously
         public override string JobIdentifier()
         {
             string result = (TryParseAsFhirToDataLakeOrchestratorJobInputData() ??
@@ -32,13 +29,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(Definition);
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
-                    // the data end time is removed when calculate JobIdentifier since job version v2
-                    if (inputData.JobVersion > SupportedJobVersion.V1)
+                    return inputData.JobVersion switch
                     {
-                        inputData.DataEndTime = _fakeDataEndTime;
-                    }
-
-                    return GetIdentifierText(inputData);
+                        SupportedJobVersion.V1 => GetIdentifierText(inputData, JobVersionManager.FhirToDataLakeOrchestratorJobIdentifierPropertiesV1),
+                        SupportedJobVersion.V2 => GetIdentifierText(inputData, JobVersionManager.FhirToDataLakeOrchestratorJobIdentifierPropertiesV2),
+                        _ => null,
+                    };
                 }
             }
             catch (Exception)
@@ -56,13 +52,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 var inputData = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(Definition);
                 if (inputData is { JobType: JobType.Processing })
                 {
-                    // the data end time is removed when calculate JobIdentifier since job version v2
-                    if (inputData.JobVersion > SupportedJobVersion.V1)
+                    return inputData.JobVersion switch
                     {
-                        inputData.DataEndTime = _fakeDataEndTime;
-                    }
-
-                    return GetIdentifierText(inputData);
+                        SupportedJobVersion.V1 => GetIdentifierText(inputData, JobVersionManager.FhirToDataLakeProcessingJobIdentifierPropertiesV1),
+                        SupportedJobVersion.V2 => GetIdentifierText(inputData, JobVersionManager.FhirToDataLakeProcessingJobIdentifierPropertiesV2),
+                        _ => null,
+                    };
                 }
             }
             catch (Exception)
@@ -73,13 +68,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
             return null;
         }
 
-        private static string GetIdentifierText(object inputData)
+        private static string GetIdentifierText(object inputData, List<string> selectedProperties)
         {
-            // the job version is added in input data to handle possible version compatibility issues when the version is updated. It is not related to the job definition, so we need to remove the job version property when calculate job identifier.
-            var jobject = JObject.FromObject(inputData);
-            jobject[JobVersionManager.JobVersionKey].Parent.Remove();
+            var inputDataJObject = JObject.FromObject(inputData);
+            var identifierJObject = new JObject();
+            foreach (var property in selectedProperties)
+            {
+                identifierJObject.Add(inputDataJObject.Property(property));
+            }
 
-            return jobject.ToString();
+            // When getting the job identifier, the default version (v1) serializes job input data using `JsonConvert.SerializeObject()`, which removes the JSON format in the output string.
+            // We select specific properties for different job versions to calculate job identifier now, so `jObject.tostring()` is used, we need to remove the JSON format in the output string for `jObject.tostring()`  function by specifying "Formatting.None";
+            return identifierJObject.ToString(Formatting.None);
         }
     }
 }
