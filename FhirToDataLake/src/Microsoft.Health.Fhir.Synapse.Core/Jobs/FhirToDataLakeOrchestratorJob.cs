@@ -232,6 +232,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     nextJobEnd = _inputData.DataEndTime;
                 }
 
+                // For job version compatibility
+                // job version v1 use nextResourceTimestamp as the next job start time, job version v2 improve it by using lastEndTime
+                DateTimeOffset? nextJobStart = _inputData.JobVersion == SupportedJobVersion.V1 ? nextResourceTimestamp : lastEndTime;
+
                 var input = new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
@@ -239,7 +243,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,
-                    DataStartTime = lastEndTime,
+                    DataStartTime = nextJobStart,
                     DataEndTime = nextJobEnd,
                 };
                 _result.NextJobTimestamp = nextJobEnd;
