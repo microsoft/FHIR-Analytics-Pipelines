@@ -66,7 +66,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var jobject = JObject.FromObject(orchestratorDefinition);
 
-            jobject[JobVersionManager.JobVersionKey] = "UnsupportedJobVersion";
+            jobject[FhirToDataLakeJobInputDataProperties.JobVersion] = "UnsupportedJobVersion";
 
             // enqueue job
             List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(

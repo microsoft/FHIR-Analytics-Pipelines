@@ -1,0 +1,28 @@
+steps:
+- task: AzureKeyVault@2
+  inputs:
+    azureSubscription: 'ResoluteOpenSource'
+    KeyVaultName: $(keyVaultName)
+    SecretsFilter: '*'
+    RunAsPreJob: false
+
+- task: AzurePowerShell@5
+  displayName: Clean up image on test ACR
+  inputs:
+    azureSubscription: ResoluteOpenSource
+    azurePowerShellVersion: latestVersion
+    ScriptType: inlineScript
+    pwsh: true
+    Inline: |
+      try
+      {
+        Remove-AzContainerRegistryRepository -Name $(imageName) -RegistryName ($env:CONTAINER_REGISTRY_SERVER -split '.', 0, "simplematch")[0]
+        Write-Host "##[section]Clear test image"
+      }
+      catch [Exception]
+      {
+        Write-Host "##[warning] $($_.Exception.Message)"
+      }
+  env:
+    CONTAINER_REGISTRY_SERVER: $(pipeline-container-registry-server)
+
