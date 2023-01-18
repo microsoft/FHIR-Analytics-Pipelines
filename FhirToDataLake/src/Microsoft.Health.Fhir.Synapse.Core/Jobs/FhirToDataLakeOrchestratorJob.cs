@@ -234,7 +234,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // For job version compatibility
                 // job version v1 use nextResourceTimestamp as the next job start time, job version v2 improve it by using lastEndTime
-                DateTimeOffset? nextJobStart = _inputData.JobVersion == SupportedJobVersion.V1 ? nextResourceTimestamp : lastEndTime;
+                DateTimeOffset? nextJobStart = _inputData.JobVersion == JobVersion.V1 ? nextResourceTimestamp : lastEndTime;
 
                 var input = new FhirToDataLakeProcessingJobInputData
                 {

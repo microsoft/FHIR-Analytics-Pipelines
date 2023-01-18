@@ -97,7 +97,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var orchestratorDefinition = new DicomToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
-                JobVersion = SupportedJobVersion.V1,
+                JobVersion = JobVersion.V1,
                 StartOffset = 0,
                 EndOffset = 100,
             };

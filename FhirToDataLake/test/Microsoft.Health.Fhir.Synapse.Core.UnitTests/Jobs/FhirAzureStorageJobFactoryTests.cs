@@ -102,7 +102,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
-                JobVersion = SupportedJobVersion.V1,
+                JobVersion = JobVersion.V1,
                 DataStartTime = null,
                 DataEndTime = DateTime.UtcNow,
             };

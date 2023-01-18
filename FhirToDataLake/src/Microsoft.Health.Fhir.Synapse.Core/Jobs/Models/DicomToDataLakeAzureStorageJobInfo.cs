@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 {
                     return inputData.JobVersion switch
                     {
-                        SupportedJobVersion.V1 => GetIdentifierText(inputData, DicomJobVersionManager.DicomToDataLakeOrchestratorJobIdentifierPropertiesV1),
+                        JobVersion.V1 => GetIdentifierText(inputData, DicomJobVersionManager.DicomToDataLakeOrchestratorJobIdentifierPropertiesV1),
                         _ => null,
                     };
                 }
@@ -55,7 +55,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 {
                     return inputData.JobVersion switch
                     {
-                        SupportedJobVersion.V1 => GetIdentifierText(inputData, DicomJobVersionManager.DicomToDataLakeProcessingJobIdentifierPropertiesV1),
+                        JobVersion.V1 => GetIdentifierText(inputData, DicomJobVersionManager.DicomToDataLakeProcessingJobIdentifierPropertiesV1),
                         _ => null,
                     };
                 }

@@ -29,7 +29,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var orchestratorDefinition1 = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
-                JobVersion = SupportedJobVersion.V2,
+                JobVersion = JobVersion.V2,
                 TriggerSequenceId = 1,
                 Since = DateTimeOffset.MinValue,
                 DataStartTime = DateTimeOffset.MinValue,
@@ -52,7 +52,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var orchestratorDefinition2 = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
-                JobVersion = SupportedJobVersion.V2,
+                JobVersion = JobVersion.V2,
                 TriggerSequenceId = 1,
                 Since = DateTimeOffset.MinValue,
                 DataStartTime = DateTimeOffset.MinValue,
@@ -80,7 +80,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var orchestratorDefinition1 = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
-                JobVersion = SupportedJobVersion.V1,
+                JobVersion = JobVersion.V1,
                 TriggerSequenceId = 1,
                 Since = DateTimeOffset.MinValue,
                 DataStartTime = DateTimeOffset.MinValue,
@@ -104,7 +104,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var orchestratorDefinition2 = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
-                JobVersion = SupportedJobVersion.V1,
+                JobVersion = JobVersion.V1,
                 TriggerSequenceId = 1,
                 Since = DateTimeOffset.MinValue,
                 DataStartTime = DateTimeOffset.MinValue,
@@ -133,7 +133,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
-                JobVersion = SupportedJobVersion.V1,
+                JobVersion = JobVersion.V1,
                 TriggerSequenceId = 1,
                 Since = DateTimeOffset.MinValue,
                 DataStartTime = DateTimeOffset.MinValue,
@@ -153,7 +153,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 HeartbeatDateTime = DateTime.UtcNow,
             };
 
-            orchestratorDefinition.JobVersion = SupportedJobVersion.V2;
+            orchestratorDefinition.JobVersion = JobVersion.V2;
 
             var jobInfo2 = new FhirToDataLakeAzureStorageJobInfo()
             {
@@ -181,7 +181,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var orchestratorDefinitionWithV1 = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
-                JobVersion = SupportedJobVersion.V1,
+                JobVersion = JobVersion.V1,
                 TriggerSequenceId = 1,
                 Since = DateTimeOffset.Parse(_sinceStr),
                 DataStartTime = DateTimeOffset.Parse(_startStr),
@@ -239,7 +239,7 @@ GivenJobVersionV1ProcessingJobDefinition_WhenGetJobIdentifierInNewVersionCode_Th
             var processingDefinitionWithV1 = new FhirToDataLakeProcessingJobInputData
             {
                 JobType = JobType.Processing,
-                JobVersion = SupportedJobVersion.V1,
+                JobVersion = JobVersion.V1,
                 TriggerSequenceId = 1,
                 ProcessingJobSequenceId = 1,
                 Since = DateTimeOffset.Parse(_sinceStr),
@@ -301,7 +301,7 @@ GivenJobVersionV2OrchestratorJobDefinition_WhenGetJobIdentifierInNewVersionCode_
             var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
-                JobVersion = SupportedJobVersion.V2,
+                JobVersion = JobVersion.V2,
                 TriggerSequenceId = 1,
                 Since = DateTimeOffset.Parse(_sinceStr),
                 DataStartTime = DateTimeOffset.Parse(_startStr),
@@ -335,7 +335,7 @@ GivenJobVersionV2ProcessingJobDefinition_WhenGetJobIdentifierInNewVersionCode_Th
             var processingDefinition = new FhirToDataLakeProcessingJobInputData
             {
                 JobType = JobType.Processing,
-                JobVersion = SupportedJobVersion.V2,
+                JobVersion = JobVersion.V2,
                 TriggerSequenceId = 1,
                 ProcessingJobSequenceId = 1,
                 Since = DateTimeOffset.Parse(_sinceStr),

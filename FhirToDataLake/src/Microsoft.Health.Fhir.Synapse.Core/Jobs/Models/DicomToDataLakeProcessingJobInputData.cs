@@ -15,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// <summary>
         /// Job version, used for version update
         /// </summary>
-        public SupportedJobVersion JobVersion { get; set; } = DicomJobVersionManager.DefaultJobVersion;
+        public JobVersion JobVersion { get; set; } = DicomJobVersionManager.DefaultJobVersion;
 
         /// <summary>
         /// Trigger sequence id

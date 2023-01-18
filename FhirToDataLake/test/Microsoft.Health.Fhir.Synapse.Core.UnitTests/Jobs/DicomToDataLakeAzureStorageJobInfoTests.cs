@@ -25,7 +25,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 JobType = JobType.Orchestrator,
                 TriggerSequenceId = 1,
-                JobVersion = SupportedJobVersion.V1,
+                JobVersion = JobVersion.V1,
                 StartOffset = 0,
                 EndOffset = 1,
             };
@@ -47,7 +47,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 JobType = JobType.Orchestrator,
                 TriggerSequenceId = 1,
-                JobVersion = SupportedJobVersion.V1,
+                JobVersion = JobVersion.V1,
                 StartOffset = 0,
                 EndOffset = 2,
             };
@@ -79,7 +79,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 JobType = JobType.Orchestrator,
                 TriggerSequenceId = 1,
-                JobVersion = SupportedJobVersion.V1,
+                JobVersion = JobVersion.V1,
                 StartOffset = 0,
             };
 

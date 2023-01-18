@@ -14,14 +14,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public void TheDefaultJobVersionShouldBeV1()
         {
             // the default job version should always be V1, as we don't add job version field in V1
-            Assert.Equal(SupportedJobVersion.V1, FhirJobVersionManager.DefaultJobVersion);
+            Assert.Equal(JobVersion.V1, FhirJobVersionManager.DefaultJobVersion);
         }
 
         [Fact]
         public void TheCurrentJobVersionShouldBeV2()
         {
             // the current job version V2, be careful to update the current job version. If the current job version is updated, need to consider version compatibility issues
-            Assert.Equal(SupportedJobVersion.V2, FhirJobVersionManager.CurrentJobVersion);
+            Assert.Equal(JobVersion.V2, FhirJobVersionManager.CurrentJobVersion);
         }
     }
 }

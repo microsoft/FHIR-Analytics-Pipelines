@@ -727,9 +727,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Theory]
-        [InlineData(SupportedJobVersion.V1)]
-        [InlineData(SupportedJobVersion.V2)]
-        public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned(SupportedJobVersion jobVersion)
+        [InlineData(JobVersion.V1)]
+        [InlineData(JobVersion.V2)]
+        public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned(JobVersion jobVersion)
         {
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 

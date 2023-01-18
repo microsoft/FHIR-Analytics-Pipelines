@@ -93,8 +93,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var inputData = JsonConvert.DeserializeObject<DicomToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
-                    bool isSupported = Enum.IsDefined(typeof(SupportedJobVersion), inputData.JobVersion);
-                    if (isSupported)
+                    if (DicomJobVersionManager.SupportedJobVersion.Contains(inputData.JobVersion))
                     {
                         var currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
                             ? new DicomToDataLakeOrchestratorJobResult()
@@ -130,8 +129,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var inputData = JsonConvert.DeserializeObject<DicomToDataLakeProcessingJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Processing })
                 {
-                    bool isSupported = Enum.IsDefined(typeof(SupportedJobVersion), inputData.JobVersion);
-                    if (isSupported)
+                    if (DicomJobVersionManager.SupportedJobVersion.Contains(inputData.JobVersion))
                     {
                         return new DicomToDataLakeProcessingJob(
                             jobInfo.Id,
