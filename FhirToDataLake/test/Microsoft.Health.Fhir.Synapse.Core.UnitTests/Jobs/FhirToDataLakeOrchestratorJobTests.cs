@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs.Models;
 using Hl7.FhirPath.Sprache;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -20,7 +19,6 @@ using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.FhirSearch;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
-using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
@@ -49,11 +47,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private static readonly List<TypeFilter> TestResourceTypeFilters = new List<TypeFilter> { new TypeFilter("Patient", null) };
         private static readonly List<TypeFilter> TestFourResourceTypeFilters = new List<TypeFilter> { new TypeFilter("Patient1", null), new TypeFilter("Patient2", null), new TypeFilter("Patient3", null), new TypeFilter("Patient4", null) };
+        private static readonly int ResourceCountPerDayPerJob = (int)(JobConfigurationConstants.HighBoundOfProcessingJobResourceCount / (TestEndTime - TestStartTime).TotalDays);
 
-        [Fact]
-        public async Task GivenASystemScopeWithOneResourceType_WhenProcessing_CorrectNumberOfJobWillBeCreated()
+        public static IEnumerable<object[]> GetResourceCountForEachResourceType()
         {
-            await VerifyCommonOrchestratorJobAsync(4, 2);
+            yield return new object[] { new Dictionary<string, int>() { { "Patient", 400000 } }, 1 };
+            yield return new object[] { new Dictionary<string, int>() { { "Patient", 800000 } }, 2 };
+            yield return new object[] { new Dictionary<string, int>() { { "Patient", 4000000 } }, 10 };
+            yield return new object[] { new Dictionary<string, int>() { { "Patient1", 400000 }, { "Patient2", 400000 }, { "Patient3", 400000 } }, 3 };
+            yield return new object[] { new Dictionary<string, int>() { { "Patient1", 40000 }, { "Patient2", 40000 }, { "Patient3", 40000 } }, 2 };
+            yield return new object[] { new Dictionary<string, int>() { { "Patient1", 4000 }, { "Patient2", 4000 }, { "Patient3", 4000 } }, 1 };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetResourceCountForEachResourceType))]
+        public async Task GivenASystemScopeWithDifferentResourceTypes_WhenProcessing_CorrectNumberOfJobWillBeCreated(Dictionary<string, int> parameters, int expectedCount)
+        {
+            await VerifyJobCountAsync(parameters, expectedCount);
         }
 
         [Fact]
@@ -205,8 +215,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
                 inputData,
-                new FhirToDataLakeProcessingJobSpliter(GetMockFhirDataClient(new Dictionary<string, int>() { { "patient", 60 } }, -1), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
-                GetMockFhirDataClient(new Dictionary<string, int>() { { "patient", 60 } }, -1),
+                new FhirToDataLakeProcessingJobSpliter(GetMockFhirDataClient(new Dictionary<string, int>() { { "Patient", 4 } }, -1), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
+                GetMockFhirDataClient(new Dictionary<string, int>() { { "Patient", 4 } }, -1),
                 GetDataWriter(containerName, blobClient),
                 queueClient,
                 GetGroupMemberExtractor(0),
@@ -218,6 +228,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 new NullLogger<FhirToDataLakeOrchestratorJob>());
 
             using var tokenSource = new CancellationTokenSource();
+            string resultString = await job.ExecuteAsync(progress, CancellationToken.None);
             Task task = job.ExecuteAsync(progress, tokenSource.Token);
 
             await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
@@ -237,9 +248,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         private static async Task<FhirToDataLakeOrchestratorJobResult> VerifyJobCountAsync(
-            Dictionary<string, int> inputFileCount,
-            int resumeFrom = -1,
-            FilterScope filterScope = FilterScope.System)
+            Dictionary<string, int> inputResourceCount,
+            int expectedJobCount)
         {
             string progressResult = null;
             Progress<string> progress = new Progress<string>(r =>
@@ -251,14 +261,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var filterConfiguration = new FilterConfiguration
             {
-                FilterScope = filterScope,
-                RequiredTypes = string.Join(",", inputFileCount.Select(x => x.Key).ToArray()),
+                FilterScope = FilterScope.System,
+                RequiredTypes = string.Join(",", inputResourceCount.Select(x => x.Key).ToArray()),
             };
 
             var blobClient = new InMemoryBlobContainerClient();
 
             FhirToDataLakeOrchestratorJobInputData inputData = GetInputData();
-            MockQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient = GetQueueClient(filterScope);
+            MockQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient = GetQueueClient(FilterScope.System);
             List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(
                 (byte)QueueType.FhirToDataLake,
                 new[] { JsonConvert.SerializeObject(inputData) },
@@ -269,14 +279,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Single(jobInfoList);
             JobInfo orchestratorJobInfo = jobInfoList.First();
 
-            var orchestratorJobResult = new FhirToDataLakeOrchestratorJobResult();
+            foreach (var item in inputResourceCount.Keys)
+            {
+                inputResourceCount[item] = (int)(inputResourceCount[item] / (TestEndTime - TestStartTime).TotalDays);
+            }
 
-            IGroupMemberExtractor groupMemberExtractor = GetGroupMemberExtractor(inputFileCount.Count);
+            IGroupMemberExtractor groupMemberExtractor = GetGroupMemberExtractor(inputResourceCount.Count);
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
                 inputData,
-                new FhirToDataLakeProcessingJobSpliter(GetMockFhirDataClient(inputFileCount, resumeFrom), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
-                GetMockFhirDataClient(inputFileCount, resumeFrom),
+                new FhirToDataLakeProcessingJobSpliter(GetMockFhirDataClient(inputResourceCount, -1), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
+                GetMockFhirDataClient(inputResourceCount, -1),
                 GetDataWriter(containerName, blobClient),
                 queueClient,
                 groupMemberExtractor,
@@ -294,12 +307,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var result = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(resultString);
 
             Assert.NotNull(result);
-            Assert.Equal(inputFileCount.Count, result.CreatedJobCount);
+            Assert.Equal(expectedJobCount, result.CreatedJobCount);
             return result;
         }
 
         private static async Task<FhirToDataLakeOrchestratorJobResult> VerifyCommonOrchestratorJobAsync(
-            int inputFileCount,
+            int processingJobCount,
             int concurrentCount,
             int resumeFrom = -1,
             int completedCount = 0,
@@ -317,7 +330,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var filterConfiguration = new FilterConfiguration
             {
                 FilterScope = filterScope,
-                RequiredTypes = "patient",
+                RequiredTypes = "Patient",
             };
 
             var blobClient = new InMemoryBlobContainerClient();
@@ -337,20 +350,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var orchestratorJobResult = new FhirToDataLakeOrchestratorJobResult();
             bool resumeMode = resumeFrom >= 0;
 
-            var daysInterval = ((TestEndTime - TestStartTime) / inputFileCount).TotalDays;
+            var daysInterval = ((TestEndTime - TestStartTime) / processingJobCount).TotalDays;
 
             if (resumeMode)
             {
                 metadataStore = GetMetaDataStore();
                 var resumeJobResult = new FhirToDataLakeOrchestratorJobResult()
                 {
+                    RunningJobIds = new HashSet<long>(Enumerable.Range(completedCount + 2, resumeFrom - completedCount + 1).Select(x => (long)x)),
                     CreatedJobCount = resumeFrom + 1,
-                    SubmittedResourceTimestamps = new Dictionary<string, DateTimeOffset>() { { "patient", TestStartTime.AddDays((resumeFrom + 1) * daysInterval) } },
-                    TotalResourceCounts = new Dictionary<string, int> { { "Patient", resumeFrom+1 } },
-                    ProcessedResourceCounts = new Dictionary<string, int> { { "Patient", resumeFrom + 1 } },
-                    SkippedResourceCounts = new Dictionary<string, int> { { "Patient", 0} },
-                    ProcessedCountInTotal = resumeFrom +1,
-                    ProcessedDataSizeInTotal = (resumeFrom + 1) * 1000L * TBValue,
+                    SubmittedResourceTimestamps = new Dictionary<string, DateTimeOffset>() { { "Patient", TestStartTime.AddDays((resumeFrom+1) * daysInterval) } },
+                    ProcessedResourceCounts = new Dictionary<string, int> { { "Patient", completedCount } },
+                    SkippedResourceCounts = new Dictionary<string, int> { { "Patient", 0 } },
+                    TotalResourceCounts = new Dictionary<string, int> { { "Patient", completedCount } },
+                    ProcessedDataSizeInTotal = completedCount * 1000L * TBValue,
+                    ProcessedCountInTotal = completedCount,
                 };
                 var resumeJobStatus = new OrchestratorJobStatusEntity()
                 {
@@ -359,9 +373,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                     GroupId = 0,
                     StatisticResult = JsonConvert.SerializeObject(resumeJobResult),
                 };
-                metadataStore.TryAddEntityAsync(resumeJobStatus);
+                _ = await metadataStore.TryAddEntityAsync(resumeJobStatus);
             }
-            for (int i = 0; i < inputFileCount; ++i)
+
+            for (int i = 0; i < processingJobCount; ++i)
             {
                 if (resumeMode)
                 {
@@ -374,41 +389,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                             ProcessingJobSequenceId = i,
                             TriggerSequenceId = inputData.TriggerSequenceId,
                             Since = inputData.Since,
-                            DataStartTime = TestStartTime.AddDays(i * daysInterval),
-                            DataEndTime = TestStartTime.AddDays((i + 1) * daysInterval),
+                            SplitParameters = new Dictionary<string, TimeRange>()
+                            {
+                                {
+                                    "Patient",
+                                    new TimeRange()
+                                    {
+                                       DataStartTime = TestStartTime.AddDays(i * daysInterval),
+                                       DataEndTime = TestStartTime.AddDays((i + 1) * daysInterval),
+                                    }
+                                },
+                            },
                         };
 
                         JobInfo jobInfo = (await queueClient.EnqueueAsync(0, new[] { JsonConvert.SerializeObject(processingInput) }, 1, false, false, CancellationToken.None)).First();
-
-                        var processingResult = new FhirToDataLakeProcessingJobResult
-                        {
-                            SearchCount = new Dictionary<string, int> { { "Patient", 1 } },
-                            ProcessedCount = new Dictionary<string, int> { { "Patient", 1 } },
-                            SkippedCount = new Dictionary<string, int> { { "Patient", 0 } },
-                            ProcessedCountInTotal = 1,
-                            ProcessedDataSizeInTotal = 1000L * TBValue,
-                        };
-
-                        jobInfo.Result = JsonConvert.SerializeObject(processingResult);
-                        if (i < completedCount)
-                        {
-                            jobInfo.Status = JobStatus.Completed;
-                            orchestratorJobResult.TotalResourceCounts.ConcatDictionaryCount(processingResult.SearchCount);
-                            orchestratorJobResult.ProcessedResourceCounts.ConcatDictionaryCount(processingResult.ProcessedCount);
-                            orchestratorJobResult.ProcessedCountInTotal += processingResult.ProcessedCountInTotal;
-                            orchestratorJobResult.ProcessedDataSizeInTotal += processingResult.ProcessedDataSizeInTotal;
-                        }
-                        else
-                        {
-                            jobInfo.Status = JobStatus.Running;
-                        }
-
-                        orchestratorJobResult.CreatedJobCount += 1;
                     }
                 }
             }
 
-            for (int i = 0; i < inputFileCount; ++i)
+            for (int i = 0; i < processingJobCount; ++i)
             {
                 if (i < completedCount)
                 {
@@ -420,12 +419,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 }
             }
 
-            IGroupMemberExtractor groupMemberExtractor = GetGroupMemberExtractor(inputFileCount);
+            IGroupMemberExtractor groupMemberExtractor = GetGroupMemberExtractor(processingJobCount);
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
                 inputData,
-                new FhirToDataLakeProcessingJobSpliter(GetMockFhirDataClient(new Dictionary<string, int>() { { "patient", inputFileCount}}, resumeFrom), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
-                GetMockFhirDataClient(new Dictionary<string, int>() { { "patient", inputFileCount } }, resumeFrom),
+                new FhirToDataLakeProcessingJobSpliter(GetMockFhirDataClient(new Dictionary<string, int>() { { "Patient", processingJobCount * ResourceCountPerDayPerJob } }, resumeFrom), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
+                GetMockFhirDataClient(new Dictionary<string, int>() { { "Patient", processingJobCount * ResourceCountPerDayPerJob } }, resumeFrom),
                 GetDataWriter(containerName, blobClient),
                 queueClient,
                 groupMemberExtractor,
@@ -443,31 +442,31 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var result = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(resultString);
 
             Assert.NotNull(result);
-            Assert.Equal(inputFileCount, result.CreatedJobCount);
-            Assert.Equal(inputFileCount, result.TotalResourceCounts["Patient"]);
-            Assert.Equal(inputFileCount, result.ProcessedResourceCounts["Patient"]);
+            Assert.Equal(processingJobCount, result.CreatedJobCount);
+            Assert.Equal(processingJobCount, result.TotalResourceCounts["Patient"]);
+            Assert.Equal(processingJobCount, result.ProcessedResourceCounts["Patient"]);
             Assert.Equal(0, result.SkippedResourceCounts["Patient"]);
-            Assert.Equal(inputFileCount, result.ProcessedCountInTotal);
-            Assert.Equal(inputFileCount * 1000L * TBValue, result.ProcessedDataSizeInTotal);
+            Assert.Equal(processingJobCount, result.ProcessedCountInTotal);
+            Assert.Equal(processingJobCount * 1000L * TBValue, result.ProcessedDataSizeInTotal);
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));
             var progressForContext = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(progressResult);
             Assert.NotNull(progressForContext);
-            Assert.Equal(inputFileCount, progressForContext.CreatedJobCount);
+            Assert.Equal(processingJobCount, progressForContext.CreatedJobCount);
             Assert.Equal(progressForContext.TotalResourceCounts["Patient"], result.TotalResourceCounts["Patient"]);
             Assert.Equal(progressForContext.ProcessedResourceCounts["Patient"], result.ProcessedResourceCounts["Patient"]);
             Assert.Equal(progressForContext.SkippedResourceCounts["Patient"], result.SkippedResourceCounts["Patient"]);
             Assert.Equal(progressForContext.ProcessedDataSizeInTotal, result.ProcessedDataSizeInTotal);
             Assert.Equal(progressForContext.ProcessedCountInTotal, result.ProcessedCountInTotal);
 
-            Assert.Equal(inputFileCount, queueClient.JobInfos.Count - 1);
+            Assert.Equal(processingJobCount, queueClient.JobInfos.Count - 1);
 
             // verify blob data;
             IEnumerable<string> blobs = await blobClient.ListBlobsAsync("staging");
             Assert.Empty(blobs);
 
             blobs = await blobClient.ListBlobsAsync("result");
-            Assert.Equal(inputFileCount, blobs.Count());
+            Assert.Equal(processingJobCount, blobs.Count());
 
             return result;
         }
@@ -543,17 +542,17 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var dataClient = Substitute.For<IApiDataClient>();
 
-            Func<BaseApiOptions, Dictionary<string, int>, string> func = new Func<BaseApiOptions, Dictionary<string, int>, string>(FunWithPara);
+            Func<BaseApiOptions, Dictionary<string, int>, string> func = new (SearchWithPara);
             dataClient.SearchAsync(Arg.Any<BaseApiOptions>(), default).Returns(x => func((BaseApiOptions)x[0], count));
 
             return dataClient;
         }
 
-        private static string FunWithPara(BaseApiOptions options, Dictionary<string, int> count)
+        private static string SearchWithPara(BaseApiOptions options, Dictionary<string, int> count)
         {
             DateTimeOffset start = DateTimeOffset.MinValue;
             DateTimeOffset end = DateTimeOffset.Now;
-            string resource = "patient";
+            string resource = "Patient";
             foreach (var parameter in options.QueryParameters)
             {
                 if (parameter.Key == FhirApiConstants.LastUpdatedKey)
@@ -589,7 +588,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 }
             }
 
-            var total = (int)(end - start).TotalDays * count[resource] * 200;
+            var total = (int)(end - start).TotalDays * count[resource];
             return $"{{\"total\":{total}}}";
         }
 
@@ -654,6 +653,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             {
                 filterManager.GetTypeFiltersAsync(default).ReturnsForAnyArgs(new List<TypeFilter>() { new TypeFilter("patient", null) });
             }
+
             filterManager.GetFilterScopeAsync(default).ReturnsForAnyArgs(filterConfiguration.FilterScope);
             filterManager.GetGroupIdAsync(default).ReturnsForAnyArgs(filterConfiguration.GroupId);
             return filterManager;
