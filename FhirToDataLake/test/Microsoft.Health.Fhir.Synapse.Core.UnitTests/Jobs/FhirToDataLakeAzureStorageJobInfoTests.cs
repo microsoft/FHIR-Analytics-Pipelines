@@ -21,6 +21,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private readonly string _startStr = "2000-01-01T00:00:00+00:00";
         private readonly string _endStr = "2023-01-01T00:00:00+00:00";
         private readonly List<PatientWrapper> _toBeProcessedPatients = new () { new PatientWrapper("patient1Hash", 2), new PatientWrapper("patient2Hash", 1) };
+        private readonly string _jobVersionPropertyName = nameof(FhirToDataLakeOrchestratorJobInputData.JobVersion);
 
         [Fact]
         public void GivenTwoDefinitionsWithDifferentEndTimeForJobVersionV2_WhenGetJobIdentifier_ThenTheJobIdentifierShouldBeTheSame()
@@ -173,7 +174,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public void
        GivenJobVersionV1OrchestratorJobDefinition_WhenGetJobIdentifierInNewVersionCode_ThenTheJobIdentifierShouldNotBeChanged()
         {
-            // the json string of job v1 : "{"JobType":0,"TriggerSequenceId":1,"Since":"1970-01-01T00:00:00+00:00","DataStartTime":"2000-01-01T00:00:00+00:00","DataEndTime":"2023-01-01T00:00:00+00:00"}"
+            // The job identifier value of job v1 : "{"JobType":0,"TriggerSequenceId":1,"Since":"1970-01-01T00:00:00+00:00","DataStartTime":"2000-01-01T00:00:00+00:00","DataEndTime":"2023-01-01T00:00:00+00:00"}"
             // you should NOT modify the expectedJobV1Identifier
             var expectedJobV1Identifier = "e45dc8b86cc6efade9886b67e1ff8747c60f59e8980d1c69caa2e4041409b199";
 
@@ -260,7 +261,6 @@ GivenJobVersionV1ProcessingJobDefinition_WhenGetJobIdentifierInNewVersionCode_Th
                 HeartbeatDateTime = DateTime.UtcNow,
             };
 
-            var a = jobInfoWithV1.JobIdentifier();
             Assert.Equal(expectedJobV1Identifier, jobInfoWithV1.JobIdentifier());
 
             var processingDefinitionWhitoutJobVersion = new FhirToDataLakeProcessingJobInputData
@@ -375,13 +375,13 @@ GivenJobVersionV2ProcessingJobDefinition_WhenGetJobIdentifierInNewVersionCode_Th
 
             var jobject = JObject.FromObject(inputData);
 
-            jobject[FhirToDataLakeJobInputDataProperties.JobVersion].Parent.Remove();
+            jobject[_jobVersionPropertyName].Parent.Remove();
 
             string inputDataString = JsonConvert.SerializeObject(jobject);
 
             var deserializedInputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(inputDataString);
 
-            Assert.Equal(JobVersionManager.DefaultJobVersion, deserializedInputData.JobVersion);
+            Assert.Equal(FhirJobVersionManager.DefaultJobVersion, deserializedInputData.JobVersion);
         }
     }
 }

@@ -34,6 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
     public class FhirAzureStorageJobFactoryTests
     {
         private const string TestWorkerName = "test-worker";
+        private static string _jobVersionKey = nameof(FhirToDataLakeOrchestratorJobInputData.JobVersion);
 
         [Fact]
         public async Task GivenUnsupportedJobVersion_WhenCreateJob_ThenShouldReturnNull()
@@ -66,7 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var jobject = JObject.FromObject(orchestratorDefinition);
 
-            jobject[FhirToDataLakeJobInputDataProperties.JobVersion] = "UnsupportedJobVersion";
+            jobject[_jobVersionKey] = "UnsupportedJobVersion";
 
             // enqueue job
             List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(

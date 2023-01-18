@@ -422,7 +422,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 currentTriggerEntity.TriggerStartTime = nextTriggerStartTime;
                 currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerEndTime;
-                currentTriggerEntity.JobVersion = JobVersionManager.CurrentJobVersion;
+                currentTriggerEntity.JobVersion = FhirJobVersionManager.CurrentJobVersion;
 
                 bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
                 _logger.LogInformation(isSucceeded
@@ -448,7 +448,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 TriggerEndTime = (DateTimeOffset)GetNextTriggerEndTime(null),
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 0,
-                JobVersion = JobVersionManager.CurrentJobVersion,
+                JobVersion = FhirJobVersionManager.CurrentJobVersion,
             };
 
             // add the initial trigger entity to table

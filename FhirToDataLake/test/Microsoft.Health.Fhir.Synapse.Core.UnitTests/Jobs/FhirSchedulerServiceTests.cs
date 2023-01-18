@@ -835,14 +835,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
 
             // The job version is updated
-            Assert.Equal(JobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
-            Assert.Equal(JobVersionManager.CurrentJobVersion, currentTriggerEntity.JobVersion);
+            Assert.Equal(FhirJobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
+            Assert.Equal(FhirJobVersionManager.CurrentJobVersion, currentTriggerEntity.JobVersion);
 
             JobInfo jobInfo = await queueClient.GetJobByIdAsync((byte)QueueType.FhirToDataLake, currentTriggerEntity.OrchestratorJobId, true, CancellationToken.None);
 
             var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
 
-            Assert.Equal(JobVersionManager.CurrentJobVersion, inputData.JobVersion);
+            Assert.Equal(FhirJobVersionManager.CurrentJobVersion, inputData.JobVersion);
 
             tokenSource.Cancel();
             await task;
@@ -889,14 +889,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
 
             // The job version is NOT updated
-            Assert.Equal(JobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
-            Assert.Equal(JobVersionManager.DefaultJobVersion, currentTriggerEntity.JobVersion);
+            Assert.Equal(FhirJobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
+            Assert.Equal(FhirJobVersionManager.DefaultJobVersion, currentTriggerEntity.JobVersion);
 
             JobInfo jobInfo = await queueClient.GetJobByIdAsync((byte)QueueType.FhirToDataLake, currentTriggerEntity.OrchestratorJobId, true, CancellationToken.None);
 
             var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
 
-            Assert.Equal(JobVersionManager.DefaultJobVersion, inputData.JobVersion);
+            Assert.Equal(FhirJobVersionManager.DefaultJobVersion, inputData.JobVersion);
 
             tokenSource.Cancel();
             await task;
@@ -964,11 +964,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(jobInfoList.First().HeartbeatDateTime, jobInfo.HeartbeatDateTime);
 
             // The job version is NOT updated
-            Assert.Equal(JobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
+            Assert.Equal(FhirJobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
 
             var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
 
-            Assert.Equal(JobVersionManager.DefaultJobVersion, inputData.JobVersion);
+            Assert.Equal(FhirJobVersionManager.DefaultJobVersion, inputData.JobVersion);
 
             tokenSource.Cancel();
             await task;
@@ -988,7 +988,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TriggerEndTime = DateTime.UtcNow.AddMinutes(-5),
                 TriggerStatus = TriggerStatus.Completed,
                 TriggerSequenceId = 11,
-                JobVersion = JobVersionManager.CurrentJobVersion,
+                JobVersion = FhirJobVersionManager.CurrentJobVersion,
             };
 
             DateTimeOffset lastTriggerEndTime = triggerEntity.TriggerEndTime;
@@ -1045,7 +1045,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TriggerEndTime = endTime,
                 TriggerStatus = TriggerStatus.Completed,
                 TriggerSequenceId = 11,
-                JobVersion = JobVersionManager.CurrentJobVersion,
+                JobVersion = FhirJobVersionManager.CurrentJobVersion,
             };
 
             var metadataStore = new MockMetadataStore();

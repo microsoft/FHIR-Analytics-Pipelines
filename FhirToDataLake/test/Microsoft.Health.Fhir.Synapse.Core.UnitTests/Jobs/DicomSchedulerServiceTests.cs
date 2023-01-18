@@ -1293,7 +1293,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // the job is dequeued, and the trigger status is still running.
             JobInfo jobInfo = await queueClient.DequeueAsync(
-                (byte)QueueType.FhirToDataLake,
+                (byte)QueueType.DicomToDataLake,
                 TestWorkerName,
                 0,
                 CancellationToken.None);
