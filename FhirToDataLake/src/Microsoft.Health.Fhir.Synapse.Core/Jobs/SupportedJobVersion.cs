@@ -19,5 +19,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// Second version.
         /// </summary>
         V2 = 2,
+
+        /// <summary>
+        /// Third version.
+        /// </summary>
+        V3 = 3,
     }
 }

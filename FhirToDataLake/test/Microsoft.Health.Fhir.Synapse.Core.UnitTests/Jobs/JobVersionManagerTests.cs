@@ -18,10 +18,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
-        public void TheCurrentJobVersionShouldBeV2()
+        public void TheCurrentJobVersionShouldBeV3()
         {
-            // the current job version V2, be careful to update the current job version. If the current job version is updated, need to consider version compatibility issues
-            Assert.Equal(SupportedJobVersion.V2, JobVersionManager.CurrentJobVersion);
+            // the current job version V3, be careful to update the current job version. If the current job version is updated, need to consider version compatibility issues
+            Assert.Equal(SupportedJobVersion.V3, JobVersionManager.CurrentJobVersion);
         }
     }
 }

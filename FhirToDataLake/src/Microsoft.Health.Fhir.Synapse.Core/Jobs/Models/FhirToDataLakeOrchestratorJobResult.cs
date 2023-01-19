@@ -26,6 +26,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         public long CreatedJobCount { get; set; }
 
         /// <summary>
+        /// Completed job count
+        /// </summary>
+        public long CompletedJobCount { get; set; }
+
+        /// <summary>
         /// Next job timestamp to be processed, used for system scope
         /// </summary>
         public DateTimeOffset? NextJobTimestamp { get; set; }
@@ -39,6 +44,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// Running job ids
         /// </summary>
         public ISet<long> RunningJobIds { get; set; } = new HashSet<long>();
+
+        /// <summary>
+        /// Sequence id to job id map
+        /// </summary>
+        public Dictionary<long, long> SequnceIdToJobIdMap { get; set; } = new Dictionary<long, long>();
 
         /// <summary>
         /// Total resource count (from data source) for each resource types.

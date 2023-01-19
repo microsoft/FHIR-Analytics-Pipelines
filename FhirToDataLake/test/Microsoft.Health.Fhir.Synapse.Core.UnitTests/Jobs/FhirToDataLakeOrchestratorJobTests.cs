@@ -125,7 +125,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var blobClient = new InMemoryBlobContainerClient();
 
-            FhirToDataLakeOrchestratorJobInputData inputData = GetInputData();
+            FhirToDataLakeOrchestratorJobInputData inputData = GetInputData(JobVersionManager.CurrentJobVersion);
             MockQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient = GetQueueClient();
             List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(
                 (byte)QueueType.FhirToDataLake,
@@ -159,7 +159,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
-        public async Task GivenOldOchestratorJobVersion_WhenExecute_ThenTheGeneratedProcessingJobVersionShouldBeTheSameAsOrchestratorJobVersion()
+        public async Task GivenOldVersionOchestratorJob_WhenExecute_ThenTheGeneratedProcessingJobVersionShouldBeTheSameAsOrchestratorJobVersion()
         {
             // orchestrator job with default job version
             var inputData = new FhirToDataLakeOrchestratorJobInputData
@@ -209,20 +209,43 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             using var tokenSource = new CancellationTokenSource();
             Task task = job.ExecuteAsync(progress, tokenSource.Token);
 
-            await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
-
-            var processingJobInfos = (await queueClient.GetJobByGroupIdAsync((byte)QueueType.FhirToDataLake, inputData.TriggerSequenceId, true, CancellationToken.None)).Where(jobInfo => jobInfo.Id != orchestratorJobInfo.Id);
-
-            Assert.True(processingJobInfos.Any());
-
-            foreach (var processingJobInfo in processingJobInfos)
+            try
             {
-                var processingJobInputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(processingJobInfo.Definition);
-                Assert.Equal(JobVersionManager.DefaultJobVersion, processingJobInputData.JobVersion);
-            }
+                await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
 
-            tokenSource.Cancel();
-            await task;
+                var processingJobInfos = (await queueClient.GetJobByGroupIdAsync((byte)QueueType.FhirToDataLake, inputData.TriggerSequenceId, true, CancellationToken.None)).Where(jobInfo => jobInfo.Id != orchestratorJobInfo.Id);
+
+                Assert.True(processingJobInfos.Any());
+
+                foreach (var processingJobInfo in processingJobInfos)
+                {
+                    var processingJobInputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(processingJobInfo.Definition);
+                    Assert.Equal(JobVersionManager.DefaultJobVersion, processingJobInputData.JobVersion);
+                }
+            }
+            finally
+            {
+                tokenSource.Cancel();
+                await Record.ExceptionAsync(async () => await task);
+            }
+        }
+
+        [Fact]
+        public async Task GivenOldVersionOrchestratorJob_WhenExecute_ThenJobShouldBeCompleted()
+        {
+            await VerifyCommonOrchestratorJobAsync(4, 2, jobVersion: SupportedJobVersion.V2);
+        }
+
+        [Fact]
+        public async Task GivenResumedOldVersionOrchestratorJob_WhenExecute_ThenJobShouldBeCompleted()
+        {
+            await VerifyCommonOrchestratorJobAsync(4, 2, 1, jobVersion: SupportedJobVersion.V2);
+        }
+
+        [Fact]
+        public async Task GivenResumedOldVersionOrchestratorJob__WhenExecuteSomeJobCompleted_ThenJobShouldBeCompleted()
+        {
+            await VerifyCommonOrchestratorJobAsync(10, 2, 5, 3, jobVersion: SupportedJobVersion.V2);
         }
 
         private static async Task<FhirToDataLakeOrchestratorJobResult> VerifyCommonOrchestratorJobAsync(
@@ -231,7 +254,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             int resumeFrom = -1,
             int completedCount = 0,
             FilterScope filterScope = FilterScope.System,
-            IMetadataStore metadataStore = null)
+            IMetadataStore metadataStore = null,
+            SupportedJobVersion jobVersion = JobVersionManager.CurrentJobVersion)
         {
             string progressResult = null;
             Progress<string> progress = new Progress<string>(r =>
@@ -248,7 +272,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var blobClient = new InMemoryBlobContainerClient();
 
-            FhirToDataLakeOrchestratorJobInputData inputData = GetInputData();
+            FhirToDataLakeOrchestratorJobInputData inputData = GetInputData(jobVersion);
             MockQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient = GetQueueClient(filterScope);
             List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(
                 (byte)QueueType.FhirToDataLake,
@@ -271,7 +295,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                         var processingInput = new FhirToDataLakeProcessingJobInputData
                         {
                             JobType = JobType.Processing,
-                            JobVersion = JobVersionManager.CurrentJobVersion,
+                            JobVersion = inputData.JobVersion,
                             ProcessingJobSequenceId = i,
                             TriggerSequenceId = inputData.TriggerSequenceId,
                             Since = inputData.Since,
@@ -298,11 +322,23 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                             orchestratorJobResult.ProcessedResourceCounts.ConcatDictionaryCount(processingResult.ProcessedCount);
                             orchestratorJobResult.ProcessedCountInTotal += processingResult.ProcessedCountInTotal;
                             orchestratorJobResult.ProcessedDataSizeInTotal += processingResult.ProcessedDataSizeInTotal;
+                            if (inputData.JobVersion != SupportedJobVersion.V1 && inputData.JobVersion != SupportedJobVersion.V2)
+                            {
+                                orchestratorJobResult.CompletedJobCount++;
+                            }
                         }
                         else
                         {
                             jobInfo.Status = JobStatus.Running;
-                            orchestratorJobResult.RunningJobIds.Add(jobInfo.Id);
+                            if (inputData.JobVersion == SupportedJobVersion.V1 || inputData.JobVersion == SupportedJobVersion.V2)
+                            {
+                                orchestratorJobResult.RunningJobIds.Add(jobInfo.Id);
+                            }
+                        }
+
+                        if (inputData.JobVersion != SupportedJobVersion.V1 && inputData.JobVersion != SupportedJobVersion.V2)
+                        {
+                            orchestratorJobResult.SequnceIdToJobIdMap.Add(i, jobInfo.Id);
                         }
 
                         orchestratorJobResult.CreatedJobCount += 1;
@@ -425,11 +461,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             return queueClient;
         }
 
-        private static FhirToDataLakeOrchestratorJobInputData GetInputData()
+        private static FhirToDataLakeOrchestratorJobInputData GetInputData(SupportedJobVersion jobVersion)
         {
             return new FhirToDataLakeOrchestratorJobInputData
             {
-                JobVersion = JobVersionManager.CurrentJobVersion,
+                JobVersion = jobVersion,
                 JobType = JobType.Orchestrator,
                 TriggerSequenceId = 0L,
                 DataStartTime = TestStartTime,
