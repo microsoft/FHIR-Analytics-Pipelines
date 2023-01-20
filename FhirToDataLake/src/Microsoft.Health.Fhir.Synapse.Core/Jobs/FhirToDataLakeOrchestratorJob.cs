@@ -476,7 +476,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     _result.RunningJobIds.Remove(jobId);
                     break;
                 case SupportedJobVersion.V3:
-                    _result.SequenceIdToJobIdMapForRunningJobs.Remove(jobId);
+                    _result.SequenceIdToJobIdMapForRunningJobs.Remove(_result.CompletedJobCount);
                     _result.CompletedJobCount++;
                     break;
                 default:
