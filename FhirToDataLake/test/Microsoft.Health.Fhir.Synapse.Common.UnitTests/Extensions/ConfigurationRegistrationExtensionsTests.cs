@@ -40,7 +40,6 @@ namespace Microsoft.Health.Fhir.Synapse.Common.UnitTests.Extensions
             yield return new object[] { "abc", "ConfigVersion 'abc' is not supported." };
         }
 
-
         public static IEnumerable<object[]> GetInvalidServiceConfigurationV1()
         {
             yield return new object[] { "fhirServer:serverUrl", string.Empty, "Fhir server url can not be empty." };

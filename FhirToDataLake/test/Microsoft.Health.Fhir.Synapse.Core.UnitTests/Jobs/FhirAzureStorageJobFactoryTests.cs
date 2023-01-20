@@ -41,7 +41,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
-            var jobFactory = new FhirAzureStorageJobFactory(
+            var jobFactory = new FhirToDatalakeAzureStorageJobFactory(
                 queueClient,
                 Substitute.For<IApiDataClient>(),
                 Substitute.For<IDataWriter>(),

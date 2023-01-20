@@ -218,7 +218,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             foreach (var processingJobInfo in processingJobInfos)
             {
                 var processingJobInputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(processingJobInfo.Definition);
-                Assert.Equal(FhirJobVersionManager.DefaultJobVersion, processingJobInputData.JobVersion);
+                Assert.Equal(FhirToDatalakeJobVersionManager.DefaultJobVersion, processingJobInputData.JobVersion);
             }
 
             tokenSource.Cancel();
@@ -271,7 +271,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                         var processingInput = new FhirToDataLakeProcessingJobInputData
                         {
                             JobType = JobType.Processing,
-                            JobVersion = FhirJobVersionManager.CurrentJobVersion,
+                            JobVersion = FhirToDatalakeJobVersionManager.CurrentJobVersion,
                             ProcessingJobSequenceId = i,
                             TriggerSequenceId = inputData.TriggerSequenceId,
                             Since = inputData.Since,
@@ -429,7 +429,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             return new FhirToDataLakeOrchestratorJobInputData
             {
-                JobVersion = FhirJobVersionManager.CurrentJobVersion,
+                JobVersion = FhirToDatalakeJobVersionManager.CurrentJobVersion,
                 JobType = JobType.Orchestrator,
                 TriggerSequenceId = 0L,
                 DataStartTime = TestStartTime,

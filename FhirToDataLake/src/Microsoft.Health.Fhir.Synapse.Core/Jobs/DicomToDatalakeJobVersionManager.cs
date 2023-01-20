@@ -8,7 +8,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
-    public class DicomJobVersionManager
+    public class DicomToDatalakeJobVersionManager
     {
         public const JobVersion CurrentJobVersion = JobVersion.V1;
 
@@ -34,7 +34,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             nameof(DicomToDataLakeProcessingJobInputData.TriggerSequenceId),
             nameof(DicomToDataLakeProcessingJobInputData.ProcessingJobSequenceId),
             nameof(DicomToDataLakeProcessingJobInputData.StartOffset),
-            nameof(DicomToDataLakeProcessingJobInputData.EndOffset),
         };
     }
 }

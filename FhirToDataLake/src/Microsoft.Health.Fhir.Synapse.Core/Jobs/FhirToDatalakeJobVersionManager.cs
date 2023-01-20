@@ -8,7 +8,7 @@ using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
-    public static class FhirJobVersionManager
+    public static class FhirToDatalakeJobVersionManager
     {
         public const JobVersion CurrentJobVersion = JobVersion.V2;
 

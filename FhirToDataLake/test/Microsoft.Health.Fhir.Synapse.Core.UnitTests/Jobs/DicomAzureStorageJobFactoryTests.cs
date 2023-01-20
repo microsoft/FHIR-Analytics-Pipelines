@@ -40,7 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         {
             var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
 
-            var jobFactory = new DicomAzureStorageJobFactory(
+            var jobFactory = new DicomToDatalakeAzureStorageJobFactory(
                 queueClient,
                 Substitute.For<IApiDataClient>(),
                 Substitute.For<IDataWriter>(),

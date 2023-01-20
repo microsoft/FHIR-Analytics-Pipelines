@@ -120,7 +120,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var deserializedInputData = JsonConvert.DeserializeObject<DicomToDataLakeOrchestratorJobInputData>(inputDataString);
 
-            Assert.Equal(DicomJobVersionManager.DefaultJobVersion, deserializedInputData.JobVersion);
+            Assert.Equal(DicomToDatalakeJobVersionManager.DefaultJobVersion, deserializedInputData.JobVersion);
         }
     }
 }

@@ -34,9 +34,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core
             switch (dataSourceConfiguration.Type)
             {
                 case DataSourceType.FHIR:
-                    services.AddSingleton<IJobFactory, FhirAzureStorageJobFactory>();
+                    services.AddSingleton<IJobFactory, FhirToDatalakeAzureStorageJobFactory>();
 
-                    services.AddSingleton<ISchedulerService, FhirSchedulerService>();
+                    services.AddSingleton<ISchedulerService, FhirToDatalakeSchedulerService>();
 
                     services.AddSingleton<IGroupMemberExtractor, GroupMemberExtractor>();
 
@@ -64,9 +64,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core
 
                     break;
                 case DataSourceType.DICOM:
-                    services.AddSingleton<IJobFactory, DicomAzureStorageJobFactory>();
+                    services.AddSingleton<IJobFactory, DicomToDatalakeAzureStorageJobFactory>();
 
-                    services.AddSingleton<ISchedulerService, DicomSchedulerService>();
+                    services.AddSingleton<ISchedulerService, DicomToDatalakeSchedulerService>();
 
                     services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<DicomToDataLakeAzureStorageJobInfo>>();
                     break;

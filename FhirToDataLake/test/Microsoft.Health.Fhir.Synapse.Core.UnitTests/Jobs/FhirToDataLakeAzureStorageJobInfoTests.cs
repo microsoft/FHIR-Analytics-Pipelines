@@ -381,7 +381,7 @@ GivenJobVersionV2ProcessingJobDefinition_WhenGetJobIdentifierInNewVersionCode_Th
 
             var deserializedInputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(inputDataString);
 
-            Assert.Equal(FhirJobVersionManager.DefaultJobVersion, deserializedInputData.JobVersion);
+            Assert.Equal(FhirToDatalakeJobVersionManager.DefaultJobVersion, deserializedInputData.JobVersion);
         }
     }
 }

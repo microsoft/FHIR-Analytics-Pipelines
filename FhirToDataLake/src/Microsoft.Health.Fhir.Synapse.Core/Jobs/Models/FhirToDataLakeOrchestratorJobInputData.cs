@@ -17,7 +17,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// <summary>
         /// Job version, used for version update
         /// </summary>
-        public JobVersion JobVersion { get; set; } = FhirJobVersionManager.DefaultJobVersion;
+        public JobVersion JobVersion { get; set; } = FhirToDatalakeJobVersionManager.DefaultJobVersion;
 
         /// <summary>
         /// Trigger sequence id.
