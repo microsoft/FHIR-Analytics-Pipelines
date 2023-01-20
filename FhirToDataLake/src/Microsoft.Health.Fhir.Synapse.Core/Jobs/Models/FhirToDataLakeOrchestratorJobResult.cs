@@ -48,7 +48,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// <summary>
         /// Sequence id to job id map
         /// </summary>
-        public Dictionary<long, long> SequnceIdToJobIdMap { get; set; } = new Dictionary<long, long>();
+        public Dictionary<long, long> SequenceIdToJobIdMapForRunningJobs { get; set; } = new Dictionary<long, long>();
 
         /// <summary>
         /// Total resource count (from data source) for each resource types.
