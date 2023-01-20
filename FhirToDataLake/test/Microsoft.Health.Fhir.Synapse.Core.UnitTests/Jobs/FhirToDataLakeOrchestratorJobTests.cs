@@ -334,11 +334,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                             {
                                 orchestratorJobResult.RunningJobIds.Add(jobInfo.Id);
                             }
-                        }
 
-                        if (inputData.JobVersion != SupportedJobVersion.V1 && inputData.JobVersion != SupportedJobVersion.V2)
-                        {
-                            orchestratorJobResult.SequenceIdToJobIdMapForRunningJobs.Add(i, jobInfo.Id);
+                            if (inputData.JobVersion != SupportedJobVersion.V1 && inputData.JobVersion != SupportedJobVersion.V2)
+                            {
+                                orchestratorJobResult.SequenceIdToJobIdMapForRunningJobs.Add(i, jobInfo.Id);
+                            }
                         }
 
                         orchestratorJobResult.CreatedJobCount += 1;
