@@ -20,6 +20,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// <summary>
         /// Resource count of the sub job.
         /// </summary>
-        public int JobSize { get; set; }
+        public int ResourceCount { get; set; }
     }
 }

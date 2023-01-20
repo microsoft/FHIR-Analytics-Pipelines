@@ -40,7 +40,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
         /// Resource type and time range parameters for system scope.
         /// SplitParameters will be null for group scope.
         /// </summary>
-        public Dictionary<string, TimeRange> SplitParameters { get; set; } = new Dictionary<string, TimeRange>() { };
+        public Dictionary<string, TimeRange> SplitParameters { get; set; }
 
         /// <summary>
         /// Start time, process all data if not specified. Used for group scope.

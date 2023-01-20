@@ -30,6 +30,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IApiDataClient _dataClient;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<FhirToDataLakeProcessingJobSpliter> _logger;
+        private const string CountApiParameter = "count";
+        private const string TotalCountFieldKey = "total";
+        private const string LastUpdatedApiParameter = "_lastUpdated";
+        private const string LastUpdatedApiParameterDesc = "-_lastUpdated";
 
         public FhirToDataLakeProcessingJobSpliter(
             IApiDataClient dataClient,
@@ -49,7 +53,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             var totalCount = await GetResourceCountAsync(resourceType, startTime, endTime, cancellationToken);
 
-            if (totalCount < HighBoundOfProcessingJobResourceCount)
+            if (totalCount <= HighBoundOfProcessingJobResourceCount)
             {
                 // Return job with total count lower than high bound.
                 _logger.LogInformation($"Generate one {resourceType} job with {totalCount} count.");
@@ -58,7 +62,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     ResourceType = resourceType,
                     TimeRange = new TimeRange() { DataStartTime = startTime, DataEndTime = endTime },
-                    JobSize = totalCount,
+                    ResourceCount = totalCount,
                 };
             }
             else
@@ -82,14 +86,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     nextJobEnd = await GetNextSplitTimestamp(resourceType, lastEndTime, anchorList, cancellationToken);
 
                     var jobSize = lastEndTime == null ? anchorList[(DateTimeOffset)nextJobEnd] : anchorList[(DateTimeOffset)nextJobEnd] - anchorList[(DateTimeOffset)lastEndTime];
-                    _logger.LogInformation($"Spliting {resourceType} job. Generated new sub job using {(DateTimeOffset.UtcNow - lastSplitTimestamp).TotalMilliseconds} milliseconds with {jobSize} resource counts. ");
+                    _logger.LogInformation($"Spliting {resourceType} job. Generated new sub job using {(DateTimeOffset.UtcNow - lastSplitTimestamp).TotalMilliseconds} milliseconds with {jobSize} resource count.");
                     lastSplitTimestamp = DateTimeOffset.Now;
 
                     yield return new SubJobInfo
                     {
                         ResourceType = resourceType,
                         TimeRange = new TimeRange() { DataStartTime = lastEndTime, DataEndTime = (DateTimeOffset)nextJobEnd },
-                        JobSize = jobSize,
+                        ResourceCount = jobSize,
                     };
 
                     jobCount += 1;
@@ -141,11 +145,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (isDescending)
             {
-                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.SortKey, "-_lastUpdated"));
+                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.SortKey, LastUpdatedApiParameterDesc));
             }
             else
             {
-                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.SortKey, "_lastUpdated"));
+                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.SortKey, LastUpdatedApiParameter));
             }
 
             if (start != null)
@@ -247,7 +251,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
-                new KeyValuePair<string, string>(FhirApiConstants.SummaryKey, "count"),
+                new KeyValuePair<string, string>(FhirApiConstants.SummaryKey, CountApiParameter),
                 new KeyValuePair<string, string>(FhirApiConstants.TypeKey, resourceType),
             };
 
@@ -262,9 +266,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
             }
-            catch
+            catch (Exception ex)
             {
-                _logger.LogInformation("Get resource count error: too mush resoucres");
+                _logger.LogInformation("Get resource count error. Reason {0}", ex.Message);
                 return int.MaxValue;
             }
 
@@ -273,7 +277,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             try
             {
                 fhirBundleObject = JObject.Parse(fhirBundleResult);
-                return (int)fhirBundleObject["total"];
+                return (int)fhirBundleObject[TotalCountFieldKey];
             }
             catch (JsonReaderException exception)
             {

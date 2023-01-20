@@ -385,8 +385,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             BaseSearchOptions searchOptions,
             CancellationToken cancellationToken)
         {
+            List<KeyValuePair<string, string>> sharedQueryParameters = new List<KeyValuePair<string, string>>(searchOptions.QueryParameters);
+
             foreach (TypeFilter typeFilter in _typeFilters)
             {
+                searchOptions.QueryParameters = new List<KeyValuePair<string, string>>(sharedQueryParameters);
+
                 if (_inputData.SplitParameters != null)
                 {
                     if (!_inputData.SplitParameters.ContainsKey(typeFilter.ResourceType))
@@ -577,7 +581,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             }
 
                             // Upload to blob and log result
-                            var dateTime = _inputData.SplitParameters == null && _inputData.SplitParameters.ContainsKey(resourceType) ? _inputData.DataEndTime : _inputData.SplitParameters[resourceType].DataEndTime;
+                            var dateTime = _inputData.SplitParameters != null && _inputData.SplitParameters.ContainsKey(resourceType) ? _inputData.SplitParameters[resourceType].DataEndTime : _inputData.DataEndTime;
                             var fileName = GetDataFileName(dateTime, schemaType, _jobId, _outputFileIndexMap[schemaType]);
                             string blobUrl = await _dataWriter.WriteAsync(parquetStream, fileName, cancellationToken);
 

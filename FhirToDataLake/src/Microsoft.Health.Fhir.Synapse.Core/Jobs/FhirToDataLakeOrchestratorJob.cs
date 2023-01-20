@@ -50,6 +50,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private readonly IMetricsLogger _metricsLogger;
         private FhirToDataLakeOrchestratorJobResult _result;
         private OrchestratorJobStatusEntity _jobStatus;
+
+        // _mergeList is used to cache small size jobs waiting for merge.
         private List<(string, TimeRange, int)> _mergeList = new List<(string, TimeRange, int)>();
         private FhirToDataLakeProcessingJobSpliter _jobSpliter;
 
@@ -133,7 +135,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     string[] jobDefinitions = { JsonConvert.SerializeObject(input) };
 
                     _result.SubmittingProcessingJob = jobDefinitions;
+
                     _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
+                    progress.Report(_jobStatus.StatisticResult);
 
                     IEnumerable<JobInfo> jobInfos = await _queueClient.EnqueueAsync(
                         _jobInfo.QueueType,
@@ -146,15 +150,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     _result.CreatedJobCount++;
                     _result.RunningJobIds.Add(newJobId);
 
-                    foreach (var item in input.SplitParameters)
+                    if (input.SplitParameters != null)
                     {
-                        _result.SubmittedResourceTimestamps[item.Key] = item.Value.DataEndTime;
+                        input?.SplitParameters.Select(x => _result.SubmittedResourceTimestamps[x.Key] = x.Value.DataEndTime);
                     }
 
                     _result.SubmittingProcessingJob = null;
-                    progress.Report(JsonConvert.SerializeObject(_result));
 
                     _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
+                    progress.Report(_jobStatus.StatisticResult);
 
                     if (_result.RunningJobIds.Count >
                         JobConfigurationConstants.CheckRunningJobCompleteRunningJobCountThreshold)
@@ -177,8 +181,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var processEndtime = DateTimeOffset.UtcNow;
                 _result.CompleteTime = processEndtime;
 
-                progress.Report(JsonConvert.SerializeObject(_result));
                 _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
+                progress.Report(_jobStatus.StatisticResult);
 
                 var jobLatency = processEndtime - _inputData.DataEndTime;
                 _metricsLogger.LogProcessLatencyMetric(jobLatency.TotalSeconds);
@@ -186,7 +190,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 _diagnosticLogger.LogInformation($"Finish FhirToDataLake job. Synced result data to {_inputData.DataEndTime}.");
                 _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}. Synced result data to {_inputData.DataEndTime}.");
 
-                return JsonConvert.SerializeObject(_result);
+                return _jobStatus.StatisticResult;
             }
             catch (OperationCanceledException operationCanceledEx)
             {
@@ -244,7 +248,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 if (!await _metadataStore.TryAddEntityAsync(newJobStatus, cancellationToken))
                 {
-                    throw new SynapsePipelineInternalException("Initialize job status failed");
+                    _logger.LogInformation("Initialize job status failed in orchestrator job {0}.", _jobInfo.Id);
+                    throw new SynapsePipelineInternalException($"Initialize job status failed in orchestrator job {_jobInfo.Id}.");
                 }
 
                 jobStatus = await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, cancellationToken);
@@ -256,9 +261,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private async Task<OrchestratorJobStatusEntity> UpdateJobStatusWithResultAsync(CancellationToken cancellationToken)
         {
             _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
+
             if (!await _metadataStore.TryUpdateEntityAsync(_jobStatus))
             {
-                throw new SynapsePipelineInternalException("Update orchestrator job status failed.");
+                _logger.LogInformation("Update orchestrator job status failed in job {0}.", _jobInfo.Id);
+                throw new SynapsePipelineInternalException($"Update orchestrator job status failed in job  {_jobInfo.Id}.");
             }
 
             return await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, cancellationToken);
@@ -269,7 +276,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             // Resume the submitting job.
             if (_result.SubmittingProcessingJob != null)
             {
-                yield return JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(_result.SubmittingProcessingJob.First());
+                foreach (var job in _result.SubmittingProcessingJob)
+                {
+                    yield return JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(job);
+                }
             }
 
             List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
@@ -290,19 +300,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 await foreach (SubJobInfo subJob in subJobs.WithCancellation(cancellationToken))
                 {
-                    if (subJob.JobSize == 0)
+                    if (subJob.ResourceCount == 0)
                     {
                         _result.SubmittedResourceTimestamps[resourceType] = _inputData.DataEndTime;
                         continue;
                     }
-                    else if (subJob.JobSize < LowBoundOfProcessingJobResourceCount)
+                    else if (subJob.ResourceCount < LowBoundOfProcessingJobResourceCount)
                     {
                         // Small size job, put it into pool and wait for merge.
-                        _logger.LogInformation($"Splitting jobs. Generated one small job for {resourceType} with {subJob.JobSize} count.");
+                        _logger.LogInformation($"One small job is generated and pushed into merge list for {resourceType} with {subJob.ResourceCount} count.");
 
-                        var jobParameters = PushToJobPool(resourceType, subJob.TimeRange, subJob.JobSize);
+                        var jobParameters = PushToJobPool(resourceType, subJob.TimeRange, subJob.ResourceCount);
                         if (jobParameters != null)
                         {
+                            _logger.LogInformation($"Generated one merged job with {jobParameters.Keys} types.");
+
                             yield return new FhirToDataLakeProcessingJobInputData
                             {
                                 JobType = JobType.Processing,
@@ -315,6 +327,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     }
                     else
                     {
+                        _logger.LogInformation($"Generated one job for {resourceType} with {subJob.ResourceCount} count.");
                         yield return new FhirToDataLakeProcessingJobInputData
                         {
                             JobType = JobType.Processing,
@@ -331,6 +344,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 var jobParameters = _mergeList.ToDictionary(x => x.Item1, x => x.Item2);
 
+                _logger.LogInformation($"Generated one merged job with {jobParameters.Keys} types.");
                 yield return new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
