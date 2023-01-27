@@ -10,9 +10,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
     public class ProcessLatencyMetric : DiagnosticMetrics
     {
         public ProcessLatencyMetric()
-            : base("ResourceLatency", MetricsCategories.Latency, new Dictionary<string, object>
+            : base("ProcessLatency", MetricsCategories.Latency, new Dictionary<string, object>
             {
-                { DimensionNames.Name, "ResourceLatency" },
+                { DimensionNames.Name, "ProcessLatency" },
                 { DimensionNames.Category, MetricsCategories.Latency },
                 { DimensionNames.IsDiagnostic, true },
                 { DimensionNames.Operation, JobOperations.CompleteJob },

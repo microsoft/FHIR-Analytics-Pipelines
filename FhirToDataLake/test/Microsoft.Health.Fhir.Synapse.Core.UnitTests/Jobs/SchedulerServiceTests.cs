@@ -34,7 +34,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         private readonly NullLogger<SchedulerService> _nullSchedulerServiceLogger =
             NullLogger<SchedulerService>.Instance;
 
-        private static readonly IMetricsLogger MetricsLogger = new MetricsLogger(new NullLogger<MetricsLogger>());
+        private static readonly MockMetricsLogger MetricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
 
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
         private const string TestJobInfoQueueName = "jobinfoqueue";
@@ -58,6 +58,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             _jobConfigOption = Options.Create(jobConfig);
+            MetricsLogger.Clear();
         }
 
         // Initialize Test
@@ -201,6 +202,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // current trigger entity is null
             CurrentTriggerEntity currentTriggerEntity = await brokenMetadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Null(currentTriggerEntity);
+            Assert.NotEmpty(MetricsLogger.MetricsDic);
+            Assert.Equal("RunSchedulerService", MetricsLogger.ErrorOperationType);
         }
 
         [Fact]
@@ -233,6 +236,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // current trigger entity is null
             CurrentTriggerEntity currentTriggerEntity = await brokenMetadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Null(currentTriggerEntity);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -265,6 +269,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // current trigger entity is not null
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -302,6 +307,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // the scheduler service acquire lease
             TriggerLeaseEntity retrievedTriggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Equal(oldGuid, retrievedTriggerLeaseEntity.WorkingInstanceGuid);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -340,6 +346,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // the scheduler service acquire lease
             TriggerLeaseEntity retrievedTriggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotEqual(oldGuid, retrievedTriggerLeaseEntity.WorkingInstanceGuid);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -391,6 +398,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity =
                 await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -451,6 +459,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource2.Cancel();
             await task2;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -500,6 +509,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // one of the scheduler service acquire lease
             TriggerLeaseEntity triggerLeaseEntity1 = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotEqual(oldGuid, triggerLeaseEntity1.WorkingInstanceGuid);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         // Renew Lease
@@ -534,6 +544,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -583,6 +594,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         // Enqueue Orchestrator Job
@@ -617,6 +629,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -663,6 +676,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -724,6 +738,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource2.Cancel();
             await task2;
+            Assert.NotEmpty(MetricsLogger.MetricsDic);
+            Assert.Equal("RunSchedulerService", MetricsLogger.ErrorOperationType);
         }
 
         [Theory]
@@ -791,6 +807,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         // version update
@@ -846,6 +863,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -900,6 +918,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -972,6 +991,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         // Complete Trigger
@@ -1029,6 +1049,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -1091,6 +1112,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(triggerEntity.TriggerSequenceId, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Completed, currentTriggerEntity.TriggerStatus);
             Assert.Equal(endTime, currentTriggerEntity.TriggerEndTime);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         // Functional Test
@@ -1160,6 +1182,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -1243,6 +1266,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource2.Cancel();
             await task2;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -1313,6 +1337,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             TriggerLeaseEntity triggerLeaseEntity2 = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Equal(triggerLeaseEntity.WorkingInstanceGuid, triggerLeaseEntity2.WorkingInstanceGuid);
             Assert.True(triggerLeaseEntity2.HeartbeatDateTime > triggerLeaseEntity.HeartbeatDateTime);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -1383,6 +1408,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             TriggerLeaseEntity triggerLeaseEntity2 = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Equal(triggerLeaseEntity.WorkingInstanceGuid, triggerLeaseEntity2.WorkingInstanceGuid);
             Assert.True(triggerLeaseEntity2.HeartbeatDateTime > triggerLeaseEntity.HeartbeatDateTime);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         // Cancellation Request
@@ -1412,6 +1438,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             long elapsedSeconds = stopWatch.ElapsedMilliseconds / 1000;
             Assert.True(elapsedSeconds < schedulerService.SchedulerServicePullingIntervalInSeconds);
             Assert.True(elapsedSeconds < schedulerService.SchedulerServiceLeaseRefreshIntervalInSeconds);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -1442,6 +1469,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             long elapsedSeconds = stopWatch.ElapsedMilliseconds / 1000;
             Assert.True(elapsedSeconds < schedulerService.SchedulerServicePullingIntervalInSeconds);
             Assert.True(elapsedSeconds < schedulerService.SchedulerServiceLeaseRefreshIntervalInSeconds);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -1489,6 +1517,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             // the service fails to acquire lease
             TriggerLeaseEntity retrievedTriggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Equal(otherGuid, retrievedTriggerLeaseEntity.WorkingInstanceGuid);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -1538,6 +1567,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             long elapsedSeconds = stopWatch.ElapsedMilliseconds / 1000;
             Assert.True(elapsedSeconds < schedulerService.SchedulerServicePullingIntervalInSeconds);
             Assert.True(elapsedSeconds < schedulerService.SchedulerServiceLeaseRefreshIntervalInSeconds);
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         // trigger end time
@@ -1602,6 +1632,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.True(triggerEndTime <= endTime);
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -1651,6 +1682,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(endTime, triggerEndTime);
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         [Fact]
@@ -1740,6 +1772,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
     }
 }
