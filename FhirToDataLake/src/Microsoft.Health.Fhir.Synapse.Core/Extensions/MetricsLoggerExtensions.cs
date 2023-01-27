@@ -33,7 +33,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
                     break;
                 default:
                     throw new ConfigurationErrorException(
-                        $"Not supported error operation type {operationType}.");
+                        $"Error operation type {operationType} is not supported.");
             }
         }
 
