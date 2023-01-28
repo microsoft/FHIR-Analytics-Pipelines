@@ -111,10 +111,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 await foreach (FhirToDataLakeProcessingJobInputData input in inputs.WithCancellation(cancellationToken))
                 {
-                    while (_result.RunningJobIds.Count >= _maxJobCountInRunningPool)
+                    while (GetRunningJobCount() >= _maxJobCountInRunningPool)
                     {
-                        await CheckRunningJobComplete(progress, cancellationToken);
-                        if (_result.RunningJobIds.Count >= _maxJobCountInRunningPool)
+                        await CheckFirstRunningJobComplete(progress, cancellationToken);
+                        if (GetRunningJobCount() >= _maxJobCountInRunningPool)
                         {
                             await Task.Delay(TimeSpan.FromSeconds(CheckFrequencyInSeconds), cancellationToken);
                         }
@@ -130,24 +130,29 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         cancellationToken);
                     long newJobId = jobInfos.First().Id;
                     _result.CreatedJobCount++;
-                    _result.RunningJobIds.Add(newJobId);
+                    if (_inputData.JobVersion == SupportedJobVersion.V1 || _inputData.JobVersion == SupportedJobVersion.V2)
+                    {
+                        _result.RunningJobIds.Add(newJobId);
+                    }
+
+                    _result.SequenceIdToJobIdMapForRunningJobs[input.ProcessingJobSequenceId] = newJobId;
 
                     // if enqueue successfully while fails to report result, will re-enqueue and return the existing jobInfo
                     progress.Report(JsonConvert.SerializeObject(_result));
 
-                    if (_result.RunningJobIds.Count >
+                    if (GetRunningJobCount() >
                         JobConfigurationConstants.CheckRunningJobCompleteRunningJobCountThreshold)
                     {
-                        await CheckRunningJobComplete(progress, cancellationToken);
+                        await CheckFirstRunningJobComplete(progress, cancellationToken);
                     }
                 }
 
                 _logger.LogInformation($"Orchestrator job {_jobInfo.Id} finished generating and enqueueing processing jobs.");
 
-                while (_result.RunningJobIds.Count > 0)
+                while (GetRunningJobCount() > 0)
                 {
-                    await CheckRunningJobComplete(progress, cancellationToken);
-                    if (_result.RunningJobIds.Count > 0)
+                    await CheckFirstRunningJobComplete(progress, cancellationToken);
+                    if (GetRunningJobCount() > 0)
                     {
                         await Task.Delay(TimeSpan.FromSeconds(CheckFrequencyInSeconds), cancellationToken);
                     }
@@ -382,83 +387,111 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return nexTimeOffset;
         }
 
-        private async Task CheckRunningJobComplete(IProgress<string> progress, CancellationToken cancellationToken)
+        private async Task CheckFirstRunningJobComplete(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Orchestrator job {_jobInfo.Id} starts to check running job status.");
+            _logger.LogInformation($"Orchestrator job {_jobInfo.Id} starts to check the first running job status.");
 
-            HashSet<long> completedJobIds = new HashSet<long>();
-            List<JobInfo> runningJobs = new List<JobInfo>();
+            long firstRunningJobId = GetFirstRunningJobId();
 
-            runningJobs.AddRange(await _queueClient.GetJobsByIdsAsync(_jobInfo.QueueType, _result.RunningJobIds.ToArray(), false, cancellationToken));
+            JobInfo firstRunningJobInfo = await _queueClient.GetJobByIdAsync(_jobInfo.QueueType, firstRunningJobId, false, cancellationToken);
 
-            foreach (JobInfo latestJobInfo in runningJobs)
+            if (cancellationToken.IsCancellationRequested)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    throw new OperationCanceledException();
-                }
+                throw new OperationCanceledException();
+            }
 
-                if (latestJobInfo.Status != JobStatus.Created && latestJobInfo.Status != JobStatus.Running)
+            if (firstRunningJobInfo.Status != JobStatus.Created && firstRunningJobInfo.Status != JobStatus.Running)
+            {
+                if (firstRunningJobInfo.Status == JobStatus.Completed)
                 {
-                    if (latestJobInfo.Status == JobStatus.Completed)
+                    await CommitJobData(firstRunningJobInfo.Id, cancellationToken);
+                    if (firstRunningJobInfo.Result != null)
                     {
-                        await CommitJobData(latestJobInfo.Id, cancellationToken);
-                        if (latestJobInfo.Result != null)
+                        var processingJobResult =
+                            JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(firstRunningJobInfo.Result);
+                        _result.TotalResourceCounts =
+                            _result.TotalResourceCounts.ConcatDictionaryCount(processingJobResult.SearchCount);
+                        _result.ProcessedResourceCounts =
+                            _result.ProcessedResourceCounts.ConcatDictionaryCount(processingJobResult.ProcessedCount);
+                        _result.SkippedResourceCounts =
+                            _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
+                        _result.ProcessedCountInTotal += processingJobResult.ProcessedCountInTotal;
+                        _result.ProcessedDataSizeInTotal += processingJobResult.ProcessedDataSizeInTotal;
+
+                        // log metrics
+                        _metricsLogger.LogSuccessfulResourceCountMetric(processingJobResult.ProcessedCountInTotal);
+                        _metricsLogger.LogSuccessfulDataSizeMetric(processingJobResult.ProcessedDataSizeInTotal);
+
+                        if (await _filterManager.GetFilterScopeAsync(cancellationToken) == FilterScope.Group)
                         {
-                            var processingJobResult =
-                                JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(latestJobInfo.Result);
-                            _result.TotalResourceCounts =
-                                _result.TotalResourceCounts.ConcatDictionaryCount(processingJobResult.SearchCount);
-                            _result.ProcessedResourceCounts =
-                                _result.ProcessedResourceCounts.ConcatDictionaryCount(processingJobResult.ProcessedCount);
-                            _result.SkippedResourceCounts =
-                                _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
-                            _result.ProcessedCountInTotal += processingJobResult.ProcessedCountInTotal;
-                            _result.ProcessedDataSizeInTotal += processingJobResult.ProcessedDataSizeInTotal;
-
-                            // log metrics
-                            _metricsLogger.LogSuccessfulResourceCountMetric(processingJobResult.ProcessedCountInTotal);
-                            _metricsLogger.LogSuccessfulDataSizeMetric(processingJobResult.ProcessedDataSizeInTotal);
-
-                            if (await _filterManager.GetFilterScopeAsync(cancellationToken) == FilterScope.Group)
+                            try
                             {
-                                try
-                                {
-                                    await _metadataStore.UpdatePatientVersionsAsync(
-                                    _jobInfo.QueueType,
-                                    processingJobResult.ProcessedPatientVersion,
-                                    cancellationToken);
-                                }
-                                catch (RequestFailedException ex)
-                                {
-                                    _logger.LogError(ex, "Failed to update patient versions from metadata table.");
-                                    throw new MetadataStoreException("Failed to update patient versions from metadata table.", ex);
-                                }
+                                await _metadataStore.UpdatePatientVersionsAsync(
+                                _jobInfo.QueueType,
+                                processingJobResult.ProcessedPatientVersion,
+                                cancellationToken);
+                            }
+                            catch (RequestFailedException ex)
+                            {
+                                _logger.LogError(ex, "Failed to update patient versions from metadata table.");
+                                throw new MetadataStoreException("Failed to update patient versions from metadata table.", ex);
                             }
                         }
                     }
-                    else if (latestJobInfo.Status == JobStatus.Failed)
-                    {
-                        _logger.LogInformation("The processing job is failed.");
-                        throw new RetriableJobException("The processing job is failed.");
-                    }
-                    else if (latestJobInfo.Status == JobStatus.Cancelled)
-                    {
-                        _logger.LogInformation("Operation cancelled by customer.");
-                        throw new OperationCanceledException("Operation cancelled by customer.");
-                    }
-
-                    completedJobIds.Add(latestJobInfo.Id);
                 }
-            }
+                else if (firstRunningJobInfo.Status == JobStatus.Failed)
+                {
+                    _logger.LogInformation("The processing job is failed.");
+                    throw new RetriableJobException("The processing job is failed.");
+                }
+                else if (firstRunningJobInfo.Status == JobStatus.Cancelled)
+                {
+                    _logger.LogInformation("Operation cancelled by customer.");
+                    throw new OperationCanceledException("Operation cancelled by customer.");
+                }
 
-            if (completedJobIds.Count > 0)
-            {
-                _result.RunningJobIds.ExceptWith(completedJobIds);
+                UpdateRunningJobStatus(firstRunningJobId);
                 progress.Report(JsonConvert.SerializeObject(_result));
             }
 
-            _logger.LogInformation($"Orchestrator job {_jobInfo.Id} finished checking running job status, there are {completedJobIds.Count} jobs completed.");
+            _logger.LogInformation($"Orchestrator job {_jobInfo.Id} finished checking the first running job {firstRunningJobId} status, the job {firstRunningJobId} is {((JobStatus)firstRunningJobInfo.Status).ToString("D")}.");
+        }
+
+        private long GetFirstRunningJobId()
+        {
+            return _inputData.JobVersion switch
+            {
+                SupportedJobVersion.V1 or SupportedJobVersion.V2 => _result.RunningJobIds.Min(),
+                SupportedJobVersion.V3 => _result.SequenceIdToJobIdMapForRunningJobs[_result.CompletedJobCount],
+                _ => throw new SynapsePipelineInternalException($"The job version {_inputData.JobVersion} is unsupported."),
+            };
+        }
+
+        private void UpdateRunningJobStatus(long jobId)
+        {
+            switch (_inputData.JobVersion)
+            {
+                case SupportedJobVersion.V1:
+                case SupportedJobVersion.V2:
+                    _result.RunningJobIds.Remove(jobId);
+                    break;
+                case SupportedJobVersion.V3:
+                    _result.SequenceIdToJobIdMapForRunningJobs.Remove(_result.CompletedJobCount);
+                    _result.CompletedJobCount++;
+                    break;
+                default:
+                    throw new SynapsePipelineInternalException($"The job version {_inputData.JobVersion} is unsupported.");
+            }
+        }
+
+        private int GetRunningJobCount()
+        {
+            return _inputData.JobVersion switch
+            {
+                SupportedJobVersion.V1 or SupportedJobVersion.V2 => _result.RunningJobIds.Count,
+                SupportedJobVersion.V3 => (int)(_result.CreatedJobCount - _result.CompletedJobCount),
+                _ => throw new SynapsePipelineInternalException($"The job version {_inputData.JobVersion} is unsupported."),
+            };
         }
 
         private async Task CommitJobData(long jobId, CancellationToken cancellationToken)

@@ -10,7 +10,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public static class JobVersionManager
     {
-        public const SupportedJobVersion CurrentJobVersion = SupportedJobVersion.V2;
+        public const SupportedJobVersion CurrentJobVersion = SupportedJobVersion.V3;
 
         public const SupportedJobVersion DefaultJobVersion = SupportedJobVersion.V1;
 
@@ -48,6 +48,26 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         };
 
         public static readonly List<string> FhirToDataLakeProcessingJobIdentifierPropertiesV2 = new ()
+        {
+            FhirToDataLakeJobInputDataProperties.JobType,
+            FhirToDataLakeJobInputDataProperties.TriggerSequenceId,
+            FhirToDataLakeJobInputDataProperties.ProcessingJobSequenceId,
+            FhirToDataLakeJobInputDataProperties.Since,
+            FhirToDataLakeJobInputDataProperties.DataStartTime,
+            FhirToDataLakeJobInputDataProperties.ToBeProcessedPatients,
+        };
+
+        // job version V3
+        // the same as job version v2
+        public static readonly List<string> FhirToDataLakeOrchestratorJobIdentifierPropertiesV3 = new ()
+        {
+            FhirToDataLakeJobInputDataProperties.JobType,
+            FhirToDataLakeJobInputDataProperties.TriggerSequenceId,
+            FhirToDataLakeJobInputDataProperties.Since,
+            FhirToDataLakeJobInputDataProperties.DataStartTime,
+        };
+
+        public static readonly List<string> FhirToDataLakeProcessingJobIdentifierPropertiesV3 = new ()
         {
             FhirToDataLakeJobInputDataProperties.JobType,
             FhirToDataLakeJobInputDataProperties.TriggerSequenceId,

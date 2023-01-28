@@ -294,7 +294,7 @@ GivenJobVersionV1ProcessingJobDefinition_WhenGetJobIdentifierInNewVersionCode_Th
         public void
 GivenJobVersionV2OrchestratorJobDefinition_WhenGetJobIdentifierInNewVersionCode_ThenTheJobIdentifierShouldNotBeChanged()
         {
-            // the json string of job v1 : "{"JobType":0,"TriggerSequenceId":1,"Since":"1970-01-01T00:00:00+00:00","DataStartTime":"2000-01-01T00:00:00+00:00"}"
+            // the json string of job v2 : "{"JobType":0,"TriggerSequenceId":1,"Since":"1970-01-01T00:00:00+00:00","DataStartTime":"2000-01-01T00:00:00+00:00"}"
             // you should NOT modify the expectedJobV1Identifier
             var expectedJobV2Identifier = "bfffa195641029bad6e569cdaf52c75e4db659d03d515952800dc23267513f24";
 
@@ -328,7 +328,7 @@ GivenJobVersionV2OrchestratorJobDefinition_WhenGetJobIdentifierInNewVersionCode_
         public void
 GivenJobVersionV2ProcessingJobDefinition_WhenGetJobIdentifierInNewVersionCode_ThenTheJobIdentifierShouldNotBeChanged()
         {
-            // the json string of job v1 : "{"JobType":1,"TriggerSequenceId":1,"ProcessingJobSequenceId":1,"Since":"1970-01-01T00:00:00+00:00","DataStartTime":"2000-01-01T00:00:00+00:00","ToBeProcessedPatients":[{"patientHash":"patient1Hash","versionId":2},{"patientHash":"patient2Hash","versionId":1}]}"
+            // the json string of job v2 : "{"JobType":1,"TriggerSequenceId":1,"ProcessingJobSequenceId":1,"Since":"1970-01-01T00:00:00+00:00","DataStartTime":"2000-01-01T00:00:00+00:00","ToBeProcessedPatients":[{"patientHash":"patient1Hash","versionId":2},{"patientHash":"patient2Hash","versionId":1}]}"
             // you should NOT modify the expectedJobV1Identifier
             var expectedJobV1Identifier = "9c3ec95655e13aed0369ebf9f5a61b3f8631f50ab211b7dca1ae9fca3d44d4e4";
 
@@ -357,7 +357,76 @@ GivenJobVersionV2ProcessingJobDefinition_WhenGetJobIdentifierInNewVersionCode_Th
                 HeartbeatDateTime = DateTime.UtcNow,
             };
 
-            var a = jobInfo.JobIdentifier();
+            Assert.Equal(expectedJobV1Identifier, jobInfo.JobIdentifier());
+        }
+
+        [Fact]
+        public void
+GivenJobVersionV3OrchestratorJobDefinition_WhenGetJobIdentifierInNewVersionCode_ThenTheJobIdentifierShouldNotBeChanged()
+        {
+            // the json string of job v3 : "{"JobType":0,"TriggerSequenceId":1,"Since":"1970-01-01T00:00:00+00:00","DataStartTime":"2000-01-01T00:00:00+00:00"}"
+            // you should NOT modify the expectedJobV1Identifier
+            var expectedJobV2Identifier = "bfffa195641029bad6e569cdaf52c75e4db659d03d515952800dc23267513f24";
+
+            var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
+            {
+                JobType = JobType.Orchestrator,
+                JobVersion = SupportedJobVersion.V2,
+                TriggerSequenceId = 1,
+                Since = DateTimeOffset.Parse(_sinceStr),
+                DataStartTime = DateTimeOffset.Parse(_startStr),
+                DataEndTime = DateTimeOffset.Parse(_endStr),
+            };
+
+            var jobInfo = new FhirToDataLakeAzureStorageJobInfo()
+            {
+                Id = 1L,
+                QueueType = 0,
+                Status = JobStatus.Created,
+                GroupId = 0,
+                Definition = JsonConvert.SerializeObject(orchestratorDefinition),
+                Result = string.Empty,
+                CancelRequested = false,
+                CreateDate = DateTime.UtcNow,
+                HeartbeatDateTime = DateTime.UtcNow,
+            };
+
+            Assert.Equal(expectedJobV2Identifier, jobInfo.JobIdentifier());
+        }
+
+        [Fact]
+        public void
+GivenJobVersionV3ProcessingJobDefinition_WhenGetJobIdentifierInNewVersionCode_ThenTheJobIdentifierShouldNotBeChanged()
+        {
+            // the json string of job v3 : "{"JobType":1,"TriggerSequenceId":1,"ProcessingJobSequenceId":1,"Since":"1970-01-01T00:00:00+00:00","DataStartTime":"2000-01-01T00:00:00+00:00","ToBeProcessedPatients":[{"patientHash":"patient1Hash","versionId":2},{"patientHash":"patient2Hash","versionId":1}]}"
+            // you should NOT modify the expectedJobV1Identifier
+            var expectedJobV1Identifier = "9c3ec95655e13aed0369ebf9f5a61b3f8631f50ab211b7dca1ae9fca3d44d4e4";
+
+            var processingDefinition = new FhirToDataLakeProcessingJobInputData
+            {
+                JobType = JobType.Processing,
+                JobVersion = SupportedJobVersion.V2,
+                TriggerSequenceId = 1,
+                ProcessingJobSequenceId = 1,
+                Since = DateTimeOffset.Parse(_sinceStr),
+                DataStartTime = DateTimeOffset.Parse(_startStr),
+                DataEndTime = DateTimeOffset.Parse(_endStr),
+                ToBeProcessedPatients = _toBeProcessedPatients,
+            };
+
+            var jobInfo = new FhirToDataLakeAzureStorageJobInfo()
+            {
+                Id = 1L,
+                QueueType = 0,
+                Status = JobStatus.Created,
+                GroupId = 0,
+                Definition = JsonConvert.SerializeObject(processingDefinition),
+                Result = string.Empty,
+                CancelRequested = false,
+                CreateDate = DateTime.UtcNow,
+                HeartbeatDateTime = DateTime.UtcNow,
+            };
+
             Assert.Equal(expectedJobV1Identifier, jobInfo.JobIdentifier());
         }
 
