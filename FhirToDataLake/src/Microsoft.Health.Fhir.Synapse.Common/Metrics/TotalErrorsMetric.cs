@@ -10,9 +10,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
     public class TotalErrorsMetric : DiagnosticMetrics
     {
         public TotalErrorsMetric(bool isDiagnostic, string errorType, string reason, string operation)
-            : base("TotalError", MetricsCategories.Errors, new Dictionary<string, object>
+            : base(MetricNames.TotalErrorsMetric, MetricsCategories.Errors, new Dictionary<string, object>
             {
-                { DimensionNames.Name, "TotalError" },
+                { DimensionNames.Name, MetricNames.TotalErrorsMetric },
                 { DimensionNames.Category, MetricsCategories.Errors },
                 { DimensionNames.IsDiagnostic, isDiagnostic },
                 { DimensionNames.ErrorType, errorType },

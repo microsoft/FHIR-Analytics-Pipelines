@@ -15,7 +15,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
 {
     public static class MetricsLoggerExtensions
     {
-        public static void LogTotalErrorsMetrics(this IMetricsLogger metricsLogger, Exception ex, string operationType, string message)
+        public static void LogTotalErrorsMetrics(this IMetricsLogger metricsLogger, Exception ex, string message, string operationType)
         {
             switch (operationType)
             {
@@ -32,7 +32,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
                     ProcessJobExecutionError(metricsLogger, ex, message);
                     break;
                 default:
-                    break;
+                    throw new ConfigurationErrorException(
+                        $"Error operation type {operationType} is not supported.");
             }
         }
 
@@ -46,9 +47,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
             metricsLogger.LogMetrics(new SuccessfulDataSizeMetric(), value);
         }
 
-        public static void LogProcessLatencyMetric(this IMetricsLogger metricsLogger, double value)
+        public static void LogResourceLatencyMetric(this IMetricsLogger metricsLogger, double value)
         {
-            metricsLogger.LogMetrics(new ProcessLatencyMetric(), value);
+            metricsLogger.LogMetrics(new ResourceLatencyMetric(), value);
         }
 
         public static void LogHealthStatusMetric(this IMetricsLogger metricsLogger, string component, bool isDiagnostic, double value)

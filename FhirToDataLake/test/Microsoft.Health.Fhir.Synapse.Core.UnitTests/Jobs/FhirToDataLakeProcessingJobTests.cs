@@ -108,10 +108,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             var blobClient = new InMemoryBlobContainerClient();
-
-            FhirToDataLakeProcessingJob job = GetFhirToDataLakeProcessingJob(1L, GetInputData(), invalidBundle, containerName, blobClient, filterConfiguration);
+            var metricsLogger = new MockMetricsLogger(null);
+            FhirToDataLakeProcessingJob job = GetFhirToDataLakeProcessingJob(1L, GetInputData(), invalidBundle, containerName, blobClient, metricsLogger, filterConfiguration);
 
             await Assert.ThrowsAsync<RetriableJobException>(() => job.ExecuteAsync(progress, CancellationToken.None));
+            Assert.Equal(1, metricsLogger.MetricsDic["TotalError"]);
+            Assert.Equal("RunJob", metricsLogger.ErrorOperationType);
         }
 
         private static FhirToDataLakeProcessingJob GetFhirToDataLakeProcessingJob(
@@ -120,6 +122,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             string bundleResult,
             string containerName,
             IAzureBlobContainerClient blobClient,
+            IMetricsLogger metricsLogger,
             FilterConfiguration filterConfiguration = null)
         {
             return new FhirToDataLakeProcessingJob(
@@ -131,7 +134,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFhirSchemaManager(),
                 GetGroupMemberExtractor(),
                 GetFilterManager(filterConfiguration),
-                new MetricsLogger(new NullLogger<MetricsLogger>()),
+                metricsLogger,
                 _diagnosticLogger,
                 new NullLogger<FhirToDataLakeProcessingJob>());
         }
