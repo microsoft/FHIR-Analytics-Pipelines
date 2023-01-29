@@ -89,7 +89,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             string containerName = Guid.NewGuid().ToString("N");
 
             var blobClient = new InMemoryBlobContainerClient();
-
             DicomToDataLakeProcessingJob job = GetDicomToDataLakeProcessingJob(1L, GetInputData(), changeFeedAllReplacedSearchResult, containerName, blobClient);
             string resultString = await job.ExecuteAsync(progress, CancellationToken.None);
             var result = JsonConvert.DeserializeObject<DicomToDataLakeProcessingJobResult>(resultString);
@@ -117,10 +116,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             string containerName = Guid.NewGuid().ToString("N");
 
             var blobClient = new InMemoryBlobContainerClient();
-
-            DicomToDataLakeProcessingJob job = GetDicomToDataLakeProcessingJob(1L, GetInputData(), invalidSearchResult, containerName, blobClient);
+            var metricsLogger = new MockMetricsLogger(null);
+            DicomToDataLakeProcessingJob job = GetDicomToDataLakeProcessingJob(1L, GetInputData(), invalidSearchResult, containerName, blobClient, metricsLogger);
 
             await Assert.ThrowsAsync<RetriableJobException>(() => job.ExecuteAsync(progress, CancellationToken.None));
+            Assert.Equal(1, metricsLogger.MetricsDic["TotalError"]);
+            Assert.Equal("RunJob", metricsLogger.ErrorOperationType);
         }
 
         private static DicomToDataLakeProcessingJob GetDicomToDataLakeProcessingJob(
@@ -128,7 +129,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             DicomToDataLakeProcessingJobInputData inputData,
             string searchResult,
             string containerName,
-            IAzureBlobContainerClient blobClient)
+            IAzureBlobContainerClient blobClient,
+            IMetricsLogger metricsLogger = null)
         {
             return new DicomToDataLakeProcessingJob(
                 jobId,
@@ -137,7 +139,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetDataWriter(containerName, blobClient),
                 GetParquetDataProcessor(),
                 GetSchemaManager(),
-                new MetricsLogger(new NullLogger<MetricsLogger>()),
+                metricsLogger ?? new MockMetricsLogger(null),
                 _diagnosticLogger,
                 new NullLogger<DicomToDataLakeProcessingJob>());
         }

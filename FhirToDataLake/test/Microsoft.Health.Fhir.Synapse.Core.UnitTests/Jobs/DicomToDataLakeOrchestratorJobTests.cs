@@ -80,6 +80,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 progressResult = r;
             });
 
+            var metricsLogger = new MockMetricsLogger(null);
             string containerName = Guid.NewGuid().ToString("N");
 
             var blobClient = new InMemoryBlobContainerClient();
@@ -132,6 +133,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                             orchestratorJobResult.ProcessedResourceCounts.ConcatDictionaryCount(processingResult.ProcessedCount);
                             orchestratorJobResult.ProcessedCountInTotal += processingResult.ProcessedCountInTotal;
                             orchestratorJobResult.ProcessedDataSizeInTotal += processingResult.ProcessedDataSizeInTotal;
+                            metricsLogger.LogSuccessfulResourceCountMetric(1);
+                            metricsLogger.LogSuccessfulDataSizeMetric(processingResult.ProcessedDataSizeInTotal);
                         }
                         else
                         {
@@ -164,7 +167,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetDataWriter(containerName, blobClient),
                 queueClient,
                 concurrentCount,
-                new MetricsLogger(new NullLogger<MetricsLogger>()),
+                metricsLogger,
                 _diagnosticLogger,
                 new NullLogger<DicomToDataLakeOrchestratorJob>());
 
@@ -191,6 +194,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(progressForContext.ProcessedDataSizeInTotal, result.ProcessedDataSizeInTotal);
             Assert.Equal(progressForContext.ProcessedCountInTotal, result.ProcessedCountInTotal);
 
+            Assert.Equal(2, metricsLogger.MetricsDic.Count);
+            Assert.Equal(inputFileCount, metricsLogger.MetricsDic[MetricNames.SuccessfulResourceCountMetric]);
+            Assert.Equal(inputFileCount * 1000L * TBValue, metricsLogger.MetricsDic[MetricNames.SuccessfulDataSizeMetric]);
             Assert.Equal(inputFileCount, queueClient.JobInfos.Count - 1);
 
             // verify blob data;

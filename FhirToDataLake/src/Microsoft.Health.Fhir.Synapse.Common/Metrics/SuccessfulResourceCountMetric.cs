@@ -10,9 +10,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
     public class SuccessfulResourceCountMetric : DiagnosticMetrics
     {
         public SuccessfulResourceCountMetric(string operation = null)
-            : base("SuccessfulResourceCount", MetricsCategories.Availability, new Dictionary<string, object>
+            : base(MetricNames.SuccessfulResourceCountMetric, MetricsCategories.Availability, new Dictionary<string, object>
             {
-                { DimensionNames.Name, "SuccessfulResourceCount" },
+                { DimensionNames.Name, MetricNames.SuccessfulResourceCountMetric },
                 { DimensionNames.Category, MetricsCategories.Availability },
                 { DimensionNames.IsDiagnostic, true },
                 { DimensionNames.Operation, JobOperations.CompleteJob },

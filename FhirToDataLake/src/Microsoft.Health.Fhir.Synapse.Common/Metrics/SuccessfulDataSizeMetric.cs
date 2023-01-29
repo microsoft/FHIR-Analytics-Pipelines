@@ -10,9 +10,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
     public class SuccessfulDataSizeMetric : DiagnosticMetrics
     {
         public SuccessfulDataSizeMetric()
-            : base("SuccessfulDataSize", MetricsCategories.Availability, new Dictionary<string, object>
+            : base(MetricNames.SuccessfulDataSizeMetric, MetricsCategories.Availability, new Dictionary<string, object>
             {
-                { DimensionNames.Name, "SuccessfulDataSize" },
+                { DimensionNames.Name, MetricNames.SuccessfulDataSizeMetric },
                 { DimensionNames.Category, MetricsCategories.Availability },
                 { DimensionNames.IsDiagnostic, true },
                 { DimensionNames.Operation, JobOperations.CompleteJob },

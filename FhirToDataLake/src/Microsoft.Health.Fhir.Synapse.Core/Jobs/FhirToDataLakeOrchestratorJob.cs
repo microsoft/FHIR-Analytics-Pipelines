@@ -164,10 +164,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 progress.Report(JsonConvert.SerializeObject(_result));
 
                 var jobLatency = processEndtime - _inputData.DataEndTime;
-                _metricsLogger.LogProcessLatencyMetric(jobLatency.TotalSeconds);
+                _metricsLogger.LogResourceLatencyMetric(jobLatency.TotalSeconds);
 
                 _diagnosticLogger.LogInformation($"Finish FhirToDataLake job. Synced result data to {_inputData.DataEndTime}.");
-                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}. Synced result data to {_inputData.DataEndTime}.");
+                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}. Synced result data to {_inputData.DataEndTime}. " +
+                    $"Report a {MetricNames.ResourceLatencyMetric} metric with {jobLatency.TotalSeconds} seconds latency");
 
                 return JsonConvert.SerializeObject(_result);
             }
@@ -421,6 +422,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         // log metrics
                         _metricsLogger.LogSuccessfulResourceCountMetric(processingJobResult.ProcessedCountInTotal);
                         _metricsLogger.LogSuccessfulDataSizeMetric(processingJobResult.ProcessedDataSizeInTotal);
+
+                        _logger.LogInformation($"Report a {MetricNames.SuccessfulResourceCountMetric} metric with {processingJobResult.ProcessedCountInTotal} resources.");
+                        _logger.LogInformation($"Report a {MetricNames.SuccessfulDataSizeMetric} metric with {processingJobResult.ProcessedDataSizeInTotal} bytes data size.");
 
                         if (await _filterManager.GetFilterScopeAsync(cancellationToken) == FilterScope.Group)
                         {
