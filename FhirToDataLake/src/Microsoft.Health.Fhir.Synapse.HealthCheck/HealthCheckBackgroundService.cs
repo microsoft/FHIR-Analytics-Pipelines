@@ -68,7 +68,8 @@ namespace Microsoft.Health.Fhir.Synapse.HealthCheck
                     List<Task> listenerTasks = _healthCheckListeners.Select(l => l.ProcessHealthStatusAsync(healthStatus, cancellationToken)).ToList();
                     foreach (HealthCheckResult component in healthStatus.HealthCheckResults)
                     {
-                        _metricsLogger.LogHealthStatusMetric(component.Name, !component.IsCritical, component.Status == Models.HealthCheckStatus.HEALTHY ? 1 : 0);
+                        _metricsLogger.LogHealthStatusMetric(component.Name, !component.IsCritical, (double)component.Status);
+                        _logger.LogInformation($"Report a {MetricNames.HealthStatusMetric} metric for component {component.Name} with status {component.Status}");
                     }
 
                     await Task.WhenAll(listenerTasks);

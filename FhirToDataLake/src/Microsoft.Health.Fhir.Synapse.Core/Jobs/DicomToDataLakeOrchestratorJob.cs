@@ -244,6 +244,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             // log metrics
                             _metricsLogger.LogSuccessfulResourceCountMetric(processingJobResult.ProcessedCountInTotal);
                             _metricsLogger.LogSuccessfulDataSizeMetric(processingJobResult.ProcessedDataSizeInTotal);
+
+                            _logger.LogInformation($"Report a {MetricNames.SuccessfulResourceCountMetric} metric with {processingJobResult.ProcessedCountInTotal} resources.");
+                            _logger.LogInformation($"Report a {MetricNames.SuccessfulDataSizeMetric} metric with {processingJobResult.ProcessedDataSizeInTotal} bytes data size.");
                         }
                     }
                     else if (latestJobInfo.Status == JobStatus.Failed)

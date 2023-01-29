@@ -10,9 +10,9 @@ namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
     public class HealthStatusMetric : DiagnosticMetrics
     {
         public HealthStatusMetric(string component, bool isDiagnostic)
-            : base("HealthStatus", MetricsCategories.Health, new Dictionary<string, object>
+            : base(MetricNames.HealthStatusMetric, MetricsCategories.Health, new Dictionary<string, object>
             {
-                { DimensionNames.Name, "HealthStatus" },
+                { DimensionNames.Name, MetricNames.HealthStatusMetric },
                 { DimensionNames.Component, component },
                 { DimensionNames.Category, MetricsCategories.Health },
                 { DimensionNames.IsDiagnostic, isDiagnostic },

@@ -136,7 +136,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 CancellationToken.None)).ToList();
             Assert.Single(jobInfoList);
             JobInfo orchestratorJobInfo = jobInfoList.First();
-
+            var metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
                 inputData,
@@ -148,13 +148,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFilterManager(new FilterConfiguration()),
                 GetMetaDataStore(),
                 10,
-                new MetricsLogger(new NullLogger<MetricsLogger>()),
+                metricsLogger,
                 _diagnosticLogger,
                 new NullLogger<FhirToDataLakeOrchestratorJob>());
 
             var retriableJobException = await Assert.ThrowsAsync<RetriableJobException>(async () =>
                 await job.ExecuteAsync(progress, CancellationToken.None));
-
+            Assert.Equal(1, metricsLogger.MetricsDic["TotalError"]);
+            Assert.Equal("RunJob", metricsLogger.ErrorOperationType);
             Assert.IsType<ApiSearchException>(retriableJobException.InnerException);
         }
 
@@ -263,6 +264,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 progressResult = r;
             });
 
+            var metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             string containerName = Guid.NewGuid().ToString("N");
 
             var filterConfiguration = new FilterConfiguration
@@ -322,6 +324,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                             orchestratorJobResult.ProcessedResourceCounts.ConcatDictionaryCount(processingResult.ProcessedCount);
                             orchestratorJobResult.ProcessedCountInTotal += processingResult.ProcessedCountInTotal;
                             orchestratorJobResult.ProcessedDataSizeInTotal += processingResult.ProcessedDataSizeInTotal;
+                            metricsLogger.LogSuccessfulResourceCountMetric(1);
+                            metricsLogger.LogSuccessfulDataSizeMetric(processingResult.ProcessedDataSizeInTotal);
+
                             if (inputData.JobVersion != JobVersion.V1 && inputData.JobVersion != JobVersion.V2)
                             {
                                 orchestratorJobResult.CompletedJobCount++;
@@ -371,7 +376,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 GetFilterManager(filterConfiguration),
                 metadataStore ?? GetMetaDataStore(),
                 concurrentCount,
-                new MetricsLogger(new NullLogger<MetricsLogger>()),
+                metricsLogger,
                 _diagnosticLogger,
                 new NullLogger<FhirToDataLakeOrchestratorJob>())
             {
@@ -402,6 +407,10 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(progressForContext.ProcessedCountInTotal, result.ProcessedCountInTotal);
             Assert.Equal(progressForContext.NextPatientIndex, result.NextPatientIndex);
 
+            Assert.Equal(3, metricsLogger.MetricsDic.Count);
+            Assert.Equal(inputFileCount, metricsLogger.MetricsDic[MetricNames.SuccessfulResourceCountMetric]);
+            Assert.Equal(inputFileCount * 1000L * TBValue, metricsLogger.MetricsDic[MetricNames.SuccessfulDataSizeMetric]);
+            Assert.Equal((int)(DateTimeOffset.UtcNow - TestEndTime).TotalMinutes, (int)(metricsLogger.MetricsDic[MetricNames.ResourceLatencyMetric] / 60));
             Assert.Equal(inputFileCount, queueClient.JobInfos.Count - 1);
 
             // verify blob data;
