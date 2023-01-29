@@ -130,7 +130,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                         cancellationToken);
                     long newJobId = jobInfos.First().Id;
                     _result.CreatedJobCount++;
-                    if (_inputData.JobVersion == SupportedJobVersion.V1 || _inputData.JobVersion == SupportedJobVersion.V2)
+                    if (_inputData.JobVersion == JobVersion.V1 || _inputData.JobVersion == JobVersion.V2)
                     {
                         _result.RunningJobIds.Add(newJobId);
                     }
@@ -240,7 +240,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 // For job version compatibility
                 // job version v1 use nextResourceTimestamp as the next job start time, job version v2 improve it by using lastEndTime
-                DateTimeOffset? nextJobStart = _inputData.JobVersion == SupportedJobVersion.V1 ? nextResourceTimestamp : lastEndTime;
+                DateTimeOffset? nextJobStart = _inputData.JobVersion == JobVersion.V1 ? nextResourceTimestamp : lastEndTime;
 
                 var input = new FhirToDataLakeProcessingJobInputData
                 {
@@ -465,8 +465,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             return _inputData.JobVersion switch
             {
-                SupportedJobVersion.V1 or SupportedJobVersion.V2 => _result.RunningJobIds.Min(),
-                SupportedJobVersion.V3 => _result.SequenceIdToJobIdMapForRunningJobs[_result.CompletedJobCount],
+                JobVersion.V1 or JobVersion.V2 => _result.RunningJobIds.Min(),
+                JobVersion.V3 => _result.SequenceIdToJobIdMapForRunningJobs[_result.CompletedJobCount],
                 _ => throw new SynapsePipelineInternalException($"The job version {_inputData.JobVersion} is unsupported."),
             };
         }
@@ -475,11 +475,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             switch (_inputData.JobVersion)
             {
-                case SupportedJobVersion.V1:
-                case SupportedJobVersion.V2:
+                case JobVersion.V1:
+                case JobVersion.V2:
                     _result.RunningJobIds.Remove(jobId);
                     break;
-                case SupportedJobVersion.V3:
+                case JobVersion.V3:
                     _result.SequenceIdToJobIdMapForRunningJobs.Remove(_result.CompletedJobCount);
                     _result.CompletedJobCount++;
                     break;
@@ -492,8 +492,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             return _inputData.JobVersion switch
             {
-                SupportedJobVersion.V1 or SupportedJobVersion.V2 => _result.RunningJobIds.Count,
-                SupportedJobVersion.V3 => (int)(_result.CreatedJobCount - _result.CompletedJobCount),
+                JobVersion.V1 or JobVersion.V2 => _result.RunningJobIds.Count,
+                JobVersion.V3 => (int)(_result.CreatedJobCount - _result.CompletedJobCount),
                 _ => throw new SynapsePipelineInternalException($"The job version {_inputData.JobVersion} is unsupported."),
             };
         }

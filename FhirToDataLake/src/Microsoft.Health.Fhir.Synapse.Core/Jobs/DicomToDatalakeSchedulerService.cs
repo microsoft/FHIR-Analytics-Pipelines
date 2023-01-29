@@ -14,24 +14,27 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
+using Microsoft.Health.Fhir.Synapse.Core.Dicom;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
+using Microsoft.Health.Fhir.Synapse.DataClient;
+using Microsoft.Health.Fhir.Synapse.DataClient.Api.Dicom;
+using Microsoft.Health.Fhir.Synapse.DataClient.Models.DicomApiOption;
 using Microsoft.Health.JobManagement;
 using NCrontab;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
-    public class SchedulerService : ISchedulerService
+    public class DicomToDatalakeSchedulerService : ISchedulerService
     {
         private readonly IQueueClient _queueClient;
-
         private readonly IMetadataStore _metadataStore;
+        private readonly IApiDataClient _dataClient;
         private readonly byte _queueType;
-        private readonly DateTimeOffset? _startTime;
-        private readonly DateTimeOffset? _endTime;
-        private readonly ILogger<SchedulerService> _logger;
+        private readonly ILogger<DicomToDatalakeSchedulerService> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly IMetricsLogger _metricsLogger;
         private readonly Guid _instanceGuid;
@@ -39,23 +42,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         // See https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression
         private readonly CrontabSchedule _crontabSchedule;
 
-        public SchedulerService(
+        public DicomToDatalakeSchedulerService(
             IQueueClient queueClient,
             IMetadataStore metadataStore,
+            IApiDataClient dataClient,
             IOptions<JobConfiguration> jobConfiguration,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
-            ILogger<SchedulerService> logger)
+            ILogger<DicomToDatalakeSchedulerService> logger)
         {
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
+            _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
 
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             _queueType = (byte)jobConfiguration.Value.QueueType;
-
-            // if both startTime and endTime are specified, add validation on ConfigurationValidatorV1 to make sure startTime is larger than endTime.
-            _startTime = jobConfiguration.Value.StartTime;
-            _endTime = jobConfiguration.Value.EndTime;
 
             // add validation on ConfiguraionValidatorV1 to make sure the SchedulerCronExpression is valid.
             _crontabSchedule = CrontabSchedule.Parse(jobConfiguration.Value.SchedulerCronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true });
@@ -72,6 +73,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         public int SchedulerServiceLeaseExpirationInSeconds { get; set; } = JobConfigurationConstants.DefaultSchedulerServiceLeaseExpirationInSeconds;
 
         public int SchedulerServiceLeaseRefreshIntervalInSeconds { get; set; } = JobConfigurationConstants.DefaultSchedulerServiceLeaseRefreshIntervalInSeconds;
+
+        public long InitialStartOffset { get; set; } = JobConfigurationConstants.DefaultDicomInitialStartOffset;
 
         // scheduler service is a long running service, it shouldn't stop for any exception.
         // It stops only when the job is scheduled to end or is cancelled.
@@ -297,7 +300,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                                                         await CreateInitialTriggerEntity(cancellationToken);
 
             // if current trigger entity is still null after initializing, just skip processing it this time and try again next time.
-            // this case should not happen.
+            // this case happens when there is no change feed in the Dicom service.
             bool scheduledToEnd = false;
             if (currentTriggerEntity != null)
             {
@@ -328,14 +331,12 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private async Task EnqueueOrchestratorJobAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
         {
             // enqueue a orchestrator job for this trigger
-            var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
+            var orchestratorDefinition = new DicomToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
-                JobVersion = currentTriggerEntity.JobVersion,
                 TriggerSequenceId = currentTriggerEntity.TriggerSequenceId,
-                Since = _startTime,
-                DataStartTime = currentTriggerEntity.TriggerStartTime,
-                DataEndTime = currentTriggerEntity.TriggerEndTime,
+                StartOffset = currentTriggerEntity.StartOffset,
+                EndOffset = currentTriggerEntity.EndOffset,
             };
 
             IEnumerable<JobInfo> jobInfoList = await _queueClient.EnqueueAsync(
@@ -405,29 +406,32 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>return true if the job has been scheduled to end, otherwise return false.</returns>
         private async Task<bool> CreateNextTriggerAsync(CurrentTriggerEntity currentTriggerEntity, CancellationToken cancellationToken)
         {
-            DateTimeOffset? nextTriggerEndTime = GetNextTriggerEndTime(currentTriggerEntity.TriggerEndTime);
+            DateTimeOffset? nextTriggerTime = GetNextTriggerTime(currentTriggerEntity.TriggerEndTime);
 
-            if (nextTriggerEndTime != null)
+            if (nextTriggerTime != null)
             {
-                DateTimeOffset? nextTriggerStartTime = GetNextTriggerStartTime(currentTriggerEntity.TriggerEndTime);
+                long latestSequence = await GetDicomLatestSequence(cancellationToken);
 
-                if (nextTriggerStartTime >= nextTriggerEndTime)
+                // if there is no new change feed added, skip this iteration
+                if (latestSequence > currentTriggerEntity.EndOffset)
                 {
-                    _logger.LogInformation($"The job has been scheduled to end {nextTriggerStartTime}.");
-                    return true;
+                    currentTriggerEntity.TriggerSequenceId += 1;
+                    currentTriggerEntity.TriggerStatus = TriggerStatus.New;
+
+                    currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerTime;
+                    currentTriggerEntity.StartOffset = currentTriggerEntity.EndOffset;
+                    currentTriggerEntity.EndOffset = latestSequence;
+
+                    bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
+                    _logger.LogInformation(isSucceeded
+                        ? $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table."
+                        : $"Failed to update new trigger with sequence id {currentTriggerEntity.TriggerSequenceId}, Etag precondition failed: {currentTriggerEntity}.");
                 }
-
-                currentTriggerEntity.TriggerSequenceId += 1;
-                currentTriggerEntity.TriggerStatus = TriggerStatus.New;
-
-                currentTriggerEntity.TriggerStartTime = nextTriggerStartTime;
-                currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerEndTime;
-                currentTriggerEntity.JobVersion = JobVersionManager.CurrentJobVersion;
-
-                bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
-                _logger.LogInformation(isSucceeded
-                    ? $"A new trigger with sequence id {currentTriggerEntity.TriggerSequenceId} is updated to azure table."
-                    : $"Failed to update new trigger with sequence id {currentTriggerEntity.TriggerSequenceId}, Etag precondition failed: {currentTriggerEntity}.");
+                else
+                {
+                    _logger.LogInformation($"There is no new change feed, the latest change feed sequence is {latestSequence}.");
+                    _diagnosticLogger.LogInformation($"There is no new change feed, the latest change feed sequence is {latestSequence}.");
+                }
             }
 
             return false;
@@ -440,15 +444,26 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         /// <returns>The created trigger entity</returns>
         private async Task<CurrentTriggerEntity> CreateInitialTriggerEntity(CancellationToken cancellationToken)
         {
+            long latestSequence = await GetDicomLatestSequence(cancellationToken);
+
+            // if there is no new change feed added, skip this iteration
+            if (latestSequence == 0)
+            {
+                _logger.LogInformation("There is no change feed in the Dicom service.");
+                _diagnosticLogger.LogInformation("There is no change feed in the Dicom service.");
+                return null;
+            }
+
             var initialTriggerEntity = new CurrentTriggerEntity
             {
                 PartitionKey = TableKeyProvider.TriggerPartitionKey(_queueType),
                 RowKey = TableKeyProvider.TriggerPartitionKey(_queueType),
-                TriggerStartTime = GetNextTriggerStartTime(null),
-                TriggerEndTime = (DateTimeOffset)GetNextTriggerEndTime(null),
+                TriggerEndTime = DateTimeOffset.Now,
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 0,
-                JobVersion = JobVersionManager.CurrentJobVersion,
+                StartOffset = InitialStartOffset,
+                EndOffset = latestSequence,
+                JobVersion = DicomToDatalakeJobVersionManager.CurrentJobVersion,
             };
 
             // add the initial trigger entity to table
@@ -461,52 +476,18 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             return await _metadataStore.GetCurrentTriggerEntityAsync(_queueType, cancellationToken);
         }
 
-        /// <summary>
-        /// return the start time in configuration for initial load job, otherwise return the last trigger end time
-        /// </summary>
-        private DateTimeOffset? GetNextTriggerStartTime(DateTimeOffset? lastTriggerEndTime)
+        private DateTimeOffset? GetNextTriggerTime(DateTimeOffset lastTriggerTime)
         {
-            return lastTriggerEndTime ?? _startTime;
-        }
-
-        /// <summary>
-        /// FHIR data use processing time as lastUpdated timestamp, there might be some latency when saving to data store.
-        /// Here we add a JobEndTimeLatencyInMinutes latency to avoid data missing due to latency in creation.
-        /// So the nextTriggerEndTime is set JobEndTimeLatencyInMinutes earlier than the current timestamp.
-        /// If Job end time is specified and earlier than the nextTriggerEndTime, will set the nextTriggerEndTime to the specified job end time.
-        /// For initial load job, lastTriggerEndTime is null;
-        /// For incremental job, lastTriggerEndTime is the end time of the last trigger, we also get all the next occurrence times during lastTriggerEndTime and latency utc now.
-        /// If next occurrence time comes after latency utc now, will return null and skip this iteration.
-        /// </summary>
-        /// <param name="lastTriggerEndTime">the end time of the last trigger</param>
-        /// <returns>the end time of the next trigger, return null if it is not yet the next occurrence time</returns>
-        private DateTimeOffset? GetNextTriggerEndTime(DateTimeOffset? lastTriggerEndTime)
-        {
-            // Add latency to utc now
-            DateTimeOffset nextTriggerEndTime =
-                DateTimeOffset.UtcNow.AddMinutes(-1 * JobConfigurationConstants.JobQueryLatencyInMinutes);
-
-            // set the trigger end time for incremental job
-            if (lastTriggerEndTime != null)
+            // this functions will return times > baseTime and < endTime
+            DateTime nextOccurrenceTime = _crontabSchedule.GetNextOccurrences(((DateTimeOffset)lastTriggerTime).DateTime, DateTimeOffset.Now.DateTime).LastOrDefault();
+            if (nextOccurrenceTime == default)
             {
-                // this functions will return times > baseTime and < endTime
-                DateTime nextOccurrenceTime = _crontabSchedule.GetNextOccurrences(((DateTimeOffset)lastTriggerEndTime).DateTime, nextTriggerEndTime.DateTime).LastOrDefault();
-                if (nextOccurrenceTime == default)
-                {
-                    return null;
-                }
-
-                DateTimeOffset nextOccurrenceOffsetTime = DateTime.SpecifyKind(nextOccurrenceTime, DateTimeKind.Utc);
-
-                nextTriggerEndTime = nextOccurrenceOffsetTime;
+                return null;
             }
 
-            if (nextTriggerEndTime > _endTime)
-            {
-                nextTriggerEndTime = (DateTimeOffset)_endTime;
-            }
+            DateTimeOffset nextOccurrenceOffsetTime = DateTime.SpecifyKind(nextOccurrenceTime, DateTimeKind.Utc);
 
-            return nextTriggerEndTime;
+            return nextOccurrenceOffsetTime;
         }
 
         /// <summary>
@@ -578,6 +559,32 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 ? $"Scheduler instance {_instanceGuid} renews lease successfully."
                 : $"Scheduler instance {_instanceGuid} fails to renew lease, failed to update lease trigger entity: {triggerLeaseEntity}.");
             return isSucceeded;
+        }
+
+        /// <summary>
+        /// Get dicom latest sequence
+        /// </summary>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>return the latest sequence, return 0 if there is no change feed</returns>
+        private async Task<long> GetDicomLatestSequence(CancellationToken cancellationToken)
+        {
+            var queryParameters = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, "false"),
+                };
+
+            var changeFeedOption = new ChangeFeedLatestOptions(queryParameters);
+            string changeFeedContent = await _dataClient.SearchAsync(changeFeedOption, cancellationToken);
+
+            // When there's no changefeed, an empty string will be returned. JObject.Parse() will throw JsonReaderException.
+            if (string.IsNullOrEmpty(changeFeedContent))
+            {
+                return 0;
+            }
+
+            var changeFeed = JObject.Parse(changeFeedContent);
+
+            return changeFeed == null ? 0 : changeFeed.Value<long>(DicomChangeFeedConstants.SequenceKey);
         }
     }
 }

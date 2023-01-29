@@ -10,7 +10,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
-using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -26,31 +25,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     /// <summary>
     /// Factory to create different jobs.
     /// </summary>
-    public class AzureStorageJobFactory : IJobFactory
+    public class DicomToDatalakeAzureStorageJobFactory : IJobFactory
     {
         private readonly IQueueClient _queueClient;
         private readonly IApiDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
-        private readonly IGroupMemberExtractor _groupMemberExtractor;
         private readonly IColumnDataProcessor _parquetDataProcessor;
         private readonly ISchemaManager<ParquetSchemaNode> _schemaManager;
-        private readonly IFilterManager _filterManager;
-        private readonly IMetadataStore _metadataStore;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly int _maxJobCountInRunningPool;
-        private readonly ILogger<AzureStorageJobFactory> _logger;
+        private readonly ILogger<DicomToDatalakeAzureStorageJobFactory> _logger;
         private readonly IMetricsLogger _metricsLogger;
 
-        public AzureStorageJobFactory(
+        public DicomToDatalakeAzureStorageJobFactory(
             IQueueClient queueClient,
             IApiDataClient dataClient,
             IDataWriter dataWriter,
-            IGroupMemberExtractor groupMemberExtractor,
             IColumnDataProcessor parquetDataProcessor,
             ISchemaManager<ParquetSchemaNode> schemaManager,
-            IFilterManager filterManager,
-            IMetadataStore metadataStore,
             IOptions<JobConfiguration> jobConfiguration,
             IMetricsLogger metricsLogger,
             IDiagnosticLogger diagnosticLogger,
@@ -59,18 +52,15 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
-            _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
             _parquetDataProcessor = EnsureArg.IsNotNull(parquetDataProcessor, nameof(parquetDataProcessor));
             _schemaManager = EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
-            _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
-            _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
 
             EnsureArg.IsNotNull(jobConfiguration, nameof(jobConfiguration));
             _maxJobCountInRunningPool = jobConfiguration.Value.MaxQueuedJobCountPerOrchestration;
 
             _loggerFactory = EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
-            _logger = _loggerFactory.CreateLogger<AzureStorageJobFactory>();
+            _logger = _loggerFactory.CreateLogger<DicomToDatalakeAzureStorageJobFactory>();
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
         }
 
@@ -78,27 +68,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
 
-            if (_metadataStore.IsInitialized())
+            Func<JobInfo, IJob>[] taskFactoryFuncs =
+                new Func<JobInfo, IJob>[] { CreateProcessingTask, CreateOrchestratorTask };
+
+            foreach (Func<JobInfo, IJob> factoryFunc in taskFactoryFuncs)
             {
-                Func<JobInfo, IJob>[] taskFactoryFuncs =
-                    new Func<JobInfo, IJob>[] { CreateProcessingTask, CreateOrchestratorTask };
-
-                foreach (Func<JobInfo, IJob> factoryFunc in taskFactoryFuncs)
+                IJob job = factoryFunc(jobInfo);
+                if (job != null)
                 {
-                    IJob job = factoryFunc(jobInfo);
-                    if (job != null)
-                    {
-                        return job;
-                    }
+                    return job;
                 }
-
-                // job hosting didn't catch any exception thrown during creating job,
-                // return null for failure case, and job hosting will skip it.
-                _logger.LogInformation($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
-                return null;
             }
 
-            _logger.LogInformation("Metadata store isn't initialized yet.");
+            // job hosting didn't catch any exception thrown during creating job,
+            // return null for failure case, and job hosting will skip it.
+            _logger.LogInformation($"Failed to create job, unknown job definition. ID: {jobInfo?.Id ?? -1}");
             return null;
         }
 
@@ -106,32 +90,25 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             try
             {
-                var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
+                var inputData = JsonConvert.DeserializeObject<DicomToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Orchestrator })
                 {
-                    bool isSupported = Enum.IsDefined(typeof(SupportedJobVersion), inputData.JobVersion);
-
-                    // return null if the job version is unsupported
-                    if (isSupported)
+                    if (DicomToDatalakeJobVersionManager.SupportedJobVersion.Contains(inputData.JobVersion))
                     {
-                        FhirToDataLakeOrchestratorJobResult currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
-                        ? new FhirToDataLakeOrchestratorJobResult()
-                        : JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
+                        var currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
+                            ? new DicomToDataLakeOrchestratorJobResult()
+                            : JsonConvert.DeserializeObject<DicomToDataLakeOrchestratorJobResult>(jobInfo.Result);
 
-                        return new FhirToDataLakeOrchestratorJob(
+                        return new DicomToDataLakeOrchestratorJob(
                             jobInfo,
                             inputData,
                             currentResult,
-                            _dataClient,
                             _dataWriter,
                             _queueClient,
-                            _groupMemberExtractor,
-                            _filterManager,
-                            _metadataStore,
                             _maxJobCountInRunningPool,
                             _metricsLogger,
                             _diagnosticLogger,
-                            _loggerFactory.CreateLogger<FhirToDataLakeOrchestratorJob>());
+                            _loggerFactory.CreateLogger<DicomToDataLakeOrchestratorJob>());
                     }
                 }
             }
@@ -149,26 +126,21 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             try
             {
-                var inputData = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(jobInfo.Definition);
+                var inputData = JsonConvert.DeserializeObject<DicomToDataLakeProcessingJobInputData>(jobInfo.Definition);
                 if (inputData is { JobType: JobType.Processing })
                 {
-                    bool isSupported = Enum.IsDefined(typeof(SupportedJobVersion), inputData.JobVersion);
-
-                    // return null if the job version is unsupported
-                    if (isSupported)
+                    if (DicomToDatalakeJobVersionManager.SupportedJobVersion.Contains(inputData.JobVersion))
                     {
-                        return new FhirToDataLakeProcessingJob(
-                        jobInfo.Id,
-                        inputData,
-                        _dataClient,
-                        _dataWriter,
-                        _parquetDataProcessor,
-                        _schemaManager,
-                        _groupMemberExtractor,
-                        _filterManager,
-                        _metricsLogger,
-                        _diagnosticLogger,
-                        _loggerFactory.CreateLogger<FhirToDataLakeProcessingJob>());
+                        return new DicomToDataLakeProcessingJob(
+                            jobInfo.Id,
+                            inputData,
+                            _dataClient,
+                            _dataWriter,
+                            _parquetDataProcessor,
+                            _schemaManager,
+                            _metricsLogger,
+                            _diagnosticLogger,
+                            _loggerFactory.CreateLogger<DicomToDataLakeProcessingJob>());
                     }
                 }
             }

@@ -179,6 +179,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var input = new DicomToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
+                    JobVersion = _inputData.JobVersion,
                     ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     StartOffset = _result.NextOffset,
@@ -194,6 +195,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 var input = new DicomToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
+                    JobVersion = _inputData.JobVersion,
                     ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     StartOffset = _result.NextOffset,

@@ -8,7 +8,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     /// <summary>
     /// Supported versions for job.
     /// </summary>
-    public enum SupportedJobVersion
+    public enum JobVersion
     {
         /// <summary>
         /// First version.

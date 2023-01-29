@@ -31,16 +31,17 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
-    public class AzureStorageJobFactoryTests
+    public class FhirToDatalakeAzureStorageJobFactoryTests
     {
         private const string TestWorkerName = "test-worker";
+        private static string _jobVersionKey = nameof(FhirToDataLakeOrchestratorJobInputData.JobVersion);
 
         [Fact]
         public async Task GivenUnsupportedJobVersion_WhenCreateJob_ThenShouldReturnNull()
         {
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
-            var jobFactory = new AzureStorageJobFactory(
+            var jobFactory = new FhirToDatalakeAzureStorageJobFactory(
                 queueClient,
                 Substitute.For<IApiDataClient>(),
                 Substitute.For<IDataWriter>(),
@@ -66,7 +67,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var jobject = JObject.FromObject(orchestratorDefinition);
 
-            jobject[FhirToDataLakeJobInputDataProperties.JobVersion] = "UnsupportedJobVersion";
+            jobject[_jobVersionKey] = "UnsupportedJobVersion";
 
             // enqueue job
             List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(
@@ -101,7 +102,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
-                JobVersion = SupportedJobVersion.V1,
+                JobVersion = JobVersion.V1,
                 DataStartTime = null,
                 DataEndTime = DateTime.UtcNow,
             };

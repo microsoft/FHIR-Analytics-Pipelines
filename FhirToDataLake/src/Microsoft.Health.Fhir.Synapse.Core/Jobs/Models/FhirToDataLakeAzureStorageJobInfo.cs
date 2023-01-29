@@ -31,8 +31,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 {
                     return inputData.JobVersion switch
                     {
-                        SupportedJobVersion.V1 => GetIdentifierText(inputData, JobVersionManager.FhirToDataLakeOrchestratorJobIdentifierPropertiesV1),
-                        SupportedJobVersion.V2 => GetIdentifierText(inputData, JobVersionManager.FhirToDataLakeOrchestratorJobIdentifierPropertiesV2),
+                        JobVersion.V1 => GetIdentifierText(inputData, FhirToDatalakeJobVersionManager.FhirToDataLakeOrchestratorJobIdentifierPropertiesV1),
+                        JobVersion.V2 => GetIdentifierText(inputData, FhirToDatalakeJobVersionManager.FhirToDataLakeOrchestratorJobIdentifierPropertiesV2),
                         _ => null,
                     };
                 }
@@ -54,8 +54,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs.Models
                 {
                     return inputData.JobVersion switch
                     {
-                        SupportedJobVersion.V1 => GetIdentifierText(inputData, JobVersionManager.FhirToDataLakeProcessingJobIdentifierPropertiesV1),
-                        SupportedJobVersion.V2 => GetIdentifierText(inputData, JobVersionManager.FhirToDataLakeProcessingJobIdentifierPropertiesV2),
+                        JobVersion.V1 => GetIdentifierText(inputData, FhirToDatalakeJobVersionManager.FhirToDataLakeProcessingJobIdentifierPropertiesV1),
+                        JobVersion.V2 => GetIdentifierText(inputData, FhirToDatalakeJobVersionManager.FhirToDataLakeProcessingJobIdentifierPropertiesV2),
                         _ => null,
                     };
                 }

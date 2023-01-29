@@ -27,12 +27,12 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
-    public class SchedulerServiceTests
+    public class FhirToDatalakeSchedulerServiceTests
     {
         private static readonly IDiagnosticLogger DiagnosticLogger = new DiagnosticLogger();
 
-        private readonly NullLogger<SchedulerService> _nullSchedulerServiceLogger =
-            NullLogger<SchedulerService>.Instance;
+        private readonly NullLogger<FhirToDatalakeSchedulerService> _nullSchedulerServiceLogger =
+            NullLogger<FhirToDatalakeSchedulerService>.Instance;
 
         private static readonly MockMetricsLogger MetricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
 
@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private readonly IOptions<JobConfiguration> _jobConfigOption;
 
-        public SchedulerServiceTests()
+        public FhirToDatalakeSchedulerServiceTests()
         {
             var jobConfig = new JobConfiguration
             {
@@ -66,13 +66,13 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new SchedulerService(null, new MockMetadataStore(), Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new FhirToDatalakeSchedulerService(null, new MockMetadataStore(), Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new SchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), null, Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), null, Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new SchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), null, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), null, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
         }
 
         [Theory]
@@ -89,14 +89,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             Assert.Throws<CrontabException>(
-                () => new SchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
         }
 
         [Fact]
         public void GivenNullSchedulerCronExpression_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new SchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(new JobConfiguration()), MetricsLogger,  DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(new JobConfiguration()), MetricsLogger,  DiagnosticLogger, _nullSchedulerServiceLogger));
         }
 
         [Fact]
@@ -112,7 +112,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 JobInfoQueueName = TestJobInfoQueueName,
             };
 
-            Exception exception = Record.Exception(() => new SchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+            Exception exception = Record.Exception(() => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
 
             Assert.Null(exception);
         }
@@ -124,7 +124,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -184,7 +184,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             var schedulerService =
-                new SchedulerService(queueClient, brokenMetadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, brokenMetadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -216,7 +216,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             var schedulerService =
-                new SchedulerService(queueClient, brokenMetadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, brokenMetadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -246,7 +246,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -291,7 +291,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -329,7 +329,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -357,7 +357,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // initialize two scheduler services
             var schedulerService1 =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -365,7 +365,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 };
 
             var schedulerService2 =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -409,7 +409,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // initialize two scheduler services
             var schedulerService1 =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -417,7 +417,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 };
 
             var schedulerService2 =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -481,7 +481,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
             var schedulerService1 =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -489,7 +489,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 };
 
             var schedulerService2 =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -520,7 +520,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -554,7 +554,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -606,7 +606,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -653,7 +653,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -691,7 +691,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService1 =
-                new SchedulerService(brokenQueueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(brokenQueueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -716,7 +716,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var schedulerService2 =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
             {
                 SchedulerServicePullingIntervalInSeconds = 1,
                 SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -743,9 +743,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Theory]
-        [InlineData(SupportedJobVersion.V1)]
-        [InlineData(SupportedJobVersion.V2)]
-        public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned(SupportedJobVersion jobVersion)
+        [InlineData(JobVersion.V1)]
+        [InlineData(JobVersion.V2)]
+        public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned(JobVersion jobVersion)
         {
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
@@ -783,7 +783,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 CancellationToken.None)).ToList();
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
             {
                 SchedulerServicePullingIntervalInSeconds = 0,
                 SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -825,6 +825,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TriggerEndTime = DateTime.UtcNow.AddMinutes(-5),
                 TriggerStatus = TriggerStatus.Completed,
                 TriggerSequenceId = 11,
+                JobVersion = FhirToDatalakeJobVersionManager.DefaultJobVersion,
             };
 
             var metadataStore = new MockMetadataStore();
@@ -833,7 +834,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -852,14 +853,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
 
             // The job version is updated
-            Assert.Equal(JobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
-            Assert.Equal(JobVersionManager.CurrentJobVersion, currentTriggerEntity.JobVersion);
+            Assert.Equal(FhirToDatalakeJobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
+            Assert.Equal(FhirToDatalakeJobVersionManager.CurrentJobVersion, currentTriggerEntity.JobVersion);
 
             JobInfo jobInfo = await queueClient.GetJobByIdAsync((byte)QueueType.FhirToDataLake, currentTriggerEntity.OrchestratorJobId, true, CancellationToken.None);
 
             var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
 
-            Assert.Equal(JobVersionManager.CurrentJobVersion, inputData.JobVersion);
+            Assert.Equal(FhirToDatalakeJobVersionManager.CurrentJobVersion, inputData.JobVersion);
 
             tokenSource.Cancel();
             await task;
@@ -880,6 +881,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TriggerEndTime = DateTime.UtcNow.AddMinutes(-5),
                 TriggerStatus = TriggerStatus.New,
                 TriggerSequenceId = 11,
+                JobVersion = FhirToDatalakeJobVersionManager.DefaultJobVersion,
             };
 
             var metadataStore = new MockMetadataStore();
@@ -888,7 +890,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -907,14 +909,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
 
             // The job version is NOT updated
-            Assert.Equal(JobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
-            Assert.Equal(JobVersionManager.DefaultJobVersion, currentTriggerEntity.JobVersion);
+            Assert.Equal(FhirToDatalakeJobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
+            Assert.Equal(FhirToDatalakeJobVersionManager.DefaultJobVersion, currentTriggerEntity.JobVersion);
 
             JobInfo jobInfo = await queueClient.GetJobByIdAsync((byte)QueueType.FhirToDataLake, currentTriggerEntity.OrchestratorJobId, true, CancellationToken.None);
 
             var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
 
-            Assert.Equal(JobVersionManager.DefaultJobVersion, inputData.JobVersion);
+            Assert.Equal(FhirToDatalakeJobVersionManager.DefaultJobVersion, inputData.JobVersion);
 
             tokenSource.Cancel();
             await task;
@@ -934,6 +936,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TriggerStartTime = DateTime.UtcNow.AddMinutes(-10),
                 TriggerEndTime = DateTime.UtcNow.AddMinutes(-5),
                 TriggerStatus = TriggerStatus.New,
+                JobVersion = FhirToDatalakeJobVersionManager.DefaultJobVersion,
             };
 
             var metadataStore = new MockMetadataStore();
@@ -959,7 +962,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 CancellationToken.None)).ToList();
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -983,11 +986,11 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(jobInfoList.First().HeartbeatDateTime, jobInfo.HeartbeatDateTime);
 
             // The job version is NOT updated
-            Assert.Equal(JobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
+            Assert.Equal(FhirToDatalakeJobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
 
             var inputData = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
 
-            Assert.Equal(JobVersionManager.DefaultJobVersion, inputData.JobVersion);
+            Assert.Equal(FhirToDatalakeJobVersionManager.DefaultJobVersion, inputData.JobVersion);
 
             tokenSource.Cancel();
             await task;
@@ -1008,7 +1011,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TriggerEndTime = DateTime.UtcNow.AddMinutes(-5),
                 TriggerStatus = TriggerStatus.Completed,
                 TriggerSequenceId = 11,
-                JobVersion = JobVersionManager.CurrentJobVersion,
+                JobVersion = FhirToDatalakeJobVersionManager.CurrentJobVersion,
             };
 
             DateTimeOffset lastTriggerEndTime = triggerEntity.TriggerEndTime;
@@ -1019,7 +1022,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1066,7 +1069,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 TriggerEndTime = endTime,
                 TriggerStatus = TriggerStatus.Completed,
                 TriggerSequenceId = 11,
-                JobVersion = JobVersionManager.CurrentJobVersion,
+                JobVersion = FhirToDatalakeJobVersionManager.CurrentJobVersion,
             };
 
             var metadataStore = new MockMetadataStore();
@@ -1088,7 +1091,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             IOptions<JobConfiguration> jobConfigOption = Options.Create(jobConfig);
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1124,7 +1127,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1192,7 +1195,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1277,7 +1280,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1348,7 +1351,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1418,7 +1421,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
-                    new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                    new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                     {
                         SchedulerServicePullingIntervalInSeconds = 1,
                         SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1448,7 +1451,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
             queueClient.Initialized = false;
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1493,7 +1496,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1526,7 +1529,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1605,7 +1608,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1657,7 +1660,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             IOptions<JobConfiguration> jobConfigOption = Options.Create(jobConfig);
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1706,7 +1709,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             IOptions<JobConfiguration> jobConfigOption = Options.Create(jobConfig);
 
             var schedulerService =
-                new SchedulerService(queueClient, metadataStore, jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,

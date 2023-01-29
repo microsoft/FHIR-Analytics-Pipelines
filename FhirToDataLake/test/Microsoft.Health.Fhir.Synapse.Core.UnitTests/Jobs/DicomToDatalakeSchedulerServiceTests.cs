@@ -29,12 +29,12 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
-    public class DicomSchedulerServiceTests
+    public class DicomToDatalakeSchedulerServiceTests
     {
         private static readonly IDiagnosticLogger DiagnosticLogger = new DiagnosticLogger();
 
-        private readonly NullLogger<DicomSchedulerService> _nullDicomSchedulerServiceLogger =
-            NullLogger<DicomSchedulerService>.Instance;
+        private readonly NullLogger<DicomToDatalakeSchedulerService> _nullDicomSchedulerServiceLogger =
+            NullLogger<DicomToDatalakeSchedulerService>.Instance;
 
         private static readonly IMetricsLogger MetricsLogger = new MetricsLogger(new NullLogger<MetricsLogger>());
 
@@ -49,7 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private const long TestEndOffset = 1300;
 
-        public DicomSchedulerServiceTests()
+        public DicomToDatalakeSchedulerServiceTests()
         {
             var jobConfig = new JobConfiguration
             {
@@ -69,16 +69,16 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new DicomSchedulerService(null, new MockMetadataStore(), GetMockDicomDataClient(string.Empty), Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
+                () => new DicomToDatalakeSchedulerService(null, new MockMetadataStore(), GetMockDicomDataClient(string.Empty), Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new DicomSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), null, GetMockDicomDataClient(string.Empty), Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
+                () => new DicomToDatalakeSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), null, GetMockDicomDataClient(string.Empty), Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new DicomSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), null, Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
+                () => new DicomToDatalakeSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), null, Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new DicomSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), GetMockDicomDataClient(string.Empty), null, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
+                () => new DicomToDatalakeSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), GetMockDicomDataClient(string.Empty), null, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
         }
 
         [Theory]
@@ -95,14 +95,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             Assert.Throws<CrontabException>(
-                () => new DicomSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), GetMockDicomDataClient(string.Empty), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
+                () => new DicomToDatalakeSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), GetMockDicomDataClient(string.Empty), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger));
         }
 
         [Fact]
         public void GivenNullSchedulerCronExpression_WhenInitialize_ExceptionShouldBeThrown()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new DicomSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), GetMockDicomDataClient(string.Empty), Options.Create(new JobConfiguration()), MetricsLogger,  DiagnosticLogger, _nullDicomSchedulerServiceLogger));
+                () => new DicomToDatalakeSchedulerService(new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), GetMockDicomDataClient(string.Empty), Options.Create(new JobConfiguration()), MetricsLogger,  DiagnosticLogger, _nullDicomSchedulerServiceLogger));
         }
 
         // Check Storage
@@ -112,7 +112,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -172,7 +172,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, brokenMetadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, brokenMetadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -202,7 +202,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             };
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, brokenMetadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, brokenMetadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -231,7 +231,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -274,7 +274,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -311,7 +311,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -338,7 +338,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // initialize two scheduler services
             var schedulerService1 =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -346,7 +346,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 };
 
             var schedulerService2 =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -389,7 +389,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // initialize two scheduler services
             var schedulerService1 =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -397,7 +397,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 };
 
             var schedulerService2 =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -460,7 +460,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
             var schedulerService1 =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -468,7 +468,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 };
 
             var schedulerService2 =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -498,7 +498,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -531,7 +531,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(string.Empty), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -585,7 +585,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             dataClient.SearchAsync(default).ReturnsForAnyArgs(string.Empty);
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, dataClient, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, dataClient, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -617,7 +617,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile2)), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile2)), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -655,7 +655,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService1 =
-                new DicomSchedulerService(brokenQueueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(brokenQueueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -680,7 +680,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var schedulerService2 =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
             {
                 SchedulerServicePullingIntervalInSeconds = 1,
                 SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -740,7 +740,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 CancellationToken.None)).ToList();
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
             {
                 SchedulerServicePullingIntervalInSeconds = 0,
                 SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -789,7 +789,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile2)), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile2)), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -824,7 +824,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile2)), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(TestDataProvider.GetDataFromFile(TestDataConstants.LatestChangeFeedFile2)), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -888,7 +888,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -971,7 +971,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1041,7 +1041,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1110,7 +1110,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
-                    new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                    new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                     {
                         SchedulerServicePullingIntervalInSeconds = 1,
                         SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1139,7 +1139,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
             queueClient.Initialized = false;
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1183,7 +1183,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1215,7 +1215,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1267,7 +1267,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new DicomSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1293,7 +1293,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // the job is dequeued, and the trigger status is still running.
             JobInfo jobInfo = await queueClient.DequeueAsync(
-                (byte)QueueType.FhirToDataLake,
+                (byte)QueueType.DicomToDataLake,
                 TestWorkerName,
                 0,
                 CancellationToken.None);
