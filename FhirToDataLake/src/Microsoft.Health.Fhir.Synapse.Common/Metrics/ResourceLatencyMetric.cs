@@ -7,12 +7,12 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Fhir.Synapse.Common.Metrics
 {
-    public class ProcessLatencyMetric : DiagnosticMetrics
+    public class ResourceLatencyMetric : DiagnosticMetrics
     {
-        public ProcessLatencyMetric()
-            : base("ProcessLatency", MetricsCategories.Latency, new Dictionary<string, object>
+        public ResourceLatencyMetric()
+            : base(MetricNames.ResourceLatencyMetric, MetricsCategories.Latency, new Dictionary<string, object>
             {
-                { DimensionNames.Name, "ProcessLatency" },
+                { DimensionNames.Name, MetricNames.ResourceLatencyMetric },
                 { DimensionNames.Category, MetricsCategories.Latency },
                 { DimensionNames.IsDiagnostic, true },
                 { DimensionNames.Operation, JobOperations.CompleteJob },

@@ -407,9 +407,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(progressForContext.NextPatientIndex, result.NextPatientIndex);
 
             Assert.Equal(3, metricsLogger.MetricsDic.Count);
-            Assert.Equal(inputFileCount, metricsLogger.MetricsDic["SuccessfulResourceCount"]);
-            Assert.Equal(inputFileCount * 1000L * TBValue, metricsLogger.MetricsDic["SuccessfulDataSize"]);
-            Assert.Equal((int)(DateTimeOffset.UtcNow - TestEndTime).TotalMinutes, (int)(metricsLogger.MetricsDic["ProcessLatency"] / 60));
+            Assert.Equal(inputFileCount, metricsLogger.MetricsDic[MetricNames.SuccessfulResourceCountMetric]);
+            Assert.Equal(inputFileCount * 1000L * TBValue, metricsLogger.MetricsDic[MetricNames.SuccessfulDataSizeMetric]);
+            Assert.Equal((int)(DateTimeOffset.UtcNow - TestEndTime).TotalMinutes, (int)(metricsLogger.MetricsDic[MetricNames.ResourceLatencyMetric] / 60));
             Assert.Equal(inputFileCount, queueClient.JobInfos.Count - 1);
 
             // verify blob data;

@@ -47,9 +47,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Extensions
             metricsLogger.LogMetrics(new SuccessfulDataSizeMetric(), value);
         }
 
-        public static void LogProcessLatencyMetric(this IMetricsLogger metricsLogger, double value)
+        public static void LogResourceLatencyMetric(this IMetricsLogger metricsLogger, double value)
         {
-            metricsLogger.LogMetrics(new ProcessLatencyMetric(), value);
+            metricsLogger.LogMetrics(new ResourceLatencyMetric(), value);
         }
 
         public static void LogHealthStatusMetric(this IMetricsLogger metricsLogger, string component, bool isDiagnostic, double value)

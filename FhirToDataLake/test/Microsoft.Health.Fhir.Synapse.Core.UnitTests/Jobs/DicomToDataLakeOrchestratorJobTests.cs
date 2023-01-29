@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
+using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
@@ -194,8 +195,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(progressForContext.ProcessedCountInTotal, result.ProcessedCountInTotal);
 
             Assert.Equal(2, metricsLogger.MetricsDic.Count);
-            Assert.Equal(inputFileCount, metricsLogger.MetricsDic["SuccessfulResourceCount"]);
-            Assert.Equal(inputFileCount * 1000L * TBValue, metricsLogger.MetricsDic["SuccessfulDataSize"]);
+            Assert.Equal(inputFileCount, metricsLogger.MetricsDic[MetricNames.SuccessfulResourceCountMetric]);
+            Assert.Equal(inputFileCount * 1000L * TBValue, metricsLogger.MetricsDic[MetricNames.SuccessfulDataSizeMetric]);
             Assert.Equal(inputFileCount, queueClient.JobInfos.Count - 1);
 
             // verify blob data;
