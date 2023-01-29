@@ -40,6 +40,5 @@ namespace Microsoft.Health.Fhir.Synapse.DataClient.Api
         /// Metadata
         /// </summary>
         public const string MetadataKey = "metadata";
-
     }
 }

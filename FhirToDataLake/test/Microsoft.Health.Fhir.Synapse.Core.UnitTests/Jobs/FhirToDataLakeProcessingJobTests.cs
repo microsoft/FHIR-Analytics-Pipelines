@@ -61,7 +61,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             var blobClient = new InMemoryBlobContainerClient();
 
-            FhirToDataLakeProcessingJob job = GetFhirToDataLakeProcessingJob(1L, GetInputData(), TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile1), containerName, blobClient, filterConfiguration);
+            FhirToDataLakeProcessingJob job = GetFhirToDataLakeProcessingJob(1L, GetInputData(), TestDataProvider.GetBundleFromFile(TestDataConstants.PatientBundleFile1), containerName, blobClient, new MockMetricsLogger(null), filterConfiguration);
 
             string resultString = await job.ExecuteAsync(progress, CancellationToken.None);
             var result = JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(resultString);
