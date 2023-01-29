@@ -14,6 +14,7 @@ using Microsoft.Health.Fhir.Synapse.Common.Configurations;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Metrics;
 using Microsoft.Health.Fhir.Synapse.Common.Models.Jobs;
+using Microsoft.Health.Fhir.Synapse.Core.DataFilter;
 using Microsoft.Health.Fhir.Synapse.Core.DataProcessor;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
@@ -30,7 +31,7 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
-    public class DicomAzureStorageJobFactoryTests
+    public class FhirToDatalakeAzureStorageJobFactoryTests
     {
         private const string TestWorkerName = "test-worker";
         private static string _jobVersionKey = nameof(FhirToDataLakeOrchestratorJobInputData.JobVersion);
@@ -38,26 +39,30 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenUnsupportedJobVersion_WhenCreateJob_ThenShouldReturnNull()
         {
-            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
-            var jobFactory = new DicomToDatalakeAzureStorageJobFactory(
+            var jobFactory = new FhirToDatalakeAzureStorageJobFactory(
                 queueClient,
                 Substitute.For<IApiDataClient>(),
                 Substitute.For<IDataWriter>(),
+                Substitute.For<IGroupMemberExtractor>(),
                 Substitute.For<IColumnDataProcessor>(),
                 Substitute.For<ISchemaManager<ParquetSchemaNode>>(),
+                Substitute.For<IFilterManager>(),
+                Substitute.For<IMetadataStore>(),
                 Options.Create(new JobConfiguration()),
                 new MetricsLogger(new NullLogger<MetricsLogger>()),
                 new DiagnosticLogger(),
                 new NullLoggerFactory());
 
             // create job with unsupported job version
-            var orchestratorDefinition = new DicomToDataLakeOrchestratorJobInputData
+            var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
                 TriggerSequenceId = 1,
-                StartOffset = 0,
-                EndOffset = 100,
+                Since = DateTimeOffset.MinValue,
+                DataStartTime = DateTimeOffset.MinValue,
+                DataEndTime = DateTimeOffset.UtcNow,
             };
 
             var jobject = JObject.FromObject(orchestratorDefinition);
@@ -66,7 +71,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // enqueue job
             List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(
-                (byte)QueueType.DicomToDataLake,
+                (byte)QueueType.FhirToDataLake,
                 new[] { JsonConvert.SerializeObject(jobject) },
                 0,
                 false,
@@ -76,7 +81,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Single(jobInfoList);
 
             // dequeue job
-            var jobInfo = await queueClient.DequeueAsync((byte)QueueType.DicomToDataLake, TestWorkerName, 0, CancellationToken.None);
+            var jobInfo = await queueClient.DequeueAsync((byte)QueueType.FhirToDataLake, TestWorkerName, 0, CancellationToken.None);
 
             Assert.NotNull(jobInfo);
             var job = jobFactory.Create(jobInfo);
@@ -88,22 +93,22 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenJobFactoryReturnNull_WhenRunningJobHosting_ThenShouldSkipAndRevisualableInQueue()
         {
-            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
+            var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var jobFactory = Substitute.For<IJobFactory>();
             jobFactory.Create(default).ReturnsNullForAnyArgs();
 
             // enqueue manually job
-            var orchestratorDefinition = new DicomToDataLakeOrchestratorJobInputData
+            var orchestratorDefinition = new FhirToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
                 JobVersion = JobVersion.V1,
-                StartOffset = 0,
-                EndOffset = 100,
+                DataStartTime = null,
+                DataEndTime = DateTime.UtcNow,
             };
 
             List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(
-                (byte)QueueType.DicomToDataLake,
+                (byte)QueueType.FhirToDataLake,
                 new[] { JsonConvert.SerializeObject(orchestratorDefinition) },
                 0,
                 false,
@@ -119,14 +124,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
             // queue message visibilityTimeout
             jobHosting.JobHeartbeatTimeoutThresholdInSeconds = 1;
-            Task task = jobHosting.StartAsync((byte)QueueType.DicomToDataLake, TestWorkerName, cancellationTokenSource);
+            Task task = jobHosting.StartAsync((byte)QueueType.FhirToDataLake, TestWorkerName, cancellationTokenSource);
 
-            var jobInfo = await queueClient.DequeueAsync((byte)QueueType.DicomToDataLake, TestWorkerName, 1, CancellationToken.None);
+            var jobInfo = await queueClient.DequeueAsync((byte)QueueType.FhirToDataLake, TestWorkerName, 1, CancellationToken.None);
             Assert.Null(jobInfo);
             await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
 
             // the job is re-visiable
-            jobInfo = await queueClient.DequeueAsync((byte)QueueType.DicomToDataLake, TestWorkerName, 1, CancellationToken.None);
+            jobInfo = await queueClient.DequeueAsync((byte)QueueType.FhirToDataLake, TestWorkerName, 1, CancellationToken.None);
 
             Assert.NotNull(jobInfo);
             Assert.Equal(JobStatus.Running, jobInfo.Status);

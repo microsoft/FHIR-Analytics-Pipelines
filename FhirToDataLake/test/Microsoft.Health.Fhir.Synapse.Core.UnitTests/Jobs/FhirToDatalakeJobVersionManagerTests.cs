@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
-    public class FhirJobVersionManagerTests
+    public class FhirToDatalakeJobVersionManagerTests
     {
         [Fact]
         public void TheDefaultJobVersionShouldBeV1()
@@ -18,10 +18,9 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
         }
 
         [Fact]
-        public void TheCurrentJobVersionShouldBeV2()
+        public void TheCurrentJobVersionShouldBeV3()
         {
-            // the current job version V2, be careful to update the current job version. If the current job version is updated, need to consider version compatibility issues
-            Assert.Equal(JobVersion.V2, FhirToDatalakeJobVersionManager.CurrentJobVersion);
+            Assert.Equal(JobVersion.V3, FhirToDatalakeJobVersionManager.CurrentJobVersion);
         }
     }
 }

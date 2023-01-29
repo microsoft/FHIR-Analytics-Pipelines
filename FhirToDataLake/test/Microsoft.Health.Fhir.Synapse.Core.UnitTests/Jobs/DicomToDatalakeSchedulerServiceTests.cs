@@ -29,7 +29,7 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
-    public class DicomSchedulerServiceTests
+    public class DicomToDatalakeSchedulerServiceTests
     {
         private static readonly IDiagnosticLogger DiagnosticLogger = new DiagnosticLogger();
 
@@ -49,7 +49,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private const long TestEndOffset = 1300;
 
-        public DicomSchedulerServiceTests()
+        public DicomToDatalakeSchedulerServiceTests()
         {
             var jobConfig = new JobConfiguration
             {

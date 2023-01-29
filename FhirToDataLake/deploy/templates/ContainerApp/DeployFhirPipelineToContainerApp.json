@@ -36,7 +36,15 @@
         "minLength": 3,
         "maxLength": 24,
         "metadata": {
-            "description": "The name of the container instance that you wish to create."
+            "description": "The name of the container app that you wish to create."
+        }
+    },
+    "containerAppEnvironmentName": {
+        "type": "string",
+        "defaultValue": "",
+        "maxLength": 24,
+        "metadata": {
+            "description": "The name of the existing Azure Containner App environment that you wish to use. Will create new environment if not specified."
         }
     },
     "fhirServerUrl": {
@@ -166,7 +174,7 @@
     "pipelineContainerName": "fhir-to-datalake",
     "pipelineName": "[toLower(parameters('pipelineName'))]",
     "analyticsWorkspaceName": "[concat(variables('pipelineName'), '-LogAnalytics')]",
-    "environmentName": "[concat(variables('pipelineName'), '-Environment')]",
+    "environmentName": "[if(empty(parameters('containerAppEnvironmentName')), concat(variables('pipelineName'), '-Environment') ,parameters('containerAppEnvironmentName'))]",
     "jobInfoQueueName": "[concat(variables('pipelineName'), 'jobinfoqueue')]",
     "jobInfoTableName": "[concat(variables('pipelineName'), 'jobinfotable')]",
     "metadataTableName": "[concat(variables('pipelineName'), 'metadatatable')]",

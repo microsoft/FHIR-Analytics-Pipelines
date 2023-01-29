@@ -27,7 +27,7 @@ using Xunit;
 
 namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 {
-    public class FhirSchedulerServiceTests
+    public class FhirToDatalakeSchedulerServiceTests
     {
         private static readonly IDiagnosticLogger DiagnosticLogger = new DiagnosticLogger();
 
@@ -45,7 +45,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
 
         private readonly IOptions<JobConfiguration> _jobConfigOption;
 
-        public FhirSchedulerServiceTests()
+        public FhirToDatalakeSchedulerServiceTests()
         {
             var jobConfig = new JobConfiguration
             {

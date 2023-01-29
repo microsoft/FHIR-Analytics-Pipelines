@@ -10,7 +10,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 {
     public static class FhirToDatalakeJobVersionManager
     {
-        public const JobVersion CurrentJobVersion = JobVersion.V2;
+        public const JobVersion CurrentJobVersion = JobVersion.V3;
 
         public const JobVersion DefaultJobVersion = JobVersion.V1;
 
@@ -18,6 +18,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         {
             JobVersion.V1,
             JobVersion.V2,
+            JobVersion.V3,
         };
 
         // The job version is added in input data to handle possible version compatibility issues when the version is updated. It is not related to the job definition, so we need to remove the job version property when calculate job identifier.
@@ -54,6 +55,26 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         };
 
         public static readonly List<string> FhirToDataLakeProcessingJobIdentifierPropertiesV2 = new ()
+        {
+            nameof(FhirToDataLakeProcessingJobInputData.JobType),
+            nameof(FhirToDataLakeProcessingJobInputData.TriggerSequenceId),
+            nameof(FhirToDataLakeProcessingJobInputData.ProcessingJobSequenceId),
+            nameof(FhirToDataLakeProcessingJobInputData.Since),
+            nameof(FhirToDataLakeProcessingJobInputData.DataStartTime),
+            nameof(FhirToDataLakeProcessingJobInputData.ToBeProcessedPatients),
+        };
+
+        // job version V3
+        // the same as job version v2
+        public static readonly List<string> FhirToDataLakeOrchestratorJobIdentifierPropertiesV3 = new()
+        {
+            nameof(FhirToDataLakeProcessingJobInputData.JobType),
+            nameof(FhirToDataLakeProcessingJobInputData.TriggerSequenceId),
+            nameof(FhirToDataLakeProcessingJobInputData.Since),
+            nameof(FhirToDataLakeProcessingJobInputData.DataStartTime),
+        };
+
+        public static readonly List<string> FhirToDataLakeProcessingJobIdentifierPropertiesV3 = new()
         {
             nameof(FhirToDataLakeProcessingJobInputData.JobType),
             nameof(FhirToDataLakeProcessingJobInputData.TriggerSequenceId),
