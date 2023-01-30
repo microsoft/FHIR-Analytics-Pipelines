@@ -6,10 +6,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Fhir.Synapse.Common.Logging;
 using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
@@ -18,8 +21,10 @@ using Microsoft.Health.Fhir.Synapse.Core.Fhir;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.DataClient;
 using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
+using Microsoft.Health.Fhir.Synapse.DataClient.Exceptions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
 using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
+using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -101,7 +106,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 _logger.LogInformation($"Spliting {resourceType} jobs, finish split {jobCount} jobs. use : {(DateTimeOffset.Now - splitingStartTime).TotalMilliseconds} milliseconds.");
             }
-
         }
 
         private async Task<Dictionary<DateTimeOffset, int>> InitializeAnchorListAsync(string resourceType, DateTimeOffset? startTime, DateTimeOffset endTime, int totalCount, CancellationToken cancellationToken)
@@ -243,6 +247,14 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 }
             }
 
+            // FHIR server has internal error if getting resource count failed within 1 millisecond search time range.
+            if (anchorList[end] == int.MaxValue)
+            {
+                _diagnosticLogger.LogError("Failed to split processing jobs caused by getting resource count from FHIR server failed.");
+                _logger.LogInformation("Failed to split processing jobs caused by getting resource count from FHIR server failed.");
+                throw new RetriableJobException("Failed to split processing jobs caused by getting resource count from FHIR server failed.");
+            }
+
             return end;
         }
 
@@ -266,10 +278,24 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
             }
-            catch (Exception ex)
+            catch (ApiSearchException ex) when (ex.InnerException is HttpRequestException)
             {
-                _logger.LogInformation("Get resource count error. Reason {0}", ex.Message);
-                return int.MaxValue;
+                var innerException = ex.InnerException as HttpRequestException;
+                switch (innerException.StatusCode)
+                {
+                    case HttpStatusCode.RequestTimeout:
+                    case HttpStatusCode.TooManyRequests:
+                    case HttpStatusCode.InternalServerError:
+                        _diagnosticLogger.LogError($"Get resource count error with transient failure. Reason: {ex.Message}. Set count as max int value and will retry later.");
+                        _logger.LogInformation(ex, "Get resource count error with transient failure. Reason: {0}. Set count as max int value and will retry later.", ex.Message);
+                        return int.MaxValue;
+                    default:
+                        break;
+                }
+
+                _diagnosticLogger.LogError(string.Format("Failed to get resource count from server. Reason: {0}", ex.Message));
+                _logger.LogInformation(ex, "Failed to get resource count from server. Reason: {0}", ex.Message);
+                throw;
             }
 
             // Parse bundle result.

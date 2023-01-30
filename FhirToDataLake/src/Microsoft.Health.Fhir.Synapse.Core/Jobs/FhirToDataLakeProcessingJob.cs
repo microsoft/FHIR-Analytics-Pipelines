@@ -56,6 +56,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private FhirToDataLakeProcessingJobResult _result;
         private List<TypeFilter> _typeFilters;
         private CacheResult _cacheResult;
+        private FilterScope _filterScope;
 
         /// <summary>
         /// Output file index map for all resources/schemas.
@@ -120,8 +121,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                 _typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
 
-                FilterScope filterScope = await _filterManager.GetFilterScopeAsync(cancellationToken);
-                switch (filterScope)
+                _filterScope = await _filterManager.GetFilterScopeAsync(cancellationToken);
+                switch (_filterScope)
                 {
                     case FilterScope.Group:
                     {
@@ -137,7 +138,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
                     default:
                         throw new ConfigurationErrorException(
-                            $"The FilterScope {filterScope} isn't supported now.");
+                            $"The FilterScope {_filterScope} isn't supported now.");
                 }
 
                 // force to commit result when all the resources of this job are processed.
@@ -391,7 +392,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             {
                 searchOptions.QueryParameters = new List<KeyValuePair<string, string>>(sharedQueryParameters);
 
-                if (_inputData.SplitParameters != null)
+                if (_filterScope == FilterScope.System)
                 {
                     if (!_inputData.SplitParameters.ContainsKey(typeFilter.ResourceType))
                     {

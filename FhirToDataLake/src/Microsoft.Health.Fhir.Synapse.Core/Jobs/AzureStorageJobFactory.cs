@@ -118,7 +118,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                             jobInfo,
                             inputData,
                             new FhirToDataLakeProcessingJobSpliter(_dataClient, _diagnosticLogger, _loggerFactory.CreateLogger<FhirToDataLakeProcessingJobSpliter>()),
-                            _dataClient,
                             _dataWriter,
                             _queueClient,
                             _groupMemberExtractor,

@@ -24,10 +24,6 @@ using Microsoft.Health.Fhir.Synapse.Core.Exceptions;
 using Microsoft.Health.Fhir.Synapse.Core.Extensions;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models;
 using Microsoft.Health.Fhir.Synapse.Core.Jobs.Models.AzureStorage;
-using Microsoft.Health.Fhir.Synapse.DataClient;
-using Microsoft.Health.Fhir.Synapse.DataClient.Api.Fhir;
-using Microsoft.Health.Fhir.Synapse.DataClient.Extensions;
-using Microsoft.Health.Fhir.Synapse.DataClient.Models.FhirApiOption;
 using Microsoft.Health.Fhir.Synapse.DataWriter;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
@@ -38,7 +34,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
     {
         private readonly JobInfo _jobInfo;
         private readonly FhirToDataLakeOrchestratorJobInputData _inputData;
-        private readonly IApiDataClient _dataClient;
         private readonly IDataWriter _dataWriter;
         private readonly IQueueClient _queueClient;
         private readonly IGroupMemberExtractor _groupMemberExtractor;
@@ -59,7 +54,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             JobInfo jobInfo,
             FhirToDataLakeOrchestratorJobInputData inputData,
             FhirToDataLakeProcessingJobSpliter jobSpliter,
-            IApiDataClient dataClient,
             IDataWriter dataWriter,
             IQueueClient queueClient,
             IGroupMemberExtractor groupMemberExtractor,
@@ -73,7 +67,6 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             _jobInfo = EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
             _inputData = EnsureArg.IsNotNull(inputData, nameof(inputData));
             _jobSpliter = EnsureArg.IsNotNull(jobSpliter, nameof(jobSpliter));
-            _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
             _groupMemberExtractor = EnsureArg.IsNotNull(groupMemberExtractor, nameof(groupMemberExtractor));
@@ -150,6 +143,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     _result.CreatedJobCount++;
                     _result.RunningJobIds.Add(newJobId);
 
+                    // Update submitted resource time stamps and clear submitting processing job status.
                     if (input.SplitParameters != null)
                     {
                         input?.SplitParameters.Select(x => _result.SubmittedResourceTimestamps[x.Key] = x.Value.DataEndTime);
@@ -238,6 +232,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
 
             if (jobStatus == null)
             {
+                // Orchestrator job status entity is not exist, will create a new one.
                 var newJobStatus = new OrchestratorJobStatusEntity()
                 {
                     PartitionKey = TableKeyProvider.JobStatusPartitionKey(_jobInfo.QueueType, Convert.ToInt32(JobType.Orchestrator)),
@@ -302,7 +297,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                 {
                     if (subJob.ResourceCount == 0)
                     {
-                        _result.SubmittedResourceTimestamps[resourceType] = _inputData.DataEndTime;
+                        _result.SubmittedResourceTimestamps[resourceType] = subJob.TimeRange.DataEndTime;
                         continue;
                     }
                     else if (subJob.ResourceCount < LowBoundOfProcessingJobResourceCount)
@@ -360,8 +355,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
         private Dictionary<string, TimeRange> PushToJobPool(string resourceType, TimeRange range, int count)
         {
             // Push small job into pool list.
-            var current = _mergeList.Sum(x => x.Item3);
-            if (current + count > LowBoundOfProcessingJobResourceCount)
+            var currentCount = _mergeList.Sum(x => x.Item3);
+            if (currentCount + count >= LowBoundOfProcessingJobResourceCount)
             {
                 // Pop all jobs if total resource count larger than low bound.
                 var result = _mergeList.ToDictionary(x => x.Item1, x => x.Item2);

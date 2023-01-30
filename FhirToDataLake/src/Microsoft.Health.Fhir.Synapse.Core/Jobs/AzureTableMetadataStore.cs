@@ -149,7 +149,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
             {
-                _logger.LogInformation(ex, "The current trigger doesn't exist, will create a new one.");
+                _logger.LogInformation(ex, "The orchestrator job status entity doesn't exist, will create a new one.");
             }
 
             // don't catch other exceptions, the caller should handle it
