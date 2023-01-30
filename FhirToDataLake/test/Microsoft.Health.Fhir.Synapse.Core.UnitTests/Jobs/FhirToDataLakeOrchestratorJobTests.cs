@@ -346,6 +346,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
                 NumberOfPatientsPerProcessingJob = 1,
             };
 
+            var startExecuteTime = DateTimeOffset.Now;
             string resultString = await job.ExecuteAsync(progress, CancellationToken.None);
             var result = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(resultString);
 
@@ -373,7 +374,8 @@ namespace Microsoft.Health.Fhir.Synapse.Core.UnitTests.Jobs
             Assert.Equal(3, metricsLogger.MetricsDic.Count);
             Assert.Equal(inputFileCount, metricsLogger.MetricsDic[MetricNames.SuccessfulResourceCountMetric]);
             Assert.Equal(inputFileCount * 1000L * TBValue, metricsLogger.MetricsDic[MetricNames.SuccessfulDataSizeMetric]);
-            Assert.Equal((int)(DateTimeOffset.UtcNow - TestEndTime).TotalMinutes, (int)(metricsLogger.MetricsDic[MetricNames.ResourceLatencyMetric] / 60));
+            Assert.True((startExecuteTime - TestEndTime).TotalSeconds <= metricsLogger.MetricsDic[MetricNames.ResourceLatencyMetric]);
+            Assert.True((DateTimeOffset.UtcNow - TestEndTime).TotalSeconds >= metricsLogger.MetricsDic[MetricNames.ResourceLatencyMetric]);
             Assert.Equal(inputFileCount, queueClient.JobInfos.Count - 1);
 
             // verify blob data;
