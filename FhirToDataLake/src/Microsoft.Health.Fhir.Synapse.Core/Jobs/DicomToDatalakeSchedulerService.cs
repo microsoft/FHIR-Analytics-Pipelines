@@ -334,6 +334,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
             var orchestratorDefinition = new DicomToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
+                JobVersion = currentTriggerEntity.JobVersion,
                 TriggerSequenceId = currentTriggerEntity.TriggerSequenceId,
                 StartOffset = currentTriggerEntity.StartOffset,
                 EndOffset = currentTriggerEntity.EndOffset,
@@ -421,6 +422,7 @@ namespace Microsoft.Health.Fhir.Synapse.Core.Jobs
                     currentTriggerEntity.TriggerEndTime = (DateTimeOffset)nextTriggerTime;
                     currentTriggerEntity.StartOffset = currentTriggerEntity.EndOffset;
                     currentTriggerEntity.EndOffset = latestSequence;
+                    currentTriggerEntity.JobVersion = DicomToDatalakeJobVersionManager.CurrentJobVersion;
 
                     bool isSucceeded = await _metadataStore.TryUpdateEntityAsync(currentTriggerEntity, cancellationToken);
                     _logger.LogInformation(isSucceeded
