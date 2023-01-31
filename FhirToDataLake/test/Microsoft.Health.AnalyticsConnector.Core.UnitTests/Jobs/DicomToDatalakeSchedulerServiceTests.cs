@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.AnalyticsConnector.Common.Configurations;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;
-using Microsoft.Health.AnalyticsConnector.Common.Metrics;
 using Microsoft.Health.AnalyticsConnector.Common.Models.Jobs;
 using Microsoft.Health.AnalyticsConnector.Core.Jobs;
 using Microsoft.Health.AnalyticsConnector.Core.Jobs.Models;
@@ -36,7 +35,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
         private readonly NullLogger<DicomToDatalakeSchedulerService> _nullDicomSchedulerServiceLogger =
             NullLogger<DicomToDatalakeSchedulerService>.Instance;
 
-        private static readonly IMetricsLogger MetricsLogger = new MetricsLogger(new NullLogger<MetricsLogger>());
+        private static readonly MockMetricsLogger MetricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
 
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
         private const string TestJobInfoQueueName = "jobinfoqueue";
@@ -62,6 +61,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             };
 
             _jobConfigOption = Options.Create(jobConfig);
+            MetricsLogger.Clear();
         }
 
         // Initialize Test
@@ -704,8 +704,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             await task2;
         }
 
-        [Fact]
-        public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned()
+        [Theory]
+        [InlineData(JobVersion.V1)]
+        public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned(JobVersion jobVersion)
         {
             var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
 
@@ -716,6 +717,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 StartOffset = 0,
                 EndOffset = 100,
                 TriggerSequenceId = 0,
+                JobVersion = jobVersion,
             };
 
             var metadataStore = new MockMetadataStore();
@@ -727,6 +729,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             var orchestratorDefinition1 = new DicomToDataLakeOrchestratorJobInputData
             {
                 JobType = JobType.Orchestrator,
+                JobVersion = initialTriggerEntity.JobVersion,
                 StartOffset = initialTriggerEntity.StartOffset,
                 EndOffset = initialTriggerEntity.EndOffset,
             };
@@ -764,6 +767,192 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
+        }
+
+        // version update
+        [Fact]
+        public async Task GivenCompletedTriggerStatus_WhenUpdateVersion_ThenTheVersionOfNextJobIsUpdated()
+        {
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
+
+            // trigger entity with old job version
+            var triggerEntity = new CurrentTriggerEntity
+            {
+                PartitionKey = TableKeyProvider.TriggerPartitionKey((byte)QueueType.DicomToDataLake),
+                RowKey = TableKeyProvider.TriggerPartitionKey((byte)QueueType.DicomToDataLake),
+                TriggerStartTime = DateTime.UtcNow.AddMinutes(-10),
+                TriggerEndTime = DateTime.UtcNow.AddMinutes(-5),
+                TriggerStatus = TriggerStatus.Completed,
+                TriggerSequenceId = 0,
+                JobVersion = DicomToDatalakeJobVersionManager.DefaultJobVersion,
+            };
+
+            var metadataStore = new MockMetadataStore();
+
+            // add the trigger entity to table
+            await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
+
+            var schedulerService =
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                {
+                    SchedulerServicePullingIntervalInSeconds = 0,
+                    SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
+                    SchedulerServiceLeaseExpirationInSeconds = 2,
+                };
+
+            // service is running
+            using var tokenSource = new CancellationTokenSource();
+            Task task = schedulerService.RunAsync(tokenSource.Token);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100), CancellationToken.None);
+
+            CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
+
+            Assert.Equal(triggerEntity.TriggerSequenceId + 1, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
+
+            // The job version is updated
+            Assert.Equal(DicomToDatalakeJobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
+            Assert.Equal(DicomToDatalakeJobVersionManager.CurrentJobVersion, currentTriggerEntity.JobVersion);
+
+            JobInfo jobInfo = await queueClient.GetJobByIdAsync((byte)QueueType.DicomToDataLake, currentTriggerEntity.OrchestratorJobId, true, CancellationToken.None);
+
+            var inputData = JsonConvert.DeserializeObject<DicomToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
+
+            Assert.Equal(DicomToDatalakeJobVersionManager.CurrentJobVersion, inputData.JobVersion);
+
+            tokenSource.Cancel();
+            await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
+        }
+
+        [Fact]
+        public async Task GivenNewTriggerStatus_WhenUpdateVersion_ThenTheVersionShouldNotBeUpdated()
+        {
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
+
+            // trigger entity with old job version
+            var triggerEntity = new CurrentTriggerEntity
+            {
+                PartitionKey = TableKeyProvider.TriggerPartitionKey((byte)QueueType.DicomToDataLake),
+                RowKey = TableKeyProvider.TriggerPartitionKey((byte)QueueType.DicomToDataLake),
+                TriggerStartTime = DateTime.UtcNow.AddMinutes(-10),
+                TriggerEndTime = DateTime.UtcNow.AddMinutes(-5),
+                TriggerStatus = TriggerStatus.New,
+                TriggerSequenceId = 11,
+                JobVersion = DicomToDatalakeJobVersionManager.DefaultJobVersion,
+            };
+
+            var metadataStore = new MockMetadataStore();
+
+            // add the trigger entity to table
+            await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
+
+            var schedulerService =
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                {
+                    SchedulerServicePullingIntervalInSeconds = 0,
+                    SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
+                    SchedulerServiceLeaseExpirationInSeconds = 2,
+                };
+
+            // service is running
+            using var tokenSource = new CancellationTokenSource();
+            Task task = schedulerService.RunAsync(tokenSource.Token);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100), CancellationToken.None);
+
+            CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
+
+            Assert.Equal(triggerEntity.TriggerSequenceId, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
+
+            // The job version is NOT updated
+            Assert.Equal(DicomToDatalakeJobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
+            Assert.Equal(DicomToDatalakeJobVersionManager.DefaultJobVersion, currentTriggerEntity.JobVersion);
+
+            JobInfo jobInfo = await queueClient.GetJobByIdAsync((byte)QueueType.DicomToDataLake, currentTriggerEntity.OrchestratorJobId, true, CancellationToken.None);
+
+            var inputData = JsonConvert.DeserializeObject<DicomToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
+
+            Assert.Equal(DicomToDatalakeJobVersionManager.DefaultJobVersion, inputData.JobVersion);
+
+            tokenSource.Cancel();
+            await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
+        }
+
+        [Fact]
+        public async Task GivenJobEnqueuedTriggerNotUpdate_WhenUpdateVersion_ThenExistingJobShouldBeReturned()
+        {
+            var queueClient = new MockQueueClient<DicomToDataLakeAzureStorageJobInfo>();
+
+            // trigger entity with old job version
+            var triggerEntity = new CurrentTriggerEntity
+            {
+                PartitionKey = TableKeyProvider.TriggerPartitionKey((byte)QueueType.DicomToDataLake),
+                RowKey = TableKeyProvider.TriggerPartitionKey((byte)QueueType.DicomToDataLake),
+                TriggerStartTime = DateTime.UtcNow.AddMinutes(-10),
+                TriggerEndTime = DateTime.UtcNow.AddMinutes(-5),
+                TriggerStatus = TriggerStatus.New,
+                JobVersion = DicomToDatalakeJobVersionManager.DefaultJobVersion,
+            };
+
+            var metadataStore = new MockMetadataStore();
+
+            // add the trigger entity to table
+            await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
+
+            var orchestratorDefinition1 = new DicomToDataLakeOrchestratorJobInputData
+            {
+                JobType = JobType.Orchestrator,
+                JobVersion = triggerEntity.JobVersion,
+                StartOffset = triggerEntity.StartOffset,
+                EndOffset = triggerEntity.EndOffset,
+            };
+
+            List<JobInfo> jobInfoList = (await queueClient.EnqueueAsync(
+                (byte)QueueType.DicomToDataLake,
+                new[] { JsonConvert.SerializeObject(orchestratorDefinition1) },
+                0,
+                false,
+                false,
+                CancellationToken.None)).ToList();
+
+            var schedulerService =
+                new DicomToDatalakeSchedulerService(queueClient, metadataStore, GetMockDicomDataClient(), _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullDicomSchedulerServiceLogger)
+                {
+                    SchedulerServicePullingIntervalInSeconds = 0,
+                    SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
+                    SchedulerServiceLeaseExpirationInSeconds = 2,
+                };
+
+            // service is running
+            using var tokenSource = new CancellationTokenSource();
+            Task task = schedulerService.RunAsync(tokenSource.Token);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100), CancellationToken.None);
+
+            // return the existing job
+            CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
+            Assert.Equal(triggerEntity.TriggerSequenceId, currentTriggerEntity.TriggerSequenceId);
+            Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
+            Assert.Equal(jobInfoList.First().Id, currentTriggerEntity.OrchestratorJobId);
+
+            JobInfo jobInfo = await queueClient.GetJobByIdAsync((byte)QueueType.DicomToDataLake, currentTriggerEntity.OrchestratorJobId, true, CancellationToken.None);
+
+            Assert.Equal(jobInfoList.First().HeartbeatDateTime, jobInfo.HeartbeatDateTime);
+
+            // The job version is NOT updated
+            Assert.Equal(DicomToDatalakeJobVersionManager.DefaultJobVersion, triggerEntity.JobVersion);
+
+            var inputData = JsonConvert.DeserializeObject<DicomToDataLakeOrchestratorJobInputData>(jobInfo.Definition);
+
+            Assert.Equal(DicomToDatalakeJobVersionManager.DefaultJobVersion, inputData.JobVersion);
+
+            tokenSource.Cancel();
+            await task;
+            Assert.Empty(MetricsLogger.MetricsDic);
         }
 
         // Complete Trigger
