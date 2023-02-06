@@ -44,7 +44,7 @@
         "defaultValue": "",
         "maxLength": 24,
         "metadata": {
-            "description": "The name of the existing Azure Containner App environment that you wish to use. Will create new environment if not specified."
+            "description": "The name of the existing Azure Container App environment that you wish to use. Will create new environment if not specified."
         }
     },
     "fhirServerUrl": {
@@ -96,7 +96,14 @@
         "minValue": 2,
         "maxValue": 10,
         "metadata": {
-            "description": "Concurrent jobs exeucting in parallel."
+            "description": "Concurrent jobs executing in parallel."
+        }
+    },
+    "schedulerCronExpression": {
+        "type": "string",
+        "defaultValue": "0 */5 * * * *",
+        "metadata": {
+            "description": "scheduler frequency, a six-part crontab format (sec min hour day month day-of-week). Refer https://github.com/atifaziz/NCrontab for more about crontab expression."
         }
     },
     "customizedSchemaImageReference":{
@@ -289,6 +296,10 @@
                 {
                     "name": "job__queueUrl",
                     "value": "[concat('https://', variables('storageAccountName'), '.queue.core.windows.net')]"
+                },
+                {
+                    "name": "job__schedulerCronExpression",
+                    "value": "[parameters('schedulerCronExpression')]"
                 },
                 {
                     "name": "dataLakeStore__storageUrl",
