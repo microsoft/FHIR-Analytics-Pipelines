@@ -69,9 +69,23 @@
                 "description": "Concurrent jobs executing in parallel."
             }
         },
+        "schedulerIntervalInMinutes": {
+            "type": "int",
+            "defaultValue": 5,
+            "allowedValues": [
+            0,
+            5,
+            30,
+            60,
+            1440
+            ],
+            "metadata": {
+                "description": "The scheduler interval in minutes, schedulerCronExpression will take effect if set to 0."
+            }
+        },
         "schedulerCronExpression": {
             "type": "string",
-            "defaultValue": "0 */5 * * * *",
+            "defaultValue": "",
             "metadata": {
                 "description": "scheduler frequency, a six-part crontab format (sec min hour day month day-of-week). Refer https://github.com/atifaziz/NCrontab for more about crontab expression."
             }
@@ -180,7 +194,8 @@
         "storageBlobDataContributorRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
         "storageQueueDataContributorRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
         "storageTableDataContributorRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
-        "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]"
+        "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
+        "schedulerCronExpression": "[if(equals(parameters('schedulerIntervalInMinutes'), 5), '0 */5 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), 30), '0 */30 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), 60), '0 0 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), 1440), '0 0 0 * * *', parameters('schedulerCronExpression')))))]"
     },
     "resources": [
         {
@@ -356,7 +371,7 @@
                         },
                         {
                             "name": "job__schedulerCronExpression",
-                            "value": "[parameters('schedulerCronExpression')]"
+                            "value": "[variables('schedulerCronExpression')]"
                         },
                         {
                             "name": "dataLakeStore__storageUrl",
