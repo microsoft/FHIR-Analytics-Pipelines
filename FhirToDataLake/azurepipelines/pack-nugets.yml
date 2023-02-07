@@ -6,13 +6,13 @@ steps:
     workingDirectory: FhirToDataLake
     script: |
       $projects = @(
-        "Microsoft.Health.Fhir.Synapse.Common/Microsoft.Health.Fhir.Synapse.Common.csproj",
-        "Microsoft.Health.Fhir.Synapse.Core/Microsoft.Health.Fhir.Synapse.Core.csproj",
-        "Microsoft.Health.Fhir.Synapse.DataClient/Microsoft.Health.Fhir.Synapse.DataClient.csproj",
-        "Microsoft.Health.Fhir.Synapse.DataWriter/Microsoft.Health.Fhir.Synapse.DataWriter.csproj",
-        "Microsoft.Health.Fhir.Synapse.JobManagement/Microsoft.Health.Fhir.Synapse.JobManagement.csproj",
-        "Microsoft.Health.Fhir.Synapse.HealthCheck/Microsoft.Health.Fhir.Synapse.HealthCheck.csproj",
-        "Microsoft.Health.Fhir.Synapse.SchemaManagement/Microsoft.Health.Fhir.Synapse.SchemaManagement.csproj"
+        "Microsoft.Health.AnalyticsConnector.Common/Microsoft.Health.AnalyticsConnector.Common.csproj",
+        "Microsoft.Health.AnalyticsConnector.Core/Microsoft.Health.AnalyticsConnector.Core.csproj",
+        "Microsoft.Health.AnalyticsConnector.DataClient/Microsoft.Health.AnalyticsConnector.DataClient.csproj",
+        "Microsoft.Health.AnalyticsConnector.DataWriter/Microsoft.Health.AnalyticsConnector.DataWriter.csproj",
+        "Microsoft.Health.AnalyticsConnector.JobManagement/Microsoft.Health.AnalyticsConnector.JobManagement.csproj",
+        "Microsoft.Health.AnalyticsConnector.HealthCheck/Microsoft.Health.AnalyticsConnector.HealthCheck.csproj",
+        "Microsoft.Health.AnalyticsConnector.SchemaManagement/Microsoft.Health.AnalyticsConnector.SchemaManagement.csproj"
       )
       
       foreach ($project in $projects) {

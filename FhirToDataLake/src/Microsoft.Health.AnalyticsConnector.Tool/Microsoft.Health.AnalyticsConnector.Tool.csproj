@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Health.Parquet" Version="$(ParquetNativeLibVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.Common\Microsoft.Health.AnalyticsConnector.Common.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.Core\Microsoft.Health.AnalyticsConnector.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.DataClient\Microsoft.Health.AnalyticsConnector.DataClient.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.DataWriter\Microsoft.Health.AnalyticsConnector.DataWriter.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.HealthCheck\Microsoft.Health.AnalyticsConnector.HealthCheck.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.SchemaManagement\Microsoft.Health.AnalyticsConnector.SchemaManagement.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings-example-v1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
