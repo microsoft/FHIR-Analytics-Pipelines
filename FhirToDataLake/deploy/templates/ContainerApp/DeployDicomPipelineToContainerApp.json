@@ -36,7 +36,15 @@
         "minLength": 3,
         "maxLength": 24,
         "metadata": {
-            "description": "The name of the container instance that you wish to create."
+            "description": "The name of the container app that you wish to create."
+        }
+    },
+    "containerAppEnvironmentName": {
+        "type": "string",
+        "defaultValue": "",
+        "maxLength": 24,
+        "metadata": {
+            "description": "The name of the existing Azure Containner App environment that you wish to use. Will create new environment if not specified."
         }
     },
     "dicomServerUrl": {
@@ -83,7 +91,7 @@
     },
     "image": {
         "type": "string",
-        "defaultValue": "healthplatformregistry.azurecr.io/fhirtodatalaketool:v0.5.0",
+        "defaultValue": "healthplatformregistry.azurecr.io/healthdatatodatalaketool:v0.6.0",
         "metadata": {
             "description": "Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials."
         }
@@ -115,11 +123,11 @@
     "pipelineContainerName": "dicom-to-datalake",
     "pipelineName": "[toLower(parameters('pipelineName'))]",
     "analyticsWorkspaceName": "[concat(variables('pipelineName'), '-LogAnalytics')]",
-    "environmentName": "[concat(variables('pipelineName'), '-Environment')]",
+    "environmentName": "[if(empty(parameters('containerAppEnvironmentName')), concat(variables('pipelineName'), '-Environment') ,parameters('containerAppEnvironmentName'))]",
     "jobInfoQueueName": "[concat(variables('pipelineName'), 'jobinfoqueue')]",
     "jobInfoTableName": "[concat(variables('pipelineName'), 'jobinfotable')]",
     "metadataTableName": "[concat(variables('pipelineName'), 'metadatatable')]",
-    "resourceTags": {"FhirAnalyticsPipeline": "DicomToDataLake", "FhirSchemaVersion": "v0.5.0"},
+    "resourceTags": {"FhirAnalyticsPipeline": "DicomToDataLake", "FhirSchemaVersion": "v0.6.0"},
     "storageAccountName": "[concat(substring(replace(variables('pipelineName'), '-', ''), 0, min(11, length(replace(variables('pipelineName'), '-', '')))), uniquestring(resourceGroup().id, variables('pipelineName')))]",
     "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
     "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
@@ -249,6 +257,10 @@
                 {
                     "name": "dataSource__dicomServer__authentication",
                     "value": "[parameters('serverAuthentication')]"
+                },
+                {
+                    "name": "arrow__readOptions__blockSize",
+                    "value": "104857600"
                 }
               ],
               "resources": {

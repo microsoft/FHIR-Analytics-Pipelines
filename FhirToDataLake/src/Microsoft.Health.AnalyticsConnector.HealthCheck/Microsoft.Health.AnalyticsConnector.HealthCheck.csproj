@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Platforms>x64</Platforms>
+    </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ensure.That" Version="10.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.Core\Microsoft.Health.AnalyticsConnector.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.DataClient\Microsoft.Health.AnalyticsConnector.DataClient.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.DataWriter\Microsoft.Health.AnalyticsConnector.DataWriter.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.JobManagement\Microsoft.Health.AnalyticsConnector.JobManagement.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.SchemaManagement\Microsoft.Health.AnalyticsConnector.SchemaManagement.csproj" />
+  </ItemGroup>
+
+</Project>
