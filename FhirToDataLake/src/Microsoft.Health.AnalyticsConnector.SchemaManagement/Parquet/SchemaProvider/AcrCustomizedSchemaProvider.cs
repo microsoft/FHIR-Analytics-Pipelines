@@ -12,11 +12,11 @@ using DotLiquid;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Fhir.Liquid.Converter.Models.Json;
 using Microsoft.Health.AnalyticsConnector.Common.Configurations;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;
 using Microsoft.Health.AnalyticsConnector.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.AnalyticsConnector.SchemaManagement.Exceptions;
+using Microsoft.Health.Fhir.Liquid.Converter.Models.Json;
 using NJsonSchema;
 
 namespace Microsoft.Health.AnalyticsConnector.SchemaManagement.Parquet.SchemaProvider
