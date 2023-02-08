@@ -101,12 +101,12 @@
     },
     "schedulerIntervalInMinutes": {
         "type": "string",
-        "defaultValue": "5",
+        "defaultValue": "every 5 minutes",
         "allowedValues": [
-            "5",
-            "30",
-            "60",
-            "1440",
+            "every 5 minutes",
+            "every 30 minutes",
+            "every hour",
+            "every day",
             "customized"
         ],
         "metadata": {
@@ -206,7 +206,7 @@
     "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
     "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
     "customizedSchemaImageReference": "[toLower(parameters('customizedSchemaImageReference'))]",
-    "schedulerCronExpression": "[if(equals(parameters('schedulerIntervalInMinutes'), '5'), '0 */5 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), '30'), '0 */30 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), '60'), '0 0 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), '1440'), '0 0 0 * * *', parameters('schedulerCrontabExpression')))))]"
+    "schedulerCronExpression": "[if(equals(parameters('schedulerIntervalInMinutes'), 'every 5 minutes'), '0 */5 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), 'every 30 minutes'), '0 */30 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), 'every hour'), '0 0 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), 'every day'), '0 0 0 * * *', parameters('schedulerCrontabExpression')))))]"
   },
   "resources": [
     {
