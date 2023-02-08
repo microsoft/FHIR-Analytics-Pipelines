@@ -112,13 +112,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     // return null if the job version is unsupported
                     if (FhirToDatalakeJobVersionManager.SupportedJobVersion.Contains(inputData.JobVersion))
                     {
-                        FhirToDataLakeOrchestratorJobResult currentResult = null;
-                        if (inputData.JobVersion == JobVersion.V1 || inputData.JobVersion == JobVersion.V2)
-                        {
-                            currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
+                        FhirToDataLakeOrchestratorJobResult currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
                             ? new FhirToDataLakeOrchestratorJobResult()
                             : JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
-                        }
 
                         return new FhirToDataLakeOrchestratorJob(
                             jobInfo,

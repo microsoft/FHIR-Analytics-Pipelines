@@ -123,7 +123,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 FilterScope filterScope = await _filterManager.GetFilterScopeAsync(cancellationToken);
                 IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> inputs = filterScope switch
                 {
-                    FilterScope.System => _inputData.JobVersion >= JobVersion.V3 ? GetInputsAsyncForSystem(cancellationToken) : GetInputsAsyncForFixedTimeSpanSystem(cancellationToken),
+                    FilterScope.System => _inputData.JobVersion >= JobVersion.V3 ? GetInputsAsyncForSystem(cancellationToken) : GetInputsAsyncSystemForFixedTimespan(cancellationToken),
                     FilterScope.Group => GetInputsAsyncForGroup(cancellationToken),
                     _ => throw new ConfigurationErrorException(
                         $"The filterScope {filterScope} isn't supported now.")
@@ -193,15 +193,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 var processEndtime = DateTimeOffset.UtcNow;
                 _result.CompleteTime = processEndtime;
 
-                if (_inputData.JobVersion >= JobVersion.V3)
-                {
-                    _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
-                    progress.Report(_jobStatus.StatisticResult);
-                }
-                else
-                {
-                    progress.Report(JsonConvert.SerializeObject(_result));
-                }
+                _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
+                progress.Report(_jobStatus.StatisticResult);
 
                 var jobLatency = processEndtime - _inputData.DataEndTime;
                 _metricsLogger.LogResourceLatencyMetric(jobLatency.TotalSeconds);
@@ -339,6 +332,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                             yield return new FhirToDataLakeProcessingJobInputData
                             {
                                 JobType = JobType.Processing,
+                                JobVersion = _inputData.JobVersion,
                                 ProcessingJobSequenceId = _result.CreatedJobCount,
                                 TriggerSequenceId = _inputData.TriggerSequenceId,
                                 Since = _inputData.Since,
@@ -352,6 +346,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                         yield return new FhirToDataLakeProcessingJobInputData
                         {
                             JobType = JobType.Processing,
+                            JobVersion = _inputData.JobVersion,
                             ProcessingJobSequenceId = _result.CreatedJobCount,
                             TriggerSequenceId = _inputData.TriggerSequenceId,
                             Since = _inputData.Since,
@@ -379,7 +374,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         }
 
-        private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForFixedTimeSpanSystem([EnumeratorCancellation] CancellationToken cancellationToken)
+        private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncSystemForFixedTimespan([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             TimeSpan interval = TimeSpan.FromSeconds(IncrementalOrchestrationIntervalInSeconds);
 
