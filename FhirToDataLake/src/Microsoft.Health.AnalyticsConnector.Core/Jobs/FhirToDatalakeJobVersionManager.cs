@@ -66,7 +66,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         // job version V3
         // the same as job version v2
-        public static readonly List<string> FhirToDataLakeOrchestratorJobIdentifierPropertiesV3 = new()
+        public static readonly List<string> FhirToDataLakeOrchestratorJobIdentifierPropertiesV3 = new ()
         {
             nameof(FhirToDataLakeProcessingJobInputData.JobType),
             nameof(FhirToDataLakeProcessingJobInputData.TriggerSequenceId),
@@ -74,7 +74,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             nameof(FhirToDataLakeProcessingJobInputData.DataStartTime),
         };
 
-        public static readonly List<string> FhirToDataLakeProcessingJobIdentifierPropertiesV3 = new()
+        public static readonly List<string> FhirToDataLakeProcessingJobIdentifierPropertiesV3 = new ()
         {
             nameof(FhirToDataLakeProcessingJobInputData.JobType),
             nameof(FhirToDataLakeProcessingJobInputData.TriggerSequenceId),
