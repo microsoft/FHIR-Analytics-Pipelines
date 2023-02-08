@@ -70,24 +70,24 @@
             }
         },
         "schedulerIntervalInMinutes": {
-            "type": "int",
-            "defaultValue": 5,
+            "type": "string",
+            "defaultValue": "5",
             "allowedValues": [
-            0,
-            5,
-            30,
-            60,
-            1440
+            "5",
+            "30",
+            "60",
+            "1440",
+            "customized"
             ],
             "metadata": {
-                "description": "The scheduler interval in minutes. To customize the scheduler, set the value to 0 and specify the value in schedulerCronExpression below."
+                "description": "The scheduler interval in minutes. To customize the scheduler, set the value to \"customized\" and specify the value in Scheduler Crontab Expression below."
             }
         },
-        "schedulerCronExpression": {
+        "schedulerCrontabExpression": {
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "Use a cron expression to set the scheduler. A cron expression is a six-part crontab format (sec min hour day month day-of-week). Refer to https://github.com/atifaziz/NCrontab for more about crontab expression."
+                "description": "Use a crontab expression to set the scheduler. A crontab expression is a six-part crontab format (sec min hour day month day-of-week). Refer to https://github.com/atifaziz/NCrontab for more about crontab expression."
             }
         },
         "customizedSchemaImageReference":{
@@ -195,7 +195,7 @@
         "storageQueueDataContributorRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
         "storageTableDataContributorRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
         "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
-        "schedulerCronExpression": "[if(equals(parameters('schedulerIntervalInMinutes'), 5), '0 */5 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), 30), '0 */30 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), 60), '0 0 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), 1440), '0 0 0 * * *', parameters('schedulerCronExpression')))))]"
+        "schedulerCronExpression": "[if(equals(parameters('schedulerIntervalInMinutes'), '5'), '0 */5 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), '30'), '0 */30 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), '60'), '0 0 * * * *', if(equals(parameters('schedulerIntervalInMinutes'), '1440'), '0 0 0 * * *', parameters('schedulerCrontabExpression')))))]"
     },
     "resources": [
         {
