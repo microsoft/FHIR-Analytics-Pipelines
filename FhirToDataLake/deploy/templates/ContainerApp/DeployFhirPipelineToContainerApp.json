@@ -36,7 +36,7 @@
           "minLength": 3,
           "maxLength": 24,
           "metadata": {
-              "description": "The name of the container app that you wish to create."
+              "description": "The name of the container app."
           }
       },
       "containerAppEnvironmentName": {
@@ -44,13 +44,13 @@
           "defaultValue": "",
           "maxLength": 24,
           "metadata": {
-              "description": "The name of the existing Azure Container App environment that you wish to use. Will create new environment if not specified."
+              "description": "The name of the existing Azure Container App environment. If not specified, new environment will be created."
           }
       },
       "fhirServerUrl": {
           "type": "string",
           "metadata": {
-              "description": "The fhir server endpoint you wish to get data."
+              "description": "The fhir server endpoint to get data."
           }
       },
       "authentication": {
@@ -61,7 +61,7 @@
           false
           ],
           "metadata": {
-              "description": "Whether to access Azure API for FHIR with managed identity authentication. Set false if you are using an OSS public FHIR server instance."
+              "description": "Whether to access Azure API for FHIR with managed identity authentication. Set it false if you use an OSS public FHIR server instance."
           }
       },
       "fhirVersion": {
@@ -73,14 +73,14 @@
           "type": "string",
           "defaultValue": "1970-01-01 00:00:00 +00:00",
           "metadata": {
-              "description": "Start timestamp of the data range you want to export."
+              "description": "Start timestamp of the data range to export."
           }
       },
       "dataEnd": {
           "type": "string",
           "defaultValue": "",
           "metadata": {
-              "description": "End timestamp of the data range you want to export. Will continuous export all data if not specified."
+              "description": "End timestamp of the data range to export. If not specified, all data will be exported."
           }
       },
       "containerName": {
@@ -96,7 +96,7 @@
           "minValue": 2,
           "maxValue": 10,
           "metadata": {
-              "description": "Concurrent jobs executing in parallel."
+              "description": "Count of concurrent jobs executing in parallel."
           }
       },
       "schedulerIntervalInMinutes": {
@@ -110,21 +110,21 @@
           1440
           ],
           "metadata": {
-              "description": "The scheduler interval in minutes, schedulerCronExpression will take effect if set to 0."
+              "description": "The scheduler interval in minutes. To customize the scheduler, set the value to 0 and specify the value in schedulerCronExpression below."
           }
       },
       "schedulerCronExpression": {
           "type": "string",
           "defaultValue": "",
           "metadata": {
-              "description": "scheduler frequency, a six-part crontab format (sec min hour day month day-of-week). Refer https://github.com/atifaziz/NCrontab for more about crontab expression."
+              "description": "Use a cron expression to set the scheduler. A cron expression is a six-part crontab format (sec min hour day month day-of-week). Refer to https://github.com/atifaziz/NCrontab for more about crontab expression."
           }
       },
       "customizedSchemaImageReference":{
           "type": "string",
           "defaultValue": "",
           "metadata": {
-              "description": "The customized schema image reference for the image on Container Registry. Refer https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
+              "description": "The customized schema image reference for the image on Container Registry. Refer to https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
           }
       },
       "filterConfigImageReference":{
