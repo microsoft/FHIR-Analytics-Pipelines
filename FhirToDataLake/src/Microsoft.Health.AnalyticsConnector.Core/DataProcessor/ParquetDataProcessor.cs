@@ -11,11 +11,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;
 using Microsoft.Health.AnalyticsConnector.Common.Models.Data;
 using Microsoft.Health.AnalyticsConnector.Core.DataProcessor.DataConverter;
 using Microsoft.Health.AnalyticsConnector.Core.Exceptions;
+using Microsoft.Health.AnalyticsConnector.Core.Fhir;
 using Microsoft.Health.AnalyticsConnector.SchemaManagement;
 using Microsoft.Health.AnalyticsConnector.SchemaManagement.Parquet;
 using Microsoft.Health.Parquet;
@@ -25,6 +25,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.DataProcessor
 {
     public sealed class ParquetDataProcessor : IColumnDataProcessor
     {
+        private const int LargeResourceSize = 100 << 20;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<ParquetDataProcessor> _logger;
         private readonly IDataSchemaConverter _defaultSchemaConverter;
@@ -98,7 +99,18 @@ namespace Microsoft.Health.AnalyticsConnector.Core.DataProcessor
 
             string inputContent = string.Join(
                 Environment.NewLine,
-                processedData.Values.Select(jsonObject => jsonObject.ToString(Formatting.None)));
+                processedData.Values.Select(jsonObject => {
+                    var str = jsonObject.ToString(Formatting.None);
+
+                    // add a log for large resource
+                    if (str.Length > LargeResourceSize)
+                    {
+                        _diagnosticLogger.LogInformation($"The resource size {str.Length} of resource id {FhirBundleParser.ExtractResourceId(jsonObject)} is larger than {LargeResourceSize} Bytes.");
+                        _logger.LogInformation($"The resource size {str.Length} of resource id {FhirBundleParser.ExtractResourceId(jsonObject)} is larger than {LargeResourceSize} Bytes.");
+                    }
+
+                    return str;
+                }));
             if (string.IsNullOrEmpty(inputContent))
             {
                 // Return StreamBatchData with null Value if no data has been converted.

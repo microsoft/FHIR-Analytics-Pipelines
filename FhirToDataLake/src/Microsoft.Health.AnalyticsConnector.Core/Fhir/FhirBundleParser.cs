@@ -58,6 +58,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Fhir
             return versionId ?? 0;
         }
 
+        public static string ExtractResourceId(JObject bundle)
+        {
+            return bundle?.GetValue(FhirBundleConstants.IdKey)?.Value<string>();
+        }
+
         private static string ParseContinuationToken(string nextUrl)
         {
             if (string.IsNullOrEmpty(nextUrl))

@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipes;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -20,7 +19,6 @@ using Microsoft.Health.AnalyticsConnector.Core.Exceptions;
 using Microsoft.Health.AnalyticsConnector.SchemaManagement;
 using Microsoft.Health.AnalyticsConnector.SchemaManagement.Parquet;
 using Newtonsoft.Json.Linq;
-using SharpCompress.Common;
 using Xunit;
 
 namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.DataProcessor
