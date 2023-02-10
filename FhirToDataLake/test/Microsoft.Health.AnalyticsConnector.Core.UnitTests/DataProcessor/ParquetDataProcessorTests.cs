@@ -6,13 +6,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.AnalyticsConnector.Common.Configurations;
-using Microsoft.Health.AnalyticsConnector.Common.Configurations.Arrow;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;
 using Microsoft.Health.AnalyticsConnector.Common.Models.Data;
 using Microsoft.Health.AnalyticsConnector.Core.DataProcessor;
@@ -20,6 +20,7 @@ using Microsoft.Health.AnalyticsConnector.Core.Exceptions;
 using Microsoft.Health.AnalyticsConnector.SchemaManagement;
 using Microsoft.Health.AnalyticsConnector.SchemaManagement.Parquet;
 using Newtonsoft.Json.Linq;
+using SharpCompress.Common;
 using Xunit;
 
 namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.DataProcessor
@@ -51,20 +52,16 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.DataProcessor
                 _diagnosticLogger,
                 schemaManagerNullLogger);
 
-            IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
-
             _testDefaultSchemaManager = schemaManagerWithoutCustomizedSchema;
 
             _testParquetDataProcessorWithoutCustomizedSchema = new ParquetDataProcessor(
                 schemaManagerWithoutCustomizedSchema,
-                arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
                 _diagnosticLogger,
                 _processorNullLogger);
 
             _testParquetDataProcessorWithCustomizedSchema = new ParquetDataProcessor(
                 schemaManagerWithCustomizedSchema,
-                arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
                 _diagnosticLogger,
                 _processorNullLogger);
@@ -76,19 +73,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.DataProcessor
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
-            IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
+            Assert.Throws<ArgumentNullException>(
+                () => new ParquetDataProcessor(null, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, _processorNullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(null, arrowConfigurationOptions, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, _processorNullLogger));
+                () => new ParquetDataProcessor(_testDefaultSchemaManager, null, _diagnosticLogger, _processorNullLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(_testDefaultSchemaManager, null, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, _processorNullLogger));
-
-            Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(_testDefaultSchemaManager, arrowConfigurationOptions, null, _diagnosticLogger, _processorNullLogger));
-
-            Assert.Throws<ArgumentNullException>(
-                () => new ParquetDataProcessor(_testDefaultSchemaManager, arrowConfigurationOptions, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, null));
+                () => new ParquetDataProcessor(_testDefaultSchemaManager, TestUtils.TestDataSchemaConverterDelegate, _diagnosticLogger, null));
         }
 
         [Fact]
@@ -164,6 +156,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.DataProcessor
         [InlineData(9)]
         [InlineData(20)]
         [InlineData(29)]
+        [InlineData(39)]
         public async Task GivenAValidLargeResouces_WhenProcess_CorrectResultShouldBeReturned(int dataSize)
         {
             IEnumerable<JObject> largeGroupSingleSet = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, $"LargeResource_Group_{dataSize}M.ndjson"));
@@ -178,67 +171,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.DataProcessor
             MemoryStream expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, $"Expected_LargeResource_Group_{dataSize}M.parquet"));
 
             Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
-        }
-
-        [Fact]
-        public async Task GivenDataWithSomeRecordsLengthLargerThanBlockSize_WhenProcess_LargeRecordsShouldBeIgnored()
-        {
-            var shortPatientData = new JObject
-            {
-                { "resourceType", "Patient" },
-                { "id", "example" },
-            };
-
-            List<JObject> testData = new List<JObject>(_testPatients) { shortPatientData };
-
-            // Set BlockSize small here, only shortPatientData can be retained an be converting to parquet result.
-            IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration()
-            {
-                ReadOptions = new ArrowReadOptionsConfiguration() { BlockSize = 50 },
-            });
-
-            var parquetDataProcessor = new ParquetDataProcessor(
-                _testDefaultSchemaManager,
-                arrowConfigurationOptions,
-                TestUtils.TestDataSchemaConverterDelegate,
-                _diagnosticLogger,
-                _processorNullLogger);
-
-            var jsonBatchData = new JsonBatchData(testData);
-
-            StreamBatchData resultBatchData = await parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("Patient", "Patient"));
-
-            var resultStream = new MemoryStream();
-            resultBatchData.Value.CopyTo(resultStream);
-
-            MemoryStream expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_Patient_IgnoreLargeLength.parquet"));
-
-            Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
-        }
-
-        [Fact]
-        public async Task GivenDataAllRecordsLengthLargerThanBlockSize_WhenProcess_NullResultShouldReturned()
-        {
-            // Set BlockSize small here, only shortPatientData can be retained an be converting to parquet result.
-            IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration()
-            {
-                ReadOptions = new ArrowReadOptionsConfiguration() { BlockSize = 50 },
-            });
-
-            var parquetDataProcessor = new ParquetDataProcessor(
-                _testDefaultSchemaManager,
-                arrowConfigurationOptions,
-                TestUtils.TestDataSchemaConverterDelegate,
-                _diagnosticLogger,
-                _processorNullLogger);
-
-            List<JObject> testData = new List<JObject>(_testPatients);
-            var jsonBatchData = new JsonBatchData(testData);
-
-            StreamBatchData result = await parquetDataProcessor.ProcessAsync(jsonBatchData, new ProcessParameters("Patient", "Patient"));
-            Assert.Null(result.Value);
-            Assert.Equal(0, result.BatchSize);
-            Assert.Equal("Patient", result.SchemaType);
         }
 
         [Fact]

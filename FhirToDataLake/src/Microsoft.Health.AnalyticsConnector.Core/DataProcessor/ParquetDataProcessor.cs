@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.AnalyticsConnector.Common.Configurations.Arrow;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;
 using Microsoft.Health.AnalyticsConnector.Common.Models.Data;
 using Microsoft.Health.AnalyticsConnector.Core.DataProcessor.DataConverter;
@@ -26,7 +25,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.DataProcessor
 {
     public sealed class ParquetDataProcessor : IColumnDataProcessor
     {
-        private readonly ArrowConfiguration _arrowConfiguration;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<ParquetDataProcessor> _logger;
         private readonly IDataSchemaConverter _defaultSchemaConverter;
@@ -38,18 +36,15 @@ namespace Microsoft.Health.AnalyticsConnector.Core.DataProcessor
 
         public ParquetDataProcessor(
             ISchemaManager<ParquetSchemaNode> schemaManager,
-            IOptions<ArrowConfiguration> arrowConfiguration,
             DataSchemaConverterDelegate schemaConverterDelegate,
             IDiagnosticLogger diagnosticLogger,
             ILogger<ParquetDataProcessor> logger)
         {
             EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
-            EnsureArg.IsNotNull(arrowConfiguration, nameof(arrowConfiguration));
             EnsureArg.IsNotNull(schemaConverterDelegate, nameof(schemaConverterDelegate));
             EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _arrowConfiguration = arrowConfiguration.Value;
             _defaultSchemaConverter = schemaConverterDelegate(ParquetSchemaConstants.DefaultSchemaProviderKey);
             _customSchemaConverter = schemaConverterDelegate(ParquetSchemaConstants.CustomSchemaProviderKey);
             _schemaManager = schemaManager;
@@ -103,12 +98,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.DataProcessor
 
             string inputContent = string.Join(
                 Environment.NewLine,
-                processedData.Values.Select(jsonObject => jsonObject.ToString(Formatting.None))
-                         .Where(result => CheckBlockSize(processParameters.SchemaType, result)));
+                processedData.Values.Select(jsonObject => jsonObject.ToString(Formatting.None)));
             if (string.IsNullOrEmpty(inputContent))
             {
                 // Return StreamBatchData with null Value if no data has been converted.
-                return Task.FromResult<StreamBatchData>(new StreamBatchData(null, 0, processParameters.SchemaType));
+                return Task.FromResult(new StreamBatchData(null, 0, processParameters.SchemaType));
             }
 
             // Convert JSON data to parquet stream.
@@ -133,26 +127,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.DataProcessor
                 _logger.LogError(ex, $"Unhandled exception when converting input data to parquet for \"{processParameters.SchemaType}\".");
                 throw;
             }
-        }
-
-        private bool CheckBlockSize(string schemaType, string data)
-        {
-            // If length of actual data is larger than BlockSize in configuration, log a warning and ignore that data, return an empty JSON string.
-            // TODO: Confirm the BlockSize handle logic in arrow.lib.
-            if (data.Length > _arrowConfiguration.ReadOptions.BlockSize)
-            {
-                _logger.LogInformation($"Single data length of {schemaType} is larger than BlockSize {_arrowConfiguration.ReadOptions.BlockSize}, will be ignored when converting to parquet.");
-                return false;
-            }
-
-            // If length of actual data is closing to BlockSize in configuration, log a warning, still return data in string.
-            // Temporarily use 1/3 as the a threshold to give the warning message.
-            if (data.Length * 3 > _arrowConfiguration.ReadOptions.BlockSize)
-            {
-                _logger.LogInformation($"Single data length of {schemaType} is closing to BlockSize {_arrowConfiguration.ReadOptions.BlockSize}.");
-            }
-
-            return true;
         }
     }
 }

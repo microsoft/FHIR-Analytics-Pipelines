@@ -5,7 +5,6 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Health.AnalyticsConnector.Common.Configurations.Arrow;
 
 namespace Microsoft.Health.AnalyticsConnector.Common.Configurations.ConfigurationResolvers
 {
