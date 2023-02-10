@@ -517,15 +517,17 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             bool resumeMode = resumeFrom >= 0;
 
             var daysInterval = ((TestEndTime - TestStartTime) / processingJobCount).TotalDays;
-
-            metadataStore = GetMetaDataStore();
-            if (inputData.JobVersion == JobVersion.V1 || inputData.JobVersion == JobVersion.V2)
+            if (resumeMode)
             {
-                orchestratorJobResult = await OldVersionInitResumeStatusAsync(metadataStore, queueClient, resumeFrom, completedCount, processingJobCount, inputData, metricsLogger);
-            }
-            else
-            {
-                orchestratorJobResult = await InitResumeStatusAsync(metadataStore, queueClient, resumeFrom, completedCount, processingJobCount, inputData, metricsLogger);
+                metadataStore = GetMetaDataStore();
+                if (inputData.JobVersion == JobVersion.V1 || inputData.JobVersion == JobVersion.V2)
+                {
+                    orchestratorJobResult = await OldVersionInitResumeStatusAsync(metadataStore, queueClient, resumeFrom, completedCount, processingJobCount, inputData, metricsLogger);
+                }
+                else
+                {
+                    orchestratorJobResult = await InitResumeStatusAsync(metadataStore, queueClient, resumeFrom, completedCount, processingJobCount, inputData, metricsLogger);
+                }
             }
 
             for (int i = 0; i < processingJobCount; ++i)
