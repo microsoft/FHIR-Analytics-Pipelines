@@ -158,7 +158,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 CancellationToken.None)).ToList();
             Assert.Single(jobInfoList);
             JobInfo orchestratorJobInfo = jobInfoList.First();
-
+            var metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
                 inputData,
@@ -171,13 +171,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 GetFilterManager(new FilterConfiguration()),
                 GetMetaDataStore(),
                 10,
-                new MetricsLogger(new NullLogger<MetricsLogger>()),
+                metricsLogger,
                 _diagnosticLogger,
                 new NullLogger<FhirToDataLakeOrchestratorJob>());
 
             var retriableJobException = await Assert.ThrowsAsync<RetriableJobException>(async () =>
                 await job.ExecuteAsync(progress, CancellationToken.None));
-
+            Assert.Equal(1, metricsLogger.MetricsDic["TotalError"]);
+            Assert.Equal("RunJob", metricsLogger.ErrorOperationType);
             Assert.IsType<ApiSearchException>(retriableJobException.InnerException);
         }
 
