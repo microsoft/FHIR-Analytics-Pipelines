@@ -164,7 +164,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                     if (input.SplitParameters != null)
                     {
-                        input?.SplitParameters.Select(x => _result.SubmittedResourceTimestamps[x.Key] = x.Value.DataEndTime);
+                        foreach (var param in input.SplitParameters)
+                        {
+                            _result.SubmittedResourceTimestamps[param.Key] = param.Value.DataEndTime;
+                        }
                     }
 
                     _result.SubmittingProcessingJob = null;

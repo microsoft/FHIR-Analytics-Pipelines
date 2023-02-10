@@ -72,12 +72,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             else
             {
                 // Split large size job using binary search.
-                var splitingStartTime = DateTimeOffset.Now;
-                _logger.LogInformation($"Start spliting {resourceType} job, total {totalCount} resources.");
+                var splittingStartTime = DateTimeOffset.Now;
+                _logger.LogInformation($"Start splitting {resourceType} job, total {totalCount} resources.");
 
                 var anchorList = await InitializeAnchorListAsync(resourceType, startTime, endTime, totalCount, cancellationToken);
+                var lastTimeStamp = anchorList.LastOrDefault().Key;
 
-                _logger.LogInformation($"Spliting {resourceType} job. Use {(DateTimeOffset.Now - splitingStartTime).TotalMilliseconds} milliseconds to initilize anchor list.");
+                _logger.LogInformation($"Splitting {resourceType} job. Use {(DateTimeOffset.Now - splittingStartTime).TotalMilliseconds} milliseconds to initilize anchor list.");
                 var lastSplitTimestamp = DateTimeOffset.Now;
                 DateTimeOffset? nextJobEnd = null;
                 var jobCount = 0;
@@ -90,8 +91,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     nextJobEnd = await GetNextSplitTimestamp(resourceType, lastEndTime, anchorList, cancellationToken);
 
                     var jobSize = lastEndTime == null ? anchorList[(DateTimeOffset)nextJobEnd] : anchorList[(DateTimeOffset)nextJobEnd] - anchorList[(DateTimeOffset)lastEndTime];
-                    _logger.LogInformation($"Spliting {resourceType} job. Generated new sub job using {(DateTimeOffset.UtcNow - lastSplitTimestamp).TotalMilliseconds} milliseconds with {jobSize} resource count.");
-                    lastSplitTimestamp = DateTimeOffset.Now;
+                    _logger.LogInformation($"Splitting {resourceType} job. Generated new sub job using {(DateTimeOffset.UtcNow - lastSplitTimestamp).TotalMilliseconds} milliseconds with {jobSize} resource count.");
+                    lastSplitTimestamp = DateTimeOffset.UtcNow;
+
+                    // The last job.
+                    if (nextJobEnd == lastTimeStamp)
+                    {
+                        nextJobEnd = endTime;
+                    }
 
                     yield return new SubJobInfo
                     {
@@ -103,7 +110,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     jobCount += 1;
                 }
 
-                _logger.LogInformation($"Spliting {resourceType} jobs, finish split {jobCount} jobs. use : {(DateTimeOffset.Now - splitingStartTime).TotalMilliseconds} milliseconds.");
+                _logger.LogInformation($"Splitting {resourceType} jobs, finish split {jobCount} jobs. use : {(DateTimeOffset.Now - splittingStartTime).TotalMilliseconds} milliseconds.");
             }
         }
 
@@ -128,10 +135,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
             if (lastTimestamp != null)
             {
-                anchorList[(DateTimeOffset)lastTimestamp] = totalCount;
+                // the value means resource counts less than the time stamp.
+                anchorList[((DateTimeOffset)lastTimestamp).AddMilliseconds(1)] = totalCount;
             }
-
-            anchorList[endTime] = totalCount;
+            else
+            {
+                anchorList[endTime] = totalCount;
+            }
 
             return anchorList;
         }

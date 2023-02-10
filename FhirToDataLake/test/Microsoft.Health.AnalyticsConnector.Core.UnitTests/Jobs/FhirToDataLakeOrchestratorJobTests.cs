@@ -218,8 +218,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 orchestratorJobInfo,
                 inputData,
                 new FhirToDataLakeOrchestratorJobResult(),
-                new FhirToDataLakeProcessingJobSpliter(GetMockFhirDataClient(new Dictionary<string, int>() { { "Patient", 4 } }, -1), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
-                GetMockFhirDataClient(new Dictionary<string, int>() { { "Patient", 4 } }, -1),
+                new FhirToDataLakeProcessingJobSpliter(GetMockOldVersionFhirDataClient(4, -1), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
+                GetMockOldVersionFhirDataClient(4, -1),
                 GetDataWriter(containerName, blobClient),
                 queueClient,
                 GetGroupMemberExtractor(0),
@@ -314,7 +314,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
                 inputData,
-                null,
+                new FhirToDataLakeOrchestratorJobResult(),
                 new FhirToDataLakeProcessingJobSpliter(GetMockFhirDataClient(inputResourceCount, -1), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
                 GetMockFhirDataClient(inputResourceCount, -1),
                 GetDataWriter(containerName, blobClient),
@@ -338,6 +338,142 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             return result;
         }
 
+        private static async Task<FhirToDataLakeOrchestratorJobResult> InitResumeStatusAsync(IMetadataStore metadataStore, MockQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient, int resumeFrom, int completedCount, int processingJobCount, FhirToDataLakeOrchestratorJobInputData inputData, IMetricsLogger metricsLogger)
+        {
+            var daysInterval = ((TestEndTime - TestStartTime) / processingJobCount).TotalDays;
+            var orchestratorJobResult = new FhirToDataLakeOrchestratorJobResult()
+            {
+                CreatedJobCount = resumeFrom + 1,
+                SubmittedResourceTimestamps = new Dictionary<string, DateTimeOffset>() { { "Patient", TestStartTime.AddDays((resumeFrom + 1) * daysInterval) } },
+                ProcessedResourceCounts = new Dictionary<string, int> { { "Patient", completedCount } },
+                SkippedResourceCounts = new Dictionary<string, int> { { "Patient", 0 } },
+                TotalResourceCounts = new Dictionary<string, int> { { "Patient", completedCount } },
+                ProcessedDataSizeInTotal = completedCount * 1000L * TBValue,
+                ProcessedCountInTotal = completedCount,
+            };
+
+            for (int i = 0; i <= resumeFrom; ++i)
+            {
+                if (i < completedCount)
+                {
+                    orchestratorJobResult.CompletedJobCount++;
+                    metricsLogger.LogSuccessfulResourceCountMetric(1);
+                    metricsLogger.LogSuccessfulDataSizeMetric(1000L * TBValue);
+                }
+                else
+                {
+                    orchestratorJobResult.SequenceIdToJobIdMapForRunningJobs.Add(i, i + 1);
+                }
+            }
+
+            var resumeJobStatus = new OrchestratorJobStatusEntity()
+            {
+                PartitionKey = TableKeyProvider.JobStatusPartitionKey((byte)QueueType.FhirToDataLake, Convert.ToInt32(JobType.Orchestrator)),
+                RowKey = TableKeyProvider.JobStatusRowKey((byte)QueueType.FhirToDataLake, Convert.ToInt32(JobType.Orchestrator), 0, 0),
+                GroupId = 0,
+                StatisticResult = JsonConvert.SerializeObject(orchestratorJobResult),
+            };
+
+            _ = await metadataStore.TryAddEntityAsync(resumeJobStatus);
+
+            for (int i = 0; i <= resumeFrom; ++i)
+            {
+                var processingInput = new FhirToDataLakeProcessingJobInputData
+                {
+                    JobType = JobType.Processing,
+                    JobVersion = inputData.JobVersion,
+                    ProcessingJobSequenceId = i,
+                    TriggerSequenceId = inputData.TriggerSequenceId,
+                    Since = inputData.Since,
+                    SplitParameters = new Dictionary<string, TimeRange>()
+                            {
+                                {
+                                    "Patient",
+                                    new TimeRange()
+                                    {
+                                       DataStartTime = TestStartTime.AddDays(i * daysInterval),
+                                       DataEndTime = TestStartTime.AddDays((i + 1) * daysInterval),
+                                    }
+                                },
+                            },
+                };
+
+                JobInfo jobInfo = (await queueClient.EnqueueAsync(0, new[] { JsonConvert.SerializeObject(processingInput) }, 1, false, false, CancellationToken.None)).First();
+            }
+
+            return orchestratorJobResult;
+        }
+
+        private static async Task<FhirToDataLakeOrchestratorJobResult> OldVersionInitResumeStatusAsync(IMetadataStore metadataStore, MockQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient, int resumeFrom, int completedCount, int processingJobCount, FhirToDataLakeOrchestratorJobInputData inputData, IMetricsLogger metricsLogger)
+        {
+            bool resumeMode = resumeFrom >= 0;
+            var orchestratorJobResult = new FhirToDataLakeOrchestratorJobResult();
+            for (int i = 0; i < processingJobCount; ++i)
+            {
+                if (resumeMode)
+                {
+                    if (i <= resumeFrom)
+                    {
+                        var processingInput = new FhirToDataLakeProcessingJobInputData
+                        {
+                            JobType = JobType.Processing,
+                            JobVersion = inputData.JobVersion,
+                            ProcessingJobSequenceId = i,
+                            TriggerSequenceId = inputData.TriggerSequenceId,
+                            Since = inputData.Since,
+                            DataStartTime = TestStartTime.AddDays(i),
+                            DataEndTime = TestStartTime.AddDays(i + 1),
+                        };
+
+                        JobInfo jobInfo = (await queueClient.EnqueueAsync(0, new[] { JsonConvert.SerializeObject(processingInput) }, 1, false, false, CancellationToken.None)).First();
+
+                        var processingResult = new FhirToDataLakeProcessingJobResult
+                        {
+                            SearchCount = new Dictionary<string, int> { { "Patient", 1 } },
+                            ProcessedCount = new Dictionary<string, int> { { "Patient", 1 } },
+                            SkippedCount = new Dictionary<string, int> { { "Patient", 0 } },
+                            ProcessedCountInTotal = 1,
+                            ProcessedDataSizeInTotal = 1000L * TBValue,
+                        };
+
+                        jobInfo.Result = JsonConvert.SerializeObject(processingResult);
+                        if (i < completedCount)
+                        {
+                            jobInfo.Status = JobStatus.Completed;
+                            orchestratorJobResult.TotalResourceCounts.ConcatDictionaryCount(processingResult.SearchCount);
+                            orchestratorJobResult.ProcessedResourceCounts.ConcatDictionaryCount(processingResult.ProcessedCount);
+                            orchestratorJobResult.ProcessedCountInTotal += processingResult.ProcessedCountInTotal;
+                            orchestratorJobResult.ProcessedDataSizeInTotal += processingResult.ProcessedDataSizeInTotal;
+                            metricsLogger.LogSuccessfulResourceCountMetric(1);
+                            metricsLogger.LogSuccessfulDataSizeMetric(processingResult.ProcessedDataSizeInTotal);
+
+                            if (inputData.JobVersion != JobVersion.V1 && inputData.JobVersion != JobVersion.V2)
+                            {
+                                orchestratorJobResult.CompletedJobCount++;
+                            }
+                        }
+                        else
+                        {
+                            jobInfo.Status = JobStatus.Running;
+                            if (inputData.JobVersion == JobVersion.V1 || inputData.JobVersion == JobVersion.V2)
+                            {
+                                orchestratorJobResult.RunningJobIds.Add(jobInfo.Id);
+                            }
+
+                            if (inputData.JobVersion != JobVersion.V1 && inputData.JobVersion != JobVersion.V2)
+                            {
+                                orchestratorJobResult.SequenceIdToJobIdMapForRunningJobs.Add(i, jobInfo.Id);
+                            }
+                        }
+
+                        orchestratorJobResult.CreatedJobCount += 1;
+                        orchestratorJobResult.NextJobTimestamp = TestStartTime.AddDays(i + 1);
+                    }
+                }
+            }
+            return orchestratorJobResult;
+        }
+
         private static async Task<FhirToDataLakeOrchestratorJobResult> VerifyCommonOrchestratorJobAsync(
             int processingJobCount,
             int concurrentCount,
@@ -353,6 +489,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 progressResult = r;
             });
 
+            var metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             string containerName = Guid.NewGuid().ToString("N");
 
             var filterConfiguration = new FilterConfiguration
@@ -380,81 +517,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             var daysInterval = ((TestEndTime - TestStartTime) / processingJobCount).TotalDays;
 
-            if (resumeMode)
+            metadataStore = GetMetaDataStore();
+            if (inputData.JobVersion == JobVersion.V1 || inputData.JobVersion == JobVersion.V2)
             {
-                metadataStore = GetMetaDataStore();
-                var resumeJobResult = new FhirToDataLakeOrchestratorJobResult()
-                {
-                    CreatedJobCount = resumeFrom + 1,
-                    SubmittedResourceTimestamps = new Dictionary<string, DateTimeOffset>() { { "Patient", TestStartTime.AddDays((resumeFrom + 1) * daysInterval) } },
-                    ProcessedResourceCounts = new Dictionary<string, int> { { "Patient", completedCount } },
-                    SkippedResourceCounts = new Dictionary<string, int> { { "Patient", 0 } },
-                    TotalResourceCounts = new Dictionary<string, int> { { "Patient", completedCount } },
-                    ProcessedDataSizeInTotal = completedCount * 1000L * TBValue,
-                    ProcessedCountInTotal = completedCount,
-                };
-
-                var resumeJobStatus = new OrchestratorJobStatusEntity()
-                {
-                    PartitionKey = TableKeyProvider.JobStatusPartitionKey((byte)QueueType.FhirToDataLake, Convert.ToInt32(JobType.Orchestrator)),
-                    RowKey = TableKeyProvider.JobStatusRowKey((byte)QueueType.FhirToDataLake, Convert.ToInt32(JobType.Orchestrator), 0, 0),
-                    GroupId = 0,
-                    StatisticResult = JsonConvert.SerializeObject(resumeJobResult),
-                };
-                _ = await metadataStore.TryAddEntityAsync(resumeJobStatus);
+                orchestratorJobResult = await OldVersionInitResumeStatusAsync(metadataStore, queueClient, resumeFrom, completedCount, processingJobCount, inputData, metricsLogger);
             }
-
-            for (int i = 0; i < processingJobCount; ++i)
+            else
             {
-                if (resumeMode)
-                {
-                    if (i <= resumeFrom)
-                    {
-                        var processingInput = new FhirToDataLakeProcessingJobInputData
-                        {
-                            JobType = JobType.Processing,
-                            JobVersion = inputData.JobVersion,
-                            ProcessingJobSequenceId = i,
-                            TriggerSequenceId = inputData.TriggerSequenceId,
-                            Since = inputData.Since,
-                            SplitParameters = new Dictionary<string, TimeRange>()
-                            {
-                                {
-                                    "Patient",
-                                    new TimeRange()
-                                    {
-                                       DataStartTime = TestStartTime.AddDays(i * daysInterval),
-                                       DataEndTime = TestStartTime.AddDays((i + 1) * daysInterval),
-                                    }
-                                },
-                            },
-                        };
-
-                        JobInfo jobInfo = (await queueClient.EnqueueAsync(0, new[] { JsonConvert.SerializeObject(processingInput) }, 1, false, false, CancellationToken.None)).First();
-                        if (i < completedCount)
-                        {
-                            if (inputData.JobVersion != JobVersion.V1 && inputData.JobVersion != JobVersion.V2)
-                            {
-                                orchestratorJobResult.CompletedJobCount++;
-                            }
-                        }
-                        else
-                        {
-                            jobInfo.Status = JobStatus.Running;
-                            orchestratorJobResult.RunningJobIds.Add(jobInfo.Id);
-                            if (inputData.JobVersion == JobVersion.V1 || inputData.JobVersion == JobVersion.V2)
-                            {
-                                orchestratorJobResult.RunningJobIds.Add(jobInfo.Id);
-                            }
-
-                            if (inputData.JobVersion != JobVersion.V1 && inputData.JobVersion != JobVersion.V2)
-                            {
-                                orchestratorJobResult.SequenceIdToJobIdMapForRunningJobs.Add(i, jobInfo.Id);
-                            }
-                        }
-
-                    }
-                }
+                orchestratorJobResult = await InitResumeStatusAsync(metadataStore, queueClient, resumeFrom, completedCount, processingJobCount, inputData, metricsLogger);
             }
 
             for (int i = 0; i < processingJobCount; ++i)
@@ -469,26 +539,37 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 }
             }
 
+            IApiDataClient dataClient = null;
+            if (inputData.JobVersion == JobVersion.V1 || inputData.JobVersion == JobVersion.V2)
+            {
+                dataClient = GetMockOldVersionFhirDataClient(processingJobCount, resumeFrom);
+            }
+            else
+            {
+                dataClient = GetMockFhirDataClient(new Dictionary<string, int>() { { "Patient", processingJobCount * ResourceCountPerDayPerJob } }, resumeFrom);
+            }
+
             IGroupMemberExtractor groupMemberExtractor = GetGroupMemberExtractor(processingJobCount);
             var job = new FhirToDataLakeOrchestratorJob(
                 orchestratorJobInfo,
                 inputData,
                 orchestratorJobResult,
-                new FhirToDataLakeProcessingJobSpliter(GetMockFhirDataClient(new Dictionary<string, int>() { { "Patient", processingJobCount * ResourceCountPerDayPerJob } }, resumeFrom), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
-                GetMockFhirDataClient(new Dictionary<string, int>() { { "Patient", processingJobCount * ResourceCountPerDayPerJob } }, resumeFrom),
+                new FhirToDataLakeProcessingJobSpliter(dataClient, _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
+                dataClient,
                 GetDataWriter(containerName, blobClient),
                 queueClient,
                 groupMemberExtractor,
                 GetFilterManager(filterConfiguration),
                 metadataStore ?? GetMetaDataStore(),
                 concurrentCount,
-                new MetricsLogger(new NullLogger<MetricsLogger>()),
+                metricsLogger,
                 _diagnosticLogger,
                 new NullLogger<FhirToDataLakeOrchestratorJob>())
             {
                 NumberOfPatientsPerProcessingJob = 1,
             };
 
+            var startExecuteTime = DateTimeOffset.Now;
             string resultString = await job.ExecuteAsync(progress, CancellationToken.None);
             var result = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(resultString);
 
@@ -510,6 +591,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             Assert.Equal(progressForContext.ProcessedDataSizeInTotal, result.ProcessedDataSizeInTotal);
             Assert.Equal(progressForContext.ProcessedCountInTotal, result.ProcessedCountInTotal);
 
+            Assert.Equal(3, metricsLogger.MetricsDic.Count);
+            Assert.Equal(processingJobCount, metricsLogger.MetricsDic[MetricNames.SuccessfulResourceCountMetric]);
+            Assert.Equal(processingJobCount * 1000L * TBValue, metricsLogger.MetricsDic[MetricNames.SuccessfulDataSizeMetric]);
+            Assert.True((startExecuteTime - TestEndTime).TotalSeconds <= metricsLogger.MetricsDic[MetricNames.ResourceLatencyMetric]);
+            Assert.True((DateTimeOffset.UtcNow - TestEndTime).TotalSeconds >= metricsLogger.MetricsDic[MetricNames.ResourceLatencyMetric]);
             Assert.Equal(processingJobCount, queueClient.JobInfos.Count - 1);
 
             // verify blob data;
@@ -586,6 +672,18 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             var dataClient = Substitute.For<IApiDataClient>();
             dataClient.SearchAsync(default)
                 .ReturnsForAnyArgs(Task.FromException<string>(new ApiSearchException("fake fhir search exception.")));
+            return dataClient;
+        }
+
+        private static IApiDataClient GetMockOldVersionFhirDataClient(int count, int resumedFrom)
+        {
+            var dataClient = Substitute.For<IApiDataClient>();
+
+            // Get bundle from next link
+            List<string> nextBundles = GetSearchBundles(count);
+            string emptyBundle = TestDataProvider.GetDataFromFile(TestDataConstants.EmptyBundleFile);
+            nextBundles.Add(emptyBundle);
+            dataClient.SearchAsync(default).ReturnsForAnyArgs(nextBundles[resumedFrom + 1], nextBundles.Skip(resumedFrom + 2).ToArray());
             return dataClient;
         }
 
