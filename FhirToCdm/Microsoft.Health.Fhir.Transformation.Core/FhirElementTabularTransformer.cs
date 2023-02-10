@@ -70,7 +70,7 @@ namespace Microsoft.Health.Fhir.Transformation.Core
                     ElementNode valueNode = fhirRoot;
                     if (!string.IsNullOrEmpty(column.FhirExpression))
                     {
-                        var valueFromExpression = fhirRoot.Select(column.FhirExpression).FirstOrDefault();
+                        var valueFromExpression = fhirRoot?.Select(column.FhirExpression).FirstOrDefault();
                         valueFromExpression = valueFromExpression ?? ElementNode.ForPrimitive(string.Empty);
                         valueNode = ElementNode.FromElement(ElementNode.FromElement(valueFromExpression));
                     }
