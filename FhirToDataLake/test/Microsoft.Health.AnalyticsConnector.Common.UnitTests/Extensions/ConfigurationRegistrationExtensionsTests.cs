@@ -75,7 +75,7 @@ namespace Microsoft.Health.AnalyticsConnector.Common.UnitTests.Extensions
         [MemberData(nameof(GetInvalidServiceConfigurationVersion))]
         public void GivenInvalidServiceCollectionConfigurationVersion_WhenValidate_ExceptionShouldBeThrown(string configVersion, string expectedMessageStart)
         {
-            Dictionary<string, string> config = new(TestValidBaseConfiguration)
+            Dictionary<string, string> config = new (TestValidBaseConfiguration)
             {
                 [ConfigurationConstants.ConfigVersionKey] = configVersion,
             };
