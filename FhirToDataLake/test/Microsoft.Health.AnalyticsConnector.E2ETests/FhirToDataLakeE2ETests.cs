@@ -522,6 +522,9 @@ namespace Microsoft.Health.AnalyticsConnector.E2ETests
             Assert.NotNull(expectedResult);
             Assert.NotNull(result);
             Assert.Equal(expectedResult.CreatedJobCount, result.CreatedJobCount);
+            Assert.Equal(expectedResult.NextPatientIndex, result.NextPatientIndex);
+            Assert.Equal(expectedResult.NextJobTimestamp, result.NextJobTimestamp);
+            Assert.Empty(result.RunningJobIds);
             Assert.True(DictionaryEquals(expectedResult.TotalResourceCounts, result.TotalResourceCounts));
             Assert.True(DictionaryEquals(expectedResult.ProcessedResourceCounts, result.ProcessedResourceCounts));
             Assert.True(DictionaryEquals(expectedResult.SkippedResourceCounts, result.SkippedResourceCounts));

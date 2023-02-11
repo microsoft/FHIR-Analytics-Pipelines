@@ -633,7 +633,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
 
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
             Assert.Equal(0, currentTriggerEntity.StartOffset);
@@ -698,7 +698,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
 
             tokenSource2.Cancel();
             await task2;
@@ -1029,7 +1029,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
 
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
             Assert.Equal(0, currentTriggerEntity.StartOffset);
@@ -1060,7 +1060,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             await Task.Delay(TimeSpan.FromSeconds(4), CancellationToken.None);
             currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Completed, currentTriggerEntity.TriggerStatus);
             Assert.Equal(TestEndOffset, currentTriggerEntity.EndOffset);
@@ -1431,7 +1431,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
 
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
             Assert.Null(currentTriggerEntity.TriggerStartTime);
@@ -1472,7 +1472,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
 
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
             Assert.Equal(0, currentTriggerEntity.StartOffset);
@@ -1503,7 +1503,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             await Task.Delay(TimeSpan.FromSeconds(4), CancellationToken.None);
             currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
-            Assert.Equal(2, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
             Assert.Equal(1, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
             Assert.Equal(1265, currentTriggerEntity.StartOffset);
@@ -1511,7 +1511,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             // the next job is created
             jobInfo =
-                await queueClient.GetJobByIdAsync((byte)QueueType.DicomToDataLake, 2, true, CancellationToken.None);
+                await queueClient.GetJobByIdAsync((byte)QueueType.DicomToDataLake, 1, true, CancellationToken.None);
             Assert.Equal(JobStatus.Created, jobInfo.Status);
 
             tokenSource.Cancel();

@@ -619,7 +619,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
 
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
             Assert.Null(currentTriggerEntity.TriggerStartTime);
@@ -666,7 +666,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
 
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
             Assert.Equal(startTime, currentTriggerEntity.TriggerStartTime);
@@ -731,7 +731,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
 
             tokenSource2.Cancel();
             await task2;
@@ -1140,7 +1140,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
 
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
             Assert.Null(currentTriggerEntity.TriggerStartTime);
@@ -1170,14 +1170,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             await Task.Delay(TimeSpan.FromSeconds(4), CancellationToken.None);
             currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
-            Assert.Equal(2, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
             Assert.Equal(1, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
             Assert.Equal(lastTriggerEndTime, currentTriggerEntity.TriggerStartTime);
 
             // the next job is created
             jobInfo =
-                await queueClient.GetJobByIdAsync((byte)QueueType.FhirToDataLake, 2, true, CancellationToken.None);
+                await queueClient.GetJobByIdAsync((byte)QueueType.FhirToDataLake, 1, true, CancellationToken.None);
             Assert.Equal(JobStatus.Created, jobInfo.Status);
 
             tokenSource.Cancel();
@@ -1553,7 +1553,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
 
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
             Assert.Equal(0, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Running, currentTriggerEntity.TriggerStatus);
             Assert.Null(currentTriggerEntity.TriggerStartTime);
@@ -1622,7 +1622,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
 
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
             Assert.Null(currentTriggerEntity.TriggerStartTime);
 
             DateTimeOffset triggerEndTime = currentTriggerEntity.TriggerEndTime;
@@ -1673,7 +1673,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
 
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
             Assert.Null(currentTriggerEntity.TriggerStartTime);
 
             DateTimeOffset triggerEndTime = currentTriggerEntity.TriggerEndTime;
@@ -1723,7 +1723,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
 
-            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(0, currentTriggerEntity.OrchestratorJobId);
             Assert.Null(currentTriggerEntity.TriggerStartTime);
 
             DateTimeOffset lastTriggerEndTime = currentTriggerEntity.TriggerEndTime;
@@ -1755,7 +1755,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             endTime = DateTimeOffset.UtcNow.AddMinutes(-1 * JobConfigurationConstants.JobQueryLatencyInMinutes);
             currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
-            Assert.Equal(2, currentTriggerEntity.OrchestratorJobId);
+            Assert.Equal(1, currentTriggerEntity.OrchestratorJobId);
             Assert.Equal(lastTriggerEndTime, currentTriggerEntity.TriggerStartTime);
 
             // the second trigger end time should be set to the latest Occurrences time

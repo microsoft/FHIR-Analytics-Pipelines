@@ -24,24 +24,29 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Extensions
         /// <returns>The last updated timestamp of the resource.</returns>
         public static DateTimeOffset? GetLastUpdated(this JObject resource)
         {
-            var lastUpdatedObject = JObject.FromObject(
-                resource.GetValue(FhirBundleConstants.MetaKey),
-                new JsonSerializer
-                   {
-                       DateParseHandling = DateParseHandling.None,
-                   });
-            var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(lastUpdatedObject.ToString()).GetValueOrDefault(FhirBundleConstants.LastUpdatedKey);
-            if (result == null)
-            {
-                throw new FhirDataParseException("Failed to find lastUpdated value in resource.");
-            }
-
             try
             {
+                var lastUpdatedObject = JObject.FromObject(
+                resource.GetValue(FhirBundleConstants.MetaKey),
+                new JsonSerializer
+                {
+                    DateParseHandling = DateParseHandling.None,
+                });
+                var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(lastUpdatedObject.ToString()).GetValueOrDefault(FhirBundleConstants.LastUpdatedKey);
+                if (result == null)
+                {
+                    throw new FhirDataParseException("Failed to find lastUpdated value in resource.");
+                }
+
                 return DateTimeOffset.Parse(result);
             }
             catch (Exception exception)
             {
+                if (exception is FhirDataParseException)
+                {
+                    throw;
+                }
+
                 throw new FhirDataParseException("Failed to parse lastUpdated value from resource.", exception);
             }
         }
