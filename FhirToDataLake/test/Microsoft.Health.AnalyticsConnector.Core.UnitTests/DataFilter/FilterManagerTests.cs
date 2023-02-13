@@ -87,6 +87,41 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.DataFilter
         }
 
         [Theory]
+        [InlineData("     Patient", 1)]
+        [InlineData("Patient ", 1)]
+        [InlineData("   Patient ", 1)]
+        [InlineData("   Patient   ", 1)]
+        [InlineData("Patient     ", 1)]
+        [InlineData("         Patient   , Patient   ", 1)]
+        [InlineData("Patient,   Account", 2)]
+        [InlineData("   Patient,   Account", 2)]
+        [InlineData(" Patient , Account ", 2)]
+        public async Task GivenValidTypeStringWithWhitespaceAndNullTypeFilters_WhenCreateTypeFiltersForSystem_ThenTheTypeFiltersForEachResourceTypesAreReturnedAsync(string typeString, int resourceTypeCount)
+        {
+            var filterConfiguration = new FilterConfiguration
+            {
+                FilterScope = FilterScope.System,
+                RequiredTypes = typeString,
+                TypeFilters = null,
+            };
+
+            var filterManager = new FilterManager(
+                new LocalFilterProvider(Options.Create(filterConfiguration)),
+                _testFhirSpecificationProvider,
+                _diagnosticLogger,
+                _nullFilterManagerLogger);
+
+            List<TypeFilter> typeFilters = await filterManager.GetTypeFiltersAsync(default);
+
+            Assert.NotNull(typeFilters);
+            Assert.Equal(resourceTypeCount, typeFilters.Count());
+            foreach (TypeFilter typeFilter in typeFilters)
+            {
+                Assert.Empty(typeFilter.Parameters);
+            }
+        }
+
+        [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("  ")]
@@ -337,7 +372,52 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.DataFilter
         // chained
         [InlineData("DiagnosticReport", "DiagnosticReport?subject:Patient.name=peter")]
         [InlineData("Observation", "Observation?patient.identifier=http://example.com/fhir/identifier/mrn|123456")]
+
+        // multi type tilters
+        [InlineData(" Condition ,  MedicationRequest    ", "  MedicationRequest?status=active   ,   MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z ")]
         public async Task GivenValidTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturnedAsync(string type, string typeFilter)
+        {
+            var filterConfiguration = new FilterConfiguration
+            {
+                FilterScope = FilterScope.System,
+                RequiredTypes = type,
+                TypeFilters = typeFilter,
+            };
+
+            var filterManager = new FilterManager(
+                new LocalFilterProvider(Options.Create(filterConfiguration)),
+                _testFhirSpecificationProvider,
+                _diagnosticLogger,
+                _nullFilterManagerLogger);
+            List<TypeFilter> typeFilters = await filterManager.GetTypeFiltersAsync(default);
+
+            string[] expectedTypes = type.Split(',');
+
+            Assert.NotNull(typeFilters);
+
+            Assert.Equal(expectedTypes.Length, typeFilters.Count);
+        }
+
+        [Theory]
+        [InlineData(" Patient ", " Patient?gender=female ")]
+
+        // quantity
+        [InlineData("Observation", "  Observation?value-quantity=5.4|http://unitsofmeasure.org|mg  ")]
+
+        // modifier
+        [InlineData("Patient, Account", "    Patient?gender:not=female ")]
+
+        // composite
+        [InlineData("DiagnosticReport", " DiagnosticReport?result.code-value-quantity=http://loinc.org|2823-3$gt5.4|http://unitsofmeasure.org|mmol/L    ")]
+
+        // reverse chaining
+        [InlineData("Patient", "  Patient?_has:Observation:patient:code=1234-5  ")]
+        [InlineData("Patient", "   Patient?_has:Observation:patient:_has:AuditEvent:entity:user=MyUserId   ")]
+
+        // chained
+        [InlineData("DiagnosticReport", "   DiagnosticReport?subject:Patient.name=peter ")]
+        [InlineData("Observation", "    Observation?patient.identifier=http://example.com/fhir/identifier/mrn|123456 ")]
+        public async Task GivenValidTypeFilterWithWhitespace_WhenParseTypeFilter_ThenTheTypeFiltersAreReturnedAsync(string type, string typeFilter)
         {
             var filterConfiguration = new FilterConfiguration
             {
