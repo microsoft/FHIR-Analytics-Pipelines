@@ -6,8 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,12 +18,12 @@ using Microsoft.Health.AnalyticsConnector.Core.Fhir;
 using Microsoft.Health.AnalyticsConnector.Core.Jobs.Models;
 using Microsoft.Health.AnalyticsConnector.DataClient;
 using Microsoft.Health.AnalyticsConnector.DataClient.Api.Fhir;
-using Microsoft.Health.AnalyticsConnector.DataClient.Exceptions;
 using Microsoft.Health.AnalyticsConnector.DataClient.Extensions;
 using Microsoft.Health.AnalyticsConnector.DataClient.Models.FhirApiOption;
 using Microsoft.Health.JobManagement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Polly.Timeout;
 
 namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 {
@@ -38,6 +36,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private const string TotalCountFieldKey = "total";
         private const string LastUpdatedApiParameter = "_lastUpdated";
         private const string LastUpdatedApiParameterDesc = "-_lastUpdated";
+        private const int TimeoutSecondsGetResourceCount = 90;
 
         public FhirToDataLakeProcessingJobSpliter(
             IApiDataClient dataClient,
@@ -72,14 +71,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             else
             {
                 // Split large size job using binary search.
-                var splittingStartTime = DateTimeOffset.Now;
+                var splittingStartTime = DateTimeOffset.UtcNow;
                 _logger.LogInformation($"Start splitting {resourceType} job, total {totalCount} resources.");
 
                 var anchorList = await InitializeAnchorListAsync(resourceType, startTime, endTime, totalCount, cancellationToken);
                 var lastTimeStamp = anchorList.LastOrDefault().Key;
 
-                _logger.LogInformation($"Splitting {resourceType} job. Use {(DateTimeOffset.Now - splittingStartTime).TotalMilliseconds} milliseconds to initilize anchor list.");
-                var lastSplitTimestamp = DateTimeOffset.Now;
+                _logger.LogInformation($"Splitting {resourceType} job. Use {(DateTimeOffset.UtcNow - splittingStartTime).TotalMilliseconds} milliseconds to initilize anchor list.");
+                var lastSplitTimestamp = DateTimeOffset.UtcNow;
                 DateTimeOffset? nextJobEnd = null;
                 var jobCount = 0;
 
@@ -90,8 +89,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                     nextJobEnd = await GetNextSplitTimestamp(resourceType, lastEndTime, anchorList, cancellationToken);
 
-                    var jobSize = lastEndTime == null ? anchorList[(DateTimeOffset)nextJobEnd] : anchorList[(DateTimeOffset)nextJobEnd] - anchorList[(DateTimeOffset)lastEndTime];
-                    _logger.LogInformation($"Splitting {resourceType} job. Generated new sub job using {(DateTimeOffset.UtcNow - lastSplitTimestamp).TotalMilliseconds} milliseconds with {jobSize} resource count.");
+                    var resouceCount = lastEndTime == null ? anchorList[(DateTimeOffset)nextJobEnd] : anchorList[(DateTimeOffset)nextJobEnd] - anchorList[(DateTimeOffset)lastEndTime];
+                    _logger.LogInformation($"Splitting {resourceType} job. Generated new sub job using {(DateTimeOffset.UtcNow - lastSplitTimestamp).TotalMilliseconds} milliseconds with {resouceCount} resource count.");
                     lastSplitTimestamp = DateTimeOffset.UtcNow;
 
                     // The last job.
@@ -104,7 +103,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     {
                         ResourceType = resourceType,
                         TimeRange = new TimeRange() { DataStartTime = lastEndTime, DataEndTime = (DateTimeOffset)nextJobEnd },
-                        ResourceCount = jobSize,
+                        ResourceCount = resouceCount,
                     };
 
                     jobCount += 1;
@@ -125,7 +124,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             // Set isDescending parameter false to get first timestmp.
             var nextTimestamp = await GetNextTimestamp(resourceType, startTime, endTime, false, cancellationToken);
 
-            // Set isDescending parameter as true to get last timestmp.
+            // Set isDescending parameter true to get last timestmp.
             var lastTimestamp = await GetNextTimestamp(resourceType, startTime, endTime, true, cancellationToken);
 
             if (nextTimestamp != null)
@@ -135,7 +134,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
             if (lastTimestamp != null)
             {
-                // the value means resource counts less than the time stamp.
+                // the value is resource counts less than the time stamp value of key.
+                // Add 1 milliseond on the last resource time stamp.
                 anchorList[((DateTimeOffset)lastTimestamp).AddMilliseconds(1)] = totalCount;
             }
             else
@@ -208,22 +208,23 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             var last = start;
             foreach (var item in anchorList)
             {
-                var value = item.Value;
-                if (value == int.MaxValue)
+                var anchorValue = item.Value;
+                if (anchorValue == int.MaxValue)
                 {
+                    // Retry to get resource count.
                     var resourceCount = await GetResourceCountAsync(resourceType, last, item.Key, cancellationToken);
                     var lastAnchorValue = last == null ? 0 : anchorList[(DateTimeOffset)last];
                     anchorList[item.Key] = resourceCount == int.MaxValue ? int.MaxValue : resourceCount + lastAnchorValue;
-                    value = anchorList[item.Key];
+                    anchorValue = anchorList[item.Key];
                 }
 
-                if (value - baseSize < LowBoundOfProcessingJobResourceCount)
+                if (anchorValue - baseSize < LowBoundOfProcessingJobResourceCount)
                 {
                     last = item.Key;
                     continue;
                 }
 
-                if (value - baseSize <= HighBoundOfProcessingJobResourceCount && value - baseSize >= LowBoundOfProcessingJobResourceCount)
+                if (anchorValue - baseSize <= HighBoundOfProcessingJobResourceCount && anchorValue - baseSize >= LowBoundOfProcessingJobResourceCount)
                 {
                     return item.Key;
                 }
@@ -283,28 +284,23 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
             var searchOptions = new BaseSearchOptions(null, parameters);
             string fhirBundleResult;
+            using var timeoutCancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(TimeoutSecondsGetResourceCount));
+            CancellationTokenSource linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCancellationToken.Token);
             try
             {
-                fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
+                fhirBundleResult = await _dataClient.SearchAsync(searchOptions, linkedToken.Token);
             }
-            catch (ApiSearchException ex) when (ex.InnerException is HttpRequestException)
+            catch (OperationCanceledException ex)
             {
-                var innerException = ex.InnerException as HttpRequestException;
-                switch (innerException.StatusCode)
-                {
-                    case HttpStatusCode.RequestTimeout:
-                    case HttpStatusCode.TooManyRequests:
-                    case HttpStatusCode.InternalServerError:
-                        _diagnosticLogger.LogError($"Get resource count error with transient failure. Reason: {ex.Message}. Set count as max int value and will retry later.");
-                        _logger.LogInformation(ex, "Get resource count error with transient failure. Reason: {0}. Set count as max int value and will retry later.", ex.Message);
-                        return int.MaxValue;
-                    default:
-                        break;
-                }
-
-                _diagnosticLogger.LogError(string.Format("Failed to get resource count from server. Reason: {0}", ex.Message));
-                _logger.LogInformation(ex, "Failed to get resource count from server. Reason: {0}", ex.Message);
-                throw;
+                _diagnosticLogger.LogError($"Get resource count canceled. Reason: {ex.Message}. Set count as max int value and will retry later.");
+                _logger.LogInformation(ex, "Get resource count canceled. Reason: {0}. Set count as max int value and will retry later.", ex.Message);
+                return int.MaxValue;
+            }
+            catch (TimeoutRejectedException ex)
+            {
+                _diagnosticLogger.LogError($"Get resource count timeout. Reason: {ex.Message}. Set count as max int value and will retry later.");
+                _logger.LogInformation(ex, "Get resource count timeout. Reason: {0}. Set count as max int value and will retry later.", ex.Message);
+                return int.MaxValue;
             }
 
             // Parse bundle result.

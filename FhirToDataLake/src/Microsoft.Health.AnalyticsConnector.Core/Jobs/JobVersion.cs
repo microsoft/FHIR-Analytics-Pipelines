@@ -24,5 +24,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         /// Third version.
         /// </summary>
         V3 = 3,
+
+        /// <summary>
+        /// Fourth version.
+        /// </summary>
+        V4 = 4,
     }
 }

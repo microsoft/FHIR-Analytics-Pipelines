@@ -10,7 +10,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 {
     public static class FhirToDatalakeJobVersionManager
     {
-        public const JobVersion CurrentJobVersion = JobVersion.V3;
+        public const JobVersion CurrentJobVersion = JobVersion.V4;
 
         public const JobVersion DefaultJobVersion = JobVersion.V1;
 
@@ -19,6 +19,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             JobVersion.V1,
             JobVersion.V2,
             JobVersion.V3,
+            JobVersion.V4,
         };
 
         // The job version is added in input data to handle possible version compatibility issues when the version is updated. It is not related to the job definition, so we need to remove the job version property when calculate job identifier.
@@ -79,6 +80,26 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             nameof(FhirToDataLakeProcessingJobInputData.JobType),
             nameof(FhirToDataLakeProcessingJobInputData.TriggerSequenceId),
             nameof(FhirToDataLakeProcessingJobInputData.ProcessingJobSequenceId),
+            nameof(FhirToDataLakeProcessingJobInputData.Since),
+            nameof(FhirToDataLakeProcessingJobInputData.DataStartTime),
+            nameof(FhirToDataLakeProcessingJobInputData.ToBeProcessedPatients),
+        };
+
+        // job version V4
+        public static readonly List<string> FhirToDataLakeOrchestratorJobIdentifierPropertiesV4 = new()
+        {
+            nameof(FhirToDataLakeProcessingJobInputData.JobType),
+            nameof(FhirToDataLakeProcessingJobInputData.TriggerSequenceId),
+            nameof(FhirToDataLakeProcessingJobInputData.Since),
+            nameof(FhirToDataLakeProcessingJobInputData.DataStartTime),
+        };
+
+        public static readonly List<string> FhirToDataLakeProcessingJobIdentifierPropertiesV4 = new()
+        {
+            nameof(FhirToDataLakeProcessingJobInputData.JobType),
+            nameof(FhirToDataLakeProcessingJobInputData.TriggerSequenceId),
+            nameof(FhirToDataLakeProcessingJobInputData.ProcessingJobSequenceId),
+            nameof(FhirToDataLakeProcessingJobInputData.SplitParameters),
             nameof(FhirToDataLakeProcessingJobInputData.Since),
             nameof(FhirToDataLakeProcessingJobInputData.DataStartTime),
             nameof(FhirToDataLakeProcessingJobInputData.ToBeProcessedPatients),

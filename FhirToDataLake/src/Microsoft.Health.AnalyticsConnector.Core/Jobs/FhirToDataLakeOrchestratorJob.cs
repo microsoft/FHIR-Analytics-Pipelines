@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using EnsureThat;
-using FellowOakDicom.Imaging.LUT;
 using Hl7.Fhir.Utility;
 using Hl7.FhirPath.Sprache;
 using Microsoft.Extensions.Logging;
@@ -54,8 +53,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private FhirToDataLakeOrchestratorJobResult _result;
         private OrchestratorJobStatusEntity _jobStatus;
 
-        // _mergeList is used to cache small size jobs waiting for merge.
-        private List<(string, TimeRange, int)> _mergeList = new List<(string, TimeRange, int)>();
+        // Used to cache small size jobs as candidates waiting for merge.
+        private List<SubJobInfo> _jobCandidateList = new ();
         private FhirToDataLakeProcessingJobSpliter _jobSpliter;
 
         public FhirToDataLakeOrchestratorJob(
@@ -110,7 +109,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             try
             {
                 _jobStatus = await InitializeJobStatusAsync(cancellationToken);
-                if (_inputData.JobVersion >= JobVersion.V3)
+                if (_inputData.JobVersion >= JobVersion.V4)
                 {
                     _result = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(_jobStatus.StatisticResult);
                 }
@@ -123,7 +122,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 FilterScope filterScope = await _filterManager.GetFilterScopeAsync(cancellationToken);
                 IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> inputs = filterScope switch
                 {
-                    FilterScope.System => _inputData.JobVersion >= JobVersion.V3 ? GetInputsAsyncForSystem(cancellationToken) : GetInputsAsyncSystemForFixedTimespan(cancellationToken),
+                    FilterScope.System => _inputData.JobVersion >= JobVersion.V4 ? GetInputsAsyncForSystem(cancellationToken) : GetInputsAsyncSystemForFixedTimespan(cancellationToken),
                     FilterScope.Group => GetInputsAsyncForGroup(cancellationToken),
                     _ => throw new ConfigurationErrorException(
                         $"The filterScope {filterScope} isn't supported now.")
@@ -327,7 +326,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                         // Small size job, put it into pool and wait for merge.
                         _logger.LogInformation($"One small job is generated and pushed into merge list for {resourceType} with {subJob.ResourceCount} count.");
 
-                        var jobParameters = PushToJobPool(resourceType, subJob.TimeRange, subJob.ResourceCount);
+                        var jobParameters = AddJobCandidate(subJob);
                         if (jobParameters != null)
                         {
                             _logger.LogInformation($"Generated one merged job with {jobParameters.Keys} types.");
@@ -359,9 +358,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 }
             }
 
-            if (_mergeList.Count != 0)
+            if (_jobCandidateList.Count != 0)
             {
-                var jobParameters = _mergeList.ToDictionary(x => x.Item1, x => x.Item2);
+                var jobParameters = _jobCandidateList.ToDictionary(x => x.ResourceType, x => x.TimeRange);
 
                 _logger.LogInformation($"Generated one merged job with {jobParameters.Keys} types.");
                 yield return new FhirToDataLakeProcessingJobInputData
@@ -422,20 +421,20 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             }
         }
 
-        private Dictionary<string, TimeRange> PushToJobPool(string resourceType, TimeRange range, int count)
+        private Dictionary<string, TimeRange> AddJobCandidate(SubJobInfo jobCandidate)
         {
-            // Push small job into pool list.
-            var currentCount = _mergeList.Sum(x => x.Item3);
-            if (currentCount + count >= LowBoundOfProcessingJobResourceCount)
+            // Push small job into candidate list.
+            var currentCount = _jobCandidateList.Sum(x => x.ResourceCount);
+            if (currentCount + jobCandidate.ResourceCount >= LowBoundOfProcessingJobResourceCount)
             {
                 // Pop all jobs if total resource count larger than low bound.
-                var result = _mergeList.ToDictionary(x => x.Item1, x => x.Item2);
-                result.Add(resourceType, range);
-                _mergeList.Clear();
+                var result = _jobCandidateList.ToDictionary(x => x.ResourceType, x => x.TimeRange);
+                result.Add(jobCandidate.ResourceType, jobCandidate.TimeRange);
+                _jobCandidateList.Clear();
                 return result;
             }
 
-            _mergeList.Add((resourceType, range, count));
+            _jobCandidateList.Add(jobCandidate);
             return null;
         }
 
@@ -649,7 +648,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             return _inputData.JobVersion switch
             {
                 JobVersion.V1 or JobVersion.V2 => _result.RunningJobIds.Min(),
-                JobVersion.V3 => _result.SequenceIdToJobIdMapForRunningJobs[_result.CompletedJobCount],
+                JobVersion.V3 or JobVersion.V4 => _result.SequenceIdToJobIdMapForRunningJobs[_result.CompletedJobCount],
                 _ => throw new SynapsePipelineInternalException($"The job version {_inputData.JobVersion} is unsupported."),
             };
         }
@@ -663,6 +662,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     _result.RunningJobIds.Remove(jobId);
                     break;
                 case JobVersion.V3:
+                case JobVersion.V4:
                     _result.SequenceIdToJobIdMapForRunningJobs.Remove(_result.CompletedJobCount);
                     _result.CompletedJobCount++;
                     break;
@@ -676,7 +676,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             return _inputData.JobVersion switch
             {
                 JobVersion.V1 or JobVersion.V2 => _result.RunningJobIds.Count,
-                JobVersion.V3 => (int)(_result.CreatedJobCount - _result.CompletedJobCount),
+                JobVersion.V3 or JobVersion.V4 => (int)(_result.CreatedJobCount - _result.CompletedJobCount),
                 _ => throw new SynapsePipelineInternalException($"The job version {_inputData.JobVersion} is unsupported."),
             };
         }

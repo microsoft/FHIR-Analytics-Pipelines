@@ -520,7 +520,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             if (resumeMode)
             {
                 metadataStore = GetMetaDataStore();
-                if (inputData.JobVersion == JobVersion.V1 || inputData.JobVersion == JobVersion.V2)
+                if (inputData.JobVersion < JobVersion.V4)
                 {
                     orchestratorJobResult = await OldVersionInitResumeStatusAsync(metadataStore, queueClient, resumeFrom, completedCount, processingJobCount, inputData, metricsLogger);
                 }
@@ -543,7 +543,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             }
 
             IApiDataClient dataClient = null;
-            if (inputData.JobVersion == JobVersion.V1 || inputData.JobVersion == JobVersion.V2)
+            if (inputData.JobVersion < JobVersion.V4)
             {
                 dataClient = GetMockOldVersionFhirDataClient(processingJobCount, resumeFrom);
             }
@@ -694,8 +694,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
         {
             var dataClient = Substitute.For<IApiDataClient>();
 
-            Func<BaseApiOptions, Dictionary<string, int>, string> func = new(SearchWithPara);
-            dataClient.SearchAsync(Arg.Any<BaseApiOptions>(), default).Returns(x => func((BaseApiOptions)x[0], count));
+            Func<BaseApiOptions, Dictionary<string, int>, string> func = new (SearchWithPara);
+            dataClient.SearchAsync(Arg.Any<BaseApiOptions>(), Arg.Any<CancellationToken>()).Returns(x => func((BaseApiOptions)x[0], count));
 
             return dataClient;
         }

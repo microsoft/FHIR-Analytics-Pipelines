@@ -395,7 +395,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                 if (_filterScope == FilterScope.System)
                 {
-                    if (_inputData.JobVersion >= JobVersion.V3)
+                    if (_inputData.JobVersion >= JobVersion.V4)
                     {
                         if (!_inputData.SplitParameters.ContainsKey(typeFilter.ResourceType))
                         {
