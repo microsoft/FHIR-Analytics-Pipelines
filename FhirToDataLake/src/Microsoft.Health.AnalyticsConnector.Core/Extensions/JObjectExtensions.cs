@@ -16,7 +16,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Extensions
 {
     public static class JObjectExtensions
     {
-
         /// <summary>
         /// Extract last updated timestamp information from resource.
         /// </summary>
@@ -27,11 +26,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Extensions
             try
             {
                 var lastUpdatedObject = JObject.FromObject(
-                resource.GetValue(FhirBundleConstants.MetaKey),
-                new JsonSerializer
-                {
-                    DateParseHandling = DateParseHandling.None,
-                });
+                    resource.GetValue(FhirBundleConstants.MetaKey),
+                    new JsonSerializer
+                    {
+                        DateParseHandling = DateParseHandling.None,
+                    });
                 var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(lastUpdatedObject.ToString()).GetValueOrDefault(FhirBundleConstants.LastUpdatedKey);
                 if (result == null)
                 {

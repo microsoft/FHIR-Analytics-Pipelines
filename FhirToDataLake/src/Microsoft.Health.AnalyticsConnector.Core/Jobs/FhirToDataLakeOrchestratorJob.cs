@@ -323,8 +323,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     }
                     else if (subJob.ResourceCount < LowBoundOfProcessingJobResourceCount)
                     {
-                        // Small size job, put it into pool and wait for merge.
-                        _logger.LogInformation($"One small job is generated and pushed into merge list for {resourceType} with {subJob.ResourceCount} count.");
+                        // Small size job, put it into candidate list.
+                        _logger.LogInformation($"One small job for {resourceType} with {subJob.ResourceCount} count is generated and pushed into candidate list.");
 
                         var jobParameters = AddJobCandidate(subJob);
                         if (jobParameters != null)
