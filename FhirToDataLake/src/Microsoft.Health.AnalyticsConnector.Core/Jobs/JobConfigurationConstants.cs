@@ -87,12 +87,12 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         public const int CheckRunningJobCompleteRunningJobCountThreshold = 5;
 
         /// <summary>
-        /// The low bound of resource count when spliting processing jobs.
+        /// The low bound of resource count when splitting processing jobs.
         /// </summary>
         public const int LowBoundOfProcessingJobResourceCount = 50000;
 
         /// <summary>
-        /// The high bound of resource count when spliting processing jobs.
+        /// The high bound of resource count when splitting processing jobs.
         /// </summary>
         public const int HighBoundOfProcessingJobResourceCount = 500000;
     }

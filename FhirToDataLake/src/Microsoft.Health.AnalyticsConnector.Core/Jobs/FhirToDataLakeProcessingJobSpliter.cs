@@ -70,7 +70,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             }
             else
             {
-                // Split large size job using binary search.
+                // Split large size job.
                 var splittingStartTime = DateTimeOffset.UtcNow;
                 _logger.LogInformation($"Start splitting {resourceType} job, total {totalCount} resources.");
 
@@ -134,7 +134,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
             if (lastTimestamp != null)
             {
-                // the value is resource counts less than the time stamp value of key.
+                // the value of anchor is resource counts less than the time stamp.
                 // Add 1 milliseond on the last resource time stamp.
                 anchorList[((DateTimeOffset)lastTimestamp).AddMilliseconds(1)] = totalCount;
             }
@@ -146,24 +146,16 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             return anchorList;
         }
 
-        // get the lastUpdated timestamp of next resource for next processing job
+        // get the lastUpdated time stamp of next resource.
         private async Task<DateTimeOffset?> GetNextTimestamp(string resourceType, DateTimeOffset? start, DateTimeOffset end, bool isDescending, CancellationToken cancellationToken)
         {
-            List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
+            List<KeyValuePair<string, string>> parameters = new ()
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString("d")),
                 new KeyValuePair<string, string>(FhirApiConstants.TypeKey, resourceType),
+                isDescending ? new KeyValuePair<string, string>(FhirApiConstants.SortKey, LastUpdatedApiParameterDesc) : new KeyValuePair<string, string>(FhirApiConstants.SortKey, LastUpdatedApiParameter),
             };
-
-            if (isDescending)
-            {
-                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.SortKey, LastUpdatedApiParameterDesc));
-            }
-            else
-            {
-                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.SortKey, LastUpdatedApiParameter));
-            }
 
             if (start != null)
             {
@@ -211,7 +203,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 var anchorValue = item.Value;
                 if (anchorValue == int.MaxValue)
                 {
-                    // Retry to get resource count.
+                    // Get resource count failed before, re-try to get resource count.
                     var resourceCount = await GetResourceCountAsync(resourceType, last, item.Key, cancellationToken);
                     var lastAnchorValue = last == null ? 0 : anchorList[(DateTimeOffset)last];
                     anchorList[item.Key] = resourceCount == int.MaxValue ? int.MaxValue : resourceCount + lastAnchorValue;
@@ -229,6 +221,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     return item.Key;
                 }
 
+                // Find next split time stamp by binary search.
                 return await BisectAnchor(resourceType, last == null ? DateTimeOffset.MinValue : (DateTimeOffset)last, item.Key, anchorList, baseSize, cancellationToken);
             }
 
@@ -292,14 +285,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             }
             catch (OperationCanceledException ex)
             {
-                _diagnosticLogger.LogError($"Get resource count canceled. Reason: {ex.Message}. Set count as max int value and will retry later.");
-                _logger.LogInformation(ex, "Get resource count canceled. Reason: {0}. Set count as max int value and will retry later.", ex.Message);
+                _diagnosticLogger.LogError($"Get resource count canceled. Reason: {ex.Message}. Return max int value and will retry later.");
+                _logger.LogInformation(ex, "Get resource count canceled. Reason: {0}. Return max int value and will retry later.", ex.Message);
                 return int.MaxValue;
             }
             catch (TimeoutRejectedException ex)
             {
-                _diagnosticLogger.LogError($"Get resource count timeout. Reason: {ex.Message}. Set count as max int value and will retry later.");
-                _logger.LogInformation(ex, "Get resource count timeout. Reason: {0}. Set count as max int value and will retry later.", ex.Message);
+                _diagnosticLogger.LogError($"Get resource count timeout. Reason: {ex.Message}. Return max int value and will retry later.");
+                _logger.LogInformation(ex, "Get resource count timeout. Reason: {0}. Return max int value and will retry later.", ex.Message);
                 return int.MaxValue;
             }
 

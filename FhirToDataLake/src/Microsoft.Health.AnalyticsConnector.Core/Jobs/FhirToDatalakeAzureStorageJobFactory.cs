@@ -113,8 +113,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     if (FhirToDatalakeJobVersionManager.SupportedJobVersion.Contains(inputData.JobVersion))
                     {
                         FhirToDataLakeOrchestratorJobResult currentResult = string.IsNullOrWhiteSpace(jobInfo.Result)
-                            ? new FhirToDataLakeOrchestratorJobResult()
-                            : JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
+                        ? new FhirToDataLakeOrchestratorJobResult()
+                        : JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(jobInfo.Result);
 
                         return new FhirToDataLakeOrchestratorJob(
                             jobInfo,

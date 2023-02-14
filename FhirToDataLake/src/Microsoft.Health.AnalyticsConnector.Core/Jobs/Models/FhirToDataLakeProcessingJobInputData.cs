@@ -38,7 +38,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
 
         /// <summary>
         /// Resource type and time range parameters for system scope.
-        /// SplitParameters will be null for group scope.
+        /// SplitParameters will be empty for group scope.
         /// </summary>
         public Dictionary<string, TimeRange> SplitParameters { get; set; } = new Dictionary<string, TimeRange>();
 
