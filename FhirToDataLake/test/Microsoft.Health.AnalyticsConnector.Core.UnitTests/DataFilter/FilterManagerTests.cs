@@ -313,12 +313,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.DataFilter
             Assert.Equal("Condition", typeFilters[2].Parameters[0].Value);
         }
 
-        [Fact]
-        public async Task GivenMultiValidTypeFilter_WhenParseTypeFilterForSystem_ThenTheTypeFiltersAreReturnedAsync()
+        [Theory]
+        [InlineData("Condition,MedicationRequest", "MedicationRequest?status=active,MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z")]
+        [InlineData(" Condition ,  MedicationRequest    ", "  MedicationRequest?status=active   ,   MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z ")]
+        public async Task GivenMultiValidTypeFilter_WhenParseTypeFilterForSystem_ThenTheTypeFiltersAreReturnedAsync(string type, string typeFilter)
         {
-            const string type = "Condition,MedicationRequest";
-            const string typeFilter = "MedicationRequest?status=active,MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z";
-
             var filterConfiguration = new FilterConfiguration
             {
                 FilterScope = FilterScope.System,
@@ -370,11 +369,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.DataFilter
         [InlineData("Patient", "Patient?_has:Observation:patient:_has:AuditEvent:entity:user=MyUserId")]
 
         // chained
-        [InlineData("DiagnosticReport", "DiagnosticReport?subject:Patient.name=peter")]
-        [InlineData("Observation", "Observation?patient.identifier=http://example.com/fhir/identifier/mrn|123456")]
-
-        // multi type tilters
-        [InlineData(" Condition ,  MedicationRequest    ", "  MedicationRequest?status=active   ,   MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z ")]
+        [InlineData("DiagnosticReport", " DiagnosticReport?subject:Patient.name=peter   ")]
+        [InlineData("Observation    ", "Observation?patient.identifier=http://example.com/fhir/identifier/mrn|123456 ")]
         public async Task GivenValidTypeFilter_WhenParseTypeFilter_ThenTheTypeFiltersAreReturnedAsync(string type, string typeFilter)
         {
             var filterConfiguration = new FilterConfiguration
