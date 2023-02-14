@@ -15,7 +15,6 @@ using Microsoft.Health.AnalyticsConnector.Common.Logging;
 using Microsoft.Health.AnalyticsConnector.Common.Models.Data;
 using Microsoft.Health.AnalyticsConnector.Core.DataProcessor.DataConverter;
 using Microsoft.Health.AnalyticsConnector.Core.Exceptions;
-using Microsoft.Health.AnalyticsConnector.Core.Fhir;
 using Microsoft.Health.AnalyticsConnector.SchemaManagement;
 using Microsoft.Health.AnalyticsConnector.SchemaManagement.Parquet;
 using Microsoft.Health.Parquet;

@@ -19,8 +19,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Fhir
 
         public const string ResourceTypeKey = "resourceType";
 
-        public const string IdKey = "id";
-
         public const string MetaKey = "meta";
 
         public const string LastUpdatedKey = "lastUpdated";
