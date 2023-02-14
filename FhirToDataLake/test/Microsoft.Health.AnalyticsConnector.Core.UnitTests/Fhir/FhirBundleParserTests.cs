@@ -22,11 +22,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Fhir
 
             IEnumerable<JObject> resources = FhirBundleParser.ExtractResourcesFromBundle(bundle);
             string continuationToken = FhirBundleParser.ExtractContinuationToken(bundle);
-            string resoruceId = FhirBundleParser.ExtractResourceId(bundle);
 
             Assert.Empty(resources);
             Assert.Null(continuationToken);
-            Assert.Equal("bundle-example", resoruceId);
         }
 
         [Fact]
@@ -36,11 +34,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Fhir
 
             IEnumerable<JObject> resources = FhirBundleParser.ExtractResourcesFromBundle(bundle);
             string continuationToken = FhirBundleParser.ExtractContinuationToken(bundle);
-            string resoruceId = FhirBundleParser.ExtractResourceId(bundle);
 
             Assert.Empty(resources);
             Assert.Null(continuationToken);
-            Assert.Null(resoruceId);
         }
 
         [Fact]
@@ -50,11 +46,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Fhir
 
             IEnumerable<JObject> resources = FhirBundleParser.ExtractResourcesFromBundle(bundle);
             string continuationToken = FhirBundleParser.ExtractContinuationToken(bundle);
-            string resoruceId = FhirBundleParser.ExtractResourceId(resources.First());
 
             Assert.Equal(2, resources.Count());
             Assert.Equal("Y29udGludWF0aW9udG9rZW4=", continuationToken);
-            Assert.Equal("3123", resoruceId);
         }
 
         [Fact]

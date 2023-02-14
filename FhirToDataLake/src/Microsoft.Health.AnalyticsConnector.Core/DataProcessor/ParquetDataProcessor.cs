@@ -105,8 +105,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.DataProcessor
                     // add a log for large resource
                     if (str.Length > LargeResourceSize)
                     {
-                        _diagnosticLogger.LogInformation($"The resource size {str.Length} of resource id {FhirBundleParser.ExtractResourceId(jsonObject)} is larger than {LargeResourceSize} Bytes.");
-                        _logger.LogInformation($"The resource size {str.Length} of resource id {FhirBundleParser.ExtractResourceId(jsonObject)} is larger than {LargeResourceSize} Bytes.");
+                        _diagnosticLogger.LogInformation($"Single data length of schema type {processParameters.SchemaType} for resource type {processParameters.ResourceType} is larger than {LargeResourceSize} Bytes.");
+                        _logger.LogInformation($"Single data length of schema type {processParameters.SchemaType} for resource type {processParameters.ResourceType} is larger than {LargeResourceSize} Bytes.");
                     }
 
                     return str;
