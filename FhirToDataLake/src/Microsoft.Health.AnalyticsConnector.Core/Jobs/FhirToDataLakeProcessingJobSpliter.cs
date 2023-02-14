@@ -59,7 +59,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             if (totalCount <= HighBoundOfProcessingJobResourceCount)
             {
                 // Return job with total count lower than high bound.
-                _logger.LogInformation($"Generate one {resourceType} job with {totalCount} count.");
+                _logger.LogInformation($"Split one sub job with {totalCount} resources from {startTime} to {endTime} for resource type {resourceType}.");
 
                 yield return new SubJobInfo
                 {
@@ -74,7 +74,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 var splittingStartTime = DateTimeOffset.UtcNow;
                 _logger.LogInformation($"Start splitting {resourceType} job, total {totalCount} resources.");
 
-                var anchorList = await InitializeAnchorListAsync(resourceType, startTime, endTime, totalCount, cancellationToken);
+                Dictionary<DateTimeOffset, int> anchorList = await InitializeAnchorListAsync(resourceType, startTime, endTime, totalCount, cancellationToken);
                 var lastTimeStamp = anchorList.LastOrDefault().Key;
 
                 _logger.LogInformation($"Splitting {resourceType} job. Use {(DateTimeOffset.UtcNow - splittingStartTime).TotalMilliseconds} milliseconds to initilize anchor list.");
@@ -84,13 +84,15 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                 while (nextJobEnd == null || nextJobEnd < endTime)
                 {
-                    anchorList = anchorList.OrderBy(p => p.Key).ToDictionary(p => p.Key, o => o.Value);
+                    anchorList = anchorList.OrderBy(p => p.Key).ToDictionary(p => p.Key, p => p.Value);
                     DateTimeOffset? lastEndTime = nextJobEnd ?? startTime;
 
                     nextJobEnd = await GetNextSplitTimestamp(resourceType, lastEndTime, anchorList, cancellationToken);
 
-                    var resouceCount = lastEndTime == null ? anchorList[(DateTimeOffset)nextJobEnd] : anchorList[(DateTimeOffset)nextJobEnd] - anchorList[(DateTimeOffset)lastEndTime];
-                    _logger.LogInformation($"Splitting {resourceType} job. Generated new sub job using {(DateTimeOffset.UtcNow - lastSplitTimestamp).TotalMilliseconds} milliseconds with {resouceCount} resource count.");
+                    var resourceCount = lastEndTime == null
+                        ? anchorList[(DateTimeOffset)nextJobEnd]
+                        : anchorList[(DateTimeOffset)nextJobEnd] - anchorList[(DateTimeOffset)lastEndTime];
+                    _logger.LogInformation($"Splitting {resourceType} job. Generated new sub job using {(DateTimeOffset.UtcNow - lastSplitTimestamp).TotalMilliseconds} milliseconds with {resourceCount} resource count.");
                     lastSplitTimestamp = DateTimeOffset.UtcNow;
 
                     // The last job.
@@ -103,7 +105,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     {
                         ResourceType = resourceType,
                         TimeRange = new TimeRange() { DataStartTime = lastEndTime, DataEndTime = (DateTimeOffset)nextJobEnd },
-                        ResourceCount = resouceCount,
+                        ResourceCount = resourceCount,
                     };
 
                     jobCount += 1;
@@ -154,7 +156,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString("d")),
                 new KeyValuePair<string, string>(FhirApiConstants.TypeKey, resourceType),
-                isDescending ? new KeyValuePair<string, string>(FhirApiConstants.SortKey, LastUpdatedApiParameterDesc) : new KeyValuePair<string, string>(FhirApiConstants.SortKey, LastUpdatedApiParameter),
+                isDescending
+                ? new KeyValuePair<string, string>(FhirApiConstants.SortKey, LastUpdatedApiParameterDesc)
+                : new KeyValuePair<string, string>(FhirApiConstants.SortKey, LastUpdatedApiParameter),
             };
 
             if (start != null)

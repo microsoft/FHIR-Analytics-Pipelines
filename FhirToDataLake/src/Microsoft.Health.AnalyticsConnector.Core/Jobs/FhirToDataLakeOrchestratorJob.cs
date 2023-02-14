@@ -54,7 +54,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private OrchestratorJobStatusEntity _jobStatus;
 
         // Used to cache small size jobs as candidates waiting for merge.
-        private List<SubJobInfo> _jobCandidateList = new ();
+        private JobCandidatePool _jobCandidatePool = new ();
         private FhirToDataLakeProcessingJobSpliter _jobSpliter;
 
         public FhirToDataLakeOrchestratorJob(
@@ -299,7 +299,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             }
 
             List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
-            var resourceTypes = typeFilters.Select(filter => filter.ResourceType).ToList();
+            var resourceTypes = typeFilters.Select(filter => filter.ResourceType).ToList().Distinct();
 
             // Split jobs by resource types.
             foreach (var resourceType in resourceTypes)
@@ -326,9 +326,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                         // Small size job, put it into candidate list.
                         _logger.LogInformation($"One small job for {resourceType} with {subJob.ResourceCount} count is generated and pushed into candidate list.");
 
-                        var jobParameters = AddJobCandidate(subJob);
-                        if (jobParameters != null)
+                        if (_jobCandidatePool.GetResourceCount() + subJob.ResourceCount >= LowBoundOfProcessingJobResourceCount)
                         {
+                            // Pop all jobs if total resource count not less than low bound.
+                            Dictionary<string, TimeRange> jobParameters = _jobCandidatePool.PopJobCandidates();
+                            jobParameters.Add(subJob.ResourceType, subJob.TimeRange);
                             _logger.LogInformation($"Generated one merged job with {jobParameters.Keys} types.");
 
                             yield return new FhirToDataLakeProcessingJobInputData
@@ -341,10 +343,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                                 SplitParameters = jobParameters,
                             };
                         }
+                        else
+                        {
+                            _jobCandidatePool.PushJobCandidates(subJob);
+                        }
                     }
                     else
                     {
-                        _logger.LogInformation($"Generated one job for {resourceType} with {subJob.ResourceCount} count.");
+                        _logger.LogInformation($"Split one sub job with {subJob.ResourceCount} resources from {subJob.TimeRange.DataStartTime} to {subJob.TimeRange.DataEndTime} for resource type {subJob.ResourceType}.");
                         yield return new FhirToDataLakeProcessingJobInputData
                         {
                             JobType = JobType.Processing,
@@ -358,9 +364,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 }
             }
 
-            if (_jobCandidateList.Count != 0)
+            if (_jobCandidatePool.GetResourceCount() > 0)
             {
-                var jobParameters = _jobCandidateList.ToDictionary(x => x.ResourceType, x => x.TimeRange);
+                var jobParameters = _jobCandidatePool.PopJobCandidates();
 
                 _logger.LogInformation($"Generated one merged job with {jobParameters.Keys} types.");
                 yield return new FhirToDataLakeProcessingJobInputData
@@ -419,23 +425,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 _result.NextJobTimestamp = nextJobEnd;
                 yield return input;
             }
-        }
-
-        private Dictionary<string, TimeRange> AddJobCandidate(SubJobInfo jobCandidate)
-        {
-            // Push small job into candidate list.
-            var currentCount = _jobCandidateList.Sum(x => x.ResourceCount);
-            if (currentCount + jobCandidate.ResourceCount >= LowBoundOfProcessingJobResourceCount)
-            {
-                // Pop all jobs if total resource count larger than low bound.
-                var result = _jobCandidateList.ToDictionary(x => x.ResourceType, x => x.TimeRange);
-                result.Add(jobCandidate.ResourceType, jobCandidate.TimeRange);
-                _jobCandidateList.Clear();
-                return result;
-            }
-
-            _jobCandidateList.Add(jobCandidate);
-            return null;
         }
 
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForGroup([EnumeratorCancellation] CancellationToken cancellationToken)
