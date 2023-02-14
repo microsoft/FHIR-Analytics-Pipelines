@@ -154,8 +154,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.DataFilter
                 return supportedResourceTypes;
             }
 
-            // TODO: trim space for each type?
-            HashSet<string> types = typeString.Split(',').ToHashSet();
+            HashSet<string> types = typeString.Split(',').Select(str => str.Trim()).ToHashSet();
 
             // validate if invalid Fhir resource types
             List<string> invalidFhirResourceTypes =
@@ -196,7 +195,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.DataFilter
                 return filters;
             }
 
-            string[] filterArray = filterString.Split(",");
+            IEnumerable<string> filterArray = filterString.Split(",").Select(str => str.Trim());
 
             // the filter format sample is
             // "MedicationRequest?status=completed&date=gt2018-07-01T00:00:00Z"
