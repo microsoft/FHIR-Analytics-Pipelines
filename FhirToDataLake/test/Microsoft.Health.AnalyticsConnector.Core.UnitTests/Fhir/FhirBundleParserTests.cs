@@ -34,6 +34,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Fhir
 
             IEnumerable<JObject> resources = FhirBundleParser.ExtractResourcesFromBundle(bundle);
             string continuationToken = FhirBundleParser.ExtractContinuationToken(bundle);
+
             Assert.Empty(resources);
             Assert.Null(continuationToken);
         }

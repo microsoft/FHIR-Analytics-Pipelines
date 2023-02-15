@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.AnalyticsConnector.Common.Configurations;
-using Microsoft.Health.AnalyticsConnector.Common.Configurations.Arrow;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;
 using Microsoft.Health.AnalyticsConnector.Common.Metrics;
 using Microsoft.Health.AnalyticsConnector.Common.Models.FhirSearch;
@@ -174,14 +173,12 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             IOptions<SchemaConfiguration> schemaConfigurationOption = Options.Create(new SchemaConfiguration());
 
             var schemaManager = new ParquetSchemaManager(schemaConfigurationOption, ParquetSchemaProviderDelegate, _diagnosticLogger, NullLogger<ParquetSchemaManager>.Instance);
-            IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
 
             var defaultConverter = new FhirDefaultSchemaConverter(schemaManager, _diagnosticLogger, NullLogger<FhirDefaultSchemaConverter>.Instance);
             var fhirConverter = new CustomSchemaConverter(TestUtils.GetMockAcrTemplateProvider(), schemaConfigurationOption, _diagnosticLogger, NullLogger<CustomSchemaConverter>.Instance);
 
             return new ParquetDataProcessor(
                 schemaManager,
-                arrowConfigurationOptions,
                 TestUtils.TestDataSchemaConverterDelegate,
                 _diagnosticLogger,
                 NullLogger<ParquetDataProcessor>.Instance);

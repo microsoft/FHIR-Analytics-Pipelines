@@ -5,7 +5,6 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Health.AnalyticsConnector.Common.Configurations.Arrow;
 
 namespace Microsoft.Health.AnalyticsConnector.Common.Configurations.ConfigurationResolvers
 {
@@ -23,8 +22,6 @@ namespace Microsoft.Health.AnalyticsConnector.Common.Configurations.Configuratio
                 configuration.GetSection(ConfigurationConstants.FilterConfigurationKey).Bind(options));
             services.Configure<DataLakeStoreConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.DataLakeStoreConfigurationKey).Bind(options));
-            services.Configure<ArrowConfiguration>(options =>
-                configuration.GetSection(ConfigurationConstants.ArrowConfigurationKey).Bind(options));
             services.Configure<SchemaConfiguration>(options =>
                 configuration.GetSection(ConfigurationConstants.SchemaConfigurationKey).Bind(options));
             services.Configure<HealthCheckConfiguration>(options =>

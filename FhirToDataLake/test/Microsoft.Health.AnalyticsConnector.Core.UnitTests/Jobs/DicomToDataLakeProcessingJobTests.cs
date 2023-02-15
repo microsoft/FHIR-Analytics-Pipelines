@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.AnalyticsConnector.Common;
 using Microsoft.Health.AnalyticsConnector.Common.Configurations;
-using Microsoft.Health.AnalyticsConnector.Common.Configurations.Arrow;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;
 using Microsoft.Health.AnalyticsConnector.Common.Metrics;
 using Microsoft.Health.AnalyticsConnector.Core.DataProcessor;
@@ -174,11 +173,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
         private static ParquetDataProcessor GetParquetDataProcessor()
         {
-            IOptions<ArrowConfiguration> arrowConfigurationOptions = Options.Create(new ArrowConfiguration());
-
             return new ParquetDataProcessor(
                 GetSchemaManager(),
-                arrowConfigurationOptions,
                 TestUtils.TestDicomDataSchemaConverterDelegate,
                 _diagnosticLogger,
                 NullLogger<ParquetDataProcessor>.Instance);
