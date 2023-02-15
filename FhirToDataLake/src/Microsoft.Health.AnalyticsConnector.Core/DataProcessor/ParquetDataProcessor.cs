@@ -24,6 +24,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.DataProcessor
 {
     public sealed class ParquetDataProcessor : IColumnDataProcessor
     {
+        // the resource size larger than 1GB may occur issue in parquet native library, as the block size of arrow read option is set to 1GB in parquet native library.
+        // in our pipeline, if the resource is large, it may occur out of memory. In our test, the memory used for a resource 100M is about 9GB.
+        // log resources larger than 100MB to colloct the information that if there are resources larger than 100MB in real data
         private const int LargeResourceSize = 100 << 20;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly ILogger<ParquetDataProcessor> _logger;
