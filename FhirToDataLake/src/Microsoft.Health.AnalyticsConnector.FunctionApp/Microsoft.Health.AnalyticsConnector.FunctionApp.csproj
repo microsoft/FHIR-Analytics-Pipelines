@@ -5,14 +5,17 @@
     <OutputType>Exe</OutputType>
     <Platforms>x64</Platforms>
   </PropertyGroup>
+
   <ItemGroup>
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.0.1" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.0.3" OutputItemType="Analyzer" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer"/>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" OutputItemType="Analyzer" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.Common\Microsoft.Health.AnalyticsConnector.Common.csproj" />
     <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.Core\Microsoft.Health.AnalyticsConnector.Core.csproj" />
@@ -20,6 +23,7 @@
     <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.DataWriter\Microsoft.Health.AnalyticsConnector.DataWriter.csproj" />
     <ProjectReference Include="..\Microsoft.Health.AnalyticsConnector.SchemaManagement\Microsoft.Health.AnalyticsConnector.SchemaManagement.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

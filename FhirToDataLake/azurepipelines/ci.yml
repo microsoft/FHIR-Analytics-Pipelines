@@ -25,10 +25,11 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: 'dotnet restore solution'
   inputs:
-    command: restore
-    projects: FhirToDataLake/*.sln
-    feedsToUse: 'config'
-    nugetConfigPath: 'FhirToDataLake/NuGet.Config'
+    workingDirectory: FhirToDataLake
+    command: custom
+    custom: restore
+    arguments: >
+      Microsoft.Health.AnalyticsConnector.Synapse.sln
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build solution'

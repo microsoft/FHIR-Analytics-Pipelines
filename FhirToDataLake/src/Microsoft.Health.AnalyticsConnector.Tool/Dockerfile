@@ -6,6 +6,7 @@ WORKDIR /src
 
 COPY ["NuGet.Config", "."]
 COPY ["Directory.Build.props", "."]
+COPY ["Directory.Packages.props", "."]
 COPY ["src/Microsoft.Health.AnalyticsConnector.Tool/Microsoft.Health.AnalyticsConnector.Tool.csproj", "src/Microsoft.Health.AnalyticsConnector.Tool/"]
 COPY ["src/Microsoft.Health.AnalyticsConnector.Common/Microsoft.Health.AnalyticsConnector.Common.csproj", "src/Microsoft.Health.AnalyticsConnector.Common/"]
 COPY ["src/Microsoft.Health.AnalyticsConnector.Core/Microsoft.Health.AnalyticsConnector.Core.csproj", "src/Microsoft.Health.AnalyticsConnector.Core/"]
