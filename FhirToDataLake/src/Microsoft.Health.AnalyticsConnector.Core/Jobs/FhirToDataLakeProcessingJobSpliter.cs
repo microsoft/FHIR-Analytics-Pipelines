@@ -74,7 +74,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 var splittingStartTime = DateTimeOffset.UtcNow;
                 _logger.LogInformation($"Start splitting {resourceType} job, total {totalCount} resources.");
 
-                Dictionary<DateTimeOffset, int> anchorList = await InitializeAnchorListAsync(resourceType, startTime, endTime, totalCount, cancellationToken);
+                SortedDictionary<DateTimeOffset, int> anchorList = await InitializeAnchorListAsync(resourceType, startTime, endTime, totalCount, cancellationToken);
                 var lastTimeStamp = anchorList.LastOrDefault().Key;
 
                 _logger.LogInformation($"Splitting {resourceType} job. Use {(DateTimeOffset.UtcNow - splittingStartTime).TotalMilliseconds} milliseconds to initilize anchor list.");
@@ -84,7 +84,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                 while (nextJobEnd == null || nextJobEnd < endTime)
                 {
-                    anchorList = anchorList.OrderBy(p => p.Key).ToDictionary(p => p.Key, p => p.Value);
                     DateTimeOffset? lastEndTime = nextJobEnd ?? startTime;
 
                     nextJobEnd = await GetNextSplitTimestamp(resourceType, lastEndTime, anchorList, cancellationToken);
@@ -115,9 +114,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             }
         }
 
-        private async Task<Dictionary<DateTimeOffset, int>> InitializeAnchorListAsync(string resourceType, DateTimeOffset? startTime, DateTimeOffset endTime, int totalCount, CancellationToken cancellationToken)
+        private async Task<SortedDictionary<DateTimeOffset, int>> InitializeAnchorListAsync(string resourceType, DateTimeOffset? startTime, DateTimeOffset endTime, int totalCount, CancellationToken cancellationToken)
         {
-            var anchorList = new Dictionary<DateTimeOffset, int>();
+            var anchorList = new SortedDictionary<DateTimeOffset, int>();
             if (startTime != null)
             {
                 anchorList[(DateTimeOffset)startTime] = 0;
@@ -198,7 +197,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             return null;
         }
 
-        private async Task<DateTimeOffset?> GetNextSplitTimestamp(string resourceType, DateTimeOffset? start, Dictionary<DateTimeOffset, int> anchorList, CancellationToken cancellationToken)
+        private async Task<DateTimeOffset?> GetNextSplitTimestamp(string resourceType, DateTimeOffset? start, SortedDictionary<DateTimeOffset, int> anchorList, CancellationToken cancellationToken)
         {
             int baseSize = start == null ? 0 : anchorList[(DateTimeOffset)start];
             var last = start;
@@ -232,7 +231,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             return last;
         }
 
-        private async Task<DateTimeOffset> BisectAnchor(string resourceType, DateTimeOffset start, DateTimeOffset end, Dictionary<DateTimeOffset, int> anchorList, int baseSize, CancellationToken cancellationToken)
+        private async Task<DateTimeOffset> BisectAnchor(string resourceType, DateTimeOffset start, DateTimeOffset end, SortedDictionary<DateTimeOffset, int> anchorList, int baseSize, CancellationToken cancellationToken)
         {
             while ((end - start).TotalMilliseconds > 1)
             {
