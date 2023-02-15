@@ -10,6 +10,14 @@
                 "description": "The name of the container instance that you wish to create."
             }
         },
+        "configVersion": {
+            "type": "int",
+            "defaultValue": 1,
+            "allowedValues": [1, 2],
+            "metadata": {
+                "description": "The source API server type you wish to get data."
+            }
+        },
         "dataSourceType": {
             "type": "string",
             "defaultValue": "FHIR",
@@ -280,6 +288,10 @@
                                 {
                                     "name": "Logging__ApplicationInsights__LogLevel__Default",
                                     "value": "Information"
+                                },
+                                {
+                                    "name": "configVersion",
+                                    "value": "[parameters('configVersion')]"
                                 },
                                 {
                                     "name": "job__jobInfoQueueName",

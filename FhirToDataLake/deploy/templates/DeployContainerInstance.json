@@ -24,11 +24,45 @@
           "description": "The resource group name for fhir server you wish to get data."
         }
       },
+      "configVersion": {
+          "type": "int",
+          "defaultValue": 1,
+          "allowedValues": [1, 2],
+          "metadata": {
+              "description": "Configuration version."
+          }
+      },
+      "dataSourceType": {
+          "type": "string",
+          "defaultValue": "FHIR",
+          "allowedValues": ["FHIR", "DICOM"],
+          "metadata": {
+              "description": "The source API server type you wish to get data."
+          }
+      },
       "fhirServerUrl": {
-        "type": "String",
-        "metadata": {
-          "description": "The fhir server endpoint you wish to get data."
-        }
+          "type": "string",
+          "defaultValue": "",
+          "metadata": {
+              "description": "The fhir server endpoint you wish to get data."
+          }
+      },
+      "fhirVersion": {
+          "type": "string",
+          "defaultValue": "R4",
+          "allowedValues": ["R4"]
+      },
+      "dicomServerUrl": {
+          "type": "string",
+          "defaultValue": "",
+          "metadata": {
+              "description": "The dicom server endpoint you wish to get data."
+          }
+      },
+      "dicomApiVersion": {
+          "type": "string",
+          "defaultValue": "V1",
+          "allowedValues": ["V1"]
       },
       "authentication": {
         "defaultValue": false,
@@ -40,13 +74,6 @@
         "metadata": {
           "description": "Whether to access Azure API for FHIR with managed identity authentication. Set false if you are using an OSS public FHIR server instance."
         }
-      },
-      "fhirVersion": {
-        "defaultValue": "R4",
-        "allowedValues": [
-          "R4"
-        ],
-        "type": "String"
       },
       "dataStart": {
         "defaultValue": "1970-01-01 00:00:00 +00:00",
@@ -245,7 +272,8 @@
       "fhirDataReaderRoleId": "[concat('/subscriptions/', parameters('fhirServerSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
       "filterACRPullRoleId": "[concat('/subscriptions/', parameters('filterACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
       "schemaACRPullRoleId": "[concat('/subscriptions/', parameters('schemaACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
-      "isSameACR": "[equals(variables('filterACRName'), variables('schemaACRName'))]"
+      "isSameACR": "[equals(variables('filterACRName'), variables('schemaACRName'))]",
+      "serverAuthentication": "[if(parameters('authentication'), 'ManagedIdentity', 'None')]"
     },
     "resources": [
       {
@@ -429,6 +457,10 @@
                     "value": "Information"
                   },
                   {
+                      "name": "configVersion",
+                      "value": "[parameters('configVersion')]"
+                  },
+                  {
                     "name": "job__jobInfoQueueName",
                     "value": "[variables('jobInfoQueueName')]"
                   },
@@ -501,16 +533,32 @@
                     "value": "[parameters('customizedSchemaImageReference')]"
                   },
                   {
-                    "name": "fhirServer__serverUrl",
-                    "value": "[parameters('fhirServerUrl')]"
+                      "name": "dataSource__type",
+                      "value": "[parameters('dataSourceType')]"
                   },
                   {
-                    "name": "fhirServer__version",
-                    "value": "[parameters('fhirVersion')]"
+                      "name": "dataSource__dicomServer__serverUrl",
+                      "value": "[parameters('dicomServerUrl')]"
                   },
                   {
-                    "name": "fhirServer__authentication",
-                    "value": "[if(parameters('authentication'), 'ManagedIdentity', 'None')]"
+                      "name": "dataSource__dicomServer__version",
+                      "value": "[parameters('dicomApiVersion')]"
+                  },
+                  {
+                      "name": "dataSource__dicomServer__authentication",
+                      "value": "[variables('serverAuthentication')]"
+                  },
+                  {
+                      "name": "fhirServer__serverUrl",
+                      "value": "[parameters('fhirServerUrl')]"
+                  },
+                  {
+                      "name": "fhirServer__version",
+                      "value": "[parameters('fhirVersion')]"
+                  },
+                  {
+                      "name": "fhirServer__authentication",
+                      "value": "[variables('serverAuthentication')]"
                   }
                 ]
               }
