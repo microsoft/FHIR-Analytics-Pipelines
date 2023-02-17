@@ -138,6 +138,10 @@ namespace Microsoft.Health.AnalyticsConnector.SchemaManagement.ContainerRegistry
                         _diagnosticLogger.LogError(string.Format("Failed to exchange ACR refresh token: ACR server {0} is not found.", registryServer));
                         _logger.LogInformation("Failed to exchange ACR refresh token: ACR server {0} is not found.", registryServer);
                         throw new ContainerRegistryTokenException(string.Format("Failed to exchange ACR refresh token: ACR server {0} is not found.", registryServer));
+                    case HttpStatusCode.Forbidden:
+                        _diagnosticLogger.LogError(string.Format("Failed to exchange ACR refresh token: ACR server {0} is forbidden.", registryServer));
+                        _logger.LogInformation("Failed to exchange ACR refresh token: ACR server {0} is forbidden.", registryServer);
+                        throw new ContainerRegistryTokenException(string.Format("Failed to exchange ACR refresh token: ACR server {0} is forbidden.", registryServer));
                     default:
                         _diagnosticLogger.LogError(string.Format("Failed to exchange ACR refresh token with AAD access token. Status code: {0}.", refreshTokenResponse.StatusCode));
                         _logger.LogInformation("Failed to exchange ACR refresh token with AAD access token. Status code: {0}.", refreshTokenResponse.StatusCode);
@@ -189,6 +193,10 @@ namespace Microsoft.Health.AnalyticsConnector.SchemaManagement.ContainerRegistry
                         _diagnosticLogger.LogError(string.Format("Failed to get ACR access token: ACR server {0} is not found.", registryServer));
                         _logger.LogInformation("Failed to get ACR access token: ACR server {0} is not found.", registryServer);
                         throw new ContainerRegistryTokenException(string.Format("Failed to get ACR access token: ACR server {0} is not found.", registryServer));
+                    case HttpStatusCode.Forbidden:
+                        _diagnosticLogger.LogError(string.Format("Failed to exchange ACR refresh token: ACR server {0} is forbidden.", registryServer));
+                        _logger.LogInformation("Failed to exchange ACR refresh token: ACR server {0} is forbidden.", registryServer);
+                        throw new ContainerRegistryTokenException(string.Format("Failed to exchange ACR refresh token: ACR server {0} is forbidden.", registryServer));
                     default:
                         _diagnosticLogger.LogError(string.Format("Failed to get ACR access token with ACR refresh token. Status code: {0}.", accessTokenResponse.StatusCode));
                         _logger.LogInformation("Failed to get ACR access token with ACR refresh token. Status code: {0}.", accessTokenResponse.StatusCode);

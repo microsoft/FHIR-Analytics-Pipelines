@@ -196,6 +196,40 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.UnitTests.Api.Dicom
             Assert.IsType<HttpRequestException>(exception.InnerException);
         }
 
+        [Theory]
+        [InlineData(HttpStatusCode.Unauthorized)]
+        [InlineData(HttpStatusCode.NotFound)]
+        [InlineData(HttpStatusCode.Forbidden)]
+        [InlineData(HttpStatusCode.BadRequest)]
+        public async Task GivenAValidDataClient_WhenSearchAndEncounterHttpRequestException_ApiSearchExceptionShouldBeThrown(HttpStatusCode statusCode)
+        {
+            var messageHandler = new MockHttpMessageHandler(new Dictionary<string, HttpResponseMessage>(), statusCode);
+            var httpClient = new HttpClient(messageHandler);
+
+            var dataSource = CreateDicomApiDataSource(DicomServerUri, AuthenticationType.None);
+            var searchOptions = new ChangeFeedLatestOptions(null);
+
+            var client = new DicomApiDataClient(dataSource, httpClient, _mockTokenCredentialProvider, _diagnosticLogger, _nullDicomApiDataClientLogger);
+
+            var exception = await Assert.ThrowsAsync<ApiSearchException>(() => client.SearchAsync(searchOptions));
+            Assert.IsType<HttpRequestException>(exception.InnerException);
+        }
+
+        [Fact]
+        public void GivenAValidDataClient_WhenSearchSync_ApiSearchExceptionShouldBeThrown()
+        {
+            var messageHandler = new MockHttpMessageHandler(new Dictionary<string, HttpResponseMessage>());
+            var httpClient = new HttpClient(messageHandler);
+
+            var dataSource = CreateDicomApiDataSource(DicomServerUri, AuthenticationType.None);
+            var searchOptions = new ChangeFeedLatestOptions(null);
+
+            var client = new DicomApiDataClient(dataSource, httpClient, _mockTokenCredentialProvider, _diagnosticLogger, _nullDicomApiDataClientLogger);
+
+            var exception = Assert.Throws<ApiSearchException>(() => client.Search(searchOptions));
+            Assert.Null(exception.InnerException);
+        }
+
         private DicomApiDataClient CreateDataClient(string dicomServerUrl, ITokenCredentialProvider mockProvider, IApiDataSource dataSource = null)
         {
             // Set up http client.

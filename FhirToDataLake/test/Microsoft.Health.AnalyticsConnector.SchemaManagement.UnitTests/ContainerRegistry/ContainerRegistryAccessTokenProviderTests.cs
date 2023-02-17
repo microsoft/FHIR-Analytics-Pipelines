@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.AnalyticsConnector.Common.Authentication;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;
+using Microsoft.Health.AnalyticsConnector.DataClient.Exceptions;
 using Microsoft.Health.AnalyticsConnector.SchemaManagement.ContainerRegistry;
 using Microsoft.Health.AnalyticsConnector.SchemaManagement.Exceptions;
 using NSubstitute;
@@ -69,6 +70,17 @@ namespace Microsoft.Health.AnalyticsConnector.SchemaManagement.UnitTests.Contain
             Assert.Equal("Bearer access_token_test", accessToken);
         }
 
+        [Theory]
+        [InlineData(HttpStatusCode.Unauthorized)]
+        [InlineData(HttpStatusCode.NotFound)]
+        [InlineData(HttpStatusCode.Forbidden)]
+        [InlineData(HttpStatusCode.BadRequest)]
+        public async Task GivenAValidRegistry_WhenGetTokenAndEncounterHttpRequestException_ExceptionShouldBeThrown(HttpStatusCode statusCode)
+        {
+            ContainerRegistryAccessTokenProvider acrTokenProvider = GetMockAcrTokenProvider(statusCode, "{\"refresh_token\":\"refresh_token_test\", \"access_token\":\"access_token_test\"}");
+            await Assert.ThrowsAsync<ContainerRegistryTokenException>(() => acrTokenProvider.GetTokenAsync(RegistryServer, default));
+        }
+
         private ContainerRegistryAccessTokenProvider GetMockAcrTokenProvider(HttpStatusCode statusCode, string content = "")
         {
             ITokenCredentialProvider tokenProvider = Substitute.For<ITokenCredentialProvider>();
@@ -93,11 +105,30 @@ namespace Microsoft.Health.AnalyticsConnector.SchemaManagement.UnitTests.Contain
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
+                if (_statusCode != HttpStatusCode.OK)
+                {
+                    throw new HttpRequestException(string.Empty, new Exception(), _statusCode);
+                }
+
                 return Task.FromResult(new HttpResponseMessage
                 {
                     StatusCode = _statusCode,
                     Content = new StringContent(_response),
                 });
+            }
+
+            protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                if (_statusCode != HttpStatusCode.OK)
+                {
+                    throw new HttpRequestException(string.Empty, new Exception(), _statusCode);
+                }
+
+                return new HttpResponseMessage
+                {
+                    StatusCode = _statusCode,
+                    Content = new StringContent(_response),
+                };
             }
         }
     }

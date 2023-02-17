@@ -183,6 +183,10 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.Api
                         _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: FHIR server {0} is not found.", _fhirApiDataSource.ServerUrl));
                         _logger.LogInformation(hrEx, "Failed to search from FHIR server: FHIR server {0} is not found.", _fhirApiDataSource.ServerUrl);
                         break;
+                    case HttpStatusCode.Forbidden:
+                        _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: FHIR server {0} is forbidden.", _fhirApiDataSource.ServerUrl));
+                        _logger.LogInformation(hrEx, "Failed to search from FHIR server: FHIR server {0} is forbidden.", _fhirApiDataSource.ServerUrl);
+                        break;
                     default:
                         _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: Status code: {0}. Reason: {1}", hrEx.StatusCode, hrEx.Message));
                         _logger.LogInformation(hrEx, "Failed to search from FHIR server: Status code: {0}. Reason: {1}", hrEx.StatusCode, hrEx.Message);
@@ -236,6 +240,10 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.Api
                     case HttpStatusCode.NotFound:
                         _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: FHIR server {0} is not found.", _fhirApiDataSource.ServerUrl));
                         _logger.LogInformation(ex, "Failed to search from FHIR server: FHIR server {0} is not found.", _fhirApiDataSource.ServerUrl);
+                        break;
+                    case HttpStatusCode.Forbidden:
+                        _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: FHIR server {0} is forbidden.", _fhirApiDataSource.ServerUrl));
+                        _logger.LogInformation(ex, "Failed to search from FHIR server: FHIR server {0} is forbidden.", _fhirApiDataSource.ServerUrl);
                         break;
                     default:
                         _diagnosticLogger.LogError(string.Format("Failed to search from FHIR server: Status code: {0}. Reason: {1}", ex.StatusCode, ex.Message));
