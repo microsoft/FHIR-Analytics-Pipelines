@@ -5,8 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using Hl7.Fhir.Utility;
 using Microsoft.Health.AnalyticsConnector.Core.Exceptions;
 using Microsoft.Health.AnalyticsConnector.Core.Fhir;
 using Newtonsoft.Json;

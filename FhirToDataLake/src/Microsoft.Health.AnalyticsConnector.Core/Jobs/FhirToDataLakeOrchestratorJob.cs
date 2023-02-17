@@ -51,10 +51,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly IMetricsLogger _metricsLogger;
         private FhirToDataLakeOrchestratorJobResult _result;
-        private OrchestratorJobStatusEntity _jobStatus;
-
-        // Used to cache small size jobs as candidates waiting for merge.
-        private JobCandidatePool _jobCandidatePool = new ();
+        private OrchestratorJobStatusEntity _jobStatusEntity;
         private FhirToDataLakeProcessingJobSpliter _jobSpliter;
 
         public FhirToDataLakeOrchestratorJob(
@@ -97,10 +94,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         public int NumberOfPatientsPerProcessingJob { get; set; } = JobConfigurationConstants.DefaultNumberOfPatientsPerProcessingJob;
 
-        public int LowBoundOfProcessingJobResourceCount { get; set; } = JobConfigurationConstants.LowBoundOfProcessingJobResourceCount;
-
-        public int HighBoundOfProcessingJobResourceCount { get; set; } = JobConfigurationConstants.HighBoundOfProcessingJobResourceCount;
-
         public async Task<string> ExecuteAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
             _diagnosticLogger.LogInformation("Start executing FhirToDataLake job.");
@@ -108,10 +101,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
             try
             {
-                _jobStatus = await InitializeJobStatusAsync(cancellationToken);
                 if (_inputData.JobVersion >= JobVersion.V4)
                 {
-                    _result = JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(_jobStatus.StatisticResult);
+                    // Initialize job status from meta table when job version larger than V4.
+                    _result = await InitializeJobStatusAsync(cancellationToken);
                 }
 
                 if (cancellationToken.IsCancellationRequested)
@@ -122,6 +115,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 FilterScope filterScope = await _filterManager.GetFilterScopeAsync(cancellationToken);
                 IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> inputs = filterScope switch
                 {
+                    // Split job by resource count when job version larger than V4.
                     FilterScope.System => _inputData.JobVersion >= JobVersion.V4 ? GetInputsAsyncForSystem(cancellationToken) : GetInputsAsyncSystemForFixedTimespan(cancellationToken),
                     FilterScope.Group => GetInputsAsyncForGroup(cancellationToken),
                     _ => throw new ConfigurationErrorException(
@@ -142,8 +136,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     string[] jobDefinitions = { JsonConvert.SerializeObject(input) };
 
                     _result.SubmittingProcessingJob = jobDefinitions;
-                    _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
-                    progress.Report(_jobStatus.StatisticResult);
+                    await UpdateJobStatusAsync(progress, cancellationToken);
 
                     IEnumerable<JobInfo> jobInfos = await _queueClient.EnqueueAsync(
                         _jobInfo.QueueType,
@@ -171,8 +164,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                     _result.SubmittingProcessingJob = null;
 
-                    _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
-                    progress.Report(_jobStatus.StatisticResult);
+                    await UpdateJobStatusAsync(progress, cancellationToken);
 
                     if (GetRunningJobCount() >
                         JobConfigurationConstants.CheckRunningJobCompleteRunningJobCountThreshold)
@@ -195,8 +187,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 var processEndtime = DateTimeOffset.UtcNow;
                 _result.CompleteTime = processEndtime;
 
-                _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
-                progress.Report(_jobStatus.StatisticResult);
+                await UpdateJobStatusAsync(progress, cancellationToken);
 
                 var jobLatency = processEndtime - _inputData.DataEndTime;
                 _metricsLogger.LogResourceLatencyMetric(jobLatency.TotalSeconds);
@@ -205,7 +196,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}. Synced result data to {_inputData.DataEndTime}. " +
                     $"Report a {MetricNames.ResourceLatencyMetric} metric with {jobLatency.TotalSeconds} seconds latency");
 
-                return _jobStatus.StatisticResult;
+                return _inputData.JobVersion >= JobVersion.V4 ? _jobStatusEntity.StatisticResult : JsonConvert.SerializeObject(_result);
             }
             catch (OperationCanceledException operationCanceledEx)
             {
@@ -247,14 +238,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             }
         }
 
-        private async Task<OrchestratorJobStatusEntity> InitializeJobStatusAsync(CancellationToken cancellationToken)
+        private async Task<FhirToDataLakeOrchestratorJobResult> InitializeJobStatusAsync(CancellationToken cancellationToken)
         {
-            OrchestratorJobStatusEntity jobStatus = await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
+            _jobStatusEntity = await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
 
-            if (jobStatus == null)
+            if (_jobStatusEntity == null)
             {
                 // Orchestrator job status entity is not exist, will create a new one.
-                var newJobStatus = new OrchestratorJobStatusEntity()
+                var newJobStatusEntity = new OrchestratorJobStatusEntity()
                 {
                     PartitionKey = TableKeyProvider.JobStatusPartitionKey(_jobInfo.QueueType, Convert.ToInt32(JobType.Orchestrator)),
                     RowKey = TableKeyProvider.JobStatusRowKey(_jobInfo.QueueType, Convert.ToInt32(JobType.Orchestrator), _jobInfo.GroupId, _jobInfo.Id),
@@ -262,34 +253,41 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     StatisticResult = JsonConvert.SerializeObject(new FhirToDataLakeOrchestratorJobResult()),
                 };
 
-                if (!await _metadataStore.TryAddEntityAsync(newJobStatus, cancellationToken))
+                if (!await _metadataStore.TryAddEntityAsync(newJobStatusEntity, cancellationToken))
                 {
                     _logger.LogInformation("Initialize job status failed in orchestrator job {0}.", _jobInfo.Id);
                     throw new SynapsePipelineInternalException($"Initialize job status failed in orchestrator job {_jobInfo.Id}.");
                 }
 
-                jobStatus = await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
+                _jobStatusEntity = await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
             }
 
-            return jobStatus;
+            return JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(_jobStatusEntity.StatisticResult);
         }
 
-        private async Task<OrchestratorJobStatusEntity> UpdateJobStatusWithResultAsync(CancellationToken cancellationToken)
+        private async Task UpdateJobStatusAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
-            _jobStatus.StatisticResult = JsonConvert.SerializeObject(_result);
+            var resultContent = JsonConvert.SerializeObject(_result);
+            progress.Report(resultContent);
 
-            if (!await _metadataStore.TryUpdateEntityAsync(_jobStatus))
+            if (_inputData.JobVersion >= JobVersion.V4)
             {
-                _logger.LogInformation("Update orchestrator job status failed in job {0}.", _jobInfo.Id);
-                throw new SynapsePipelineInternalException($"Update orchestrator job status failed in job  {_jobInfo.Id}.");
-            }
+                // Update job status on meta table for job version larger than V4.
+                _jobStatusEntity.StatisticResult = resultContent;
 
-            return await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
+                if (!await _metadataStore.TryUpdateEntityAsync(_jobStatusEntity))
+                {
+                    _logger.LogInformation("Update orchestrator job status failed in job {0}.", _jobInfo.Id);
+                    throw new SynapsePipelineInternalException($"Update orchestrator job status failed in job  {_jobInfo.Id}.");
+                }
+
+                _jobStatusEntity = await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
+            }
         }
 
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            // Resume the submitting job.
+            // Resume the submitting jobs.
             if (_result.SubmittingProcessingJob != null)
             {
                 foreach (var job in _result.SubmittingProcessingJob)
@@ -298,77 +296,20 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 }
             }
 
-            List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
-            var resourceTypes = typeFilters.Select(filter => filter.ResourceType).ToList().Distinct();
-
-            // Split jobs by resource types.
-            foreach (var resourceType in resourceTypes)
+            IAsyncEnumerable<ProcessingJobInfo> processingJobs = _jobSpliter.SplitJobAsync(_inputData.DataStartTime, _inputData.DataEndTime, _result.SubmittedResourceTimestamps, cancellationToken);
+            await foreach (ProcessingJobInfo processingJob in processingJobs.WithCancellation(cancellationToken))
             {
-                var startTime = _result.SubmittedResourceTimestamps.ContainsKey(resourceType) ? _result.SubmittedResourceTimestamps[resourceType] : _inputData.DataStartTime;
-
-                // The resource type has already been processed.
-                if (startTime >= _inputData.DataEndTime)
+                if (processingJob.ResourceCount == 0)
                 {
+                    // If resource count is 0, skip the job and update the submitted timestamp.
+                    foreach (SubJobInfo subJob in processingJob.SubJobInfos)
+                    {
+                        _result.SubmittedResourceTimestamps[subJob.ResourceType] = subJob.TimeRange.DataEndTime;
+                    }
+
                     continue;
                 }
 
-                IAsyncEnumerable<SubJobInfo> subJobs = _jobSpliter.SplitJobAsync(resourceType, startTime, _inputData.DataEndTime, cancellationToken);
-
-                await foreach (SubJobInfo subJob in subJobs.WithCancellation(cancellationToken))
-                {
-                    if (subJob.ResourceCount == 0)
-                    {
-                        _result.SubmittedResourceTimestamps[resourceType] = subJob.TimeRange.DataEndTime;
-                        continue;
-                    }
-                    else if (subJob.ResourceCount < LowBoundOfProcessingJobResourceCount)
-                    {
-                        // Small size job, put it into candidate list.
-                        _logger.LogInformation($"One small job for {resourceType} with {subJob.ResourceCount} count is generated and pushed into candidate list.");
-
-                        if (_jobCandidatePool.GetResourceCount() + subJob.ResourceCount >= LowBoundOfProcessingJobResourceCount)
-                        {
-                            // Pop all jobs if total resource count not less than low bound.
-                            Dictionary<string, TimeRange> jobParameters = _jobCandidatePool.PopJobCandidates();
-                            jobParameters.Add(subJob.ResourceType, subJob.TimeRange);
-                            _logger.LogInformation($"Generated one merged job with {jobParameters.Keys} types.");
-
-                            yield return new FhirToDataLakeProcessingJobInputData
-                            {
-                                JobType = JobType.Processing,
-                                JobVersion = _inputData.JobVersion,
-                                ProcessingJobSequenceId = _result.CreatedJobCount,
-                                TriggerSequenceId = _inputData.TriggerSequenceId,
-                                Since = _inputData.Since,
-                                SplitParameters = jobParameters,
-                            };
-                        }
-                        else
-                        {
-                            _jobCandidatePool.PushJobCandidates(subJob);
-                        }
-                    }
-                    else
-                    {
-                        _logger.LogInformation($"Split one sub job with {subJob.ResourceCount} resources from {subJob.TimeRange.DataStartTime} to {subJob.TimeRange.DataEndTime} for resource type {subJob.ResourceType}.");
-                        yield return new FhirToDataLakeProcessingJobInputData
-                        {
-                            JobType = JobType.Processing,
-                            JobVersion = _inputData.JobVersion,
-                            ProcessingJobSequenceId = _result.CreatedJobCount,
-                            TriggerSequenceId = _inputData.TriggerSequenceId,
-                            Since = _inputData.Since,
-                            SplitParameters = new Dictionary<string, TimeRange>() { { subJob.ResourceType, subJob.TimeRange } },
-                        };
-                    }
-                }
-            }
-
-            if (_jobCandidatePool.GetResourceCount() > 0)
-            {
-                var jobParameters = _jobCandidatePool.PopJobCandidates();
-
-                _logger.LogInformation($"Generated one merged job with {jobParameters.Keys} types.");
                 yield return new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
@@ -376,10 +317,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     ProcessingJobSequenceId = _result.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,
-                    SplitParameters = jobParameters,
+                    SplitParameters = processingJob.SubJobInfos.ToDictionary(x => x.ResourceType, x => x.TimeRange),
                 };
             }
-
         }
 
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncSystemForFixedTimespan([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -625,8 +565,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 }
 
                 UpdateRunningJobStatus(firstRunningJobId);
-                _jobStatus = await UpdateJobStatusWithResultAsync(cancellationToken);
-                progress.Report(_jobStatus.StatisticResult);
+                await UpdateJobStatusAsync(progress, cancellationToken);
             }
 
             _logger.LogInformation($"Orchestrator job {_jobInfo.Id} finished checking the first running job {firstRunningJobId} status, the job {firstRunningJobId} is {((JobStatus)firstRunningJobInfo.Status).ToString("D")}.");

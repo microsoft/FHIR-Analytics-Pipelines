@@ -10,7 +10,6 @@ using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using Hl7.Fhir.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.AnalyticsConnector.Common.Exceptions;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;

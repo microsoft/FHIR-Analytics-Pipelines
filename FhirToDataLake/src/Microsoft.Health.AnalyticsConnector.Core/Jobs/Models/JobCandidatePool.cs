@@ -20,14 +20,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
             _currentResourceCount += subJob.ResourceCount;
         }
 
-        public Dictionary<string, TimeRange> PopJobCandidates()
+        public List<SubJobInfo> PopJobCandidates()
         {
-            if (_currentResourceCount == 0)
+            if (!_jobCandidateList.Any())
             {
                 return null;
             }
 
-            Dictionary<string, TimeRange> result = _jobCandidateList.ToDictionary(x => x.ResourceType, x => x.TimeRange);
+            List<SubJobInfo> result = new List<SubJobInfo>(_jobCandidateList);
             _jobCandidateList.Clear();
             _currentResourceCount = 0;
             return result;
