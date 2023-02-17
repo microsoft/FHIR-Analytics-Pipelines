@@ -236,6 +236,28 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.UnitTests.Api.Fhir
             Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.BundleFile1), bundle1);
         }
 
+        [Theory]
+        [InlineData(HttpStatusCode.Unauthorized)]
+        [InlineData(HttpStatusCode.NotFound)]
+        [InlineData(HttpStatusCode.Forbidden)]
+        [InlineData(HttpStatusCode.BadRequest)]
+        public async Task GivenAValidDataClient_WhenSearchAndEncounterHttpRequestException_ApiSearchExceptionShouldBeThrown(HttpStatusCode statusCode)
+        {
+            var messageHandler = new MockHttpMessageHandler(new Dictionary<string, HttpResponseMessage>(), statusCode);
+            var httpClient = new HttpClient(messageHandler);
+
+            var dataSource = CreateFhirApiDataSource(FhirServerUri, AuthenticationType.None);
+            var searchOptions = new ResourceIdSearchOptions("MedicationRequest", "3123", null);
+
+            var client = new FhirApiDataClient(dataSource, httpClient, _mockTokenCredentialProvider, _diagnosticLogger, _nullFhirApiDataClientLogger);
+
+            var exception = await Assert.ThrowsAsync<ApiSearchException>(() => client.SearchAsync(searchOptions));
+            Assert.IsType<HttpRequestException>(exception.InnerException);
+
+            exception = Assert.Throws<ApiSearchException>(() => client.Search(searchOptions));
+            Assert.IsType<HttpRequestException>(exception.InnerException);
+        }
+
         private FhirApiDataClient CreateDataClient(string fhirServerUrl, ITokenCredentialProvider mockProvider, IApiDataSource dataSource = null)
         {
             // Set up http client.
