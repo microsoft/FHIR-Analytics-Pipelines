@@ -163,7 +163,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 orchestratorJobInfo,
                 inputData,
                 new FhirToDataLakeOrchestratorJobResult(),
-                new FhirToDataLakeProcessingJobSpliter(GetBrokenFhirDataClient(), GetFilterManager(new FilterConfiguration()), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
+                new FhirToDataLakeProcessingJobSplitter(GetBrokenFhirDataClient(), GetFilterManager(new FilterConfiguration()), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSplitter>()),
                 GetBrokenFhirDataClient(),
                 GetDataWriter(containerName, blobClient),
                 queueClient,
@@ -219,7 +219,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 orchestratorJobInfo,
                 inputData,
                 new FhirToDataLakeOrchestratorJobResult(),
-                new FhirToDataLakeProcessingJobSpliter(GetMockOldVersionFhirDataClient(4, -1), GetFilterManager(new FilterConfiguration()), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
+                new FhirToDataLakeProcessingJobSplitter(GetMockOldVersionFhirDataClient(4, -1), GetFilterManager(new FilterConfiguration()), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSplitter>()),
                 GetMockOldVersionFhirDataClient(4, -1),
                 GetDataWriter(containerName, blobClient),
                 queueClient,
@@ -316,7 +316,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 orchestratorJobInfo,
                 inputData,
                 new FhirToDataLakeOrchestratorJobResult(),
-                new FhirToDataLakeProcessingJobSpliter(GetMockFhirDataClient(inputResourceCount, -1), GetFilterManager(filterConfiguration), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
+                new FhirToDataLakeProcessingJobSplitter(GetMockFhirDataClient(inputResourceCount, -1), GetFilterManager(filterConfiguration), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSplitter>()),
                 GetMockFhirDataClient(inputResourceCount, -1),
                 GetDataWriter(containerName, blobClient),
                 queueClient,
@@ -339,10 +339,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             return result;
         }
 
-        private static async Task<FhirToDataLakeOrchestratorJobResult> InitResumeStatusAsync(IMetadataStore metadataStore, MockQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient, int resumeFrom, int completedCount, int processingJobCount, FhirToDataLakeOrchestratorJobInputData inputData, IMetricsLogger metricsLogger)
+        private static async Task InitResumeStatusAsync(IMetadataStore metadataStore, MockQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient, int resumeFrom, int completedCount, int processingJobCount, FhirToDataLakeOrchestratorJobInputData inputData, IMetricsLogger metricsLogger)
         {
             var daysInterval = ((TestEndTime - TestStartTime) / processingJobCount).TotalDays;
-            var orchestratorJobResult = new FhirToDataLakeOrchestratorJobResult()
+            var orchestratorJobStatus = new FhirToDataLakeOrchestratorJobStatus()
             {
                 CreatedJobCount = resumeFrom + 1,
                 SubmittedResourceTimestamps = new Dictionary<string, DateTimeOffset>() { { "Patient", TestStartTime.AddDays((resumeFrom + 1) * daysInterval) } },
@@ -357,13 +357,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             {
                 if (i < completedCount)
                 {
-                    orchestratorJobResult.CompletedJobCount++;
+                    orchestratorJobStatus.CompletedJobCount++;
                     metricsLogger.LogSuccessfulResourceCountMetric(1);
                     metricsLogger.LogSuccessfulDataSizeMetric(1000L * TBValue);
                 }
                 else
                 {
-                    orchestratorJobResult.SequenceIdToJobIdMapForRunningJobs.Add(i, i + 1);
+                    orchestratorJobStatus.SequenceIdToJobIdMapForRunningJobs.Add(i, i + 1);
                 }
             }
 
@@ -372,7 +372,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 PartitionKey = TableKeyProvider.JobStatusPartitionKey((byte)QueueType.FhirToDataLake, Convert.ToInt32(JobType.Orchestrator)),
                 RowKey = TableKeyProvider.JobStatusRowKey((byte)QueueType.FhirToDataLake, Convert.ToInt32(JobType.Orchestrator), 0, 0),
                 GroupId = 0,
-                StatisticResult = JsonConvert.SerializeObject(orchestratorJobResult),
+                JobStatus = JsonConvert.SerializeObject(orchestratorJobStatus),
             };
 
             _ = await metadataStore.TryAddEntityAsync(resumeJobStatus);
@@ -386,11 +386,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                     ProcessingJobSequenceId = i,
                     TriggerSequenceId = inputData.TriggerSequenceId,
                     Since = inputData.Since,
-                    SplitParameters = new Dictionary<string, TimeRange>()
+                    SplitParameters = new Dictionary<string, FhirToDataLakeSplitSubJobTimeRange>()
                             {
                                 {
                                     "Patient",
-                                    new TimeRange()
+                                    new FhirToDataLakeSplitSubJobTimeRange()
                                     {
                                        DataStartTime = TestStartTime.AddDays(i * daysInterval),
                                        DataEndTime = TestStartTime.AddDays((i + 1) * daysInterval),
@@ -401,8 +401,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
                 JobInfo jobInfo = (await queueClient.EnqueueAsync(0, new[] { JsonConvert.SerializeObject(processingInput) }, 1, false, false, CancellationToken.None)).First();
             }
-
-            return orchestratorJobResult;
         }
 
         private static async Task<FhirToDataLakeOrchestratorJobResult> OldVersionInitResumeStatusAsync(IMetadataStore metadataStore, MockQueueClient<FhirToDataLakeAzureStorageJobInfo> queueClient, int resumeFrom, int completedCount, int processingJobCount, FhirToDataLakeOrchestratorJobInputData inputData, IMetricsLogger metricsLogger)
@@ -472,6 +470,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                     }
                 }
             }
+
             return orchestratorJobResult;
         }
 
@@ -526,7 +525,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 }
                 else
                 {
-                    orchestratorJobResult = await InitResumeStatusAsync(metadataStore, queueClient, resumeFrom, completedCount, processingJobCount, inputData, metricsLogger);
+                    await InitResumeStatusAsync(metadataStore, queueClient, resumeFrom, completedCount, processingJobCount, inputData, metricsLogger);
                 }
             }
 
@@ -557,7 +556,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 orchestratorJobInfo,
                 inputData,
                 orchestratorJobResult,
-                new FhirToDataLakeProcessingJobSpliter(dataClient, GetFilterManager(filterConfiguration), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSpliter>()),
+                new FhirToDataLakeProcessingJobSplitter(dataClient, GetFilterManager(filterConfiguration), _diagnosticLogger, new NullLogger<FhirToDataLakeProcessingJobSplitter>()),
                 dataClient,
                 GetDataWriter(containerName, blobClient),
                 queueClient,

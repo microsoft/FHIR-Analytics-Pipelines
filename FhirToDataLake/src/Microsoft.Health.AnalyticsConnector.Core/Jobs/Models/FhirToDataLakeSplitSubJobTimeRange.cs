@@ -3,20 +3,20 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
+using System;
 
 namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
 {
-    public class ProcessingJobInfo
+    public class FhirToDataLakeSplitSubJobTimeRange
     {
         /// <summary>
-        /// Total resource count.
+        /// Start time, process all data if not specified,
         /// </summary>
-        public int ResourceCount { get; set; } = 0;
+        public DateTimeOffset? DataStartTime { get; set; }
 
         /// <summary>
-        /// List of sub jobs.
+        /// End time
         /// </summary>
-        public List<SubJobInfo> SubJobInfos { get; set; } = new List<SubJobInfo>();
+        public DateTimeOffset DataEndTime { get; set; }
     }
 }

@@ -22,7 +22,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models.AzureStorage
         /// <summary>
         /// Statistic result of orchestrator job.
         /// </summary>
-        public string StatisticResult { get; set; }
+        public string JobStatus { get; set; }
 
         /// <summary>
         /// The corresponding orchestrator job group id of current trigger

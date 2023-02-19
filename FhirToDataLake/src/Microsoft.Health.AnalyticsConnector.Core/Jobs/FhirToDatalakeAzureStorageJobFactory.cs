@@ -120,7 +120,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                             jobInfo,
                             inputData,
                             currentResult,
-                            new FhirToDataLakeProcessingJobSpliter(_dataClient, _filterManager, _diagnosticLogger, _loggerFactory.CreateLogger<FhirToDataLakeProcessingJobSpliter>()),
+                            new FhirToDataLakeProcessingJobSplitter(_dataClient, _filterManager, _diagnosticLogger, _loggerFactory.CreateLogger<FhirToDataLakeProcessingJobSplitter>()),
                             _dataClient,
                             _dataWriter,
                             _queueClient,

@@ -9,7 +9,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using DotLiquid.Util;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;
@@ -30,21 +29,21 @@ using Polly.Timeout;
 
 namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 {
-    public class FhirToDataLakeProcessingJobSpliter
+    public class FhirToDataLakeProcessingJobSplitter
     {
         private readonly IApiDataClient _dataClient;
         private readonly IDiagnosticLogger _diagnosticLogger;
-        private readonly ILogger<FhirToDataLakeProcessingJobSpliter> _logger;
-        private readonly JobCandidatePool _jobCandidatePool = new ();
+        private readonly ILogger<FhirToDataLakeProcessingJobSplitter> _logger;
+        private readonly FhirToDataLakeSplitSubJobCandidates _jobCandidatePool = new ();
         private readonly IFilterManager _filterManager;
         private const int TimeoutSecondsGetResourceCount = 90;
         private const string TotalCountFieldKey = "total";
 
-        public FhirToDataLakeProcessingJobSpliter(
+        public FhirToDataLakeProcessingJobSplitter(
             IApiDataClient dataClient,
             IFilterManager filterManager,
             IDiagnosticLogger diagnosticLogger,
-            ILogger<FhirToDataLakeProcessingJobSpliter> logger)
+            ILogger<FhirToDataLakeProcessingJobSplitter> logger)
         {
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _filterManager = EnsureArg.IsNotNull(filterManager, nameof(filterManager));
@@ -56,11 +55,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         public int HighBoundOfProcessingJobResourceCount { get; set; } = JobConfigurationConstants.HighBoundOfProcessingJobResourceCount;
 
-        public async IAsyncEnumerable<ProcessingJobInfo> SplitJobAsync(DateTimeOffset? dataStartTime, DateTimeOffset dataEndTime, Dictionary<string, DateTimeOffset> submittedResourceTimestamps, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<FhirToDataLakeSplitProcessingJobInfo> SplitJobAsync(DateTimeOffset? dataStartTime, DateTimeOffset dataEndTime, Dictionary<string, DateTimeOffset> submittedResourceTimestamps, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             // Get all distinct resource types to be processed.
             List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
-            var resourceTypes = typeFilters.Select(filter => filter.ResourceType).ToHashSet();
+            HashSet<string> resourceTypes = typeFilters.Select(filter => filter.ResourceType).ToHashSet();
 
             // Split jobs by resource types.
             foreach (var resourceType in resourceTypes)
@@ -78,15 +77,16 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 if (totalCount == 0)
                 {
                     // Return Processing job with resource count is zero.
-                    yield return new ProcessingJobInfo
+                    _logger.LogInformation($"[Job splitter]: There is no resource for resource type {resourceType}. Will skip the resoucre type. ");
+                    yield return new FhirToDataLakeSplitProcessingJobInfo
                     {
                         ResourceCount = 0,
-                        SubJobInfos = new List<SubJobInfo>()
+                        SubJobInfos = new List<FhirToDataLakeSplitSubJobInfo>()
                         {
                             new ()
                             {
                                 ResourceType = resourceType,
-                                TimeRange = new TimeRange() { DataStartTime = startTime, DataEndTime = dataEndTime },
+                                TimeRange = new FhirToDataLakeSplitSubJobTimeRange() { DataStartTime = startTime, DataEndTime = dataEndTime },
                                 ResourceCount = totalCount,
                             },
                         },
@@ -95,41 +95,36 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 else if (totalCount < LowBoundOfProcessingJobResourceCount)
                 {
                     // Small size job, put it into candidate pool.
-                    SubJobInfo subJob = new ()
+                    FhirToDataLakeSplitSubJobInfo subJob = new ()
                     {
                         ResourceType = resourceType,
-                        TimeRange = new TimeRange() { DataStartTime = startTime, DataEndTime = dataEndTime },
+                        TimeRange = new FhirToDataLakeSplitSubJobTimeRange() { DataStartTime = startTime, DataEndTime = dataEndTime },
                         ResourceCount = totalCount,
                     };
 
-                    _jobCandidatePool.PushJobCandidates(subJob);
-                    _logger.LogInformation($"One small job for {resourceType} with {totalCount} count is generated and pushed into candidate pool.");
+                    _jobCandidatePool.AddJobCandidates(subJob);
+                    _logger.LogInformation($"[Job splitter]: One small job for {resourceType} with {totalCount} count is generated and pushed into candidate pool.");
 
                     // Wrap all candidates if total resource count for candidates not less than low bound. Otherwise, push sub job into candidate pool.
-                    var currentCandidatesResourceCount = _jobCandidatePool.GetResourceCount();
-                    if (currentCandidatesResourceCount >= LowBoundOfProcessingJobResourceCount)
+                    if (_jobCandidatePool.GetResourceCount() >= LowBoundOfProcessingJobResourceCount)
                     {
-                        yield return new ProcessingJobInfo
-                        {
-                            ResourceCount = currentCandidatesResourceCount,
-                            SubJobInfos = _jobCandidatePool.PopJobCandidates(),
-                        };
+                        yield return _jobCandidatePool.GenerateProcessingJob();
                     }
                 }
                 else if (totalCount <= HighBoundOfProcessingJobResourceCount)
                 {
                     // Return job with total count higher than low bound and lower than high bound.
-                    _logger.LogInformation($"Split one sub job with {totalCount} resources from {startTime} to {dataEndTime} for resource type {resourceType}.");
+                    _logger.LogInformation($"[Job splitter]: Split one sub job with {totalCount} resources from {startTime} to {dataEndTime} for resource type {resourceType}.");
 
-                    yield return new ProcessingJobInfo
+                    yield return new FhirToDataLakeSplitProcessingJobInfo
                     {
                         ResourceCount = totalCount,
-                        SubJobInfos = new List<SubJobInfo>()
+                        SubJobInfos = new List<FhirToDataLakeSplitSubJobInfo>()
                         {
-                            new SubJobInfo
+                            new FhirToDataLakeSplitSubJobInfo
                             {
                                 ResourceType = resourceType,
-                                TimeRange = new TimeRange() { DataStartTime = startTime, DataEndTime = dataEndTime },
+                                TimeRange = new FhirToDataLakeSplitSubJobTimeRange() { DataStartTime = startTime, DataEndTime = dataEndTime },
                                 ResourceCount = totalCount,
                             },
                         },
@@ -138,30 +133,25 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 else
                 {
                     // Split job for one resource type if total resource count larger than high bound.
-                    IAsyncEnumerable<SubJobInfo> subJobs = SplitInternalAsync(resourceType, totalCount, startTime, dataEndTime, cancellationToken);
-                    await foreach (SubJobInfo subJob in subJobs.WithCancellation(cancellationToken))
+                    IAsyncEnumerable<FhirToDataLakeSplitSubJobInfo> subJobs = SplitInternalAsync(resourceType, totalCount, startTime, dataEndTime, cancellationToken);
+                    await foreach (FhirToDataLakeSplitSubJobInfo subJob in subJobs.WithCancellation(cancellationToken))
                     {
                         if (subJob.ResourceCount < LowBoundOfProcessingJobResourceCount)
                         {
-                            _jobCandidatePool.PushJobCandidates(subJob);
+                            _jobCandidatePool.AddJobCandidates(subJob);
 
                             // Wrap all candidates if total resource count for candidates not less than low bound. Otherwise, push sub job into candidate pool.
-                            var currentCandidatesResourceCount = _jobCandidatePool.GetResourceCount();
-                            if (currentCandidatesResourceCount >= LowBoundOfProcessingJobResourceCount)
+                            if (_jobCandidatePool.GetResourceCount() >= LowBoundOfProcessingJobResourceCount)
                             {
-                                yield return new ProcessingJobInfo
-                                {
-                                    ResourceCount = currentCandidatesResourceCount,
-                                    SubJobInfos = _jobCandidatePool.PopJobCandidates(),
-                                };
+                                yield return _jobCandidatePool.GenerateProcessingJob();
                             }
                         }
                         else
                         {
-                            yield return new ProcessingJobInfo
+                            yield return new FhirToDataLakeSplitProcessingJobInfo
                             {
                                 ResourceCount = subJob.ResourceCount,
-                                SubJobInfos = new List<SubJobInfo>() { subJob },
+                                SubJobInfos = new List<FhirToDataLakeSplitSubJobInfo>() { subJob },
                             };
                         }
                     }
@@ -171,43 +161,34 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             // Wrap the rest candidates.
             if (_jobCandidatePool.GetResourceCount() > 0)
             {
-                yield return new ProcessingJobInfo
-                {
-                    ResourceCount = _jobCandidatePool.GetResourceCount(),
-                    SubJobInfos = _jobCandidatePool.PopJobCandidates(),
-                };
+                yield return _jobCandidatePool.GenerateProcessingJob();
             }
         }
 
-        private async IAsyncEnumerable<SubJobInfo> SplitInternalAsync(string resourceType, int totalCount, DateTimeOffset? startTime, DateTimeOffset endTime, [EnumeratorCancellation] CancellationToken cancellationToken)
+        private async IAsyncEnumerable<FhirToDataLakeSplitSubJobInfo> SplitInternalAsync(string resourceType, int totalCount, DateTimeOffset? startTime, DateTimeOffset endTime, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            // Timers for logger.
-            var startTimer = DateTimeOffset.UtcNow;
-
-            _logger.LogInformation($"Start splitting {resourceType}, total {totalCount} resources.");
+            _logger.LogInformation($"[Job Splitter]: Start splitting job for resource type {resourceType}, total {totalCount} resources.");
 
             // AnchorList caches sorted anchors that record resource counts from start time.
             // Initialize anchor list to add first and last anchors in the given time range.
             SortedDictionary<DateTimeOffset, int> anchorList = await InitializeAnchorListAsync(resourceType, startTime, endTime, totalCount, cancellationToken);
-            var lastAnchor = anchorList.LastOrDefault().Key;
+            DateTimeOffset lastAnchor = anchorList.LastOrDefault().Key;
 
-            _logger.LogInformation($"Splitting {resourceType} job. Use {(DateTimeOffset.UtcNow - startTimer).TotalMilliseconds} milliseconds to initilize anchor list.");
+            _logger.LogInformation($"[Job Splitter]: Finish initilize anchor list for resource type {resourceType}.");
 
             DateTimeOffset? lastJobTimestamp = startTime;
 
-            var jobCount = 0;
+            int jobCount = 0;
 
             // Sperate timestamp within [startTime, endTime) in order.
             while (lastJobTimestamp == null || lastJobTimestamp < endTime)
             {
-                DateTimeOffset splitTimer = DateTimeOffset.UtcNow;
+                DateTimeOffset? nextJobTimestamp = await GetNextSplitTimestamp(resourceType, lastJobTimestamp, anchorList, cancellationToken);
 
-                var nextJobTimestamp = await GetNextSplitTimestamp(resourceType, lastJobTimestamp, anchorList, cancellationToken);
-
-                var resourceCount = lastJobTimestamp == null
+                int resourceCount = lastJobTimestamp == null
                     ? anchorList[(DateTimeOffset)nextJobTimestamp]
                     : anchorList[(DateTimeOffset)nextJobTimestamp] - anchorList[(DateTimeOffset)lastJobTimestamp];
-                _logger.LogInformation($"Splitting {resourceType} job. Generated new sub job using {(DateTimeOffset.UtcNow - splitTimer).TotalMilliseconds} milliseconds with {resourceCount} resource count.");
+                _logger.LogInformation($"[Job splitter]: Split sub job with {totalCount} resources from {lastJobTimestamp} to {nextJobTimestamp} for resource type {resourceType}.");
 
                 // The last job.
                 if (nextJobTimestamp == lastAnchor)
@@ -215,10 +196,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     nextJobTimestamp = endTime;
                 }
 
-                var subJob = new SubJobInfo
+                FhirToDataLakeSplitSubJobInfo subJob = new ()
                 {
                     ResourceType = resourceType,
-                    TimeRange = new TimeRange() { DataStartTime = lastJobTimestamp, DataEndTime = (DateTimeOffset)nextJobTimestamp },
+                    TimeRange = new FhirToDataLakeSplitSubJobTimeRange() { DataStartTime = lastJobTimestamp, DataEndTime = (DateTimeOffset)nextJobTimestamp },
                     ResourceCount = resourceCount,
                 };
 
@@ -227,7 +208,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 yield return subJob;
             }
 
-            _logger.LogInformation($"Splitting {resourceType} jobs, finish split {jobCount} jobs. use : {(DateTimeOffset.Now - startTimer).TotalMilliseconds} milliseconds.");
+            _logger.LogInformation($"[Job splitter]: Finish split sub job for resource type {resourceType} with {jobCount} jobs.");
         }
 
         private async Task<SortedDictionary<DateTimeOffset, int>> InitializeAnchorListAsync(string resourceType, DateTimeOffset? startTime, DateTimeOffset endTime, int totalCount, CancellationToken cancellationToken)
@@ -238,11 +219,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 anchorList[(DateTimeOffset)startTime] = 0;
             }
 
-            // Set isDescending parameter false to get first timestmp.
-            var firstTimestamp = await GetFirstResourceTimestamp(resourceType, startTime, endTime, cancellationToken);
+            // Set isDescending parameter false to get first timestamp.
+            DateTimeOffset? firstTimestamp = await GetFirstResourceTimestamp(resourceType, startTime, endTime, cancellationToken);
 
             // Set isDescending parameter true to get last timestamp.
-            var lastTimestamp = await GetLastResourceTimestamp(resourceType, startTime, endTime, cancellationToken);
+            DateTimeOffset? lastTimestamp = await GetLastResourceTimestamp(resourceType, startTime, endTime, cancellationToken);
 
             if (firstTimestamp != null)
             {
@@ -293,7 +274,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{((DateTimeOffset)start).ToInstantString()}"));
             }
 
-            var searchOptions = new BaseSearchOptions(null, parameters);
+            BaseSearchOptions searchOptions = new (null, parameters);
 
             string fhirBundleResult = await _dataClient.SearchAsync(searchOptions, cancellationToken);
 
@@ -306,7 +287,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             catch (JsonReaderException exception)
             {
                 string reason = string.Format(
-                        "Failed to parse fhir search result for '{0}' with search parameters '{1}'.",
+                        "[Job splitter]: Failed to parse fhir search result for '{0}' with search parameters '{1}'.",
                         searchOptions.ResourceType,
                         string.Join(", ", searchOptions.QueryParameters.Select(parameter => $"{parameter.Key}: {parameter.Value}")));
 
@@ -317,7 +298,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
             List<JObject> fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject).ToList();
 
-            if (fhirResources.Any() && fhirResources.First().GetLastUpdated() != null)
+            if (fhirResources.Any())
             {
                 return fhirResources.First().GetLastUpdated();
             }
@@ -329,10 +310,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private async Task<DateTimeOffset?> GetNextSplitTimestamp(string resourceType, DateTimeOffset? start, SortedDictionary<DateTimeOffset, int> anchorList, CancellationToken cancellationToken)
         {
             int baseSize = start == null ? 0 : anchorList[(DateTimeOffset)start];
-            var last = start;
+            DateTimeOffset? last = start;
             foreach (var item in anchorList)
             {
-                var anchorValue = item.Value;
                 if (anchorList[item.Key] == int.MaxValue)
                 {
                     // Get resource count failed before, re-try to get resource count.
@@ -364,7 +344,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             while ((end - start).TotalMilliseconds > 1)
             {
                 DateTimeOffset mid = start.Add((end - start) / 2);
-                var resourceCount = await GetResourceCountAsync(resourceType, start, mid, cancellationToken);
+                int resourceCount = await GetResourceCountAsync(resourceType, start, mid, cancellationToken);
                 resourceCount = resourceCount == int.MaxValue ? int.MaxValue : resourceCount + anchorList[start];
                 anchorList[mid] = resourceCount;
                 if (resourceCount - baseSize > HighBoundOfProcessingJobResourceCount)
@@ -384,9 +364,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             // FHIR server has internal error if getting resource count failed within 1 millisecond search time range.
             if (anchorList[end] == int.MaxValue)
             {
-                _diagnosticLogger.LogError("Failed to split processing jobs caused by getting resource count from FHIR server failed.");
-                _logger.LogInformation("Failed to split processing jobs caused by getting resource count from FHIR server failed.");
-                throw new RetriableJobException("Failed to split processing jobs caused by getting resource count from FHIR server failed.");
+                _diagnosticLogger.LogError("[Job splitter]: Failed to split processing jobs caused by getting resource count from FHIR server failed.");
+                _logger.LogInformation("[Job splitter]: Failed to split processing jobs caused by getting resource count from FHIR server failed.");
+                throw new RetriableJobException("[Job splitter]: Failed to split processing jobs caused by getting resource count from FHIR server failed.");
             }
 
             return end;
@@ -394,7 +374,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         private async Task<int> GetResourceCountAsync(string resourceType, DateTimeOffset? start, DateTimeOffset end, CancellationToken cancellationToken)
         {
-            List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
+            List<KeyValuePair<string, string>> parameters = new ()
             {
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.SummaryKey, FhirApiConstants.SearchCountParameter),
@@ -406,7 +386,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"ge{((DateTimeOffset)start).ToInstantString()}"));
             }
 
-            var searchOptions = new BaseSearchOptions(null, parameters);
+            BaseSearchOptions searchOptions = new (null, parameters);
             string fhirBundleResult;
             using var timeoutCancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(TimeoutSecondsGetResourceCount));
             CancellationTokenSource linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCancellationToken.Token);
@@ -416,14 +396,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             }
             catch (OperationCanceledException ex)
             {
-                _diagnosticLogger.LogError($"Get resource count canceled. Reason: {ex.Message}. Return max int value and will retry later.");
-                _logger.LogInformation(ex, "Get resource count canceled. Reason: {0}. Return max int value and will retry later.", ex.Message);
+                _diagnosticLogger.LogError($"[Job splitter]: Get resource count canceled. Reason: {ex.Message}. Return max int value and will retry later.");
+                _logger.LogInformation(ex, "[Job splitter]: Get resource count canceled. Reason: {0}. Return max int value and will retry later.", ex.Message);
                 return int.MaxValue;
             }
             catch (TimeoutRejectedException ex)
             {
-                _diagnosticLogger.LogError($"Get resource count timeout. Reason: {ex.Message}. Return max int value and will retry later.");
-                _logger.LogInformation(ex, "Get resource count timeout. Reason: {0}. Return max int value and will retry later.", ex.Message);
+                _diagnosticLogger.LogError($"[Job splitter]: Get resource count timeout. Reason: {ex.Message}. Return max int value and will retry later.");
+                _logger.LogInformation(ex, "[Job splitter]: Get resource count timeout. Reason: {0}. Return max int value and will retry later.", ex.Message);
                 return int.MaxValue;
             }
 
@@ -437,7 +417,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             catch (JsonReaderException exception)
             {
                 string reason = string.Format(
-                        "Failed to parse fhir search result for '{0}' with search parameters '{1}'.",
+                        "[Job splitter]: Failed to parse fhir search result for '{0}' with search parameters '{1}'.",
                         searchOptions.ResourceType,
                         string.Join(", ", searchOptions.QueryParameters.Select(parameter => $"{parameter.Key}: {parameter.Value}")));
 

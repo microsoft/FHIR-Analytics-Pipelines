@@ -8,26 +8,30 @@ using System.Linq;
 
 namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
 {
-    public class JobCandidatePool
+    public class FhirToDataLakeSplitSubJobCandidates
     {
-        private List<SubJobInfo> _jobCandidateList = new ();
+        private List<FhirToDataLakeSplitSubJobInfo> _jobCandidateList = new ();
         private int _currentResourceCount;
 
-        public void PushJobCandidates(SubJobInfo subJob)
+        public void AddJobCandidates(FhirToDataLakeSplitSubJobInfo subJob)
         {
             // Push small job into candidate list.
             _jobCandidateList.Add(subJob);
             _currentResourceCount += subJob.ResourceCount;
         }
 
-        public List<SubJobInfo> PopJobCandidates()
+        public FhirToDataLakeSplitProcessingJobInfo GenerateProcessingJob()
         {
             if (!_jobCandidateList.Any())
             {
                 return null;
             }
 
-            List<SubJobInfo> result = new List<SubJobInfo>(_jobCandidateList);
+            FhirToDataLakeSplitProcessingJobInfo result = new FhirToDataLakeSplitProcessingJobInfo
+            {
+                ResourceCount = _currentResourceCount,
+                SubJobInfos = new List<FhirToDataLakeSplitSubJobInfo>(_jobCandidateList),
+            };
             _jobCandidateList.Clear();
             _currentResourceCount = 0;
             return result;

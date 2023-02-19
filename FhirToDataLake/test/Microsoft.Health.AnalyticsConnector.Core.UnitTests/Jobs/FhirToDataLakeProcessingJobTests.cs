@@ -228,7 +228,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 TriggerSequenceId = 0L,
                 ProcessingJobSequenceId = 0L,
                 DataEndTime = DateTimeOffset.UtcNow,
-                SplitParameters = new Dictionary<string, TimeRange> { { "Patient", new TimeRange() { DataEndTime = DateTimeOffset.UtcNow } } },
+                SplitParameters = new Dictionary<string, FhirToDataLakeSplitSubJobTimeRange> { { "Patient", new FhirToDataLakeSplitSubJobTimeRange() { DataEndTime = DateTimeOffset.UtcNow } } },
             };
             return inputData;
         }

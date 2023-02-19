@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
 {
-    public class FhirToDataLakeOrchestratorJobResult
+    public class FhirToDataLakeOrchestratorJobStatus
     {
         /// <summary>
         /// Job start time
@@ -29,6 +29,16 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
         /// Completed job count
         /// </summary>
         public long CompletedJobCount { get; set; }
+
+        /// <summary>
+        /// Processing job input data that are in the process of submitting, used for system scope
+        /// </summary>
+        public string[] SubmittingProcessingJob { get; set; } = null;
+
+        /// <summary>
+        /// Submitted timestamp for each resource type, used for system scope
+        /// </summary>
+        public Dictionary<string, DateTimeOffset> SubmittedResourceTimestamps { get; set; } = new Dictionary<string, DateTimeOffset>();
 
         /// <summary>
         /// Next job timestamp to be processed, used for system scope
