@@ -176,8 +176,8 @@
       "dicomServerWorkspace" : "[split(variables('dicomServerFullName'), '-')[0]]",
       "dicomServerName": "[substring(variables('dicomServerFullName'),add(length(variables('dicomServerWorkspace')), 1))]",
       "schemaACRName" : "[split(parameters('customizedSchemaImageReference'), '.')[0]]",
-      "dicomDataReaderRoleId": "[concat('/subscriptions/', parameters('serverSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
-      "schemaACRPullRoleId": "[concat('/subscriptions/', parameters('schemaACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', 'e89c7a3c-2f64-4fa1-a847-3e4c9ba4283a')]",
+      "dicomDataReaderRoleId": "[concat('/subscriptions/', parameters('serverSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', 'e89c7a3c-2f64-4fa1-a847-3e4c9ba4283a')]",
+      "schemaACRPullRoleId": "[concat('/subscriptions/', parameters('schemaACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
       "serverAuthentication": "[if(parameters('authentication'), 'ManagedIdentity', 'None')]"
     },
     "resources": [
