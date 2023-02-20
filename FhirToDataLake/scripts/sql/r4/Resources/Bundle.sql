@@ -98,6 +98,7 @@ SELECT
     [entry.modifierExtension],
     [entry.link],
     [entry.fullUrl],
+    [entry.resource],
     [entry.search.id],
     [entry.search.extension],
     [entry.search.modifierExtension],
@@ -118,7 +119,8 @@ SELECT
     [entry.response.status],
     [entry.response.location],
     [entry.response.etag],
-    [entry.response.lastModified]
+    [entry.response.lastModified],
+    [entry.response.outcome]
 FROM openrowset (
         BULK 'Bundle/**',
         DATA_SOURCE = 'ParquetSource',
@@ -133,6 +135,7 @@ FROM openrowset (
         [entry.modifierExtension]      NVARCHAR(MAX)       '$.modifierExtension',
         [entry.link]                   NVARCHAR(MAX)       '$.link' AS JSON,
         [entry.fullUrl]                VARCHAR(256)        '$.fullUrl',
+        [entry.resource]               NVARCHAR(MAX)       '$.resource',
         [entry.search.id]              NVARCHAR(100)       '$.search.id',
         [entry.search.extension]       NVARCHAR(MAX)       '$.search.extension',
         [entry.search.modifierExtension] NVARCHAR(MAX)       '$.search.modifierExtension',
@@ -153,5 +156,6 @@ FROM openrowset (
         [entry.response.status]        NVARCHAR(100)       '$.response.status',
         [entry.response.location]      VARCHAR(256)        '$.response.location',
         [entry.response.etag]          NVARCHAR(100)       '$.response.etag',
-        [entry.response.lastModified]  VARCHAR(64)         '$.response.lastModified'
+        [entry.response.lastModified]  VARCHAR(64)         '$.response.lastModified',
+        [entry.response.outcome]       NVARCHAR(MAX)       '$.response.outcome'
     ) j

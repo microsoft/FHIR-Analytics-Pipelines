@@ -111,6 +111,22 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.DataProcessor
             Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
         }
 
+        [Fact]
+        public async Task GivenAContainedResourceInputData_WhenProcessWithoutCustomizedSchema_CorrectResultShouldBeReturned()
+        {
+            var testResources = TestUtils.LoadNdjsonData(Path.Combine(TestUtils.TestDataFolder, "ContainedResource.ndjson"));
+            var jsonBatchData = new JsonBatchData(testResources);
+
+            StreamBatchData resultBatchData = await _testParquetDataProcessorWithoutCustomizedSchema.ProcessAsync(jsonBatchData, new ProcessParameters("Condition", "Condition"));
+
+            var resultStream = new MemoryStream();
+            resultBatchData.Value.CopyTo(resultStream);
+
+            MemoryStream expectedResult = GetExpectedParquetStream(Path.Combine(TestUtils.ExpectTestDataFolder, "Expected_ContainedResource.parquet"));
+
+            Assert.Equal(expectedResult.ToArray(), resultStream.ToArray());
+        }
+
         // It may takes few minutes to run this large input data test.
         [Fact]
         public async Task GivenAValidMultipleLargeInputData_WhenProcess_CorrectResultShouldBeReturned()

@@ -69,7 +69,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             Assert.Equal(3, result.SearchCount["Patient"]);
             Assert.Equal(3, result.ProcessedCount["Patient"]);
             Assert.Equal(0, result.SkippedCount["Patient"]);
-            Assert.Equal(52314, result.ProcessedDataSizeInTotal);
+            Assert.Equal(52508, result.ProcessedDataSizeInTotal);
             Assert.Equal(3, result.ProcessedCountInTotal);
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));

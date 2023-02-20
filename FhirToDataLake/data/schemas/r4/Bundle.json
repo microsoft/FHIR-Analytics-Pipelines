@@ -1017,6 +1017,20 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "resource": {
+          "Name": "resource",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Bundle",
+            "entry",
+            "resource"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
         "search": {
           "Name": "search",
           "Type": "Bundle_Search",
@@ -1370,6 +1384,21 @@
                 "entry",
                 "response",
                 "lastModified"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "outcome": {
+              "Name": "outcome",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Bundle",
+                "entry",
+                "response",
+                "outcome"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null

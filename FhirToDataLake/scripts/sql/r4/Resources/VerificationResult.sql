@@ -15,6 +15,7 @@ CREATE EXTERNAL TABLE [fhir].[VerificationResult] (
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
     [text.div] NVARCHAR(MAX),
+    [contained] NVARCHAR(MAX),
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
     [target] VARCHAR(MAX),
