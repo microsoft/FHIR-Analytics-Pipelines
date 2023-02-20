@@ -49,5 +49,9 @@ namespace Microsoft.Health.AnalyticsConnector.Common.Configurations
         };
 
         public const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
+
+        // Azure DICOM server default audience is "https://dicom.healthcareapis.azure.com".
+        // Refer https://learn.microsoft.com/en-us/azure/healthcare-apis/dicom/dicom-get-access-token-azure-cli-old#obtain-a-token
+        public const string AzureDicomServerAudience = "https://dicom.healthcareapis.azure.com";
     }
 }
