@@ -40,14 +40,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         public Task<TriggerLeaseEntity> GetTriggerLeaseEntityAsync(byte queueType, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Get orchestrator job status entity from azure table
+        /// Get job status entity from azure table
         /// </summary>
         /// <param name="queueType">queue type.</param>
         /// <param name="groupId">group ID.</param>
         /// <param name="jobId">job ID.</param>
         /// <param name="cancellationToken">cancellation token.</param>
-        /// <returns>Orchestrator job status entity, return null if does not exist.</returns>
-        public Task<OrchestratorJobStatusEntity> GetOrchestratorJobStatusAsync(byte queueType, long groupId, long jobId, CancellationToken cancellationToken = default);
+        /// <returns>job status entity, return null if does not exist.</returns>
+        public Task<JobStatusEntity> GetJobStatusAsync(byte queueType, long groupId, long jobId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get current trigger entity from azure table

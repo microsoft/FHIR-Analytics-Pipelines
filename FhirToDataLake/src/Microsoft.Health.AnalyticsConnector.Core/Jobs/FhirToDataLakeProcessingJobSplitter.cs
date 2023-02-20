@@ -174,13 +174,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             SortedDictionary<DateTimeOffset, int> anchorList = await InitializeAnchorListAsync(resourceType, startTime, endTime, totalCount, cancellationToken);
             DateTimeOffset lastAnchor = anchorList.LastOrDefault().Key;
 
-            _logger.LogInformation($"[Job Splitter]: Finish initilize anchor list for resource type {resourceType}.");
+            _logger.LogInformation($"[Job Splitter]: Finish initialize anchor list for resource type {resourceType}.");
 
             DateTimeOffset? lastJobTimestamp = startTime;
 
             int jobCount = 0;
 
-            // Sperate timestamp within [startTime, endTime) in order.
+            // Split timestamp within [startTime, endTime) in order.
             while (lastJobTimestamp == null || lastJobTimestamp < endTime)
             {
                 DateTimeOffset? nextJobTimestamp = await GetNextSplitTimestamp(resourceType, lastJobTimestamp, anchorList, cancellationToken);
@@ -214,10 +214,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private async Task<SortedDictionary<DateTimeOffset, int>> InitializeAnchorListAsync(string resourceType, DateTimeOffset? startTime, DateTimeOffset endTime, int totalCount, CancellationToken cancellationToken)
         {
             var anchorList = new SortedDictionary<DateTimeOffset, int>();
-            if (startTime != null)
-            {
-                anchorList[(DateTimeOffset)startTime] = 0;
-            }
 
             // Set isDescending parameter false to get first timestamp.
             DateTimeOffset? firstTimestamp = await GetFirstResourceTimestamp(resourceType, startTime, endTime, cancellationToken);
@@ -228,6 +224,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             if (firstTimestamp != null)
             {
                 anchorList[(DateTimeOffset)firstTimestamp] = 0;
+            }
+            else if (startTime != null)
+            {
+                anchorList[(DateTimeOffset)startTime] = 0;
             }
 
             if (lastTimestamp != null)
@@ -264,10 +264,16 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{end.ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Single.ToString("d")),
                 new KeyValuePair<string, string>(FhirApiConstants.TypeKey, resourceType),
-                isDescending
-                ? new KeyValuePair<string, string>(FhirApiConstants.SortKey, FhirApiConstants.LastUpdatedParameterDesc)
-                : new KeyValuePair<string, string>(FhirApiConstants.SortKey, FhirApiConstants.LastUpdatedParameter),
             };
+
+            if (isDescending)
+            {
+                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.SortKey, FhirApiConstants.SortByLastUpdatedDesc));
+            }
+            else
+            {
+                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.SortKey, FhirApiConstants.SortByLastUpdated));
+            }
 
             if (start != null)
             {
@@ -310,20 +316,20 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private async Task<DateTimeOffset?> GetNextSplitTimestamp(string resourceType, DateTimeOffset? start, SortedDictionary<DateTimeOffset, int> anchorList, CancellationToken cancellationToken)
         {
             int baseSize = start == null ? 0 : anchorList[(DateTimeOffset)start];
-            DateTimeOffset? last = start;
+            DateTimeOffset? lastAnchor = start;
             foreach (var item in anchorList)
             {
                 if (anchorList[item.Key] == int.MaxValue)
                 {
                     // Get resource count failed before, re-try to get resource count.
-                    var resourceCount = await GetResourceCountAsync(resourceType, last, item.Key, cancellationToken);
-                    var lastAnchorValue = last == null ? 0 : anchorList[(DateTimeOffset)last];
+                    var resourceCount = await GetResourceCountAsync(resourceType, lastAnchor, item.Key, cancellationToken);
+                    var lastAnchorValue = lastAnchor == null ? 0 : anchorList[(DateTimeOffset)lastAnchor];
                     anchorList[item.Key] = resourceCount == int.MaxValue ? int.MaxValue : resourceCount + lastAnchorValue;
                 }
 
                 if (anchorList[item.Key] - baseSize < LowBoundOfProcessingJobResourceCount)
                 {
-                    last = item.Key;
+                    lastAnchor = item.Key;
                     continue;
                 }
                 else if (anchorList[item.Key] - baseSize <= HighBoundOfProcessingJobResourceCount)
@@ -332,10 +338,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 }
 
                 // Find next split timestamp by binary search.
-                return await BisectAnchor(resourceType, last == null ? DateTimeOffset.MinValue : (DateTimeOffset)last, item.Key, anchorList, baseSize, cancellationToken);
+                return await BisectAnchor(resourceType, lastAnchor == null ? DateTimeOffset.MinValue : (DateTimeOffset)lastAnchor, item.Key, anchorList, baseSize, cancellationToken);
             }
 
-            return last;
+            return lastAnchor;
         }
 
         private async Task<DateTimeOffset> BisectAnchor(string resourceType, DateTimeOffset start, DateTimeOffset end, SortedDictionary<DateTimeOffset, int> anchorList, int baseSize, CancellationToken cancellationToken)
@@ -344,8 +350,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             while ((end - start).TotalMilliseconds > 1)
             {
                 DateTimeOffset mid = start.Add((end - start) / 2);
-                int resourceCount = await GetResourceCountAsync(resourceType, start, mid, cancellationToken);
-                resourceCount = resourceCount == int.MaxValue ? int.MaxValue : resourceCount + anchorList[start];
+                int incrementalResourceCount = await GetResourceCountAsync(resourceType, start, mid, cancellationToken);
+                int resourceCount = incrementalResourceCount == int.MaxValue ? int.MaxValue : incrementalResourceCount + anchorList[start];
                 anchorList[mid] = resourceCount;
                 if (resourceCount - baseSize > HighBoundOfProcessingJobResourceCount)
                 {
@@ -361,7 +367,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 }
             }
 
-            // FHIR server has internal error if getting resource count failed within 1 millisecond search time range.
+            // FHIR server is not healthy if getting resource count failed within 1 millisecond search time range.
             if (anchorList[end] == int.MaxValue)
             {
                 _diagnosticLogger.LogError("[Job splitter]: Failed to split processing jobs caused by getting resource count from FHIR server failed.");

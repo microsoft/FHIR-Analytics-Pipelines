@@ -9,7 +9,7 @@ using Azure.Data.Tables;
 
 namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models.AzureStorage
 {
-    public class OrchestratorJobStatusEntity : ITableEntity
+    public class JobStatusEntity : ITableEntity
     {
         public string PartitionKey { get; set; }
 
@@ -20,12 +20,17 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models.AzureStorage
         public ETag ETag { get; set; }
 
         /// <summary>
-        /// Statistic result of orchestrator job.
+        /// Job type.
+        /// </summary>
+        public JobType JobType { get; set; }
+
+        /// <summary>
+        /// Job status.
         /// </summary>
         public string JobStatus { get; set; }
 
         /// <summary>
-        /// The corresponding orchestrator job group id of current trigger
+        /// Group id of Job
         /// </summary>
         public long GroupId { get; set; } = 0;
     }

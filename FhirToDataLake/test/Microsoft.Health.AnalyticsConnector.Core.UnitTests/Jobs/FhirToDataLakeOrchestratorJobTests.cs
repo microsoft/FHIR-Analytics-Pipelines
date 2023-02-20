@@ -367,10 +367,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 }
             }
 
-            var resumeJobStatus = new OrchestratorJobStatusEntity()
+            var resumeJobStatus = new JobStatusEntity()
             {
-                PartitionKey = TableKeyProvider.JobStatusPartitionKey((byte)QueueType.FhirToDataLake, Convert.ToInt32(JobType.Orchestrator)),
-                RowKey = TableKeyProvider.JobStatusRowKey((byte)QueueType.FhirToDataLake, Convert.ToInt32(JobType.Orchestrator), 0, 0),
+                PartitionKey = TableKeyProvider.JobStatusPartitionKey((byte)QueueType.FhirToDataLake, 0),
+                RowKey = TableKeyProvider.JobStatusRowKey(0, 0),
                 GroupId = 0,
                 JobStatus = JsonConvert.SerializeObject(orchestratorJobStatus),
             };
@@ -386,17 +386,21 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                     ProcessingJobSequenceId = i,
                     TriggerSequenceId = inputData.TriggerSequenceId,
                     Since = inputData.Since,
-                    SplitParameters = new Dictionary<string, FhirToDataLakeSplitSubJobTimeRange>()
+                    SplitProcessingJobInfo = new FhirToDataLakeSplitProcessingJobInfo()
+                    {
+                        SubJobInfos = new List<FhirToDataLakeSplitSubJobInfo>()
+                        {
+                            new FhirToDataLakeSplitSubJobInfo()
                             {
+                                ResourceType = "Patient",
+                                TimeRange = new FhirToDataLakeSplitSubJobTimeRange()
                                 {
-                                    "Patient",
-                                    new FhirToDataLakeSplitSubJobTimeRange()
-                                    {
-                                       DataStartTime = TestStartTime.AddDays(i * daysInterval),
-                                       DataEndTime = TestStartTime.AddDays((i + 1) * daysInterval),
-                                    }
+                                    DataStartTime = TestStartTime.AddDays(i * daysInterval),
+                                    DataEndTime = TestStartTime.AddDays((i + 1) * daysInterval),
                                 },
                             },
+                        },
+                    },
                 };
 
                 JobInfo jobInfo = (await queueClient.EnqueueAsync(0, new[] { JsonConvert.SerializeObject(processingInput) }, 1, false, false, CancellationToken.None)).First();

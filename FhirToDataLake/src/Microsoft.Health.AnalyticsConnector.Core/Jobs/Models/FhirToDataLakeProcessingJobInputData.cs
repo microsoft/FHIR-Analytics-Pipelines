@@ -37,10 +37,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
         public DateTimeOffset? Since { get; set; }
 
         /// <summary>
-        /// Resource type and time range parameters for system scope.
-        /// SplitParameters will be empty for group scope.
+        /// Splitted processing job info for system scope.
+        /// SplitProcessingJobInfo will be null for group scope.
         /// </summary>
-        public Dictionary<string, FhirToDataLakeSplitSubJobTimeRange> SplitParameters { get; set; } = new Dictionary<string, FhirToDataLakeSplitSubJobTimeRange>();
+        public FhirToDataLakeSplitProcessingJobInfo SplitProcessingJobInfo { get; set; }
 
         /// <summary>
         /// Start time, process all data if not specified. Used for group scope.

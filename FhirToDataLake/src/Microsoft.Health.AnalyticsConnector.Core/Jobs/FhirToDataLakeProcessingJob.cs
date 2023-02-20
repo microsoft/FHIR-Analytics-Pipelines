@@ -57,6 +57,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private List<TypeFilter> _typeFilters;
         private CacheResult _cacheResult;
         private FilterScope _filterScope;
+        private Dictionary<string, FhirToDataLakeSplitSubJobTimeRange> _splitProcessingJobTimeRangeParameters;
 
         /// <summary>
         /// Output file index map for all resources/schemas.
@@ -93,6 +94,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+
+            if (_inputData.JobVersion >= JobVersion.V4)
+            {
+                _splitProcessingJobTimeRangeParameters = _inputData.SplitProcessingJobInfo.SubJobInfos.ToDictionary(x => x.ResourceType, x => x.TimeRange);
+            }
         }
 
         // the processing job status is never set to failed or cancelled.
@@ -396,20 +402,20 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 {
                     if (_inputData.JobVersion >= JobVersion.V4)
                     {
-                        if (!_inputData.SplitParameters.ContainsKey(typeFilter.ResourceType))
+                        if (!_splitProcessingJobTimeRangeParameters.ContainsKey(typeFilter.ResourceType))
                         {
                             continue;
                         }
 
                         searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(
                                 FhirApiConstants.LastUpdatedKey,
-                                $"lt{_inputData.SplitParameters[typeFilter.ResourceType].DataEndTime.ToInstantString()}"));
+                                $"lt{_splitProcessingJobTimeRangeParameters[typeFilter.ResourceType].DataEndTime.ToInstantString()}"));
 
-                        if (_inputData.SplitParameters[typeFilter.ResourceType].DataStartTime != null)
+                        if (_splitProcessingJobTimeRangeParameters[typeFilter.ResourceType].DataStartTime != null)
                         {
                             searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(
                                 FhirApiConstants.LastUpdatedKey,
-                                $"ge{((DateTimeOffset)_inputData.SplitParameters[typeFilter.ResourceType].DataStartTime).ToInstantString()}"));
+                                $"ge{((DateTimeOffset)_splitProcessingJobTimeRangeParameters[typeFilter.ResourceType].DataStartTime).ToInstantString()}"));
                         }
                     }
                     else
@@ -597,7 +603,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                             }
 
                             // Upload to blob and log result
-                            var dateTime = _inputData.SplitParameters != null && _inputData.SplitParameters.ContainsKey(resourceType) ? _inputData.SplitParameters[resourceType].DataEndTime : _inputData.DataEndTime;
+                            var dateTime = _splitProcessingJobTimeRangeParameters != null && _splitProcessingJobTimeRangeParameters.ContainsKey(resourceType) ? _splitProcessingJobTimeRangeParameters[resourceType].DataEndTime : _inputData.DataEndTime;
                             var fileName = GetDataFileName(dateTime, schemaType, _jobId, _outputFileIndexMap[schemaType]);
                             string blobUrl = await _dataWriter.WriteAsync(parquetStream, fileName, cancellationToken);
 

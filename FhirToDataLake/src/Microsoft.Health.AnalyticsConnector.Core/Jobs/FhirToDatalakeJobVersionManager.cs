@@ -99,7 +99,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             nameof(FhirToDataLakeProcessingJobInputData.JobType),
             nameof(FhirToDataLakeProcessingJobInputData.TriggerSequenceId),
             nameof(FhirToDataLakeProcessingJobInputData.ProcessingJobSequenceId),
-            nameof(FhirToDataLakeProcessingJobInputData.SplitParameters),
+            nameof(FhirToDataLakeProcessingJobInputData.SplitProcessingJobInfo),
             nameof(FhirToDataLakeProcessingJobInputData.Since),
             nameof(FhirToDataLakeProcessingJobInputData.DataStartTime),
             nameof(FhirToDataLakeProcessingJobInputData.ToBeProcessedPatients),

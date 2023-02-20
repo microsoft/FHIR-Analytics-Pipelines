@@ -27,7 +27,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
                 return null;
             }
 
-            FhirToDataLakeSplitProcessingJobInfo result = new FhirToDataLakeSplitProcessingJobInfo
+            FhirToDataLakeSplitProcessingJobInfo result = new ()
             {
                 ResourceCount = _currentResourceCount,
                 SubJobInfos = new List<FhirToDataLakeSplitSubJobInfo>(_jobCandidateList),

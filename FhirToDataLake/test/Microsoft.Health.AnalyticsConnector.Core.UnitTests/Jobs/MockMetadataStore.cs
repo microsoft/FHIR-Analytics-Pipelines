@@ -107,7 +107,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
         private Tuple<string, string> TriggerLeaseEntityKey(byte queueType) =>
             new Tuple<string, string>(TableKeyProvider.LeasePartitionKey(queueType), TableKeyProvider.LeaseRowKey(queueType));
 
-        public Task<OrchestratorJobStatusEntity> GetOrchestratorJobStatusAsync(byte queueType, long groupId, long jobId, CancellationToken cancellationToken = default)
+        public Task<JobStatusEntity> GetJobStatusAsync(byte queueType, long groupId, long jobId, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

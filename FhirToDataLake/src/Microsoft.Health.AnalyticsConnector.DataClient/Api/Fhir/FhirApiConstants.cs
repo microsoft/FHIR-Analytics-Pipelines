@@ -54,12 +54,12 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.Api.Fhir
         /// <summary>
         /// Last updated parameter for sort.
         /// </summary>
-        public const string LastUpdatedParameter = "_lastUpdated";
+        public const string SortByLastUpdated = "_lastUpdated";
 
         /// <summary>
         /// Last updated parameter in descending order for sort.
         /// </summary>
-        public const string LastUpdatedParameterDesc = "-_lastUpdated";
+        public const string SortByLastUpdatedDesc = "-_lastUpdated";
 
         /// <summary>
         /// Count parameter.

@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using EnsureThat;
-using FellowOakDicom.Imaging.LUT;
 using Hl7.Fhir.Utility;
 using Hl7.FhirPath.Sprache;
 using Microsoft.Extensions.Logging;
@@ -52,7 +51,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly IMetricsLogger _metricsLogger;
         private FhirToDataLakeOrchestratorJobStatus _jobStatus;
-        private OrchestratorJobStatusEntity _jobStatusEntity;
+        private JobStatusEntity _jobStatusEntity;
         private FhirToDataLakeProcessingJobSplitter _jobSplitter;
         private FhirToDataLakeOrchestratorJobResult _result;
 
@@ -105,11 +104,12 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             {
                 if (_inputData.JobVersion >= JobVersion.V4)
                 {
-                    // Initialize job status from meta table when job version larger than V4.
+                    // Initialize job status from meta table when job version larger than or equal to V4.
                     _jobStatus = await InitializeJobStatusFromTableAsync(cancellationToken);
                 }
                 else
                 {
+                    // Initialize job status from result when job version smaller than V4.
                     _jobStatus = InitializeJobStatusFromResult();
                 }
 
@@ -237,11 +237,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
             _jobStatus.SequenceIdToJobIdMapForRunningJobs[input.ProcessingJobSequenceId] = newJobId;
 
-            if (input.SplitParameters != null)
+            if (input.SplitProcessingJobInfo != null)
             {
-                foreach (var param in input.SplitParameters)
+                foreach (var job in input.SplitProcessingJobInfo.SubJobInfos)
                 {
-                    _jobStatus.SubmittedResourceTimestamps[param.Key] = param.Value.DataEndTime;
+                    _jobStatus.SubmittedResourceTimestamps[job.ResourceType] = job.TimeRange.DataEndTime;
                 }
             }
 
@@ -250,27 +250,56 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         private FhirToDataLakeOrchestratorJobStatus InitializeJobStatusFromResult()
         {
-            var resultContent = JsonConvert.SerializeObject(_result);
-            return JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobStatus>(resultContent);
+            return new FhirToDataLakeOrchestratorJobStatus()
+            {
+                StartTime = _result.StartTime,
+                CompleteTime = _result.CompleteTime,
+                CreatedJobCount = _result.CreatedJobCount,
+                CompletedJobCount = _result.CompletedJobCount,
+                NextJobTimestamp = _result.NextJobTimestamp,
+                NextPatientIndex = _result.NextPatientIndex,
+                RunningJobIds = _result.RunningJobIds,
+                SequenceIdToJobIdMapForRunningJobs = _result.SequenceIdToJobIdMapForRunningJobs,
+                TotalResourceCounts = _result.TotalResourceCounts,
+                ProcessedCountInTotal = _result.ProcessedCountInTotal,
+                SkippedResourceCounts = _result.SkippedResourceCounts,
+                ProcessedResourceCounts = _result.ProcessedResourceCounts,
+                ProcessedDataSizeInTotal = _result.ProcessedDataSizeInTotal,
+            };
         }
 
         private FhirToDataLakeOrchestratorJobResult GenerateJobResultFromStatusAsync()
         {
-            var resultContent = JsonConvert.SerializeObject(_jobStatus);
-            return JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobResult>(resultContent);
+            return new FhirToDataLakeOrchestratorJobResult()
+            {
+                StartTime = _jobStatus.StartTime,
+                CompleteTime = _jobStatus.CompleteTime,
+                CreatedJobCount = _jobStatus.CreatedJobCount,
+                CompletedJobCount = _jobStatus.CompletedJobCount,
+                NextJobTimestamp = _jobStatus.NextJobTimestamp,
+                NextPatientIndex = _jobStatus.NextPatientIndex,
+                RunningJobIds = _jobStatus.RunningJobIds,
+                SequenceIdToJobIdMapForRunningJobs = _jobStatus.SequenceIdToJobIdMapForRunningJobs,
+                TotalResourceCounts = _jobStatus.TotalResourceCounts,
+                ProcessedCountInTotal = _jobStatus.ProcessedCountInTotal,
+                SkippedResourceCounts = _jobStatus.SkippedResourceCounts,
+                ProcessedResourceCounts = _jobStatus.ProcessedResourceCounts,
+                ProcessedDataSizeInTotal = _jobStatus.ProcessedDataSizeInTotal,
+            };
         }
 
         private async Task<FhirToDataLakeOrchestratorJobStatus> InitializeJobStatusFromTableAsync(CancellationToken cancellationToken)
         {
-            _jobStatusEntity = await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
+            _jobStatusEntity = await _metadataStore.GetJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
 
             if (_jobStatusEntity == null)
             {
                 // Orchestrator job status entity is not exist, will create a new one.
-                var newJobStatusEntity = new OrchestratorJobStatusEntity()
+                var newJobStatusEntity = new JobStatusEntity()
                 {
-                    PartitionKey = TableKeyProvider.JobStatusPartitionKey(_jobInfo.QueueType, Convert.ToInt32(JobType.Orchestrator)),
-                    RowKey = TableKeyProvider.JobStatusRowKey(_jobInfo.QueueType, Convert.ToInt32(JobType.Orchestrator), _jobInfo.GroupId, _jobInfo.Id),
+                    PartitionKey = TableKeyProvider.JobStatusPartitionKey(_jobInfo.QueueType, _jobInfo.GroupId),
+                    RowKey = TableKeyProvider.JobStatusRowKey(_jobInfo.GroupId, _jobInfo.Id),
+                    JobType = JobType.Orchestrator,
                     GroupId = _jobInfo.GroupId,
                     JobStatus = JsonConvert.SerializeObject(new FhirToDataLakeOrchestratorJobResult()),
                 };
@@ -281,7 +310,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     throw new SynapsePipelineInternalException($"Initialize job status failed in orchestrator job {_jobInfo.Id}.");
                 }
 
-                _jobStatusEntity = await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
+                _jobStatusEntity = await _metadataStore.GetJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
             }
 
             return JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobStatus>(_jobStatusEntity.JobStatus);
@@ -305,7 +334,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     throw new SynapsePipelineInternalException($"Update orchestrator job status failed in job  {_jobInfo.Id}.");
                 }
 
-                _jobStatusEntity = await _metadataStore.GetOrchestratorJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
+                _jobStatusEntity = await _metadataStore.GetJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
             }
         }
 
@@ -341,7 +370,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     ProcessingJobSequenceId = _jobStatus.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,
-                    SplitParameters = processingJob.SubJobInfos.ToDictionary(x => x.ResourceType, x => x.TimeRange),
+                    SplitProcessingJobInfo = processingJob,
                 };
             }
         }

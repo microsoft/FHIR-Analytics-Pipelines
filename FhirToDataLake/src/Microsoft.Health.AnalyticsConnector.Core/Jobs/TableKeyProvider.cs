@@ -13,9 +13,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         public static string TriggerRowKey(byte queueType) => $"{queueType:D3}_trigger";
 
-        public static string JobStatusPartitionKey(byte queueType, int jobType) => $"{queueType:D3}_{jobType}_jobStatus";
+        public static string JobStatusPartitionKey(byte queueType, long groupId) => $"{queueType:D3}_{groupId:D20}";
 
-        public static string JobStatusRowKey(byte queueType, int jobType, long groupId, long jobId) => $"{queueType:D3}_{jobType}_{groupId:D20}_{jobId:D20}";
+        public static string JobStatusRowKey(long groupId, long jobId) => $"{groupId:D20}_{jobId:D20}";
 
         public static string LeasePartitionKey(byte queueType) => $"{queueType:D3}_lock";
 

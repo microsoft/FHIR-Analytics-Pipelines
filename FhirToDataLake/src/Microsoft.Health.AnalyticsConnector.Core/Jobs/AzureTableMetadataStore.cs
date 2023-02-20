@@ -14,7 +14,6 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.AnalyticsConnector.Common.Configurations;
-using Microsoft.Health.AnalyticsConnector.Core.Jobs.Models;
 using Microsoft.Health.AnalyticsConnector.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.AnalyticsConnector.JobManagement;
 
@@ -135,21 +134,21 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             return (await _metadataTableClient.GetEntityAsync<CompartmentInfoEntity>(TableKeyProvider.CompartmentPartitionKey(queueType), TableKeyProvider.CompartmentRowKey(patientId), cancellationToken: cancellationToken)).Value;
         }
 
-        public async Task<OrchestratorJobStatusEntity> GetOrchestratorJobStatusAsync(byte queueType, long groupId, long jobId, CancellationToken cancellationToken = default)
+        public async Task<JobStatusEntity> GetJobStatusAsync(byte queueType, long groupId, long jobId, CancellationToken cancellationToken = default)
         {
-            OrchestratorJobStatusEntity entity = null;
+            JobStatusEntity entity = null;
             try
             {
-                Response<OrchestratorJobStatusEntity> response = await _metadataTableClient.GetEntityAsync<OrchestratorJobStatusEntity>(
-                    TableKeyProvider.JobStatusPartitionKey(queueType, Convert.ToInt32(JobType.Orchestrator)),
-                    TableKeyProvider.JobStatusRowKey(queueType, Convert.ToInt32(JobType.Orchestrator), groupId, jobId),
+                Response<JobStatusEntity> response = await _metadataTableClient.GetEntityAsync<JobStatusEntity>(
+                    TableKeyProvider.JobStatusPartitionKey(queueType, groupId),
+                    TableKeyProvider.JobStatusRowKey(groupId, jobId),
                     cancellationToken: cancellationToken);
 
                 entity = response.Value;
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
             {
-                _logger.LogInformation(ex, "The orchestrator job status entity doesn't exist, will create a new one.");
+                _logger.LogInformation(ex, "The job status entity doesn't exist, will create a new one.");
             }
 
             // don't catch other exceptions, the caller should handle it
