@@ -18,7 +18,9 @@ namespace Microsoft.Health.AnalyticsConnector.Common.Configurations
         [JsonProperty("authentication")]
         public AuthenticationType Authentication { get; set; } = AuthenticationType.None;
 
-        [JsonProperty("serverEnvironmentGroup")]
-        public ServerEnvironmentGroup ServerEnvironmentGroup { get; set; } = ServerEnvironmentGroup.PROD;
+        // Azure DICOM server default audience is "https://dicom.healthcareapis.azure.com".
+        // Refer https://learn.microsoft.com/en-us/azure/healthcare-apis/dicom/dicom-get-access-token-azure-cli-old#obtain-a-token
+        [JsonProperty("audience")]
+        public string Audience { get; set; } = "https://dicom.healthcareapis.azure.com";
     }
 }

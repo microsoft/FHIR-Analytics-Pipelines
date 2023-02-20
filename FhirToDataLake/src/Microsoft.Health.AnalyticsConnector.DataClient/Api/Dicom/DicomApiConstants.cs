@@ -45,15 +45,5 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.Api.Dicom
         /// Latest key in DICOM url.
         /// </summary>
         public const string LatestKey = "latest";
-
-        /// <summary>
-        /// The managed identity audiences to get access token for DICOM service.
-        /// </summary>
-        public static readonly Dictionary<ServerEnvironmentGroup, string> DicomServerAudienceMap = new Dictionary<ServerEnvironmentGroup, string>()
-        {
-            { ServerEnvironmentGroup.PROD, "https://dicom.healthcareapis.azure.com" },
-            { ServerEnvironmentGroup.TEST, "https://dicom.healthcareapis.azure-test.net" },
-            { ServerEnvironmentGroup.LOCAL, "https://dicom.healthcareapis.azure-test.net" },
-        };
     }
 }

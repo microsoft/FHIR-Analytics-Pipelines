@@ -36,7 +36,7 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.Api
                         EnsureArg.IsNotNullOrEmpty(config.Value.DicomServer.ServerUrl, nameof(config.Value.DicomServer.ServerUrl)));
                     ServerUrl = $"{dicomServerUrl}{DicomApiConstants.VersionMap[config.Value.DicomServer.ApiVersion]}/";
                     Authentication = config.Value.DicomServer.Authentication;
-                    Audience = DicomApiConstants.DicomServerAudienceMap[config.Value.DicomServer.ServerEnvironmentGroup];
+                    Audience = config.Value.DicomServer.Audience;
                     break;
                 default:
                     // Should not be thrown.
