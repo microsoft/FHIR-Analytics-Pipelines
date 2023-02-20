@@ -44,11 +44,11 @@
         ],
         "type": "Bool",
         "metadata": {
-          "description": "Whether to access Azure API for FHIR with managed identity authentication. Set false if you are using an OSS public FHIR server instance."
+          "description": "Whether to access health data service with managed identity authentication. Set false if you are using an OSS public FHIR server instance."
         }
       },
       "containerName": {
-        "defaultValue": "fhir",
+        "defaultValue": "dicom",
         "type": "String",
         "metadata": {
           "description": "The name of the container to store job and data."
@@ -240,7 +240,7 @@
       {
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2020-10-01",
-        "name": "[guid(uniqueString('fhirServerRoleAssignment'))]",
+        "name": "[guid(uniqueString('dicomServerRoleAssignment'))]",
         "dependsOn": [
           "[variables('pipelineName')]"
         ],
