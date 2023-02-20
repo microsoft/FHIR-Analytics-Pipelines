@@ -10,47 +10,19 @@
           "description": "The name of the container instance that you wish to create."
         }
       },
-      "fhirServerSubscriptionId": {
+      "serverSubscriptionId": {
         "type": "String",
         "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
         "metadata": {
-          "description": "The subscription ID for fhir server you wish to get data."
+          "description": "The subscription ID for health data server you wish to get data."
         }
       },
-      "fhirServerResourceGroupName": {
+      "serverResourceGroupName": {
         "type": "String",
         "defaultValue": "analyticsconnectorperftest",
         "metadata": {
-          "description": "The resource group name for fhir server you wish to get data."
+          "description": "The resource group name for health data server you wish to get data."
         }
-      },
-      "configVersion": {
-          "type": "int",
-          "defaultValue": 1,
-          "allowedValues": [1, 2],
-          "metadata": {
-              "description": "Configuration version."
-          }
-      },
-      "dataSourceType": {
-          "type": "string",
-          "defaultValue": "FHIR",
-          "allowedValues": ["FHIR", "DICOM"],
-          "metadata": {
-              "description": "The source API server type you wish to get data."
-          }
-      },
-      "fhirServerUrl": {
-          "type": "string",
-          "defaultValue": "",
-          "metadata": {
-              "description": "The fhir server endpoint you wish to get data."
-          }
-      },
-      "fhirVersion": {
-          "type": "string",
-          "defaultValue": "R4",
-          "allowedValues": ["R4"]
       },
       "dicomServerUrl": {
           "type": "string",
@@ -75,74 +47,11 @@
           "description": "Whether to access Azure API for FHIR with managed identity authentication. Set false if you are using an OSS public FHIR server instance."
         }
       },
-      "dataStart": {
-        "defaultValue": "1970-01-01 00:00:00 +00:00",
-        "type": "String",
-        "metadata": {
-          "description": "Start timestamp of the data range you want to export."
-        }
-      },
-      "dataEnd": {
-        "defaultValue": "",
-        "type": "String",
-        "metadata": {
-          "description": "End timestamp of the data range you want to export. Will continuous export all data if not specified."
-        }
-      },
       "containerName": {
         "defaultValue": "fhir",
         "type": "String",
         "metadata": {
           "description": "The name of the container to store job and data."
-        }
-      },
-      "filterACRSubscriptionId": {
-        "type": "String",
-        "defaultValue": "cc148bf2-42fb-4913-a3fb-2f284a69eb89",
-        "metadata": {
-          "description": "The subscription ID for filter ACR."
-        }
-      },
-      "filterACRResourceGroupName": {
-        "type": "String",
-        "defaultValue": "analyticsconnectorperftest",
-        "metadata": {
-          "description": "The resource group name for filter ACR."
-        }
-      },
-      "filterConfigImageReference": {
-        "defaultValue": "",
-        "type": "String",
-        "metadata": {
-          "description": "Azure Container Registry image reference of filter configuration file."
-        }
-      },
-      "filterScope": {
-        "defaultValue": "System",
-        "type": "String",
-        "metadata": {
-          "description": "For data filtering use. The export scope can be System or Group. The default value is System if no filter is applied."
-        }
-      },
-      "groupId": {
-        "defaultValue": "",
-        "type": "String",
-        "metadata": {
-          "description": "For data filtering use. If the Filter scope is set as Group, you need to fill the group Id, otherwise leave it blank."
-        }
-      },
-      "requiredTypes": {
-        "defaultValue": "",
-        "type": "String",
-        "metadata": {
-          "description": "For data filtering use. Specify which types of resources will be included. For example, type=Patient would return only patient resources. All resource types will be exported if not specified. Leave it blank if no filter is applied."
-        }
-      },
-      "typeFilters": {
-        "defaultValue": "",
-        "type": "String",
-        "metadata": {
-          "description": "For data filtering use. Use along with the requiredTypes configuration. The value is a comma-separated list of FHIR queries that further restrict the results. All data of requiredTypes will be exported if not specified. Leave it blank if no filter is applied."
         }
       },
       "customizedSchema": {
@@ -249,30 +158,26 @@
       "applicationInsightsName": "[concat('AppInsights-', variables('pipelineName'))]",
       "deployAppInsights": "[parameters('deployAppInsights')]",
       "resourceTags": {
-        "FhirAnalyticsPipeline": "FhirToDataLake",
-        "FhirSchemaVersion": "v0.5.0"
+        "FhirAnalyticsPipeline": "DicomToDataLake",
+        "FhirSchemaVersion": "v0.6.0"
       },
       "storageAccountName": "[concat(substring(replace(variables('pipelineName'), '-', ''), 0, min(11, length(replace(variables('pipelineName'), '-', '')))), uniquestring(resourceGroup().id, variables('pipelineName')))]",
       "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
       "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
       "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
       "storageTableDataReaderRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '76199698-9eea-4c19-bc75-cec21354c6b6')]",
-      "filterConfigImageReference": "[toLower(parameters('filterConfigImageReference'))]",
       "restartPolicy": "OnFailure",
       "urlSplitDelimiters": [
         ".",
         "//"
       ],
       
-      "fhirServerFullName" : "[split(parameters('fhirServerUrl'), variables('urlSplitDelimiters'))[1]]",
-      "fhirServerWorkspace" : "[split(variables('fhirServerFullName'), '-')[0]]",
-      "fhirServerName": "[substring(variables('fhirServerFullName'),add(length(variables('fhirServerWorkspace')), 1))]",
-      "filterACRName" : "[split(parameters('filterConfigImageReference'),'.')[0]]",
+      "dicomServerFullName" : "[split(parameters('dicomServerUrl'), variables('urlSplitDelimiters'))[1]]",
+      "dicomServerWorkspace" : "[split(variables('dicomServerFullName'), '-')[0]]",
+      "dicomServerName": "[substring(variables('dicomServerFullName'),add(length(variables('dicomServerWorkspace')), 1))]",
       "schemaACRName" : "[split(parameters('customizedSchemaImageReference'), '.')[0]]",
-      "fhirDataReaderRoleId": "[concat('/subscriptions/', parameters('fhirServerSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
-      "filterACRPullRoleId": "[concat('/subscriptions/', parameters('filterACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
-      "schemaACRPullRoleId": "[concat('/subscriptions/', parameters('schemaACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
-      "isSameACR": "[equals(variables('filterACRName'), variables('schemaACRName'))]",
+      "dicomDataReaderRoleId": "[concat('/subscriptions/', parameters('serverSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', '4c8d0bbc-75d3-4935-991f-5f3c56d81508')]",
+      "schemaACRPullRoleId": "[concat('/subscriptions/', parameters('schemaACRSubscriptionId'), '/providers/Microsoft.Authorization/roleDefinitions/', 'e89c7a3c-2f64-4fa1-a847-3e4c9ba4283a')]",
       "serverAuthentication": "[if(parameters('authentication'), 'ManagedIdentity', 'None')]"
     },
     "resources": [
@@ -348,10 +253,10 @@
               {
                 "type": "Microsoft.Authorization/roleAssignments",
                 "apiVersion": "2022-04-01",
-                "name": "[guid(uniqueString(variables('fhirServerName'), variables('pipelineName')))]",
-                "scope": "[concat('Microsoft.HealthcareApis/workspaces/', variables('fhirServerWorkspace'), '/fhirservices/', variables('fhirServerName'))]",
+                "name": "[guid(uniqueString(variables('dicomServerName'), variables('pipelineName')))]",
+                "scope": "[concat('Microsoft.HealthcareApis/workspaces/', variables('dicomServerWorkspace'), '/dicomservices/', variables('dicomServerName'))]",
                 "properties": {
-                  "roleDefinitionId": "[variables('fhirDataReaderRoleId')]",
+                  "roleDefinitionId": "[variables('dicomDataReaderRoleId')]",
                   "principalId": "[reference(resourceId(variables('subscriptionId'), variables('resourceGroupName'), 'Microsoft.ContainerInstance/containerGroups/', variables('pipelineName')), '2021-09-01', 'full').identity.principalId]",
                   "principalType": "ServicePrincipal"
                 }
@@ -359,44 +264,13 @@
             ]
           }
         },
-        "subscriptionId": "[parameters('fhirServerSubscriptionId')]",
-        "resourceGroup": "[parameters('fhirServerResourceGroupName')]"
+        "subscriptionId": "[parameters('serverSubscriptionId')]",
+        "resourceGroup": "[parameters('serverResourceGroupName')]"
       },
       {
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2020-10-01",
-        "condition": "[not(empty(parameters('filterConfigImageReference')))]",
-        "name": "[guid(uniqueString('filterACRRoleAssignment'))]",
-        "dependsOn": [
-          "[variables('pipelineName')]"
-        ],
-        "properties": {
-          "mode": "Incremental",
-          "template": {
-            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-            "contentVersion": "1.0.0.0",
-            "resources": [
-              {
-                "type": "Microsoft.Authorization/roleAssignments",
-                "apiVersion": "2022-04-01",
-                "name": "[guid(uniqueString(variables('filterConfigImageReference'), variables('pipelineName')))]",
-                "scope": "[concat('Microsoft.ContainerRegistry/registries/', variables('filterACRName'))]",
-                "properties": {
-                  "roleDefinitionId": "[variables('filterACRPullRoleId')]",
-                  "principalId": "[reference(resourceId(variables('subscriptionId'), variables('resourceGroupName'), 'Microsoft.ContainerInstance/containerGroups/', variables('pipelineName')), '2021-09-01', 'full').identity.principalId]",
-                  "principalType": "ServicePrincipal"
-                }
-              }
-            ]
-          }
-        },
-        "subscriptionId": "[parameters('filterACRSubscriptionId')]",
-        "resourceGroup": "[parameters('filterACRResourceGroupName')]"
-      },
-      {
-        "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2020-10-01",
-        "condition": "[not(or(empty(parameters('customizedSchemaImageReference')), variables('isSameACR')))]",
+        "condition": "[not(empty(parameters('customizedSchemaImageReference')))]",
         "name": "[guid(uniqueString('schemaACRRoleAssignment'))]",
         "dependsOn": [
           "[variables('pipelineName')]"
@@ -458,7 +332,7 @@
                   },
                   {
                       "name": "configVersion",
-                      "value": "[parameters('configVersion')]"
+                      "value": "2"
                   },
                   {
                     "name": "job__jobInfoQueueName",
@@ -477,14 +351,6 @@
                     "value": "[parameters('containerName')]"
                   },
                   {
-                    "name": "job__startTime",
-                    "value": "[parameters('dataStart')]"
-                  },
-                  {
-                    "name": "job__endTime",
-                    "value": "[parameters('dataEnd')]"
-                  },
-                  {
                     "name": "job__maxRunningJobCount",
                     "value": "[parameters('concurrency')]"
                   },
@@ -501,30 +367,6 @@
                     "value": "[concat('https://', variables('storageAccountName'), '.blob.core.windows.net')]"
                   },
                   {
-                    "name": "filter__filterScope",
-                    "value": "[parameters('filterScope')]"
-                  },
-                  {
-                    "name": "filter__enableExternalFilter",
-                    "value": "[if(empty(variables('filterConfigImageReference')), 'false', 'true')]"
-                  },
-                  {
-                    "name": "filter__filterImageReference",
-                    "value": "[variables('filterConfigImageReference')]"
-                  },
-                  {
-                    "name": "filter__groupId",
-                    "value": "[parameters('groupId')]"
-                  },
-                  {
-                    "name": "filter__requiredTypes",
-                    "value": "[parameters('requiredTypes')]"
-                  },
-                  {
-                    "name": "filter__typeFilters",
-                    "value": "[parameters('typeFilters')]"
-                  },
-                  {
                     "name": "schema__enableCustomizedSchema",
                     "value": "[parameters('customizedSchema')]"
                   },
@@ -534,7 +376,7 @@
                   },
                   {
                       "name": "dataSource__type",
-                      "value": "[parameters('dataSourceType')]"
+                      "value": "DICOM"
                   },
                   {
                       "name": "dataSource__dicomServer__serverUrl",
@@ -546,18 +388,6 @@
                   },
                   {
                       "name": "dataSource__dicomServer__authentication",
-                      "value": "[variables('serverAuthentication')]"
-                  },
-                  {
-                      "name": "fhirServer__serverUrl",
-                      "value": "[parameters('fhirServerUrl')]"
-                  },
-                  {
-                      "name": "fhirServer__version",
-                      "value": "[parameters('fhirVersion')]"
-                  },
-                  {
-                      "name": "fhirServer__authentication",
                       "value": "[variables('serverAuthentication')]"
                   }
                 ]
