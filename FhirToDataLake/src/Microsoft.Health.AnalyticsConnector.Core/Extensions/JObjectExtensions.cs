@@ -37,7 +37,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Extensions
 
                 return DateTimeOffset.Parse(result);
             }
-            catch (FhirDataParseException exception)
+            catch (FhirDataParseException)
             {
                 throw;
             }

@@ -11,8 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using EnsureThat;
-using Hl7.Fhir.Utility;
-using Hl7.FhirPath.Sprache;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.AnalyticsConnector.Common.Exceptions;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;
@@ -50,6 +48,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private readonly ILogger<FhirToDataLakeOrchestratorJob> _logger;
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly IMetricsLogger _metricsLogger;
+
         private FhirToDataLakeOrchestratorJobStatus _jobStatus;
         private JobStatusEntity _jobStatusEntity;
         private FhirToDataLakeProcessingJobSplitter _jobSplitter;
@@ -142,7 +141,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     string[] jobDefinitions = { JsonConvert.SerializeObject(input) };
 
                     _jobStatus.SubmittingProcessingJob = jobDefinitions;
-                    await UploadJobStatusAsync(progress, cancellationToken);
+                    await SynchroniseJobStatusAsync(progress, cancellationToken);
 
                     IEnumerable<JobInfo> jobInfos = await _queueClient.EnqueueAsync(
                         _jobInfo.QueueType,
@@ -153,7 +152,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                         cancellationToken);
                     long newJobId = jobInfos.First().Id;
                     UpdateSubmittingJobStatus(input, newJobId);
-                    await UploadJobStatusAsync(progress, cancellationToken);
+                    await SynchroniseJobStatusAsync(progress, cancellationToken);
 
                     if (GetRunningJobCount() >
                         JobConfigurationConstants.CheckRunningJobCompleteRunningJobCountThreshold)
@@ -176,7 +175,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 var processEndtime = DateTimeOffset.UtcNow;
                 _jobStatus.CompleteTime = processEndtime;
 
-                await UploadJobStatusAsync(progress, cancellationToken);
+                await SynchroniseJobStatusAsync(progress, cancellationToken);
 
                 var jobLatency = processEndtime - _inputData.DataEndTime;
                 _metricsLogger.LogResourceLatencyMetric(jobLatency.TotalSeconds);
@@ -185,7 +184,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}. Synced result data to {_inputData.DataEndTime}. " +
                     $"Report a {MetricNames.ResourceLatencyMetric} metric with {jobLatency.TotalSeconds} seconds latency");
 
-                return _inputData.JobVersion >= JobVersion.V4 ? _jobStatusEntity.JobStatus : JsonConvert.SerializeObject(_jobStatus);
+                return _inputData.JobVersion >= JobVersion.V4 ? _jobStatusEntity.JobStatus : JsonConvert.SerializeObject(_result);
             }
             catch (OperationCanceledException operationCanceledEx)
             {
@@ -268,9 +267,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             };
         }
 
-        private FhirToDataLakeOrchestratorJobResult GenerateJobResultFromStatusAsync()
+        private void UpdateJobResultFromStatusAsync()
         {
-            return new FhirToDataLakeOrchestratorJobResult()
+            _result = new FhirToDataLakeOrchestratorJobResult()
             {
                 StartTime = _jobStatus.StartTime,
                 CompleteTime = _jobStatus.CompleteTime,
@@ -316,14 +315,15 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             return JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobStatus>(_jobStatusEntity.JobStatus);
         }
 
-        private async Task UploadJobStatusAsync(IProgress<string> progress, CancellationToken cancellationToken)
+        private async Task SynchroniseJobStatusAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
             if (_inputData.JobVersion <= JobVersion.V4)
             {
-                progress.Report(JsonConvert.SerializeObject(GenerateJobResultFromStatusAsync()));
+                UpdateJobResultFromStatusAsync();
+                progress.Report(JsonConvert.SerializeObject(_result));
             }
 
-            if(_inputData.JobVersion >= JobVersion.V4)
+            if (_inputData.JobVersion >= JobVersion.V4)
             {
                 // Update job status on meta table for job version larger than V4.
                 _jobStatusEntity.JobStatus = JsonConvert.SerializeObject(_jobStatus);
@@ -618,7 +618,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 }
 
                 UpdateRunningJobStatus(firstRunningJobId);
-                await UploadJobStatusAsync(progress, cancellationToken);
+                await SynchroniseJobStatusAsync(progress, cancellationToken);
             }
 
             _logger.LogInformation($"Orchestrator job {_jobInfo.Id} finished checking the first running job {firstRunningJobId} status, the job {firstRunningJobId} is {((JobStatus)firstRunningJobInfo.Status).ToString("D")}.");
