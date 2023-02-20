@@ -167,7 +167,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 _metricsLogger.LogResourceLatencyMetric(jobLatency.TotalSeconds);
 
                 _diagnosticLogger.LogInformation($"Finish FhirToDataLake job. Synced result data to {_inputData.DataEndTime}.");
-                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}. Synced result data to {_inputData.DataEndTime}. " +
+                _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}, {_result.CompletedJobCount} processing jobs are created. Synced result data to {_inputData.DataEndTime}. " +
                     $"Report a {MetricNames.ResourceLatencyMetric} metric with {jobLatency.TotalSeconds} seconds latency");
 
                 return JsonConvert.SerializeObject(_result);

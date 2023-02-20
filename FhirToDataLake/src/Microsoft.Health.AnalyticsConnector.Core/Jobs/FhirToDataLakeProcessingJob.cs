@@ -147,7 +147,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                 progress.Report(JsonConvert.SerializeObject(_result));
 
-                _logger.LogInformation($"Finished processing job '{_jobId}'.");
+                _logger.LogInformation($"Finished processing job {_jobId}.");
 
                 return JsonConvert.SerializeObject(_result);
             }
