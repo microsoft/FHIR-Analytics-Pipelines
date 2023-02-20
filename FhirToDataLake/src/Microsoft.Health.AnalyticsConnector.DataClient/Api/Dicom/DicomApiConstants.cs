@@ -51,7 +51,7 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.Api.Dicom
         /// </summary>
         public static readonly Dictionary<ServerEnvironmentGroup, string> DicomServerAudienceMap = new Dictionary<ServerEnvironmentGroup, string>()
         {
-            { ServerEnvironmentGroup.PROD, "https://dicom.healthcareapis.azure.net" },
+            { ServerEnvironmentGroup.PROD, "https://dicom.healthcareapis.azure.com" },
             { ServerEnvironmentGroup.TEST, "https://dicom.healthcareapis.azure-test.net" },
             { ServerEnvironmentGroup.LOCAL, "https://dicom.healthcareapis.azure-test.net" },
         };

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.AnalyticsConnector.Common;
@@ -25,7 +26,11 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.UnitTests.Api.Dicom
     public class DicomApiDataClientTests
     {
         private static readonly IDiagnosticLogger _diagnosticLogger = new DiagnosticLogger();
-        private readonly MockTokenCredentialProvider _mockTokenCredentialProvider = new ();
+        private readonly MockTokenCredentialProvider _mockTokenCredentialProvider = new MockTokenCredentialProvider()
+        {
+            Audience = "https://dicom.healthcareapis.azure.com",
+        };
+
         private readonly NullLogger<DicomApiDataClient> _nullDicomApiDataClientLogger = NullLogger<DicomApiDataClient>.Instance;
 
         private const string SampleOffset = "1262";
@@ -175,6 +180,25 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.UnitTests.Api.Dicom
             string changeFeeds = await client.SearchAsync(changeFeedOffsetOptions);
 
             Assert.Equal(TestDataProvider.GetDataFromFile(TestDataConstants.ChangeFeedsFile), changeFeeds);
+        }
+
+        [Fact]
+        public async Task GivenInvalidServerEnvironmentGroup_WhenSearch_ExceptionShouldBeThrown()
+        {
+            var testCredentialProvider = new MockTokenCredentialProvider()
+            {
+                Audience = "TESTINVALIDAUDIENCE",
+            };
+
+            DicomApiDataClient client = CreateDataClient(DicomServerUri, testCredentialProvider);
+            var queryParameters = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>(DicomApiConstants.IncludeMetadataKey, SampleIncludeMetadata),
+            };
+
+            var changeFeedLatestOptions = new ChangeFeedLatestOptions(queryParameters);
+            var exception = await Assert.ThrowsAsync<ApiSearchException>(() => client.SearchAsync(changeFeedLatestOptions));
+            Assert.IsType<AuthenticationFailedException>(exception.InnerException);
         }
 
         [Fact]

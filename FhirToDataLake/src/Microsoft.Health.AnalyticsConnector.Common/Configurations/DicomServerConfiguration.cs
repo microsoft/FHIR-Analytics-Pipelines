@@ -18,7 +18,7 @@ namespace Microsoft.Health.AnalyticsConnector.Common.Configurations
         [JsonProperty("authentication")]
         public AuthenticationType Authentication { get; set; } = AuthenticationType.None;
 
-        [JsonProperty("environmentGroup")]
+        [JsonProperty("serverEnvironmentGroup")]
         public ServerEnvironmentGroup ServerEnvironmentGroup { get; set; } = ServerEnvironmentGroup.PROD;
     }
 }
