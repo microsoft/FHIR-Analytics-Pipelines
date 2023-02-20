@@ -3,25 +3,26 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Microsoft.Health.AnalyticsConnector.Common.Configurations;
-
-namespace Microsoft.Health.AnalyticsConnector.DataClient
+namespace Microsoft.Health.AnalyticsConnector.Common
 {
-    public interface IApiDataSource
+    /// <summary>
+    /// Server environment group
+    /// </summary>
+    public enum ServerEnvironmentGroup
     {
         /// <summary>
-        /// Server url.
+        /// Azure production cloud environment
         /// </summary>
-        public string ServerUrl { get; }
+        PROD,
 
         /// <summary>
-        /// Authentication audience to access the server.
+        /// Local environment
         /// </summary>
-        public string Audience { get; }
+        LOCAL,
 
         /// <summary>
-        /// Authentication method to access the server.
+        /// Test environment
         /// </summary>
-        public AuthenticationType Authentication { get; }
+        TEST,
     }
 }
