@@ -179,6 +179,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             using var tokenSource = new CancellationTokenSource();
 
+            // the deplay time should be larger than 2*"SchedulerServicePullingIntervalInSeconds" and with some buffer time.
             tokenSource.CancelAfter(TimeSpan.FromSeconds(4));
             Exception exception = await Record.ExceptionAsync(async () => await schedulerService.RunAsync(tokenSource.Token));
 
@@ -209,6 +210,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             using var tokenSource = new CancellationTokenSource();
 
+            // the deplay time should be larger than 2*"SchedulerServicePullingIntervalInSeconds" and with some buffer time.
             tokenSource.CancelAfter(TimeSpan.FromSeconds(3));
             Exception exception = await Record.ExceptionAsync(async () => await schedulerService.RunAsync(tokenSource.Token));
 
@@ -1418,6 +1420,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             TriggerLeaseEntity triggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
             Assert.NotNull(triggerLeaseEntity);
 
+            // the deplay time should be larger than 2*"SchedulerServicePullingIntervalInSeconds" and with some buffer time.
             await Task.Delay(TimeSpan.FromSeconds(4), CancellationToken.None);
 
             TriggerLeaseEntity newTriggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.DicomToDataLake, CancellationToken.None);
