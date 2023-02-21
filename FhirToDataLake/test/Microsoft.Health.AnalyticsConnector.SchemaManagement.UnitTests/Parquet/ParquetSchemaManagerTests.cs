@@ -63,10 +63,10 @@ namespace Microsoft.Health.AnalyticsConnector.SchemaManagement.UnitTests.Parquet
                 () => new ParquetSchemaManager(schemaConfigurationOption, TestUtils.TestParquetSchemaProviderDelegate, _diagnosticLogger, null));
         }
 
-        [InlineData("Patient", 25)]
-        [InlineData("Observation", 33)]
-        [InlineData("Encounter", 32)]
-        [InlineData("Claim", 36)]
+        [InlineData("Patient", 34)]
+        [InlineData("Observation", 44)]
+        [InlineData("Encounter", 35)]
+        [InlineData("Claim", 41)]
         [Theory]
         public static void GivenASchemaType_WhenGetSchema_CorrectResultShouldBeReturned(string schemaType, int propertyCount)
         {
