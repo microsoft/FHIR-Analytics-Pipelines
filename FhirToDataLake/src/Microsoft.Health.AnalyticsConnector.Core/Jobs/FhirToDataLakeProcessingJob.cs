@@ -94,11 +94,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             _metricsLogger = EnsureArg.IsNotNull(metricsLogger, nameof(metricsLogger));
             _diagnosticLogger = EnsureArg.IsNotNull(diagnosticLogger, nameof(diagnosticLogger));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
-
-            if (_inputData.JobVersion >= JobVersion.V4)
-            {
-                _splitProcessingJobTimeRangeParameters = _inputData.SplitProcessingJobInfo.SubJobInfos.ToDictionary(x => x.ResourceType, x => x.TimeRange);
-            }
         }
 
         // the processing job status is never set to failed or cancelled.
@@ -211,6 +206,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             };
 
             var searchOption = new BaseSearchOptions(null, parameters);
+
+            if (_inputData.JobVersion >= JobVersion.V4)
+            {
+                _splitProcessingJobTimeRangeParameters = _inputData.SplitProcessingJobInfo.SubJobInfos.ToDictionary(x => x.ResourceType, x => x.TimeRange);
+            }
 
             // retrieve resources for all the type filters.
             await ProcessFiltersAsync(progress, searchOption, cancellationToken);

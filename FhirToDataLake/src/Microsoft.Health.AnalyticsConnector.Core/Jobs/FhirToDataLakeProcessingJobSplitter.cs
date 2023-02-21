@@ -77,7 +77,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 if (totalCount == 0)
                 {
                     // Return Processing job with resource count is zero.
-                    _logger.LogInformation($"[Job splitter]: There is no resource for resource type {resourceType}. Will skip the resoucre type. ");
+                    _logger.LogInformation($"[Job splitter]: There is no resource for resource type {resourceType}. The job will be skipped outside. ");
                     yield return new FhirToDataLakeSplitProcessingJobInfo
                     {
                         ResourceCount = 0,
@@ -105,7 +105,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     _jobCandidatePool.AddJobCandidates(subJob);
                     _logger.LogInformation($"[Job splitter]: One small job for {resourceType} with {totalCount} count is generated and pushed into candidate pool.");
 
-                    // Wrap all candidates if total resource count for candidates not less than low bound. Otherwise, push sub job into candidate pool.
+                    // Generate one sub job if total resource count for candidates not less than low bound.
                     if (_jobCandidatePool.GetResourceCount() >= LowBoundOfProcessingJobResourceCount)
                     {
                         yield return _jobCandidatePool.GenerateProcessingJob();
@@ -140,8 +140,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                         {
                             _jobCandidatePool.AddJobCandidates(subJob);
 
-                            // Wrap all candidates if total resource count for candidates not less than low bound. Otherwise, push sub job into candidate pool.
-                            if (_jobCandidatePool.GetResourceCount() >= LowBoundOfProcessingJobResourceCount)
+                            // Generate one sub job if total resource count for candidates not less than low bound.
                             {
                                 yield return _jobCandidatePool.GenerateProcessingJob();
                             }

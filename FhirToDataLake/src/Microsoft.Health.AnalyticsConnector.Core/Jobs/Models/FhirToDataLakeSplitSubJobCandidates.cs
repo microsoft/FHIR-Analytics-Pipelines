@@ -15,7 +15,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
 
         public void AddJobCandidates(FhirToDataLakeSplitSubJobInfo subJob)
         {
-            // Push small job into candidate list.
+            // Add small job into candidate list.
             _jobCandidateList.Add(subJob);
             _currentResourceCount += subJob.ResourceCount;
         }

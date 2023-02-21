@@ -29,6 +29,7 @@ using Microsoft.Health.AnalyticsConnector.DataClient.Extensions;
 using Microsoft.Health.AnalyticsConnector.DataClient.Models.FhirApiOption;
 using Microsoft.Health.AnalyticsConnector.DataWriter;
 using Microsoft.Health.JobManagement;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -363,6 +364,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     continue;
                 }
 
+                _logger.LogInformation($"Generate one processing job with {processingJob.ResourceCount} resources.");
                 yield return new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
