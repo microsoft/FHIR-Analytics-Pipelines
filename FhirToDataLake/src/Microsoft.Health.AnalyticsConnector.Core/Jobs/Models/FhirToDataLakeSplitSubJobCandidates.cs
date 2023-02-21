@@ -24,7 +24,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
         {
             if (!_jobCandidateList.Any())
             {
-                return null;
+                _currentResourceCount = 0;
+                return new FhirToDataLakeSplitProcessingJobInfo();
             }
 
             FhirToDataLakeSplitProcessingJobInfo result = new ()
