@@ -345,7 +345,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             var orchestratorJobStatus = new FhirToDataLakeOrchestratorJobStatus()
             {
                 CreatedJobCount = resumeFrom + 1,
-                SubmittedResourceTimestamps = new Dictionary<string, DateTimeOffset>() { { "Patient", TestStartTime.AddDays((resumeFrom + 1) * daysInterval) } },
+                CommittedResourceTimestamps = new Dictionary<string, DateTimeOffset>() { { "Patient", TestStartTime.AddDays((resumeFrom + 1) * daysInterval) } },
                 ProcessedResourceCounts = new Dictionary<string, int> { { "Patient", completedCount } },
                 SkippedResourceCounts = new Dictionary<string, int> { { "Patient", 0 } },
                 TotalResourceCounts = new Dictionary<string, int> { { "Patient", completedCount } },

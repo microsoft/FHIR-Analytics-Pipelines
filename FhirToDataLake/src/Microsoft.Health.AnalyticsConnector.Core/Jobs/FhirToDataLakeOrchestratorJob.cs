@@ -140,7 +140,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                     string[] jobDefinitions = { JsonConvert.SerializeObject(input) };
 
-                    _jobStatus.SubmittingProcessingJob = jobDefinitions;
+                    _jobStatus.ToBeCommittedProcessingJob = jobDefinitions;
                     await SynchroniseJobStatusAsync(progress, cancellationToken);
 
                     IEnumerable<JobInfo> jobInfos = await _queueClient.EnqueueAsync(
@@ -151,7 +151,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                         false,
                         cancellationToken);
                     long newJobId = jobInfos.First().Id;
-                    UpdateSubmittingJobStatus(input, newJobId);
+                    UpdateCommittedJobStatus(input, newJobId);
                     await SynchroniseJobStatusAsync(progress, cancellationToken);
 
                     if (GetRunningJobCount() >
@@ -226,7 +226,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             }
         }
 
-        private void UpdateSubmittingJobStatus(FhirToDataLakeProcessingJobInputData input, long newJobId)
+        private void UpdateCommittedJobStatus(FhirToDataLakeProcessingJobInputData input, long newJobId)
         {
             _jobStatus.CreatedJobCount++;
             if (_inputData.JobVersion == JobVersion.V1 || _inputData.JobVersion == JobVersion.V2)
@@ -240,11 +240,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             {
                 foreach (var job in input.SplitProcessingJobInfo.SubJobInfos)
                 {
-                    _jobStatus.SubmittedResourceTimestamps[job.ResourceType] = job.TimeRange.DataEndTime;
+                    _jobStatus.CommittedResourceTimestamps[job.ResourceType] = job.TimeRange.DataEndTime;
                 }
             }
 
-            _jobStatus.SubmittingProcessingJob = null;
+            _jobStatus.ToBeCommittedProcessingJob = null;
         }
 
         private FhirToDataLakeOrchestratorJobStatus InitializeJobStatusFromResult()
@@ -341,15 +341,15 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             // Resume the submitting jobs.
-            if (_jobStatus.SubmittingProcessingJob != null)
+            if (_jobStatus.ToBeCommittedProcessingJob != null)
             {
-                foreach (var job in _jobStatus.SubmittingProcessingJob)
+                foreach (var job in _jobStatus.ToBeCommittedProcessingJob)
                 {
                     yield return JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(job);
                 }
             }
 
-            IAsyncEnumerable<FhirToDataLakeSplitProcessingJobInfo> processingJobs = _jobSplitter.SplitJobAsync(_inputData.DataStartTime, _inputData.DataEndTime, _jobStatus.SubmittedResourceTimestamps, cancellationToken);
+            IAsyncEnumerable<FhirToDataLakeSplitProcessingJobInfo> processingJobs = _jobSplitter.SplitJobAsync(_inputData.DataStartTime, _inputData.DataEndTime, _jobStatus.CommittedResourceTimestamps, cancellationToken);
             await foreach (FhirToDataLakeSplitProcessingJobInfo processingJob in processingJobs.WithCancellation(cancellationToken))
             {
                 if (processingJob.ResourceCount == 0)
@@ -357,7 +357,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     // If resource count is 0, skip the job and update the submitted timestamp.
                     foreach (FhirToDataLakeSplitSubJobInfo subJob in processingJob.SubJobInfos)
                     {
-                        _jobStatus.SubmittedResourceTimestamps[subJob.ResourceType] = subJob.TimeRange.DataEndTime;
+                        _jobStatus.CommittedResourceTimestamps[subJob.ResourceType] = subJob.TimeRange.DataEndTime;
                     }
 
                     continue;

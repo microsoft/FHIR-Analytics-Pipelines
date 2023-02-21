@@ -29,6 +29,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Extensions
                     {
                         DateParseHandling = DateParseHandling.None,
                     });
+
+                // Using JsonConvert to deserialize string to avoid parse DateTimeoffset string into DateTime objects.
                 string result = JsonConvert.DeserializeObject<Dictionary<string, string>>(lastUpdatedObject.ToString()).GetValueOrDefault(FhirBundleConstants.LastUpdatedKey);
                 if (result == null)
                 {

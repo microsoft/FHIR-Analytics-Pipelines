@@ -31,14 +31,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
         public long CompletedJobCount { get; set; }
 
         /// <summary>
-        /// Processing job input data that are in the process of submitting, used for system scope
+        /// Processing job input data that to be committed
         /// </summary>
-        public string[] SubmittingProcessingJob { get; set; } = null;
+        public string[] ToBeCommittedProcessingJob { get; set; } = null;
 
         /// <summary>
-        /// Submitted timestamp for each resource type, used for system scope
+        /// Committed timestamp for each resource type, used for system scope
         /// </summary>
-        public Dictionary<string, DateTimeOffset> SubmittedResourceTimestamps { get; set; } = new Dictionary<string, DateTimeOffset>();
+        public Dictionary<string, DateTimeOffset> CommittedResourceTimestamps { get; set; } = new Dictionary<string, DateTimeOffset>();
 
         /// <summary>
         /// Next job timestamp to be processed, used for system scope
