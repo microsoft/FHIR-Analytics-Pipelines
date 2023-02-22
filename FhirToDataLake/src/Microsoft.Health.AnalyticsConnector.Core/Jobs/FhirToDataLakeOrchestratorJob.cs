@@ -142,7 +142,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     string[] jobDefinitions = { JsonConvert.SerializeObject(input) };
 
                     _jobStatus.ToBeCommittedProcessingJob = jobDefinitions;
-                    await SynchroniseJobStatusAsync(progress, cancellationToken);
+                    await PersistJobStatusAsync(progress, cancellationToken);
 
                     IEnumerable<JobInfo> jobInfos = await _queueClient.EnqueueAsync(
                         _jobInfo.QueueType,
@@ -153,7 +153,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                         cancellationToken);
                     long newJobId = jobInfos.First().Id;
                     UpdateCommittedJobStatus(input, newJobId);
-                    await SynchroniseJobStatusAsync(progress, cancellationToken);
+                    await PersistJobStatusAsync(progress, cancellationToken);
 
                     if (GetRunningJobCount() >
                         JobConfigurationConstants.CheckRunningJobCompleteRunningJobCountThreshold)
@@ -176,7 +176,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 var processEndtime = DateTimeOffset.UtcNow;
                 _jobStatus.CompleteTime = processEndtime;
 
-                await SynchroniseJobStatusAsync(progress, cancellationToken);
+                await PersistJobStatusAsync(progress, cancellationToken);
 
                 var jobLatency = processEndtime - _inputData.DataEndTime;
                 _metricsLogger.LogResourceLatencyMetric(jobLatency.TotalSeconds);
@@ -316,7 +316,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             return JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobStatus>(_jobStatusEntity.JobStatus);
         }
 
-        private async Task SynchroniseJobStatusAsync(IProgress<string> progress, CancellationToken cancellationToken)
+        private async Task PersistJobStatusAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
             if (_inputData.JobVersion <= JobVersion.V4)
             {
@@ -620,7 +620,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 }
 
                 UpdateRunningJobStatus(firstRunningJobId);
-                await SynchroniseJobStatusAsync(progress, cancellationToken);
+                await PersistJobStatusAsync(progress, cancellationToken);
             }
 
             _logger.LogInformation($"Orchestrator job {_jobInfo.Id} finished checking the first running job {firstRunningJobId} status, the job {firstRunningJobId} is {((JobStatus)firstRunningJobInfo.Status).ToString("D")}.");
