@@ -104,7 +104,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             {
                 if (_inputData.JobVersion >= JobVersion.V4)
                 {
-                    // Initialize job status from meta table when job version larger than or equal to V4.
+                    // Initialize job status from meta table from V4 job version.
                     _jobStatus = await InitializeJobStatusFromTableAsync(cancellationToken);
                 }
                 else
@@ -268,7 +268,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             };
         }
 
-        private void UpdateJobResultFromStatusAsync()
+        private void UpdateJobResultFromStatus()
         {
             _result = new FhirToDataLakeOrchestratorJobResult()
             {
@@ -306,7 +306,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                 if (!await _metadataStore.TryAddEntityAsync(newJobStatusEntity, cancellationToken))
                 {
-                    _logger.LogInformation("Initialize job status failed in orchestrator job {0}.", _jobInfo.Id);
+                    _logger.LogError("Initialize job status failed in orchestrator job {0}.", _jobInfo.Id);
                     throw new SynapsePipelineInternalException($"Initialize job status failed in orchestrator job {_jobInfo.Id}.");
                 }
 
@@ -320,18 +320,18 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         {
             if (_inputData.JobVersion <= JobVersion.V4)
             {
-                UpdateJobResultFromStatusAsync();
+                UpdateJobResultFromStatus();
                 progress.Report(JsonConvert.SerializeObject(_result));
             }
 
             if (_inputData.JobVersion >= JobVersion.V4)
             {
-                // Update job status on meta table for job version larger than V4.
+                // Update job status on meta table from V4 job version.
                 _jobStatusEntity.JobStatus = JsonConvert.SerializeObject(_jobStatus);
 
                 if (!await _metadataStore.TryUpdateEntityAsync(_jobStatusEntity))
                 {
-                    _logger.LogInformation("Update orchestrator job status failed in job {0}.", _jobInfo.Id);
+                    _logger.LogError("Update orchestrator job status failed in job {0}.", _jobInfo.Id);
                     throw new SynapsePipelineInternalException($"Update orchestrator job status failed in job  {_jobInfo.Id}.");
                 }
 

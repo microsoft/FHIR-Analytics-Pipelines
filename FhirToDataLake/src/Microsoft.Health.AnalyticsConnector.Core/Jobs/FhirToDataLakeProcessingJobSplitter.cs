@@ -76,8 +76,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                 if (totalCount == 0)
                 {
-                    // Return Processing job with resource count is zero.
-                    _logger.LogInformation($"[Job splitter]: There is no resource for resource type {resourceType}. The job will be skipped outside. ");
+                    // Return Processing job with resource count is zero. The job will be skipped outside.
+                    _logger.LogInformation($"[Job splitter]: There are no resources found for resource type {resourceType} from {splitJobStartTime} to {dataEndTime}.");
                     yield return new FhirToDataLakeSplitProcessingJobInfo
                     {
                         ResourceCount = 0,
@@ -103,7 +103,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     };
 
                     _jobCandidatePool.AddJobCandidates(subJob);
-                    _logger.LogInformation($"[Job splitter]: One small job for {resourceType} with {totalCount} count is generated and pushed into candidate pool.");
+                    _logger.LogInformation($"[Job splitter]: One small job for {resourceType} with {totalCount} count from {splitJobStartTime} to {dataEndTime} is generated and pushed into candidate pool.");
 
                     // Generate one sub job if total resource count for candidates not less than low bound.
                     if (_jobCandidatePool.GetResourceCount() >= LowBoundOfProcessingJobResourceCount)
@@ -224,7 +224,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             {
                 anchorList[(DateTimeOffset)firstResourceTimestamp] = 0;
             }
-            else if (startTime != null)
+
+            // The job need to split from start time. Add start time in anchor list.
+            if (startTime != null)
             {
                 anchorList[(DateTimeOffset)startTime] = 0;
             }
