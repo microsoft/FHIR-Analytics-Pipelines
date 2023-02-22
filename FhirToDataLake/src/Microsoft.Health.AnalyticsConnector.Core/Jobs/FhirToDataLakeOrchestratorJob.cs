@@ -29,7 +29,6 @@ using Microsoft.Health.AnalyticsConnector.DataClient.Extensions;
 using Microsoft.Health.AnalyticsConnector.DataClient.Models.FhirApiOption;
 using Microsoft.Health.AnalyticsConnector.DataWriter;
 using Microsoft.Health.JobManagement;
-using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -104,7 +103,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             {
                 if (_inputData.JobVersion >= JobVersion.V4)
                 {
-                    // Initialize job status from meta table from V4 job version.
+                    // Initialize job status from metatable from V4 job version.
                     _jobStatus = await InitializeJobStatusFromTableAsync(cancellationToken);
                 }
                 else
@@ -121,7 +120,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 FilterScope filterScope = await _filterManager.GetFilterScopeAsync(cancellationToken);
                 IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> inputs = filterScope switch
                 {
-                    // Split job by resource count when job version larger than V4.
+                    // Split job by resource count from V4 job version.
                     FilterScope.System => _inputData.JobVersion >= JobVersion.V4 ? GetInputsAsyncForSystem(cancellationToken) : GetInputsAsyncSystemForFixedTimespan(cancellationToken),
                     FilterScope.Group => GetInputsAsyncForGroup(cancellationToken),
                     _ => throw new ConfigurationErrorException(
@@ -152,6 +151,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                         false,
                         cancellationToken);
                     long newJobId = jobInfos.First().Id;
+
+                    // Update job status if enqueue successfully.
                     UpdateCommittedJobStatus(input, newJobId);
                     await PersistJobStatusAsync(progress, cancellationToken);
 
@@ -310,6 +311,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     throw new SynapsePipelineInternalException($"Initialize job status failed in orchestrator job {_jobInfo.Id}.");
                 }
 
+                // Update Etag of job status entity.
                 _jobStatusEntity = await _metadataStore.GetJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
             }
 
@@ -318,6 +320,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         private async Task PersistJobStatusAsync(IProgress<string> progress, CancellationToken cancellationToken)
         {
+            // Usage of result will be deprecated from V5.
             if (_inputData.JobVersion <= JobVersion.V4)
             {
                 UpdateJobResultFromStatus();
@@ -341,7 +344,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            // Resume the submitting jobs.
+            // Resume the un-committed processing jobs.
             if (_jobStatus.ToBeCommittedProcessingJob != null)
             {
                 foreach (var job in _jobStatus.ToBeCommittedProcessingJob)
@@ -355,7 +358,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             {
                 if (processingJob.ResourceCount == 0)
                 {
-                    // If resource count is 0, skip the job and update the submitted timestamp.
+                    // If resource count is 0, skip the job and update the committed timestamp for resouce type.
                     foreach (FhirToDataLakeSplitSubJobInfo subJob in processingJob.SubJobInfos)
                     {
                         _jobStatus.CommittedResourceTimestamps[subJob.ResourceType] = subJob.TimeRange.DataEndTime;

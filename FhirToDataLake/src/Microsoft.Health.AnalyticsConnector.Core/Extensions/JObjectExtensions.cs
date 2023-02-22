@@ -30,14 +30,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Extensions
                         DateParseHandling = DateParseHandling.None,
                     });
 
-                // Using JsonConvert to deserialize string to avoid parse DateTimeoffset string into DateTime objects.
+                // Using JsonConvert to deserialize string can avoid parsing DateTimeoffset string into DateTime objects.
                 string result = JsonConvert.DeserializeObject<Dictionary<string, string>>(lastUpdatedObject.ToString()).GetValueOrDefault(FhirBundleConstants.LastUpdatedKey);
-                if (result == null)
-                {
-                    throw new FhirDataParseException("Failed to find lastUpdated value in resource.");
-                }
-
-                return DateTimeOffset.Parse(result);
+                return result == null
+                    ? throw new FhirDataParseException("Failed to find lastUpdated value in resource.")
+                    : DateTimeOffset.Parse(result);
             }
             catch (FhirDataParseException)
             {

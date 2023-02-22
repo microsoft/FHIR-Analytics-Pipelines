@@ -55,7 +55,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         public int HighBoundOfProcessingJobResourceCount { get; set; } = JobConfigurationConstants.HighBoundOfProcessingJobResourceCount;
 
-        public async IAsyncEnumerable<FhirToDataLakeSplitProcessingJobInfo> SplitJobAsync(DateTimeOffset? dataStartTime, DateTimeOffset dataEndTime, Dictionary<string, DateTimeOffset> submittedResourceTimestamps, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<FhirToDataLakeSplitProcessingJobInfo> SplitJobAsync(DateTimeOffset? dataStartTime, DateTimeOffset dataEndTime, Dictionary<string, DateTimeOffset> committedResourceTimestamps, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             // Get all distinct resource types to be processed.
             List<TypeFilter> typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
@@ -64,7 +64,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             // Split jobs by resource types.
             foreach (var resourceType in resourceTypes)
             {
-                var splitJobStartTime = submittedResourceTimestamps.ContainsKey(resourceType) ? submittedResourceTimestamps[resourceType] : dataStartTime;
+                var splitJobStartTime = committedResourceTimestamps.ContainsKey(resourceType) ? committedResourceTimestamps[resourceType] : dataStartTime;
 
                 // The resource type has already been processed.
                 if (splitJobStartTime >= dataEndTime)
@@ -108,12 +108,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     // Generate one sub job if total resource count for candidates not less than low bound.
                     if (_jobCandidatePool.GetResourceCount() >= LowBoundOfProcessingJobResourceCount)
                     {
+                        _logger.LogInformation($"[Job splitter]: Generate a merged job with {_jobCandidatePool.GetResourceCount} resource count.");
                         yield return _jobCandidatePool.GenerateProcessingJob();
                     }
                 }
                 else if (totalCount <= HighBoundOfProcessingJobResourceCount)
                 {
-                    // Return job with total count higher than low bound and lower than high bound.
+                    // Return job with total count in the range of low bound and high bound.
                     _logger.LogInformation($"[Job splitter]: Split one sub job with {totalCount} resources from {splitJobStartTime} to {dataEndTime} for resource type {resourceType}.");
 
                     yield return new FhirToDataLakeSplitProcessingJobInfo
@@ -141,12 +142,15 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                             _jobCandidatePool.AddJobCandidates(subJob);
 
                             // Generate one sub job if total resource count for candidates not less than low bound.
+                            if (_jobCandidatePool.GetResourceCount() >= LowBoundOfProcessingJobResourceCount)
                             {
+                                _logger.LogInformation($"[Job splitter]: Generate a merged job with {_jobCandidatePool.GetResourceCount} resource count.");
                                 yield return _jobCandidatePool.GenerateProcessingJob();
                             }
                         }
                         else
                         {
+                            _logger.LogInformation($"[Job splitter]: Split one sub job with {subJob.ResourceCount} resources from {subJob.TimeRange.DataStartTime} to {subJob.TimeRange.DataEndTime} for resource type {resourceType}.");
                             yield return new FhirToDataLakeSplitProcessingJobInfo
                             {
                                 ResourceCount = subJob.ResourceCount,
@@ -172,8 +176,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             // Initialize anchor list to add first and last anchors in the given time range.
             SortedDictionary<DateTimeOffset, int> anchorList = await InitializeAnchorListAsync(resourceType, startTime, endTime, totalCount, cancellationToken);
             DateTimeOffset lastAnchor = anchorList.LastOrDefault().Key;
-
-            _logger.LogInformation($"[Job Splitter]: Finish initialize anchor list for resource type {resourceType}.");
 
             DateTimeOffset? lastSplitTimestamp = startTime;
 
@@ -313,7 +315,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             return null;
         }
 
-        // get next split time stamp that resource count fall in [lowBound, highBound].
+        // get next split time stamp that resource count falls in [lowBound, highBound].
         private async Task<DateTimeOffset> GetNextSplitTimestamp(string resourceType, DateTimeOffset? startTimestamp, SortedDictionary<DateTimeOffset, int> anchorList, CancellationToken cancellationToken)
         {
             int baseSize = startTimestamp == null ? 0 : anchorList[(DateTimeOffset)startTimestamp];
@@ -354,7 +356,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         private async Task<DateTimeOffset> BinarySerachAnchor(string resourceType, DateTimeOffset startAnchorTimestamp, DateTimeOffset endAnchorTimestamp, SortedDictionary<DateTimeOffset, int> anchorList, int baseSize, CancellationToken cancellationToken)
         {
-            // Binary search to find timestamp mid that resource count between [start, mid) falls into boundaries.
+            // Binary search to find midAnchorTimestamp that resource count between [startAnchorTimestamp, midAnchorTimestamp) falls into boundaries.
             while ((endAnchorTimestamp - startAnchorTimestamp).TotalMilliseconds > 1)
             {
                 DateTimeOffset midAnchorTimestamp = startAnchorTimestamp.Add((endAnchorTimestamp - startAnchorTimestamp) / 2);

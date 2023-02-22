@@ -606,7 +606,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                             var dateTime = _splitProcessingJobTimeRangeParameters != null && _splitProcessingJobTimeRangeParameters.ContainsKey(resourceType) ? _splitProcessingJobTimeRangeParameters[resourceType].DataEndTime : _inputData.DataEndTime;
                             var fileName = GetDataFileName(dateTime, schemaType, _jobId, _outputFileIndexMap[schemaType]);
                             string blobUrl = await _dataWriter.WriteAsync(parquetStream, fileName, cancellationToken);
-
                             _outputFileIndexMap[schemaType] += 1;
 
                             _result.ProcessedDataSizeInTotal += parquetStream.Value.Length;
