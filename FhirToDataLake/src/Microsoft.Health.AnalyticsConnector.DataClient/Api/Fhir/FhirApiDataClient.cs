@@ -92,7 +92,7 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.Api
 
                         // The thread-safe AzureServiceTokenProvider class caches the token in memory and retrieves it from Azure AD just before expiration.
                         // https://docs.microsoft.com/en-us/dotnet/api/overview/azure/service-to-service-authentication#using-the-library
-                        accessToken = await _accessTokenProvider.GetAccessTokenAsync(_fhirApiDataSource.ServerUrl, cancellationToken);
+                        accessToken = await _accessTokenProvider.GetAccessTokenAsync(_fhirApiDataSource.Audience, cancellationToken);
                     }
                 }
                 catch (Exception ex)

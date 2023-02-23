@@ -17,5 +17,8 @@ namespace Microsoft.Health.AnalyticsConnector.Common.Configurations
 
         [JsonProperty("authentication")]
         public AuthenticationType Authentication { get; set; } = AuthenticationType.None;
+
+        [JsonProperty("audience")]
+        public string Audience { get; set; } = ConfigurationConstants.AzureDicomServerAudience;
     }
 }

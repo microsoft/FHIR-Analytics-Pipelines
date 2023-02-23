@@ -45,10 +45,5 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.Api.Dicom
         /// Latest key in DICOM url.
         /// </summary>
         public const string LatestKey = "latest";
-
-        /// <summary>
-        /// The managed identity url to get access token for DICOM service.
-        /// </summary>
-        public const string DicomResourceUrl = "https://dicom.healthcareapis.azure.com";
     }
 }

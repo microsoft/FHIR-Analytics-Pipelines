@@ -15,6 +15,11 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient
         public string ServerUrl { get; }
 
         /// <summary>
+        /// Authentication audience to access the server.
+        /// </summary>
+        public string Audience { get; }
+
+        /// <summary>
         /// Authentication method to access the server.
         /// </summary>
         public AuthenticationType Authentication { get; }

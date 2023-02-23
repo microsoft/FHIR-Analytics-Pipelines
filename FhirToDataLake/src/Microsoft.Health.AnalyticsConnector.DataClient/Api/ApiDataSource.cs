@@ -29,12 +29,14 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.Api
                     ServerUrl = AddSlashForUrl(
                         EnsureArg.IsNotNullOrEmpty(config.Value.FhirServer.ServerUrl, nameof(config.Value.FhirServer.ServerUrl)));
                     Authentication = config.Value.FhirServer.Authentication;
+                    Audience = ServerUrl;
                     break;
                 case DataSourceType.DICOM:
                     var dicomServerUrl = AddSlashForUrl(
                         EnsureArg.IsNotNullOrEmpty(config.Value.DicomServer.ServerUrl, nameof(config.Value.DicomServer.ServerUrl)));
                     ServerUrl = $"{dicomServerUrl}{DicomApiConstants.VersionMap[config.Value.DicomServer.ApiVersion]}/";
                     Authentication = config.Value.DicomServer.Authentication;
+                    Audience = config.Value.DicomServer.Audience;
                     break;
                 default:
                     // Should not be thrown.
@@ -43,6 +45,8 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.Api
         }
 
         public string ServerUrl { get; }
+
+        public string Audience { get; }
 
         public AuthenticationType Authentication { get; }
 

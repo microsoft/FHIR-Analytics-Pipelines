@@ -101,7 +101,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.DataProcessor
 
             string inputContent = string.Join(
                 Environment.NewLine,
-                processedData.Values.Select(jsonObject => {
+                processedData.Values.Select(jsonObject =>
+                {
                     var str = jsonObject.ToString(Formatting.None);
 
                     // add a log for large resource
