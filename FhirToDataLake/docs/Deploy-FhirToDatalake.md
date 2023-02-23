@@ -96,7 +96,7 @@ You must provide the following roles to your account to run the PowerShell scrip
 
 ### 5. Provide access of the Storage Account to the Synapse Workspace
 
-To enable Synapse to read the data from the Storage Account, assign the _Storage Blob Data Contributor_ role to it. You can do this by selecting **Managed identify** while adding members to the role. You should be able to pick your Synapse workspace instance from the list of managed identities shown on the portal.
+To enable Synapse to read the data from the Storage Account, assign the _Storage Blob Data Contributor_ role to it. You can do this by selecting **Managed Identity** while adding members to the role. You should be able to pick your Synapse workspace instance from the list of managed identities shown on the portal.
 
 ### 6. Run the PowerShell script
 
