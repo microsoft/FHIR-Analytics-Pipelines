@@ -1,6 +1,6 @@
 # Write crontab expressions for pipeline scheduler
 
-You can use cron expressions to schedule FHIR Analytics pipeline jobs. FHIR Analytics pipeline is using [NCrontab](https://github.com/atifaziz/NCrontab) tp oarse the cron expressions.
+You can use cron expressions to schedule FHIR Analytics pipeline jobs. FHIR Analytics pipeline is using [NCrontab](https://github.com/atifaziz/NCrontab) to parse the cron expressions.
 
 The cron expression the pipeline currently suported is a string consisting of 6 fields, separated by spaces. Each field represents a particular unit of time and specifies when the job should be run. The format for a cron expression is six-part as follows:
 
@@ -27,8 +27,8 @@ The fields are as follows:
 
 Here are some examples:
 
-- Run every 10 minutes: ___* /10 * * * *___
-- Run every 30 minutes: ___* /30 * * * *___  
+- Run every 10 minutes: ___0 /10 * * * *___
+- Run every 30 minutes: ___0 /30 * * * *___  
 - Run daily at 0am: ___* * * * * *___
 - Run at 10:00am every Saturday:  ___0 0 10 * * 6___ 
 
