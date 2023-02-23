@@ -29,7 +29,7 @@ Here are some examples:
 
 - Run every 10 minutes: ___0 /10 * * * *___
 - Run every 30 minutes: ___0 /30 * * * *___  
-- Run daily at 0am: ___* * * * * *___
+- Run daily at 0am: ___0 0 0 * * *___
 - Run at 10:00am every Saturday:  ___0 0 10 * * 6___ 
 
 
