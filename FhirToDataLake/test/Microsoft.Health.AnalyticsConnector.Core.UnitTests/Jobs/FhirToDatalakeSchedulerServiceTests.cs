@@ -531,7 +531,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             TriggerLeaseEntity triggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(triggerLeaseEntity);
 
-            await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
+            // the deplay time should be larger than 2*"SchedulerServicePullingIntervalInSeconds" and with some buffer time.
+            await Task.Delay(TimeSpan.FromSeconds(4), CancellationToken.None);
 
             TriggerLeaseEntity newTriggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(newTriggerLeaseEntity);
@@ -614,7 +615,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             using var tokenSource = new CancellationTokenSource();
             Task task = schedulerService.RunAsync(tokenSource.Token);
 
-            await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
+            // the deplay time should be larger than 2*"SchedulerServicePullingIntervalInSeconds" and with some buffer time.
+            await Task.Delay(TimeSpan.FromSeconds(3), CancellationToken.None);
 
             // should enqueue orchestrator job
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
@@ -1541,7 +1543,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             TriggerLeaseEntity triggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(triggerLeaseEntity);
 
-            await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
+            await Task.Delay(TimeSpan.FromSeconds(4), CancellationToken.None);
 
             TriggerLeaseEntity newTriggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(newTriggerLeaseEntity);

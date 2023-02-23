@@ -61,7 +61,14 @@ _JSON schema file:_
 Refer [here](https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md) to push the prepared schema to Azure Container Registry, later we will use the schema image reference from the Container Registry to deploy the analytics pipeline.
 
 ### 3.	Deploy the Analytics pipeline with customized schema enabled
-Deploy the pipeline with [ARM template](https://github.com/microsoft/FHIR-Analytics-Pipelines/blob/main/FhirToDataLake/deploy/templates/FhirSynapsePipelineTemplate.json), set the parameter "Customized Schema" as "true", and "Customized Schema Image Reference" as the reference of image where your schema is stored.
+
+Use the button below to deploy  the pipeline with [ARM template](../deploy/templates/ContainerApp/DeployFhirPipelineToContainerApp.json) through the Azure Portal.
+   
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2FFHIR-Analytics-Pipelines%2Fmain%2FFhirToDataLake%2Fdeploy%2Ftemplates%2FContainerApp%2FDeployDicomPipelineToContainerApp.json" target="_blank">
+    <img src="https://aka.ms/deploytoazurebutton"/>
+</a>
+
+Set the parameter "Customized Schema" as "true", and "Customized Schema Image Reference" as the reference of image where your schema is stored.
 
  ![image](./assets/DeploymentTemplate.png)
 
