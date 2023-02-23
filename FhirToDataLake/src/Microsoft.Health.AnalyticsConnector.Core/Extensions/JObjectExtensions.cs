@@ -4,10 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Health.AnalyticsConnector.Core.Exceptions;
 using Microsoft.Health.AnalyticsConnector.Core.Fhir;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.AnalyticsConnector.Core.Extensions
@@ -23,18 +21,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Extensions
         {
             try
             {
-                JObject lastUpdatedObject = JObject.FromObject(
-                    resource.GetValue(FhirBundleConstants.MetaKey),
-                    new JsonSerializer
-                    {
-                        DateParseHandling = DateParseHandling.None,
-                    });
+                DateTimeOffset? lastUpdated = (resource.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<DateTime>(FhirBundleConstants.LastUpdatedKey);
 
-                // Using JsonConvert to deserialize string can avoid parsing DateTimeoffset string into DateTime objects.
-                string result = JsonConvert.DeserializeObject<Dictionary<string, string>>(lastUpdatedObject.ToString()).GetValueOrDefault(FhirBundleConstants.LastUpdatedKey);
-                return result == null
+                return (DateTimeOffset)(lastUpdated == null
                     ? throw new FhirDataParseException("Failed to find lastUpdated value in resource.")
-                    : DateTimeOffset.Parse(result);
+                    : lastUpdated);
             }
             catch (FhirDataParseException)
             {

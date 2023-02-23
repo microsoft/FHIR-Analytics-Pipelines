@@ -26,6 +26,21 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.UnitTests.Extensions
                     new DateTimeOffset(2021, 9, 9, 8, 0, 30, new TimeSpan(-8, 0, 0)),
                     "2021-09-09T08:00:30.0000000-08:00",
                 },
+                new object[]
+                {
+                    new DateTimeOffset(2022, 5, 1, 8, 6, 32, 123, new TimeSpan(1, 0, 0)),
+                    "2022-05-01T08:06:32.1230000+01:00",
+                },
+                new object[]
+                {
+                    new DateTimeOffset(2022, 5, 1, 8, 6, 32, 999, new TimeSpan(13, 30, 0)),
+                    "2022-05-01T08:06:32.9990000+13:30",
+                },
+                new object[]
+                {
+                    new DateTimeOffset(2022, 5, 1, 8, 6, 32, 1, new TimeSpan(13, 30, 0)),
+                    "2022-05-01T08:06:32.0010000+13:30",
+                },
             };
 
         [Theory]

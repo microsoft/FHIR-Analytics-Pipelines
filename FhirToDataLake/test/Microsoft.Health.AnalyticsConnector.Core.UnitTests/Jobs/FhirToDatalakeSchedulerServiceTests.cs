@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.AnalyticsConnector.Common.Configurations;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;
+using Microsoft.Health.AnalyticsConnector.Common.Metrics;
 using Microsoft.Health.AnalyticsConnector.Common.Models.Jobs;
 using Microsoft.Health.AnalyticsConnector.Core.Jobs;
 using Microsoft.Health.AnalyticsConnector.Core.Jobs.Models;
@@ -30,8 +31,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
         private readonly NullLogger<FhirToDatalakeSchedulerService> _nullSchedulerServiceLogger =
             NullLogger<FhirToDatalakeSchedulerService>.Instance;
-
-        private static readonly MockMetricsLogger MetricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
 
         private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
         private const string TestJobInfoQueueName = "jobinfoqueue";
@@ -55,21 +54,21 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             };
 
             _jobConfigOption = Options.Create(jobConfig);
-            MetricsLogger.Clear();
         }
 
         // Initialize Test
         [Fact]
         public void GivenNullInputParameters_WhenInitialize_ExceptionShouldBeThrown()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             Assert.Throws<ArgumentNullException>(
-                () => new FhirToDatalakeSchedulerService(null, new MockMetadataStore(), Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new FhirToDatalakeSchedulerService(null, new MockMetadataStore(), Options.Create(new JobConfiguration()), metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), null, Options.Create(new JobConfiguration()), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), null, Options.Create(new JobConfiguration()), metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
 
             Assert.Throws<ArgumentNullException>(
-                () => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), null, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), null, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
         }
 
         [Theory]
@@ -80,25 +79,28 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
         [InlineData("*/5 * * * *")]
         public void GivenInvalidSchedulerCronExpression_WhenInitialize_ExceptionShouldBeThrown(string schedulerCronExpression)
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var jobConfig = new JobConfiguration
             {
                 SchedulerCronExpression = schedulerCronExpression,
             };
 
             Assert.Throws<CrontabException>(
-                () => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(jobConfig), metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
         }
 
         [Fact]
         public void GivenNullSchedulerCronExpression_WhenInitialize_ExceptionShouldBeThrown()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             Assert.Throws<ArgumentNullException>(
-                () => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(new JobConfiguration()), MetricsLogger,  DiagnosticLogger, _nullSchedulerServiceLogger));
+                () => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(new JobConfiguration()), metricsLogger,  DiagnosticLogger, _nullSchedulerServiceLogger));
         }
 
         [Fact]
         public void GivenNullStartEndTime_WhenInitialize_NoExceptionShouldBeThrown()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var jobConfig = new JobConfiguration
             {
                 QueueType = QueueType.FhirToDataLake,
@@ -109,7 +111,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 JobInfoQueueName = TestJobInfoQueueName,
             };
 
-            Exception exception = Record.Exception(() => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(jobConfig), MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
+            Exception exception = Record.Exception(() => new FhirToDatalakeSchedulerService(new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>(), new MockMetadataStore(), Options.Create(jobConfig), metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger));
 
             Assert.Null(exception);
         }
@@ -118,10 +120,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenUninitializedStorage_WhenRunAsync_WaitUntilStorageInitialized()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -174,6 +177,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenBrokenMetadataStoreThrowExceptionWhenGetTriggerLeaseEntity_WhenTryAcquireLeaseAsync_ThenNoExceptionShouldBeThrown()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var brokenMetadataStore = new MockMetadataStore
             {
@@ -181,7 +185,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             };
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, brokenMetadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, brokenMetadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -199,13 +203,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             // current trigger entity is null
             CurrentTriggerEntity currentTriggerEntity = await brokenMetadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Null(currentTriggerEntity);
-            Assert.NotEmpty(MetricsLogger.MetricsDic);
-            Assert.Equal("RunSchedulerService", MetricsLogger.ErrorOperationType);
+            Assert.NotEmpty(metricsLogger.MetricsDic);
+            Assert.Equal("RunSchedulerService", metricsLogger.ErrorOperationType);
         }
 
         [Fact]
         public async Task GivenBrokenMetadataStoreReturnNullWhenGetTriggerLeaseEntity_WhenTryAcquireLeaseAsync_ThenNoExceptionShouldBeThrown()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var brokenMetadataStore = new MockMetadataStore
             {
@@ -213,7 +218,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             };
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, brokenMetadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, brokenMetadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -233,17 +238,18 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             // current trigger entity is null
             CurrentTriggerEntity currentTriggerEntity = await brokenMetadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Null(currentTriggerEntity);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenNoTriggerLeaseEntityInTable_WhenTryAcquireLeaseAsync_ThenShouldCreateANewOne()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                 };
@@ -266,12 +272,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             // current trigger entity is not null
             CurrentTriggerEntity currentTriggerEntity = await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenLeaseNotTimeout_WhenTryAcquireLeaseAsync_ThenShouldNotAcquireLease()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var oldGuid = Guid.NewGuid();
             var triggerLeaseEntity = new TriggerLeaseEntity
@@ -288,7 +295,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -304,12 +311,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             // the scheduler service acquire lease
             TriggerLeaseEntity retrievedTriggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Equal(oldGuid, retrievedTriggerLeaseEntity.WorkingInstanceGuid);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenLeaseTimeout_WhenTryAcquireLeaseAsync_ThenShouldAcquireLease()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var oldGuid = Guid.NewGuid();
             var triggerLeaseEntity = new TriggerLeaseEntity
@@ -326,7 +334,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -343,18 +351,19 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             // the scheduler service acquire lease
             TriggerLeaseEntity retrievedTriggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotEqual(oldGuid, retrievedTriggerLeaseEntity.WorkingInstanceGuid);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GiveTwoSchedulerService_WhenTryAcquireLeaseAsync_ThenOnlyOneWillAcquireLease()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             // initialize two scheduler services
             var schedulerService1 =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -362,7 +371,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 };
 
             var schedulerService2 =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -395,18 +404,19 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             CurrentTriggerEntity currentTriggerEntity =
                 await metadataStore.GetCurrentTriggerEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotNull(currentTriggerEntity);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenCrashSchedulerService_WhenRunAsync_ThenTheLeaseShouldBeAcquiredByOtherSchedulerService()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             // initialize two scheduler services
             var schedulerService1 =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -414,7 +424,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 };
 
             var schedulerService2 =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -456,12 +466,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource2.Cancel();
             await task2;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenTwoSchedulerServiceAndLeaseTimeout_WhenTryAcquireLeaseAsync_ThenOnlyOneWillAcquireLease()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var oldGuid = Guid.NewGuid();
             var triggerLeaseEntity = new TriggerLeaseEntity
@@ -478,7 +489,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
             var schedulerService1 =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -486,7 +497,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 };
 
             var schedulerService2 =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -506,18 +517,19 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             // one of the scheduler service acquire lease
             TriggerLeaseEntity triggerLeaseEntity1 = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.NotEqual(oldGuid, triggerLeaseEntity1.WorkingInstanceGuid);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         // Renew Lease
         [Fact]
         public async Task GivenLongRunningSchedulerService_WhenRunAsync_ThenTheLeaseShouldBeRenewed()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -541,17 +553,18 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenLeaseLost_WhenRenewLease_ThenShouldFailToRenewLease()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -591,19 +604,20 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         // Enqueue Orchestrator Job
         [Fact]
         public async Task GivenNewJob_WhenRunAsync_ThenTheInitialTriggerEntityShouldBeCreatedAndEnqueueOrchestratorJob()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -626,12 +640,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenNewJobWithStartTime_WhenRunAsync_ThenTheInitialTriggerEntityShouldBeCreatedAndEnqueueOrchestratorJob()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             DateTimeOffset startTime = new DateTime(2022, 1, 1);
 
             var jobConfig = new JobConfiguration
@@ -650,7 +665,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -673,12 +688,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenEnqueueFailure_WhenRunAsync_ThenTheTriggerShouldBeRetried()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var brokenQueueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             void FaultAction() => throw new RequestFailedException("fake request failed exception");
@@ -688,7 +704,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             var metadataStore = new MockMetadataStore();
 
             var schedulerService1 =
-                new FhirToDatalakeSchedulerService(brokenQueueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(brokenQueueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -713,7 +729,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var schedulerService2 =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
             {
                 SchedulerServicePullingIntervalInSeconds = 1,
                 SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -735,8 +751,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource2.Cancel();
             await task2;
-            Assert.NotEmpty(MetricsLogger.MetricsDic);
-            Assert.Equal("RunSchedulerService", MetricsLogger.ErrorOperationType);
+            Assert.NotEmpty(metricsLogger.MetricsDic);
+            Assert.Equal("RunSchedulerService", metricsLogger.ErrorOperationType);
         }
 
         [Theory]
@@ -744,6 +760,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
         [InlineData(JobVersion.V2)]
         public async Task GivenReEnqueueJob_WhenRunAsync_ThenTheExistingJobShouldBeReturned(JobVersion jobVersion)
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var initialTriggerEntity = new CurrentTriggerEntity
@@ -780,7 +797,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 CancellationToken.None)).ToList();
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
             {
                 SchedulerServicePullingIntervalInSeconds = 0,
                 SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -804,13 +821,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         // version update
         [Fact]
         public async Task GivenCompletedTriggerStatus_WhenUpdateVersion_ThenTheVersionOfNextJobIsUpdated()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             // trigger entity with old job version
@@ -831,7 +849,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -861,12 +879,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenNewTriggerStatus_WhenUpdateVersion_ThenTheVersionShouldNotBeUpdated()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             // trigger entity with old job version
@@ -887,7 +906,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -917,12 +936,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenJobEnqueuedTriggerNotUpdate_WhenUpdateVersion_ThenExistingJobShouldBeReturned()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             // trigger entity with old job version
@@ -959,7 +979,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 CancellationToken.None)).ToList();
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 0,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -991,13 +1011,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         // Complete Trigger
         [Fact]
         public async Task GivenCompletedTrigger_WhenRunAsync_ThenShouldCreateAndEnqueueTheNextTrigger()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var triggerEntity = new CurrentTriggerEntity
@@ -1019,7 +1040,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerEntity, CancellationToken.None);
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1049,12 +1070,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenJobScheduledToEnd_WhenRunAsync_ThenShouldStopRunning()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             DateTimeOffset endTime = new DateTime(2022, 1, 1);
 
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
@@ -1088,7 +1110,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             IOptions<JobConfiguration> jobConfigOption = Options.Create(jobConfig);
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1112,19 +1134,20 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             Assert.Equal(triggerEntity.TriggerSequenceId, currentTriggerEntity.TriggerSequenceId);
             Assert.Equal(TriggerStatus.Completed, currentTriggerEntity.TriggerStatus);
             Assert.Equal(endTime, currentTriggerEntity.TriggerEndTime);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         // Functional Test
         [Fact]
         public async Task GivenValidTrigger_WhenRunAsync_ThenTheTriggerShouldBeProcessed()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1182,17 +1205,18 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenRunningTrigger_WhenReRunAsync_ThenTheTriggerShouldBePickedUp()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1266,18 +1290,19 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource2.Cancel();
             await task2;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenFailedTrigger_WhenReRunAsync_ThenTheTriggerShouldKeepFailure()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1337,18 +1362,19 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             TriggerLeaseEntity triggerLeaseEntity2 = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Equal(triggerLeaseEntity.WorkingInstanceGuid, triggerLeaseEntity2.WorkingInstanceGuid);
             Assert.True(triggerLeaseEntity2.HeartbeatDateTime > triggerLeaseEntity.HeartbeatDateTime);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenCancelledTrigger_WhenReRunAsync_ThenTheTriggerShouldKeepFailure()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1408,17 +1434,18 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             TriggerLeaseEntity triggerLeaseEntity2 = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Equal(triggerLeaseEntity.WorkingInstanceGuid, triggerLeaseEntity2.WorkingInstanceGuid);
             Assert.True(triggerLeaseEntity2.HeartbeatDateTime > triggerLeaseEntity.HeartbeatDateTime);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         // Cancellation Request
         [Fact]
         public async Task GivenCancelRequest_WhenStartToRun_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
-                    new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                    new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                     {
                         SchedulerServicePullingIntervalInSeconds = 1,
                         SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1438,17 +1465,18 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             long elapsedSeconds = stopWatch.ElapsedMilliseconds / 1000;
             Assert.True(elapsedSeconds < schedulerService.SchedulerServicePullingIntervalInSeconds);
             Assert.True(elapsedSeconds < schedulerService.SchedulerServiceLeaseRefreshIntervalInSeconds);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenCancelRequest_WhenCheckStorageInitialization_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             queueClient.Initialized = false;
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1469,12 +1497,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             long elapsedSeconds = stopWatch.ElapsedMilliseconds / 1000;
             Assert.True(elapsedSeconds < schedulerService.SchedulerServicePullingIntervalInSeconds);
             Assert.True(elapsedSeconds < schedulerService.SchedulerServiceLeaseRefreshIntervalInSeconds);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenCancelRequest_WhenTryAcquireLease_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             // the lease is acquired by another instance
@@ -1493,7 +1522,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             await metadataStore.TryAddEntityAsync(triggerLeaseEntity, CancellationToken.None);
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1517,16 +1546,17 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             // the service fails to acquire lease
             TriggerLeaseEntity retrievedTriggerLeaseEntity = await metadataStore.GetTriggerLeaseEntityAsync((byte)QueueType.FhirToDataLake, CancellationToken.None);
             Assert.Equal(otherGuid, retrievedTriggerLeaseEntity.WorkingInstanceGuid);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenCancelRequest_WhenRunAsync_ThenSchedulerShouldBeCancelledWithoutDelay()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
             var metadataStore = new MockMetadataStore();
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1567,7 +1597,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             long elapsedSeconds = stopWatch.ElapsedMilliseconds / 1000;
             Assert.True(elapsedSeconds < schedulerService.SchedulerServicePullingIntervalInSeconds);
             Assert.True(elapsedSeconds < schedulerService.SchedulerServiceLeaseRefreshIntervalInSeconds);
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         // trigger end time
@@ -1600,12 +1630,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
         [Fact]
         public async Task GivenInitialJobWithoutEndTime_WhenCreateNextTrigger_ThenTheJobEndTimeShouldBeSetCorrectly()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, _jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1632,12 +1663,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             Assert.True(triggerEndTime <= endTime);
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenInitialJobWithEndTime_WhenCreateNextTrigger_ThenTheJobEndTimeShouldBeSetCorrectly()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
@@ -1657,7 +1689,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             IOptions<JobConfiguration> jobConfigOption = Options.Create(jobConfig);
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1682,12 +1714,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             Assert.Equal(endTime, triggerEndTime);
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
 
         [Fact]
         public async Task GivenInitialJobWithFutureEndTime_WhenCreateNextTrigger_ThenTheJobEndTimeShouldBeSetCorrectly()
         {
+            MockMetricsLogger metricsLogger = new MockMetricsLogger(new NullLogger<MockMetricsLogger>());
             var queueClient = new MockQueueClient<FhirToDataLakeAzureStorageJobInfo>();
 
             var metadataStore = new MockMetadataStore();
@@ -1706,7 +1739,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             IOptions<JobConfiguration> jobConfigOption = Options.Create(jobConfig);
 
             var schedulerService =
-                new FhirToDatalakeSchedulerService(queueClient, metadataStore, jobConfigOption, MetricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
+                new FhirToDatalakeSchedulerService(queueClient, metadataStore, jobConfigOption, metricsLogger, DiagnosticLogger, _nullSchedulerServiceLogger)
                 {
                     SchedulerServicePullingIntervalInSeconds = 1,
                     SchedulerServiceLeaseRefreshIntervalInSeconds = 1,
@@ -1772,7 +1805,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
 
             tokenSource.Cancel();
             await task;
-            Assert.Empty(MetricsLogger.MetricsDic);
+            Assert.Empty(metricsLogger.MetricsDic);
         }
     }
 }

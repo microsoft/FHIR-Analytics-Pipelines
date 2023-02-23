@@ -58,6 +58,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
             yield return new object[] { new Dictionary<string, int>() { { "Patient1", 400000 }, { "Patient2", 400000 }, { "Patient3", 400000 } }, 3 };
             yield return new object[] { new Dictionary<string, int>() { { "Patient1", 40000 }, { "Patient2", 40000 }, { "Patient3", 40000 } }, 2 };
             yield return new object[] { new Dictionary<string, int>() { { "Patient1", 4000 }, { "Patient2", 4000 }, { "Patient3", 4000 } }, 1 };
+            yield return new object[] { new Dictionary<string, int>() { { "Patient1", 4000 }, { "Patient2", 4000 }, { "Patient3", 4000 }, { "Patient4", 4000 }, { "Patient5", 4000 } }, 1 };
+            yield return new object[] { new Dictionary<string, int>() { { "Patient1", 0 }, { "Patient2", 0 }, { "Patient3", 4000 } }, 1 };
+            yield return new object[] { new Dictionary<string, int>() { { "Patient1", 0 }, { "Patient2", 0 }, { "Patient3", 0 } }, 0 };
+            yield return new object[] { new Dictionary<string, int>() { }, 0 };
         }
 
         [Theory]
@@ -741,6 +745,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                         return $"{{\"entry\": [{{\"resource\":{{\"meta\":{{\"lastUpdated\":\"{start.ToInstantString()}\"}}}}}}]}}";
                     }
                 }
+            }
+
+            if (!count.ContainsKey(resource))
+            {
+                count[resource] = 0;
             }
 
             var total = (int)(end - start).TotalDays * count[resource];

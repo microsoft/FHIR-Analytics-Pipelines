@@ -22,16 +22,15 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Extensions
         {
             JObject testJObject = GetTestJObject(SamplePatientFileName);
 
-            DateTimeOffset? date = testJObject.GetLastUpdated();
-            Assert.NotNull(date);
+            DateTimeOffset date = testJObject.GetLastUpdated();
 
-            Assert.Equal(2012, date.Value.Year);
-            Assert.Equal(6, date.Value.Month);
-            Assert.Equal(3, date.Value.Day);
-            Assert.Equal(23, date.Value.Hour);
-            Assert.Equal(45, date.Value.Minute);
-            Assert.Equal(32, date.Value.Second);
-            Assert.Equal(123, date.Value.Millisecond);
+            Assert.Equal(2012, date.Year);
+            Assert.Equal(6, date.Month);
+            Assert.Equal(3, date.Day);
+            Assert.Equal(23, date.Hour);
+            Assert.Equal(45, date.Minute);
+            Assert.Equal(32, date.Second);
+            Assert.Equal(123, date.Millisecond);
         }
 
         [Fact]
