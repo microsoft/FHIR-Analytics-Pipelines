@@ -2,7 +2,7 @@
 
 You can use cron expressions to schedule FHIR Analytics pipeline jobs. FHIR Analytics pipeline is using [NCrontab](https://github.com/atifaziz/NCrontab) to parse the cron expressions.
 
-The cron expression the pipeline currently suported is a string consisting of 6 fields, separated by spaces. Each field represents a particular unit of time and specifies when the job should be run. The format for a cron expression is six-part as follows:
+The cron expression the pipeline currently supported is a string consisting of 6 fields, separated by spaces. Each field represents a particular unit of time and specifies when the job should be run. The format for a cron expression is six-part as follows:
 
     * * * * * *
     - - - - - -
