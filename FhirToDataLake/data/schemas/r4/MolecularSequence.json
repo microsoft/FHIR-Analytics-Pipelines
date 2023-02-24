@@ -87,6 +87,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_versionId": {
+          "Name": "_versionId",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "meta",
+            "_versionId"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "_versionId",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "_versionId",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "lastUpdated": {
           "Name": "lastUpdated",
           "Type": "instant",
@@ -101,6 +146,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_lastUpdated": {
+          "Name": "_lastUpdated",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "meta",
+            "_lastUpdated"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "_lastUpdated",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "_lastUpdated",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "source": {
           "Name": "source",
           "Type": "uri",
@@ -114,6 +204,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_source": {
+          "Name": "_source",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "meta",
+            "_source"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "_source",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "_source",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "profile": {
           "Name": "profile",
@@ -186,6 +321,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "security",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -197,6 +347,21 @@
                 "meta",
                 "security",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "security",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -216,6 +381,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "security",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -231,6 +411,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "security",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -242,6 +437,21 @@
                 "meta",
                 "security",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "security",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -306,6 +516,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "tag",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -317,6 +542,21 @@
                 "meta",
                 "tag",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "tag",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -336,6 +576,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "tag",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -351,6 +606,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "tag",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -362,6 +632,21 @@
                 "meta",
                 "tag",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "meta",
+                "tag",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -385,6 +670,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_implicitRules": {
+      "Name": "_implicitRules",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MolecularSequence",
+        "_implicitRules"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MolecularSequence",
+            "_implicitRules",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MolecularSequence",
+            "_implicitRules",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "language": {
       "Name": "language",
       "Type": "code",
@@ -397,6 +724,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_language": {
+      "Name": "_language",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MolecularSequence",
+        "_language"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MolecularSequence",
+            "_language",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MolecularSequence",
+            "_language",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "text": {
       "Name": "text",
@@ -451,6 +820,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_status": {
+          "Name": "_status",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "text",
+            "_status"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "text",
+                "_status",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "text",
+                "_status",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "div": {
           "Name": "div",
           "Type": "xhtml",
@@ -467,6 +881,19 @@
         }
       },
       "ChoiceTypeNodes": {}
+    },
+    "contained": {
+      "Name": "contained",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "MolecularSequence",
+        "contained"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
     },
     "extension": {
       "Name": "extension",
@@ -547,6 +974,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_use": {
+          "Name": "_use",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "identifier",
+            "_use"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "identifier",
+                "_use",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "identifier",
+                "_use",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "CodeableConcept",
@@ -618,6 +1090,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "identifier",
+                "type",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -636,6 +1123,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_system": {
+          "Name": "_system",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "identifier",
+            "_system"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "identifier",
+                "_system",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "identifier",
+                "_system",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "value": {
           "Name": "value",
           "Type": "string",
@@ -649,6 +1181,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_value": {
+          "Name": "_value",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "identifier",
+            "_value"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "identifier",
+                "_value",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "identifier",
+                "_value",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "period": {
           "Name": "period",
@@ -707,6 +1284,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_start": {
+              "Name": "_start",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "identifier",
+                "period",
+                "_start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "end": {
               "Name": "end",
               "Type": "dateTime",
@@ -718,6 +1310,21 @@
                 "identifier",
                 "period",
                 "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_end": {
+              "Name": "_end",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "identifier",
+                "period",
+                "_end"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -782,6 +1389,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_reference": {
+              "Name": "_reference",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "identifier",
+                "assigner",
+                "_reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "uri",
@@ -793,6 +1415,21 @@
                 "identifier",
                 "assigner",
                 "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_type": {
+              "Name": "_type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "identifier",
+                "assigner",
+                "_type"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -826,6 +1463,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "identifier",
+                "assigner",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -846,6 +1498,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_type": {
+      "Name": "_type",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MolecularSequence",
+        "_type"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MolecularSequence",
+            "_type",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MolecularSequence",
+            "_type",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "coordinateSystem": {
       "Name": "coordinateSystem",
       "Type": "integer",
@@ -858,6 +1552,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_coordinateSystem": {
+      "Name": "_coordinateSystem",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MolecularSequence",
+        "_coordinateSystem"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MolecularSequence",
+            "_coordinateSystem",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MolecularSequence",
+            "_coordinateSystem",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "patient": {
       "Name": "patient",
@@ -912,6 +1648,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_reference": {
+          "Name": "_reference",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "patient",
+            "_reference"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "patient",
+                "_reference",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "patient",
+                "_reference",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "uri",
@@ -925,6 +1706,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "patient",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "patient",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "patient",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "identifier": {
           "Name": "identifier",
@@ -983,6 +1809,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "patient",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -1013,6 +1854,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "patient",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -1024,6 +1880,21 @@
                 "patient",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "patient",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1074,6 +1945,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_display": {
+          "Name": "_display",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "patient",
+            "_display"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "patient",
+                "_display",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "patient",
+                "_display",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1131,6 +2047,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_reference": {
+          "Name": "_reference",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "specimen",
+            "_reference"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "specimen",
+                "_reference",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "specimen",
+                "_reference",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "uri",
@@ -1144,6 +2105,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "specimen",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "specimen",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "specimen",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "identifier": {
           "Name": "identifier",
@@ -1202,6 +2208,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "specimen",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -1232,6 +2253,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "specimen",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -1243,6 +2279,21 @@
                 "specimen",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "specimen",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1293,6 +2344,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_display": {
+          "Name": "_display",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "specimen",
+            "_display"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "specimen",
+                "_display",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "specimen",
+                "_display",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1350,6 +2446,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_reference": {
+          "Name": "_reference",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "device",
+            "_reference"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "device",
+                "_reference",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "device",
+                "_reference",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "uri",
@@ -1363,6 +2504,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "device",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "device",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "device",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "identifier": {
           "Name": "identifier",
@@ -1421,6 +2607,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "device",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -1451,6 +2652,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "device",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -1462,6 +2678,21 @@
                 "device",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "device",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1512,6 +2743,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_display": {
+          "Name": "_display",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "device",
+            "_display"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "device",
+                "_display",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "device",
+                "_display",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1569,6 +2845,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_reference": {
+          "Name": "_reference",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "performer",
+            "_reference"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "performer",
+                "_reference",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "performer",
+                "_reference",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "uri",
@@ -1582,6 +2903,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "performer",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "performer",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "performer",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "identifier": {
           "Name": "identifier",
@@ -1640,6 +3006,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "performer",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -1670,6 +3051,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "performer",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -1681,6 +3077,21 @@
                 "performer",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "performer",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1731,6 +3142,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_display": {
+          "Name": "_display",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "performer",
+            "_display"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "performer",
+                "_display",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "performer",
+                "_display",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1788,6 +3244,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_value": {
+          "Name": "_value",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quantity",
+            "_value"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quantity",
+                "_value",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quantity",
+                "_value",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "comparator": {
           "Name": "comparator",
           "Type": "enum",
@@ -1801,6 +3302,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_comparator": {
+          "Name": "_comparator",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quantity",
+            "_comparator"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quantity",
+                "_comparator",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quantity",
+                "_comparator",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "unit": {
           "Name": "unit",
@@ -1816,6 +3362,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_unit": {
+          "Name": "_unit",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quantity",
+            "_unit"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quantity",
+                "_unit",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quantity",
+                "_unit",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "system": {
           "Name": "system",
           "Type": "uri",
@@ -1830,6 +3421,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_system": {
+          "Name": "_system",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quantity",
+            "_system"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quantity",
+                "_system",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quantity",
+                "_system",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "code": {
           "Name": "code",
           "Type": "code",
@@ -1843,6 +3479,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_code": {
+          "Name": "_code",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quantity",
+            "_code"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quantity",
+                "_code",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quantity",
+                "_code",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1971,6 +3652,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "chromosome",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -1989,6 +3685,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_genomeBuild": {
+          "Name": "_genomeBuild",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "referenceSeq",
+            "_genomeBuild"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "_genomeBuild",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "_genomeBuild",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "orientation": {
           "Name": "orientation",
           "Type": "enum",
@@ -2002,6 +3743,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_orientation": {
+          "Name": "_orientation",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "referenceSeq",
+            "_orientation"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "_orientation",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "_orientation",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "referenceSeqId": {
           "Name": "referenceSeqId",
@@ -2074,6 +3860,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "referenceSeqId",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -2135,6 +3936,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_reference": {
+              "Name": "_reference",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "referenceSeqPointer",
+                "_reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "uri",
@@ -2146,6 +3962,21 @@
                 "referenceSeq",
                 "referenceSeqPointer",
                 "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_type": {
+              "Name": "_type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "referenceSeqPointer",
+                "_type"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2179,6 +4010,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "referenceSeqPointer",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -2197,6 +4043,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_referenceSeqString": {
+          "Name": "_referenceSeqString",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "referenceSeq",
+            "_referenceSeqString"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "_referenceSeqString",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "_referenceSeqString",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "strand": {
           "Name": "strand",
           "Type": "enum",
@@ -2210,6 +4101,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_strand": {
+          "Name": "_strand",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "referenceSeq",
+            "_strand"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "_strand",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "_strand",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "windowStart": {
           "Name": "windowStart",
@@ -2225,6 +4161,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_windowStart": {
+          "Name": "_windowStart",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "referenceSeq",
+            "_windowStart"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "_windowStart",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "_windowStart",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "windowEnd": {
           "Name": "windowEnd",
           "Type": "integer",
@@ -2238,6 +4219,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_windowEnd": {
+          "Name": "_windowEnd",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "referenceSeq",
+            "_windowEnd"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "_windowEnd",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "referenceSeq",
+                "_windowEnd",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -2309,6 +4335,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_start": {
+          "Name": "_start",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "variant",
+            "_start"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "_start",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "_start",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "end": {
           "Name": "end",
           "Type": "integer",
@@ -2322,6 +4393,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_end": {
+          "Name": "_end",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "variant",
+            "_end"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "_end",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "_end",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "observedAllele": {
           "Name": "observedAllele",
@@ -2337,6 +4453,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_observedAllele": {
+          "Name": "_observedAllele",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "variant",
+            "_observedAllele"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "_observedAllele",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "_observedAllele",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "referenceAllele": {
           "Name": "referenceAllele",
           "Type": "string",
@@ -2351,6 +4512,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_referenceAllele": {
+          "Name": "_referenceAllele",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "variant",
+            "_referenceAllele"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "_referenceAllele",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "_referenceAllele",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "cigar": {
           "Name": "cigar",
           "Type": "string",
@@ -2364,6 +4570,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_cigar": {
+          "Name": "_cigar",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "variant",
+            "_cigar"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "_cigar",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "_cigar",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "variantPointer": {
           "Name": "variantPointer",
@@ -2422,6 +4673,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_reference": {
+              "Name": "_reference",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "variantPointer",
+                "_reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "uri",
@@ -2433,6 +4699,21 @@
                 "variant",
                 "variantPointer",
                 "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_type": {
+              "Name": "_type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "variantPointer",
+                "_type"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2466,6 +4747,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "variant",
+                "variantPointer",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -2485,6 +4781,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_observedSeq": {
+      "Name": "_observedSeq",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MolecularSequence",
+        "_observedSeq"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MolecularSequence",
+            "_observedSeq",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MolecularSequence",
+            "_observedSeq",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "quality": {
       "Name": "quality",
@@ -2552,6 +4890,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quality",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "standardSequence": {
           "Name": "standardSequence",
@@ -2624,6 +5007,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "standardSequence",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -2642,6 +5040,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_start": {
+          "Name": "_start",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quality",
+            "_start"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_start",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_start",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "end": {
           "Name": "end",
           "Type": "integer",
@@ -2655,6 +5098,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_end": {
+          "Name": "_end",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quality",
+            "_end"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_end",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_end",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "score": {
           "Name": "score",
@@ -2713,6 +5201,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "score",
+                "_value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "comparator": {
               "Name": "comparator",
               "Type": "enum",
@@ -2724,6 +5227,21 @@
                 "quality",
                 "score",
                 "comparator"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_comparator": {
+              "Name": "_comparator",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "score",
+                "_comparator"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2743,6 +5261,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_unit": {
+              "Name": "_unit",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "score",
+                "_unit"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "system": {
               "Name": "system",
               "Type": "uri",
@@ -2758,6 +5291,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "score",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "code": {
               "Name": "code",
               "Type": "code",
@@ -2769,6 +5317,21 @@
                 "quality",
                 "score",
                 "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "score",
+                "_code"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2847,6 +5410,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "method",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -2865,6 +5443,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_truthTP": {
+          "Name": "_truthTP",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quality",
+            "_truthTP"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_truthTP",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_truthTP",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "queryTP": {
           "Name": "queryTP",
           "Type": "decimal",
@@ -2878,6 +5501,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_queryTP": {
+          "Name": "_queryTP",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quality",
+            "_queryTP"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_queryTP",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_queryTP",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "truthFN": {
           "Name": "truthFN",
@@ -2893,6 +5561,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_truthFN": {
+          "Name": "_truthFN",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quality",
+            "_truthFN"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_truthFN",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_truthFN",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "queryFP": {
           "Name": "queryFP",
           "Type": "decimal",
@@ -2906,6 +5619,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_queryFP": {
+          "Name": "_queryFP",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quality",
+            "_queryFP"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_queryFP",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_queryFP",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "gtFP": {
           "Name": "gtFP",
@@ -2921,6 +5679,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_gtFP": {
+          "Name": "_gtFP",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quality",
+            "_gtFP"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_gtFP",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_gtFP",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "precision": {
           "Name": "precision",
           "Type": "decimal",
@@ -2934,6 +5737,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_precision": {
+          "Name": "_precision",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quality",
+            "_precision"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_precision",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_precision",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "recall": {
           "Name": "recall",
@@ -2949,6 +5797,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_recall": {
+          "Name": "_recall",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quality",
+            "_recall"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_recall",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_recall",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "fScore": {
           "Name": "fScore",
           "Type": "decimal",
@@ -2962,6 +5855,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_fScore": {
+          "Name": "_fScore",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "quality",
+            "_fScore"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_fScore",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "_fScore",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "roc": {
           "Name": "roc",
@@ -3035,6 +5973,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_score": {
+              "Name": "_score",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "roc",
+                "_score"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "numTP": {
               "Name": "numTP",
               "Type": "JSONSTRING",
@@ -3046,6 +5999,21 @@
                 "quality",
                 "roc",
                 "numTP"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_numTP": {
+              "Name": "_numTP",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "roc",
+                "_numTP"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -3065,6 +6033,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_numFP": {
+              "Name": "_numFP",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "roc",
+                "_numFP"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "numFN": {
               "Name": "numFN",
               "Type": "JSONSTRING",
@@ -3076,6 +6059,21 @@
                 "quality",
                 "roc",
                 "numFN"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_numFN": {
+              "Name": "_numFN",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "roc",
+                "_numFN"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -3095,6 +6093,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_precision": {
+              "Name": "_precision",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "roc",
+                "_precision"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "sensitivity": {
               "Name": "sensitivity",
               "Type": "JSONSTRING",
@@ -3110,6 +6123,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_sensitivity": {
+              "Name": "_sensitivity",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "roc",
+                "_sensitivity"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "fMeasure": {
               "Name": "fMeasure",
               "Type": "JSONSTRING",
@@ -3121,6 +6149,21 @@
                 "quality",
                 "roc",
                 "fMeasure"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_fMeasure": {
+              "Name": "_fMeasure",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "quality",
+                "roc",
+                "_fMeasure"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -3143,6 +6186,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_readCoverage": {
+      "Name": "_readCoverage",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "MolecularSequence",
+        "_readCoverage"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MolecularSequence",
+            "_readCoverage",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "MolecularSequence",
+            "_readCoverage",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "repository": {
       "Name": "repository",
@@ -3211,6 +6296,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "repository",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "repository",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "repository",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "url": {
           "Name": "url",
           "Type": "uri",
@@ -3224,6 +6354,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_url": {
+          "Name": "_url",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "repository",
+            "_url"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "repository",
+                "_url",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "repository",
+                "_url",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "name": {
           "Name": "name",
@@ -3239,6 +6414,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_name": {
+          "Name": "_name",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "repository",
+            "_name"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "repository",
+                "_name",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "repository",
+                "_name",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "datasetId": {
           "Name": "datasetId",
           "Type": "string",
@@ -3252,6 +6472,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_datasetId": {
+          "Name": "_datasetId",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "repository",
+            "_datasetId"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "repository",
+                "_datasetId",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "repository",
+                "_datasetId",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "variantsetId": {
           "Name": "variantsetId",
@@ -3267,6 +6532,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_variantsetId": {
+          "Name": "_variantsetId",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "repository",
+            "_variantsetId"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "repository",
+                "_variantsetId",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "repository",
+                "_variantsetId",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "readsetId": {
           "Name": "readsetId",
           "Type": "string",
@@ -3280,6 +6590,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_readsetId": {
+          "Name": "_readsetId",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "repository",
+            "_readsetId"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "repository",
+                "_readsetId",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "repository",
+                "_readsetId",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -3337,6 +6692,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_reference": {
+          "Name": "_reference",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "pointer",
+            "_reference"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "pointer",
+                "_reference",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "pointer",
+                "_reference",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "uri",
@@ -3350,6 +6750,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "pointer",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "pointer",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "pointer",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "identifier": {
           "Name": "identifier",
@@ -3408,6 +6853,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "pointer",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -3438,6 +6898,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "pointer",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -3449,6 +6924,21 @@
                 "pointer",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "pointer",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -3499,6 +6989,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_display": {
+          "Name": "_display",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "pointer",
+            "_display"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "pointer",
+                "_display",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "pointer",
+                "_display",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -3627,6 +7162,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "structureVariant",
+                "variantType",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -3645,6 +7195,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_exact": {
+          "Name": "_exact",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "structureVariant",
+            "_exact"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "structureVariant",
+                "_exact",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "structureVariant",
+                "_exact",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "length": {
           "Name": "length",
           "Type": "integer",
@@ -3658,6 +7253,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_length": {
+          "Name": "_length",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "MolecularSequence",
+            "structureVariant",
+            "_length"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "structureVariant",
+                "_length",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "structureVariant",
+                "_length",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "outer": {
           "Name": "outer",
@@ -3731,6 +7371,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_start": {
+              "Name": "_start",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "structureVariant",
+                "outer",
+                "_start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "end": {
               "Name": "end",
               "Type": "integer",
@@ -3742,6 +7397,21 @@
                 "structureVariant",
                 "outer",
                 "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_end": {
+              "Name": "_end",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "structureVariant",
+                "outer",
+                "_end"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -3821,6 +7491,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_start": {
+              "Name": "_start",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "structureVariant",
+                "inner",
+                "_start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "end": {
               "Name": "end",
               "Type": "integer",
@@ -3832,6 +7517,21 @@
                 "structureVariant",
                 "inner",
                 "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_end": {
+              "Name": "_end",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "MolecularSequence",
+                "structureVariant",
+                "inner",
+                "_end"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null

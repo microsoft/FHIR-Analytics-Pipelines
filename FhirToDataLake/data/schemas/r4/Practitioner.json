@@ -87,6 +87,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_versionId": {
+          "Name": "_versionId",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "meta",
+            "_versionId"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "_versionId",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "_versionId",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "lastUpdated": {
           "Name": "lastUpdated",
           "Type": "instant",
@@ -101,6 +146,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_lastUpdated": {
+          "Name": "_lastUpdated",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "meta",
+            "_lastUpdated"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "_lastUpdated",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "_lastUpdated",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "source": {
           "Name": "source",
           "Type": "uri",
@@ -114,6 +204,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_source": {
+          "Name": "_source",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "meta",
+            "_source"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "_source",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "_source",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "profile": {
           "Name": "profile",
@@ -186,6 +321,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "security",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -197,6 +347,21 @@
                 "meta",
                 "security",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "security",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -216,6 +381,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "security",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -231,6 +411,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "security",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -242,6 +437,21 @@
                 "meta",
                 "security",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "security",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -306,6 +516,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "tag",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -317,6 +542,21 @@
                 "meta",
                 "tag",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "tag",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -336,6 +576,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "tag",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -351,6 +606,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "tag",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -362,6 +632,21 @@
                 "meta",
                 "tag",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "meta",
+                "tag",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -385,6 +670,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_implicitRules": {
+      "Name": "_implicitRules",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Practitioner",
+        "_implicitRules"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Practitioner",
+            "_implicitRules",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Practitioner",
+            "_implicitRules",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "language": {
       "Name": "language",
       "Type": "code",
@@ -397,6 +724,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_language": {
+      "Name": "_language",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Practitioner",
+        "_language"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Practitioner",
+            "_language",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Practitioner",
+            "_language",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "text": {
       "Name": "text",
@@ -451,6 +820,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_status": {
+          "Name": "_status",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "text",
+            "_status"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "text",
+                "_status",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "text",
+                "_status",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "div": {
           "Name": "div",
           "Type": "xhtml",
@@ -467,6 +881,19 @@
         }
       },
       "ChoiceTypeNodes": {}
+    },
+    "contained": {
+      "Name": "contained",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Practitioner",
+        "contained"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
     },
     "extension": {
       "Name": "extension",
@@ -547,6 +974,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_use": {
+          "Name": "_use",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "identifier",
+            "_use"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "identifier",
+                "_use",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "identifier",
+                "_use",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "CodeableConcept",
@@ -618,6 +1090,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "identifier",
+                "type",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -636,6 +1123,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_system": {
+          "Name": "_system",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "identifier",
+            "_system"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "identifier",
+                "_system",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "identifier",
+                "_system",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "value": {
           "Name": "value",
           "Type": "string",
@@ -649,6 +1181,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_value": {
+          "Name": "_value",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "identifier",
+            "_value"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "identifier",
+                "_value",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "identifier",
+                "_value",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "period": {
           "Name": "period",
@@ -707,6 +1284,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_start": {
+              "Name": "_start",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "identifier",
+                "period",
+                "_start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "end": {
               "Name": "end",
               "Type": "dateTime",
@@ -718,6 +1310,21 @@
                 "identifier",
                 "period",
                 "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_end": {
+              "Name": "_end",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "identifier",
+                "period",
+                "_end"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -782,6 +1389,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_reference": {
+              "Name": "_reference",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "identifier",
+                "assigner",
+                "_reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "uri",
@@ -793,6 +1415,21 @@
                 "identifier",
                 "assigner",
                 "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_type": {
+              "Name": "_type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "identifier",
+                "assigner",
+                "_type"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -826,6 +1463,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "identifier",
+                "assigner",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -845,6 +1497,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_active": {
+      "Name": "_active",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Practitioner",
+        "_active"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Practitioner",
+            "_active",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Practitioner",
+            "_active",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "name": {
       "Name": "name",
@@ -899,6 +1593,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_use": {
+          "Name": "_use",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "name",
+            "_use"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "_use",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "_use",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "text": {
           "Name": "text",
           "Type": "string",
@@ -912,6 +1651,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_text": {
+          "Name": "_text",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "name",
+            "_text"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "_text",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "_text",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "family": {
           "Name": "family",
@@ -927,6 +1711,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_family": {
+          "Name": "_family",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "name",
+            "_family"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "_family",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "_family",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "given": {
           "Name": "given",
           "Type": "string",
@@ -940,6 +1769,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_given": {
+          "Name": "_given",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "name",
+            "_given"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "_given",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "_given",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "prefix": {
           "Name": "prefix",
@@ -955,6 +1829,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_prefix": {
+          "Name": "_prefix",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "name",
+            "_prefix"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "_prefix",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "_prefix",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "suffix": {
           "Name": "suffix",
           "Type": "string",
@@ -968,6 +1887,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_suffix": {
+          "Name": "_suffix",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "name",
+            "_suffix"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "_suffix",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "_suffix",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "period": {
           "Name": "period",
@@ -1026,6 +1990,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_start": {
+              "Name": "_start",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "period",
+                "_start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "end": {
               "Name": "end",
               "Type": "dateTime",
@@ -1037,6 +2016,21 @@
                 "name",
                 "period",
                 "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_end": {
+              "Name": "_end",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "name",
+                "period",
+                "_end"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1100,6 +2094,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_system": {
+          "Name": "_system",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "telecom",
+            "_system"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "telecom",
+                "_system",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "telecom",
+                "_system",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "value": {
           "Name": "value",
           "Type": "string",
@@ -1113,6 +2152,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_value": {
+          "Name": "_value",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "telecom",
+            "_value"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "telecom",
+                "_value",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "telecom",
+                "_value",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "use": {
           "Name": "use",
@@ -1128,6 +2212,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_use": {
+          "Name": "_use",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "telecom",
+            "_use"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "telecom",
+                "_use",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "telecom",
+                "_use",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "rank": {
           "Name": "rank",
           "Type": "positiveInt",
@@ -1141,6 +2270,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_rank": {
+          "Name": "_rank",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "telecom",
+            "_rank"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "telecom",
+                "_rank",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "telecom",
+                "_rank",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "period": {
           "Name": "period",
@@ -1199,6 +2373,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_start": {
+              "Name": "_start",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "telecom",
+                "period",
+                "_start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "end": {
               "Name": "end",
               "Type": "dateTime",
@@ -1210,6 +2399,21 @@
                 "telecom",
                 "period",
                 "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_end": {
+              "Name": "_end",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "telecom",
+                "period",
+                "_end"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1273,6 +2477,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_use": {
+          "Name": "_use",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "address",
+            "_use"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_use",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_use",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "enum",
@@ -1286,6 +2535,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "address",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "text": {
           "Name": "text",
@@ -1301,6 +2595,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_text": {
+          "Name": "_text",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "address",
+            "_text"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_text",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_text",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "line": {
           "Name": "line",
           "Type": "string",
@@ -1314,6 +2653,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_line": {
+          "Name": "_line",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "address",
+            "_line"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_line",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_line",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "city": {
           "Name": "city",
@@ -1329,6 +2713,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_city": {
+          "Name": "_city",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "address",
+            "_city"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_city",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_city",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "district": {
           "Name": "district",
           "Type": "string",
@@ -1342,6 +2771,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_district": {
+          "Name": "_district",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "address",
+            "_district"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_district",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_district",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "state": {
           "Name": "state",
@@ -1357,6 +2831,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_state": {
+          "Name": "_state",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "address",
+            "_state"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_state",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_state",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "postalCode": {
           "Name": "postalCode",
           "Type": "string",
@@ -1371,6 +2890,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_postalCode": {
+          "Name": "_postalCode",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "address",
+            "_postalCode"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_postalCode",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_postalCode",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "country": {
           "Name": "country",
           "Type": "string",
@@ -1384,6 +2948,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_country": {
+          "Name": "_country",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "address",
+            "_country"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_country",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "_country",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "period": {
           "Name": "period",
@@ -1442,6 +3051,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_start": {
+              "Name": "_start",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "period",
+                "_start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "end": {
               "Name": "end",
               "Type": "dateTime",
@@ -1453,6 +3077,21 @@
                 "address",
                 "period",
                 "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_end": {
+              "Name": "_end",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "address",
+                "period",
+                "_end"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1476,6 +3115,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_gender": {
+      "Name": "_gender",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Practitioner",
+        "_gender"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Practitioner",
+            "_gender",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Practitioner",
+            "_gender",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "birthDate": {
       "Name": "birthDate",
       "Type": "date",
@@ -1488,6 +3169,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_birthDate": {
+      "Name": "_birthDate",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Practitioner",
+        "_birthDate"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Practitioner",
+            "_birthDate",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Practitioner",
+            "_birthDate",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "photo": {
       "Name": "photo",
@@ -1542,6 +3265,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_contentType": {
+          "Name": "_contentType",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "photo",
+            "_contentType"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_contentType",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_contentType",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "language": {
           "Name": "language",
           "Type": "code",
@@ -1555,6 +3323,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_language": {
+          "Name": "_language",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "photo",
+            "_language"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_language",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_language",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "data": {
           "Name": "data",
@@ -1570,6 +3383,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_data": {
+          "Name": "_data",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "photo",
+            "_data"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_data",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_data",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "url": {
           "Name": "url",
           "Type": "url",
@@ -1583,6 +3441,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_url": {
+          "Name": "_url",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "photo",
+            "_url"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_url",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_url",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "size": {
           "Name": "size",
@@ -1598,6 +3501,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_size": {
+          "Name": "_size",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "photo",
+            "_size"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_size",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_size",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "hash": {
           "Name": "hash",
           "Type": "base64Binary",
@@ -1611,6 +3559,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_hash": {
+          "Name": "_hash",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "photo",
+            "_hash"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_hash",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_hash",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "title": {
           "Name": "title",
@@ -1626,6 +3619,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_title": {
+          "Name": "_title",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "photo",
+            "_title"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_title",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_title",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "creation": {
           "Name": "creation",
           "Type": "dateTime",
@@ -1639,6 +3677,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_creation": {
+          "Name": "_creation",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "photo",
+            "_creation"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_creation",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "photo",
+                "_creation",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1753,6 +3836,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "qualification",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -1783,6 +3881,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "qualification",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -1794,6 +3907,21 @@
                 "qualification",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "qualification",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1902,6 +4030,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "qualification",
+                "code",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -1963,6 +4106,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_start": {
+              "Name": "_start",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "qualification",
+                "period",
+                "_start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "end": {
               "Name": "end",
               "Type": "dateTime",
@@ -1974,6 +4132,21 @@
                 "qualification",
                 "period",
                 "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_end": {
+              "Name": "_end",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "qualification",
+                "period",
+                "_end"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2038,6 +4211,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_reference": {
+              "Name": "_reference",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "qualification",
+                "issuer",
+                "_reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "uri",
@@ -2049,6 +4237,21 @@
                 "qualification",
                 "issuer",
                 "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_type": {
+              "Name": "_type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "qualification",
+                "issuer",
+                "_type"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2079,6 +4282,21 @@
                 "qualification",
                 "issuer",
                 "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "qualification",
+                "issuer",
+                "_display"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2185,6 +4403,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "communication",
+                "coding",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -2196,6 +4429,21 @@
                 "communication",
                 "coding",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "communication",
+                "coding",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2215,6 +4463,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "communication",
+                "coding",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -2230,6 +4493,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "communication",
+                "coding",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -2241,6 +4519,21 @@
                 "communication",
                 "coding",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "communication",
+                "coding",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2261,6 +4554,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_text": {
+          "Name": "_text",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Practitioner",
+            "communication",
+            "_text"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "communication",
+                "_text",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Practitioner",
+                "communication",
+                "_text",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}

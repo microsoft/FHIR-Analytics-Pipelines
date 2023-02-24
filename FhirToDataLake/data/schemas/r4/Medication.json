@@ -87,6 +87,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_versionId": {
+          "Name": "_versionId",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "meta",
+            "_versionId"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "_versionId",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "_versionId",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "lastUpdated": {
           "Name": "lastUpdated",
           "Type": "instant",
@@ -101,6 +146,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_lastUpdated": {
+          "Name": "_lastUpdated",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "meta",
+            "_lastUpdated"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "_lastUpdated",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "_lastUpdated",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "source": {
           "Name": "source",
           "Type": "uri",
@@ -114,6 +204,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_source": {
+          "Name": "_source",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "meta",
+            "_source"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "_source",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "_source",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "profile": {
           "Name": "profile",
@@ -186,6 +321,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "security",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -197,6 +347,21 @@
                 "meta",
                 "security",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "security",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -216,6 +381,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "security",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -231,6 +411,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "security",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -242,6 +437,21 @@
                 "meta",
                 "security",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "security",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -306,6 +516,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "tag",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -317,6 +542,21 @@
                 "meta",
                 "tag",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "tag",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -336,6 +576,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "tag",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -351,6 +606,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "tag",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -362,6 +632,21 @@
                 "meta",
                 "tag",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "meta",
+                "tag",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -385,6 +670,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_implicitRules": {
+      "Name": "_implicitRules",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Medication",
+        "_implicitRules"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Medication",
+            "_implicitRules",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Medication",
+            "_implicitRules",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "language": {
       "Name": "language",
       "Type": "code",
@@ -397,6 +724,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_language": {
+      "Name": "_language",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Medication",
+        "_language"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Medication",
+            "_language",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Medication",
+            "_language",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "text": {
       "Name": "text",
@@ -451,6 +820,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_status": {
+          "Name": "_status",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "text",
+            "_status"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "text",
+                "_status",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "text",
+                "_status",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "div": {
           "Name": "div",
           "Type": "xhtml",
@@ -467,6 +881,19 @@
         }
       },
       "ChoiceTypeNodes": {}
+    },
+    "contained": {
+      "Name": "contained",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "Medication",
+        "contained"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
     },
     "extension": {
       "Name": "extension",
@@ -547,6 +974,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_use": {
+          "Name": "_use",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "identifier",
+            "_use"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "identifier",
+                "_use",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "identifier",
+                "_use",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "CodeableConcept",
@@ -618,6 +1090,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "identifier",
+                "type",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -636,6 +1123,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_system": {
+          "Name": "_system",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "identifier",
+            "_system"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "identifier",
+                "_system",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "identifier",
+                "_system",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "value": {
           "Name": "value",
           "Type": "string",
@@ -649,6 +1181,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_value": {
+          "Name": "_value",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "identifier",
+            "_value"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "identifier",
+                "_value",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "identifier",
+                "_value",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "period": {
           "Name": "period",
@@ -707,6 +1284,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_start": {
+              "Name": "_start",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "identifier",
+                "period",
+                "_start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "end": {
               "Name": "end",
               "Type": "dateTime",
@@ -718,6 +1310,21 @@
                 "identifier",
                 "period",
                 "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_end": {
+              "Name": "_end",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "identifier",
+                "period",
+                "_end"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -782,6 +1389,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_reference": {
+              "Name": "_reference",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "identifier",
+                "assigner",
+                "_reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "uri",
@@ -793,6 +1415,21 @@
                 "identifier",
                 "assigner",
                 "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_type": {
+              "Name": "_type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "identifier",
+                "assigner",
+                "_type"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -823,6 +1460,21 @@
                 "identifier",
                 "assigner",
                 "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "identifier",
+                "assigner",
+                "_display"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -929,6 +1581,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "code",
+                "coding",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -940,6 +1607,21 @@
                 "code",
                 "coding",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "code",
+                "coding",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -959,6 +1641,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "code",
+                "coding",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -974,6 +1671,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "code",
+                "coding",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -985,6 +1697,21 @@
                 "code",
                 "coding",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "code",
+                "coding",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1005,6 +1732,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_text": {
+          "Name": "_text",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "code",
+            "_text"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "code",
+                "_text",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "code",
+                "_text",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1021,6 +1793,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_status": {
+      "Name": "_status",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "Medication",
+        "_status"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Medication",
+            "_status",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "Medication",
+            "_status",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "manufacturer": {
       "Name": "manufacturer",
@@ -1075,6 +1889,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_reference": {
+          "Name": "_reference",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "manufacturer",
+            "_reference"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "manufacturer",
+                "_reference",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "manufacturer",
+                "_reference",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "uri",
@@ -1088,6 +1947,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "manufacturer",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "manufacturer",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "manufacturer",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "identifier": {
           "Name": "identifier",
@@ -1146,6 +2050,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "manufacturer",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -1176,6 +2095,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "manufacturer",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -1187,6 +2121,21 @@
                 "manufacturer",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "manufacturer",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1237,6 +2186,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_display": {
+          "Name": "_display",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "manufacturer",
+            "_display"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "manufacturer",
+                "_display",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "manufacturer",
+                "_display",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1337,6 +2331,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "form",
+                "coding",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -1348,6 +2357,21 @@
                 "form",
                 "coding",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "form",
+                "coding",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1367,6 +2391,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "form",
+                "coding",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -1382,6 +2421,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "form",
+                "coding",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -1393,6 +2447,21 @@
                 "form",
                 "coding",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "form",
+                "coding",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1413,6 +2482,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_text": {
+          "Name": "_text",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "form",
+            "_text"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "form",
+                "_text",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "form",
+                "_text",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1513,6 +2627,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "amount",
+                "numerator",
+                "_value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "comparator": {
               "Name": "comparator",
               "Type": "enum",
@@ -1524,6 +2653,21 @@
                 "amount",
                 "numerator",
                 "comparator"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_comparator": {
+              "Name": "_comparator",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "amount",
+                "numerator",
+                "_comparator"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1543,6 +2687,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_unit": {
+              "Name": "_unit",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "amount",
+                "numerator",
+                "_unit"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "system": {
               "Name": "system",
               "Type": "uri",
@@ -1558,6 +2717,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "amount",
+                "numerator",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "code": {
               "Name": "code",
               "Type": "code",
@@ -1569,6 +2743,21 @@
                 "amount",
                 "numerator",
                 "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "amount",
+                "numerator",
+                "_code"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1633,6 +2822,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "amount",
+                "denominator",
+                "_value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "comparator": {
               "Name": "comparator",
               "Type": "enum",
@@ -1644,6 +2848,21 @@
                 "amount",
                 "denominator",
                 "comparator"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_comparator": {
+              "Name": "_comparator",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "amount",
+                "denominator",
+                "_comparator"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1663,6 +2882,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_unit": {
+              "Name": "_unit",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "amount",
+                "denominator",
+                "_unit"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "system": {
               "Name": "system",
               "Type": "uri",
@@ -1678,6 +2912,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "amount",
+                "denominator",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "code": {
               "Name": "code",
               "Type": "code",
@@ -1689,6 +2938,21 @@
                 "amount",
                 "denominator",
                 "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "amount",
+                "denominator",
+                "_code"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1765,6 +3029,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_isActive": {
+          "Name": "_isActive",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "ingredient",
+            "_isActive"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "ingredient",
+                "_isActive",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "ingredient",
+                "_isActive",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "strength": {
           "Name": "strength",
@@ -1929,6 +3238,22 @@
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
+                },
+                "_text": {
+                  "Name": "_text",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Medication",
+                    "ingredient",
+                    "item",
+                    "codeableConcept",
+                    "_text"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
                 }
               },
               "ChoiceTypeNodes": {}
@@ -1994,6 +3319,22 @@
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
                 },
+                "_reference": {
+                  "Name": "_reference",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Medication",
+                    "ingredient",
+                    "item",
+                    "reference",
+                    "_reference"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
                 "type": {
                   "Name": "type",
                   "Type": "uri",
@@ -2006,6 +3347,22 @@
                     "item",
                     "reference",
                     "type"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_type": {
+                  "Name": "_type",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Medication",
+                    "ingredient",
+                    "item",
+                    "reference",
+                    "_type"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -2038,6 +3395,22 @@
                     "item",
                     "reference",
                     "display"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_display": {
+                  "Name": "_display",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "Medication",
+                    "ingredient",
+                    "item",
+                    "reference",
+                    "_display"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -2127,6 +3500,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_lotNumber": {
+          "Name": "_lotNumber",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "batch",
+            "_lotNumber"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "batch",
+                "_lotNumber",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "batch",
+                "_lotNumber",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "expirationDate": {
           "Name": "expirationDate",
           "Type": "dateTime",
@@ -2140,6 +3558,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_expirationDate": {
+          "Name": "_expirationDate",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "Medication",
+            "batch",
+            "_expirationDate"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "batch",
+                "_expirationDate",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "Medication",
+                "batch",
+                "_expirationDate",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}

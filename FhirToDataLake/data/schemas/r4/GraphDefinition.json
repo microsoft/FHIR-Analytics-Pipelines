@@ -87,6 +87,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_versionId": {
+          "Name": "_versionId",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "GraphDefinition",
+            "meta",
+            "_versionId"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "_versionId",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "_versionId",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "lastUpdated": {
           "Name": "lastUpdated",
           "Type": "instant",
@@ -101,6 +146,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_lastUpdated": {
+          "Name": "_lastUpdated",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "GraphDefinition",
+            "meta",
+            "_lastUpdated"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "_lastUpdated",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "_lastUpdated",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "source": {
           "Name": "source",
           "Type": "uri",
@@ -114,6 +204,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_source": {
+          "Name": "_source",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "GraphDefinition",
+            "meta",
+            "_source"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "_source",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "_source",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "profile": {
           "Name": "profile",
@@ -186,6 +321,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "security",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -197,6 +347,21 @@
                 "meta",
                 "security",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "security",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -216,6 +381,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "security",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -231,6 +411,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "security",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -242,6 +437,21 @@
                 "meta",
                 "security",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "security",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -306,6 +516,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "tag",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -317,6 +542,21 @@
                 "meta",
                 "tag",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "tag",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -336,6 +576,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "tag",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -351,6 +606,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "tag",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -362,6 +632,21 @@
                 "meta",
                 "tag",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "meta",
+                "tag",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -385,6 +670,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_implicitRules": {
+      "Name": "_implicitRules",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "GraphDefinition",
+        "_implicitRules"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_implicitRules",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_implicitRules",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "language": {
       "Name": "language",
       "Type": "code",
@@ -397,6 +724,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_language": {
+      "Name": "_language",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "GraphDefinition",
+        "_language"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_language",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_language",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "text": {
       "Name": "text",
@@ -451,6 +820,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_status": {
+          "Name": "_status",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "GraphDefinition",
+            "text",
+            "_status"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "text",
+                "_status",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "text",
+                "_status",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "div": {
           "Name": "div",
           "Type": "xhtml",
@@ -467,6 +881,19 @@
         }
       },
       "ChoiceTypeNodes": {}
+    },
+    "contained": {
+      "Name": "contained",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "GraphDefinition",
+        "contained"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
     },
     "extension": {
       "Name": "extension",
@@ -507,6 +934,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_url": {
+      "Name": "_url",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "GraphDefinition",
+        "_url"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_url",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_url",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "version": {
       "Name": "version",
       "Type": "string",
@@ -519,6 +988,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_version": {
+      "Name": "_version",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "GraphDefinition",
+        "_version"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_version",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_version",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "name": {
       "Name": "name",
@@ -533,6 +1044,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_name": {
+      "Name": "_name",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "GraphDefinition",
+        "_name"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_name",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_name",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "status": {
       "Name": "status",
       "Type": "enum",
@@ -545,6 +1098,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_status": {
+      "Name": "_status",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "GraphDefinition",
+        "_status"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_status",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_status",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "experimental": {
       "Name": "experimental",
@@ -559,6 +1154,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_experimental": {
+      "Name": "_experimental",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "GraphDefinition",
+        "_experimental"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_experimental",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_experimental",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "date": {
       "Name": "date",
       "Type": "dateTime",
@@ -572,6 +1209,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_date": {
+      "Name": "_date",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "GraphDefinition",
+        "_date"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_date",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_date",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "publisher": {
       "Name": "publisher",
       "Type": "string",
@@ -584,6 +1263,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_publisher": {
+      "Name": "_publisher",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "GraphDefinition",
+        "_publisher"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_publisher",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_publisher",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "contact": {
       "Name": "contact",
@@ -637,6 +1358,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_name": {
+          "Name": "_name",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "GraphDefinition",
+            "contact",
+            "_name"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "contact",
+                "_name",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "contact",
+                "_name",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "telecom": {
           "Name": "telecom",
@@ -695,6 +1461,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "contact",
+                "telecom",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -706,6 +1487,21 @@
                 "contact",
                 "telecom",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "contact",
+                "telecom",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -725,6 +1521,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "contact",
+                "telecom",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "rank": {
               "Name": "rank",
               "Type": "positiveInt",
@@ -736,6 +1547,21 @@
                 "contact",
                 "telecom",
                 "rank"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_rank": {
+              "Name": "_rank",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "contact",
+                "telecom",
+                "_rank"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -773,6 +1599,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_description": {
+      "Name": "_description",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "GraphDefinition",
+        "_description"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_description",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_description",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "useContext": {
       "Name": "useContext",
@@ -870,6 +1738,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "useContext",
+                "code",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -881,6 +1764,21 @@
                 "useContext",
                 "code",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "useContext",
+                "code",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -900,6 +1798,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "useContext",
+                "code",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -915,6 +1828,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "useContext",
+                "code",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -926,6 +1854,21 @@
                 "useContext",
                 "code",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "useContext",
+                "code",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1021,6 +1964,22 @@
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
+                },
+                "_text": {
+                  "Name": "_text",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "GraphDefinition",
+                    "useContext",
+                    "value",
+                    "codeableConcept",
+                    "_text"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
                 }
               },
               "ChoiceTypeNodes": {}
@@ -1086,6 +2045,22 @@
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
                 },
+                "_value": {
+                  "Name": "_value",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "GraphDefinition",
+                    "useContext",
+                    "value",
+                    "quantity",
+                    "_value"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
                 "comparator": {
                   "Name": "comparator",
                   "Type": "enum",
@@ -1098,6 +2073,22 @@
                     "value",
                     "quantity",
                     "comparator"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_comparator": {
+                  "Name": "_comparator",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "GraphDefinition",
+                    "useContext",
+                    "value",
+                    "quantity",
+                    "_comparator"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -1118,6 +2109,22 @@
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
                 },
+                "_unit": {
+                  "Name": "_unit",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "GraphDefinition",
+                    "useContext",
+                    "value",
+                    "quantity",
+                    "_unit"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
                 "system": {
                   "Name": "system",
                   "Type": "uri",
@@ -1134,6 +2141,22 @@
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
                 },
+                "_system": {
+                  "Name": "_system",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "GraphDefinition",
+                    "useContext",
+                    "value",
+                    "quantity",
+                    "_system"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
                 "code": {
                   "Name": "code",
                   "Type": "code",
@@ -1146,6 +2169,22 @@
                     "value",
                     "quantity",
                     "code"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_code": {
+                  "Name": "_code",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "GraphDefinition",
+                    "useContext",
+                    "value",
+                    "quantity",
+                    "_code"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -1294,6 +2333,22 @@
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
                 },
+                "_reference": {
+                  "Name": "_reference",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "GraphDefinition",
+                    "useContext",
+                    "value",
+                    "reference",
+                    "_reference"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
                 "type": {
                   "Name": "type",
                   "Type": "uri",
@@ -1306,6 +2361,22 @@
                     "value",
                     "reference",
                     "type"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_type": {
+                  "Name": "_type",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "GraphDefinition",
+                    "useContext",
+                    "value",
+                    "reference",
+                    "_type"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -1338,6 +2409,22 @@
                     "value",
                     "reference",
                     "display"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_display": {
+                  "Name": "_display",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "GraphDefinition",
+                    "useContext",
+                    "value",
+                    "reference",
+                    "_display"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -1464,6 +2551,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "jurisdiction",
+                "coding",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -1475,6 +2577,21 @@
                 "jurisdiction",
                 "coding",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "jurisdiction",
+                "coding",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1494,6 +2611,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "jurisdiction",
+                "coding",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -1509,6 +2641,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "jurisdiction",
+                "coding",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -1520,6 +2667,21 @@
                 "jurisdiction",
                 "coding",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "jurisdiction",
+                "coding",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1540,6 +2702,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_text": {
+          "Name": "_text",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "GraphDefinition",
+            "jurisdiction",
+            "_text"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "jurisdiction",
+                "_text",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "jurisdiction",
+                "_text",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1557,6 +2764,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_purpose": {
+      "Name": "_purpose",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "GraphDefinition",
+        "_purpose"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_purpose",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_purpose",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "start": {
       "Name": "start",
       "Type": "code",
@@ -1569,6 +2818,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_start": {
+      "Name": "_start",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "GraphDefinition",
+        "_start"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_start",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "GraphDefinition",
+            "_start",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "profile": {
       "Name": "profile",
@@ -1650,6 +2941,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_path": {
+          "Name": "_path",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "GraphDefinition",
+            "link",
+            "_path"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "link",
+                "_path",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "link",
+                "_path",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "sliceName": {
           "Name": "sliceName",
           "Type": "string",
@@ -1663,6 +2999,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_sliceName": {
+          "Name": "_sliceName",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "GraphDefinition",
+            "link",
+            "_sliceName"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "link",
+                "_sliceName",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "link",
+                "_sliceName",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "min": {
           "Name": "min",
@@ -1678,6 +3059,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_min": {
+          "Name": "_min",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "GraphDefinition",
+            "link",
+            "_min"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "link",
+                "_min",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "link",
+                "_min",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "max": {
           "Name": "max",
           "Type": "string",
@@ -1692,6 +3118,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_max": {
+          "Name": "_max",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "GraphDefinition",
+            "link",
+            "_max"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "link",
+                "_max",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "link",
+                "_max",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "description": {
           "Name": "description",
           "Type": "string",
@@ -1705,6 +3176,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_description": {
+          "Name": "_description",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "GraphDefinition",
+            "link",
+            "_description"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "link",
+                "_description",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "link",
+                "_description",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "target": {
           "Name": "target",
@@ -1778,6 +3294,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_type": {
+              "Name": "_type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "link",
+                "target",
+                "_type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "params": {
               "Name": "params",
               "Type": "string",
@@ -1789,6 +3320,21 @@
                 "link",
                 "target",
                 "params"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_params": {
+              "Name": "_params",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "GraphDefinition",
+                "link",
+                "target",
+                "_params"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null

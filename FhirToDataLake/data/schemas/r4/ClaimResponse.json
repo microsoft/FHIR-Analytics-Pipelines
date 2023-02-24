@@ -87,6 +87,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_versionId": {
+          "Name": "_versionId",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "meta",
+            "_versionId"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "_versionId",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "_versionId",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "lastUpdated": {
           "Name": "lastUpdated",
           "Type": "instant",
@@ -101,6 +146,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_lastUpdated": {
+          "Name": "_lastUpdated",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "meta",
+            "_lastUpdated"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "_lastUpdated",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "_lastUpdated",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "source": {
           "Name": "source",
           "Type": "uri",
@@ -114,6 +204,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_source": {
+          "Name": "_source",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "meta",
+            "_source"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "_source",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "_source",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "profile": {
           "Name": "profile",
@@ -186,6 +321,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "security",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -197,6 +347,21 @@
                 "meta",
                 "security",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "security",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -216,6 +381,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "security",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -231,6 +411,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "security",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -242,6 +437,21 @@
                 "meta",
                 "security",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "security",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -306,6 +516,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "tag",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -317,6 +542,21 @@
                 "meta",
                 "tag",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "tag",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -336,6 +576,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "tag",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -351,6 +606,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "tag",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -362,6 +632,21 @@
                 "meta",
                 "tag",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "meta",
+                "tag",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -385,6 +670,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_implicitRules": {
+      "Name": "_implicitRules",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "ClaimResponse",
+        "_implicitRules"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_implicitRules",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_implicitRules",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "language": {
       "Name": "language",
       "Type": "code",
@@ -397,6 +724,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_language": {
+      "Name": "_language",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "ClaimResponse",
+        "_language"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_language",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_language",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "text": {
       "Name": "text",
@@ -451,6 +820,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_status": {
+          "Name": "_status",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "text",
+            "_status"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "text",
+                "_status",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "text",
+                "_status",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "div": {
           "Name": "div",
           "Type": "xhtml",
@@ -467,6 +881,19 @@
         }
       },
       "ChoiceTypeNodes": {}
+    },
+    "contained": {
+      "Name": "contained",
+      "Type": "JSONSTRING",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": true,
+      "NodePaths": [
+        "ClaimResponse",
+        "contained"
+      ],
+      "SubNodes": null,
+      "ChoiceTypeNodes": null
     },
     "extension": {
       "Name": "extension",
@@ -547,6 +974,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_use": {
+          "Name": "_use",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "identifier",
+            "_use"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "identifier",
+                "_use",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "identifier",
+                "_use",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "CodeableConcept",
@@ -618,6 +1090,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "identifier",
+                "type",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -636,6 +1123,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_system": {
+          "Name": "_system",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "identifier",
+            "_system"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "identifier",
+                "_system",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "identifier",
+                "_system",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "value": {
           "Name": "value",
           "Type": "string",
@@ -649,6 +1181,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_value": {
+          "Name": "_value",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "identifier",
+            "_value"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "identifier",
+                "_value",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "identifier",
+                "_value",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "period": {
           "Name": "period",
@@ -707,6 +1284,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_start": {
+              "Name": "_start",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "identifier",
+                "period",
+                "_start"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "end": {
               "Name": "end",
               "Type": "dateTime",
@@ -718,6 +1310,21 @@
                 "identifier",
                 "period",
                 "end"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_end": {
+              "Name": "_end",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "identifier",
+                "period",
+                "_end"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -782,6 +1389,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_reference": {
+              "Name": "_reference",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "identifier",
+                "assigner",
+                "_reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "uri",
@@ -793,6 +1415,21 @@
                 "identifier",
                 "assigner",
                 "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_type": {
+              "Name": "_type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "identifier",
+                "assigner",
+                "_type"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -826,6 +1463,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "identifier",
+                "assigner",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -845,6 +1497,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_status": {
+      "Name": "_status",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "ClaimResponse",
+        "_status"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_status",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_status",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "type": {
       "Name": "type",
@@ -942,6 +1636,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "type",
+                "coding",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -953,6 +1662,21 @@
                 "type",
                 "coding",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "type",
+                "coding",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -972,6 +1696,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "type",
+                "coding",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -987,6 +1726,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "type",
+                "coding",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -998,6 +1752,21 @@
                 "type",
                 "coding",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "type",
+                "coding",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1018,6 +1787,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_text": {
+          "Name": "_text",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "type",
+            "_text"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "type",
+                "_text",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "type",
+                "_text",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1118,6 +1932,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "subType",
+                "coding",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -1129,6 +1958,21 @@
                 "subType",
                 "coding",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "subType",
+                "coding",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1148,6 +1992,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "subType",
+                "coding",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -1163,6 +2022,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "subType",
+                "coding",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -1174,6 +2048,21 @@
                 "subType",
                 "coding",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "subType",
+                "coding",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1194,6 +2083,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_text": {
+          "Name": "_text",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "subType",
+            "_text"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "subType",
+                "_text",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "subType",
+                "_text",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1210,6 +2144,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_use": {
+      "Name": "_use",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "ClaimResponse",
+        "_use"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_use",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_use",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "patient": {
       "Name": "patient",
@@ -1264,6 +2240,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_reference": {
+          "Name": "_reference",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "patient",
+            "_reference"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "patient",
+                "_reference",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "patient",
+                "_reference",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "uri",
@@ -1277,6 +2298,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "patient",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "patient",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "patient",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "identifier": {
           "Name": "identifier",
@@ -1335,6 +2401,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "patient",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -1365,6 +2446,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "patient",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -1376,6 +2472,21 @@
                 "patient",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "patient",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1426,6 +2537,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_display": {
+          "Name": "_display",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "patient",
+            "_display"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "patient",
+                "_display",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "patient",
+                "_display",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1442,6 +2598,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_created": {
+      "Name": "_created",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "ClaimResponse",
+        "_created"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_created",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_created",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "insurer": {
       "Name": "insurer",
@@ -1496,6 +2694,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_reference": {
+          "Name": "_reference",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "insurer",
+            "_reference"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurer",
+                "_reference",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurer",
+                "_reference",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "uri",
@@ -1509,6 +2752,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "insurer",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurer",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurer",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "identifier": {
           "Name": "identifier",
@@ -1567,6 +2855,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurer",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -1597,6 +2900,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurer",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -1608,6 +2926,21 @@
                 "insurer",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurer",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1658,6 +2991,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_display": {
+          "Name": "_display",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "insurer",
+            "_display"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurer",
+                "_display",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurer",
+                "_display",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1715,6 +3093,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_reference": {
+          "Name": "_reference",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "requestor",
+            "_reference"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "requestor",
+                "_reference",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "requestor",
+                "_reference",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "uri",
@@ -1728,6 +3151,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "requestor",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "requestor",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "requestor",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "identifier": {
           "Name": "identifier",
@@ -1786,6 +3254,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "requestor",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -1816,6 +3299,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "requestor",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -1827,6 +3325,21 @@
                 "requestor",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "requestor",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -1877,6 +3390,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_display": {
+          "Name": "_display",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "requestor",
+            "_display"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "requestor",
+                "_display",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "requestor",
+                "_display",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -1934,6 +3492,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_reference": {
+          "Name": "_reference",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "request",
+            "_reference"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "request",
+                "_reference",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "request",
+                "_reference",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "uri",
@@ -1947,6 +3550,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "request",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "request",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "request",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "identifier": {
           "Name": "identifier",
@@ -2005,6 +3653,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "request",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -2035,6 +3698,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "request",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -2046,6 +3724,21 @@
                 "request",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "request",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2096,6 +3789,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_display": {
+          "Name": "_display",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "request",
+            "_display"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "request",
+                "_display",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "request",
+                "_display",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -2113,6 +3851,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_outcome": {
+      "Name": "_outcome",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "ClaimResponse",
+        "_outcome"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_outcome",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_outcome",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "disposition": {
       "Name": "disposition",
       "Type": "string",
@@ -2126,6 +3906,48 @@
       "SubNodes": null,
       "ChoiceTypeNodes": null
     },
+    "_disposition": {
+      "Name": "_disposition",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "ClaimResponse",
+        "_disposition"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_disposition",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_disposition",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
+    },
     "preAuthRef": {
       "Name": "preAuthRef",
       "Type": "string",
@@ -2138,6 +3960,48 @@
       ],
       "SubNodes": null,
       "ChoiceTypeNodes": null
+    },
+    "_preAuthRef": {
+      "Name": "_preAuthRef",
+      "Type": "Element",
+      "Depth": 1,
+      "IsRepeated": false,
+      "IsLeaf": false,
+      "NodePaths": [
+        "ClaimResponse",
+        "_preAuthRef"
+      ],
+      "SubNodes": {
+        "id": {
+          "Name": "id",
+          "Type": "string",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_preAuthRef",
+            "id"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        },
+        "extension": {
+          "Name": "extension",
+          "Type": "JSONSTRING",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": true,
+          "NodePaths": [
+            "ClaimResponse",
+            "_preAuthRef",
+            "extension"
+          ],
+          "SubNodes": null,
+          "ChoiceTypeNodes": null
+        }
+      },
+      "ChoiceTypeNodes": {}
     },
     "preAuthPeriod": {
       "Name": "preAuthPeriod",
@@ -2192,6 +4056,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_start": {
+          "Name": "_start",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "preAuthPeriod",
+            "_start"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "preAuthPeriod",
+                "_start",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "preAuthPeriod",
+                "_start",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "end": {
           "Name": "end",
           "Type": "dateTime",
@@ -2205,6 +4114,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_end": {
+          "Name": "_end",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "preAuthPeriod",
+            "_end"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "preAuthPeriod",
+                "_end",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "preAuthPeriod",
+                "_end",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -2305,6 +4259,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payeeType",
+                "coding",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -2316,6 +4285,21 @@
                 "payeeType",
                 "coding",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payeeType",
+                "coding",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2335,6 +4319,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payeeType",
+                "coding",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -2350,6 +4349,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payeeType",
+                "coding",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -2361,6 +4375,21 @@
                 "payeeType",
                 "coding",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payeeType",
+                "coding",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2381,6 +4410,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_text": {
+          "Name": "_text",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "payeeType",
+            "_text"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payeeType",
+                "_text",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payeeType",
+                "_text",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -2452,6 +4526,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_itemSequence": {
+          "Name": "_itemSequence",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "item",
+            "_itemSequence"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "item",
+                "_itemSequence",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "item",
+                "_itemSequence",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "noteNumber": {
           "Name": "noteNumber",
           "Type": "positiveInt",
@@ -2465,6 +4584,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_noteNumber": {
+          "Name": "_noteNumber",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "item",
+            "_noteNumber"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "item",
+                "_noteNumber",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "item",
+                "_noteNumber",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "adjudication": {
           "Name": "adjudication",
@@ -2582,6 +4746,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "item",
+                "adjudication",
+                "_value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -2658,6 +4837,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_detailSequence": {
+              "Name": "_detailSequence",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "item",
+                "detail",
+                "_detailSequence"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "noteNumber": {
               "Name": "noteNumber",
               "Type": "JSONSTRING",
@@ -2669,6 +4863,21 @@
                 "item",
                 "detail",
                 "noteNumber"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_noteNumber": {
+              "Name": "_noteNumber",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "item",
+                "detail",
+                "_noteNumber"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2776,6 +4985,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_itemSequence": {
+          "Name": "_itemSequence",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "addItem",
+            "_itemSequence"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "_itemSequence",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "_itemSequence",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "detailSequence": {
           "Name": "detailSequence",
           "Type": "positiveInt",
@@ -2790,6 +5044,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_detailSequence": {
+          "Name": "_detailSequence",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "addItem",
+            "_detailSequence"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "_detailSequence",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "_detailSequence",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "subdetailSequence": {
           "Name": "subdetailSequence",
           "Type": "positiveInt",
@@ -2803,6 +5102,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_subdetailSequence": {
+          "Name": "_subdetailSequence",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "addItem",
+            "_subdetailSequence"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "_subdetailSequence",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "_subdetailSequence",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "provider": {
           "Name": "provider",
@@ -2861,6 +5205,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_reference": {
+              "Name": "_reference",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "provider",
+                "_reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "uri",
@@ -2872,6 +5231,21 @@
                 "addItem",
                 "provider",
                 "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_type": {
+              "Name": "_type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "provider",
+                "_type"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2902,6 +5276,21 @@
                 "addItem",
                 "provider",
                 "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "provider",
+                "_display"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -2980,6 +5369,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "productOrService",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -3052,6 +5456,21 @@
                 "addItem",
                 "modifier",
                 "text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "modifier",
+                "_text"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -3130,6 +5549,66 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "programCode",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
+        "_servicedDate": {
+          "Name": "_servicedDate",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "addItem",
+            "_servicedDate"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "_servicedDate",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "_servicedDate",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -3191,6 +5670,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "quantity",
+                "_value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "comparator": {
               "Name": "comparator",
               "Type": "enum",
@@ -3202,6 +5696,21 @@
                 "addItem",
                 "quantity",
                 "comparator"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_comparator": {
+              "Name": "_comparator",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "quantity",
+                "_comparator"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -3221,6 +5730,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_unit": {
+              "Name": "_unit",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "quantity",
+                "_unit"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "system": {
               "Name": "system",
               "Type": "uri",
@@ -3236,6 +5760,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "quantity",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "code": {
               "Name": "code",
               "Type": "code",
@@ -3247,6 +5786,21 @@
                 "addItem",
                 "quantity",
                 "code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "quantity",
+                "_code"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -3311,6 +5865,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "unitPrice",
+                "_value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "currency": {
               "Name": "currency",
               "Type": "code",
@@ -3322,6 +5891,21 @@
                 "addItem",
                 "unitPrice",
                 "currency"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_currency": {
+              "Name": "_currency",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "unitPrice",
+                "_currency"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -3342,6 +5926,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_factor": {
+          "Name": "_factor",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "addItem",
+            "_factor"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "_factor",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "_factor",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "net": {
           "Name": "net",
@@ -3400,6 +6029,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "net",
+                "_value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "currency": {
               "Name": "currency",
               "Type": "code",
@@ -3411,6 +6055,21 @@
                 "addItem",
                 "net",
                 "currency"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_currency": {
+              "Name": "_currency",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "net",
+                "_currency"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -3489,6 +6148,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "bodySite",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -3564,6 +6238,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "subSite",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -3581,6 +6270,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_noteNumber": {
+          "Name": "_noteNumber",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": true,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "addItem",
+            "_noteNumber"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "_noteNumber",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "_noteNumber",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "adjudication": {
           "Name": "adjudication",
@@ -3695,6 +6429,21 @@
                 "addItem",
                 "adjudication",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "adjudication",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -3834,6 +6583,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_factor": {
+              "Name": "_factor",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "detail",
+                "_factor"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "net": {
               "Name": "net",
               "Type": "JSONSTRING",
@@ -3860,6 +6624,21 @@
                 "addItem",
                 "detail",
                 "noteNumber"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_noteNumber": {
+              "Name": "_noteNumber",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "addItem",
+                "detail",
+                "_noteNumber"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -3985,6 +6764,22 @@
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
                 },
+                "_start": {
+                  "Name": "_start",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "serviced",
+                    "period",
+                    "_start"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
                 "end": {
                   "Name": "end",
                   "Type": "dateTime",
@@ -3997,6 +6792,22 @@
                     "serviced",
                     "period",
                     "end"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_end": {
+                  "Name": "_end",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "serviced",
+                    "period",
+                    "_end"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -4095,6 +6906,22 @@
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
+                },
+                "_text": {
+                  "Name": "_text",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "codeableConcept",
+                    "_text"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
                 }
               },
               "ChoiceTypeNodes": {}
@@ -4160,6 +6987,22 @@
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
                 },
+                "_use": {
+                  "Name": "_use",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "address",
+                    "_use"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
                 "type": {
                   "Name": "type",
                   "Type": "enum",
@@ -4172,6 +7015,22 @@
                     "location",
                     "address",
                     "type"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_type": {
+                  "Name": "_type",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "address",
+                    "_type"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -4192,6 +7051,22 @@
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
                 },
+                "_text": {
+                  "Name": "_text",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "address",
+                    "_text"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
                 "line": {
                   "Name": "line",
                   "Type": "JSONSTRING",
@@ -4204,6 +7079,22 @@
                     "location",
                     "address",
                     "line"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_line": {
+                  "Name": "_line",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "address",
+                    "_line"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -4224,6 +7115,22 @@
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
                 },
+                "_city": {
+                  "Name": "_city",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "address",
+                    "_city"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
                 "district": {
                   "Name": "district",
                   "Type": "string",
@@ -4236,6 +7143,22 @@
                     "location",
                     "address",
                     "district"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_district": {
+                  "Name": "_district",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "address",
+                    "_district"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -4256,6 +7179,22 @@
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
                 },
+                "_state": {
+                  "Name": "_state",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "address",
+                    "_state"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
                 "postalCode": {
                   "Name": "postalCode",
                   "Type": "string",
@@ -4272,6 +7211,22 @@
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
                 },
+                "_postalCode": {
+                  "Name": "_postalCode",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "address",
+                    "_postalCode"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
                 "country": {
                   "Name": "country",
                   "Type": "string",
@@ -4284,6 +7239,22 @@
                     "location",
                     "address",
                     "country"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_country": {
+                  "Name": "_country",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "address",
+                    "_country"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -4368,6 +7339,22 @@
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
                 },
+                "_reference": {
+                  "Name": "_reference",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "reference",
+                    "_reference"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
                 "type": {
                   "Name": "type",
                   "Type": "uri",
@@ -4380,6 +7367,22 @@
                     "location",
                     "reference",
                     "type"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_type": {
+                  "Name": "_type",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "reference",
+                    "_type"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -4412,6 +7415,22 @@
                     "location",
                     "reference",
                     "display"
+                  ],
+                  "SubNodes": null,
+                  "ChoiceTypeNodes": null
+                },
+                "_display": {
+                  "Name": "_display",
+                  "Type": "JSONSTRING",
+                  "Depth": 3,
+                  "IsRepeated": false,
+                  "IsLeaf": true,
+                  "NodePaths": [
+                    "ClaimResponse",
+                    "addItem",
+                    "location",
+                    "reference",
+                    "_display"
                   ],
                   "SubNodes": null,
                   "ChoiceTypeNodes": null
@@ -4570,6 +7589,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "adjudication",
+                "category",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -4645,6 +7679,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "adjudication",
+                "reason",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -4706,6 +7755,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "adjudication",
+                "amount",
+                "_value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "currency": {
               "Name": "currency",
               "Type": "code",
@@ -4717,6 +7781,21 @@
                 "adjudication",
                 "amount",
                 "currency"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_currency": {
+              "Name": "_currency",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "adjudication",
+                "amount",
+                "_currency"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -4737,6 +7816,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_value": {
+          "Name": "_value",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "adjudication",
+            "_value"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "adjudication",
+                "_value",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "adjudication",
+                "_value",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -4865,6 +7989,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "total",
+                "category",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -4926,6 +8065,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "total",
+                "amount",
+                "_value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "currency": {
               "Name": "currency",
               "Type": "code",
@@ -4937,6 +8091,21 @@
                 "total",
                 "amount",
                 "currency"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_currency": {
+              "Name": "_currency",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "total",
+                "amount",
+                "_currency"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -5071,6 +8240,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payment",
+                "type",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -5132,6 +8316,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payment",
+                "adjustment",
+                "_value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "currency": {
               "Name": "currency",
               "Type": "code",
@@ -5143,6 +8342,21 @@
                 "payment",
                 "adjustment",
                 "currency"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_currency": {
+              "Name": "_currency",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payment",
+                "adjustment",
+                "_currency"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -5221,6 +8435,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payment",
+                "adjustmentReason",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -5238,6 +8467,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_date": {
+          "Name": "_date",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "payment",
+            "_date"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payment",
+                "_date",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payment",
+                "_date",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "amount": {
           "Name": "amount",
@@ -5296,6 +8570,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payment",
+                "amount",
+                "_value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "currency": {
               "Name": "currency",
               "Type": "code",
@@ -5307,6 +8596,21 @@
                 "payment",
                 "amount",
                 "currency"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_currency": {
+              "Name": "_currency",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payment",
+                "amount",
+                "_currency"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -5371,6 +8675,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payment",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -5401,6 +8720,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payment",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -5412,6 +8746,21 @@
                 "payment",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "payment",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -5548,6 +8897,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "fundsReserve",
+                "coding",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -5559,6 +8923,21 @@
                 "fundsReserve",
                 "coding",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "fundsReserve",
+                "coding",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -5578,6 +8957,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "fundsReserve",
+                "coding",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -5593,6 +8987,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "fundsReserve",
+                "coding",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -5604,6 +9013,21 @@
                 "fundsReserve",
                 "coding",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "fundsReserve",
+                "coding",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -5624,6 +9048,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_text": {
+          "Name": "_text",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "fundsReserve",
+            "_text"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "fundsReserve",
+                "_text",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "fundsReserve",
+                "_text",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -5724,6 +9193,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "formCode",
+                "coding",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "version": {
               "Name": "version",
               "Type": "string",
@@ -5735,6 +9219,21 @@
                 "formCode",
                 "coding",
                 "version"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_version": {
+              "Name": "_version",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "formCode",
+                "coding",
+                "_version"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -5754,6 +9253,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_code": {
+              "Name": "_code",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "formCode",
+                "coding",
+                "_code"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "display": {
               "Name": "display",
               "Type": "string",
@@ -5769,6 +9283,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "formCode",
+                "coding",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "userSelected": {
               "Name": "userSelected",
               "Type": "boolean",
@@ -5780,6 +9309,21 @@
                 "formCode",
                 "coding",
                 "userSelected"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_userSelected": {
+              "Name": "_userSelected",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "formCode",
+                "coding",
+                "_userSelected"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -5800,6 +9344,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_text": {
+          "Name": "_text",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "formCode",
+            "_text"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "formCode",
+                "_text",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "formCode",
+                "_text",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -5857,6 +9446,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_contentType": {
+          "Name": "_contentType",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "form",
+            "_contentType"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_contentType",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_contentType",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "language": {
           "Name": "language",
           "Type": "code",
@@ -5870,6 +9504,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_language": {
+          "Name": "_language",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "form",
+            "_language"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_language",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_language",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "data": {
           "Name": "data",
@@ -5885,6 +9564,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_data": {
+          "Name": "_data",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "form",
+            "_data"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_data",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_data",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "url": {
           "Name": "url",
           "Type": "url",
@@ -5898,6 +9622,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_url": {
+          "Name": "_url",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "form",
+            "_url"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_url",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_url",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "size": {
           "Name": "size",
@@ -5913,6 +9682,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_size": {
+          "Name": "_size",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "form",
+            "_size"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_size",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_size",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "hash": {
           "Name": "hash",
           "Type": "base64Binary",
@@ -5926,6 +9740,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_hash": {
+          "Name": "_hash",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "form",
+            "_hash"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_hash",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_hash",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "title": {
           "Name": "title",
@@ -5941,6 +9800,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_title": {
+          "Name": "_title",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "form",
+            "_title"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_title",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_title",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "creation": {
           "Name": "creation",
           "Type": "dateTime",
@@ -5954,6 +9858,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_creation": {
+          "Name": "_creation",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "form",
+            "_creation"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_creation",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "form",
+                "_creation",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -6025,6 +9974,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_number": {
+          "Name": "_number",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "processNote",
+            "_number"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "processNote",
+                "_number",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "processNote",
+                "_number",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "enum",
@@ -6039,6 +10033,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "processNote",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "processNote",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "processNote",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "text": {
           "Name": "text",
           "Type": "string",
@@ -6052,6 +10091,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_text": {
+          "Name": "_text",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "processNote",
+            "_text"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "processNote",
+                "_text",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "processNote",
+                "_text",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "language": {
           "Name": "language",
@@ -6124,6 +10208,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "processNote",
+                "language",
+                "_text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -6184,6 +10283,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_reference": {
+          "Name": "_reference",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "communicationRequest",
+            "_reference"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "communicationRequest",
+                "_reference",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "communicationRequest",
+                "_reference",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "type": {
           "Name": "type",
           "Type": "uri",
@@ -6197,6 +10341,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_type": {
+          "Name": "_type",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "communicationRequest",
+            "_type"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "communicationRequest",
+                "_type",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "communicationRequest",
+                "_type",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "identifier": {
           "Name": "identifier",
@@ -6255,6 +10444,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_use": {
+              "Name": "_use",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "communicationRequest",
+                "identifier",
+                "_use"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "JSONSTRING",
@@ -6285,6 +10489,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_system": {
+              "Name": "_system",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "communicationRequest",
+                "identifier",
+                "_system"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "value": {
               "Name": "value",
               "Type": "string",
@@ -6296,6 +10515,21 @@
                 "communicationRequest",
                 "identifier",
                 "value"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_value": {
+              "Name": "_value",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "communicationRequest",
+                "identifier",
+                "_value"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -6346,6 +10580,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_display": {
+          "Name": "_display",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "communicationRequest",
+            "_display"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "communicationRequest",
+                "_display",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "communicationRequest",
+                "_display",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         }
       },
       "ChoiceTypeNodes": {}
@@ -6417,6 +10696,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_sequence": {
+          "Name": "_sequence",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "insurance",
+            "_sequence"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurance",
+                "_sequence",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurance",
+                "_sequence",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "focal": {
           "Name": "focal",
           "Type": "boolean",
@@ -6430,6 +10754,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_focal": {
+          "Name": "_focal",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "insurance",
+            "_focal"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurance",
+                "_focal",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurance",
+                "_focal",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "coverage": {
           "Name": "coverage",
@@ -6488,6 +10857,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_reference": {
+              "Name": "_reference",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurance",
+                "coverage",
+                "_reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "uri",
@@ -6499,6 +10883,21 @@
                 "insurance",
                 "coverage",
                 "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_type": {
+              "Name": "_type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurance",
+                "coverage",
+                "_type"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -6532,6 +10931,21 @@
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
+            },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurance",
+                "coverage",
+                "_display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
             }
           },
           "ChoiceTypeNodes": {}
@@ -6549,6 +10963,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_businessArrangement": {
+          "Name": "_businessArrangement",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "insurance",
+            "_businessArrangement"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurance",
+                "_businessArrangement",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurance",
+                "_businessArrangement",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "claimResponse": {
           "Name": "claimResponse",
@@ -6607,6 +11066,21 @@
               "SubNodes": null,
               "ChoiceTypeNodes": null
             },
+            "_reference": {
+              "Name": "_reference",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurance",
+                "claimResponse",
+                "_reference"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
             "type": {
               "Name": "type",
               "Type": "uri",
@@ -6618,6 +11092,21 @@
                 "insurance",
                 "claimResponse",
                 "type"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_type": {
+              "Name": "_type",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurance",
+                "claimResponse",
+                "_type"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -6648,6 +11137,21 @@
                 "insurance",
                 "claimResponse",
                 "display"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_display": {
+              "Name": "_display",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "insurance",
+                "claimResponse",
+                "_display"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null
@@ -6725,6 +11229,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_itemSequence": {
+          "Name": "_itemSequence",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "error",
+            "_itemSequence"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "error",
+                "_itemSequence",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "error",
+                "_itemSequence",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "detailSequence": {
           "Name": "detailSequence",
           "Type": "positiveInt",
@@ -6739,6 +11288,51 @@
           "SubNodes": null,
           "ChoiceTypeNodes": null
         },
+        "_detailSequence": {
+          "Name": "_detailSequence",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "error",
+            "_detailSequence"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "error",
+                "_detailSequence",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "error",
+                "_detailSequence",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
+        },
         "subDetailSequence": {
           "Name": "subDetailSequence",
           "Type": "positiveInt",
@@ -6752,6 +11346,51 @@
           ],
           "SubNodes": null,
           "ChoiceTypeNodes": null
+        },
+        "_subDetailSequence": {
+          "Name": "_subDetailSequence",
+          "Type": "Element",
+          "Depth": 2,
+          "IsRepeated": false,
+          "IsLeaf": false,
+          "NodePaths": [
+            "ClaimResponse",
+            "error",
+            "_subDetailSequence"
+          ],
+          "SubNodes": {
+            "id": {
+              "Name": "id",
+              "Type": "string",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "error",
+                "_subDetailSequence",
+                "id"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "extension": {
+              "Name": "extension",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "error",
+                "_subDetailSequence",
+                "extension"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            }
+          },
+          "ChoiceTypeNodes": {}
         },
         "code": {
           "Name": "code",
@@ -6821,6 +11460,21 @@
                 "error",
                 "code",
                 "text"
+              ],
+              "SubNodes": null,
+              "ChoiceTypeNodes": null
+            },
+            "_text": {
+              "Name": "_text",
+              "Type": "JSONSTRING",
+              "Depth": 3,
+              "IsRepeated": false,
+              "IsLeaf": true,
+              "NodePaths": [
+                "ClaimResponse",
+                "error",
+                "code",
+                "_text"
               ],
               "SubNodes": null,
               "ChoiceTypeNodes": null

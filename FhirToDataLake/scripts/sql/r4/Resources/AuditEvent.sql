@@ -15,6 +15,7 @@ CREATE EXTERNAL TABLE [fhir].[AuditEvent] (
     [text.extension] NVARCHAR(MAX),
     [text.status] NVARCHAR(64),
     [text.div] NVARCHAR(MAX),
+    [contained] NVARCHAR(MAX),
     [extension] NVARCHAR(MAX),
     [modifierExtension] NVARCHAR(MAX),
     [type.id] NVARCHAR(100),

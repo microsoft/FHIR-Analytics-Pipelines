@@ -278,6 +278,7 @@ SELECT
     [parameter.valueMeta.profile],
     [parameter.valueMeta.security],
     [parameter.valueMeta.tag],
+    [parameter.resource],
     [parameter.part]
 FROM openrowset (
         BULK 'Parameters/**',
@@ -542,5 +543,6 @@ FROM openrowset (
         [parameter.valueMeta.profile]  NVARCHAR(MAX)       '$.valueMeta.profile',
         [parameter.valueMeta.security] NVARCHAR(MAX)       '$.valueMeta.security',
         [parameter.valueMeta.tag]      NVARCHAR(MAX)       '$.valueMeta.tag',
+        [parameter.resource]           NVARCHAR(MAX)       '$.resource',
         [parameter.part]               NVARCHAR(MAX)       '$.part' AS JSON
     ) j

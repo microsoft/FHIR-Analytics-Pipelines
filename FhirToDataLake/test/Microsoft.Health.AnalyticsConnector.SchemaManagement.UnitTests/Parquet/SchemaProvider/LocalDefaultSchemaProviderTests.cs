@@ -45,10 +45,10 @@ namespace Microsoft.Health.AnalyticsConnector.SchemaManagement.UnitTests.Parquet
                 () => new LocalDefaultSchemaProvider(dataSourceOption, diagnosticLogger, null));
         }
 
-        [InlineData("Patient", 24)]
-        [InlineData("Observation", 32)]
-        [InlineData("Encounter", 31)]
-        [InlineData("Claim", 35)]
+        [InlineData("Patient", 34)]
+        [InlineData("Observation", 44)]
+        [InlineData("Encounter", 35)]
+        [InlineData("Claim", 41)]
         [Theory]
         public static async void GivenSchemaDirectory_WhenGetR4Schema_CorrectResultShouldBeReturned(string schemaType, int propertyCount)
         {
