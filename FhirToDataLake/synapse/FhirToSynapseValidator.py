@@ -110,6 +110,10 @@ class SchemaManager:
 
     @staticmethod
     def parse_schema(node_schema, json_data_path, table_column_path, field_dict_result):
+        # Omit primitive extension properties when compare columns number with External Table
+        if node_schema["Name"].startswith('_'):
+            return
+
         if node_schema["IsRepeated"]:
             field_dict_result[".".join(json_data_path)] = ".".join(table_column_path)
         elif node_schema["IsLeaf"]:
