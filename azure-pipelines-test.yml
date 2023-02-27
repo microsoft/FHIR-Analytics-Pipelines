@@ -52,7 +52,6 @@ stages:
   - job: CleanTestEnvironment
     dependsOn:
     - RunFhirToSynapseOverallTest
-    - RunDicomToSynapseOverallTest
     pool:
       vmImage: 'ubuntu-22.04'
     steps:
