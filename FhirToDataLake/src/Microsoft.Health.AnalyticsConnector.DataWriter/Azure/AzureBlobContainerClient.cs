@@ -215,6 +215,29 @@ namespace Microsoft.Health.AnalyticsConnector.DataWriter.Azure
             }
         }
 
+        public async Task<IEnumerable<AzureBlobInfo>> ListBlobInfoAsync(string blobPrefix, CancellationToken cancellationToken = default)
+        {
+            List<AzureBlobInfo> blobNameList = new List<AzureBlobInfo>();
+            try
+            {
+                await foreach (Page<BlobHierarchyItem> page in BlobContainerClient.GetBlobsByHierarchyAsync(prefix: blobPrefix, cancellationToken: cancellationToken)
+                    .AsPages(default, ListBlobPageCount))
+                {
+                    blobNameList.AddRange(page.Values
+                        .Where(item => item.IsBlob)
+                        .Select(item => new AzureBlobInfo(item.Blob.Name, item.Blob.Properties.ETag.ToString(), item.Blob.Properties.LastModified)));
+                }
+
+                return blobNameList;
+            }
+            catch (Exception ex)
+            {
+                _diagnosticLogger.LogError($"List blob prefix '{blobPrefix}' failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"List blob prefix '{blobPrefix}' failed. Reason: '{ex.Message}'");
+                throw new AzureBlobOperationFailedException($"List blob prefix '{blobPrefix}' failed.", ex);
+            }
+        }
+
         public async Task<Stream> GetBlobAsync(string blobName, CancellationToken cancellationToken = default)
         {
             BlobClient blobClient = BlobContainerClient.GetBlobClient(blobName);
@@ -235,6 +258,24 @@ namespace Microsoft.Health.AnalyticsConnector.DataWriter.Azure
                 _diagnosticLogger.LogError($"Get blob '{blobName}' failed. Reason: '{ex.Message}'");
                 _logger.LogInformation(ex, $"Get blob '{blobName}' failed. Reason: '{ex.Message}'");
                 throw new AzureBlobOperationFailedException($"Get blob '{blobName}' failed.", ex);
+            }
+        }
+
+        public string GetBlobETag(string blobName)
+        {
+            EnsureArg.IsNotNull(blobName, nameof(blobName));
+
+            BlobClient blob = BlobContainerClient.GetBlobClient(blobName);
+
+            try
+            {
+                return blob.GetProperties().Value.ETag.ToString().Trim('"');
+            }
+            catch (Exception ex)
+            {
+                _diagnosticLogger.LogError($"Failed to get ETag of '{blobName}'. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"Failed to get ETag of '{blobName}'. Reason: '{ex.Message}'");
+                throw new AzureBlobOperationFailedException($"Failed to get ETag of '{blobName}'.", ex);
             }
         }
 
@@ -316,7 +357,7 @@ namespace Microsoft.Health.AnalyticsConnector.DataWriter.Azure
             catch (Exception ex)
             {
                 _logger.LogInformation(ex, "Failed to acquire lease on the blob '{0}'. Reason: '{1}'", blobName, ex.Message);
-                return null;
+                throw new AzureBlobOperationFailedException($"Failed to acquire lease on the blob '{blobName}'.", ex);
             }
         }
 
@@ -436,6 +477,25 @@ namespace Microsoft.Health.AnalyticsConnector.DataWriter.Azure
                 yield return item;
             }
             while (item != null);
+        }
+
+        public async Task<Stream> DownloadFileAsync(string directory, string file, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                DataLakeDirectoryClient directoryClient = DataLakeFileSystemClient.GetDirectoryClient(directory);
+                DataLakeFileClient fileClient = directoryClient.GetFileClient(file);
+                Response<FileDownloadInfo> downloadResponse = await fileClient.ReadAsync(cancellationToken);
+
+                _logger.LogInformation($"Download file '{file}' in directory '{directory}' successfully.");
+                return downloadResponse.Value.Content;
+            }
+            catch (Exception ex)
+            {
+                _diagnosticLogger.LogError($"Failed to download file '{file}' in directory '{directory}'. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, "Failed to download file '{0}' in directory '{1}'. Reason: '{2}'", file, directory, ex.Message);
+                throw new AzureBlobOperationFailedException($"Failed to download file '{file}' in directory '{directory}'.", ex);
+            }
         }
     }
 }

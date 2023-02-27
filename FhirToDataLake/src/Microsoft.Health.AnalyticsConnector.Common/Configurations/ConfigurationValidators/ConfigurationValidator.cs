@@ -76,6 +76,20 @@ namespace Microsoft.Health.AnalyticsConnector.Common.Configurations.Configuratio
                     }
 
                     break;
+                case DataSourceType.FhirDataLakeStore:
+                    var fhirDataLakeStoreConfiguration = dataSourceConfiguration.FhirDataLakeStore;
+
+                    if (string.IsNullOrWhiteSpace(fhirDataLakeStoreConfiguration.StorageUrl))
+                    {
+                        throw new ConfigurationErrorException("FHIR data lake store storage URL cannot be empty.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(fhirDataLakeStoreConfiguration.ContainerName))
+                    {
+                        throw new ConfigurationErrorException("FHIR data lake store container name cannot be empty.");
+                    }
+
+                    break;
                 default:
                     throw new ConfigurationErrorException($"Data source type {dataSourceConfiguration.Type} is not supported");
             }

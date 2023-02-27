@@ -42,6 +42,12 @@ namespace Microsoft.Health.AnalyticsConnector.Common.Configurations
         public string MetadataTableName { get; set; }
 
         /// <summary>
+        /// Completed blob table name.
+        /// </summary>
+        [JsonProperty("completedBlobTableName")]
+        public string CompletedBlobTableName { get; set; }
+
+        /// <summary>
         /// Job information queue name.
         /// </summary>
         [JsonProperty("jobInfoQueueName")]

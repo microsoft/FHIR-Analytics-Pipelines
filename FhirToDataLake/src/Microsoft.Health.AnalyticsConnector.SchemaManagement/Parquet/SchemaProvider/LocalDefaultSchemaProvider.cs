@@ -103,6 +103,16 @@ namespace Microsoft.Health.AnalyticsConnector.SchemaManagement.Parquet.SchemaPro
                     };
                 case DataSourceType.DICOM:
                     return string.Format("{0}.{1}", assembly.GetName().Name, SchemaDicomEmbeddedPrefix);
+                case DataSourceType.FhirDataLakeStore:
+                    fhirVersion = _dataSourceConfiguration.FhirDataLakeStore.Version;
+                    return fhirVersion switch
+                    {
+                        FhirVersion.R4 => string.Format("{0}.{1}", assembly.GetName().Name, SchemaR4EmbeddedPrefix),
+                        FhirVersion.R5 => string.Format("{0}.{1}", assembly.GetName().Name, SchemaR5EmbeddedPrefix),
+
+                        // Will not happened because we have validated schema version when initialization.
+                        _ => throw new GenerateFhirParquetSchemaNodeException($"Fhir schema version {fhirVersion} is not supported.")
+                    };
                 default:
                     throw new ConfigurationErrorException($"Data source type {_dataSourceConfiguration.Type} is not supported");
             }

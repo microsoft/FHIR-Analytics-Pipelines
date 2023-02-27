@@ -62,6 +62,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core
 
                     services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<FhirToDataLakeAzureStorageJobInfo>>();
 
+                    services.AddSingleton<IExternalDependencyChecker, ExternalDependencyChecker>();
+
                     break;
                 case DataSourceType.DICOM:
                     services.AddSingleton<IJobFactory, DicomToDatalakeAzureStorageJobFactory>();
@@ -69,6 +71,21 @@ namespace Microsoft.Health.AnalyticsConnector.Core
                     services.AddSingleton<ISchedulerService, DicomToDatalakeSchedulerService>();
 
                     services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<DicomToDataLakeAzureStorageJobInfo>>();
+
+                    services.AddSingleton<IExternalDependencyChecker, ExternalDependencyChecker>();
+
+                    break;
+                case DataSourceType.FhirDataLakeStore:
+                    services.AddSingleton<IJobFactory, FhirDataLakeToDataLakeAzureStorageJobFactory>();
+
+                    services.AddSingleton<ISchedulerService, FhirDataLakeToDataLakeSchedulerService>();
+
+                    services.AddSingleton<IQueueClient, AzureStorageJobQueueClient<FhirDataLakeToDataLakeAzureStorageJobInfo>>();
+
+                    services.AddSingleton<IExternalDependencyChecker, DataLakeExternalDependencyChecker>();
+
+                    services.AddSingleton<ICompletedBlobStore, AzureTableCompletedBlobStore>();
+
                     break;
                 default:
                     throw new ConfigurationErrorException($"Data source type {dataSourceConfiguration.Type} is not supported");
@@ -84,8 +101,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core
 
             services.AddSingleton<IColumnDataProcessor, ParquetDataProcessor>();
 
-            services.AddSingleton<IExternalDependencyChecker, ExternalDependencyChecker>();
-
             services.AddSchemaConverters(dataSourceConfiguration.Type);
 
             return services;
@@ -96,6 +111,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core
             switch (dataSourceType)
             {
                 case DataSourceType.FHIR:
+                case DataSourceType.FhirDataLakeStore:
                     services.AddSingleton<FhirDefaultSchemaConverter>();
                     break;
                 case DataSourceType.DICOM:
@@ -111,7 +127,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core
             {
                 return name switch
                 {
-                    ParquetSchemaConstants.DefaultSchemaProviderKey => dataSourceType == DataSourceType.FHIR
+                    ParquetSchemaConstants.DefaultSchemaProviderKey => (dataSourceType == DataSourceType.FHIR || dataSourceType == DataSourceType.FhirDataLakeStore)
                         ? delegateProvider.GetService<FhirDefaultSchemaConverter>()
                         : delegateProvider.GetService<DicomDefaultSchemaConverter>(),
                     ParquetSchemaConstants.CustomSchemaProviderKey => delegateProvider.GetService<CustomSchemaConverter>(),

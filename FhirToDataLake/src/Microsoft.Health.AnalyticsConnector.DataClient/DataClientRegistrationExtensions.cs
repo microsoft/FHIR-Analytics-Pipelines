@@ -14,6 +14,7 @@ using Microsoft.Health.AnalyticsConnector.Common.Configurations;
 using Microsoft.Health.AnalyticsConnector.Common.Exceptions;
 using Microsoft.Health.AnalyticsConnector.DataClient.Api;
 using Microsoft.Health.AnalyticsConnector.DataClient.Api.Dicom;
+using Microsoft.Health.AnalyticsConnector.DataClient.DataLake;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
@@ -24,8 +25,6 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient
     {
         public static IServiceCollection AddDataSource(this IServiceCollection services)
         {
-            services.AddSingleton<IApiDataSource, ApiDataSource>();
-
             var dataSourceConfiguration = services
                 .BuildServiceProvider()
                 .GetRequiredService<IOptions<DataSourceConfiguration>>()
@@ -34,6 +33,7 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient
             switch (dataSourceConfiguration.Type)
             {
                 case DataSourceType.FHIR:
+                    services.AddSingleton<IApiDataSource, ApiDataSource>();
                     services.AddHttpClient<IApiDataClient, FhirApiDataClient>(client =>
                     {
                         client.BaseAddress = new Uri(dataSourceConfiguration.FhirServer.ServerUrl);
@@ -44,6 +44,7 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient
 
                     break;
                 case DataSourceType.DICOM:
+                    services.AddSingleton<IApiDataSource, ApiDataSource>();
                     services.AddHttpClient<IApiDataClient, DicomApiDataClient>(client =>
                     {
                         client.BaseAddress = new Uri(dataSourceConfiguration.DicomServer.ServerUrl);
@@ -51,6 +52,12 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient
                     .AddPolicyHandler(GetRetryPolicy(services))
                     .AddPolicyHandler(GetTimeoutPolicy())
                     .AddPolicyHandler(GetCircuitBreakerPolicy());
+
+                    break;
+                case DataSourceType.FhirDataLakeStore:
+                    services.AddHttpClient();
+                    services.AddSingleton<IDataLakeSource, AzureDataLakeSource>();
+                    services.AddSingleton<IDataLakeClient, AzureDataLakeClient>();
 
                     break;
                 default:

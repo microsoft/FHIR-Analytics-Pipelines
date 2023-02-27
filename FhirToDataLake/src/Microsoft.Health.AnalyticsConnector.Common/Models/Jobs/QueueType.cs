@@ -16,5 +16,10 @@ namespace Microsoft.Health.AnalyticsConnector.Common.Models.Jobs
         /// Dicom to data lake
         /// </summary>
         DicomToDataLake = 1,
+
+        /// <summary>
+        /// FHIR data lake to data lake
+        /// </summary>
+        FhirDataLakeToDataLake = 2,
     }
 }

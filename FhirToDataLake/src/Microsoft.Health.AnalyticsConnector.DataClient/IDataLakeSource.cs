@@ -3,26 +3,18 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.AnalyticsConnector.Common
+namespace Microsoft.Health.AnalyticsConnector.DataClient
 {
-    /// <summary>
-    /// Supported data source types
-    /// </summary>
-    public enum DataSourceType
+    public interface IDataLakeSource
     {
         /// <summary>
-        /// FHIR
+        /// Storage url.
         /// </summary>
-        FHIR,
+        public string StorageUrl { get; }
 
         /// <summary>
-        /// DICOM
+        /// Storage container name.
         /// </summary>
-        DICOM,
-
-        /// <summary>
-        /// FhirDataLakeStore
-        /// </summary>
-        FhirDataLakeStore,
+        public string Location { get; }
     }
 }

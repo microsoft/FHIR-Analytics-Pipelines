@@ -35,6 +35,11 @@ namespace Microsoft.Health.AnalyticsConnector.DataWriter.Azure
         // Committed data file path: "result/{schemaType}/{offset}/{JobId:d20}"
         private readonly Regex _dicomStagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z_]+/\d+)$");
 
+        // TODO [boywu]: refine regex for blob name
+        // Staged data folder path: "staging/{JobId:d20}/{blobName}/{etag}/{schemaType}"
+        // Committed data file path: "result/{schemaType}/{blobName}/{etag}/{JobId:d20}"
+        private readonly Regex _fhirDataLakeStagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z0-9_]+/[A-Za-z0-9_]+/[A-Za-z_]+)$");
+
         private readonly DataSourceType _dataSourceType;
 
         public AzureBlobDataWriter(
@@ -92,6 +97,7 @@ namespace Microsoft.Health.AnalyticsConnector.DataWriter.Azure
                     {
                         DataSourceType.FHIR => _fhirStagingDataFolderRegex.Match(path.Name),
                         DataSourceType.DICOM => _dicomStagingDataFolderRegex.Match(path.Name),
+                        DataSourceType.FhirDataLakeStore => _fhirDataLakeStagingDataFolderRegex.Match(path.Name),
                         _ => throw new ConfigurationErrorException($"Data source type {_dataSourceType} is not supported")
                     };
 

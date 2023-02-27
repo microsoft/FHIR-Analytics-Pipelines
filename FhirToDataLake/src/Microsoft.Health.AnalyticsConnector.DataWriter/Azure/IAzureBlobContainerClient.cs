@@ -37,6 +37,16 @@ namespace Microsoft.Health.AnalyticsConnector.DataWriter.Azure
             CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// List AzureBlobInfo with specific prefix.
+        /// </summary>
+        /// <param name="blobPrefix">blob prefix.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>AzureBlobInfo list.</returns>
+        public Task<IEnumerable<AzureBlobInfo>> ListBlobInfoAsync(
+            string blobPrefix,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Create a new blob. Returns false if the blob already exists.
         /// </summary>
         /// <param name="blobName">The blob name to create.</param>
@@ -57,6 +67,14 @@ namespace Microsoft.Health.AnalyticsConnector.DataWriter.Azure
         public Task<Stream> GetBlobAsync(
             string blobName,
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get blob ETag.
+        /// </summary>
+        /// <param name="blobName">blob name.</param>
+        /// <returns>blob ETag.</returns>
+        public string GetBlobETag(
+            string blobName);
 
         /// <summary>
         /// Delete a blob.
@@ -150,6 +168,18 @@ namespace Microsoft.Health.AnalyticsConnector.DataWriter.Azure
         /// <returns>sub directory names.</returns>
         public IAsyncEnumerable<PathItem> ListPathsAsync(
             string directory,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Download file.
+        /// </summary>
+        /// <param name="directory">input directory.</param>
+        /// <param name="file">input file.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>file stream.</returns>
+        public Task<Stream> DownloadFileAsync(
+            string directory,
+            string file,
             CancellationToken cancellationToken = default);
     }
 }

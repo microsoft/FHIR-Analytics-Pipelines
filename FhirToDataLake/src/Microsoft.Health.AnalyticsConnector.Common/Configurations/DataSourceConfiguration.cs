@@ -17,5 +17,8 @@ namespace Microsoft.Health.AnalyticsConnector.Common.Configurations
 
         [JsonProperty("dicomServer")]
         public DicomServerConfiguration DicomServer { get; set; } = new DicomServerConfiguration();
+
+        [JsonProperty("fhirDataLakeStore")]
+        public FhirDataLakeStoreConfiguration FhirDataLakeStore { get; set; } = new FhirDataLakeStoreConfiguration();
     }
 }
