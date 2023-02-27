@@ -81,7 +81,7 @@ Example:
 
 **Inline Resources**
 
-Inline [Resources](https://www.hl7.org/fhir/resource.html#Resource) such as "contained" and "outcome" properties are flexible FHIR resource data properties, and will be wrapped into a single string.
+Inline [Resources](https://www.hl7.org/fhir/resource.html#Resource) such as [contained](https://build.fhir.org/references.html#contained) and [Bundle.entry.response.outcome](https://www.hl7.org/fhir/bundle.html) properties are flexible FHIR resource data properties, and will be wrapped into a single string.
 
 Example:
 
