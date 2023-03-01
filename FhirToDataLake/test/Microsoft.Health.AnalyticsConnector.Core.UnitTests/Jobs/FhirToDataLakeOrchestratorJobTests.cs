@@ -377,6 +377,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 RowKey = TableKeyProvider.JobStatusRowKey(0, 0),
                 GroupId = 0,
                 JobStatus = JsonConvert.SerializeObject(orchestratorJobStatus),
+                JobVersion = FhirToDatalakeJobVersionManager.CurrentJobVersion,
             };
 
             _ = await metadataStore.TryAddEntityAsync(resumeJobStatus);

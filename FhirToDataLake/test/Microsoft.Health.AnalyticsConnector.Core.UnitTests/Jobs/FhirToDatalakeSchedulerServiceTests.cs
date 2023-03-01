@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.AnalyticsConnector.Common.Configurations;
 using Microsoft.Health.AnalyticsConnector.Common.Logging;
-using Microsoft.Health.AnalyticsConnector.Common.Metrics;
 using Microsoft.Health.AnalyticsConnector.Common.Models.Jobs;
 using Microsoft.Health.AnalyticsConnector.Core.Jobs;
 using Microsoft.Health.AnalyticsConnector.Core.Jobs.Models;

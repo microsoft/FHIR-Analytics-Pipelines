@@ -25,6 +25,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models.AzureStorage
         public JobType JobType { get; set; }
 
         /// <summary>
+        /// Job version.
+        /// </summary>
+        public JobVersion JobVersion { get; set; }
+
+        /// <summary>
         /// Job status.
         /// </summary>
         public string JobStatus { get; set; }

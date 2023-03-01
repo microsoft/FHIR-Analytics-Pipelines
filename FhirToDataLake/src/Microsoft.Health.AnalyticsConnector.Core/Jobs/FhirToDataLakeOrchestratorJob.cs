@@ -302,13 +302,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     RowKey = TableKeyProvider.JobStatusRowKey(_jobInfo.GroupId, _jobInfo.Id),
                     JobType = JobType.Orchestrator,
                     GroupId = _jobInfo.GroupId,
-                    JobStatus = JsonConvert.SerializeObject(new FhirToDataLakeOrchestratorJobResult()),
+                    JobVersion = FhirToDatalakeJobVersionManager.CurrentJobVersion,
+                    JobStatus = JsonConvert.SerializeObject(new FhirToDataLakeOrchestratorJobStatus()),
                 };
 
                 if (!await _metadataStore.TryAddEntityAsync(newJobStatusEntity, cancellationToken))
                 {
                     _logger.LogError("Initialize job status failed in orchestrator job {0}.", _jobInfo.Id);
-                    throw new SynapsePipelineInternalException($"Initialize job status failed in orchestrator job {_jobInfo.Id}.");
+                    throw new MetadataStoreException($"Initialize job status failed in orchestrator job {_jobInfo.Id}.");
                 }
 
                 // Update Etag of job status entity.
@@ -335,7 +336,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 if (!await _metadataStore.TryUpdateEntityAsync(_jobStatusEntity))
                 {
                     _logger.LogError("Update orchestrator job status failed in job {0}.", _jobInfo.Id);
-                    throw new SynapsePipelineInternalException($"Update orchestrator job status failed in job  {_jobInfo.Id}.");
+                    throw new MetadataStoreException($"Update orchestrator job status failed in job  {_jobInfo.Id}.");
                 }
 
                 _jobStatusEntity = await _metadataStore.GetJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
@@ -358,7 +359,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             {
                 if (processingJob.ResourceCount == 0)
                 {
-                    // If resource count is 0, skip the job and update the committed timestamp for resouce type.
+                    // If resource count is 0, skip the job and update the committed timestamp for resource type.
                     foreach (FhirToDataLakeSplitSubJobInfo subJob in processingJob.SubJobInfos)
                     {
                         _jobStatus.CommittedResourceTimestamps[subJob.ResourceType] = subJob.TimeRange.DataEndTime;

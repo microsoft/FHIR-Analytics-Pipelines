@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.AnalyticsConnector.Common.Configurations;
 using Microsoft.Health.AnalyticsConnector.Common.Exceptions;
+using Microsoft.Health.AnalyticsConnector.Core.Exceptions;
 using Microsoft.Health.AnalyticsConnector.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.AnalyticsConnector.JobManagement;
 
@@ -154,7 +155,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             catch (RequestFailedException ex)
             {
                 _logger.LogError(ex, $"Get job status entity failed. Reason : {ex.Message}");
-                throw new SynapsePipelineInternalException($"Get job status entity failed. Reason : {ex.Message}", ex);
+                throw new MetadataStoreException($"Get job status entity failed. Reason : {ex.Message}", ex);
             }
 
             // don't catch other exceptions, the caller should handle it

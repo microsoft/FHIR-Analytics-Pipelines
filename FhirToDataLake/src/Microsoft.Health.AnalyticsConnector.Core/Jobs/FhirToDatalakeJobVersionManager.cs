@@ -86,6 +86,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         };
 
         // job version V4
+        // Add split processing job information.
         public static readonly List<string> FhirToDataLakeOrchestratorJobIdentifierPropertiesV4 = new()
         {
             nameof(FhirToDataLakeProcessingJobInputData.JobType),

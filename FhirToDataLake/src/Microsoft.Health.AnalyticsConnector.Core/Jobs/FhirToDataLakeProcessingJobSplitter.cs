@@ -189,7 +189,6 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 int resourceCount = lastSplitTimestamp == null
                     ? anchorList[(DateTimeOffset)nextSplitTimestamp]
                     : anchorList[(DateTimeOffset)nextSplitTimestamp] - anchorList[(DateTimeOffset)lastSplitTimestamp];
-                _logger.LogInformation($"[Job splitter]: Split sub job with {totalCount} resources from {lastSplitTimestamp} to {nextSplitTimestamp} for resource type {resourceType}.");
 
                 // The last job.
                 if (nextSplitTimestamp == lastAnchor)
@@ -236,7 +235,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             if (lastResourceTimestamp != null)
             {
                 // the value of anchor is resource counts less than the timestamp.
-                // Add 1 milliseond on the last resource timestamp.
+                // Add 1 millisecond on the last resource timestamp.
                 anchorList[((DateTimeOffset)lastResourceTimestamp).AddMilliseconds(1)] = totalCount;
             }
             else
@@ -275,7 +274,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             }
             else
             {
-                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.SortKey, FhirApiConstants.SortByLastUpdated));
+                parameters.Add(new KeyValuePair<string, string>(FhirApiConstants.SortKey, FhirApiConstants.SortByLastUpdatedAsc));
             }
 
             if (start != null)
@@ -342,7 +341,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     if (lastAnchorTimestamp == null || anchorList[(DateTimeOffset)lastAnchorTimestamp] - baseSize < LowBoundOfProcessingJobResourceCount)
                     {
                         // Find next split timestamp by binary search.
-                        return await BinarySerachAnchor(resourceType, lastAnchorTimestamp == null ? DateTimeOffset.MinValue : (DateTimeOffset)lastAnchorTimestamp, item.Key, anchorList, baseSize, cancellationToken);
+                        return await BinarySearchAnchor(resourceType, lastAnchorTimestamp == null ? DateTimeOffset.MinValue : (DateTimeOffset)lastAnchorTimestamp, item.Key, anchorList, baseSize, cancellationToken);
                     }
                     else
                     {
@@ -354,7 +353,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             return (DateTimeOffset)lastAnchorTimestamp;
         }
 
-        private async Task<DateTimeOffset> BinarySerachAnchor(string resourceType, DateTimeOffset startAnchorTimestamp, DateTimeOffset endAnchorTimestamp, SortedDictionary<DateTimeOffset, int> anchorList, int baseSize, CancellationToken cancellationToken)
+        private async Task<DateTimeOffset> BinarySearchAnchor(string resourceType, DateTimeOffset startAnchorTimestamp, DateTimeOffset endAnchorTimestamp, SortedDictionary<DateTimeOffset, int> anchorList, int baseSize, CancellationToken cancellationToken)
         {
             // Binary search to find midAnchorTimestamp that resource count between [startAnchorTimestamp, midAnchorTimestamp) falls into boundaries.
             while ((endAnchorTimestamp - startAnchorTimestamp).TotalMilliseconds > 1)
