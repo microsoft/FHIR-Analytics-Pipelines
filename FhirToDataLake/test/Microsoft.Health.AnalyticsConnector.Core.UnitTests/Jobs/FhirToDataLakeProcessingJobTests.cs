@@ -225,6 +225,20 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 TriggerSequenceId = 0L,
                 ProcessingJobSequenceId = 0L,
                 DataEndTime = DateTimeOffset.UtcNow,
+                SplitProcessingJobInfo = new FhirToDataLakeSplitProcessingJobInfo()
+                {
+                    SubJobInfos = new List<FhirToDataLakeSplitSubJobInfo>()
+                    {
+                        new FhirToDataLakeSplitSubJobInfo()
+                        {
+                            ResourceType = "Patient",
+                            TimeRange = new FhirToDataLakeSplitSubJobTimeRange()
+                            {
+                                DataEndTime = DateTimeOffset.UtcNow,
+                            },
+                        },
+                    },
+                },
             };
             return inputData;
         }

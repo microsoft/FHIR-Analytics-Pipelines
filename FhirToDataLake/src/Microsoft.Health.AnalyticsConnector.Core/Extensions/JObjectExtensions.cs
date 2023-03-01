@@ -17,18 +17,19 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Extensions
         /// </summary>
         /// <param name="resource">input resource.</param>
         /// <returns>The last updated timestamp of the resource.</returns>
-        public static DateTimeOffset? GetLastUpdated(this JObject resource)
+        public static DateTimeOffset GetLastUpdated(this JObject resource)
         {
-            string result =
-                (resource.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<string>(FhirBundleConstants.LastUpdatedKey);
-            if (result == null)
-            {
-                throw new FhirDataParseException("Failed to find lastUpdated value in resource.");
-            }
-
             try
             {
-                return DateTimeOffset.Parse(result);
+                DateTimeOffset? lastUpdated = (resource.GetValue(FhirBundleConstants.MetaKey) as JObject)?.Value<DateTime>(FhirBundleConstants.LastUpdatedKey);
+
+                return (DateTimeOffset)(lastUpdated == null
+                    ? throw new FhirDataParseException("Failed to find lastUpdated value in resource.")
+                    : lastUpdated);
+            }
+            catch (FhirDataParseException)
+            {
+                throw;
             }
             catch (Exception exception)
             {

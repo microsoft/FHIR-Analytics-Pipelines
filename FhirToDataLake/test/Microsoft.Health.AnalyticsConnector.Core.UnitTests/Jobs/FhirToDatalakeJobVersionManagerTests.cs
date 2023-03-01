@@ -18,9 +18,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
         }
 
         [Fact]
-        public void TheCurrentJobVersionShouldBeV3()
+        public void TheCurrentJobVersionShouldBeV4()
         {
-            Assert.Equal(JobVersion.V3, FhirToDatalakeJobVersionManager.CurrentJobVersion);
+            Assert.Equal(JobVersion.V4, FhirToDatalakeJobVersionManager.CurrentJobVersion);
         }
     }
 }

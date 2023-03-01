@@ -3,31 +3,23 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
+namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
 {
-    /// <summary>
-    /// Supported versions for job.
-    /// </summary>
-    public enum JobVersion
+    public class FhirToDataLakeSplitSubJobInfo
     {
         /// <summary>
-        /// First version.
+        /// Resource type
         /// </summary>
-        V1 = 1,
+        public string ResourceType { get; set; }
 
         /// <summary>
-        /// Second version.
+        /// Time range of sub job.
         /// </summary>
-        V2 = 2,
+        public FhirToDataLakeSplitSubJobTimeRange TimeRange { get; set; }
 
         /// <summary>
-        /// Third version.
+        /// Resource count of the sub job.
         /// </summary>
-        V3 = 3,
-
-        /// <summary>
-        /// Fourth version.
-        /// </summary>
-        V4 = 4,
+        public int ResourceCount { get; set; }
     }
 }

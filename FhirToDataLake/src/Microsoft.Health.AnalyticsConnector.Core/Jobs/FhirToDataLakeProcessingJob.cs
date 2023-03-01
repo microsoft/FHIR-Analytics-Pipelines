@@ -56,6 +56,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private FhirToDataLakeProcessingJobResult _result;
         private List<TypeFilter> _typeFilters;
         private CacheResult _cacheResult;
+        private FilterScope _filterScope;
+        private Dictionary<string, FhirToDataLakeSplitSubJobTimeRange> _splitProcessingJobTimeRangeParameters;
 
         /// <summary>
         /// Output file index map for all resources/schemas.
@@ -120,8 +122,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                 _typeFilters = await _filterManager.GetTypeFiltersAsync(cancellationToken);
 
-                FilterScope filterScope = await _filterManager.GetFilterScopeAsync(cancellationToken);
-                switch (filterScope)
+                _filterScope = await _filterManager.GetFilterScopeAsync(cancellationToken);
+                switch (_filterScope)
                 {
                     case FilterScope.Group:
                     {
@@ -137,7 +139,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                     default:
                         throw new ConfigurationErrorException(
-                            $"The FilterScope {filterScope} isn't supported now.");
+                            $"The FilterScope {_filterScope} isn't supported now.");
                 }
 
                 // force to commit result when all the resources of this job are processed.
@@ -200,18 +202,15 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             // the resource type and customized parameters of each filter will be set later.
             List<KeyValuePair<string, string>> parameters = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>(FhirApiConstants.LastUpdatedKey, $"lt{_inputData.DataEndTime.ToInstantString()}"),
                 new KeyValuePair<string, string>(FhirApiConstants.PageCountKey, FhirApiPageCount.Batch.ToString("d")),
             };
 
-            if (_inputData.DataStartTime != null)
-            {
-                parameters.Add(new KeyValuePair<string, string>(
-                    FhirApiConstants.LastUpdatedKey,
-                    $"ge{((DateTimeOffset)_inputData.DataStartTime).ToInstantString()}"));
-            }
-
             var searchOption = new BaseSearchOptions(null, parameters);
+
+            if (_inputData.JobVersion >= JobVersion.V4)
+            {
+                _splitProcessingJobTimeRangeParameters = _inputData.SplitProcessingJobInfo.SubJobInfos.ToDictionary(x => x.ResourceType, x => x.TimeRange);
+            }
 
             // retrieve resources for all the type filters.
             await ProcessFiltersAsync(progress, searchOption, cancellationToken);
@@ -397,8 +396,43 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
             foreach (TypeFilter typeFilter in _typeFilters)
             {
-                searchOptions.ResourceType = typeFilter.ResourceType;
                 searchOptions.QueryParameters = new List<KeyValuePair<string, string>>(sharedQueryParameters);
+
+                if (_filterScope == FilterScope.System)
+                {
+                    if (_inputData.JobVersion >= JobVersion.V4)
+                    {
+                        if (!_splitProcessingJobTimeRangeParameters.ContainsKey(typeFilter.ResourceType))
+                        {
+                            continue;
+                        }
+
+                        searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(
+                                FhirApiConstants.LastUpdatedKey,
+                                $"lt{_splitProcessingJobTimeRangeParameters[typeFilter.ResourceType].DataEndTime.ToInstantString()}"));
+
+                        if (_splitProcessingJobTimeRangeParameters[typeFilter.ResourceType].DataStartTime != null)
+                        {
+                            searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(
+                                FhirApiConstants.LastUpdatedKey,
+                                $"ge{((DateTimeOffset)_splitProcessingJobTimeRangeParameters[typeFilter.ResourceType].DataStartTime).ToInstantString()}"));
+                        }
+                    }
+                    else
+                    {
+                        searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(
+                            FhirApiConstants.LastUpdatedKey,
+                            $"lt{_inputData.DataEndTime.ToInstantString()}"));
+                        if (_inputData.DataStartTime != null)
+                        {
+                            searchOptions.QueryParameters.Add(new KeyValuePair<string, string>(
+                                FhirApiConstants.LastUpdatedKey,
+                                $"ge{((DateTimeOffset)_inputData.DataStartTime).ToInstantString()}"));
+                        }
+                    }
+                }
+
+                searchOptions.ResourceType = typeFilter.ResourceType;
                 foreach (KeyValuePair<string, string> parameter in typeFilter.Parameters)
                 {
                     searchOptions.QueryParameters.Add(parameter);
@@ -569,7 +603,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                             }
 
                             // Upload to blob and log result
-                            var fileName = GetDataFileName(_inputData.DataEndTime, schemaType, _jobId, _outputFileIndexMap[schemaType]);
+                            var dateTime = _splitProcessingJobTimeRangeParameters != null && _splitProcessingJobTimeRangeParameters.ContainsKey(resourceType) ? _splitProcessingJobTimeRangeParameters[resourceType].DataEndTime : _inputData.DataEndTime;
+                            var fileName = GetDataFileName(dateTime, schemaType, _jobId, _outputFileIndexMap[schemaType]);
                             string blobUrl = await _dataWriter.WriteAsync(parquetStream, fileName, cancellationToken);
                             _outputFileIndexMap[schemaType] += 1;
 

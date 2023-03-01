@@ -22,6 +22,7 @@ using Microsoft.Health.AnalyticsConnector.Core.Exceptions;
 using Microsoft.Health.AnalyticsConnector.Core.Extensions;
 using Microsoft.Health.AnalyticsConnector.Core.Fhir;
 using Microsoft.Health.AnalyticsConnector.Core.Jobs.Models;
+using Microsoft.Health.AnalyticsConnector.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.AnalyticsConnector.DataClient;
 using Microsoft.Health.AnalyticsConnector.DataClient.Api.Fhir;
 using Microsoft.Health.AnalyticsConnector.DataClient.Extensions;
@@ -48,12 +49,16 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private readonly IDiagnosticLogger _diagnosticLogger;
         private readonly IMetricsLogger _metricsLogger;
 
+        private FhirToDataLakeOrchestratorJobStatus _jobStatus;
+        private JobStatusEntity _jobStatusEntity;
+        private FhirToDataLakeProcessingJobSplitter _jobSplitter;
         private FhirToDataLakeOrchestratorJobResult _result;
 
         public FhirToDataLakeOrchestratorJob(
             JobInfo jobInfo,
             FhirToDataLakeOrchestratorJobInputData inputData,
             FhirToDataLakeOrchestratorJobResult result,
+            FhirToDataLakeProcessingJobSplitter jobSplitter,
             IApiDataClient dataClient,
             IDataWriter dataWriter,
             IQueueClient queueClient,
@@ -68,6 +73,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             _jobInfo = EnsureArg.IsNotNull(jobInfo, nameof(jobInfo));
             _inputData = EnsureArg.IsNotNull(inputData, nameof(inputData));
             _result = EnsureArg.IsNotNull(result, nameof(result));
+            _jobSplitter = EnsureArg.IsNotNull(jobSplitter, nameof(jobSplitter));
             _dataClient = EnsureArg.IsNotNull(dataClient, nameof(dataClient));
             _dataWriter = EnsureArg.IsNotNull(dataWriter, nameof(dataWriter));
             _queueClient = EnsureArg.IsNotNull(queueClient, nameof(queueClient));
@@ -95,6 +101,17 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
             try
             {
+                if (_inputData.JobVersion >= JobVersion.V4)
+                {
+                    // Initialize job status from metatable from V4 job version.
+                    _jobStatus = await InitializeJobStatusFromTableAsync(cancellationToken);
+                }
+                else
+                {
+                    // Initialize job status from result when job version smaller than V4.
+                    _jobStatus = InitializeJobStatusFromResult();
+                }
+
                 if (cancellationToken.IsCancellationRequested)
                 {
                     throw new OperationCanceledException();
@@ -103,7 +120,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 FilterScope filterScope = await _filterManager.GetFilterScopeAsync(cancellationToken);
                 IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> inputs = filterScope switch
                 {
-                    FilterScope.System => GetInputsAsyncForSystem(cancellationToken),
+                    // Split job by resource count from V4 job version.
+                    FilterScope.System => _inputData.JobVersion >= JobVersion.V4 ? GetInputsAsyncForSystem(cancellationToken) : GetInputsAsyncSystemForFixedTimespan(cancellationToken),
                     FilterScope.Group => GetInputsAsyncForGroup(cancellationToken),
                     _ => throw new ConfigurationErrorException(
                         $"The filterScope {filterScope} isn't supported now.")
@@ -121,6 +139,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     }
 
                     string[] jobDefinitions = { JsonConvert.SerializeObject(input) };
+
+                    _jobStatus.ToBeCommittedProcessingJob = jobDefinitions;
+                    await PersistJobStatusAsync(progress, cancellationToken);
+
                     IEnumerable<JobInfo> jobInfos = await _queueClient.EnqueueAsync(
                         _jobInfo.QueueType,
                         jobDefinitions,
@@ -129,16 +151,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                         false,
                         cancellationToken);
                     long newJobId = jobInfos.First().Id;
-                    _result.CreatedJobCount++;
-                    if (_inputData.JobVersion == JobVersion.V1 || _inputData.JobVersion == JobVersion.V2)
-                    {
-                        _result.RunningJobIds.Add(newJobId);
-                    }
 
-                    _result.SequenceIdToJobIdMapForRunningJobs[input.ProcessingJobSequenceId] = newJobId;
-
-                    // if enqueue successfully while fails to report result, will re-enqueue and return the existing jobInfo
-                    progress.Report(JsonConvert.SerializeObject(_result));
+                    // Update job status if enqueue successfully.
+                    UpdateCommittedJobStatus(input, newJobId);
+                    await PersistJobStatusAsync(progress, cancellationToken);
 
                     if (GetRunningJobCount() >
                         JobConfigurationConstants.CheckRunningJobCompleteRunningJobCountThreshold)
@@ -159,9 +175,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 }
 
                 var processEndtime = DateTimeOffset.UtcNow;
-                _result.CompleteTime = processEndtime;
+                _jobStatus.CompleteTime = processEndtime;
 
-                progress.Report(JsonConvert.SerializeObject(_result));
+                await PersistJobStatusAsync(progress, cancellationToken);
 
                 var jobLatency = processEndtime - _inputData.DataEndTime;
                 _metricsLogger.LogResourceLatencyMetric(jobLatency.TotalSeconds);
@@ -170,7 +186,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 _logger.LogInformation($"Finish FhirToDataLake orchestrator job {_jobInfo.Id}, {_result.CompletedJobCount} processing jobs are created. Synced result data to {_inputData.DataEndTime}. " +
                     $"Report a {MetricNames.ResourceLatencyMetric} metric with {jobLatency.TotalSeconds} seconds latency");
 
-                return JsonConvert.SerializeObject(_result);
+                return _inputData.JobVersion >= JobVersion.V4 ? _jobStatusEntity.JobStatus : JsonConvert.SerializeObject(_result);
             }
             catch (OperationCanceledException operationCanceledEx)
             {
@@ -212,7 +228,160 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             }
         }
 
+        private void UpdateCommittedJobStatus(FhirToDataLakeProcessingJobInputData input, long newJobId)
+        {
+            _jobStatus.CreatedJobCount++;
+            if (_inputData.JobVersion == JobVersion.V1 || _inputData.JobVersion == JobVersion.V2)
+            {
+                _jobStatus.RunningJobIds.Add(newJobId);
+            }
+
+            _jobStatus.SequenceIdToJobIdMapForRunningJobs[input.ProcessingJobSequenceId] = newJobId;
+
+            if (input.SplitProcessingJobInfo != null)
+            {
+                foreach (var job in input.SplitProcessingJobInfo.SubJobInfos)
+                {
+                    _jobStatus.CommittedResourceTimestamps[job.ResourceType] = job.TimeRange.DataEndTime;
+                }
+            }
+
+            _jobStatus.ToBeCommittedProcessingJob = null;
+        }
+
+        private FhirToDataLakeOrchestratorJobStatus InitializeJobStatusFromResult()
+        {
+            return new FhirToDataLakeOrchestratorJobStatus()
+            {
+                StartTime = _result.StartTime,
+                CompleteTime = _result.CompleteTime,
+                CreatedJobCount = _result.CreatedJobCount,
+                CompletedJobCount = _result.CompletedJobCount,
+                NextJobTimestamp = _result.NextJobTimestamp,
+                NextPatientIndex = _result.NextPatientIndex,
+                RunningJobIds = _result.RunningJobIds,
+                SequenceIdToJobIdMapForRunningJobs = _result.SequenceIdToJobIdMapForRunningJobs,
+                TotalResourceCounts = _result.TotalResourceCounts,
+                ProcessedCountInTotal = _result.ProcessedCountInTotal,
+                SkippedResourceCounts = _result.SkippedResourceCounts,
+                ProcessedResourceCounts = _result.ProcessedResourceCounts,
+                ProcessedDataSizeInTotal = _result.ProcessedDataSizeInTotal,
+            };
+        }
+
+        private void UpdateJobResultFromStatus()
+        {
+            _result = new FhirToDataLakeOrchestratorJobResult()
+            {
+                StartTime = _jobStatus.StartTime,
+                CompleteTime = _jobStatus.CompleteTime,
+                CreatedJobCount = _jobStatus.CreatedJobCount,
+                CompletedJobCount = _jobStatus.CompletedJobCount,
+                NextJobTimestamp = _jobStatus.NextJobTimestamp,
+                NextPatientIndex = _jobStatus.NextPatientIndex,
+                RunningJobIds = _jobStatus.RunningJobIds,
+                SequenceIdToJobIdMapForRunningJobs = _jobStatus.SequenceIdToJobIdMapForRunningJobs,
+                TotalResourceCounts = _jobStatus.TotalResourceCounts,
+                ProcessedCountInTotal = _jobStatus.ProcessedCountInTotal,
+                SkippedResourceCounts = _jobStatus.SkippedResourceCounts,
+                ProcessedResourceCounts = _jobStatus.ProcessedResourceCounts,
+                ProcessedDataSizeInTotal = _jobStatus.ProcessedDataSizeInTotal,
+            };
+        }
+
+        private async Task<FhirToDataLakeOrchestratorJobStatus> InitializeJobStatusFromTableAsync(CancellationToken cancellationToken)
+        {
+            _jobStatusEntity = await _metadataStore.GetJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
+
+            if (_jobStatusEntity == null)
+            {
+                // Orchestrator job status entity is not exist, will create a new one.
+                var newJobStatusEntity = new JobStatusEntity()
+                {
+                    PartitionKey = TableKeyProvider.JobStatusPartitionKey(_jobInfo.QueueType, _jobInfo.GroupId),
+                    RowKey = TableKeyProvider.JobStatusRowKey(_jobInfo.GroupId, _jobInfo.Id),
+                    JobType = JobType.Orchestrator,
+                    GroupId = _jobInfo.GroupId,
+                    JobVersion = FhirToDatalakeJobVersionManager.CurrentJobVersion,
+                    JobStatus = JsonConvert.SerializeObject(new FhirToDataLakeOrchestratorJobStatus()),
+                };
+
+                if (!await _metadataStore.TryAddEntityAsync(newJobStatusEntity, cancellationToken))
+                {
+                    _logger.LogError("Initialize job status failed in orchestrator job {0}.", _jobInfo.Id);
+                    throw new MetadataStoreException($"Initialize job status failed in orchestrator job {_jobInfo.Id}.");
+                }
+
+                // Update Etag of job status entity.
+                _jobStatusEntity = await _metadataStore.GetJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
+            }
+
+            return JsonConvert.DeserializeObject<FhirToDataLakeOrchestratorJobStatus>(_jobStatusEntity.JobStatus);
+        }
+
+        private async Task PersistJobStatusAsync(IProgress<string> progress, CancellationToken cancellationToken)
+        {
+            // Usage of result will be deprecated from V5.
+            if (_inputData.JobVersion <= JobVersion.V4)
+            {
+                UpdateJobResultFromStatus();
+                progress.Report(JsonConvert.SerializeObject(_result));
+            }
+
+            if (_inputData.JobVersion >= JobVersion.V4)
+            {
+                // Update job status on meta table from V4 job version.
+                _jobStatusEntity.JobStatus = JsonConvert.SerializeObject(_jobStatus);
+
+                if (!await _metadataStore.TryUpdateEntityAsync(_jobStatusEntity))
+                {
+                    _logger.LogError("Update orchestrator job status failed in job {0}.", _jobInfo.Id);
+                    throw new MetadataStoreException($"Update orchestrator job status failed in job  {_jobInfo.Id}.");
+                }
+
+                _jobStatusEntity = await _metadataStore.GetJobStatusAsync(_jobInfo.QueueType, _jobInfo.GroupId, _jobInfo.Id, cancellationToken);
+            }
+        }
+
         private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncForSystem([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            // Resume the un-committed processing jobs.
+            if (_jobStatus.ToBeCommittedProcessingJob != null)
+            {
+                foreach (var job in _jobStatus.ToBeCommittedProcessingJob)
+                {
+                    yield return JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobInputData>(job);
+                }
+            }
+
+            IAsyncEnumerable<FhirToDataLakeSplitProcessingJobInfo> processingJobs = _jobSplitter.SplitJobAsync(_inputData.DataStartTime, _inputData.DataEndTime, _jobStatus.CommittedResourceTimestamps, cancellationToken);
+            await foreach (FhirToDataLakeSplitProcessingJobInfo processingJob in processingJobs.WithCancellation(cancellationToken))
+            {
+                if (processingJob.ResourceCount == 0)
+                {
+                    // If resource count is 0, skip the job and update the committed timestamp for resource type.
+                    foreach (FhirToDataLakeSplitSubJobInfo subJob in processingJob.SubJobInfos)
+                    {
+                        _jobStatus.CommittedResourceTimestamps[subJob.ResourceType] = subJob.TimeRange.DataEndTime;
+                    }
+
+                    continue;
+                }
+
+                _logger.LogInformation($"Generate one processing job with {processingJob.ResourceCount} resources.");
+                yield return new FhirToDataLakeProcessingJobInputData
+                {
+                    JobType = JobType.Processing,
+                    JobVersion = _inputData.JobVersion,
+                    ProcessingJobSequenceId = _jobStatus.CreatedJobCount,
+                    TriggerSequenceId = _inputData.TriggerSequenceId,
+                    Since = _inputData.Since,
+                    SplitProcessingJobInfo = processingJob,
+                };
+            }
+        }
+
+        private async IAsyncEnumerable<FhirToDataLakeProcessingJobInputData> GetInputsAsyncSystemForFixedTimespan([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             TimeSpan interval = TimeSpan.FromSeconds(IncrementalOrchestrationIntervalInSeconds);
 
@@ -221,14 +390,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 interval = TimeSpan.FromSeconds(InitialOrchestrationIntervalInSeconds);
             }
 
-            while (_result.NextJobTimestamp == null || _result.NextJobTimestamp < _inputData.DataEndTime)
+            while (_jobStatus.NextJobTimestamp == null || _jobStatus.NextJobTimestamp < _inputData.DataEndTime)
             {
-                DateTimeOffset? lastEndTime = _result.NextJobTimestamp ?? _inputData.DataStartTime;
+                DateTimeOffset? lastEndTime = _jobStatus.NextJobTimestamp ?? _inputData.DataStartTime;
                 DateTimeOffset? nextResourceTimestamp =
                     await GetNextTimestamp(lastEndTime, _inputData.DataEndTime, cancellationToken);
                 if (nextResourceTimestamp == null)
                 {
-                    _result.NextJobTimestamp = _inputData.DataEndTime;
+                    _jobStatus.NextJobTimestamp = _inputData.DataEndTime;
                     break;
                 }
 
@@ -246,13 +415,13 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 {
                     JobType = JobType.Processing,
                     JobVersion = _inputData.JobVersion,
-                    ProcessingJobSequenceId = _result.CreatedJobCount,
+                    ProcessingJobSequenceId = _jobStatus.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,
                     DataStartTime = nextJobStart,
                     DataEndTime = nextJobEnd,
                 };
-                _result.NextJobTimestamp = nextJobEnd;
+                _jobStatus.NextJobTimestamp = nextJobEnd;
                 yield return input;
             }
         }
@@ -262,22 +431,22 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             // for group scope, extract patient list from group at first
             List<PatientWrapper> toBeProcessedPatients = await GetToBeProcessedPatientsAsync(cancellationToken);
 
-            while (_result.NextPatientIndex < toBeProcessedPatients.Count)
+            while (_jobStatus.NextPatientIndex < toBeProcessedPatients.Count)
             {
-                List<PatientWrapper> selectedPatients = toBeProcessedPatients.Skip(_result.NextPatientIndex)
+                List<PatientWrapper> selectedPatients = toBeProcessedPatients.Skip(_jobStatus.NextPatientIndex)
                     .Take(NumberOfPatientsPerProcessingJob).ToList();
                 var input = new FhirToDataLakeProcessingJobInputData
                 {
                     JobType = JobType.Processing,
                     JobVersion = _inputData.JobVersion,
-                    ProcessingJobSequenceId = _result.CreatedJobCount,
+                    ProcessingJobSequenceId = _jobStatus.CreatedJobCount,
                     TriggerSequenceId = _inputData.TriggerSequenceId,
                     Since = _inputData.Since,
                     DataStartTime = _inputData.DataStartTime,
                     DataEndTime = _inputData.DataEndTime,
                     ToBeProcessedPatients = selectedPatients,
                 };
-                _result.NextPatientIndex += selectedPatients.Count;
+                _jobStatus.NextPatientIndex += selectedPatients.Count;
                 yield return input;
             }
         }
@@ -376,7 +545,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
                 List<JObject> fhirResources = FhirBundleParser.ExtractResourcesFromBundle(fhirBundleObject).ToList();
 
-                if (fhirResources.Any() && fhirResources.First().GetLastUpdated() != null)
+                if (fhirResources.Any())
                 {
                     if (nexTimeOffset == null || fhirResources.First().GetLastUpdated() < nexTimeOffset)
                     {
@@ -410,14 +579,14 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     {
                         var processingJobResult =
                             JsonConvert.DeserializeObject<FhirToDataLakeProcessingJobResult>(firstRunningJobInfo.Result);
-                        _result.TotalResourceCounts =
-                            _result.TotalResourceCounts.ConcatDictionaryCount(processingJobResult.SearchCount);
-                        _result.ProcessedResourceCounts =
-                            _result.ProcessedResourceCounts.ConcatDictionaryCount(processingJobResult.ProcessedCount);
-                        _result.SkippedResourceCounts =
-                            _result.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
-                        _result.ProcessedCountInTotal += processingJobResult.ProcessedCountInTotal;
-                        _result.ProcessedDataSizeInTotal += processingJobResult.ProcessedDataSizeInTotal;
+                        _jobStatus.TotalResourceCounts =
+                            _jobStatus.TotalResourceCounts.ConcatDictionaryCount(processingJobResult.SearchCount);
+                        _jobStatus.ProcessedResourceCounts =
+                            _jobStatus.ProcessedResourceCounts.ConcatDictionaryCount(processingJobResult.ProcessedCount);
+                        _jobStatus.SkippedResourceCounts =
+                            _jobStatus.SkippedResourceCounts.ConcatDictionaryCount(processingJobResult.SkippedCount);
+                        _jobStatus.ProcessedCountInTotal += processingJobResult.ProcessedCountInTotal;
+                        _jobStatus.ProcessedDataSizeInTotal += processingJobResult.ProcessedDataSizeInTotal;
 
                         // log metrics
                         _metricsLogger.LogSuccessfulResourceCountMetric(processingJobResult.ProcessedCountInTotal);
@@ -455,7 +624,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 }
 
                 UpdateRunningJobStatus(firstRunningJobId);
-                progress.Report(JsonConvert.SerializeObject(_result));
+                await PersistJobStatusAsync(progress, cancellationToken);
             }
 
             _logger.LogInformation($"Orchestrator job {_jobInfo.Id} finished checking the first running job {firstRunningJobId} status, the job {firstRunningJobId} is {((JobStatus)firstRunningJobInfo.Status).ToString("D")}.");
@@ -465,8 +634,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         {
             return _inputData.JobVersion switch
             {
-                JobVersion.V1 or JobVersion.V2 => _result.RunningJobIds.Min(),
-                JobVersion.V3 => _result.SequenceIdToJobIdMapForRunningJobs[_result.CompletedJobCount],
+                JobVersion.V1 or JobVersion.V2 => _jobStatus.RunningJobIds.Min(),
+                JobVersion.V3 or JobVersion.V4 => _jobStatus.SequenceIdToJobIdMapForRunningJobs[_jobStatus.CompletedJobCount],
                 _ => throw new SynapsePipelineInternalException($"The job version {_inputData.JobVersion} is unsupported."),
             };
         }
@@ -477,11 +646,12 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             {
                 case JobVersion.V1:
                 case JobVersion.V2:
-                    _result.RunningJobIds.Remove(jobId);
+                    _jobStatus.RunningJobIds.Remove(jobId);
                     break;
                 case JobVersion.V3:
-                    _result.SequenceIdToJobIdMapForRunningJobs.Remove(_result.CompletedJobCount);
-                    _result.CompletedJobCount++;
+                case JobVersion.V4:
+                    _jobStatus.SequenceIdToJobIdMapForRunningJobs.Remove(_jobStatus.CompletedJobCount);
+                    _jobStatus.CompletedJobCount++;
                     break;
                 default:
                     throw new SynapsePipelineInternalException($"The job version {_inputData.JobVersion} is unsupported.");
@@ -492,8 +662,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         {
             return _inputData.JobVersion switch
             {
-                JobVersion.V1 or JobVersion.V2 => _result.RunningJobIds.Count,
-                JobVersion.V3 => (int)(_result.CreatedJobCount - _result.CompletedJobCount),
+                JobVersion.V1 or JobVersion.V2 => _jobStatus.RunningJobIds.Count,
+                JobVersion.V3 or JobVersion.V4 => (int)(_jobStatus.CreatedJobCount - _jobStatus.CompletedJobCount),
                 _ => throw new SynapsePipelineInternalException($"The job version {_inputData.JobVersion} is unsupported."),
             };
         }

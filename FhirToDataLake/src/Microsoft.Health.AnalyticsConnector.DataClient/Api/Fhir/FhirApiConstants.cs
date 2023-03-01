@@ -17,6 +17,11 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.Api.Fhir
         public const string LastUpdatedKey = "_lastUpdated";
 
         /// <summary>
+        /// Summary search parameter.
+        /// </summary>
+        public const string SummaryKey = "_summary";
+
+        /// <summary>
         /// Id search parameter.
         /// </summary>
         public const string IdKey = "_id";
@@ -40,5 +45,25 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient.Api.Fhir
         /// Metadata
         /// </summary>
         public const string MetadataKey = "metadata";
+
+        /// <summary>
+        /// Sort parameter.
+        /// </summary>
+        public const string SortKey = "_sort";
+
+        /// <summary>
+        /// Last updated parameter for sort.
+        /// </summary>
+        public const string SortByLastUpdatedAsc = "_lastUpdated";
+
+        /// <summary>
+        /// Last updated parameter in descending order for sort.
+        /// </summary>
+        public const string SortByLastUpdatedDesc = "-_lastUpdated";
+
+        /// <summary>
+        /// Count parameter.
+        /// </summary>
+        public const string SearchCountParameter = "count";
     }
 }

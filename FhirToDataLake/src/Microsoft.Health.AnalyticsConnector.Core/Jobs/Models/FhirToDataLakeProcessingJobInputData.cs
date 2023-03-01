@@ -37,12 +37,18 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
         public DateTimeOffset? Since { get; set; }
 
         /// <summary>
-        /// Start time, process all data if not specified,
+        /// Splitted processing job info for system scope.
+        /// SplitProcessingJobInfo will be null for group scope.
+        /// </summary>
+        public FhirToDataLakeSplitProcessingJobInfo SplitProcessingJobInfo { get; set; }
+
+        /// <summary>
+        /// Start time, process all data if not specified. Used for group scope.
         /// </summary>
         public DateTimeOffset? DataStartTime { get; set; }
 
         /// <summary>
-        /// End time
+        /// End time. Used for group scope.
         /// </summary>
         public DateTimeOffset DataEndTime { get; set; }
 

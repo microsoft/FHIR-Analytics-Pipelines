@@ -17,7 +17,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
         where TJobInfo : AzureStorageJobInfo, new()
     {
         private List<TJobInfo> _jobInfos = new List<TJobInfo>();
-        private long _largestId = 1;
+        private long _largestId = 0;
 
         public Action EnqueueFaultAction { get; set; }
 

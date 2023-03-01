@@ -14,6 +14,8 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.AnalyticsConnector.Common.Configurations;
+using Microsoft.Health.AnalyticsConnector.Common.Exceptions;
+using Microsoft.Health.AnalyticsConnector.Core.Exceptions;
 using Microsoft.Health.AnalyticsConnector.Core.Jobs.Models.AzureStorage;
 using Microsoft.Health.AnalyticsConnector.JobManagement;
 
@@ -132,6 +134,32 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         public async Task<CompartmentInfoEntity> GetCompartmentInfoEntityAsync(byte queueType, string patientId, CancellationToken cancellationToken = default)
         {
             return (await _metadataTableClient.GetEntityAsync<CompartmentInfoEntity>(TableKeyProvider.CompartmentPartitionKey(queueType), TableKeyProvider.CompartmentRowKey(patientId), cancellationToken: cancellationToken)).Value;
+        }
+
+        public async Task<JobStatusEntity> GetJobStatusAsync(byte queueType, long groupId, long jobId, CancellationToken cancellationToken = default)
+        {
+            JobStatusEntity entity = null;
+            try
+            {
+                Response<JobStatusEntity> response = await _metadataTableClient.GetEntityAsync<JobStatusEntity>(
+                    TableKeyProvider.JobStatusPartitionKey(queueType, groupId),
+                    TableKeyProvider.JobStatusRowKey(groupId, jobId),
+                    cancellationToken: cancellationToken);
+
+                entity = response.Value;
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == AzureStorageErrorCode.GetEntityNotFoundErrorCode)
+            {
+                _logger.LogInformation(ex, "The job status entity doesn't exist, will create a new one.");
+            }
+            catch (RequestFailedException ex)
+            {
+                _logger.LogError(ex, $"Get job status entity failed. Reason : {ex.Message}");
+                throw new MetadataStoreException($"Get job status entity failed. Reason : {ex.Message}", ex);
+            }
+
+            // don't catch other exceptions, the caller should handle it
+            return entity;
         }
 
         public async Task<Dictionary<string, long>> GetPatientVersionsAsync(byte queueType, List<string> patientsHash, CancellationToken cancellationToken = default)
