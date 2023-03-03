@@ -203,6 +203,10 @@
               "image": "[parameters('image')]",
               "env": [
                 {
+                    "name": "configVersion",
+                    "value": "2"
+                },
+                {
                     "name": "job__jobInfoQueueName",
                     "value": "[variables('jobInfoQueueName')]"
                 },
