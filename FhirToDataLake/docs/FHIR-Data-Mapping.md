@@ -49,9 +49,9 @@ Example:
     }}]
 }
 ```
-    
+
 **Extensions**
-   
+
 [FHIR Extension](https://www.hl7.org/fhir/extensibility.html#Extension) properties in raw JSON data will be wrapped into a single string.
 
 Example:
@@ -78,41 +78,46 @@ Example:
 "extension": "[{\"url\": \"http://nema.org/fhir/extensions#0010:1010\",\"valueQuantity\": {\"value\": 56,\"unit\": \"Y\"}}]"
 }
 ```
-   
 
-### Exclude primitive extensions and inline resources
+**Inline Resources**
 
-Extensions on primitive types usually begin with a underline prefix in the raw FHIR JSON data. Inline [Resources](https://www.hl7.org/fhir/resource.html#Resource) such as "contained" and "outcome" properties are flexiable FHIR resource data properties. These two kinds of fields are excluded in Parquet files.
+Inline [Resources](https://www.hl7.org/fhir/resource.html#Resource) such as [contained](https://build.fhir.org/references.html#contained) and [Bundle.entry.response.outcome](https://www.hl7.org/fhir/bundle.html) properties are flexible FHIR resource data properties, and will be wrapped into a single string.
+
+Example:
 
 ```javascript
 /* Raw FHIR Json data */
 {
-"resourceType": "Patient",
-"id": "example",
-"gender": "male",
-// Primitive extensions will excluded
-"_gender": {
-    "extension": [{
-        "url": "http://nema.org/examples/extensions#gender",
-        "valueCoding": {
-            "code": "M"
-    }}]
-},
-// Inline resources will be excluded
-"contained" : {...}
+  "resourceType" : "Condition",
+  "contained": [
+    {
+      "resourceType" : "Practitioner",
+      "id" : "p1",
+      "name" : [{
+        "family" : "Person",
+        "given" : ["Patricia"]
+      }]
+    }],
+   "asserter" : {
+     "reference" : "#p1"
+  }
 }
 
 /* Converted data in parquet file */
 {
-"resourceType": "Patient",
-"id": "example",
-"gender": "male",
+    "resourceType": "Condition",
+    "id": "example",
+    // Contained properties will be wrapped into single Json string
+    "contained": "[{\"resourceType\":\"Practitioner\",\"id\":\"p1\",\"name\":[{\"family\":\"Person\",\"given\":[\"Patricia\"]}]}]",
+    "asserter": {
+        "reference" : "#p1"
+    }
 }
 ```
 
 ### Choice Types
 
-From the recommandation on SQL-based projection of FHIR resources [Sql-On-Fhir](https://github.com/FHIR/sql-on-fhir/blob/master/sql-on-fhir.md#choice-types), choice types (denoted as elementName[x]) are represented as an SQL ```STRUCT``` of the elementName, where that struct contains a child for each type of the choice. The code example below adds an additional level for choice type fields.  For more information, see [Resource Index](https://www.hl7.org/fhir/resourcelist.html) from HL7.
+From the recommendation on SQL-based projection of FHIR resources [Sql-On-Fhir](https://github.com/FHIR/sql-on-fhir/blob/master/sql-on-fhir.md#choice-types), choice types (denoted as elementName[x]) are represented as an SQL ```STRUCT``` of the elementName, where that struct contains a child for each type of the choice. The code example below adds an additional level for choice type fields.  For more information, see [Resource Index](https://www.hl7.org/fhir/resourcelist.html) from HL7.
 
 ```javascript
 /* Raw FHIR Json data */
@@ -135,15 +140,17 @@ From the recommandation on SQL-based projection of FHIR resources [Sql-On-Fhir](
 ```
 
 ## Query Parquet data on Synapse
-The PowerShell script [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) creates default EXTERNAL TABLEs and VIEWs on Synapse Serverless SQL pool. 
+The PowerShell script [Set-SynapseEnvironment.ps1](../scripts/Set-SynapseEnvironment.ps1) creates default EXTERNAL TABLEs and VIEWs on Synapse Serverless SQL pool.
 
-Below are general rules of the default TABLEs and VIEWs defintions.
+Below are general rules of the default TABLEs and VIEWs definitions.
 
-### Definitons for EXTERNAL TABLE
+### Definitions for EXTERNAL TABLE
 
-Each EXTERNAL TABLE is linked to all Parquet files for a specific resource type. They have names such as ```"[fhir].[{resource type name}]"```. 
+Each EXTERNAL TABLE is linked to all Parquet files for a specific resource type. They have names such as ```"[fhir].[{resource type name}]"```.
 
 EXTERNAL TABLE can directly parse nested data in Parquet files, so nested data is expanded to the leaf field. But it can't parse repeated data in Parquet files, Synapse Serverless SQL pool automatically wraps repeated columns into single JSON string when they are queried.
+
+Extensions on primitive types are excluded in EXTERNAL TABLE.
 
 1. Columns for leaf fields.
 
@@ -165,7 +172,7 @@ EXTERNAL TABLE can directly parse nested data in Parquet files, so nested data i
     ```
 
 2. Columns for repeated fields.
-   
+
     ```sql
     [name] VARCHAR(MAX)
     ```
@@ -186,7 +193,7 @@ EXTERNAL TABLE can directly parse nested data in Parquet files, so nested data i
 
 VIEWs are linked to repeated fields in first depth among Parquet files of all resource types. They have names such as ```"[fhir].[{resource type name}{property name}]"```.
 
-Most of properties in FHIR data can be repeated in first depth (that is ```"name"``` in ```"Patient"```, ```"category"``` in ```"Observation"```), and they are wrapped into a single string when they're queired in EXTERNAL TABLEs. VIEWs provide a quick look for the detailed fields under those commonly used fields.
+Most of properties in FHIR data can be repeated in first depth (that is ```"name"``` in ```"Patient"```, ```"category"``` in ```"Observation"```), and they are wrapped into a single string when they're queried in EXTERNAL TABLEs. VIEWs provide a quick look for the detailed fields under those commonly used fields.
 
 In VIEWs, nested data is expanded to the leaf field, and we define columns link to repeated root field, and let Synapse wrap them into a single string when querying.
 
