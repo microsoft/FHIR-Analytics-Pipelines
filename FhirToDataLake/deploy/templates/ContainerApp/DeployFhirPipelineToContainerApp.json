@@ -277,6 +277,10 @@
               "image": "[parameters('image')]",
               "env": [
                 {
+                    "name": "configVersion",
+                    "value": "1"
+                },
+                {
                     "name": "job__jobInfoQueueName",
                     "value": "[variables('jobInfoQueueName')]"
                 },
