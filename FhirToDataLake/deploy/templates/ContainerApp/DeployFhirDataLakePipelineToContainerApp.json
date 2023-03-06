@@ -160,6 +160,7 @@
     "jobInfoQueueName": "[concat(variables('pipelineName'), 'jobinfoqueue')]",
     "jobInfoTableName": "[concat(variables('pipelineName'), 'jobinfotable')]",
     "metadataTableName": "[concat(variables('pipelineName'), 'metadatatable')]",
+    "completedBlobTableName": "[concat(variables('pipelineName'), 'completedblobtable')]",
     "resourceTags": {"FhirAnalyticsPipeline": "FhirDataLakeToDataLake", "FhirSchemaVersion": "v0.6.1"},
     "storageAccountName": "[concat(substring(replace(variables('pipelineName'), '-', ''), 0, min(11, length(replace(variables('pipelineName'), '-', '')))), uniquestring(resourceGroup().id, variables('pipelineName')))]",
     "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
@@ -247,6 +248,10 @@
                 {
                     "name": "job__metadataTableName",
                     "value": "[variables('metadataTableName')]"
+                },
+                {
+                    "name": "job__completedBlobTableName",
+                    "value": "[variables('completedBlobTableName')]"
                 },
                 {
                     "name": "job__maxRunningJobCount",

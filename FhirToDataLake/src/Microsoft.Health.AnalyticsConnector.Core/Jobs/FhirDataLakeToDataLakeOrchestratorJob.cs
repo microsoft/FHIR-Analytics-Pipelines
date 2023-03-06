@@ -198,10 +198,15 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             if (blobs.Any())
             {
                 var completedBlobs = await _completedBlobStore.GetCompletedBlobsAsync(cancellationToken);
-                blobs = blobs.Except(completedBlobs).ToList();
 
                 foreach (var blob in blobs)
                 {
+                    var formattedBlobName = Path.ChangeExtension(blob.Name, null).Replace('/', '_');
+                    if (completedBlobs.Where(blob => string.Equals(blob.Name, formattedBlobName, StringComparison.OrdinalIgnoreCase)).Any())
+                    {
+                        continue;
+                    }
+
                     var input = new FhirDataLakeToDataLakeProcessingJobInputData
                     {
                         JobType = JobType.Processing,
@@ -289,9 +294,10 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         private async Task<bool> CreateCompletedBlobEntityAsync(string blobName, string eTag, CancellationToken cancellationToken)
         {
+            // PartitionKey cannot contain forward slash (/) character: https://learn.microsoft.com/en-us/archive/blogs/jmstall/azure-storage-naming-rules#valid-values-for-partitionkey-and-rowkey
             var completedBlobEntity = new CompletedBlobEntity
             {
-                PartitionKey = Path.ChangeExtension(blobName, null),
+                PartitionKey = Path.ChangeExtension(blobName, null).Replace('/', '_'),
                 RowKey = eTag,
             };
 

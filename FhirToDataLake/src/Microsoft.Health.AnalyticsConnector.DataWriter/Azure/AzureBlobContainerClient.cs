@@ -232,9 +232,9 @@ namespace Microsoft.Health.AnalyticsConnector.DataWriter.Azure
             }
             catch (Exception ex)
             {
-                _diagnosticLogger.LogError($"List blob prefix '{blobPrefix}' failed. Reason: '{ex.Message}'");
-                _logger.LogInformation(ex, $"List blob prefix '{blobPrefix}' failed. Reason: '{ex.Message}'");
-                throw new AzureBlobOperationFailedException($"List blob prefix '{blobPrefix}' failed.", ex);
+                _diagnosticLogger.LogError($"List blob info with prefix '{blobPrefix}' failed. Reason: '{ex.Message}'");
+                _logger.LogInformation(ex, $"List blob info with prefix '{blobPrefix}' failed. Reason: '{ex.Message}'");
+                throw new AzureBlobOperationFailedException($"List blob info with prefix '{blobPrefix}' failed.", ex);
             }
         }
 

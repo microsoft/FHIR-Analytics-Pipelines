@@ -56,8 +56,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
 
         public async Task<bool> IsExternalDependencyReady(CancellationToken cancellationToken)
         {
-            bool isInputBlobContainerReady = IsBlobContainerReady(_sourceBlobContainerClient);
-            bool isOutputBlobContainerReady = IsBlobContainerReady(_blobContainerClient);
+            bool isSourceBlobContainerReady = IsBlobContainerReady(_sourceBlobContainerClient);
+            bool isDestinationBlobContainerReady = IsBlobContainerReady(_blobContainerClient);
 
             bool isSchemaAcrReady = true;
             if (!string.IsNullOrWhiteSpace(_schemaImageReference))
@@ -65,7 +65,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                 isSchemaAcrReady = await IsAzureContainerRegistryReady(_schemaImageReference, cancellationToken);
             }
 
-            bool isReady = isInputBlobContainerReady && isOutputBlobContainerReady && isSchemaAcrReady;
+            bool isReady = isSourceBlobContainerReady && isDestinationBlobContainerReady && isSchemaAcrReady;
 
             if (isReady)
             {

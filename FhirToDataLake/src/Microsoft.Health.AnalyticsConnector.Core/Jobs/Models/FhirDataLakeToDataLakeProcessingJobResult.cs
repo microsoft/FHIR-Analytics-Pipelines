@@ -44,10 +44,5 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
         /// Data size for output parquet data in bytes.
         /// </summary>
         public long ProcessedDataSizeInTotal { get; set; } = 0;
-
-        /// <summary>
-        /// Next index to be processed.
-        /// </summary>
-        public long NextIndex { get; set; } = 0;
     }
 }

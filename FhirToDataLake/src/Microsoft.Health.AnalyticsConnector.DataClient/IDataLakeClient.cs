@@ -26,14 +26,6 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Get blob ETag.
-        /// </summary>
-        /// <param name="blobName">blob name.</param>
-        /// <returns>blob ETag.</returns>
-        public string GetBlobETag(
-            string blobName);
-
-        /// <summary>
         /// Load blob in stream.
         /// </summary>
         /// <param name="blobName">blob name.</param>
@@ -42,6 +34,14 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient
         public Task<Stream> LoadBlobAsync(
             string blobName,
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get blob ETag.
+        /// </summary>
+        /// <param name="blobName">blob name.</param>
+        /// <returns>blob ETag.</returns>
+        public string GetBlobETag(
+            string blobName);
 
         /// <summary>
         /// Acquire lease for a blob.

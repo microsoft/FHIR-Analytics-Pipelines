@@ -55,6 +55,7 @@ namespace Microsoft.Health.AnalyticsConnector.DataClient
 
                     break;
                 case DataSourceType.FhirDataLakeStore:
+                    // Add HttpClient for ACR
                     services.AddHttpClient();
                     services.AddSingleton<IDataLakeSource, AzureDataLakeSource>();
                     services.AddSingleton<IDataLakeClient, AzureDataLakeClient>();

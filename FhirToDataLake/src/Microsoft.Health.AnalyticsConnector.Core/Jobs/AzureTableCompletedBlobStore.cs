@@ -25,7 +25,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         private readonly TableClient _completedBlobTableClient;
         private readonly ILogger<AzureTableCompletedBlobStore> _logger;
 
-        private const int QueryEntityPageCount = 100;
+        // A query against the Table service may return a maximum of 1000 items at one time: https://learn.microsoft.com/en-us/rest/api/storageservices/query-timeout-and-pagination
+        private const int QueryEntityMaxPerPage = 1000;
 
         private bool _isInitialized;
 
@@ -90,8 +91,11 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         public async Task<List<AzureBlobInfo>> GetCompletedBlobsAsync(CancellationToken cancellationToken = default)
         {
             List<AzureBlobInfo> blobs = new List<AzureBlobInfo>();
-            await foreach (Page<CompletedBlobEntity> page in _completedBlobTableClient.QueryAsync<CompletedBlobEntity>(cancellationToken: cancellationToken)
-                    .AsPages(default, QueryEntityPageCount))
+            AsyncPageable<CompletedBlobEntity> completedBlobEntityQueryResult = _completedBlobTableClient.QueryAsync<CompletedBlobEntity>(
+                maxPerPage: QueryEntityMaxPerPage,
+                cancellationToken: cancellationToken);
+
+            await foreach (Page<CompletedBlobEntity> page in completedBlobEntityQueryResult.AsPages(default, QueryEntityMaxPerPage))
             {
                 blobs.AddRange(page.Values.Select(item => new AzureBlobInfo(item.PartitionKey, item.RowKey)));
             }
