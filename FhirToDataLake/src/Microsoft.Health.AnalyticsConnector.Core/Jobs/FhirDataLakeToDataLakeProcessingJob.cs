@@ -182,6 +182,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             using StreamReader inputDataReader = new StreamReader(inputDataStream);
 
             string content = null;
+            long currentIndex = 0;
             List<JObject> buffer = new List<JObject>();
             Queue<Task> processingTasks = new Queue<Task>();
 
@@ -193,7 +194,8 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
                     throw new OperationCanceledException();
                 }
 
-                buffer.Add(JObject.Parse(content));
+                buffer.Add(ParseResource(content, _inputData.BlobName, _inputData.ETag, currentIndex));
+                currentIndex++;
                 _cacheResult.CacheSize += content.Length * sizeof(char);
 
                 if (buffer.Count < MaxBatchSize)
@@ -357,8 +359,26 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
             string eTag,
             int partId)
         {
-            var formattedBlobName = Path.GetFileNameWithoutExtension(blobName).Replace('/', '_');
-            return $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/{formattedBlobName}/{eTag}/{schemaType}/{schemaType}_{partId:d10}.parquet";
+            return $"{AzureStorageConstants.StagingFolderName}/{jobId:d20}/{blobName}/{eTag}/{schemaType}/{schemaType}_{partId:d10}.parquet";
+        }
+
+        private JObject ParseResource(string content, string blobName, string eTag, long index)
+        {
+            try
+            {
+                var resource = JObject.Parse(content);
+                resource.Add(DataLakeConstants.BlobNameColumnKey, new JValue(blobName));
+                resource.Add(DataLakeConstants.ETagColumnKey, new JValue(eTag));
+                resource.Add(DataLakeConstants.IndexColumnKey, new JValue(index));
+
+                return resource;
+            }
+            catch (Exception ex)
+            {
+                _diagnosticLogger.LogError("The input content is invalid JSON.");
+                _logger.LogInformation("The input content is invalid JSON.");
+                throw new JobExecutionException("The input content is invalid JSON.", ex);
+            }
         }
     }
 }

@@ -1,0 +1,386 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+        "type": "string",
+        "defaultValue": "East US",
+        "allowedValues": [
+            "Australia East",
+            "Brazil South",
+            "Canada Central",
+            "Central US",
+            "East Asia",
+            "East US",
+            "East US 2",
+            "France Central",
+            "Germany West Central",
+            "Japan East",
+            "Korea Central",
+            "North Central US",
+            "North Europe",
+            "Norway East",
+            "South Africa North",
+            "South Central US",
+            "UK South",
+            "West Europe",
+            "West US",
+            "West US 3"
+        ],
+        "metadata": {
+            "description": "Location for all resources."
+        }
+    },
+    "pipelineName": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 24,
+        "metadata": {
+            "description": "The name of the container app."
+        }
+    },
+    "containerAppEnvironmentName": {
+        "type": "string",
+        "defaultValue": "",
+        "maxLength": 24,
+        "metadata": {
+            "description": "The name of the existing Azure Container App environment. If not specified, new environment will be created."
+        }
+    },
+    "fhirDataLakeStoreStorageUrl": {
+        "type": "string",
+        "metadata": {
+            "description": "The fhir data lake store storage url."
+        }
+    },
+    "fhirDataLakeStoreContainerName": {
+        "type": "string",
+        "metadata": {
+            "description": "The fhir data lake store container name."
+        }
+    },
+    "fhirVersion": {
+        "type": "string",
+        "defaultValue": "R4",
+        "allowedValues": ["R4"]
+    },
+    "dataStart": {
+        "type": "string",
+        "defaultValue": "1970-01-01 00:00:00 +00:00",
+        "metadata": {
+            "description": "Start timestamp of the data range to export."
+        }
+    },
+    "dataEnd": {
+        "type": "string",
+        "defaultValue": "",
+        "metadata": {
+            "description": "End timestamp of the data range to export. If not specified, all data will be exported."
+        }
+    },
+    "containerName": {
+        "type": "string",
+        "defaultValue": "fhirdatalake",
+        "metadata": {
+            "description": "The name of the container to store job and data."
+        }
+    },
+    "jobConcurrency": {
+        "type": "int",
+        "defaultValue": 3,
+        "minValue": 2,
+        "maxValue": 10,
+        "metadata": {
+            "description": "Count of concurrent jobs executing in parallel."
+        }
+    },
+    "schedulerInterval": {
+        "type": "string",
+        "defaultValue": "every 5 minutes",
+        "allowedValues": [
+            "every 5 minutes",
+            "every 30 minutes",
+            "every hour",
+            "every day",
+            "customized"
+        ],
+        "metadata": {
+            "description": "The scheduler interval. To customize the scheduler, set the value to \"customized\" and specify the value in Scheduler Crontab Expression below."
+        }
+    },
+    "schedulerCrontabExpression": {
+        "type": "string",
+        "defaultValue": "",
+        "metadata": {
+            "description": "Use a crontab expression to set the scheduler. A crontab expression is a six-part crontab format (sec min hour day month day-of-week). Refer to https://github.com/atifaziz/NCrontab for more about crontab expression."
+        }
+    },
+    "customizedSchemaImageReference":{
+        "type": "string",
+        "defaultValue": "",
+        "metadata": {
+            "description": "The customized schema image reference for the image on Container Registry. Refer to https://github.com/microsoft/FHIR-Converter/blob/main/docs/TemplateManagementCLI.md for manage your template images."
+        }
+    },
+    "image": {
+        "type": "string",
+        "defaultValue": "healthplatformregistry.azurecr.io/healthdatatodatalaketool:v0.6.1",
+        "metadata": {
+            "description": "Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials."
+        }
+    },
+    "maxInstanceCount": {
+        "type": "int",
+        "defaultValue": 10,
+        "minValue": 1,
+        "maxValue": 30,
+        "metadata": {
+            "description": "Maximum number of replicas running for fhir datalake to datalake container app."
+        }
+    },
+    "storageAccountType": {
+        "type": "string",
+        "defaultValue": "Standard_LRS",
+        "allowedValues": [
+            "Standard_LRS",
+            "Standard_GRS",
+            "Standard_RAGRS"
+        ],
+        "metadata": {
+            "description": "Storage Account type"
+        }
+    }
+  },
+  "variables": {
+    "dataSourceType": "FhirDataLakeStore",
+    "pipelineContainerName": "fhir-datalake-to-datalake",
+    "pipelineName": "[toLower(parameters('pipelineName'))]",
+    "analyticsWorkspaceName": "[concat(variables('pipelineName'), '-LogAnalytics')]",
+    "environmentName": "[if(empty(parameters('containerAppEnvironmentName')), concat(variables('pipelineName'), '-Environment') ,parameters('containerAppEnvironmentName'))]",
+    "jobInfoQueueName": "[concat(variables('pipelineName'), 'jobinfoqueue')]",
+    "jobInfoTableName": "[concat(variables('pipelineName'), 'jobinfotable')]",
+    "metadataTableName": "[concat(variables('pipelineName'), 'metadatatable')]",
+    "resourceTags": {"FhirAnalyticsPipeline": "FhirDataLakeToDataLake", "FhirSchemaVersion": "v0.6.1"},
+    "storageAccountName": "[concat(substring(replace(variables('pipelineName'), '-', ''), 0, min(11, length(replace(variables('pipelineName'), '-', '')))), uniquestring(resourceGroup().id, variables('pipelineName')))]",
+    "storageBlobDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
+    "storageQueueDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
+    "storageTableDataContributerRoleId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
+    "customizedSchemaImageReference": "[toLower(parameters('customizedSchemaImageReference'))]",
+    "schedulerCronExpression": "[if(equals(parameters('schedulerInterval'), 'every 5 minutes'), '0 */5 * * * *', if(equals(parameters('schedulerInterval'), 'every 30 minutes'), '0 */30 * * * *', if(equals(parameters('schedulerInterval'), 'every hour'), '0 0 * * * *', if(equals(parameters('schedulerInterval'), 'every day'), '0 0 0 * * *', parameters('schedulerCrontabExpression')))))]"
+  },
+  "resources": [
+    {
+        "type": "Microsoft.Storage/storageAccounts",
+        "apiVersion": "2019-06-01",
+        "name": "[variables('storageAccountName')]",
+        "location": "[parameters('location')]",
+        "tags": "[variables('resourceTags')]",
+        "sku": {
+            "name": "[parameters('storageAccountType')]"
+        },
+        "properties": {
+            "isHnsEnabled": true
+        },
+        "kind": "StorageV2"
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2021-12-01-preview",
+      "name": "[variables('analyticsWorkspaceName')]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('resourceTags')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 60
+      }
+    },
+    {
+      "type": "Microsoft.App/managedEnvironments",
+      "apiVersion": "2022-03-01",
+      "name": "[variables('environmentName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('analyticsWorkspaceName'))]"
+      ],
+      "location": "[parameters('location')]",
+      "tags": "[variables('resourceTags')]",
+      "properties": {
+        "appLogsConfiguration": {
+          "destination": "log-analytics",
+          "logAnalyticsConfiguration": {
+            "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces/', variables('analyticsWorkspaceName')), '2015-03-20').customerId]",
+            "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces/', variables('analyticsWorkspaceName')), '2015-03-20').primarySharedKey]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2022-03-01",
+      "type": "Microsoft.App/containerApps",
+      "name": "[variables('pipelineName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', variables('environmentName'))]"
+      ],
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "location": "[parameters('location')]",
+      "tags": "[variables('resourceTags')]",
+      "properties": {
+        "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', variables('environmentName'))]",
+        "template": {
+          "revisionSuffix": "myrevision",
+          "containers": [
+            {
+              "name": "[variables('pipelineContainerName')]",
+              "image": "[parameters('image')]",
+              "env": [
+                {
+                    "name": "job__jobInfoQueueName",
+                    "value": "[variables('jobInfoQueueName')]"
+                },
+                {
+                    "name": "job__jobInfoTableName",
+                    "value": "[variables('jobInfoTableName')]"
+                },
+                {
+                    "name": "job__metadataTableName",
+                    "value": "[variables('metadataTableName')]"
+                },
+                {
+                    "name": "job__maxRunningJobCount",
+                    "value": "[string(parameters('jobConcurrency'))]"
+                },
+                {
+                    "name": "job__containerName",
+                    "value": "[parameters('containerName')]"
+                },
+                {
+                    "name": "job__startTime",
+                    "value": "[parameters('dataStart')]"
+                },
+                {
+                    "name": "job__endTime",
+                    "value": "[parameters('dataEnd')]"
+                },
+                {
+                    "name": "job__tableUrl",
+                    "value": "[concat('https://', variables('storageAccountName'), '.table.core.windows.net')]"
+                },
+                {
+                    "name": "job__queueUrl",
+                    "value": "[concat('https://', variables('storageAccountName'), '.queue.core.windows.net')]"
+                },
+                {
+                    "name": "job__schedulerCronExpression",
+                    "value": "[variables('schedulerCronExpression')]"
+                },
+                {
+                    "name": "dataLakeStore__storageUrl",
+                    "value": "[concat('https://', variables('storageAccountName'), '.blob.core.windows.net')]"
+                },
+                {
+                    "name": "schema__enableCustomizedSchema",
+                    "value": "[if(empty(variables('customizedSchemaImageReference')), 'false', 'true')]"
+                },
+                {
+                    "name": "schema__schemaImageReference",
+                    "value": "[variables('customizedSchemaImageReference')]"
+                },
+                {
+                    "name": "dataSource__type",
+                    "value": "[variables('dataSourceType')]"
+                },
+                {
+                    "name": "dataSource__fhirDataLakeStore__storageUrl",
+                    "value": "[parameters('fhirDataLakeStoreStorageUrl')]"
+                },
+                {
+                    "name": "dataSource__fhirDataLakeStore__containerName",
+                    "value": "[parameters('fhirDataLakeStoreContainerName')]"
+                },
+                {
+                    "name": "dataSource__fhirDataLakeStore__version",
+                    "value": "[parameters('fhirVersion')]"
+                }
+              ],
+              "resources": {
+                "cpu": 2,
+                "memory": "4Gi"
+              }
+            }
+          ],
+          "scale": {
+            "minReplicas": 1,
+            "maxReplicas": "[parameters('maxInstanceCount')]",
+            "rules": [
+                {
+                "name": "cpu-scaling-rule",
+                "custom": {
+                    "type": "cpu",
+                    "metadata": {
+                        "type": "Utilization",
+                        "value": "50"
+                        }
+                    }
+                },
+                {
+                    "name": "memory-scaling-rule",
+                    "custom": {
+                        "type": "memory",
+                        "metadata": {
+                            "type": "Utilization",
+                            "value": "50"
+                        }
+                    }
+                }
+            ]
+          }
+        }
+      }
+    },
+    {
+        "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+        "apiVersion": "2018-09-01-preview",
+        "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'), variables('pipelineName'), 'blob')))]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+            "[resourceId('Microsoft.App/containerApps', variables('pipelineName'))]"
+        ],
+        "properties": {
+            "roleDefinitionId": "[variables('storageBlobDataContributerRoleId')]",
+            "principalId": "[reference(resourceId('Microsoft.App/containerApps/', variables('pipelineName')), '2022-03-01', 'Full').identity.principalId]",
+            "principalType": "ServicePrincipal"
+        }
+    },
+    {
+        "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+        "apiVersion": "2018-09-01-preview",
+        "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'), variables('pipelineName'), 'queue')))]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+            "[resourceId('Microsoft.App/containerApps', variables('pipelineName'))]"
+        ],
+        "properties": {
+            "roleDefinitionId": "[variables('storageQueueDataContributerRoleId')]",
+            "principalId": "[reference(resourceId('Microsoft.App/containerApps/', variables('pipelineName')), '2022-03-01', 'Full').identity.principalId]",
+            "principalType": "ServicePrincipal"
+        }
+    },
+    {
+        "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+        "apiVersion": "2018-09-01-preview",
+        "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'), variables('pipelineName'), 'table')))]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+            "[resourceId('Microsoft.App/containerApps', variables('pipelineName'))]"
+        ],
+        "properties": {
+            "roleDefinitionId": "[variables('storageTableDataContributerRoleId')]",
+            "principalId": "[reference(resourceId('Microsoft.App/containerApps/', variables('pipelineName')), '2022-03-01', 'Full').identity.principalId]",
+            "principalType": "ServicePrincipal"
+        }
+    }
+  ]
+}

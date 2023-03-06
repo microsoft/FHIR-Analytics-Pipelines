@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -290,7 +291,7 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs
         {
             var completedBlobEntity = new CompletedBlobEntity
             {
-                PartitionKey = blobName,
+                PartitionKey = Path.ChangeExtension(blobName, null),
                 RowKey = eTag,
             };
 

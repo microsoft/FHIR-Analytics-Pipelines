@@ -27,19 +27,9 @@ namespace Microsoft.Health.AnalyticsConnector.Core.Jobs.Models
         public long CreatedJobCount { get; set; }
 
         /// <summary>
-        /// Completed job count
-        /// </summary>
-        public long CompletedJobCount { get; set; }
-
-        /// <summary>
         /// Running job ids
         /// </summary>
         public ISet<long> RunningJobIds { get; set; } = new HashSet<long>();
-
-        /// <summary>
-        /// Completed blobs
-        /// </summary>
-        public ISet<AzureBlobInfo> CompletedBlobs { get; set; } = new HashSet<AzureBlobInfo>();
 
         /// <summary>
         /// Total resource count (from data source) for each resource types.

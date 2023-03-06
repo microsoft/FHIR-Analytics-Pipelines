@@ -61,6 +61,16 @@ namespace Microsoft.Health.AnalyticsConnector.SchemaManagement.Parquet.SchemaPro
                 throw new GenerateFhirParquetSchemaNodeException($"Parse schema file failed. Reason: {ex.Message}.", ex);
             }
 
+            if (_dataSourceConfiguration.Type == DataSourceType.FhirDataLakeStore)
+            {
+                foreach ((var schemanNodeType, var schemaNode) in defaultSchemaNodesMap)
+                {
+                    schemaNode.SubNodes.Add(DataLakeConstants.BlobNameColumnKey, CreateBlobSchemaNode(schemanNodeType, DataLakeConstants.BlobNameColumnKey));
+                    schemaNode.SubNodes.Add(DataLakeConstants.ETagColumnKey, CreateBlobSchemaNode(schemanNodeType, DataLakeConstants.ETagColumnKey));
+                    schemaNode.SubNodes.Add(DataLakeConstants.IndexColumnKey, CreateBlobSchemaNode(schemanNodeType, DataLakeConstants.IndexColumnKey));
+                }
+            }
+
             return Task.FromResult(defaultSchemaNodesMap);
         }
 
@@ -116,6 +126,20 @@ namespace Microsoft.Health.AnalyticsConnector.SchemaManagement.Parquet.SchemaPro
                 default:
                     throw new ConfigurationErrorException($"Data source type {_dataSourceConfiguration.Type} is not supported");
             }
+        }
+
+        private static ParquetSchemaNode CreateBlobSchemaNode(string schemaNodeType, string schemaNodeName)
+        {
+            return new ParquetSchemaNode
+            {
+                Name = schemaNodeName,
+                Type = schemaNodeName.Equals(DataLakeConstants.IndexColumnKey) ? "integer" : "string",
+                IsRepeated = false,
+                IsLeaf = true,
+                NodePaths = new List<string> { schemaNodeType, schemaNodeName },
+                SubNodes = null,
+                ChoiceTypeNodes = null,
+            };
         }
     }
 }

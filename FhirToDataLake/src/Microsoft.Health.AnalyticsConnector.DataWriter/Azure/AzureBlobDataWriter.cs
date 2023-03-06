@@ -38,7 +38,7 @@ namespace Microsoft.Health.AnalyticsConnector.DataWriter.Azure
         // TODO [boywu]: refine regex for blob name
         // Staged data folder path: "staging/{JobId:d20}/{blobName}/{etag}/{schemaType}"
         // Committed data file path: "result/{schemaType}/{blobName}/{etag}/{JobId:d20}"
-        private readonly Regex _fhirDataLakeStagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z0-9_]+/[A-Za-z0-9_]+/[A-Za-z_]+)$");
+        private readonly Regex _fhirDataLakeStagingDataFolderRegex = new Regex(AzureStorageConstants.StagingFolderName + @"/[0-9]{20}/(?<partition>[A-Za-z0-9./_-]+/[A-Za-z0-9_]+/[A-Za-z_]+)$");
 
         private readonly DataSourceType _dataSourceType;
 
