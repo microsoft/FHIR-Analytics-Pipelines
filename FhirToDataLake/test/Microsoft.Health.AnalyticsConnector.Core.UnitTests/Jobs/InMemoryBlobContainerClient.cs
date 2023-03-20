@@ -200,5 +200,20 @@ namespace Microsoft.Health.AnalyticsConnector.Core.UnitTests.Jobs
                 }
             }
         }
+
+        public Task<IEnumerable<AzureBlobInfo>> ListBlobInfoAsync(string blobPrefix, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetBlobETag(string blobName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Stream> DownloadFileAsync(string directory, string file, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
