@@ -1,4 +1,4 @@
-# DEPRECATED DICOM to Synapse Sync Agent
+# DEPRECATED: DICOM to Synapse Sync Agent
 
 DICOM to Synapse Sync Agent enables you to query directly and perform Analytics on DICOM metadata by moving DICOM metadata to Azure Data Lake in near real time and making it available to a Synapse workspace.
 
