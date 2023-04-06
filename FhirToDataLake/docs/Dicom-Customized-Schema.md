@@ -1,4 +1,4 @@
-# Customized Schema For DICOM To Data Lake
+# DEPRECATED: Customized Schema For DICOM To Data Lake
 
  ![image](./assets/ProcessExtensions.png)
 
