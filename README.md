@@ -15,7 +15,7 @@ This OSS project currently has the following solutions:
 
     This solution enables you to query against the entire DICOM metadata with Synapse in SQL. You can also access the Parquet files directly from a Synapse Spark pool. 
     
-    Supported DICOM server:
+    DEPRECATED [Supported DICOM server]:
     [DICOM service in Azure Health Data Services](https://learn.microsoft.com/en-us/azure/healthcare-apis/dicom/), [DICOM server](https://github.com/microsoft/dicom-server) 
 
 1. [FHIR to CDM Pipeline Generator](FhirToCdm/docs/fhir-to-cdm.md): It is a tool to generate an ADF pipeline for moving a snapshot of data from a FHIR server using $export API to a [CDM folder](https://docs.microsoft.com/en-us/common-data-model/data-lake) in Azure Data Lake Storage Gen 2 in csv format. The tools requires a user-created configuration file containing instructions to project and flatten FHIR Resources and fields into tables. You can also follow the [instructions](FhirToCdm/docs/cdm-to-synapse.md) for creating a downstream pipeline in Synapse workspace to move data from CDM folder to Synapse dedicated SQL pool.
