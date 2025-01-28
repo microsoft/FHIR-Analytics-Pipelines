@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+>Notice:
+> Thank you for your interest in our repository. As of January 27, 2025, this repository is no longer being developed or maintained.
+We recommend that you use the new [healthcare data solutions in Microsoft Fabric](https://learn.microsoft.com/en-us/industry/healthcare/healthcare-data-solutions/overview).
+
 # Health Data Analytics Pipelines
 
 Health Data Analytics Pipelines is an open source project with the goal to help build components and pipelines for transforming and moving FHIR and DICOM data from FHIR and DICOM servers to [Azure Data Lake](https://azure.microsoft.com/en-us/solutions/data-lake/) and thereby make it available for analytics with [Azure Synapse](https://azure.microsoft.com/en-us/services/synapse-analytics/), [Power BI](https://powerbi.microsoft.com/en-us/), and [Azure Machine Learning](https://azure.microsoft.com/en-us/services/machine-learning/).
